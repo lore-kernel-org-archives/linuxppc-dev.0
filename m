@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 116B4C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:44:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 617A2C388F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:48:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B845206C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:44:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A310F21D40
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:48:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="FM+6iGu/";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QWVzJVj2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B845206C0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="3vRHayQH";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="cMpwA14t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A310F21D40
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQSd147zMzDq7h
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 22:44:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQSjS1Nd0zDqbY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 22:48:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
@@ -31,41 +31,41 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=FM+6iGu/; 
+ header.s=2020 header.b=3vRHayQH; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=QWVzJVj2; 
+ header.a=ed25519-sha256 header.s=2020e header.b=cMpwA14t; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR2q5DPjzDqTn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:33:39 +1100 (AEDT)
-Message-Id: <20201103095857.681196473@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR2t60j5zDqV1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:33:42 +1100 (AEDT)
+Message-Id: <20201103095857.885321106@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604399616;
+ s=2020; t=1604399619;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=9zfWJBESkC89ZM3wXi9RpcYi0kqs7Y++H87KJDM1PsA=;
- b=FM+6iGu/X6o10mq/FtDQCiRN7zTRF3r0s7Ss+igapV9ttM5H7pYB9Wje8MGF3i4YSPxAhK
- 25KKcscHcfgXak4e88H/ht4KlbCfLV+0zHOakSsxZy5/qBn7n2qUPGEJXY392Q1xlELmJo
- NblwLDaZEYb14PR5t1vVPqhWlETKeRLogBWSuEdl+nicahgGjme8XOjFq5RonDKoVE8y3N
- wzDbheHIZNB47+lThJbtB6qAeeRtyiUKkaoGgv+wOchAPMwUg1W4ue/fJgRLfbfX4eu5kI
- HEdlHJNf7HxB2vsO8pVfZinxI+Fmi8cfatioLdXGdXxAnzKppg7jyhwAaFAASA==
+ bh=kIU8mE8cIMxt7HdcaYjAxqCl6OgglnUDNaPoJJkieik=;
+ b=3vRHayQH6aMh+hAkR5udU6nvhLSigt/vofHCpg28n6tJ7ncJLkKSX/+B0fY+KHlPQTxHBM
+ Z5oZvM1+yr17K88jGTZjKl9HfvKiw5paOIqhEJXDcaTQ4spL/1kJpkm2339FbE+6JNWLTR
+ MeHd6e0o23EHfV6kEyc2kAqbqhhCVgio8/SYL5GgFQrlW7kRDNJZxtjYUqpBu01I4JlaOq
+ 5fiMSnibVKdZD3iEI+V5SnV+lSsoiI36LHud/O3JrZkiIg1+L2hMYbBu0B1D2NifwMJIfQ
+ 0x4GMxcIJdc3/yItQhHmHiZQAIXkRAwQZd4p0ANPvVTseAqvd3AGpoALeG6IiQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604399616;
+ s=2020e; t=1604399619;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=9zfWJBESkC89ZM3wXi9RpcYi0kqs7Y++H87KJDM1PsA=;
- b=QWVzJVj2VvqtXcIZwtvJwhwpHQqxRIV9wytN6gScTp4DI1FqFOrSCxUaik507DE6SqoDSo
- C5jxssGHP4ej70Cg==
-Date: Tue, 03 Nov 2020 10:27:23 +0100
+ bh=kIU8mE8cIMxt7HdcaYjAxqCl6OgglnUDNaPoJJkieik=;
+ b=cMpwA14tnMdsPseMKHpm31g8L4mhbGqu6Qa8dh2fFxqo+adO15rx0TWaTsfp9yg3/fl1iJ
+ gOg1e1DIUFkpsICQ==
+Date: Tue, 03 Nov 2020 10:27:25 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 11/37] csky/mm/highmem: Switch to generic kmap atomic
+Subject: [patch V3 13/37] mips/mm/highmem: Switch to generic kmap atomic
 References: <20201103092712.714480842@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -123,89 +123,109 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No reason having the same code in every architecture.
+No reason having the same code in every architecture
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-csky@vger.kernel.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@vger.kernel.org
 ---
-V3: Does not compile with gcc 10
+V3: Remove the kmap types cruft
 ---
- arch/csky/Kconfig               |    1 
- arch/csky/include/asm/fixmap.h  |    4 +-
- arch/csky/include/asm/highmem.h |    6 ++-
- arch/csky/mm/highmem.c          |   75 ----------------------------------------
- 4 files changed, 8 insertions(+), 78 deletions(-)
+ arch/mips/Kconfig                  |    1 
+ arch/mips/include/asm/fixmap.h     |    4 -
+ arch/mips/include/asm/highmem.h    |    6 +-
+ arch/mips/include/asm/kmap_types.h |   13 ------
+ arch/mips/mm/highmem.c             |   77 -------------------------------------
+ arch/mips/mm/init.c                |    4 -
+ 6 files changed, 6 insertions(+), 99 deletions(-)
 
---- a/arch/csky/Kconfig
-+++ b/arch/csky/Kconfig
-@@ -286,6 +286,7 @@ config NR_CPUS
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -2719,6 +2719,7 @@ config WAR_MIPS34K_MISSED_ITLB
  config HIGHMEM
  	bool "High Memory Support"
- 	depends on !CPU_CK610
+ 	depends on 32BIT && CPU_SUPPORTS_HIGHMEM && SYS_SUPPORTS_HIGHMEM && !CPU_MIPS32_3_5_EVA
 +	select KMAP_LOCAL
- 	default y
  
- config FORCE_MAX_ZONEORDER
---- a/arch/csky/include/asm/fixmap.h
-+++ b/arch/csky/include/asm/fixmap.h
-@@ -8,7 +8,7 @@
- #include <asm/memory.h>
+ config CPU_SUPPORTS_HIGHMEM
+ 	bool
+--- a/arch/mips/include/asm/fixmap.h
++++ b/arch/mips/include/asm/fixmap.h
+@@ -17,7 +17,7 @@
+ #include <spaces.h>
  #ifdef CONFIG_HIGHMEM
  #include <linux/threads.h>
 -#include <asm/kmap_types.h>
 +#include <asm/kmap_size.h>
  #endif
  
- enum fixed_addresses {
-@@ -17,7 +17,7 @@ enum fixed_addresses {
- #endif
+ /*
+@@ -52,7 +52,7 @@ enum fixed_addresses {
  #ifdef CONFIG_HIGHMEM
- 	FIX_KMAP_BEGIN,
--	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_TYPE_NR * NR_CPUS) - 1,
+ 	/* reserved pte's for temporary kernel mappings */
+ 	FIX_KMAP_BEGIN = FIX_CMAP_END + 1,
+-	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
 +	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
  #endif
  	__end_of_fixed_addresses
  };
---- a/arch/csky/include/asm/highmem.h
-+++ b/arch/csky/include/asm/highmem.h
-@@ -9,7 +9,7 @@
- #include <linux/init.h>
+--- a/arch/mips/include/asm/highmem.h
++++ b/arch/mips/include/asm/highmem.h
+@@ -24,7 +24,7 @@
  #include <linux/interrupt.h>
  #include <linux/uaccess.h>
+ #include <asm/cpu-features.h>
 -#include <asm/kmap_types.h>
 +#include <asm/kmap_size.h>
- #include <asm/cache.h>
  
- /* undef for production */
-@@ -32,10 +32,12 @@ extern pte_t *pkmap_page_table;
+ /* declarations for highmem.c */
+ extern unsigned long highstart_pfn, highend_pfn;
+@@ -48,11 +48,11 @@ extern pte_t *pkmap_page_table;
  
  #define ARCH_HAS_KMAP_FLUSH_TLB
  extern void kmap_flush_tlb(unsigned long addr);
 -extern void *kmap_atomic_pfn(unsigned long pfn);
  
- #define flush_cache_kmaps() do {} while (0)
+ #define flush_cache_kmaps()	BUG_ON(cpu_has_dc_aliases)
  
-+#define arch_kmap_local_post_map(vaddr, pteval)	kmap_flush_tlb(vaddr)
-+#define arch_kmap_local_post_unmap(vaddr)	kmap_flush_tlb(vaddr)
-+
- extern void kmap_init(void);
+-extern void kmap_init(void);
++#define arch_kmap_local_post_map(vaddr, pteval)	local_flush_tlb_one(vaddr)
++#define arch_kmap_local_post_unmap(vaddr)	local_flush_tlb_one(vaddr)
  
  #endif /* __KERNEL__ */
---- a/arch/csky/mm/highmem.c
-+++ b/arch/csky/mm/highmem.c
-@@ -9,8 +9,6 @@
+ 
+--- a/arch/mips/include/asm/kmap_types.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _ASM_KMAP_TYPES_H
+-#define _ASM_KMAP_TYPES_H
+-
+-#ifdef CONFIG_DEBUG_HIGHMEM
+-#define	 __WITH_KM_FENCE
+-#endif
+-
+-#include <asm-generic/kmap_types.h>
+-
+-#undef __WITH_KM_FENCE
+-
+-#endif
+--- a/arch/mips/mm/highmem.c
++++ b/arch/mips/mm/highmem.c
+@@ -8,8 +8,6 @@
+ #include <asm/fixmap.h>
  #include <asm/tlbflush.h>
- #include <asm/cacheflush.h>
  
 -static pte_t *kmap_pte;
 -
  unsigned long highstart_pfn, highend_pfn;
  
  void kmap_flush_tlb(unsigned long addr)
-@@ -19,67 +17,7 @@ void kmap_flush_tlb(unsigned long addr)
+@@ -17,78 +15,3 @@ void kmap_flush_tlb(unsigned long addr)
+ 	flush_tlb_one(addr);
  }
  EXPORT_SYMBOL(kmap_flush_tlb);
- 
+-
 -void *kmap_atomic_high_prot(struct page *page, pgprot_t prot)
 -{
 -	unsigned long vaddr;
@@ -218,29 +238,34 @@ V3: Does not compile with gcc 10
 -	BUG_ON(!pte_none(*(kmap_pte - idx)));
 -#endif
 -	set_pte(kmap_pte-idx, mk_pte(page, prot));
--	flush_tlb_one((unsigned long)vaddr);
+-	local_flush_tlb_one((unsigned long)vaddr);
 -
--	return (void *)vaddr;
+-	return (void*) vaddr;
 -}
 -EXPORT_SYMBOL(kmap_atomic_high_prot);
 -
 -void kunmap_atomic_high(void *kvaddr)
 -{
 -	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
--	int idx;
+-	int type __maybe_unused;
 -
 -	if (vaddr < FIXADDR_START)
 -		return;
 -
+-	type = kmap_atomic_idx();
 -#ifdef CONFIG_DEBUG_HIGHMEM
--	idx = KM_TYPE_NR*smp_processor_id() + kmap_atomic_idx();
+-	{
+-		int idx = type + KM_TYPE_NR * smp_processor_id();
 -
--	BUG_ON(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
+-		BUG_ON(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
 -
--	pte_clear(&init_mm, vaddr, kmap_pte - idx);
--	flush_tlb_one(vaddr);
--#else
--	(void) idx; /* to kill a warning */
+-		/*
+-		 * force other mappings to Oops if they'll try to access
+-		 * this pte without first remap it
+-		 */
+-		pte_clear(&init_mm, vaddr, kmap_pte-idx);
+-		local_flush_tlb_one(vaddr);
+-	}
 -#endif
 -	kmap_atomic_idx_pop();
 -}
@@ -255,6 +280,7 @@ V3: Does not compile with gcc 10
 -	unsigned long vaddr;
 -	int idx, type;
 -
+-	preempt_disable();
 -	pagefault_disable();
 -
 -	type = kmap_atomic_idx_push();
@@ -263,27 +289,35 @@ V3: Does not compile with gcc 10
 -	set_pte(kmap_pte-idx, pfn_pte(pfn, PAGE_KERNEL));
 -	flush_tlb_one(vaddr);
 -
--	return (void *) vaddr;
+-	return (void*) vaddr;
 -}
--
--static void __init kmap_pages_init(void)
-+void __init kmap_init(void)
- {
- 	unsigned long vaddr;
- 	pgd_t *pgd;
-@@ -96,14 +34,3 @@ static void __init kmap_pages_init(void)
- 	pte = pte_offset_kernel(pmd, vaddr);
- 	pkmap_page_table = pte;
- }
 -
 -void __init kmap_init(void)
 -{
--	unsigned long vaddr;
+-	unsigned long kmap_vstart;
 -
--	kmap_pages_init();
--
--	vaddr = __fix_to_virt(FIX_KMAP_BEGIN);
--
--	kmap_pte = pte_offset_kernel((pmd_t *)pgd_offset_k(vaddr), vaddr);
+-	/* cache the first kmap pte */
+-	kmap_vstart = __fix_to_virt(FIX_KMAP_BEGIN);
+-	kmap_pte = virt_to_kpte(kmap_vstart);
 -}
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -36,7 +36,6 @@
+ #include <asm/cachectl.h>
+ #include <asm/cpu.h>
+ #include <asm/dma.h>
+-#include <asm/kmap_types.h>
+ #include <asm/maar.h>
+ #include <asm/mmu_context.h>
+ #include <asm/sections.h>
+@@ -402,9 +401,6 @@ void __init paging_init(void)
+ 
+ 	pagetable_init();
+ 
+-#ifdef CONFIG_HIGHMEM
+-	kmap_init();
+-#endif
+ #ifdef CONFIG_ZONE_DMA
+ 	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+ #endif
 
