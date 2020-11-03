@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22764C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 12:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83BC0C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 12:57:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1698620735
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 12:53:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B221220731
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 12:57:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="tqX0huA3";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="oAcSNmei"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1698620735
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="cAh//GKs";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="FQTjFZ+Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B221220731
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQV8W6MRdzDqfc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 23:53:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQVF21phRzDqfr
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 23:57:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
@@ -31,41 +31,41 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=tqX0huA3; 
+ header.s=2020 header.b=cAh//GKs; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=oAcSNmei; 
+ header.a=ed25519-sha256 header.s=2020e header.b=FQTjFZ+Z; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR3V2r8hzDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:34:14 +1100 (AEDT)
-Message-Id: <20201103095859.948321621@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR3T1bbbzDqTn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:34:13 +1100 (AEDT)
+Message-Id: <20201103095859.836711767@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604399644;
+ s=2020; t=1604399643;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=pWTP+ffmxbdbKgw8Fs16NN7GUZ4c2XuBXkTON+k89eo=;
- b=tqX0huA3F2bRZGg5joppInMsd89JdtzQORLsBqdOU/cOQ9uNazXTFF+fXnrg9Lvo7UTQF+
- tfAXAlY98Cp8E88kX5FSfcVehbIuu4gCGdKyQusY7s2vKR/fc+WwwKprFg+uuIuaKZ5Vs8
- tKvRO99KWGPJB1qnu00RadM9QOpIAe9bUxTUpY6xhr58iPpUqU/8ypCk+UtFww7a2Z6+tD
- K81IrB+KPrJf49nwV583/mEA7Vp083clJTvWvydIml0VZ1RUr3o1iEnFm1LMpQ5ZYUJH5y
- l0wYvNWdqV1o7YOuE3FLp/1v36bpWI8ig5M02Fceplah92aoUhFNnt3+SDlY+Q==
+ bh=yUxHC0cakBFRwhud8xMOIDvuAaJvgwuFtrBz27XdsEs=;
+ b=cAh//GKsz39P8xqXnJcqDaA3W/edzWVdAqwjKoXA5Js/x368VRmdM0h2fj6bQZPAll8hmr
+ yl8q8CcCNvb+2SfFaIo7cnx8vW2iPoTlWRNGNB06KJ1ERTQlqVwbp+qakHsf3DKm3O66rB
+ +8+R2pAlCb2SMbZCBSyvPjBwiK1AVT7Wn6TtWs6GsMiR2cmkq8EcpYI90/EI8cGq7Q0K6k
+ PWjm7m4uZQ4xtBGqzKEndSPHHSWqIlOOUtSiYkKMXa6yxfM8jl2K7omhkCJJofz/LjfJ5M
+ Q/MfbNPI/NbAKfCFzA8vjy9XJtarFWdneKuOU4n/OP2w4gxAPRJI0FNbRKwq8Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604399644;
+ s=2020e; t=1604399643;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=pWTP+ffmxbdbKgw8Fs16NN7GUZ4c2XuBXkTON+k89eo=;
- b=oAcSNmeianVANBdkJfMq3VEfmfk7zPkjo1SytIi26JtOQ/F/yxC+2+XTfAnYi8jPc8tJbo
- D8mVfP2UZfQ3SJBw==
-Date: Tue, 03 Nov 2020 10:27:45 +0100
+ bh=yUxHC0cakBFRwhud8xMOIDvuAaJvgwuFtrBz27XdsEs=;
+ b=FQTjFZ+ZYdRELu4iTMN0YYBNgOsOxBJVlxyxuynko9bscI/OxppLps2A/EThS2XSvqYRg0
+ nAwEXgV5JRubDDDA==
+Date: Tue, 03 Nov 2020 10:27:44 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 33/37] highmem: Remove kmap_atomic_prot()
+Subject: [patch V3 32/37] drm/vmgfx: Replace kmap_atomic()
 References: <20201103092712.714480842@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -87,21 +87,20 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-aio@kvack.org,
  Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
  Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
  dri-devel@lists.freedesktop.org, virtualization@lists.linux-foundation.org,
- Ben Segall <bsegall@google.com>, Chris Mason <clm@fb.com>,
+ Ben Segall <bsegall@google.com>, linux-mm@kvack.org,
  Huang Rui <ray.huang@amd.com>, Paul Mackerras <paulus@samba.org>,
  Gerd Hoffmann <kraxel@redhat.com>,
  Daniel Bristot de Oliveira <bristot@redhat.com>, sparclinux@vger.kernel.org,
  Vincent Chen <deanbo422@gmail.com>, Christoph Hellwig <hch@lst.de>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Paul McKenney <paulmck@kernel.org>, Max Filippov <jcmvbkbc@gmail.com>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- linux-csky@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- David Airlie <airlied@linux.ie>,
+ Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Max Filippov <jcmvbkbc@gmail.com>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, David Airlie <airlied@linux.ie>,
  VMware Graphics <linux-graphics-maintainer@vmware.com>,
  Mel Gorman <mgorman@suse.de>, nouveau@lists.freedesktop.org,
  Dave Airlie <airlied@redhat.com>, linux-snps-arc@lists.infradead.org,
  Ben Skeggs <bskeggs@redhat.com>, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org,
+ Paul McKenney <paulmck@kernel.org>, intel-gfx@lists.freedesktop.org,
  Roland Scheidegger <sroland@vmware.com>, Josef Bacik <josef@toxicpanda.com>,
  Steven Rostedt <rostedt@goodmis.org>,
  Linus Torvalds <torvalds@linuxfoundation.org>,
@@ -112,7 +111,7 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-aio@kvack.org,
  Jani Nikula <jani.nikula@linux.intel.com>, Chris Zankel <chris@zankel.net>,
  Michal Simek <monstr@monstr.eu>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Nick Hu <nickhu@andestech.com>, linux-mm@kvack.org,
+ Nick Hu <nickhu@andestech.com>, Chris Mason <clm@fb.com>,
  Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
  Christian Koenig <christian.koenig@amd.com>, Benjamin LaHaise <bcrl@kvack.org>,
  Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
@@ -123,46 +122,98 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No more users.
+There is no reason to disable pagefaults and preemption as a side effect of
+kmap_atomic_prot().
+
+Use kmap_local_page_prot() instead and document the reasoning for the
+mapping usage with the given pgprot.
+
+Remove the NULL pointer check for the map. These functions return a valid
+address for valid pages and the return was bogus anyway as it would have
+left preemption and pagefaults disabled.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: VMware Graphics <linux-graphics-maintainer@vmware.com>
+Cc: Roland Scheidegger <sroland@vmware.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
 ---
 V3: New patch
 ---
- include/linux/highmem-internal.h |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/vmwgfx/vmwgfx_blit.c |   30 ++++++++++++------------------
+ 1 file changed, 12 insertions(+), 18 deletions(-)
 
---- a/include/linux/highmem-internal.h
-+++ b/include/linux/highmem-internal.h
-@@ -87,16 +87,11 @@ static inline void __kunmap_local(void *
- 	kunmap_local_indexed(vaddr);
- }
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_blit.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_blit.c
+@@ -375,12 +375,12 @@ static int vmw_bo_cpu_blit_line(struct v
+ 		copy_size = min_t(u32, copy_size, PAGE_SIZE - src_page_offset);
  
--static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
-+static inline void *kmap_atomic(struct page *page)
- {
- 	preempt_disable();
- 	pagefault_disable();
--	return __kmap_local_page_prot(page, prot);
--}
+ 		if (unmap_src) {
+-			kunmap_atomic(d->src_addr);
++			kunmap_local(d->src_addr);
+ 			d->src_addr = NULL;
+ 		}
+ 
+ 		if (unmap_dst) {
+-			kunmap_atomic(d->dst_addr);
++			kunmap_local(d->dst_addr);
+ 			d->dst_addr = NULL;
+ 		}
+ 
+@@ -388,12 +388,8 @@ static int vmw_bo_cpu_blit_line(struct v
+ 			if (WARN_ON_ONCE(dst_page >= d->dst_num_pages))
+ 				return -EINVAL;
+ 
+-			d->dst_addr =
+-				kmap_atomic_prot(d->dst_pages[dst_page],
+-						 d->dst_prot);
+-			if (!d->dst_addr)
+-				return -ENOMEM;
 -
--static inline void *kmap_atomic(struct page *page)
--{
--	return kmap_atomic_prot(page, kmap_prot);
-+	return __kmap_local_page_prot(page, kmap_prot);
- }
++			d->dst_addr = kmap_local_page_prot(d->dst_pages[dst_page],
++							   d->dst_prot);
+ 			d->mapped_dst = dst_page;
+ 		}
  
- static inline void __kunmap_atomic(void *addr)
-@@ -181,11 +176,6 @@ static inline void *kmap_atomic(struct p
- 	return page_address(page);
- }
+@@ -401,12 +397,8 @@ static int vmw_bo_cpu_blit_line(struct v
+ 			if (WARN_ON_ONCE(src_page >= d->src_num_pages))
+ 				return -EINVAL;
  
--static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
--{
--	return kmap_atomic(page);
--}
+-			d->src_addr =
+-				kmap_atomic_prot(d->src_pages[src_page],
+-						 d->src_prot);
+-			if (!d->src_addr)
+-				return -ENOMEM;
 -
- static inline void __kunmap_atomic(void *addr)
- {
- #ifdef ARCH_HAS_FLUSH_ON_KUNMAP
++			d->src_addr = kmap_local_page_prot(d->src_pages[src_page],
++							   d->src_prot);
+ 			d->mapped_src = src_page;
+ 		}
+ 		diff->do_cpy(diff, d->dst_addr + dst_page_offset,
+@@ -436,8 +428,10 @@ static int vmw_bo_cpu_blit_line(struct v
+  *
+  * Performs a CPU blit from one buffer object to another avoiding a full
+  * bo vmap which may exhaust- or fragment vmalloc space.
+- * On supported architectures (x86), we're using kmap_atomic which avoids
+- * cross-processor TLB- and cache flushes and may, on non-HIGHMEM systems
++ *
++ * On supported architectures (x86), we're using kmap_local_prot() which
++ * avoids cross-processor TLB- and cache flushes. kmap_local_prot() will
++ * either map a highmem page with the proper pgprot on HIGHMEM=y systems or
+  * reference already set-up mappings.
+  *
+  * Neither of the buffer objects may be placed in PCI memory
+@@ -500,9 +494,9 @@ int vmw_bo_cpu_blit(struct ttm_buffer_ob
+ 	}
+ out:
+ 	if (d.src_addr)
+-		kunmap_atomic(d.src_addr);
++		kunmap_local(d.src_addr);
+ 	if (d.dst_addr)
+-		kunmap_atomic(d.dst_addr);
++		kunmap_local(d.dst_addr);
+ 
+ 	return ret;
+ }
 
