@@ -2,63 +2,65 @@ Return-Path: <SRS0=iSul=EJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEBB1C388F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 13:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C08D3C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 13:48:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01EB322243
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 13:40:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A5FC321D91
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 13:48:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="g6hnGexd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01EB322243
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="QsyOdLU8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5FC321D91
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQWBp4w1NzDqPR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 00:40:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=g6hnGexd; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQWM73KHBzDqkg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 00:48:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQTGm5HRdzDqXg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 23:14:08 +1100 (AEDT)
-Received: from kernel.org (unknown [87.71.17.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 7A5E021D40;
- Tue,  3 Nov 2020 12:13:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1604405644;
- bh=rLf9yomATEx+srpgZeJ+KGPkFKfQ91E1jTn5i//k+v4=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=g6hnGexdu0W8O3pdlTR5aEzs0r2kP0xaYSrsTT9GezuIkJBm3EQGnE9HC9/i0y14W
- KQUMLf4/1ekMps9SlVeB61DMUq0iGCpQKrc0qBQk9l3Egw36MfVD4m724myMj1mv1P
- DJcwnqhwNdB7eOcGdB3ofp3gW4GGQabL04rnh6Gk=
-Date: Tue, 3 Nov 2020 14:13:50 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: Re: [PATCH v3 2/4] PM: hibernate: make direct map manipulations more
- explicit
-Message-ID: <20201103121350.GI4879@kernel.org>
-References: <20201101170815.9795-1-rppt@kernel.org>
- <20201101170815.9795-3-rppt@kernel.org>
- <20201103110816.t6a3ebtgcm7mfogy@box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQVms5ZdQzDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 00:21:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=QsyOdLU8; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4CQVmq12kQz9sVK;
+ Wed,  4 Nov 2020 00:21:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1604409707;
+ bh=MYU/GYY7WjVexPVFkQjnwSJPt6lSEwILNYT0f9czXic=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=QsyOdLU8adwVcT8UXmok40+HZGKDVAJxNBuEZyOMHRguFeBnxFXHjqdOHTKaffzfS
+ wdeFcw9uRV+38twP0uAPQLraN5Zp6zBx2hCo9GY68ewshFt3+2KqbPlDO/mDE0Kaqa
+ EWI8MYDfDuNxBRAAGYFa8JAJd2AHRTqdmEwIyv0LsoB0LDNmS1MhMfqa9t1DXbt9Wh
+ oKS/hzSsPavOyqGB+RqJN4UXzDHa28vADzT3beGbYUO66JOwCwB6oYLyYKMwcBu/Bz
+ ZeChRJ2wt/RymbPo471jHnfIQplSkHegyyBoijeIvl24k21fMgeediCcNj/HrBT+rn
+ z9PnukoBH6xtQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 1/3] powerpc/uaccess: Switch __put_user_size_allowed() to
+ __put_user_asm_goto()
+In-Reply-To: <871rhgwzcg.fsf@igel.home>
+References: <94ba5a5138f99522e1562dbcdb38d31aa790dc89.1599216721.git.christophe.leroy__44535.5968013004$1599217383$gmane$org@csgroup.eu>
+ <87mu079ron.fsf@igel.home> <87imav9r64.fsf@igel.home>
+ <87pn53vsep.fsf@mpe.ellerman.id.au> <871rhgwzcg.fsf@igel.home>
+Date: Wed, 04 Nov 2020 00:21:44 +1100
+Message-ID: <875z6mvamv.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201103110816.t6a3ebtgcm7mfogy@box>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,79 +72,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Len Brown <len.brown@intel.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
- David Rientjes <rientjes@google.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, Pekka Enberg <penberg@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 03, 2020 at 02:08:16PM +0300, Kirill A. Shutemov wrote:
-> On Sun, Nov 01, 2020 at 07:08:13PM +0200, Mike Rapoport wrote:
-> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> > index 46b1804c1ddf..054c8cce4236 100644
-> > --- a/kernel/power/snapshot.c
-> > +++ b/kernel/power/snapshot.c
-> > @@ -76,6 +76,32 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
-> >  static inline void hibernate_restore_unprotect_page(void *page_address) {}
-> >  #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
-> >  
-> > +static inline void hibernate_map_page(struct page *page, int enable)
-> > +{
-> > +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
-> > +		unsigned long addr = (unsigned long)page_address(page);
-> > +		int ret;
-> > +
-> > +		/*
-> > +		 * This should not fail because remapping a page here means
-> > +		 * that we only update protection bits in an existing PTE.
-> > +		 * It is still worth to have WARN_ON() here if something
-> > +		 * changes and this will no longer be the case.
-> > +		 */
-> > +		if (enable)
-> > +			ret = set_direct_map_default_noflush(page);
-> > +		else
-> > +			ret = set_direct_map_invalid_noflush(page);
-> > +
-> > +		if (WARN_ON(ret))
-> 
-> _ONCE?
+Andreas Schwab <schwab@linux-m68k.org> writes:
+> #
+> # Automatically generated file; DO NOT EDIT.
+> # Linux/powerpc 5.10.0-rc1 Kernel Configuration
+> #
+> CONFIG_CC_VERSION_TEXT="gcc-4.9 (SUSE Linux) 4.9.3"
 
-I've changed it to pr_warn() after David said people enable panic on
-warn in production kernels.
+So it seems to be a combination of GCC 4.9 and ...
 
-> > +			return;
-> > +
-> > +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-> > +	} else {
-> > +		debug_pagealloc_map_pages(page, 1, enable);
-> > +	}
-> > +}
-> > +
-> >  static int swsusp_page_is_free(struct page *);
-> >  static void swsusp_set_page_forbidden(struct page *);
-> >  static void swsusp_unset_page_forbidden(struct page *);
-> 
-> -- 
->  Kirill A. Shutemov
+> # CONFIG_PPC_RADIX_MMU is not set
 
--- 
-Sincerely yours,
-Mike.
+That ^, which specifically causes PPC_KUAP=n.
+
+When PPC_KUAP=y allow_user_access() inlines an isync and mtspr, both of
+which contain a memory clobber, and that seems to hide the bug.
+
+I think for now we just have to stop using asm goto for put_user() on
+GCC 4.9.
+
+I'll send a patch for that.
+
+cheers
