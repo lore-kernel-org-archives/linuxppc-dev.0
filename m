@@ -8,82 +8,82 @@ X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E39F9C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9A1AC388F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:44:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9331220786
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:42:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 053FD20786
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:44:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GZPVvErj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9331220786
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b4PJS/xa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 053FD20786
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQdv43Dc0zDqXZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:42:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQdxQ0hJRzDqB4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:44:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::842;
- helo=mail-qt1-x842.google.com; envelope-from=zhuyifei1999@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::741;
+ helo=mail-qk1-x741.google.com; envelope-from=zhuyifei1999@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=GZPVvErj; dkim-atps=neutral
-Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com
- [IPv6:2607:f8b0:4864:20::842])
+ header.s=20161025 header.b=b4PJS/xa; dkim-atps=neutral
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQWHz08vGzDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 00:45:18 +1100 (AEDT)
-Received: by mail-qt1-x842.google.com with SMTP id p12so4237895qtp.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2020 05:45:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQWJ35wZfzDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 00:45:23 +1100 (AEDT)
+Received: by mail-qk1-x741.google.com with SMTP id s14so14576554qkg.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2020 05:45:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=do2IkGTsgJZMce9dLCi5y9V7vjNX63EvX8bAUDpEGLM=;
- b=GZPVvErj4PHBMLqkcSjbNmjmJr4IFQAsCF6LbDLPnOqXfs7SLj1TTKqhDmNgH840z/
- JMTtucvAwREP+cEU+Z5Iz9lcArpHDNTiECZewb/MjCmRhNpQ6PuqqdTsVjqPNl8xvRdo
- sip44uxOeEAEVkGMyHAODxwQELEMs/kd6J09+5V1ZmN3zfpxAieTNiIx3evs2766AEOo
- gEP+Z4M+G2wLoWKjcrT41XHAyl01UzldioGtYHEGV1haEI4YToOheJ1zn1dRAZHSXrbf
- pKglRVS7f6vVvyFumFCM3MU4VHkFYyeDA7+teIbMSHjdZA03RLUMjsja8eSRa7PJSF9s
- Z5Wg==
+ bh=KyUFBIsp7WG/ZlJY7JJxE8NR9eUIpLAxO9Zr6R0PBAI=;
+ b=b4PJS/xarNSgluAWCDQQJdu5ZZO0VU1I/CVu92i5vqJojdmesNzdpHU7yArgmVQ/E0
+ ssbV0IRGKePz0hLGbtulnwYnTx5COwyQyc9m5w6wHYmkYcfAi0KMHRRx7s4bial5QlHm
+ FvgIq+A4dw+gBa8aET875i6MrhNYYoEziVxW0mYaQlwHJjIC17MKQQffriRcRcrqbvIZ
+ E0DUUKInWpAcW0rkp9bF5XrHmo61/Wt1H/vsEPSTiCc6yDtBv1y+2E2shnOXWuZJykAv
+ qixeNSrBN1O663ndDaowUg7ftIsFgDEFacIeZyHTHWsjCEpnDR4tkoP+lBgPM5gFOtbX
+ RUdA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=do2IkGTsgJZMce9dLCi5y9V7vjNX63EvX8bAUDpEGLM=;
- b=GyURyiMKiBaVhlJxntqfGG3jObvB3ZrQde2Ry0PXJz8P6W5VErxqbtHJ+vUdi2bfO7
- Iv47Xvh8ZRCHYazYc0ULcU5B8Z3Y+zSnurmx9i/uR8hNjM0Pe0wQO3sEoJ3lJ+Y9o8zC
- XB1Sn9jfdE+QcAY5K3sXd8kWJNGmE0ch9QWWyZ3G5BXClKj+Z48OEr4iIN9N2Olkgm4x
- jhl+0bbmHYslsvgVbiP023yAMX0sGkwTOcgOcid6JmtHBQRURK0x7Ha4h4XwL3h4mHjV
- GVuzWs07tiA9AwIStPymb2d8dg/CwBB45abOZo8dytS5eX3X7Q6bo0bq4s+FQl1l2nof
- svCQ==
-X-Gm-Message-State: AOAM530fiKDcQQMAYPh75M4rRJR4DXhQgmiDkFwwyCGv68hXl0N8Wnfr
- HOX9p2rsYqNlSf9dUsTbMVo=
-X-Google-Smtp-Source: ABdhPJzhvqPfN56+Yli4koNRw2qkj9WiJNRq59eXTsSDpfjJx+9FOdsirhwbtC1KEzvqsKxYUpRyXg==
-X-Received: by 2002:a05:622a:8a:: with SMTP id
- o10mr19841485qtw.274.1604411113872; 
- Tue, 03 Nov 2020 05:45:13 -0800 (PST)
+ bh=KyUFBIsp7WG/ZlJY7JJxE8NR9eUIpLAxO9Zr6R0PBAI=;
+ b=Owt8XUCJfMYcrpUpx2NNM00jSEQZok1a973Q6NKTF2XqSDKFgFBC9vNycNE45MDOHv
+ eZtfhM0/185bn8vgrILfvG1TpfKHsmLeMZfuvpfRGTpsiyMFE/WPiQnICOEorJizaz2w
+ VSnJYnN8yJzdf0qlR1zz0jHnsC5e52hRvPCl7kDK8jj1eDT/qXRPZE7NE338Fv/ZcF1f
+ x+TVoFsJn0AQkTnbA5LwCn8hfxCiGBza789FUpZPpgKMci3owUHX4T3orqXiCnEx0e0M
+ hf4Y4WQU4pP+GMbaO9SSYBm6UxRxQ4PBnoJOQrZAiIRD6DqzTgTnJ6VBmENas5u4mBay
+ r3sQ==
+X-Gm-Message-State: AOAM530n9XJuyANLWs0dTJvruYaVDnOoyacMEx6z1fh1qTy5DwIPOe+6
+ ugOgvMOu24oamymUCI9bKJI=
+X-Google-Smtp-Source: ABdhPJxjlZ3tKnk2e7vxZIf8aOb5eHzCPcpqw48aBWIjBaLIjY56iC7mD5NkhJDWu4rwTzCntUVI8A==
+X-Received: by 2002:a05:620a:62b:: with SMTP id
+ 11mr20584746qkv.229.1604411118944; 
+ Tue, 03 Nov 2020 05:45:18 -0800 (PST)
 Received: from zhuyifei1999-ThinkPad-T480.gw.illinois.edu
  ([2620:0:e00:400f::31])
- by smtp.gmail.com with ESMTPSA id a206sm7356568qkb.64.2020.11.03.05.45.12
+ by smtp.gmail.com with ESMTPSA id a206sm7356568qkb.64.2020.11.03.05.45.17
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 03 Nov 2020 05:45:13 -0800 (PST)
+ Tue, 03 Nov 2020 05:45:18 -0800 (PST)
 From: YiFei Zhu <zhuyifei1999@gmail.com>
 To: containers@lists.linux-foundation.org
-Subject: [PATCH seccomp 4/8] riscv: Enable seccomp architecture tracking
-Date: Tue,  3 Nov 2020 07:43:00 -0600
-Message-Id: <c2a5b127d7b52557bca6526eeaa73c91fa989816.1604410035.git.yifeifz2@illinois.edu>
+Subject: [PATCH seccomp 7/8] xtensa: Enable seccomp architecture tracking
+Date: Tue,  3 Nov 2020 07:43:03 -0600
+Message-Id: <eab25a03fbf296e65e5292c7a25d15285e93e6de.1604410035.git.yifeifz2@illinois.edu>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <cover.1604410035.git.yifeifz2@illinois.edu>
 References: <cover.1604410035.git.yifeifz2@illinois.edu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 04 Nov 2020 05:22:59 +1100
+X-Mailman-Approved-At: Wed, 04 Nov 2020 05:23:00 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,32 +117,42 @@ From: YiFei Zhu <yifeifz2@illinois.edu>
 
 To enable seccomp constant action bitmaps, we need to have a static
 mapping to the audit architecture and system call table size. Add these
-for riscv.
+for xtensa.
 
 Signed-off-by: YiFei Zhu <yifeifz2@illinois.edu>
 ---
- arch/riscv/include/asm/seccomp.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/xtensa/include/asm/Kbuild    |  1 -
+ arch/xtensa/include/asm/seccomp.h | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+ create mode 100644 arch/xtensa/include/asm/seccomp.h
 
-diff --git a/arch/riscv/include/asm/seccomp.h b/arch/riscv/include/asm/seccomp.h
-index bf7744ee3b3d..c7ee6a3507be 100644
---- a/arch/riscv/include/asm/seccomp.h
-+++ b/arch/riscv/include/asm/seccomp.h
-@@ -7,4 +7,14 @@
- 
- #include <asm-generic/seccomp.h>
- 
-+#ifdef CONFIG_64BIT
-+# define SECCOMP_ARCH_NATIVE		AUDIT_ARCH_RISCV64
-+# define SECCOMP_ARCH_NATIVE_NR		NR_syscalls
-+# define SECCOMP_ARCH_NATIVE_NAME	"riscv64"
-+#else /* !CONFIG_64BIT */
-+# define SECCOMP_ARCH_NATIVE		AUDIT_ARCH_RISCV32
-+# define SECCOMP_ARCH_NATIVE_NR		NR_syscalls
-+# define SECCOMP_ARCH_NATIVE_NAME	"riscv32"
-+#endif
+diff --git a/arch/xtensa/include/asm/Kbuild b/arch/xtensa/include/asm/Kbuild
+index c59c42a1221a..9718e9593564 100644
+--- a/arch/xtensa/include/asm/Kbuild
++++ b/arch/xtensa/include/asm/Kbuild
+@@ -7,5 +7,4 @@ generic-y += mcs_spinlock.h
+ generic-y += param.h
+ generic-y += qrwlock.h
+ generic-y += qspinlock.h
+-generic-y += seccomp.h
+ generic-y += user.h
+diff --git a/arch/xtensa/include/asm/seccomp.h b/arch/xtensa/include/asm/seccomp.h
+new file mode 100644
+index 000000000000..f1cb6b0a9e1f
+--- /dev/null
++++ b/arch/xtensa/include/asm/seccomp.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASM_SECCOMP_H
++#define _ASM_SECCOMP_H
 +
- #endif /* _ASM_SECCOMP_H */
++#include <asm-generic/seccomp.h>
++
++#define SECCOMP_ARCH_NATIVE		AUDIT_ARCH_XTENSA
++#define SECCOMP_ARCH_NATIVE_NR		NR_syscalls
++#define SECCOMP_ARCH_NATIVE_NAME	"xtensa"
++
++#endif /* _ASM_SECCOMP_H */
 -- 
 2.29.2
 
