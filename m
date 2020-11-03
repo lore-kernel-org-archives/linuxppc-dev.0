@@ -5,82 +5,80 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E88A8C388F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 05:16:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B4BBC388F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 05:18:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49F552225E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 05:16:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3374D2225E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 05:18:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q8frw9zv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49F552225E
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i35ly/+5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3374D2225E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQJ0L0kzNzDqX7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 16:16:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQJ2c141rzDqWK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 16:18:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531;
- helo=mail-pg1-x531.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Q8frw9zv; dkim-atps=neutral
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
- [IPv6:2607:f8b0:4864:20::531])
+ header.s=20161025 header.b=i35ly/+5; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQHJw0nTNzDqGm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 15:45:19 +1100 (AEDT)
-Received: by mail-pg1-x531.google.com with SMTP id o3so12688845pgr.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2020 20:45:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQHzj5D80zDqXs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 16:15:28 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id t22so8003775plr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2020 21:15:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=agvQ3ZyGhauvIfharAWAuaXeGE+xtDPU3qHRS9piZV8=;
- b=Q8frw9zvpRzTxfSNehqlCtumte2M+zu+ZubhumvDbV5LCmZTOXB3V8ZcoYGOOzMZPk
- ql49xa24cCmawDqywyG+9jdyNiEwBlFNngI6csypi02VAa21xZeSIffV03CWVTM2PNVj
- 1McsHWzB4XauPJbMAXYfjZfCIL6HrzQKl7gq3QMx0T3D5Yoa6MhnNjRoy/ma4CnHwNMb
- 8F2vs3M3vGVvKTWus0FcOR2ltZTZD1eM3hi+TppTyisJOBaepZIfrOJnZeIwhJz4MYX6
- EaJlTkEGTvnXCAbkVtW3CqiVwAf3FQlpBSFmB1UIH6/iykSICKE5PIbRldvYU0NltOHm
- K1UQ==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Ail4gPbM6KYhcHl/X1E86yuCBJMivDSBFsI62nnOZZI=;
+ b=i35ly/+5tSJBMlc6oh6Z2u6MqAFEoYXqT5fbVnsPAF3r/Pt9QXivANWSkY5n0588TV
+ ZiGxwwKpGrPaiz00rOrDQv5Uq7knbVX6mjbpCchVaykaSf7/Q9+LWr/91Tx/cUZ+QRwZ
+ cOkPp7Dsid5iEYmo3P5TpcfKLPu8jPLVOJluSqnOsSbLVgCOzcdElQ/4jA/hD37pvTQr
+ 6k5u1Nx5QTm4+FCpFHdCiXRCYT/k/1AlTcJ8KoCpn5wQ2PLiMdlpv3zNIr+UewkjPNcf
+ uql90uDs5btkOmz/DAmV0HvwNWkfywfUXKBg8ULGv4eaL2rD8ea6F5EAGEvA/Js3gyTd
+ oHGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=agvQ3ZyGhauvIfharAWAuaXeGE+xtDPU3qHRS9piZV8=;
- b=OfD68o7VoixvgN36OERPq7syFV2wLX7GYoGdn0pakwdE+CYnlzfhr/+Kn3vHLAalK0
- BfgKm/OopK2v+7NIvgqPikKpPWYy/OkUgYsOOiNXisqGjlH9dHQKWL9mpNU0XRqW9HY9
- KV+zEviuHdEbQh4Oap1kg8a53u9yGlsKmxJSWOjk5rTi3XHf+cRwtChh9t9FC2T9YDLl
- WDNFLNXn+gSuexDV9YzwOqbRsFhegdUCe/k1VHhJXDbZm/XKAVvP9YnK9mNfa+fuaZ0Q
- 04WHE54lla9yjwITtiyvr3ZlIpgxlGAad+nb+qRvuRqDiPN0T3TQA8E6jRVkc3xDdTYW
- Rhgw==
-X-Gm-Message-State: AOAM531Ic3cKi03qjoMGwOqGxKgbU2SOrCyW+PWObiPLXBVhQllw9O2s
- 3AfkBuDbVHAiXueEUT2hSPXFffhC/ec=
-X-Google-Smtp-Source: ABdhPJz4HRsmCJypU/thUNXanEyiwHa4mzp/+EXBHr95zROCRLY0w8pAYG+K3InUZQSeLngcwPtfjg==
-X-Received: by 2002:aa7:8548:0:b029:164:769a:353 with SMTP id
- y8-20020aa785480000b0290164769a0353mr24678487pfn.45.1604378716763; 
- Mon, 02 Nov 2020 20:45:16 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Ail4gPbM6KYhcHl/X1E86yuCBJMivDSBFsI62nnOZZI=;
+ b=nZ4T8aFX0x6DSd6ZikW60776MLXfiHpCohrwzfyO15MkECOf/k9EdM/8Mkqp/rCdj/
+ fVxrGMddTKwlhaPPEEy/9lUJCDAq9J6/kF9oMBz3SZJnwnFG4kmAudZ+w32YJrF2loUR
+ hWpwAbSlADJEFNFsm+ScLY6ygAYeKqZ6DXj3uV7sJUMQswqg/XdB5CJer9WDtF9pcLFX
+ lC10ZwvduJldefN9w6om4uNgR38+a0WsT9+J749gwdHrXFSnTBCOs+/WwHWJqTq0gKLs
+ 3sJmWGTSjy+jlP7bmfBFLgyWMkVjMOq6RRP4hx8FSjPVb5Oeux3hfWswu9jYbX2bl0yg
+ /XWw==
+X-Gm-Message-State: AOAM533CJJTt77gCespkJcHyR1v01scGtk7xyfjblXF0pKSZG7H3aDg8
+ eQWYOrPPqgt3vFDbxj5Xp6ex5nfaMDE=
+X-Google-Smtp-Source: ABdhPJzHhRHZ9e+taImMI0DE83pc38IhFJ6v3j9w30SeeXMaaiCukc0CCPOVo6HaapkQRao4NbPLjw==
+X-Received: by 2002:a17:902:c3c9:b029:d6:7e88:cfa9 with SMTP id
+ j9-20020a170902c3c9b02900d67e88cfa9mr23077620plj.64.1604380522380; 
+ Mon, 02 Nov 2020 21:15:22 -0800 (PST)
 Received: from wafer.ozlabs.ibm.com.ozlabs.ibm.com
  (110-175-254-242.static.tpgi.com.au. [110.175.254.242])
- by smtp.gmail.com with ESMTPSA id a84sm494691pfa.53.2020.11.02.20.45.15
+ by smtp.gmail.com with ESMTPSA id 26sm4225357pgm.92.2020.11.02.21.15.20
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 02 Nov 2020 20:45:16 -0800 (PST)
+ Mon, 02 Nov 2020 21:15:21 -0800 (PST)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] selftests/powerpc: Add VF recovery tests
-Date: Tue,  3 Nov 2020 15:45:03 +1100
-Message-Id: <20201103044503.917128-3-oohall@gmail.com>
+Subject: [PATCH 1/2] powerpc/eeh: Rework pci_dev lookup in debugfs attributes
+Date: Tue,  3 Nov 2020 16:15:11 +1100
+Message-Id: <20201103051512.919333-1-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20201103044503.917128-1-oohall@gmail.com>
-References: <20201103044503.917128-1-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,233 +97,123 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The basic EEH test ignores VFs since we the way the eeh_dev_break debugfs
-interface works means that if multiple VFs are enabled we may cause errors
-on all them them. However, we can work around that by only enabling a
-single VF at a time.
-
-This patch adds some infrastructure for finding SR-IOV capable devices and
-enabling / disabling VFs so we can exercise the VF specific EEH recovery
-paths. Two new tests are added, one for testing EEH aware devices and one
-for EEH un-aware VFs.
+Pull the string -> pci_dev lookup stuff into a helper function. No functional change.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- .../selftests/powerpc/eeh/eeh-functions.sh    | 108 ++++++++++++++++++
- .../selftests/powerpc/eeh/eeh-vf-aware.sh     |  45 ++++++++
- .../selftests/powerpc/eeh/eeh-vf-unaware.sh   |  35 ++++++
- 3 files changed, 188 insertions(+)
- create mode 100755 tools/testing/selftests/powerpc/eeh/eeh-vf-aware.sh
- create mode 100755 tools/testing/selftests/powerpc/eeh/eeh-vf-unaware.sh
+ arch/powerpc/kernel/eeh.c | 71 ++++++++++++++++++++-------------------
+ 1 file changed, 37 insertions(+), 34 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-index 32e5b7fbf18a..70daa3925dcb 100644
---- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-@@ -135,3 +135,111 @@ eeh_one_dev() {
- 	return 0;
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 813713c9120c..f9182ff57804 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1596,6 +1596,35 @@ static int proc_eeh_show(struct seq_file *m, void *v)
  }
  
-+eeh_has_driver() {
-+	test -e /sys/bus/pci/devices/$1/driver;
-+	return $?
+ #ifdef CONFIG_DEBUG_FS
++
++
++static struct pci_dev *eeh_debug_lookup_pdev(struct file *filp,
++					     const char __user *user_buf,
++					     size_t count, loff_t *ppos)
++{
++	uint32_t domain, bus, dev, fn;
++	struct pci_dev *pdev;
++	char buf[20];
++	int ret;
++
++	memset(buf, 0, sizeof(buf));
++	ret = simple_write_to_buffer(buf, sizeof(buf)-1, ppos, user_buf, count);
++	if (!ret)
++		return ERR_PTR(-EFAULT);
++
++	ret = sscanf(buf, "%x:%x:%x.%x", &domain, &bus, &dev, &fn);
++	if (ret != 4) {
++		pr_err("%s: expected 4 args, got %d\n", __func__, ret);
++		return ERR_PTR(-EINVAL);
++	}
++
++	pdev = pci_get_domain_bus_and_slot(domain, bus, (dev << 3) | fn);
++	if (!pdev)
++		return ERR_PTR(-ENODEV);
++
++	return pdev;
 +}
 +
-+eeh_can_recover() {
-+	# we'll get an IO error if the device's current driver doesn't support
-+	# error recovery
-+	echo $1 > '/sys/kernel/debug/powerpc/eeh_dev_can_recover' 2>/dev/null
-+
-+	return $?
-+}
-+
-+eeh_find_all_pfs() {
-+	devices=""
-+
-+	# SR-IOV on pseries requires hypervisor support, so check for that
-+	is_pseries=""
-+	if grep -q pSeries /proc/cpuinfo ; then
-+		if [ ! -f /proc/device-tree/rtas/ibm,open-sriov-allow-unfreeze ] ||
-+		   [ ! -f /proc/device-tree/rtas/ibm,open-sriov-map-pe-number ] ; then
-+			return 1;
-+		fi
-+
-+		is_pseries="true"
-+	fi
-+
-+	for dev in `ls -1 /sys/bus/pci/devices/` ; do
-+		sysfs="/sys/bus/pci/devices/$dev"
-+		if [ ! -e "$sysfs/sriov_numvfs" ] ; then
-+			continue
-+		fi
-+
-+		# skip unsupported PFs on pseries
-+		if [ -z "$is_pseries" ] &&
-+		   [ ! -f "$sysfs/of_node/ibm,is-open-sriov-pf" ] &&
-+		   [ ! -f "$sysfs/of_node/ibm,open-sriov-vf-bar-info" ] ; then
-+			continue;
-+		fi
-+
-+		# no driver, no vfs
-+		if ! eeh_has_driver $dev ; then
-+			continue
-+		fi
-+
-+		devices="$devices $dev"
-+	done
-+
-+	if [ -z "$devices" ] ; then
-+		return 1;
-+	fi
-+
-+	echo $devices
-+	return 0;
-+}
-+
-+# attempts to enable one VF on each PF so we can do VF specific tests.
-+# stdout: list of enabled VFs, one per line
-+# return code: 0 if vfs are found, 1 otherwise
-+eeh_enable_vfs() {
-+	pf_list="$(eeh_find_all_pfs)"
-+
-+	vfs=0
-+	for dev in $pf_list ; do
-+		pf_sysfs="/sys/bus/pci/devices/$dev"
-+
-+		# make sure we have a single VF
-+		echo 0 > "$pf_sysfs/sriov_numvfs"
-+		echo 1 > "$pf_sysfs/sriov_numvfs"
-+		if [ "$?" != 0 ] ; then
-+			log "Unable to enable VFs on $pf, skipping"
-+			continue;
-+		fi
-+
-+		vf="$(basename $(realpath "$pf_sysfs/virtfn0"))"
-+		if [ $? != 0 ] ; then
-+			log "unable to find enabled vf on $pf"
-+			echo 0 > "$pf_sysfs/sriov_numvfs"
-+			continue;
-+		fi
-+
-+		if ! eeh_can_break $vf ; then
-+			log "skipping "
-+
-+			echo 0 > "$pf_sysfs/sriov_numvfs"
-+			continue;
-+		fi
-+
-+		vfs="$((vfs + 1))"
-+		echo $vf
-+	done
-+
-+	test "$vfs" != 0
-+	return $?
-+}
-+
-+eeh_disable_vfs() {
-+	pf_list="$(eeh_find_all_pfs)"
-+	if [ -z "$pf_list" ] ; then
-+		return 1;
-+	fi
-+
-+	for dev in $pf_list ; do
-+		echo 0 > "/sys/bus/pci/devices/$dev/sriov_numvfs"
-+	done
-+
-+	return 0;
-+}
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-vf-aware.sh b/tools/testing/selftests/powerpc/eeh/eeh-vf-aware.sh
-new file mode 100755
-index 000000000000..874c11953bb6
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-vf-aware.sh
-@@ -0,0 +1,45 @@
-+#!/bin/sh
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+. ./eeh-functions.sh
-+
-+eeh_test_prep # NB: may exit
-+
-+vf_list="$(eeh_enable_vfs)";
-+if $? != 0 ; then
-+	log "No usable VFs found. Skipping EEH unaware VF test"
-+	exit $KSELFTESTS_SKIP;
-+fi
-+
-+log "Enabled VFs: $vf_list"
-+
-+tested=0
-+passed=0
-+for vf in $vf_list ; do
-+	log "Testing $vf"
-+
-+	if ! eeh_can_recover $vf ; then
-+		log "Driver for $vf doesn't support error recovery, skipping"
-+		continue;
-+	fi
-+
-+	tested="$((tested + 1))"
-+
-+	log "Breaking $vf..."
-+	if ! eeh_one_dev $vf ; then
-+		log "$vf failed to recover"
-+		continue;
-+	fi
-+
-+	passed="$((passed + 1))"
-+done
-+
-+eeh_disable_vfs
-+
-+if [ "$tested" == 0 ] ; then
-+	echo "No VFs with EEH aware drivers found, skipping"
-+	exit $KSELFTESTS_SKIP
-+fi
-+
-+test "$failed" != 0
-+exit $?;
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-vf-unaware.sh b/tools/testing/selftests/powerpc/eeh/eeh-vf-unaware.sh
-new file mode 100755
-index 000000000000..8a4c147b9d43
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-vf-unaware.sh
-@@ -0,0 +1,35 @@
-+#!/bin/sh
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+. ./eeh-functions.sh
-+
-+eeh_test_prep # NB: may exit
-+
-+vf_list="$(eeh_enable_vfs)";
-+if $? != 0 ; then
-+	log "No usable VFs found. Skipping EEH unaware VF test"
-+	exit $KSELFTESTS_SKIP;
-+fi
-+
-+log "Enabled VFs: $vf_list"
-+
-+failed=0
-+for vf in $vf_list ; do
-+	log "Testing $vf"
-+
-+	if eeh_can_recover $vf ; then
-+		log "Driver for $vf supports error recovery. Unbinding..."
-+		echo "$vf" > /sys/bus/pci/devices/$vf/driver/unbind
-+	fi
-+
-+	log "Breaking $vf..."
-+	if ! eeh_one_dev $vf ; then
-+		log "$vf failed to recover"
-+		failed="$((failed + 1))"
-+	fi
-+done
-+
-+eeh_disable_vfs
-+
-+test "$failed" != 0
-+exit $?;
+ static int eeh_enable_dbgfs_set(void *data, u64 val)
+ {
+ 	if (val)
+@@ -1688,26 +1717,13 @@ static ssize_t eeh_dev_check_write(struct file *filp,
+ 				const char __user *user_buf,
+ 				size_t count, loff_t *ppos)
+ {
+-	uint32_t domain, bus, dev, fn;
+ 	struct pci_dev *pdev;
+ 	struct eeh_dev *edev;
+-	char buf[20];
+ 	int ret;
+ 
+-	memset(buf, 0, sizeof(buf));
+-	ret = simple_write_to_buffer(buf, sizeof(buf)-1, ppos, user_buf, count);
+-	if (!ret)
+-		return -EFAULT;
+-
+-	ret = sscanf(buf, "%x:%x:%x.%x", &domain, &bus, &dev, &fn);
+-	if (ret != 4) {
+-		pr_err("%s: expected 4 args, got %d\n", __func__, ret);
+-		return -EINVAL;
+-	}
+-
+-	pdev = pci_get_domain_bus_and_slot(domain, bus, (dev << 3) | fn);
+-	if (!pdev)
+-		return -ENODEV;
++	pdev = eeh_debug_lookup_pdev(filp, user_buf, count, ppos);
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
+ 
+ 	edev = pci_dev_to_eeh_dev(pdev);
+ 	if (!edev) {
+@@ -1717,8 +1733,8 @@ static ssize_t eeh_dev_check_write(struct file *filp,
+ 	}
+ 
+ 	ret = eeh_dev_check_failure(edev);
+-	pci_info(pdev, "eeh_dev_check_failure(%04x:%02x:%02x.%01x) = %d\n",
+-			domain, bus, dev, fn, ret);
++	pci_info(pdev, "eeh_dev_check_failure(%s) = %d\n",
++			pci_name(pdev), ret);
+ 
+ 	pci_dev_put(pdev);
+ 
+@@ -1829,25 +1845,12 @@ static ssize_t eeh_dev_break_write(struct file *filp,
+ 				const char __user *user_buf,
+ 				size_t count, loff_t *ppos)
+ {
+-	uint32_t domain, bus, dev, fn;
+ 	struct pci_dev *pdev;
+-	char buf[20];
+ 	int ret;
+ 
+-	memset(buf, 0, sizeof(buf));
+-	ret = simple_write_to_buffer(buf, sizeof(buf)-1, ppos, user_buf, count);
+-	if (!ret)
+-		return -EFAULT;
+-
+-	ret = sscanf(buf, "%x:%x:%x.%x", &domain, &bus, &dev, &fn);
+-	if (ret != 4) {
+-		pr_err("%s: expected 4 args, got %d\n", __func__, ret);
+-		return -EINVAL;
+-	}
+-
+-	pdev = pci_get_domain_bus_and_slot(domain, bus, (dev << 3) | fn);
+-	if (!pdev)
+-		return -ENODEV;
++	pdev = eeh_debug_lookup_pdev(filp, user_buf, count, ppos);
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
+ 
+ 	ret = eeh_debugfs_break_device(pdev);
+ 	pci_dev_put(pdev);
 -- 
 2.26.2
 
