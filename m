@@ -2,62 +2,66 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3901C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:30:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D035C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:38:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2251C2074B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:30:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2251C2074B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 226982074B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:38:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="XdXW2pCM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 226982074B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CRNDr6CvGzDqfJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 10:30:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=jzbc=ek=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CRNPS12FkzDqkK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 10:38:04 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CRN2b2Ky6zDqhC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 10:21:43 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 209869] Kernel 5.10-rc1 fails to boot on a PowerMac G4 3,6 at
- an early stage
-Date: Wed, 04 Nov 2020 23:21:40 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-209869-206035-7fwCAqaibx@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-209869-206035@https.bugzilla.kernel.org/>
-References: <bug-209869-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CRNMV1cQSzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 10:36:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=XdXW2pCM; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4CRNMT3KkJz9sPB;
+ Thu,  5 Nov 2020 10:36:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1604532981;
+ bh=tvf1yvsQMnkIfDvVfNZUhP9qZGxh2S8Or2/lDBF1aOI=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=XdXW2pCMgVmKFvXcjiUbZo2ARcycAwcoCf4vOBZDhVoZ84vVSBrmHJYwYhMqGatny
+ oQvrtmfOvkkCxdZJBFj7d9NG1fVfYLj69/zRctymbln+Yr76SUvwPVmKnRk9oi5LsX
+ bImBBk8dlc8WtzAjBBPX8cm82M91Txb6600UEzGdplO43LLcpWWmdtTi/0EBa6hvGU
+ nH7XcL94NmPayMLRJlqI8nJC5iciUIM1npRz1N7y+ldbAkiZzW4EPx2Oxc2t2Rfze6
+ rXLrJ7/LSzTyQ7gQ5MQ/a+rU6yxTzzUXFWTJ9AalLFRik5kQWxR73Dbp+QFfH+hp16
+ 7dwR1o9Q02J7g==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Lee Jones <lee.jones@linaro.org>, lee.jones@linaro.org
+Subject: Re: [PATCH 31/36] powerpc: asm: hvconsole: Move 'hvc_vio_init_early's
+ prototype to shared location
+In-Reply-To: <20201104193549.4026187-32-lee.jones@linaro.org>
+References: <20201104193549.4026187-1-lee.jones@linaro.org>
+ <20201104193549.4026187-32-lee.jones@linaro.org>
+Date: Thu, 05 Nov 2020 10:36:19 +1100
+Message-ID: <87r1p8u230.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,17 +73,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D209869
+Lee Jones <lee.jones@linaro.org> writes:
+> Fixes the following W=3D1 kernel build warning(s):
+>
+>  drivers/tty/hvc/hvc_vio.c:385:13: warning: no previous prototype for =E2=
+=80=98hvc_vio_init_early=E2=80=99 [-Wmissing-prototypes]
+>  385 | void __init hvc_vio_init_early(void)
+>  | ^~~~~~~~~~~~~~~~~~
+>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> ---
+>  arch/powerpc/include/asm/hvconsole.h     | 3 +++
+>  arch/powerpc/platforms/pseries/pseries.h | 3 ---
+>  arch/powerpc/platforms/pseries/setup.c   | 1 +
+>  3 files changed, 4 insertions(+), 3 deletions(-)
 
---- Comment #8 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 293501
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D293501&action=3Dedit
-dmesg (5.9.3 + KASAN, PowerMac G4 DP)
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+> diff --git a/arch/powerpc/include/asm/hvconsole.h b/arch/powerpc/include/=
+asm/hvconsole.h
+> index 999ed5ac90531..936a1ee1ac786 100644
+> --- a/arch/powerpc/include/asm/hvconsole.h
+> +++ b/arch/powerpc/include/asm/hvconsole.h
+> @@ -24,5 +24,8 @@
+>  extern int hvc_get_chars(uint32_t vtermno, char *buf, int count);
+>  extern int hvc_put_chars(uint32_t vtermno, const char *buf, int count);
+>=20=20
+> +/* Provided by HVC VIO */
+> +extern void hvc_vio_init_early(void);
+
+extern isn't needed, but don't feel you need to respin just to drop it.
+
+cheers
