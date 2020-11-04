@@ -2,82 +2,40 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47EBCC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:32:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D7D7C388F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:44:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DD362236F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:32:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DD362236F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 06FE72236F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:44:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06FE72236F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CR4Jk28XmzDqW6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 22:32:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CR4Z53KDvzDqBd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 22:44:29 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CR4CG3YgXzDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 22:28:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CR4RG3vmbzDqW2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 22:38:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4CR4CF3tW4z8tVh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 22:28:09 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4CR4CF1h89z9sVN; Wed,  4 Nov 2020 22:28:09 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nefkom.net (client-ip=2001:a60:0:28:0:1:25:1;
- helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-X-Greylist: delayed 428 seconds by postgrey-1.36 at bilbo;
- Wed, 04 Nov 2020 22:28:08 AEDT
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4CR4CD2vK6z9sVK
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2020 22:28:06 +1100 (AEDT)
-Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
- by mail-out.m-online.net (Postfix) with ESMTP id 4CR42k54qMz1rwml;
- Wed,  4 Nov 2020 12:20:46 +0100 (CET)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
- by mail.m-online.net (Postfix) with ESMTP id 4CR42k3sCxz1qwll;
- Wed,  4 Nov 2020 12:20:46 +0100 (CET)
-X-Virus-Scanned: amavisd-new at mnet-online.de
-Received: from mail.mnet-online.de ([192.168.8.182])
- by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
- port 10024)
- with ESMTP id wT3JsyRxCWWr; Wed,  4 Nov 2020 12:20:45 +0100 (CET)
-X-Auth-Info: yCs6fd9Tu6vBgr465Kh7BESvaqTg94lsNqVy6DgZ75COoJ5OxtBaw0gsscDBJ0jV
-Received: from igel.home (ppp-46-244-174-110.dynamic.mnet-online.de
- [46.244.174.110])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.mnet-online.de (Postfix) with ESMTPSA;
- Wed,  4 Nov 2020 12:20:45 +0100 (CET)
-Received: by igel.home (Postfix, from userid 1000)
- id 4F9A62C0A59; Wed,  4 Nov 2020 12:20:45 +0100 (CET)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Use asm_goto_volatile for put_user()
-References: <20201104111742.672142-1-mpe@ellerman.id.au>
-X-Yow: Thank god!!..  It's HENNY YOUNGMAN!!
-Date: Wed, 04 Nov 2020 12:20:45 +0100
-In-Reply-To: <20201104111742.672142-1-mpe@ellerman.id.au> (Michael Ellerman's
- message of "Wed, 4 Nov 2020 22:17:42 +1100")
-Message-ID: <87a6vxid0y.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4CR4RG0Fdjz9sVN; Wed,  4 Nov 2020 22:38:32 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: "Paul E . McKenney" <paulmck@kernel.org>, Qian Cai <cai@redhat.com>
+In-Reply-To: <20201028182334.13466-1-cai@redhat.com>
+References: <20201028182334.13466-1-cai@redhat.com>
+Subject: Re: [PATCH] powerpc/smp: Move rcu_cpu_starting() earlier
+Message-Id: <160448988356.674824.15131006402948740998.b4-ty@ellerman.id.au>
+Date: Wed,  4 Nov 2020 22:38:32 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,16 +47,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With that patch the kernel is working again.
+On Wed, 28 Oct 2020 14:23:34 -0400, Qian Cai wrote:
+> The call to rcu_cpu_starting() in start_secondary() is not early enough
+> in the CPU-hotplug onlining process, which results in lockdep splats as
+> follows:
+> 
+>  WARNING: suspicious RCU usage
+>  -----------------------------
+>  kernel/locking/lockdep.c:3497 RCU-list traversed in non-reader section!!
+> 
+> [...]
 
-Andreas.
+Applied to powerpc/fixes.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
-"And now for something completely different."
+[1/1] powerpc/smp: Call rcu_cpu_starting() earlier
+      https://git.kernel.org/powerpc/c/99f070b62322a4b8c1252952735806d09eb44b68
+
+cheers
