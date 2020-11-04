@@ -2,63 +2,64 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,PDS_TONAME_EQ_TOLOCAL_SHORT,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9F0EC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:13:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 687FFC2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:18:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D24221734
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:13:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eD89QmjZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D24221734
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1E252208C7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:18:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E252208C7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CR5C23kmwzDqBV
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:13:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CR5K63k1JzDqPg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:18:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=loongson.cn;
+ envelope-from=tangyouling@loongson.cn; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=eD89QmjZ; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CR54638mTzDqVq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 23:07:02 +1100 (AEDT)
-Received: from kernel.org (unknown [87.71.17.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1F9B621734;
- Wed,  4 Nov 2020 12:06:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1604491619;
- bh=duO1j2GGcQwevtBQUg8hBjbl0GtrzLAe1ZI9BqgVsxw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=eD89QmjZS7Bhb45LPDsNVTa4M6Lrt1nokstBxIOs5ZmPG9N4cbuMHN0DRZsPKkx2L
- OdwqGkhjrJ6WVz2H3idePpfpYx9n1cBBpsxJDMgxfvnGLZndLM6eqoSOdGTKabWkBk
- 58XHdmB3TudbGRqfdtIz7zg4vR0uya8vePLxMXVA=
-Date: Wed, 4 Nov 2020 14:06:51 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: osalvador <osalvador@suse.de>
-Subject: Re: [PATCH v1 3/4] powerpc/mm: remove linear mapping if
- __add_pages() fails in arch_add_memory()
-Message-ID: <20201104120651.GQ4879@kernel.org>
-References: <20201029162718.29910-1-david@redhat.com>
- <20201029162718.29910-4-david@redhat.com>
- <20201104095007.GB4981@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201104095007.GB4981@localhost.localdomain>
+ dmarc=none (p=none dis=none) header.from=loongson.cn
+X-Greylist: delayed 431 seconds by postgrey-1.36 at bilbo;
+ Wed, 04 Nov 2020 22:06:34 AEDT
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CR3kL5cPwzDqY6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 22:06:34 +1100 (AEDT)
+Received: from bogon.localdomain (unknown [113.200.148.30])
+ by mail.loongson.cn (Coremail) with SMTP id AQAAf9AxCtF_iaJfXqQFAA--.7999S2;
+ Wed, 04 Nov 2020 18:59:11 +0800 (CST)
+From: Youling Tang <tangyouling@loongson.cn>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Use the common INIT_DATA_SECTION macro in
+ vmlinux.lds.S
+Date: Wed,  4 Nov 2020 18:59:10 +0800
+Message-Id: <1604487550-20040-1-git-send-email-tangyouling@loongson.cn>
+X-Mailer: git-send-email 2.1.0
+X-CM-TRANSID: AQAAf9AxCtF_iaJfXqQFAA--.7999S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrur1fXw43AFyfWF4xAr1kKrg_yoWkCrX_Ga
+ sIva1ftr1kCrsIya1kAr1fXFyDtayrGr1S93ZI9ws7AF1fZwsxJ3Z7Ga17Zw18Wr1Ikrsx
+ ZF45ZF90yF10yjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUIcSsGvfJTRUUUb2xYjsxI4VWDJwAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I
+ 6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM2
+ 8CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0
+ cI8IcVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4
+ A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IE
+ w4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r4j6F4UMc
+ vjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY02Avz4vE14v_Gw1l42xK82IY
+ c2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s
+ 026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF
+ 0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0x
+ vE42xK8VAvwI8IcIk0rVWrJr0_WFyUJwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E
+ 87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU4SdgDUUUU
+X-CM-SenderInfo: 5wdqw5prxox03j6o00pqjv00gofq/
+X-Mailman-Approved-At: Wed, 04 Nov 2020 23:09:28 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,30 +71,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>,
- Wei Yang <richard.weiyang@linux.alibaba.com>,
- David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 04, 2020 at 10:50:07AM +0100, osalvador wrote:
-> On Thu, Oct 29, 2020 at 05:27:17PM +0100, David Hildenbrand wrote:
-> > Let's revert what we did in case seomthing goes wrong and we return an
-> > error.
-> 
-> Dumb question, but should not we do this for other arches as well?
+Use the common INIT_DATA_SECTION rule for the linker script in an effort
+to regularize the linker script.
 
-It seems arm64 and s390 already do that. 
-x86 could have its arch_add_memory() improved though :)
+Signed-off-by: Youling Tang <tangyouling@loongson.cn>
+---
+ arch/powerpc/kernel/vmlinux.lds.S | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
-> -- 
-> Oscar Salvador
-> SUSE L3
-
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index e0548b4..5dc05f3 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -186,21 +186,7 @@ SECTIONS
+ 		EXIT_TEXT
+ 	}
+ 
+-	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+-		INIT_DATA
+-	}
+-
+-	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		INIT_SETUP(16)
+-	}
+-
+-	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		INIT_CALLS
+-	}
+-
+-	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		CON_INITCALL
+-	}
++	INIT_DATA_SECTION(16)
+ 
+ 	. = ALIGN(8);
+ 	__ftr_fixup : AT(ADDR(__ftr_fixup) - LOAD_OFFSET) {
+@@ -228,9 +214,6 @@ SECTIONS
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+-	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		INIT_RAM_FS
+-	}
+ 
+ 	PERCPU_SECTION(L1_CACHE_BYTES)
+ 
 -- 
-Sincerely yours,
-Mike.
+2.1.0
+
