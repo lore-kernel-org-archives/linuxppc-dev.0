@@ -2,40 +2,63 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,PDS_TONAME_EQ_TOLOCAL_SHORT,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D50C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9F0EC2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:13:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 905382071A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 11:49:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 905382071A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 9D24221734
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 12:13:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eD89QmjZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D24221734
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CR4gw1NhjzDqGY
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 22:49:32 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CR5C23kmwzDqBV
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 23:13:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=eD89QmjZ; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CR4RF03ZwzDqW1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 22:38:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CR4RC23yVz9sVK; Wed,  4 Nov 2020 22:38:30 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Qian Cai <cai@redhat.com>
-In-Reply-To: <20201028152717.8967-1-cai@redhat.com>
-References: <20201028152717.8967-1-cai@redhat.com>
-Subject: Re: [PATCH] powerpc/eeh_cache: Fix a possible debugfs deadlock
-Message-Id: <160448988321.674824.1925161464513848358.b4-ty@ellerman.id.au>
-Date: Wed,  4 Nov 2020 22:38:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CR54638mTzDqVq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 23:07:02 +1100 (AEDT)
+Received: from kernel.org (unknown [87.71.17.26])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 1F9B621734;
+ Wed,  4 Nov 2020 12:06:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1604491619;
+ bh=duO1j2GGcQwevtBQUg8hBjbl0GtrzLAe1ZI9BqgVsxw=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=eD89QmjZS7Bhb45LPDsNVTa4M6Lrt1nokstBxIOs5ZmPG9N4cbuMHN0DRZsPKkx2L
+ OdwqGkhjrJ6WVz2H3idePpfpYx9n1cBBpsxJDMgxfvnGLZndLM6eqoSOdGTKabWkBk
+ 58XHdmB3TudbGRqfdtIz7zg4vR0uya8vePLxMXVA=
+Date: Wed, 4 Nov 2020 14:06:51 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: osalvador <osalvador@suse.de>
+Subject: Re: [PATCH v1 3/4] powerpc/mm: remove linear mapping if
+ __add_pages() fails in arch_add_memory()
+Message-ID: <20201104120651.GQ4879@kernel.org>
+References: <20201029162718.29910-1-david@redhat.com>
+ <20201029162718.29910-4-david@redhat.com>
+ <20201104095007.GB4981@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201104095007.GB4981@localhost.localdomain>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,33 +70,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: Michal Hocko <mhocko@suse.com>,
+ Wei Yang <richard.weiyang@linux.alibaba.com>,
+ David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 28 Oct 2020 11:27:17 -0400, Qian Cai wrote:
-> Lockdep complains that a possible deadlock below in
-> eeh_addr_cache_show() because it is acquiring a lock with IRQ enabled,
-> but eeh_addr_cache_insert_dev() needs to acquire the same lock with IRQ
-> disabled. Let's just make eeh_addr_cache_show() acquire the lock with
-> IRQ disabled as well.
+On Wed, Nov 04, 2020 at 10:50:07AM +0100, osalvador wrote:
+> On Thu, Oct 29, 2020 at 05:27:17PM +0100, David Hildenbrand wrote:
+> > Let's revert what we did in case seomthing goes wrong and we return an
+> > error.
 > 
->         CPU0                    CPU1
->         ----                    ----
->    lock(&pci_io_addr_cache_root.piar_lock);
->                                 local_irq_disable();
->                                 lock(&tp->lock);
->                                 lock(&pci_io_addr_cache_root.piar_lock);
->    <Interrupt>
->      lock(&tp->lock);
-> 
-> [...]
+> Dumb question, but should not we do this for other arches as well?
 
-Applied to powerpc/fixes.
+It seems arm64 and s390 already do that. 
+x86 could have its arch_add_memory() improved though :)
 
-[1/1] powerpc/eeh_cache: Fix a possible debugfs deadlock
-      https://git.kernel.org/powerpc/c/fd552e0542b4532483289cce48fdbd27b692984b
+> -- 
+> Oscar Salvador
+> SUSE L3
 
-cheers
+-- 
+Sincerely yours,
+Mike.
