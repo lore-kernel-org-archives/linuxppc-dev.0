@@ -2,71 +2,53 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E0DC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 06:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5336FC2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 07:59:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAD4420663
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 06:46:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAD4420663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 2FA8822384
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 07:59:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FA8822384
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=depni.sinp.msu.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQxy92S0RzDqbm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 17:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQxwK0FdKzDqXS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 17:44:39 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CQxw02z0rz9tyPY;
- Wed,  4 Nov 2020 07:44:32 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id dDuwbj7axkAB; Wed,  4 Nov 2020 07:44:32 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CQxw01tGMz9tyPX;
- Wed,  4 Nov 2020 07:44:32 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2F1118B7E0;
- Wed,  4 Nov 2020 07:44:33 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pT5JxX0as3Cj; Wed,  4 Nov 2020 07:44:33 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CF2908B75E;
- Wed,  4 Nov 2020 07:44:32 +0100 (CET)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQzZY5T0LzDqc7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 18:59:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=depni.sinp.msu.ru (client-ip=213.131.7.21;
+ helo=depni-mx.sinp.msu.ru; envelope-from=belyshev@depni.sinp.msu.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=depni.sinp.msu.ru
+Received: from depni-mx.sinp.msu.ru (depni-mx.sinp.msu.ru [213.131.7.21])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CQzXn5nxvzDqRD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 18:57:59 +1100 (AEDT)
+Received: from spider (unknown [176.192.246.239])
+ by depni-mx.sinp.msu.ru (Postfix) with ESMTPSA id CA4711BF43D;
+ Wed,  4 Nov 2020 10:57:58 +0300 (MSK)
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
 Subject: Re: [PATCH] powerpc/32s: Setup the early hash table at all time.
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
 References: <b8f8101c368b8a6451844a58d7bd7d83c14cf2aa.1601566529.git.christophe.leroy@csgroup.eu>
  <87wnz8vizm.fsf@igel.home> <87y2jouw8k.fsf@mpe.ellerman.id.au>
  <87v9esaxlv.fsf@igel.home>
  <20201030140047.Horde.TJJqKGzG9vSGbMRNIj-MPg7@messagerie.c-s.fr>
- <87pn4zc0zl.fsf@igel.home> <1f8494cd-36db-e3a2-8ea4-28fb976468e7@csgroup.eu>
+ <87pn4zc0zl.fsf@igel.home>
+ <1f8494cd-36db-e3a2-8ea4-28fb976468e7@csgroup.eu>
  <875z6mmfna.fsf@depni.sinp.msu.ru>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <5acd7caf-99e9-9cb5-ed24-578d2e0a5ee1@csgroup.eu>
-Date: Wed, 4 Nov 2020 07:44:32 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.1
+ <5acd7caf-99e9-9cb5-ed24-578d2e0a5ee1@csgroup.eu>
+Date: Wed, 04 Nov 2020 10:57:53 +0300
+In-Reply-To: <5acd7caf-99e9-9cb5-ed24-578d2e0a5ee1@csgroup.eu> (Christophe
+ Leroy's message of "Wed, 4 Nov 2020 07:44:32 +0100")
+Message-ID: <871rh9mu4e.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.0.50 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <875z6mmfna.fsf@depni.sinp.msu.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,20 +66,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 
+> To be sure we are not in front of a long lasting bug, could you try
+> CONFIG_KASAN=y on v5.9 ?
 
-Le 03/11/2020 à 19:58, Serge Belyshev a écrit :
->> Would you mind checking that with that patch reverted, you are able to
->> boot a kernel built with CONFIG_KASAN ?
-> 
-> I can reproduce the same problem on a powerbook G4, and no,
-> CONFIG_KASAN=y kernel with that patch reverted also does not boot with
-> the same symptom: white screen at the bootloader right after "Booting Linux
-> via __start() @ 0x0140000 ..."
-> 
+Indeed it started to fail somewhere between v5.6 and v5.7.
 
-Thanks for the test Serge.
+v5.7 fails early with few messages on the console with reboot, v5.8 and
+later hang right at bootloader.
 
-To be sure we are not in front of a long lasting bug, could you try CONFIG_KASAN=y on v5.9 ?
-
-Christophe
+I'm bisecting now.
