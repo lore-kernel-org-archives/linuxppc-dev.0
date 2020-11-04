@@ -2,56 +2,114 @@ Return-Path: <SRS0=IsZE=EK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13FACC388F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 17:49:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC457C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 17:56:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 162EE2087D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 17:49:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 162EE2087D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
+	by mail.kernel.org (Postfix) with ESMTPS id B296720639
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 17:56:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="aeEWS0hb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B296720639
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CRDfg65FKzDqdj
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 04:48:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.178.242;
- helo=mslow2.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CRDq45VQ9zDqdM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 04:56:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=bootlin.com
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CRDcj4q1lzDqVs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 04:47:14 +1100 (AEDT)
-Received: from relay12.mail.gandi.net (unknown [217.70.178.232])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 284A93A88B2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 17:39:37 +0000 (UTC)
-Received: from xps13 (unknown [91.224.148.103])
- (Authenticated sender: miquel.raynal@bootlin.com)
- by relay12.mail.gandi.net (Postfix) with ESMTPSA id 99DDE200008;
- Wed,  4 Nov 2020 17:39:00 +0000 (UTC)
-Date: Wed, 4 Nov 2020 18:38:59 +0100
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: Kernel 5.10-rc1 not mounting NAND flash (Bisected to
- d7157ff49a5b ("mtd: rawnand: Use the ECC framework user input parsing
- bits"))
-Message-ID: <20201104183859.590f0806@xps13>
-In-Reply-To: <20201104183353.Horde.FyqZycHkfr5KHDjPaOEBpQ7@messagerie.c-s.fr>
-References: <20201104183353.Horde.FyqZycHkfr5KHDjPaOEBpQ7@messagerie.c-s.fr>
-Organization: Bootlin
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=aeEWS0hb; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CRDn65GMLzDqY6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 04:54:31 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0A4HXnx0018078; Wed, 4 Nov 2020 12:54:16 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=mime-version : date :
+ from : to : cc : subject : in-reply-to : references : message-id :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=uoGKHjVI9qCmgMT7Z13+wCWlgoPk1FdTmCEv9WQfshk=;
+ b=aeEWS0hb1HQX8G0wD6qXlogTejASPSaHGEYeXKnii7xoNkWjNlXDIXRiqCvxxiS0mQ3F
+ lwoh/SjoFBfEXjGySionVF5nw7I0zJ5JLnFe1TsMbb44wWY8GQBc5Q1fFAlP630tya2X
+ S2vhuMKZwSOelDOU4e8OdJ7iYZiZ4arCegcl2uLy9G6Sr1SFVlEzYIiRHmSWWnfMUWZ5
+ TO+WuxZfSx/yFJKLiJ9TcfAvxWsmmnCB5CPEvuisU/gCpwBhKNtqMhg/sqzCWIvpbejP
+ ND1HO3uU+PY0D/DYeehu4sF3Ab5w7/HWuJJexawo8rf2wb7vefBYXx2rDCcl/jyCqF4w lA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34kxep5vcv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 04 Nov 2020 12:54:15 -0500
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0A4HXxCZ019183;
+ Wed, 4 Nov 2020 12:54:15 -0500
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34kxep5vcm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 04 Nov 2020 12:54:15 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0A4HppCV001558;
+ Wed, 4 Nov 2020 17:54:14 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma04wdc.us.ibm.com with ESMTP id 34h0ej06xw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 04 Nov 2020 17:54:14 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0A4HsEkb4260454
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 4 Nov 2020 17:54:14 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 35A59124054;
+ Wed,  4 Nov 2020 17:54:14 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BF419124052;
+ Wed,  4 Nov 2020 17:54:12 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed,  4 Nov 2020 17:54:12 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Date: Wed, 04 Nov 2020 09:54:12 -0800
+From: drt <drt@linux.vnet.ibm.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 09/12] net: ethernet: ibm: ibmvnic: Fix some kernel-doc
+ misdemeanours
+In-Reply-To: <20201104133815.GC933237@lunn.ch>
+References: <20201104090610.1446616-1-lee.jones@linaro.org>
+ <20201104090610.1446616-10-lee.jones@linaro.org>
+ <20201104133815.GC933237@lunn.ch>
+Message-ID: <85bc60fb363b95bc87627607d20b3616@linux.vnet.ibm.com>
+X-Sender: drt@linux.vnet.ibm.com
+User-Agent: Roundcube Webmail/1.0.1
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-04_11:2020-11-04,
+ 2020-11-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 mlxlogscore=999
+ impostorscore=0 malwarescore=0 suspectscore=0 adultscore=0 clxscore=1011
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2011040126
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,67 +121,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org,
+ Santiago Leon <santi_leon@yahoo.com>, John Allen <jallen@linux.vnet.ibm.com>,
+ netdev@vger.kernel.org, Lijun Pan <ljp@linux.ibm.com>,
+ linux-arm-kernel@lists.infradead.org, Dany Madden <drt@linux.ibm.com>,
+ kuba@kernel.org, Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+On 2020-11-04 05:38, Andrew Lunn wrote:
+> On Wed, Nov 04, 2020 at 09:06:07AM +0000, Lee Jones wrote:
+>> Fixes the following W=1 kernel build warning(s):
+>> 
+>>  from drivers/net/ethernet/ibm/ibmvnic.c:35:
+>>  inlined from ‘handle_vpd_rsp’ at 
+>> drivers/net/ethernet/ibm/ibmvnic.c:4124:3:
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter 
+>> or member 'hdr_field' not described in 'build_hdr_data'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter 
+>> or member 'skb' not described in 'build_hdr_data'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter 
+>> or member 'hdr_len' not described in 'build_hdr_data'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter 
+>> or member 'hdr_data' not described in 'build_hdr_data'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter 
+>> or member 'hdr_field' not described in 'create_hdr_descs'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter 
+>> or member 'hdr_data' not described in 'create_hdr_descs'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter 
+>> or member 'len' not described in 'create_hdr_descs'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter 
+>> or member 'hdr_len' not described in 'create_hdr_descs'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter 
+>> or member 'scrq_arr' not described in 'create_hdr_descs'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter 
+>> or member 'txbuff' not described in 'build_hdr_descs_arr'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter 
+>> or member 'num_entries' not described in 'build_hdr_descs_arr'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter 
+>> or member 'hdr_field' not described in 'build_hdr_descs_arr'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter 
+>> or member 'adapter' not described in 'do_change_param_reset'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter 
+>> or member 'rwi' not described in 'do_change_param_reset'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter 
+>> or member 'reset_state' not described in 'do_change_param_reset'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter 
+>> or member 'adapter' not described in 'do_reset'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter 
+>> or member 'rwi' not described in 'do_reset'
+>>  drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter 
+>> or member 'reset_state' not described in 'do_reset'
+>> 
+>> Cc: Dany Madden <drt@linux.ibm.com>
+>> Cc: Lijun Pan <ljp@linux.ibm.com>
+>> Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: "David S. Miller" <davem@davemloft.net>
+>> Cc: Jakub Kicinski <kuba@kernel.org>
+>> Cc: Santiago Leon <santi_leon@yahoo.com>
+>> Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>> Cc: John Allen <jallen@linux.vnet.ibm.com>
+>> Cc: netdev@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> 
+> Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote on Wed, 04 Nov
-2020 18:33:53 +0100:
+Reviewed-by: Dany Madden <drt@linux.ibm.com>
 
-> Hi Miquel,
->=20
-> I'm unable to boot 5.10-rc1 on my boards. I get the following error:
->=20
-> [    4.125811] nand: device found, Manufacturer ID: 0xad, Chip ID: 0x76
-> [    4.131992] nand: Hynix NAND 64MiB 3,3V 8-bit
-> [    4.136173] nand: 64 MiB, SLC, erase size: 16 KiB, page size: 512, OOB=
- size: 16
-> [    4.143534] ------------[ cut here ]------------
-> [    4.147934] Unsupported ECC algorithm!
-> [    4.152142] WARNING: CPU: 0 PID: 1 at drivers/mtd/nand/raw/nand_base.c=
-:5244 nand_scan_with_ids+0x1260/0x1640
-> ...
-> [    4.332052] ---[ end trace e3a36f62cae4ac56 ]---
-> [    4.336882] gpio-nand: probe of c0000000.nand failed with error -22
->=20
-> Bisected to commit d7157ff49a5b ("mtd: rawnand: Use the ECC framework use=
-r input parsing bits")
->=20
-> My first impression is that with that change, the value set in chip->ecc.=
-algo
-> by gpio_nand_probe() in drivers/mtd/nand/raw/gpio.c gets overwritten in r=
-awnand_dt_init()
->=20
-> The following change fixes the problem, though I'm not sure it is the rig=
-ht fix. Can you have a look ?
->=20
-> diff --git a/drivers/mtd/nand/raw/nand_base.c b/drivers/mtd/nand/raw/nand=
-_base.c
-> index 1f0d542d5923..aa74797cf2da 100644
-> --- a/drivers/mtd/nand/raw/nand_base.c
-> +++ b/drivers/mtd/nand/raw/nand_base.c
-> @@ -5032,7 +5032,8 @@ static int rawnand_dt_init(struct nand_chip *chip)
->   		chip->ecc.engine_type =3D nand->ecc.defaults.engine_type;
->=20
->   	chip->ecc.placement =3D nand->ecc.user_conf.placement;
-> -	chip->ecc.algo =3D nand->ecc.user_conf.algo;
-> +	if (chip->ecc.algo =3D=3D NAND_ECC_ALGO_UNKNOWN)
-> +		chip->ecc.algo =3D nand->ecc.user_conf.algo;
->   	chip->ecc.strength =3D nand->ecc.user_conf.strength;
->   	chip->ecc.size =3D nand->ecc.user_conf.step_size;
->=20
-> ---
->=20
-> Thanks
-> Christophe
-
-Sorry for introducing this issue, I didn't had the time to send the
-Fixes PR yet but I think this issue has been solved already. Could
-you please try with a recent linux-next?
-
-Thanks,
-Miqu=C3=A8l
+Thanks, Lee.
+Dany
+> 
+>     Andrew
