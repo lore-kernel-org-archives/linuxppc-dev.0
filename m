@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A83D8C00A89
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 05:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90984C00A89
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 05:25:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5E6E2087D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 05:23:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5E6E2087D
+	by mail.kernel.org (Postfix) with ESMTPS id E066E2083B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 05:25:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E066E2083B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CRX4W0Mc6zDr0f
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 16:23:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CRX671FvrzDqyB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2020 16:25:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=codefail.de (client-ip=198.54.127.69;
  helo=se14-2.privateemail.com; envelope-from=cmr@codefail.de;
@@ -30,28 +30,29 @@ Received: from se14-2.privateemail.com (se14-2.privateemail.com
  [198.54.127.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CRWrb5ztnzDqhb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CRWrb65DgzDqhm
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 16:13:35 +1100 (AEDT)
 Received: from new-01-3.privateemail.com ([198.54.122.47])
  by se14.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
- (Exim 4.92) (envelope-from <cmr@codefail.de>) id 1kaXaS-0008uv-UQ
+ (Exim 4.92) (envelope-from <cmr@codefail.de>) id 1kaXaT-0008wa-1Y
  for linuxppc-dev@lists.ozlabs.org; Wed, 04 Nov 2020 21:13:32 -0800
 Received: from MTA-11.privateemail.com (unknown [10.20.147.23])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id C03C1A72
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 05:13:27 +0000 (UTC)
+ by NEW-01-3.privateemail.com (Postfix) with ESMTPS id EF2B0A77
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 05:13:28 +0000 (UTC)
 Received: from mta-11.privateemail.com (localhost [127.0.0.1])
- by mta-11.privateemail.com (Postfix) with ESMTP id ADAFF80046
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 00:13:27 -0500 (EST)
+ by mta-11.privateemail.com (Postfix) with ESMTP id DB13580046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 00:13:28 -0500 (EST)
 Received: from geist.attlocal.net (unknown [10.20.151.249])
- by mta-11.privateemail.com (Postfix) with ESMTPA id 798F880041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 05:13:27 +0000 (UTC)
+ by mta-11.privateemail.com (Postfix) with ESMTPA id A92D180041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2020 05:13:28 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-Date: Wed,  4 Nov 2020 23:16:54 -0600
-Message-Id: <20201105051701.25053-2-cmr@codefail.de>
+Subject: [PATCH v2 5/8] powerpc/signal64: Replace setup_sigcontext() w/
+ unsafe_setup_sigcontext()
+Date: Wed,  4 Nov 2020 23:16:58 -0600
+Message-Id: <20201105051701.25053-6-cmr@codefail.de>
 X-Mailer: git-send-email 2.29.0
 In-Reply-To: <20201105051701.25053-1-cmr@codefail.de>
 References: <20201105051701.25053-1-cmr@codefail.de>
@@ -64,20 +65,20 @@ X-SpamExperts-Username: out-03
 Authentication-Results: registrar-servers.com;
  auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
 X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00244926952032)
+X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00185925233071)
 X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0XvADx2zSFwG+3csxFBPBHmpSDasLI4SayDByyq9LIhVXzHpYKxDwMt+
- +zmW/nipx0TNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
- xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX7G2/5kFLVleZZ6jnwzbv1uFO05s+oip5EC/YK
+X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0XvADx2zSFwG+3csxFBPBHmpSDasLI4SayDByyq9LIhV8m8dNaIjtcIj
+ Q4Blq8Zfe0TNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
+ xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX78ogAwlCpwyDx15kaaHSH71O05s+oip5EC/YK
  rMQ9+O92RfE6OSObaNx/GIkER/ho6hfscI36S5ZyZNhIm1qgix6Fhd62KY0TvtygpLSFJ3Lw5N/o
  jaomCoWWiTtol8oIjMLSPcwmNI0TQjQbbn/msxmYvSRMYhU3cO2EzUHwVXEwQzgH3ZUltkgdVMpa
  zhNDPjwfaB2rE/S2BhQBkwlK0UgKCrov1GasWV1vj2C+0pcXuAT86WptVNwo/cWcelODMVhfRAfm
  ME3CBgei5d0ipUHvm3Pq/TMVhLiLVSlbDnIEsVH1HkXSWW+lJituJnqw31/E3ahF5MMcDI7KdpjQ
  KUg2DwcIutxTdYYuCv7MB8w4iSij0rwbBa82X4V+KdE8ybxQmwA+8NxVIq0MJiSKg9jlDHh8k6TT
  dHl8m1/8O/92QjNLubgZSlcJjVjePeKVE0yhWxRviTEhnM4stux5zs2eyc346LIB3Zm3bJBgM0nW
- nv2O+GUciRvT7igjbfErFtEQiNpWr8Dshv6DftvtlGZJgVZw2KizLfHKT1Ui9eqnil7sNNnzdI7c
+ nv2O+GUciRvT7igjbfErYKokR7Oy7is2MWnnoOnCE2ZJgVZw2KizLfHKT1Ui9eqnil7sNNnzdI7c
  WFzHzXcM92PNDpgLsd6Ddd/s7VM53ngEDB0hGM25vwdLItd8JHlwRg+9bWPA7CG7LJO22QfGpvIQ
- LT5rkrG+KrR4dVWHxijLx/yB4/0tOjisrLyLrqZc9aUV1oY4fX3W5eOCNA39ksRRE30nnfZObe7o
+ LT5rkrG+KrR4dVWHxhIJwvlL/7nKi1H/aRg6rmZc9aUV1oY4fX3W5eOCNA39ksRRE30nnfZObe7o
  1mbr5b4m4O41f3i6XB3J2CA/ZpSpytsBXZZv0niRRFlqwL4JNTd9Km+1fuQNFP4CpCvZPbNBqyph
  zXy+6cTE/AxalG8BEiCj5vZGv9mneHqn4w6ZRYMJqVDlz3D3q3rGz4wpqbrr3vieQzASqOF9IoeU
  DZANWzkl2RGDx1/F1uE2HybNOt0p+xrrv5paups8mshKvA==
@@ -97,88 +98,165 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Implement raw_copy_from_user_allowed() which assumes that userspace read
-access is open. Use this new function to implement raw_copy_from_user().
-Finally, wrap the new function to follow the usual "unsafe_" convention
-of taking a label argument. The new raw_copy_from_user_allowed() calls
-__copy_tofrom_user() internally, but this is still safe to call in user
-access blocks formed with user_*_access_begin()/user_*_access_end()
-since asm functions are not instrumented for tracing.
+Previously setup_sigcontext() performed a costly KUAP switch on every
+uaccess operation. These repeated uaccess switches cause a significant
+drop in signal handling performance.
+
+Rewrite setup_sigcontext() to assume that a userspace write access window
+is open. Replace all uaccess functions with their 'unsafe' versions
+which avoid the repeated uaccess switches.
 
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 ---
- arch/powerpc/include/asm/uaccess.h | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/signal_64.c | 70 ++++++++++++++++++++-------------
+ 1 file changed, 43 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index ef5bbb705c08..96b4abab4f5a 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -403,38 +403,45 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- }
- #endif /* __powerpc64__ */
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index d3e9519b2e62..3f25309826b6 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -101,9 +101,13 @@ static void prepare_setup_sigcontext(struct task_struct *tsk, int ctx_has_vsx_re
+  * Set up the sigcontext for the signal frame.
+  */
  
--static inline unsigned long raw_copy_from_user(void *to,
--		const void __user *from, unsigned long n)
-+static inline unsigned long
-+raw_copy_from_user_allowed(void *to, const void __user *from, unsigned long n)
+-static long setup_sigcontext(struct sigcontext __user *sc,
+-		struct task_struct *tsk, int signr, sigset_t *set,
+-		unsigned long handler, int ctx_has_vsx_region)
++#define unsafe_setup_sigcontext(sc, tsk, signr, set, handler,		\
++				ctx_has_vsx_region, e)			\
++	unsafe_op_wrap(__unsafe_setup_sigcontext(sc, tsk, signr, set,	\
++			handler, ctx_has_vsx_region), e)
++static long notrace __unsafe_setup_sigcontext(struct sigcontext __user *sc,
++					struct task_struct *tsk, int signr, sigset_t *set,
++					unsigned long handler, int ctx_has_vsx_region)
  {
--	unsigned long ret;
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		ret = 1;
-+		unsigned long ret = 1;
+ 	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
+ 	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
+@@ -118,20 +122,19 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ #endif
+ 	struct pt_regs *regs = tsk->thread.regs;
+ 	unsigned long msr = regs->msr;
+-	long err = 0;
+ 	/* Force usr to alway see softe as 1 (interrupts enabled) */
+ 	unsigned long softe = 0x1;
  
- 		switch (n) {
- 		case 1:
- 			barrier_nospec();
--			__get_user_size(*(u8 *)to, from, 1, ret);
-+			__get_user_size_allowed(*(u8 *)to, from, 1, ret);
- 			break;
- 		case 2:
- 			barrier_nospec();
--			__get_user_size(*(u16 *)to, from, 2, ret);
-+			__get_user_size_allowed(*(u16 *)to, from, 2, ret);
- 			break;
- 		case 4:
- 			barrier_nospec();
--			__get_user_size(*(u32 *)to, from, 4, ret);
-+			__get_user_size_allowed(*(u32 *)to, from, 4, ret);
- 			break;
- 		case 8:
- 			barrier_nospec();
--			__get_user_size(*(u64 *)to, from, 8, ret);
-+			__get_user_size_allowed(*(u64 *)to, from, 8, ret);
- 			break;
- 		}
- 		if (ret == 0)
- 			return 0;
+ 	BUG_ON(tsk != current);
+ 
+ #ifdef CONFIG_ALTIVEC
+-	err |= __put_user(v_regs, &sc->v_regs);
++	unsafe_put_user(v_regs, &sc->v_regs, efault_out);
+ 
+ 	/* save altivec registers */
+ 	if (tsk->thread.used_vr) {
+ 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
+-		err |= __copy_to_user(v_regs, &tsk->thread.vr_state,
+-				      33 * sizeof(vector128));
++		unsafe_copy_to_user(v_regs, &tsk->thread.vr_state,
++				    33 * sizeof(vector128), efault_out);
+ 		/* set MSR_VEC in the MSR value in the frame to indicate that sc->v_reg)
+ 		 * contains valid data.
+ 		 */
+@@ -140,12 +143,12 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+ 	 * use altivec.
+ 	 */
+-	err |= __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
++	unsafe_put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33], efault_out);
+ #else /* CONFIG_ALTIVEC */
+-	err |= __put_user(0, &sc->v_regs);
++	unsafe_put_user(0, &sc->v_regs, efault_out);
+ #endif /* CONFIG_ALTIVEC */
+ 	/* copy fpr regs and fpscr */
+-	err |= copy_fpr_to_user(&sc->fp_regs, tsk);
++	unsafe_copy_fpr_to_user(&sc->fp_regs, tsk, efault_out);
+ 
+ 	/*
+ 	 * Clear the MSR VSX bit to indicate there is no valid state attached
+@@ -160,24 +163,27 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	 */
+ 	if (tsk->thread.used_vsr && ctx_has_vsx_region) {
+ 		v_regs += ELF_NVRREG;
+-		err |= copy_vsx_to_user(v_regs, tsk);
++		unsafe_copy_vsx_to_user(v_regs, tsk, efault_out);
+ 		/* set MSR_VSX in the MSR value in the frame to
+ 		 * indicate that sc->vs_reg) contains valid data.
+ 		 */
+ 		msr |= MSR_VSX;
  	}
+ #endif /* CONFIG_VSX */
+-	err |= __put_user(&sc->gp_regs, &sc->regs);
++	unsafe_put_user(&sc->gp_regs, &sc->regs, efault_out);
+ 	WARN_ON(!FULL_REGS(regs));
+-	err |= __copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE);
+-	err |= __put_user(msr, &sc->gp_regs[PT_MSR]);
+-	err |= __put_user(softe, &sc->gp_regs[PT_SOFTE]);
+-	err |= __put_user(signr, &sc->signal);
+-	err |= __put_user(handler, &sc->handler);
++	unsafe_copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE, efault_out);
++	unsafe_put_user(msr, &sc->gp_regs[PT_MSR], efault_out);
++	unsafe_put_user(softe, &sc->gp_regs[PT_SOFTE], efault_out);
++	unsafe_put_user(signr, &sc->signal, efault_out);
++	unsafe_put_user(handler, &sc->handler, efault_out);
+ 	if (set != NULL)
+-		err |=  __put_user(set->sig[0], &sc->oldmask);
++		unsafe_put_user(set->sig[0], &sc->oldmask, efault_out);
  
-+	return __copy_tofrom_user((__force void __user *)to, from, n);
-+}
+-	return err;
++	return 0;
 +
-+static inline unsigned long
-+raw_copy_from_user(void *to, const void __user *from, unsigned long n)
-+{
-+	unsigned long ret;
-+
- 	barrier_nospec();
- 	allow_read_from_user(from, n);
--	ret = __copy_tofrom_user((__force void __user *)to, from, n);
-+	ret = raw_copy_from_user_allowed(to, from, n);
- 	prevent_read_from_user(from, n);
- 	return ret;
++efault_out:
++	return -EFAULT;
  }
-@@ -542,6 +549,9 @@ user_write_access_begin(const void __user *ptr, size_t len)
- #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
- #define unsafe_put_user(x, p, e) __put_user_goto(x, p, e)
  
-+#define unsafe_copy_from_user(d, s, l, e) \
-+	unsafe_op_wrap(raw_copy_from_user_allowed(d, s, l), e)
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -664,12 +670,15 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 
+ 	if (old_ctx != NULL) {
+ 		prepare_setup_sigcontext(current, ctx_has_vsx_region);
+-		if (!access_ok(old_ctx, ctx_size)
+-		    || setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL, 0,
+-					ctx_has_vsx_region)
+-		    || __copy_to_user(&old_ctx->uc_sigmask,
+-				      &current->blocked, sizeof(sigset_t)))
++		if (!user_write_access_begin(old_ctx, ctx_size))
+ 			return -EFAULT;
 +
- #define unsafe_copy_to_user(d, s, l, e) \
- do {									\
- 	u8 __user *_dst = (u8 __user *)(d);				\
++		unsafe_setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL,
++					0, ctx_has_vsx_region, efault_out);
++		unsafe_copy_to_user(&old_ctx->uc_sigmask, &current->blocked,
++				    sizeof(sigset_t), efault_out);
++
++		user_write_access_end();
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+@@ -698,6 +707,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 	/* This returns like rt_sigreturn */
+ 	set_thread_flag(TIF_RESTOREALL);
+ 	return 0;
++
++efault_out:
++	user_write_access_end();
++	return -EFAULT;
+ }
+ 
+ 
+@@ -849,9 +862,12 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	} else {
+ 		err |= __put_user(0, &frame->uc.uc_link);
+ 		prepare_setup_sigcontext(tsk, 1);
+-		err |= setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
+-					NULL, (unsigned long)ksig->ka.sa.sa_handler,
+-					1);
++		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
++			return -EFAULT;
++		err |= __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
++						ksig->sig, NULL,
++						(unsigned long)ksig->ka.sa.sa_handler, 1);
++		user_write_access_end();
+ 	}
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
 -- 
 2.29.0
 
