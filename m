@@ -2,107 +2,83 @@ Return-Path: <SRS0=J0gu=EM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E70CC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F14F3C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:39:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45D7E2087E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:04:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7EE82087E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:39:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="c+FcpGWJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45D7E2087E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="giuuga+S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7EE82087E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CSXtv6t8yzDrRX
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2020 08:04:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ljp@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CSYh54KqZzDrPx
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2020 08:39:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42a;
+ helo=mail-wr1-x42a.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=c+FcpGWJ; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=giuuga+S; dkim-atps=neutral
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com
+ [IPv6:2a00:1450:4864:20::42a])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CSXs826wmzDrPM;
- Sat,  7 Nov 2020 08:02:35 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0A6Kb5DQ162691; Fri, 6 Nov 2020 16:02:31 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=mime-version : date :
- from : to : cc : subject : in-reply-to : references : message-id :
- content-type : content-transfer-encoding; s=pp1;
- bh=SXpYmCvvUiF836r6Iz01TeufGvsPo/Gs8jXJV547tnU=;
- b=c+FcpGWJVWvMKtiUMVb6A6W7ffJqZvumy2BvHLJnA+qD8a3FYWjSQTOS9n/2DNq5bexW
- 3hd+dPth3a4J+RfcP9l9gsP4EziJAqutuFKwnvFQYgbebmcdnPmZKbHLrBAX17ywPUL2
- LB9Ac6T7ePQwne6UStIxGWUzNHMSCjwmTXz9jooTsilf33d8+jf8Q+pZPANFm+IupDU6
- d7GP6XArwItL03MO3hGyYHaYNQPj1nWFw6zMRXi8zOMKaGTm2Xb2aFd8z+zNYsvfgdWn
- IbzYxYvDAtOsNHqxGnNNqjDiBqKYIYlYIvMSPjDdMtiZVvqU0TxMoLoZYG8DlEc/rU0U zg== 
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34nd8msa5m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 Nov 2020 16:02:30 -0500
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0A6L1P6Y000749;
- Fri, 6 Nov 2020 21:02:29 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma03wdc.us.ibm.com with ESMTP id 34h0fkjqrj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 Nov 2020 21:02:29 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0A6L2MSY38273724
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 6 Nov 2020 21:02:22 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 35C7A6E050;
- Fri,  6 Nov 2020 21:02:28 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ECCE46E054;
- Fri,  6 Nov 2020 21:02:27 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri,  6 Nov 2020 21:02:27 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CSYcz4tBBzDrPS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2020 08:37:03 +1100 (AEDT)
+Received: by mail-wr1-x42a.google.com with SMTP id x7so2767127wrl.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2020 13:37:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=sWMhK/OvncM3wrg/l2R/3oqz+FYOuFfnAnN4zZZG95g=;
+ b=giuuga+Subtfjj4L06B+sRGS3UP4NSvhfj3Dy96cBZOlbr2uIBvVAviwtIhKtM88Oc
+ cbGk73Rqe9eUV8XEoW6PRC3Hq0/qxrPOtNJY+y9bTkZ1H4h0mKEFG28iBAIVmBMvK/TT
+ DKMvwZVy7/6hnyGbWAA+0+Lx3Ufj+y7so197DYDn6aY2KqlJL0fLvmGfGVaybffQBwK/
+ XgpkRd1j/mfFbFkNUr4FkrhZUeQXdyWesLk0vrwqwc28m1BvpQM5ROsMUbdQ3bKKFxxl
+ lqG8l4wNNr2nb6nviGQI1WSj51WqGQL4g6hM2WXRfBblkxKdax614UM/3LpGUT1S/JJs
+ WHYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=sWMhK/OvncM3wrg/l2R/3oqz+FYOuFfnAnN4zZZG95g=;
+ b=rl+3baVGCYM2eeqBJ6FxRWp8LzX2lD0uFBK1f4DA+QOmfz+5eqvUe8DgJgHtzSZD/C
+ P65O9zQjhBlv3IUhJLU1UCZ/xqXme/KXjiF35QhOaOmF2g1OhoUJ9oMSy+w0PYnDSiDi
+ 5vYdiDNlXZBJBCfIWh+gmHPg1RawJtpN8RHTXY02qQWY5W/9WTmeAJP0bFsSvhpNWqUr
+ h4UiqaNWoJzsRbjHljIMJE+o8OovVQ4ldQ9eEOXS0VN9Zd0eOQ24KVfUFj+YXAykMIop
+ 1cwaZ/b8BL4FtL5dGQ40r4OgrsK+9Km/2PLL1Lx5R2u4pw2TpouO01knHgQjPIyXl4x/
+ NiOw==
+X-Gm-Message-State: AOAM533AdYU6n+Gwk4DXZUHD9bbQSUAoGxWLV81M11hnoZC2FUqm53Eo
+ eKwlGXB5Z4V3O+SKUeq/f8yZSw==
+X-Google-Smtp-Source: ABdhPJwYbbeGzfNSZK1/UV+MifV9QDrLVlkETYPhmljhd2e2p7ph7BVoQ2I52W0yiGbOkeQrcS1TNA==
+X-Received: by 2002:a5d:66c3:: with SMTP id k3mr108958wrw.123.1604698619742;
+ Fri, 06 Nov 2020 13:36:59 -0800 (PST)
+Received: from dell.default ([91.110.221.236])
+ by smtp.gmail.com with ESMTPSA id d16sm3984942wrw.17.2020.11.06.13.36.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 06 Nov 2020 13:36:58 -0800 (PST)
+From: Lee Jones <lee.jones@linaro.org>
+To: lee.jones@linaro.org
+Subject: [PATCH v2 00/23] Rid W=1 warnings in MTD
+Date: Fri,  6 Nov 2020 21:36:32 +0000
+Message-Id: <20201106213655.1838861-1-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Date: Fri, 06 Nov 2020 15:02:27 -0600
-From: ljp <ljp@linux.vnet.ibm.com>
-To: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH net-next] Revert ibmvnic merge do_change_param_reset into
- do_reset
-In-Reply-To: <20201106114208.4b0e8eec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20201106191745.1679846-1-drt@linux.ibm.com>
- <0ff353cbada91b031d1bbae250a975d5@linux.vnet.ibm.com>
- <20201106114208.4b0e8eec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <ba446b20f6c90e4db68127238f83f231@linux.vnet.ibm.com>
-X-Sender: ljp@linux.vnet.ibm.com
-User-Agent: Roundcube Webmail/1.0.1
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-06_06:2020-11-05,
- 2020-11-06 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- phishscore=0 suspectscore=0 bulkscore=0 clxscore=1015 impostorscore=0
- malwarescore=0 mlxlogscore=999 adultscore=0 spamscore=0 priorityscore=1501
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011060144
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,47 +90,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wvoigt@us.ibm.com, netdev@vger.kernel.org,
- Linuxppc-dev <linuxppc-dev-bounces+ljp=linux.ibm.com@lists.ozlabs.org>,
- Dany Madden <drt@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
+Cc: Boris BREZILLON <b.brezillon.dev@gmail.com>,
+ Vignesh Raghavendra <vigneshr@ti.com>, Sergey Lapin <slapin@ossfans.org>,
+ dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org,
+ Frieder Schrempf <frieder.schrempf@kontron.de>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Choudary Kalluri <punnaia@xilinx.com>, Robert Jarzmik <robert.jarzmik@free.fr>,
+ Sumit Semwal <sumit.semwal@linaro.org>, Paul Mackerras <paulus@samba.org>,
+ Dan Brown <dan_brown@ieee.org>, linux-samsung-soc@vger.kernel.org,
+ Adrian Hunter <ext-adrian.hunter@nokia.com>, Kamal Dasu <kdasu.kdev@gmail.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Thomas Gleixner <gleixner@linutronix.de>, Chen-Yu Tsai <wens@csie.org>,
+ Kukjin Kim <kgene@kernel.org>, bcm-kernel-feedback-list@broadcom.com,
+ linux-media@vger.kernel.org, Tudor Ambarus <tudor.ambarus@microchip.com>,
+ Maxime Ripard <mripard@kernel.org>, linaro-mm-sig@lists.linaro.org,
+ Dmitriy B <rzk333@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ =?UTF-8?q?Jochen=20Sch=C3=A4uble?= <psionic@psionic.de>,
+ Naga Sureshkumar Relli <nagasure@xilinx.com>,
+ Yoshio Furuyama <ytc-mb-yfuruyama7@kioxia.com>,
+ Nicolas Pitre <nico@fluxnic.net>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Boris Brezillon <boris.brezillon@collabora.com>, Qiang Yu <yuq825@gmail.com>,
+ Philipp Zabel <p.zabel@pengutronix.de>, Richard Weinberger <richard@nod.at>,
+ Jian Zhang <jzhang@ti.com>, Brian Norris <computersforpeace@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2020-11-06 13:42, Jakub Kicinski wrote:
-> On Fri, 06 Nov 2020 13:30:25 -0600 ljp wrote:
->> On 2020-11-06 13:17, Dany Madden wrote:
->> > This reverts commit 16b5f5ce351f8709a6b518cc3cbf240c378305bf
->> > where it restructures do_reset. There are patches being tested that
->> > would require major rework if this is committed first.
->> >
->> > We will resend this after the other patches have been applied.
->> 
->> I discussed with my manager, and he has agreed not revert this one
->> since it is in the net-next tree and will not affect net tree for
->> current bug fix patches.
-> 
-> We merge net into net-next periodically (~every week or so) so if you
-> keep making changes to both branches I will have to deal with the
-> fallout.
-> 
-> I'm assuming that the resolution for the current conflict which Stephen
-> Rothwell sent from linux-next is correct. Please confirm.
-> 
-> I will resolve it like he did when Linus pulls from net (hopefully
-> later today).
-> 
-> But if you know you have more fixes I'd rather revert this, get all the
-> relevant fixed into net, wait for net to be merged into net-next and
-> then redo the refactoring.
-> 
-> Hope that makes sense.
+This set is part of a larger effort attempting to clean-up W=1
+kernel builds, which are currently overwhelmingly riddled with
+niggly little warnings.
 
-Jakub,
+v1 => v2:
+  - Added tags
+  - Satisfied Miquel's review comments
 
-We had further discussion in the team based on your comments above.
-You can revert it for now.
-Thanks for your efforts.
+Lee Jones (23):
+  mtd: mtdpart: Fix misdocumented function parameter 'mtd'
+  mtd: devices: phram: File headers are not good candidates for
+    kernel-doc
+  mtd: nand: onenand: onenand_base: Fix expected kernel-doc formatting
+  mtd: devices: docg3: Fix kernel-doc 'bad line' and 'excessive doc'
+    issues
+  mtd: mtdcore: Fix misspelled function parameter 'section'
+  mtd: nand: onenand: onenand_bbt: Fix expected kernel-doc formatting
+  mtd: spi-nor: controllers: hisi-sfc: Demote non-conformant kernel-doc
+  mtd: ubi: build: Document 'ubi_num' in struct mtd_dev_param
+  mtd: nand: spi: toshiba: Demote non-conformant kernel-doc header
+  mtd: ubi: kapi: Correct documentation for 'ubi_leb_read_sg's 'sgl'
+    parameter
+  mtd: ubi: eba: Fix a couple of misdocumentation issues
+  mtd: ubi: wl: Fix a couple of kernel-doc issues
+  mtd: nand: raw: brcmnand: brcmnand: Demote non-conformant kernel-doc
+    headers
+  mtd: ubi: gluebi: Fix misnamed function parameter documentation
+  mtd: nand: raw: diskonchip: Marking unused variables as
+    __always_unused
+  mtd: nand: raw: cafe_nand: Remove superfluous param doc and add
+    another
+  mtd: nand: raw: s3c2410: Add documentation for 2 missing struct
+    members
+  mtd: nand: raw: omap_elm: Finish half populated function header,
+    demote empty ones
+  mtd: nand: raw: omap2: Fix a bunch of kernel-doc misdemeanours
+  mtd: nand: raw: sunxi_nand: Document 'sunxi_nfc's 'caps' member
+  mtd: nand: raw: arasan-nand-controller: Document 'anfc_op's 'buf'
+    member
+  mtd: nand: onenand: onenand_base: Fix some kernel-doc misdemeanours
+  mtd: devices: powernv_flash: Add function names to headers and fix
+    'dev'
 
-Lijun
+ drivers/mtd/devices/docg3.c                   |   5 +-
+ drivers/mtd/devices/phram.c                   |   2 +-
+ drivers/mtd/devices/powernv_flash.c           |   5 +-
+ drivers/mtd/mtdcore.c                         |   2 +-
+ drivers/mtd/mtdpart.c                         |   2 +-
+ drivers/mtd/nand/onenand/onenand_base.c       | 444 +++++++++---------
+ drivers/mtd/nand/onenand/onenand_bbt.c        |  32 +-
+ drivers/mtd/nand/raw/arasan-nand-controller.c |   1 +
+ drivers/mtd/nand/raw/brcmnand/brcmnand.c      |   6 +-
+ drivers/mtd/nand/raw/cafe_nand.c              |   2 +-
+ drivers/mtd/nand/raw/diskonchip.c             |   4 +-
+ drivers/mtd/nand/raw/omap2.c                  |  18 +-
+ drivers/mtd/nand/raw/omap_elm.c               |   7 +-
+ drivers/mtd/nand/raw/s3c2410.c                |   4 +-
+ drivers/mtd/nand/raw/sunxi_nand.c             |   1 +
+ drivers/mtd/nand/spi/toshiba.c                |   2 +-
+ drivers/mtd/spi-nor/controllers/hisi-sfc.c    |   2 +-
+ drivers/mtd/ubi/build.c                       |   1 +
+ drivers/mtd/ubi/eba.c                         |   3 +-
+ drivers/mtd/ubi/gluebi.c                      |   2 +-
+ drivers/mtd/ubi/kapi.c                        |   2 +-
+ drivers/mtd/ubi/wl.c                          |   3 +-
+ 22 files changed, 278 insertions(+), 272 deletions(-)
+
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: bcm-kernel-feedback-list@broadcom.com
+Cc: Ben Dooks <ben@simtec.co.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Boris BREZILLON <b.brezillon.dev@gmail.com>
+Cc: Boris Brezillon <boris.brezillon@collabora.com>
+Cc: Brian Norris <computersforpeace@gmail.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Choudary Kalluri <punnaia@xilinx.com>
+Cc: "Christian König" <christian.koenig@amd.com>
+Cc: Dan Brown <dan_brown@ieee.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Dmitriy B <rzk333@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: Frieder Schrempf <frieder.schrempf@kontron.de>
+Cc: Jian Zhang <jzhang@ti.com>
+Cc: "Jochen Schäuble" <psionic@psionic.de>
+Cc: Kamal Dasu <kdasu.kdev@gmail.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linaro-mm-sig@lists.linaro.org
+Cc: linux-media@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Naga Sureshkumar Relli <nagasure@xilinx.com>
+Cc: Nicolas Pitre <nico@fluxnic.net>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Qiang Yu <yuq825@gmail.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Sergey Lapin <slapin@ossfans.org>
+Cc: Sumit Semwal <sumit.semwal@linaro.org>
+Cc: Thomas Gleixner <gleixner@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tudor Ambarus <tudor.ambarus@microchip.com>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>
+Cc: Yoshio Furuyama <ytc-mb-yfuruyama7@kioxia.com>
+-- 
+2.25.1
+
