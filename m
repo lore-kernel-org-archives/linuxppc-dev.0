@@ -2,85 +2,90 @@ Return-Path: <SRS0=J0gu=EM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A5B5C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:41:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FA5DC2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:43:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D598206D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:41:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3756E20735
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2020 21:43:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sJW30ndV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D598206D4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r6p4t2hB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3756E20735
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CSYkH53XJzDrQp
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2020 08:41:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CSYm2577PzDrQ6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2020 08:43:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::342;
- helo=mail-wm1-x342.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=sJW30ndV; dkim-atps=neutral
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
- [IPv6:2a00:1450:4864:20::342])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=r6p4t2hB; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CSYdT5LkxzDrQ0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2020 08:37:33 +1100 (AEDT)
-Received: by mail-wm1-x342.google.com with SMTP id d142so2814389wmd.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2020 13:37:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ynyF2LluxBEO2JLmlcMvxixiCa/MBQSn7HUEDQ95Ad8=;
- b=sJW30ndVh1qGXkUaw3pZaZEjF2ef9gfmBHcrLUN8CKyAoBZToeJQQGOgveJ9pOnH9G
- iLnj25fAUb5CHE4pzNXFTP4bhMNeVU9zyQDF1cWEHGd11k8kQJFQMEHxT3Dl1zjar9i1
- fLeGKBfoVm5SSIuvPhaI1FnA013nnfZJ8yjEL9YynAZGNTKmaaPzx1Z8entolXVdwDXF
- CpfAG963D1ALbbrNpXiYanN/0p8rW8kbDmkOIfYRs2zp7QT0lXC2BhMYgEqAXpdrHyfE
- U/pK0fH1kVdmS6ynQhtxJ6E8bO3EBpBdOD+PU9rYMIdej1Dw7doRpC+V18xrgEa4Q7rq
- 2Adg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CSYgd4fCrzDqLR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2020 08:39:24 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id g12so1955596pgm.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2020 13:39:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=7aTWPGVFVbBWyajMT43VMslcFxXhz4VtDG2Makyw31Y=;
+ b=r6p4t2hBK6TaeQb58ushb4iE+SAEpBwSj1UGF6u7fYvIqBs1cEHVzdSxjnk/UvBUhQ
+ W8cQNHQveNpdu6qA1gOQgeBjly7CjVn0ieNdMmJ4AE1PhT0tBGdqAE2ATyQXtl53Rdac
+ ZSEHU6hmqv482cXm79+gjmSgYiVcLHmHBSB9ASlPgGe12tTIZ7BslHv0PrUoTc6QNCzB
+ Y4D1M3FoogsQTPU2TEZ8iGOdBXFfpwexcOJliySVCXgf/GT2xq991kkYGm2s66q1CwTr
+ P9yJmfhZKmDkC/LbEoObcnYCPuhL8uq3lxzJN/aUEe2Rfj/NIp1IosQuoV/x4T5dC36U
+ Xlvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ynyF2LluxBEO2JLmlcMvxixiCa/MBQSn7HUEDQ95Ad8=;
- b=VhH8m1a7odnFSfWCR90pNqFIVGt1FzEmWZMtMKSNpan0zDGNuneEUAh3Y17Ax9woMV
- ug8cLz7ejwkJAd7FhJd+qR7Ll/D7A5jYa9q5Voj37QaaItWKY5njjjdDS3clM3i+aNv+
- tPjiN0ZAWFYDsSkH1sGv+y/4sLjc5Gvo5g18h+fFngmN0Y6NGpCQ3Kxpvaryhk71esOx
- eekXcBEnOcQKIunmNRVkG06hsQEc2MOW81ro7Enc2in+PJEzoBcmzBpVEPZI5KtGKfbN
- LuvPz3shJmEN4vAqJBx0xkNO5FqzEqLsfIJOzQVbwKKaDD4ytKlcvTewLR33MyQ8nzVl
- HrNw==
-X-Gm-Message-State: AOAM531Gou8oDi9GQ+YpYfwSSIVwDnbwfFgz+YvJILpYvPZaQ08zjVCy
- fMpGr733Fuz/hLIHx3AOIxNjtQ==
-X-Google-Smtp-Source: ABdhPJxG+LiIYfVShEQWJVAJMZtLl+cVPcfShbpulxjLFaLqCc0rq0BMZWwZRXF2wVzCbzIu7Bfcjg==
-X-Received: by 2002:a1c:3803:: with SMTP id f3mr1574214wma.14.1604698649574;
- Fri, 06 Nov 2020 13:37:29 -0800 (PST)
-Received: from dell.default ([91.110.221.236])
- by smtp.gmail.com with ESMTPSA id d16sm3984942wrw.17.2020.11.06.13.37.28
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 06 Nov 2020 13:37:28 -0800 (PST)
-From: Lee Jones <lee.jones@linaro.org>
-To: lee.jones@linaro.org
-Subject: [PATCH v2 23/23] mtd: devices: powernv_flash: Add function names to
- headers and fix 'dev'
-Date: Fri,  6 Nov 2020 21:36:55 +0000
-Message-Id: <20201106213655.1838861-24-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201106213655.1838861-1-lee.jones@linaro.org>
-References: <20201106213655.1838861-1-lee.jones@linaro.org>
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=7aTWPGVFVbBWyajMT43VMslcFxXhz4VtDG2Makyw31Y=;
+ b=olMBn2sUX+3G8xiu2Xq4uefOlgBQOMzkBtWVCtf7YHesnMU5hG+LNEKCh77nnW7pFG
+ 33gE1BRZ7QlrGuTC/tefVH8fYdV98QvVtyxrXHvUQtrgrbfGcvYgBD3r8tILKA7/AdUl
+ 3UbkFJCp8RoBYyqJPT8UZkqVyZaq2QUsvNaVqjTMVGAdW484tGeeQWojyEqqAtVJ/iHU
+ BxnN75rYfxQiYCXteUXOLPY51ya/ouTlfrQVSEy9a9rwXsYKkQjSS16JflAom4FzvF0u
+ /oAZN4IUbuPMNnWbp4iLsjNb5IivTeWdhgDu/25V6A5BA+kYM4DqQNT/66sevpONeQYQ
+ tINw==
+X-Gm-Message-State: AOAM531V8xy4ESYaa7bXEw4ntTWE0wPwQRLKsS3mUQdHgd8be96MbN/3
+ xXUulE8eALufRxLFoNmjwUk=
+X-Google-Smtp-Source: ABdhPJwpIojmp9b1+/us6ZoC1XobJl4twTivXTCrNIPeHZ3z7HJtN7EZ21TixK2ffUkYFiMgVC+9xw==
+X-Received: by 2002:a17:90a:1f0b:: with SMTP id
+ u11mr1596531pja.105.1604698761088; 
+ Fri, 06 Nov 2020 13:39:21 -0800 (PST)
+Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id u22sm2689423pgf.24.2020.11.06.13.39.19
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 06 Nov 2020 13:39:20 -0800 (PST)
+Date: Fri, 6 Nov 2020 13:27:08 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v3 1/2] ASoC: dt-bindings: fsl_aud2htx: Add binding doc
+ for aud2htx module
+Message-ID: <20201106212707.GA3927@Asurada-Nvidia>
+References: <1604281947-26874-1-git-send-email-shengjiu.wang@nxp.com>
+ <160466365499.22812.9217467877032314221.b4-ty@kernel.org>
+ <20201106122013.GB49612@sirena.org.uk>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201106122013.GB49612@sirena.org.uk>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,71 +97,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vignesh Raghavendra <vigneshr@ti.com>, Richard Weinberger <richard@nod.at>,
- Miquel Raynal <miquel.raynal@bootlin.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-mtd@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, timur@kernel.org,
+ Xiubo.Lee@gmail.com, lgirdwood@gmail.com,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ tiwai@suse.com, perex@perex.cz, robh+dt@kernel.org, festevam@gmail.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes the following W=1 kernel build warning(s):
+On Fri, Nov 06, 2020 at 12:20:13PM +0000, Mark Brown wrote:
+> On Fri, Nov 06, 2020 at 11:54:23AM +0000, Mark Brown wrote:
+> > On Mon, 2 Nov 2020 09:52:26 +0800, Shengjiu Wang wrote:
+> > > AUD2HTX (Audio Subsystem TO HDMI TX Subsystem) is a new
+> > > IP module found on i.MX8MP.
+> > 
+> > Applied to
+> > 
+> >    https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+> 
+> Sorry, looks like me queueing this raced with the review comments coming
+> in.  I think the review commments are small enough that it'll be OK to
+> fix incrementally?
 
- drivers/mtd/devices/powernv_flash.c:129: warning: Cannot understand  * @mtd: the device
- drivers/mtd/devices/powernv_flash.c:145: warning: Cannot understand  * @mtd: the device
- drivers/mtd/devices/powernv_flash.c:161: warning: Cannot understand  * @mtd: the device
- drivers/mtd/devices/powernv_flash.c:184: warning: Function parameter or member 'dev' not described in 'powernv_flash_set_driver_info'
+Yes. I am okay if we move forward with this version.
 
-Cc: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Richard Weinberger <richard@nod.at>
-Cc: Vignesh Raghavendra <vigneshr@ti.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linux-mtd@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/mtd/devices/powernv_flash.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index 0b757d9ba2f6b..6950a87648151 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -126,6 +126,7 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- }
- 
- /**
-+ * powernv_flash_read
-  * @mtd: the device
-  * @from: the offset to read from
-  * @len: the number of bytes to read
-@@ -142,6 +143,7 @@ static int powernv_flash_read(struct mtd_info *mtd, loff_t from, size_t len,
- }
- 
- /**
-+ * powernv_flash_write
-  * @mtd: the device
-  * @to: the offset to write to
-  * @len: the number of bytes to write
-@@ -158,6 +160,7 @@ static int powernv_flash_write(struct mtd_info *mtd, loff_t to, size_t len,
- }
- 
- /**
-+ * powernv_flash_erase
-  * @mtd: the device
-  * @erase: the erase info
-  * Returns 0 if erase successful or -ERRNO if an error occurred
-@@ -176,7 +179,7 @@ static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
- 
- /**
-  * powernv_flash_set_driver_info - Fill the mtd_info structure and docg3
-- * structure @pdev: The platform device
-+ * @dev: The device structure
-  * @mtd: The structure to fill
-  */
- static int powernv_flash_set_driver_info(struct device *dev,
--- 
-2.25.1
-
+Thanks
