@@ -4,40 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53438C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 10:38:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EADE4C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 10:40:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A725206ED
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 10:38:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A725206ED
+	by mail.kernel.org (Postfix) with ESMTPS id 2D190206ED
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 10:40:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D190206ED
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CTVwV4p33zDrQ8
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 21:38:50 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CTVyF16jYzDrQb
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 21:40:21 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CTVjy5KHjzDqYk
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2020 21:29:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CTVjz1xD1zDqw0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2020 21:29:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 4CTVjx2FzZz9sTD; Sun,  8 Nov 2020 21:29:41 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CTVjw5nCyz9sVD; Sun,  8 Nov 2020 21:29:40 +1100 (AEDT)
+ id 4CTVjt73x2z9sSs; Sun,  8 Nov 2020 21:29:38 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20201104111742.672142-1-mpe@ellerman.id.au>
-References: <20201104111742.672142-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Use asm_goto_volatile for put_user()
-Message-Id: <160483134266.1400561.1749074181140263524.b4-ty@ellerman.id.au>
-Date: Sun,  8 Nov 2020 21:29:40 +1100 (AEDT)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <a44367744de54e2315b2f1a8cbbd7f88488072e0.1602342806.git.christophe.leroy@csgroup.eu>
+References: <a44367744de54e2315b2f1a8cbbd7f88488072e0.1602342806.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/603: Always fault when _PAGE_ACCESSED is not set
+Message-Id: <160483134300.1400561.16749061547293752526.b4-ty@ellerman.id.au>
+Date: Sun,  8 Nov 2020 21:29:38 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,24 +50,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: schwab@linux-m68k.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 4 Nov 2020 22:17:42 +1100, Michael Ellerman wrote:
-> Andreas reported that commit ee0a49a6870e ("powerpc/uaccess: Switch
-> __put_user_size_allowed() to __put_user_asm_goto()") broke
-> CLONE_CHILD_SETTID.
+On Sat, 10 Oct 2020 15:14:30 +0000 (UTC), Christophe Leroy wrote:
+> The kernel expects pte_young() to work regardless of CONFIG_SWAP.
 > 
-> Further inspection showed that the put_user() in schedule_tail() was
-> missing entirely, the store not emitted by the compiler.
-> 
-> [...]
+> Make sure a minor fault is taken to set _PAGE_ACCESSED when it
+> is not already set, regardless of the selection of CONFIG_SWAP.
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc: Use asm_goto_volatile for put_user()
-      https://git.kernel.org/powerpc/c/1344a232016dbb0492be81f8517c4bf8fc1c6610
+[1/1] powerpc/603: Always fault when _PAGE_ACCESSED is not set
+      https://git.kernel.org/powerpc/c/11522448e641e8f1690c9db06e01985e8e19b401
 
 cheers
