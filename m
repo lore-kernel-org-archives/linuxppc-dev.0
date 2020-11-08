@@ -2,23 +2,24 @@ Return-Path: <SRS0=GXYn=EO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFBC0C4742C
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 17:01:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95916C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 17:02:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 326A220678
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 17:01:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 326A220678
+	by mail.kernel.org (Postfix) with ESMTPS id 9730B206C0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2020 17:02:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9730B206C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CTgPh5dzRzDqtZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2020 04:01:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CTgRX5cv5zDqyS
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2020 04:02:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CTgKj1MtPzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2020 03:57:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CTgKj158jzDqZH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2020 03:57:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CTgKV6JHBz9tyqV;
- Sun,  8 Nov 2020 17:57:34 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CTgKT3wZXz9tyqT;
+ Sun,  8 Nov 2020 17:57:33 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NkLS1fSN036r; Sun,  8 Nov 2020 17:57:34 +0100 (CET)
+ with ESMTP id 8pQCq4HOlVkq; Sun,  8 Nov 2020 17:57:33 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CTgKV4v8nz9tyqR;
- Sun,  8 Nov 2020 17:57:34 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CTgKT3689z9tyqR;
+ Sun,  8 Nov 2020 17:57:33 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 490A78B77F;
- Sun,  8 Nov 2020 17:57:38 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 33A758B77F;
+ Sun,  8 Nov 2020 17:57:37 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1vTl7CMWKfeE; Sun,  8 Nov 2020 17:57:38 +0100 (CET)
+ with ESMTP id PFwlpPKVlyhe; Sun,  8 Nov 2020 17:57:37 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E28068B75B;
- Sun,  8 Nov 2020 17:57:37 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E2A5F8B75B;
+ Sun,  8 Nov 2020 17:57:36 +0100 (CET)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BCAD966855; Sun,  8 Nov 2020 16:57:37 +0000 (UTC)
-Message-Id: <f7e9cb9e9240feec63cb330abf40b67d1aad852f.1604854583.git.christophe.leroy@csgroup.eu>
+ id B88E166855; Sun,  8 Nov 2020 16:57:36 +0000 (UTC)
+Message-Id: <b901ddfdeb8a0a3b7cb59999599cdfde1bbfe834.1604854583.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <7719261b0a0d2787772339484c33eb809723bca7.1604854583.git.christophe.leroy@csgroup.eu>
 References: <7719261b0a0d2787772339484c33eb809723bca7.1604854583.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 3/3] powerpc: Remove RFI macro
+Subject: [PATCH v2 2/3] powerpc: Replace RFI by rfi on book3s/32 and booke
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun,  8 Nov 2020 16:57:37 +0000 (UTC)
+Date: Sun,  8 Nov 2020 16:57:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,127 +76,160 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-RFI macro is just there to add an infinite loop past
-rfi in order to avoid prefetch on 40x in half a dozen
-of places in entry_32 and head_32.
+For book3s/32 and for booke, RFI is just an rfi.
+Only 40x has a non trivial RFI.
+CONFIG_PPC_RTAS is never selected by 40x platforms.
 
-Those places are already full of #ifdefs, so just add a
-few more to explicitely show those loops and remove RFI.
+Make it more explicit by replacing RFI by rfi wherever possible.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/ppc_asm.h |  5 -----
- arch/powerpc/kernel/entry_32.S     | 30 ++++++++++++++++++++++++------
- arch/powerpc/kernel/head_32.h      |  5 ++++-
- 3 files changed, 28 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/entry_32.S       |  6 +++---
+ arch/powerpc/kernel/head_book3s_32.S | 18 +++++++++---------
+ arch/powerpc/kernel/head_booke.h     |  2 +-
+ arch/powerpc/kvm/book3s_rmhandlers.S |  4 ++--
+ 4 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index bedf3eb52ebc..101986d4a29d 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -498,11 +498,6 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
- #define MTMSRD(r)	mtmsrd	r
- #define MTMSR_EERI(reg)	mtmsrd	reg,1
- #else
--#ifndef CONFIG_40x
--#define	RFI		rfi
--#else
--#define RFI		rfi; b .	/* Prevent prefetch past rfi */
--#endif
- #define MTMSRD(r)	mtmsr	r
- #define MTMSR_EERI(reg)	mtmsr	reg
- #endif
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index e10e1167ffb1..c7c28e8acc10 100644
+index 8cdc8bcde703..e10e1167ffb1 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -234,7 +234,10 @@ transfer_to_handler_cont:
- 	mtspr	SPRN_SRR0,r11
- 	mtspr	SPRN_SRR1,r10
- 	mtlr	r9
--	RFI				/* jump to handler, enable MMU */
-+	rfi				/* jump to handler, enable MMU */
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
+@@ -1027,7 +1027,7 @@ exc_exit_restart:
+ 	lwz	r1,GPR1(r1)
+ 	.globl exc_exit_restart_end
+ exc_exit_restart_end:
+-	RFI
++	rfi
+ _ASM_NOKPROBE_SYMBOL(exc_exit_restart)
+ _ASM_NOKPROBE_SYMBOL(exc_exit_restart_end)
  
- #if defined (CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
- 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
-@@ -263,7 +266,10 @@ _ASM_NOKPROBE_SYMBOL(transfer_to_handler_cont)
- 	LOAD_REG_IMMEDIATE(r0, MSR_KERNEL)
- 	mtspr	SPRN_SRR0,r12
- 	mtspr	SPRN_SRR1,r0
+@@ -1356,7 +1356,7 @@ _GLOBAL(enter_rtas)
+ 	stw	r7, THREAD + RTAS_SP(r2)
+ 	mtspr	SPRN_SRR0,r8
+ 	mtspr	SPRN_SRR1,r9
 -	RFI
 +	rfi
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
- 
- reenable_mmu:
- 	/*
-@@ -321,7 +327,10 @@ stack_ovf:
- #endif
- 	mtspr	SPRN_SRR0,r9
- 	mtspr	SPRN_SRR1,r10
--	RFI
-+	rfi
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
- _ASM_NOKPROBE_SYMBOL(stack_ovf)
- #endif
- 
-@@ -470,7 +479,10 @@ syscall_exit_finish:
- #endif
- 	mtspr	SPRN_SRR0,r7
- 	mtspr	SPRN_SRR1,r8
--	RFI
-+	rfi
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
- _ASM_NOKPROBE_SYMBOL(syscall_exit_finish)
- #ifdef CONFIG_44x
- 2:	li	r7,0
-@@ -600,7 +612,10 @@ ret_from_kernel_syscall:
- #endif
- 	mtspr	SPRN_SRR0, r9
- 	mtspr	SPRN_SRR1, r10
--	RFI
-+	rfi
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
- _ASM_NOKPROBE_SYMBOL(ret_from_kernel_syscall)
+ 1:	tophys_novmstack r9, r1
+ #ifdef CONFIG_VMAP_STACK
+ 	li	r0, MSR_KERNEL & ~MSR_IR	/* can take DTLB miss */
+@@ -1371,6 +1371,6 @@ _GLOBAL(enter_rtas)
+ 	stw	r0, THREAD + RTAS_SP(r7)
+ 	mtspr	SPRN_SRR0,r8
+ 	mtspr	SPRN_SRR1,r9
+-	RFI			/* return to caller */
++	rfi			/* return to caller */
+ _ASM_NOKPROBE_SYMBOL(enter_rtas)
+ #endif /* CONFIG_PPC_RTAS */
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 5eb9eedac920..40e8c8ce4018 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -206,7 +206,7 @@ turn_on_mmu:
+ 	lis	r0,start_here@h
+ 	ori	r0,r0,start_here@l
+ 	mtspr	SPRN_SRR0,r0
+-	RFI				/* enables MMU */
++	rfi				/* enables MMU */
  
  /*
-@@ -803,7 +818,10 @@ fast_exception_return:
- 	REST_GPR(9, r11)
- 	REST_GPR(12, r11)
- 	lwz	r11,GPR11(r11)
+  * We need __secondary_hold as a place to hold the other cpus on
+@@ -769,13 +769,13 @@ fast_hash_page_return:
+ 	mtcr	r11
+ 	lwz	r11, THR11(r10)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
 -	RFI
 +	rfi
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
- _ASM_NOKPROBE_SYMBOL(fast_exception_return)
  
- #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 7c767765071d..232000742c9a 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -222,7 +222,10 @@
+ 1:	/* ISI */
+ 	mtcr	r11
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	RFI
++	rfi
+ 
+ stack_overflow:
+ 	vmap_stack_overflow_exception
+@@ -910,7 +910,7 @@ __secondary_start:
+ 	ori	r3,r3,start_secondary@l
+ 	mtspr	SPRN_SRR0,r3
+ 	mtspr	SPRN_SRR1,r4
+-	RFI
++	rfi
+ #endif /* CONFIG_SMP */
+ 
+ #ifdef CONFIG_KVM_BOOK3S_HANDLER
+@@ -1038,7 +1038,7 @@ start_here:
+ 	.align	4
+ 	mtspr	SPRN_SRR0,r4
+ 	mtspr	SPRN_SRR1,r3
+-	RFI
++	rfi
+ /* Load up the kernel context */
+ 2:	bl	load_up_mmu
+ 
+@@ -1062,7 +1062,7 @@ start_here:
+ 	ori	r3,r3,start_kernel@l
+ 	mtspr	SPRN_SRR0,r3
+ 	mtspr	SPRN_SRR1,r4
+-	RFI
++	rfi
+ 
+ /*
+  * void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+@@ -1177,7 +1177,7 @@ _ENTRY(update_bats)
+ 	.align	4
+ 	mtspr	SPRN_SRR0, r4
+ 	mtspr	SPRN_SRR1, r3
+-	RFI
++	rfi
+ 1:	bl	clear_bats
+ 	lis	r3, BATS@ha
+ 	addi	r3, r3, BATS@l
+@@ -1196,7 +1196,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	mtmsr	r3
+ 	mtspr	SPRN_SRR0, r7
+ 	mtspr	SPRN_SRR1, r6
+-	RFI
++	rfi
+ 
+ flush_tlbs:
+ 	lis	r10, 0x40
+@@ -1217,7 +1217,7 @@ mmu_off:
+ 	mtspr	SPRN_SRR0,r4
+ 	mtspr	SPRN_SRR1,r3
+ 	sync
+-	RFI
++	rfi
+ 
+ /* We use one BAT to map up to 256M of RAM at _PAGE_OFFSET */
+ initial_bats:
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 71c359d438b5..e26d35de27e5 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -176,7 +176,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
  #endif
  	mtspr	SPRN_SRR1,r10
  	mtspr	SPRN_SRR0,r11
 -	RFI				/* jump to handler, enable MMU */
 +	rfi				/* jump to handler, enable MMU */
-+#ifdef CONFIG_40x
-+	b .	/* Prevent prefetch past rfi */
-+#endif
  99:	b	ret_from_kernel_syscall
  .endm
+ 
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index 3dc129a254b5..b45b750fa77a 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -36,8 +36,8 @@
+ 
+ #define FUNC(name)		name
+ 
+-#define RFI_TO_KERNEL	RFI
+-#define RFI_TO_GUEST	RFI
++#define RFI_TO_KERNEL	rfi
++#define RFI_TO_GUEST	rfi
+ 
+ .macro INTERRUPT_TRAMPOLINE intno
  
 -- 
 2.25.0
