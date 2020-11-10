@@ -2,63 +2,61 @@ Return-Path: <SRS0=8kw5=EQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D9EFC5517A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F9CFC388F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:13:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06E3C20829
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:10:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06E3C20829
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=vivo.com
+	by mail.kernel.org (Postfix) with ESMTPS id 81B6720829
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:13:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="K06u+zu3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81B6720829
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CVgXx2WfKzDqh3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 19:10:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CVgbH1MlXzDqhT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 19:12:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=vivo.com (client-ip=115.236.127.1; helo=mail-m1271.qiye.163.com;
- envelope-from=wangqing@vivo.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vivo.com
-X-Greylist: delayed 363 seconds by postgrey-1.36 at bilbo;
- Tue, 10 Nov 2020 19:09:08 AEDT
-Received: from mail-m1271.qiye.163.com (mail-m1271.qiye.163.com
- [115.236.127.1])
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=K06u+zu3; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CVgVr4TkhzDqNw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 19:09:08 +1100 (AEDT)
-Received: from vivo-HP-ProDesk-680-G4-PCI-MT.vivo.xyz (unknown [58.251.74.231])
- by mail-m1271.qiye.163.com (Hmail) with ESMTPA id 0E6B758309A;
- Tue, 10 Nov 2020 16:02:53 +0800 (CST)
-From: Wang Qing <wangqing@vivo.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Jordan Niethe <jniethe5@gmail.com>,
- Alistair Popple <alistair@popple.id.au>,
- Michael Neuling <mikey@neuling.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2] sched/rt, powerpc: Prepare for PREEMPT_RT
-Date: Tue, 10 Nov 2020 16:02:47 +0800
-Message-Id: <1604995368-29649-1-git-send-email-wangqing@vivo.com>
-X-Mailer: git-send-email 2.7.4
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZS1VLWVdZKFlBSE83V1ktWUFJV1kPCR
- oVCBIfWUFZHh4fSU4eQh5CHhpCVkpNS09CQk5ITEhMS05VEwETFhoSFyQUDg9ZV1kWGg8SFR0UWU
- FZT0tIVUpKS0hKQ1VLWQY+
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PRw6Mio5FT8uGREdHiEuGhUx
- GQsaFDlVSlVKTUtPQkJOSExPSkxOVTMWGhIXVQwaFRwKEhUcOw0SDRRVGBQWRVlXWRILWUFZTkNV
- SU5KVUxPVUlISllXWQgBWUFJQ0lKNwY+
-X-HM-Tid: 0a75b12dda1498b6kuuu0e6b758309a
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CVgWT0ZS5zDqNw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 19:09:41 +1100 (AEDT)
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 8C4D020829;
+ Tue, 10 Nov 2020 08:09:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1604995777;
+ bh=sy7QXvxUfH/3KiKO9Y6BbpTJBIkVN+fQSL9Hr6a0y/A=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=K06u+zu3nrS01+JWe8jentZZLcazBwFJCjZuuCpV9CCCazEU0xPJ8j9z1QmWcuYGO
+ AzHgwoesnsoHQ08Feh758/mm5qI/brMyTjUzM43H3xLpIl3mFX1wCGzHHxuyUMzmTS
+ al5Wn734Pi2E1ZqceeT9DcpMTp7YbwWTRztjOviM=
+Date: Tue, 10 Nov 2020 09:10:34 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Wang Qing <wangqing@vivo.com>
+Subject: Re: [PATCH V2] sched/rt, powerpc: Prepare for PREEMPT_RT
+Message-ID: <X6pK+oh3XuusGVFR@kroah.com>
+References: <1604995368-29649-1-git-send-email-wangqing@vivo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1604995368-29649-1-git-send-email-wangqing@vivo.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,40 +68,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Wang Qing <wangqing@vivo.com>, tglx@linutronix.de
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Alistair Popple <alistair@popple.id.au>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Jordan Niethe <jniethe5@gmail.com>, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PREEMPT_RT is a separate preemption model, CONFIG_PRTTMPT will
- be disabled when CONFIG_PREEMPT_RT is enabled,  so you need
-to add CONFIG_PREEMPT_RT judgments to __die().
+On Tue, Nov 10, 2020 at 04:02:47PM +0800, Wang Qing wrote:
+> PREEMPT_RT is a separate preemption model, CONFIG_PRTTMPT will
 
-Signed-off-by: Wang Qing <wangqing@vivo.com>
-
-Changes in v2:
- - Modify as Christophe suggested.
----
- arch/powerpc/kernel/traps.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 5006dcb..dec7b81
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -262,10 +262,11 @@ static int __die(const char *str, struct pt_regs *regs, long err)
- {
- 	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
- 
--	printk("%s PAGE_SIZE=%luK%s%s%s%s%s%s %s\n",
-+	printk("%s PAGE_SIZE=%luK%s%s%s%s%s%s%s %s\n",
- 	       IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
- 	       PAGE_SIZE / 1024, get_mmu_str(),
- 	       IS_ENABLED(CONFIG_PREEMPT) ? " PREEMPT" : "",
-+	       IS_ENABLED(CONFIG_PREEMPT_RT) ? " PREEMPT_RT" : "",
- 	       IS_ENABLED(CONFIG_SMP) ? " SMP" : "",
- 	       IS_ENABLED(CONFIG_SMP) ? (" NR_CPUS=" __stringify(NR_CPUS)) : "",
- 	       debug_pagealloc_enabled() ? " DEBUG_PAGEALLOC" : "",
--- 
-2.7.4
+Minor typo on this line with your config option :(
 
