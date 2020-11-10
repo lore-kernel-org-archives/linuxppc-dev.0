@@ -2,84 +2,68 @@ Return-Path: <SRS0=8kw5=EQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7684DC388F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 11:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95E7AC4742C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 11:36:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98C8E20659
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 11:30:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SNfNLhZ/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98C8E20659
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4F30C204EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 11:36:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F30C204EC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CVlz60DYfzDqC0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 22:30:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CVm5w5lpzzDqJV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 22:36:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=xiakaixu1987@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=SNfNLhZ/; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CVlkj5dwjzDqfZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 22:19:40 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id j5so6328648plk.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 03:19:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=X4dag7xcL4vnMx5NVKJB+5vVrgE6HapSQew213si/Dw=;
- b=SNfNLhZ/dpxXrMy4/FK9AWMcOQdw9k1kOpHCwRyMv2hM6sYX8QjWLwUCV9HLXiSs++
- GzibrEaqkpoMEgwqdu5Dq5S5Ii3qhaZxmsALEQm6+0GtcPf6H1n1DazRzzvyiQdPQ8dD
- /lpLwXQWAUXch6mzTUfFXNJLuDO1A+ej5zdvWteJ0tqmUsNjlZa9/i+9IxH/WTnTa8aN
- bbYO8NiBxEDs2CEsj9s+3s4IrYjWGWSaCh3mffIompyLQFiSr0PsclBbak+tP2WWFE7K
- M6iU8cKDzeZp70OyVeaJ0pu+hHm5pY+dnzjCF8o3FIWCvdHDgcva1P3WNa+94NdEqF9b
- NB8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=X4dag7xcL4vnMx5NVKJB+5vVrgE6HapSQew213si/Dw=;
- b=ee5csRtI0ixS6+xOS2uRMPpT3EvzzhoY+pl3UYNpnYod90Pa6kbf+5yui2z/Hdq1rA
- XlMwC1dqGGcczQHZ2U47y0o6vfUEkbPHVJnpRFZ/vU9d01EBp2wtSn09Snj+b19ijn/r
- hAHcleVYRn6XTV85SFcLZyMoISUWXjZiVx8wOMTvjD7+m1fvoe1J2TtXCTFfEmJ4nOu5
- 8k3uRjuUabThMLpXm6ZpTJwtqUF0XXPrG0hH0E4pqv6tretgWbNQefHkpG4ccFEKC838
- /nmMxTXsfgqCU5C8BnjNMOBfRhOjNxWGsKsIQWCNQI2sn6XLEBNF2hapUAi+o9LW5+bP
- dZ7w==
-X-Gm-Message-State: AOAM530AWslN4DbS8iVnZ/b+Iw1ebw8PU4IyKTE0REbjzo9BDICNDgeX
- TePzNm0BEgXTbY6Z+xfgVA==
-X-Google-Smtp-Source: ABdhPJyiAwT7goe3svaAUM2ZncwpSApH4A+jbOGzmSqdTK1fW3Iex6KPIHHdoE2c8DF2NZx0tD5CYQ==
-X-Received: by 2002:a17:902:c154:b029:d6:efa5:4ce7 with SMTP id
- 20-20020a170902c154b02900d6efa54ce7mr16096487plj.73.1605007176212; 
- Tue, 10 Nov 2020 03:19:36 -0800 (PST)
-Received: from he-cluster.localdomain (67.216.221.250.16clouds.com.
- [67.216.221.250])
- by smtp.gmail.com with ESMTPSA id s145sm14224197pfs.187.2020.11.10.03.19.34
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 10 Nov 2020 03:19:35 -0800 (PST)
-From: xiakaixu1987@gmail.com
-X-Google-Original-From: kaixuxia@tencent.com
-To: fbarrat@linux.ibm.com, ajd@linux.ibm.com, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/powernv/sriov: fix unsigned int win compared to less
- than zero
-Date: Tue, 10 Nov 2020 19:19:30 +0800
-Message-Id: <1605007170-22171-1-git-send-email-kaixuxia@tencent.com>
-X-Mailer: git-send-email 1.8.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CVm0n1YLlzDqC0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 22:31:43 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CVm0V5TNPz9tyfr;
+ Tue, 10 Nov 2020 12:31:38 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id GLDHci3zbK_f; Tue, 10 Nov 2020 12:31:38 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CVm0V4YXHz9tyfl;
+ Tue, 10 Nov 2020 12:31:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E91A18B7F0;
+ Tue, 10 Nov 2020 12:31:39 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ywS02Q8deDx4; Tue, 10 Nov 2020 12:31:39 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 731F18B764;
+ Tue, 10 Nov 2020 12:31:39 +0100 (CET)
+Subject: Re: [RFC PATCH 0/9] powerpc/64s: fast interrupt exit
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20201106155929.2246055-1-npiggin@gmail.com>
+ <fdde16b8-2bb4-f6a2-3c29-61d0169453cf@csgroup.eu>
+ <1604997971.w6spl33ij0.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <8217782e-1668-7af0-be59-4027eb46b49f@csgroup.eu>
+Date: Tue, 10 Nov 2020 12:31:39 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.1
+MIME-Version: 1.0
+In-Reply-To: <1604997971.w6spl33ij0.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,38 +75,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kaixu Xia <kaixuxia@tencent.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Kaixu Xia <kaixuxia@tencent.com>
 
-Fix coccicheck warning:
 
-./arch/powerpc/platforms/powernv/pci-sriov.c:443:7-10: WARNING: Unsigned expression compared with zero: win < 0
-./arch/powerpc/platforms/powernv/pci-sriov.c:462:7-10: WARNING: Unsigned expression compared with zero: win < 0
+Le 10/11/2020 à 09:49, Nicholas Piggin a écrit :
+> Excerpts from Christophe Leroy's message of November 7, 2020 8:35 pm:
+>>
+>>
+>> Le 06/11/2020 à 16:59, Nicholas Piggin a écrit :
+>>> This series attempts to improve the speed of interrupts and system calls
+>>> in two major ways.
+>>>
+>>> Firstly, the SRR/HSRR registers do not need to be reloaded if they were
+>>> not used or clobbered fur the duration of the interrupt.
+>>>
+>>> Secondly, an alternate return location facility is added for soft-masked
+>>> asynchronous interrupts and then that's used to set everything up for
+>>> return without having to disable MSR RI or EE.
+>>>
+>>> After this series, the entire system call / interrupt handler fast path
+>>> executes no mtsprs and one mtmsrd to enable interrupts initially, and
+>>> the system call vectored path doesn't even need to do that.
+>>
+>> Interesting series.
+>>
+>> Unfortunately, can't be done on PPC32 (at least on non bookE), because it would mean mapping kernel
+>> at 0 instead of 0xC0000000. Not sure libc would like it, and anyway it would be an issue for
+>> catching NULL pointer dereferencing, unless we use page tables instead of BATs to map kernel mem,
+>> which would be serious performance cut.
+> 
+> Hmm, why would you have to map at 0?
 
-Reported-by: Tosk Robot <tencent_os_robot@tencent.com>
-Signed-off-by: Kaixu Xia <kaixuxia@tencent.com>
----
- arch/powerpc/platforms/powernv/pci-sriov.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+In real mode, physical mem is at 0. If we want to switch from real to virtual mode by just writing 
+to MSR, then we need virtuel addresses match with real addresses ?
+We could play with chip selects to put RAM at 0xc0000000, but then we'd have a problem with 
+exception as they have to be at 0. Or we could play with MSR[IP] and get the exceptions at 
+0xfff00000, but that would not be so easy I guess.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-sriov.c b/arch/powerpc/platforms/powernv/pci-sriov.c
-index c4434f20f42f..92fc861c528f 100644
---- a/arch/powerpc/platforms/powernv/pci-sriov.c
-+++ b/arch/powerpc/platforms/powernv/pci-sriov.c
-@@ -422,7 +422,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
- {
- 	struct pnv_iov_data   *iov;
- 	struct pnv_phb        *phb;
--	unsigned int           win;
-+	int		       win;
- 	struct resource       *res;
- 	int                    i, j;
- 	int64_t                rc;
--- 
-2.20.0
+> 
+> PPC32 doesn't have soft mask interrupts, but you could still test all
+> MSR[PR]=0 interrupts to see if they land inside some region to see if
+> they hit in the restart table I think?
 
+Yes and this is already what is done at exit for the ones that handle MSR[RI] I think.
+
+> 
+> Could PPC32 skip the SRR reload at least? That's simpler.
+
+I think that would only be possible if real addresses where matching virtual addresses, or am I 
+missing something ?
+
+Christophe
