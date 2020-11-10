@@ -2,75 +2,84 @@ Return-Path: <SRS0=8kw5=EQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CCDDC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 01:16:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EFAFC4741F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 02:58:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5805A20644
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 01:16:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E525D207D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 02:58:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="DRjXCHfa";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="acv/dHWH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5805A20644
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gWWeHTLi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E525D207D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CVVLV4V2VzDqgP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 12:16:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CVXcD5tCSzDqfq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 13:58:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=xiakaixu1987@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linutronix.de
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=DRjXCHfa; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=acv/dHWH; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (unknown [193.142.43.55])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=gWWeHTLi; dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CVVJ63cxNzDqSG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 12:14:14 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604970836;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=UkwosGD4CNwpr5O4mn7FToWEjHCGounmVIqa5vjwzhQ=;
- b=DRjXCHfaWTV+37wSriT1BjBgrVPE6jdQ5QSgYOIapfxJkFIwaFOAyxB9axkmnF7jwFoYyj
- IwVALzvZ0PuA7RxNph9leDCS6B9rTa4rL3nKcIBy/Am24PTMh01e/A2SQWp6LTkOQfBaj6
- TPNYDFf29DCqNiv3sgD8nE6enYeIlsYkCGyKDzwB1FGN01/Y3vKoJQtpchwkYWrvNb9W70
- 4PCnBA8S0oYM/XwkwwZotKzR9vmT9oC6FdGvh5lMI1bLUaS0qdB+ZPTGprUeJSBjnvH0Xv
- xyRk7zOTS6b0OUuDBNt+X1xYcMB1KSB7gGowiPoSA5hPR5omsqQ5g20Kt4+uKg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604970836;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=UkwosGD4CNwpr5O4mn7FToWEjHCGounmVIqa5vjwzhQ=;
- b=acv/dHWHYYmtT1/z0brDNSAmBtlvEk8c07ItXmS/RUDap25yEm8biO9jTMWItRsTlNRTeF
- x/KI3sqvslL8SkDg==
-To: ira.weiny@intel.com, Andrew Morton <akpm@linux-foundation.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC PKS/PMEM 05/58] kmap: Introduce k[un]map_thread
-In-Reply-To: <20201009195033.3208459-6-ira.weiny@intel.com>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
- <20201009195033.3208459-6-ira.weiny@intel.com>
-Date: Tue, 10 Nov 2020 02:13:56 +0100
-Message-ID: <87h7pyhv3f.fsf@nanos.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CVXYj579czDqZP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 13:56:09 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id e7so10042588pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2020 18:56:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=10dhqypAgXKLqnQc/Ojgnp2H1LV7b1aG71TKjLfXWtM=;
+ b=gWWeHTLiHwPrViViLz3noob5AhWPsr8rnxg1oN48xMXTcobUuKzrbKSmRwVjJkXIpe
+ 0ZXs7RUVg3B9K1kPXx6iEs8emZdybNukF5xLe7bfd/FCTl5nZam+nn9SWZqmp0kUduce
+ 2FE5PCyHRb37ks+FHJrM1M0J2p3/4tLoSdX85tN9u6cH4YV2VbCKZG2opLoP3TomOgwC
+ Ln6c+0eZ7S5LarN0D0eYP3WYOIzJ1AU/Fued4CB/8bxvbz0ZSnh/kG0QtJKddgctE6fT
+ PHu9S/DbnoDfZM06IU6IKf8at8GBhB9ZPP32hgdEmcXFoJTAZ9ibLejWbtTI05mnj0CX
+ PSzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=10dhqypAgXKLqnQc/Ojgnp2H1LV7b1aG71TKjLfXWtM=;
+ b=T4X6Wtepl1Uo9ybG2/39gQ3cKZSYBXnI1AsxNZEII0JpS8uZ/N2GnqwgN9QqtR5UkE
+ Vb9QCPLhS/ArHF0BVCsa605kMDUomnMyPyJUjcILFzgd/lu+VrlG4S6CPuTQrPtFK1Xp
+ RVjctXndiEAPOV3WK9RMN3cItnYKk5GdmYeC++HHxAI8pDb3xEJ25xw6Mqe0iRMHaz3p
+ MQRdnPkWv+lAekF3JmDnknMa26bubuxyiNYo3IqOiuM0A5md6Qr8O8Cw5WClokFL/Fcl
+ irh1tnoBqGq2Igu5MKlv9d8MJ1LyCDDSA+Sbqdn8huLt/3Tgj3TgWIbagLtYbxAx14aM
+ cwJA==
+X-Gm-Message-State: AOAM532w5KPCHRYJJ66O6hTnej7KQ3GVyVJadTJqpopTj4CTU+dClJgI
+ b0fVX9eIG90bvNVnBId6jQ==
+X-Google-Smtp-Source: ABdhPJxGLd96DmACzpGMPyv3gfQnc7fyfkF5dYrFJKuIMk9THqi9LLX9IXGDwl619kCYT6eodO/T5Q==
+X-Received: by 2002:a17:90a:7784:: with SMTP id
+ v4mr2582765pjk.60.1604976966173; 
+ Mon, 09 Nov 2020 18:56:06 -0800 (PST)
+Received: from he-cluster.localdomain (67.216.221.250.16clouds.com.
+ [67.216.221.250])
+ by smtp.gmail.com with ESMTPSA id t32sm11812552pgl.0.2020.11.09.18.56.04
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 09 Nov 2020 18:56:05 -0800 (PST)
+From: xiakaixu1987@gmail.com
+X-Google-Original-From: kaixuxia@tencent.com
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH] powerpc/mm: Fix comparing pointer to 0 warning
+Date: Tue, 10 Nov 2020 10:56:01 +0800
+Message-Id: <1604976961-20441-1-git-send-email-kaixuxia@tencent.com>
+X-Mailer: git-send-email 1.8.3.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,103 +91,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- linux-mm@kvack.org, target-devel@vger.kernel.org,
- linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org,
- samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>,
- ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com,
- devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org,
- linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org,
- cluster-devel@redhat.com, linux-cachefs@redhat.com,
- intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org,
- linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
- linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org,
- ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org,
- reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org,
- linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- io-uring@vger.kernel.org, linux-nfs@vger.kernel.org,
- linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
- linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+Cc: Kaixu Xia <kaixuxia@tencent.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ira,
+From: Kaixu Xia <kaixuxia@tencent.com>
 
-On Fri, Oct 09 2020 at 12:49, ira weiny wrote:
-> From: Ira Weiny <ira.weiny@intel.com>
->
-> To correctly support the semantics of kmap() with Kernel protection keys
-> (PKS), kmap() may be required to set the protections on multiple
-> processors (globally).  Enabling PKS globally can be very expensive
-> depending on the requested operation.  Furthermore, enabling a domain
-> globally reduces the protection afforded by PKS.
->
-> Most kmap() (Aprox 209 of 229) callers use the map within a single thread and
-> have no need for the protection domain to be enabled globally.  However, the
-> remaining callers do not follow this pattern and, as best I can tell, expect
-> the mapping to be 'global' and available to any thread who may access the
-> mapping.[1]
->
-> We don't anticipate global mappings to pmem, however in general there is a
-> danger in changing the semantics of kmap().  Effectively, this would cause an
-> unresolved page fault with little to no information about why the failure
-> occurred.
->
-> To resolve this a number of options were considered.
->
-> 1) Attempt to change all the thread local kmap() calls to kmap_atomic()[2]
-> 2) Introduce a flags parameter to kmap() to indicate if the mapping should be
->    global or not
-> 3) Change ~20 call sites to 'kmap_global()' to indicate that they require a
->    global enablement of the pages.
-> 4) Change ~209 call sites to 'kmap_thread()' to indicate that the mapping is to
->    be used within that thread of execution only
->
-> Option 1 is simply not feasible.  Option 2 would require all of the call sites
-> of kmap() to change.  Option 3 seems like a good minimal change but there is a
-> danger that new code may miss the semantic change of kmap() and not get the
-> behavior the developer intended.  Therefore, #4 was chosen.
+Fixes coccicheck warning:
 
-There is Option #5:
+./arch/powerpc/mm/pgtable_32.c:87:11-12: WARNING comparing pointer to 0
 
-Convert the thread local kmap() invocations to the proposed kmap_local()
-interface which is coming along [1].
+Avoid pointer type value compared to 0.
 
-That solves a couple of issues:
+Reported-by: Tosk Robot <tencent_os_robot@tencent.com>
+Signed-off-by: Kaixu Xia <kaixuxia@tencent.com>
+---
+ arch/powerpc/mm/pgtable_32.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- 1) It relieves the current kmap_atomic() usage sites from the implict
-    pagefault/preempt disable semantics which apply even when
-    CONFIG_HIGHMEM is disabled. kmap_local() still can be invoked from
-    atomic context.
-
- 2) Due to #1 it allows to replace the conditional usage of kmap() and
-    kmap_atomic() for purely thread local mappings.
-
- 3) It puts the burden on the HIGHMEM inflicted systems
-
- 4) It is actually more efficient for most of the pure thread local use
-    cases on HIGHMEM inflicted systems because it avoids the overhead of
-    the global lock and the potential kmap slot exhaustion. A potential
-    preemption will be more expensive, but that's not really the case we
-    want to optimize for.
-
- 5) It solves the RT issue vs. kmap_atomic()
-
-So instead of creating yet another variety of kmap() which is just
-scratching the particular PKRS itch, can we please consolidate all of
-that on the wider reaching kmap_local() approach?
-
-Thanks,
-
-        tglx
-     
-[1] https://lore.kernel.org/lkml/20201103092712.714480842@linutronix.de/
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 079159e97bca..888b9713a316 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -84,7 +84,7 @@ int __ref map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot)
+ 		pg = pte_alloc_kernel(pd, va);
+ 	else
+ 		pg = early_pte_alloc_kernel(pd, va);
+-	if (pg != 0) {
++	if (pg) {
+ 		err = 0;
+ 		/* The PTE should never be already set nor present in the
+ 		 * hash table
+-- 
+2.20.0
 
