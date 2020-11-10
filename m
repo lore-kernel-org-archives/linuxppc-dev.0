@@ -2,86 +2,87 @@ Return-Path: <SRS0=8kw5=EQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F562C388F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F018C388F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:48:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8FEB206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:45:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 73F4420731
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 08:48:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S9UN78V1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8FEB206B6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gSn+R8Pv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73F4420731
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CVhK21D1TzDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 19:45:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CVhMg1ZGSzDqlS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2020 19:47:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
+ helo=mail-pg1-x543.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=S9UN78V1; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+ header.s=20161025 header.b=gSn+R8Pv; dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CVhH31VSlzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 19:43:57 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id 62so9537008pgg.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 00:43:57 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CVhKR5hG2zDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 19:46:03 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id h6so9572711pgk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 00:46:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
- :content-transfer-encoding;
- bh=nU28X/2goC9bhKTGyai/OKb8F8//CkVk7/If+Z36/f4=;
- b=S9UN78V13gm2p9tZ9XCsnwgad08eGcMfIoPX2XILIYS+lHH9YusRjCXADZWaK9rakd
- kxPmagRBlDDSciqKGbDl9+7uppPSPjF0+fWHlcmKAI/JZ8xMuP6aBdm9wwi584Fsxa2d
- VnuomE78KZRDJuOk2RL6Er2ppodGrqM4YKrUEqyPTo3lyyMrB4vYEk3AvTTy8Eh1n/5M
- WdMHmjA8QtQKhMkQZ631zNmPwauue4M7k81MveqccuDYwlGX1wuju/dwSlvAfXRAdSq8
- qgh8qkZiOIH2cnbmff5gxihzVTBT3GySqQZw6O+xIU6f0ESyeQd+6SpRclc/IW2yoW07
- wmaQ==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=G12SAfGo9zxDhW2sfOaoLT7Ktw6spyrLizVoU+CQKHg=;
+ b=gSn+R8PvB0P75cPhWXK+AsCwd1kW9Tg0e7bVX8Adq5UK5mqsZ/vFjOW+uF4KBrQuTa
+ zC3NG8kF2qe106t3HxD3K+16SQ41jWl2CcbDYzg2g64RRjTNKDpATn4oEexEuWLnNiZB
+ wCoZdjyFdjKvKEqxx7z+MgDSO763uFB305vnamPJ1Wm1mZZzcwpMf+faPFMtRIMWJHkW
+ 0V1g4n0bpfbW6BHapxmZFJZfz1Qo8zxafu0RbuS+yD8xLX+ZfKpOqQZDTUoI9vvufVjW
+ LePiITZ5+cPkb0/mVZ9QLJr6afGgijF0L8M52WvfTTz1IwZvzZlv1Mmg9cEsgNaG7Eak
+ kiFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:message-id:content-transfer-encoding;
- bh=nU28X/2goC9bhKTGyai/OKb8F8//CkVk7/If+Z36/f4=;
- b=VUmLT4FOK0toeaHTPbF1ijCTqPTspRau8DvUsb/P3P3poO2BZFpBrnXDXKNGhodTOa
- 11CsyRpZDcS3NmiE4DQZpK7K4VvA8OUIrYCw7cI7xNaRdYXSJ6ZyToENB4Ju0JgGQzak
- 98CuZQy6Ijz9hitQqKBLev1Ume9pScpgd79Uh5j4asHHggNSZvMn5JfHnvfWbWZFQEGq
- LGHzZOXDVrS+3UdzT/pZTcYjoHAFSG2ZmwqBbu/BI+HBAHkeDO+EiKnGYp7IhtObc0Z7
- Po3rcuB8EHnlfobeJL+89bQBui0s0j5ZkNGVvqr9roZkuyzegO/Z2ZJNHcpX5t2z88eU
- u05Q==
-X-Gm-Message-State: AOAM533T7btrANdKlCIjQ3nkBOgu9zMfOoiTXZi//+97HrdeWMj18XEI
- BBAP+EggO89C5Ry84x8iaWY=
-X-Google-Smtp-Source: ABdhPJyWg5P0GSOfHjyvas8HFAZqd9dwIMABSfNnfj5Jr6pF53261vuOdz50yzwyf3Ay4DcbK0mi/Q==
-X-Received: by 2002:a17:90a:1d09:: with SMTP id
- c9mr3912741pjd.80.1604997834147; 
- Tue, 10 Nov 2020 00:43:54 -0800 (PST)
+ bh=G12SAfGo9zxDhW2sfOaoLT7Ktw6spyrLizVoU+CQKHg=;
+ b=e0TAgFiVfXF/7mOifmpg45YJl8B9yH6+ON/YlQcheUITwfbUFrE2Z76F/fMRSCCsp8
+ 4I5WDuQFCHgpV66egJ9PaUunSMB+iGKsddp+5dsMAYWnwCvfW6WrkdzXfdEfH9hbjpKJ
+ WlykzshzerlkaqWF6F/+1OpgE6Ajs1gUAwVXplryLElEqylfN0O1zEt8a3Jr+7nvC7/T
+ cSqGGeXlJkAo29IWZlQc6jL6dNyowz6TN6G/4qVBeyhC/NzEhnS3RzLQjXwr5RfxMsne
+ KguvmPWHNL+MAhZ3W9ZAcFxTVvtjNxATcjS6EIzIrMLtRKcQ8AS77IQiHRQagrskRknN
+ dAIw==
+X-Gm-Message-State: AOAM530ZWpJ6XZG40+EFx8WnlBeoOvAfBD032q8fz247Hu5cFgwgT5K3
+ 1gORY/3v6arGE9BHU3bm4eU=
+X-Google-Smtp-Source: ABdhPJx3np16kym1rMkDTZ30+yq2VJ/D3E5goHBnPjVIZz1lnC6ahLzpM+leXGVqEKHqMwYhBOGxrQ==
+X-Received: by 2002:a17:90b:b12:: with SMTP id
+ bf18mr3642616pjb.205.1604997959304; 
+ Tue, 10 Nov 2020 00:45:59 -0800 (PST)
 Received: from localhost (27-32-36-31.tpgi.com.au. [27.32.36.31])
- by smtp.gmail.com with ESMTPSA id a12sm2114969pjh.48.2020.11.10.00.43.52
+ by smtp.gmail.com with ESMTPSA id c9sm13577108pfc.197.2020.11.10.00.45.57
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 10 Nov 2020 00:43:53 -0800 (PST)
-Date: Tue, 10 Nov 2020 18:43:48 +1000
+ Tue, 10 Nov 2020 00:45:58 -0800 (PST)
+Date: Tue, 10 Nov 2020 18:45:53 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 18/18] powerpc/64s: move power4 idle entirely to C
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org
-References: <20201105143431.1874789-1-npiggin@gmail.com>
- <20201105143431.1874789-19-npiggin@gmail.com>
- <7de6fd21-da79-fe8f-5db4-f99ee0dd7d23@csgroup.eu>
-In-Reply-To: <7de6fd21-da79-fe8f-5db4-f99ee0dd7d23@csgroup.eu>
+Subject: Re: [PATCH v2 1/3] powerpc/64s: Replace RFI by RFI_TO_KERNEL and
+ remove RFI
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+References: <7719261b0a0d2787772339484c33eb809723bca7.1604854583.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <7719261b0a0d2787772339484c33eb809723bca7.1604854583.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Message-Id: <1604997329.cf7j9ms575.astroid@bobo.none>
+Message-Id: <1604997906.z9qht3tf9f.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,117 +96,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Christophe Leroy's message of November 7, 2020 7:43 pm:
+Excerpts from Christophe Leroy's message of November 9, 2020 2:57 am:
+> In head_64.S, we have two places using RFI to return to
+> kernel. Use RFI_TO_KERNEL instead.
 >=20
->=20
-> Le 05/11/2020 =C3=A0 15:34, Nicholas Piggin a =C3=A9crit=C2=A0:
->> Christophe asked about doing this, most of the code is still in
->> asm but maybe it's slightly nicer? I don't know if it's worthwhile.
->=20
-> Heu... I don't think I was asking for that, but why not, see later commen=
-ts.
->=20
-> At first I was just asking to write the following in C:
->=20
-> +
-> +	.globl power4_idle_nap_return
-> +power4_idle_nap_return:
-> +	blr
->=20
->=20
-> In extenso, instead of the above do somewhere something like:
->=20
-> void power4_idle_nap_return(void)
-> {
-> }
+> They are the two only places using RFI on book3s/64, so
+> the RFI macro can go away.
 
-Ah! Well either was a good question. I don't mind attempting it :)
+Looks good to me.
 
->> ---
->>   arch/powerpc/kernel/idle.c        | 25 ++++++++++++++++++++-----
->>   arch/powerpc/kernel/idle_book3s.S | 22 ----------------------
->>   2 files changed, 20 insertions(+), 27 deletions(-)
->>=20
->> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
->> index ae0e2632393d..849e77a45915 100644
->> --- a/arch/powerpc/kernel/idle.c
->> +++ b/arch/powerpc/kernel/idle.c
->> @@ -72,6 +72,9 @@ int powersave_nap;
->>   #ifdef CONFIG_PPC_970_NAP
->>   void power4_idle(void)
->>   {
->> +	unsigned long msr_idle =3D MSR_KERNEL|MSR_EE|MSR_POW;
->> +	unsigned long tmp1, tmp2;
->> +
->>   	if (!cpu_has_feature(CPU_FTR_CAN_NAP))
->>   		return;
->>  =20
->> @@ -84,13 +87,25 @@ void power4_idle(void)
->>   	if (cpu_has_feature(CPU_FTR_ALTIVEC))
->>   		asm volatile("DSSALL ; sync" ::: "memory");
->>  =20
->> -	power4_idle_nap();
->> -
->> +	asm volatile(
->> +"	ld	%0,PACA_THREAD_INFO(r13)		\n"
->> +"	ld	%1,TI_LOCAL_FLAGS(%0)			\n"
->> +"	ori	%1,%1,_TLF_NAPPING			\n"
->> +"	std	%1,TI_LOCAL_FLAGS(%0)			\n"
->=20
-> Can't this just be:
->=20
-> 	current_thread_info()->local_flags |=3D _TLF_NAPPING;
->=20
->>   	/*
->> -	 * power4_idle_nap returns with interrupts enabled (soft and hard).
->> -	 * to our caller with interrupts enabled (soft and hard). Our caller
->> -	 * can cope with either interrupts disabled or enabled upon return.
->> +	 * NAPPING bit is set, from this point onward nap_adjust_return()
->> +	 * will cause interrupts to return to power4_idle_nap_return.
->>   	 */
->> +"1:	sync						\n"
->> +"	isync						\n"
->> +"	mtmsrd	%2					\n"
->> +"	isync						\n"
->> +"	b	1b					\n"
->=20
-> And this:
->=20
-> 	for (;;) {
-> 		mb();
-> 		isync();
-> 		mtmsr(MSR_KERNEL|MSR_EE|MSR_POW);
-> 		isync();
-> 	}
-
-I was hoping something nicer like this but I think not because as soon=20
-as we set _TLF_NAPPING, we might take an interrupt which returns=20
-somewhere else, and you aren't allowed to do that in C code (mainly=20
-because the stack and register state would be unknown). Even going=20
-immediately to blr or end of function might miss restoring NVGPRs etc.
-
-There might be some tricks we could play with soft-masking interrupts,=20
-using MSR[EE]=3D0, and then doing all this and returning to right after=20
-the mtmsr POW with a flag set...  But it's a bit of tricky churn for an=20
-old CPU that works okay.
-
-Thanks,
-Nick
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
 
 >=20
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/include/asm/ppc_asm.h | 1 -
+>  arch/powerpc/kernel/head_64.S      | 9 +++++++--
+>  2 files changed, 7 insertions(+), 3 deletions(-)
 >=20
->> +"	.globl power4_idle_nap_return			\n"
->> +"power4_idle_nap_return:				\n"
->> +	: "=3Dr"(tmp1), "=3Dr"(tmp2)
->> +	: "r"(msr_idle)
->> +	);
->>   }
->>   #endif
->>  =20
+> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/as=
+m/ppc_asm.h
+> index 511786f0e40d..bedf3eb52ebc 100644
+> --- a/arch/powerpc/include/asm/ppc_asm.h
+> +++ b/arch/powerpc/include/asm/ppc_asm.h
+> @@ -495,7 +495,6 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_C=
+ELL_TB_BUG, 96)
+>  #endif
+> =20
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> -#define RFI		rfid
+>  #define MTMSRD(r)	mtmsrd	r
+>  #define MTMSR_EERI(reg)	mtmsrd	reg,1
+>  #else
+> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.=
+S
+> index 1510b2a56669..ecf9a88988ff 100644
+> --- a/arch/powerpc/kernel/head_64.S
+> +++ b/arch/powerpc/kernel/head_64.S
+> @@ -41,6 +41,11 @@
+>  #include <asm/ppc-opcode.h>
+>  #include <asm/export.h>
+>  #include <asm/feature-fixups.h>
+> +#ifdef CONFIG_PPC_BOOK3S
+> +#include <asm/exception-64s.h>
+> +#else
+> +#include <asm/exception-64e.h>
+> +#endif
+> =20
+>  /* The physical memory is laid out such that the secondary processor
+>   * spin code sits at 0x0000...0x00ff. On server, the vectors follow
+> @@ -829,7 +834,7 @@ __secondary_start:
+> =20
+>  	mtspr	SPRN_SRR0,r3
+>  	mtspr	SPRN_SRR1,r4
+> -	RFI
+> +	RFI_TO_KERNEL
+>  	b	.	/* prevent speculative execution */
+> =20
+>  /*=20
+> @@ -966,7 +971,7 @@ start_here_multiplatform:
+>  	ld	r4,PACAKMSR(r13)
+>  	mtspr	SPRN_SRR0,r3
+>  	mtspr	SPRN_SRR1,r4
+> -	RFI
+> +	RFI_TO_KERNEL
+>  	b	.	/* prevent speculative execution */
+> =20
+>  	/* This is where all platforms converge execution */
+> --=20
+> 2.25.0
 >=20
-> Christophe
 >=20
