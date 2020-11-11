@@ -7,46 +7,44 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B999C56202
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:35:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4C42C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:37:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D6D820756
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:35:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D6D820756
+	by mail.kernel.org (Postfix) with ESMTPS id 7EBD4206D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:37:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EBD4206D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWKMq40fNzDqMx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:35:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWKQR6GjPzDqRJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:37:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.com
+Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
  [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnm0bnFzDqM0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnm4GRJzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:16 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id CCEBE80305E2;
- Wed, 11 Nov 2020 09:09:10 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 891DC8000853;
+ Wed, 11 Nov 2020 09:09:15 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id n8keCE_iaknt; Wed, 11 Nov 2020 12:09:10 +0300 (MSK)
+ with ESMTP id esJnQ4c3GepC; Wed, 11 Nov 2020 12:09:14 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Lad Prabhakar
- <prabhakar.mahadev-lad.rj@bp.renesas.com>, Yoshihiro Shimoda
- <yoshihiro.shimoda.uh@renesas.com>
-Subject: [PATCH v4 09/18] dt-bindings: usb: renesas-xhci: Refer to the
- usb-xhci.yaml file
-Date: Wed, 11 Nov 2020 12:08:44 +0300
-Message-ID: <20201111090853.14112-10-Sergey.Semin@baikalelectronics.ru>
+ <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
+Subject: [PATCH v4 14/18] dt-bindings: usb: dwc3: Add Frame Length Adj
+ constraints
+Date: Wed, 11 Nov 2020 12:08:49 +0300
+Message-ID: <20201111090853.14112-15-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -64,57 +62,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-kernel@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Kevin Hilman <khilman@baylibre.com>, linux-usb@vger.kernel.org,
- linux-mips@vger.kernel.org, Serge Semin <fancer.lancer@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Serge Semin <Sergey.Semin@baikalelectronics.ru>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+Cc: Neil Armstrong <narmstrong@baylibre.com>, linux-kernel@vger.kernel.org,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
- Chunfeng Yun <chunfeng.yun@mediatek.com>,
+ Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Andy Gross <agross@kernel.org>, Chunfeng Yun <chunfeng.yun@mediatek.com>,
+ linux-snps-arc@lists.infradead.org, devicetree@vger.kernel.org,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Manu Gautam <mgautam@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With minor peculiarities (like uploading some vendor-specific firmware)
-these are just Generic xHCI controllers fully compatible with its
-properties. Make sure the Renesas USB xHCI DT nodes are also validated
-against the Generic xHCI DT schema.
+In accordance with the IP core databook the
+snps,quirk-frame-length-adjustment property can be set within [0, 0x3F].
+Let's make sure the DT schema applies a correct constraints on the
+property.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 ---
- Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/usb/snps,dwc3.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml b/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-index add9f7b66da0..4491567152a1 100644
---- a/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-+++ b/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-@@ -11,7 +11,7 @@ maintainers:
-   - Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+index 64579aed404f..cd8527789d64 100644
+--- a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+@@ -234,6 +234,8 @@ properties:
+       length adjustment when the fladj_30mhz_sdbnd signal is invalid or
+       incorrect.
+     $ref: /schemas/types.yaml#/definitions/uint32
++    minimum: 0
++    maximum: 0x3f
  
- allOf:
--  - $ref: "usb-hcd.yaml"
-+  - $ref: "usb-xhci.yaml"
- 
- properties:
-   compatible:
-@@ -68,7 +68,7 @@ required:
-   - power-domains
-   - resets
- 
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
+   snps,rx-thr-num-pkt-prd:
+     description:
 -- 
 2.28.0
 
