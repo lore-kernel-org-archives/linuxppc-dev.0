@@ -7,42 +7,43 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C29E9C4742C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14BDDC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:21:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD1BA206E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:19:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD1BA206E3
+	by mail.kernel.org (Postfix) with ESMTPS id 4CD642067D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:21:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CD642067D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWK1b21k5zDqWQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:19:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWK3n4059zDqY7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:21:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (mx.baikalchip.com [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnj4RZDzDqM7
+Received: from mail.baikalelectronics.ru (ns2.chip.baikal.ru [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnj44K7zDqM4
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:13 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id D46D8803017C;
- Wed, 11 Nov 2020 09:09:06 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id CD16F803073E;
+ Wed, 11 Nov 2020 09:09:05 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xSFsh-m3_7gH; Wed, 11 Nov 2020 12:09:06 +0300 (MSK)
+ with ESMTP id qU-jSI3SHFlp; Wed, 11 Nov 2020 12:09:05 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
-Subject: [PATCH v4 05/18] dt-bindings: usb: usb-hcd: Add "tpl-support" property
-Date: Wed, 11 Nov 2020 12:08:40 +0300
-Message-ID: <20201111090853.14112-6-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v4 03/18] dt-bindings: usb: usb-drd: Add "otg-rev" property
+ constraints
+Date: Wed, 11 Nov 2020 12:08:38 +0300
+Message-ID: <20201111090853.14112-4-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -79,40 +80,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The host controller device might be designed to work for the particular
-products or applications. In that case its DT node is supposed to be
-equipped with the tpl-support property.
+There are only four OTG revisions are currently supported by the kernel:
+0x0100, 0x0120, 0x0130, 0x0200. Any another value is considered as
+invalid.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
 
-Changelog v2:
-- Grammar fix: "s/it'/its"
-- Discard '|' from the property description, since we don't need to preserve
-  the text formatting.
+Changelog v4:
+- Move the constraints to the usb-drd.yaml schema where the otg-rev
+  property is now defined.
 ---
- Documentation/devicetree/bindings/usb/usb-hcd.yaml | 6 ++++++
- 1 file changed, 6 insertions(+)
+ Documentation/devicetree/bindings/usb/usb-drd.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/usb/usb-hcd.yaml b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-index 52cc84c400c0..9881ac10380d 100644
---- a/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-+++ b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-@@ -17,6 +17,12 @@ properties:
-     description: Phandle of a companion device
-     $ref: /schemas/types.yaml#/definitions/phandle
+diff --git a/Documentation/devicetree/bindings/usb/usb-drd.yaml b/Documentation/devicetree/bindings/usb/usb-drd.yaml
+index f3a64c46dcd0..f229fc8068d9 100644
+--- a/Documentation/devicetree/bindings/usb/usb-drd.yaml
++++ b/Documentation/devicetree/bindings/usb/usb-drd.yaml
+@@ -18,6 +18,7 @@ properties:
+       features (HNP/SRP/ADP) is enabled. If ADP is required, otg-rev should be
+       0x0200 or above.
+     $ref: /schemas/types.yaml#/definitions/uint32
++    enum: [0x0100, 0x0120, 0x0130, 0x0200]
  
-+  tpl-support:
-+    description:
-+      Indicates if the Targeted Peripheral List is supported for given
-+      targeted hosts (non-PC hosts).
-+    type: boolean
-+
- additionalProperties: true
- 
- examples:
+   dr_mode:
+     description:
 -- 
 2.28.0
 
