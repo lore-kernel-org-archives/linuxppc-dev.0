@@ -2,55 +2,90 @@ Return-Path: <SRS0=kIvJ=ER=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B943C388F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 02:42:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 684EAC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 04:47:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 093E120759
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 02:42:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 093E120759
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 643BC21D91
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 04:47:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sFvPZ5K7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 643BC21D91
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CW8Ck11pczDqWQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 13:42:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWBzw0XjbzDqVb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 15:47:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
- envelope-from=zhangxiaoxu5@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433;
+ helo=mail-pf1-x433.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CW7Nm13CLzDqCg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 13:05:25 +1100 (AEDT)
-Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.59])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4CW7NJ44D7zkj08;
- Wed, 11 Nov 2020 10:05:04 +0800 (CST)
-Received: from localhost.localdomain (10.175.101.6) by
- DGGEMS402-HUB.china.huawei.com (10.3.19.202) with Microsoft SMTP Server id
- 14.3.487.0; Wed, 11 Nov 2020 10:05:05 +0800
-From: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
-To: <tyreld@linux.ibm.com>, <zhangxiaoxu5@huawei.com>,
- <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <groug@kaod.org>
-Subject: [PATCH] Revert "powerpc/pseries/hotplug-cpu: Remove double free in
- error path"
-Date: Tue, 10 Nov 2020 21:07:52 -0500
-Message-ID: <20201111020752.1686139-1-zhangxiaoxu5@huawei.com>
-X-Mailer: git-send-email 2.25.4
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=sFvPZ5K7; dkim-atps=neutral
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com
+ [IPv6:2607:f8b0:4864:20::433])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CWBy03sXczDqTw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 15:45:59 +1100 (AEDT)
+Received: by mail-pf1-x433.google.com with SMTP id 10so878819pfp.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 20:45:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=C0J+QwPsnlOynYUCwR2+mmJvkS3NHQtxi+FgysKrHK4=;
+ b=sFvPZ5K7HFuCHQHkHpPRHDwc7ma2PE2ucEBH4dd8w7uc9r03fuaRzpeKarovbIHTGy
+ DseBDvACti3HP3GdW0CkfA9oYaZGC5UfN96L1B1gMGo9qRoALqKy2LIZ2rXwuW7Fhdyj
+ GZ70SVgK0A5Tx3XMopwoCURwrg2BjIQFCpM4LgeTrIYlG8iy8VdVnKJduC/q7z8CvSb5
+ DSvXOHjQrea5HDQXl4rPtfuVRhoFCz1Fj626TKM4DKJaGqiW4M803ykVshANQOfspTx6
+ yV554IrVJc/zrkKyqlTcDleU0+AQpRlqHda9MEN7kcH7lJboJKDbtsmmYNfhzsGl4EC0
+ LpKw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=C0J+QwPsnlOynYUCwR2+mmJvkS3NHQtxi+FgysKrHK4=;
+ b=rive16S3svMVBcXEnnMk3rJG3Cq3Pt4bgD/jWthDSt9tnTmHxO7WzsVLiknl1YrlFv
+ nUwivwMUXwAVCqK1eEDB8J/544jmlvAIgh43hh+nq47EUduDqblpkfMyhSJIbQQYFAYY
+ hq3deY52e9+4E9ntd20yNABWKT4IJxqkPsp3PE7xGABVStV3XAVm2xkgRNU9fu+MxRc1
+ uNCG6Wwr6HEnstFHbVNDxjPTuze6K+3I+W7n1wfOimW56mBYuR6hUXAY9vheutOa6vQD
+ jHCpkaBGAeLe9FlxCEZTQkKNimKl73F/qiJwfwEWud8eL3uv+BDjQBmK67RlbPBn1vhn
+ G5Gw==
+X-Gm-Message-State: AOAM532PFm6gAh6KrO1TaVMLWWJG0YXA76U5Mgg+nzVu5T3Yr9KUwqV8
+ 2TCJPqxUec+CtQvFTUTRNPk=
+X-Google-Smtp-Source: ABdhPJwLmeNPL3DGsuUzwEbReC4WwX1DjKEX6noIG/zIfKSY6DQnRblTSBkr+mtQFzqGM4EXDvjOnw==
+X-Received: by 2002:a63:b55e:: with SMTP id u30mr19340955pgo.381.1605069954897; 
+ Tue, 10 Nov 2020 20:45:54 -0800 (PST)
+Received: from localhost (27-32-36-31.tpgi.com.au. [27.32.36.31])
+ by smtp.gmail.com with ESMTPSA id b16sm688789pju.16.2020.11.10.20.45.53
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 10 Nov 2020 20:45:54 -0800 (PST)
+Date: Wed, 11 Nov 2020 14:45:49 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 02/18] powerpc: remove arguments from fault handler
+ functions
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20201105143431.1874789-1-npiggin@gmail.com>
+ <20201105143431.1874789-3-npiggin@gmail.com>
+ <6af9a488-3816-9744-db4b-5a3bceb1f0f0@csgroup.eu>
+ <1604996406.ltcjkqarcr.astroid@bobo.none>
+ <3872d710-97e2-80c3-991c-7f1ffe790a3d@csgroup.eu>
+In-Reply-To: <3872d710-97e2-80c3-991c-7f1ffe790a3d@csgroup.eu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.101.6]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Wed, 11 Nov 2020 13:41:06 +1100
+Message-Id: <1605069878.ohfaq5qrth.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,33 +101,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit a0ff72f9f5a780341e7ff5e9ba50a0dad5fa1980.
+Excerpts from Christophe Leroy's message of November 10, 2020 9:15 pm:
+>=20
+>=20
+> Le 10/11/2020 =C3=A0 09:29, Nicholas Piggin a =C3=A9crit=C2=A0:
+>> Excerpts from Christophe Leroy's message of November 6, 2020 5:59 pm:
+>>>
+>>>
+>>> Le 05/11/2020 =C3=A0 15:34, Nicholas Piggin a =C3=A9crit=C2=A0:
+>>>> Make mm fault handlers all just take the pt_regs * argument and load
+>>>> DAR/DSISR from that. Make those that return a value return long.
+>>>>
+>>>> This is done to make the function signatures match other handlers, whi=
+ch
+>>>> will help with a future patch to add wrappers. Explicit arguments coul=
+d
+>>>> be added for performance but that would require more wrapper macro
+>>>> variants.
+>>>>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> ---
+>=20
+> [...]
+>=20
+>>=20
+>>>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>>>> index e65a49f246ef..390a296b16a3 100644
+>>>> --- a/arch/powerpc/mm/fault.c
+>>>> +++ b/arch/powerpc/mm/fault.c
+>>>> @@ -549,11 +549,12 @@ static int __do_page_fault(struct pt_regs *regs,=
+ unsigned long address,
+>>>>    }
+>>>>    NOKPROBE_SYMBOL(__do_page_fault);
+>>>>   =20
+>>>> -int do_page_fault(struct pt_regs *regs, unsigned long address,
+>>>> -		  unsigned long error_code)
+>>>> +long do_page_fault(struct pt_regs *regs)
+>>>>    {
+>>>>    	enum ctx_state prev_state =3D exception_enter();
+>>>> -	int err;
+>>>> +	unsigned long address =3D regs->dar;
+>>>> +	unsigned long error_code =3D regs->dsisr;
+>>>> +	long err;
+>>>
+>>> By doing something more or less like this (need to be tuned for bookE a=
+s well):
+>>>
+>>> +	int is_exec =3D TRAP(regs) =3D=3D 0x400;
+>>> +	unsigned long address =3D is_exec ? regs->ssr0 : regs->dar;
+>>> +	unsigned long error_code =3D is_exec ? (regs->ssr1 & DSISR_SRR1_MATCH=
+_32S) : regs->dsisr;
+>>=20
+>> Ah, I didn't see that you saved these in srr0/1 already. Hmm, not in
+>> pt_regs though. thread_struct (VMAP_STACK only)? exception_regs (booke
+>> only)? Doesn't seem so easy.
+>=20
+> Oops yes you are right, SRR0/SRR1 are not in pt_regs. And their validity =
+in thread struct is rather=20
+> short ... So forget my comment.
 
-Since the commit b015f6bc9547 ("powerpc/pseries: Add cpu DLPAR
-support for drc-info property"), the 'cpu_drcs' wouldn't be double
-freed when the 'cpus' node not found.
+So, are you happy to go with this for now? I guess things can
+later be cleaned up to avoid double saving on cases like VMAP.
 
-So we needn't apply this patch, otherwise, the memory will be leak.
-
-Fixes: a0ff72f9f5a7 ("powerpc/pseries/hotplug-cpu: Remove double free in error path")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index f2837e33bf5d..4bb1c9f2bb11 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -743,6 +743,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
- 	parent = of_find_node_by_path("/cpus");
- 	if (!parent) {
- 		pr_warn("Could not find CPU root node in device tree\n");
-+		kfree(cpu_drcs);
- 		return -1;
- 	}
- 
--- 
-2.25.4
-
+Thanks,
+Nick
