@@ -2,92 +2,53 @@ Return-Path: <SRS0=kIvJ=ER=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78511C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 06:42:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12AAFC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:13:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B793F20786
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 06:42:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Fy4c28ce"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B793F20786
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 377C9206E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:12:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 377C9206E3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWFXg2tN1zDqZL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 17:42:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWJt05g6zzDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:12:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044;
- helo=mail-pj1-x1044.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Fy4c28ce; dkim-atps=neutral
-Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com
- [IPv6:2607:f8b0:4864:20::1044])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CWFTG1gzgzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 17:39:44 +1100 (AEDT)
-Received: by mail-pj1-x1044.google.com with SMTP id gv24so209976pjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2020 22:39:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
- :content-transfer-encoding;
- bh=t+Jy28aeNB1RwaNjEhwLXsJjBqbzm5Wsk5Ve6lpCpHc=;
- b=Fy4c28ceB9IqOKbwPvTqWCSPefCSQN1/UlAKlkdlaGHLbQT/cxkXuMsVDK3YL7VzFG
- 0OhhEihZeki61aex2edWX0zG+JiCKFUXvtmmZYmJ+M6D5VBkFa0jwwtwz//1cXRDE+5N
- PyyorbJ+y2COs4C6LjpB86OwG8f78xsrpshaDHfBp++cqtl2oreKpNA3L+QzHZvopotb
- SMcBELx/Y9DriymaONHocCkDcNzN8rZksp9FaufO9zB6Oijy060e4Pyp8dggjxRqCnLL
- 7u+hLbKKMedJNNUayUVczODRtgzzJPxNpSm+AlI+QtDYMVeWL/MyQ0/QcpH9KajcZjqn
- oEJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=t+Jy28aeNB1RwaNjEhwLXsJjBqbzm5Wsk5Ve6lpCpHc=;
- b=iLStrDyaVqmVDAxCq2BBPicG/8FkA4EK1fLujJQT6cR56hVJ1yyUxL5M2++ZsU86dz
- f/8aVyTf7PZrkuEMfqcFK4H++mUYlgK5axAqElvQ93cvihijlavzGz0wJJIloFHnM+eA
- ri8Zlzl+5tRKMz5gjHz4hBL+sMPeIM7HAZVnbHTSoprXBs9tPO6DMk8y1s9f0dlq75kN
- vSpxof7Vi+OLv3BrJPf1fswnW6whxiBp514E55E7URC4vxeBd8g+xyJUYmfgu62LG0jI
- O4jiReeab/CgzqMgcmc4+AXkeC4SiRWdY5KILltOIsvW7S+UhIB87X/Vva+EdmIi/KIO
- dYUw==
-X-Gm-Message-State: AOAM531gsAsWOF3WrzYWrylGAJYUpp2FeHJkeh7LZ4U70u5pmhMeNBHQ
- bebpzjaE6161jAyHULWkiF/wFvnaXUk=
-X-Google-Smtp-Source: ABdhPJy1epNwO8KNf8bMAvbtFyd4397UV8mCUNlPVywJYXSxVo9hHVfoZB4hKJ1hY8ocfF7mNFAJhA==
-X-Received: by 2002:a17:90a:df16:: with SMTP id
- gp22mr2375796pjb.213.1605076779784; 
- Tue, 10 Nov 2020 22:39:39 -0800 (PST)
-Received: from localhost (27-32-36-31.tpgi.com.au. [27.32.36.31])
- by smtp.gmail.com with ESMTPSA id t26sm1260341pfl.72.2020.11.10.22.39.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 10 Nov 2020 22:39:39 -0800 (PST)
-Date: Wed, 11 Nov 2020 16:39:33 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 03/18] powerpc: bad_page_fault, do_break get registers
- from regs
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org
-References: <20201105143431.1874789-1-npiggin@gmail.com>
- <20201105143431.1874789-4-npiggin@gmail.com>
- <8b325832-b843-7d01-8b0f-fc278c444ce5@csgroup.eu>
- <1604996998.52nfki5192.astroid@bobo.none>
- <882fa82f-e109-c76d-e0a8-2e4fe920db0b@csgroup.eu>
- <1605069958.zq8gnsvl6e.astroid@bobo.none>
-In-Reply-To: <1605069958.zq8gnsvl6e.astroid@bobo.none>
+ smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
+ helo=mail.baikalelectronics.ru;
+ envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=baikalelectronics.ru
+Received: from mail.baikalelectronics.ru (unknown [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CWJng5NzhzDqM4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:10 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 59F58803017D;
+ Wed, 11 Nov 2020 09:09:06 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at baikalelectronics.ru
+Received: from mail.baikalelectronics.ru ([127.0.0.1])
+ by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cDrI3XA_dWn7; Wed, 11 Nov 2020 12:09:05 +0300 (MSK)
+From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
+Subject: [PATCH v4 04/18] dt-bindings: usb: Add "ulpi/serial/hsic" PHY types
+Date: Wed, 11 Nov 2020 12:08:39 +0300
+Message-ID: <20201111090853.14112-5-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
+References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-Message-Id: <1605076126.b04m8ile46.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,48 +60,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Neil Armstrong <narmstrong@baylibre.com>, linux-kernel@vger.kernel.org,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Andy Gross <agross@kernel.org>, Chunfeng Yun <chunfeng.yun@mediatek.com>,
+ linux-snps-arc@lists.infradead.org, devicetree@vger.kernel.org,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Manu Gautam <mgautam@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Nicholas Piggin's message of November 11, 2020 2:46 pm:
-> Excerpts from Christophe Leroy's message of November 10, 2020 9:19 pm:
->>=20
->>=20
->> Le 10/11/2020 =C3=A0 09:34, Nicholas Piggin a =C3=A9crit=C2=A0:
->>> Excerpts from Christophe Leroy's message of November 6, 2020 6:14 pm:
->>>>
->>>>
->>>> Le 05/11/2020 =C3=A0 15:34, Nicholas Piggin a =C3=A9crit=C2=A0:
->>>>> This also moves the 32s DABR match to C.
->>>>
->>>> Is there a real benefit doing this ?
->>>=20
->>> Oh I missed doing it, but yes I think bad_page_fault and do_break shoul=
-d
->>> probably be implemented with the DEFINE_INTERRUT_HANDLER wrappers.
->>>=20
->>=20
->> Yes, anyway, do we need to do that change ? Can't the dispatch between d=
-o_break() and page fault=20
->> handling remain in handle_page_fault() ? What's the benefit of going int=
-o do_page_fault() and coming=20
->> back ?
->=20
-> You might be right, I'll take another look at it.
+Aside from the UTMI+ there are also ULPI, Serial and HSIC PHY types
+that can be specified in the phy_type HCD property. Add them to the
+enumeration of the acceptable values.
 
-For 32-bit, we need to come back to save NV GPRs. Certainly the 64s code=20
-stays in do_page_fault because it always saves them.
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Reviewed-by: Rob Herring <robh@kernel.org>
 
-Now I don't think that's the nicest thing to go in and out of the=20
-interrupt wrappers twice in these cases, but for a first pass I think=20
-it's okay. Either we could add another type of error-case wrapper that
-does some adjustment if it becomes necessary, or we find a nice way to
-save NVGPRs from C code.
+---
 
-If we could somehow parse unwind data to find where the NVGPRs are saved=20
-by the compiler and generate a little code stub to load them out, would
-be the ultimate :) Maybe one day...
+Changelog v2:
+- Grammar fix: "s/PHY types can be/PHY types that can be"
+- Drop quotes from around the string constants.
 
-Thanks,
-Nick
+Changelog v4:
+- Move the new PHY types definitions into the usb.yaml schema where the
+  phy_type property is now defined.
+---
+ Documentation/devicetree/bindings/usb/usb.yaml | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/usb/usb.yaml b/Documentation/devicetree/bindings/usb/usb.yaml
+index 991c02725e2b..6dc4821e63c3 100644
+--- a/Documentation/devicetree/bindings/usb/usb.yaml
++++ b/Documentation/devicetree/bindings/usb/usb.yaml
+@@ -27,11 +27,13 @@ properties:
+   phy_type:
+     description:
+       Tells USB controllers that we want to configure the core to support a
+-      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected. In case
+-      this isn't passed via DT, USB controllers should default to HW
+-      capability.
++      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected, UTMI+ low
++      pin interface if ULPI is specified, Serial core/PHY interconnect if
++      serial is specified and High-Speed Inter-Chip feature if HSIC is
++      selected. In case this isn't passed via DT, USB controllers should
++      default to HW capability.
+     $ref: /schemas/types.yaml#/definitions/string
+-    enum: [utmi, utmi_wide]
++    enum: [utmi, utmi_wide, ulpi, serial, hsic]
+ 
+   maximum-speed:
+    description:
+-- 
+2.28.0
+
