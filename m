@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14BDDC388F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2580C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:23:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CD642067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:21:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CD642067D
+	by mail.kernel.org (Postfix) with ESMTPS id 0E1B1206FB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:23:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E1B1206FB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWK3n4059zDqY7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:21:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWK6324mszDqWW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:23:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.chip.baikal.ru [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnj44K7zDqM4
+Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
+ [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnk1VlczDqM5
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:13 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id CD16F803073E;
- Wed, 11 Nov 2020 09:09:05 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id AE59C803073D;
+ Wed, 11 Nov 2020 09:09:07 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qU-jSI3SHFlp; Wed, 11 Nov 2020 12:09:05 +0300 (MSK)
+ with ESMTP id 2wsDKerN1vQE; Wed, 11 Nov 2020 12:09:07 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
-Subject: [PATCH v4 03/18] dt-bindings: usb: usb-drd: Add "otg-rev" property
- constraints
-Date: Wed, 11 Nov 2020 12:08:38 +0300
-Message-ID: <20201111090853.14112-4-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v4 06/18] dt-bindings: usb: Add generic "usb-phy" property
+Date: Wed, 11 Nov 2020 12:08:41 +0300
+Message-ID: <20201111090853.14112-7-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -80,34 +80,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are only four OTG revisions are currently supported by the kernel:
-0x0100, 0x0120, 0x0130, 0x0200. Any another value is considered as
-invalid.
+Even though the Generic PHY framework is the more preferable way of
+setting the USB PHY up, there are still many dts-files and DT bindings
+which rely on having the legacy "usb-phy" specified to attach particular
+USB PHYs to USB cores. Let's have the "usb-phy" property described in
+the generic USB HCD binding file so it would be validated against the
+nodes in which it's specified. Mark the property as deprecated to
+discourage the developers from using it.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Acked-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
 
-Changelog v4:
-- Move the constraints to the usb-drd.yaml schema where the otg-rev
-  property is now defined.
----
- Documentation/devicetree/bindings/usb/usb-drd.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Changelog v2:
+- Discard '|' from the property description, since we don't need to
+  preserve the text formatting.
 
-diff --git a/Documentation/devicetree/bindings/usb/usb-drd.yaml b/Documentation/devicetree/bindings/usb/usb-drd.yaml
-index f3a64c46dcd0..f229fc8068d9 100644
---- a/Documentation/devicetree/bindings/usb/usb-drd.yaml
-+++ b/Documentation/devicetree/bindings/usb/usb-drd.yaml
-@@ -18,6 +18,7 @@ properties:
-       features (HNP/SRP/ADP) is enabled. If ADP is required, otg-rev should be
-       0x0200 or above.
-     $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [0x0100, 0x0120, 0x0130, 0x0200]
- 
-   dr_mode:
+Changelog v4:
+- Move the "usb-phy" property definition into the usb.yaml schema where
+  all generic USB properties are now defined.
+---
+ Documentation/devicetree/bindings/usb/usb.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/usb/usb.yaml b/Documentation/devicetree/bindings/usb/usb.yaml
+index 6dc4821e63c3..5400893d693e 100644
+--- a/Documentation/devicetree/bindings/usb/usb.yaml
++++ b/Documentation/devicetree/bindings/usb/usb.yaml
+@@ -24,6 +24,13 @@ properties:
      description:
+       Name specifier for the USB PHY
+ 
++  usb-phy:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    description:
++      List of all the USB PHYs on this HCD to be accepted by the legacy USB
++      Physical Layer subsystem.
++    deprecated: true
++
+   phy_type:
+     description:
+       Tells USB controllers that we want to configure the core to support a
 -- 
 2.28.0
 
