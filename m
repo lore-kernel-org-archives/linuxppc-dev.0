@@ -7,36 +7,35 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FD80C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51BB6C56201
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:46:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3508A20729
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:44:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3508A20729
+	by mail.kernel.org (Postfix) with ESMTPS id 8359120637
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 09:46:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8359120637
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWKZ50hDgzDqkf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:44:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWKcc5sHgzDqD2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 20:46:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.com
- [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnn1sL3zDqM4
+Received: from mail.baikalelectronics.ru (mx.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CWJnn5VTwzDqM0
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 20:09:17 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 9C939802A078;
- Wed, 11 Nov 2020 09:09:16 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 26906803071C;
+ Wed, 11 Nov 2020 09:09:17 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Hpf2fNfFqWQz; Wed, 11 Nov 2020 12:09:15 +0300 (MSK)
+ with ESMTP id LlqsdPIFHgdt; Wed, 11 Nov 2020 12:09:16 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
@@ -44,10 +43,10 @@ To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>,
  <khilman@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Jerome
  Brunet <jbrunet@baylibre.com>, Martin Blumenstingl
  <martin.blumenstingl@googlemail.com>
-Subject: [PATCH v4 15/18] dt-bindings: usb: meson-g12a-usb: Fix FL-adj
- property value
-Date: Wed, 11 Nov 2020 12:08:50 +0300
-Message-ID: <20201111090853.14112-16-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v4 16/18] dt-bindings: usb: meson-g12a-usb: Validate DWC2/DWC3
+ sub-nodes
+Date: Wed, 11 Nov 2020 12:08:51 +0300
+Message-ID: <20201111090853.14112-17-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -84,38 +83,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An empty snps,quirk-frame-length-adjustment won't cause any change
-performed by the driver. Moreover the DT schema validation will fail,
-since it expects the property being assigned with some value. So set
-fix the example by setting a valid FL-adj value in accordance with
-Neil Armstrong comment.
+Amlogic G12A USB DT sub-nodes are supposed to be compatible with the
+generic DWC USB2 and USB3 devices. Since now we've got DT schemas for
+both of the later IP cores let's make sure that the Amlogic G12A USB
+DT nodes are fully evaluated including the DWC sub-nodes.
 
-Link: https://lore.kernel.org/linux-usb/20201010224121.12672-16-Sergey.Semin@baikalelectronics.ru/
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Acked-by: Neil Armstrong <narmstrong@baylibre.com>
+Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
 Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 
 ---
 
-Note the same problem is in the DT source file
-arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi .
+Changelog v2:
+- Use "oneOf: [dwc2.yaml#, snps,dwc3.yaml#]" instead of the bulky "if:
+  properties: compatibe: ..." statement.
 ---
- .../devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml    | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml  | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml b/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
-index 5b04a7dfa018..a4b44a16aaef 100644
+index a4b44a16aaef..7b2dc905c8ce 100644
 --- a/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
 +++ b/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
-@@ -209,6 +209,6 @@ examples:
-               interrupts = <30>;
-               dr_mode = "host";
-               snps,dis_u2_susphy_quirk;
--              snps,quirk-frame-length-adjustment;
-+              snps,quirk-frame-length-adjustment = <0x20>;
-           };
-     };
+@@ -78,7 +78,9 @@ properties:
+ 
+ patternProperties:
+   "^usb@[0-9a-f]+$":
+-    type: object
++    oneOf:
++      - $ref: dwc2.yaml#
++      - $ref: snps,dwc3.yaml#
+ 
+ additionalProperties: false
+ 
 -- 
 2.28.0
 
