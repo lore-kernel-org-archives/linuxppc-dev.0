@@ -2,96 +2,86 @@ Return-Path: <SRS0=kIvJ=ER=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C94C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 12:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9109C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 13:37:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1ECD7206C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 12:14:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B7C8B2065C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 13:37:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ePDDo/IV";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ePDDo/IV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ECD7206C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dNmx8let"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7C8B2065C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWNvj5Q4BzDqSW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2020 23:14:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWQlV3XW5zDqQY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 00:37:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=63.128.21.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::843;
+ helo=mail-qt1-x843.google.com; envelope-from=zhuyifei1999@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=ePDDo/IV; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=ePDDo/IV; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [63.128.21.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=dNmx8let; dkim-atps=neutral
+Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
+ [IPv6:2607:f8b0:4864:20::843])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CWNpq36Y9zDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 23:10:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605096624;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=Y65as4hO2k5CaDRlNinPuyS+/mcMvfkWE/AmgknX/f0=;
- b=ePDDo/IVplNCu6+gd4seMQu+2rPdX3cHBMzVu9QTYHqQUVrcaSwN0PV8h4gpmlB5DFEOMu
- Jiftqd9w5r5Qg7H77fmS/aW0HwdlwSwsjXOGqvnZbpw5/eUUnaaN+GcPiQb+BrG/Zo7w99
- oweXDrQhLj8Czf24r0OUuRqQyfetEjc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605096624;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=Y65as4hO2k5CaDRlNinPuyS+/mcMvfkWE/AmgknX/f0=;
- b=ePDDo/IVplNCu6+gd4seMQu+2rPdX3cHBMzVu9QTYHqQUVrcaSwN0PV8h4gpmlB5DFEOMu
- Jiftqd9w5r5Qg7H77fmS/aW0HwdlwSwsjXOGqvnZbpw5/eUUnaaN+GcPiQb+BrG/Zo7w99
- oweXDrQhLj8Czf24r0OUuRqQyfetEjc=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-172-KIVkhXwCPsa4RlcUPDHLEA-1; Wed, 11 Nov 2020 07:10:20 -0500
-X-MC-Unique: KIVkhXwCPsa4RlcUPDHLEA-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id AEE2A879526;
- Wed, 11 Nov 2020 12:10:18 +0000 (UTC)
-Received: from [10.36.114.151] (ovpn-114-151.ams2.redhat.com [10.36.114.151])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 721865C62B;
- Wed, 11 Nov 2020 12:10:16 +0000 (UTC)
-Subject: Re: [PATCH v1 2/4] powerpc/mm: print warning in
- arch_remove_linear_mapping()
-To: osalvador <osalvador@suse.de>
-References: <20201029162718.29910-1-david@redhat.com>
- <20201029162718.29910-3-david@redhat.com>
- <20201104094255.GA4981@localhost.localdomain>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat GmbH
-Message-ID: <78f48ca7-d801-238d-f107-11b82d8a6384@redhat.com>
-Date: Wed, 11 Nov 2020 13:10:15 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CWQgx3PtxzDqT9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2020 00:34:37 +1100 (AEDT)
+Received: by mail-qt1-x843.google.com with SMTP id m65so1216387qte.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2020 05:34:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=/wWgXpwOKfWu89zfH4z55YdVS4FoKgsyU3KjhUPw2Xk=;
+ b=dNmx8letqvw7/kng3JJM9MT8cp864llEi2W+fdgHjl0ywQOexzPsPUHJHFNPynp1Fu
+ KyowDk74TZHDe12eygZFrmJx/0ykft94sWcknmiP/gb2ci8KYGrnhUPNAVoX1CQ7micC
+ W9dxg0yPt32jkNPh+v2S6Ec8TERKRUxhAcuQXa3NFkbWo80pdfJ6Bl7pZT/OVLOTmPOj
+ ZqSlW3XjT5hv6sk/2vSinzAG6ZS7KozmDUro8la2o7lq04jT1uzUKYXTrmPAjUt7smwf
+ isz4yxPSfYvHYghHVVTVYFLVyuwWgAnYoJ33J4COWXdBK+Sc1/TKSOTKCGWEZcvZVt2n
+ sfsQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=/wWgXpwOKfWu89zfH4z55YdVS4FoKgsyU3KjhUPw2Xk=;
+ b=blLSqnc+7dMA6lgbEkSbplNgmq9r51oDR3xj1PwQh834xFYHMTSJZF4D4dH/uq2fTn
+ 8SwIw8fPk3ARKFdOTTv+LYozr+X37B+Rc7IG+awREWizrimg7rcjElZJ9FukTRXGzuPC
+ UAjW4DH9eOvit0PCvAQHPX1+5Yfzu9nCb5GXe2ErdO4HK4umtH5BTgs4wa3EqZEtbTTT
+ Tl+FjJ4/7mCbtYq9p59FMtjq6+m2XUxSNcKNasCSaQ9OHkpL4XbXPW1FKk3gDDIwmdHu
+ tFwFgTazDUTP+kTjUt/jwrFDc5GKiIu237LiPWYBns93dRwp3qOCujSjY1jzQMtcQG+i
+ I7vw==
+X-Gm-Message-State: AOAM5310XQpsXyFRAn4QfLjVQN+4gqcTtym4HrQ2CZF1E6RflV7nDMfC
+ bqFtieLco5dKLG7nIF03Vxw=
+X-Google-Smtp-Source: ABdhPJyXr79D39F72KQTAuWFk25+3xGmXqPHFQ+ygjm2TFYHLHgr595PCW4dLHay6xJ4RhIuu7lNGA==
+X-Received: by 2002:ac8:5901:: with SMTP id 1mr17048871qty.350.1605101673552; 
+ Wed, 11 Nov 2020 05:34:33 -0800 (PST)
+Received: from localhost.localdomain
+ (host-173-230-99-154.tnkngak.clients.pavlovmedia.com. [173.230.99.154])
+ by smtp.gmail.com with ESMTPSA id r190sm1997814qkf.101.2020.11.11.05.34.32
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 11 Nov 2020 05:34:33 -0800 (PST)
+From: YiFei Zhu <zhuyifei1999@gmail.com>
+To: containers@lists.linux-foundation.org
+Subject: [PATCH seccomp v2 1/8] csky: Enable seccomp architecture tracking
+Date: Wed, 11 Nov 2020 07:33:47 -0600
+Message-Id: <f9219026d4803b22f3e57e3768b4e42e004ef236.1605101222.git.yifeifz2@illinois.edu>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <cover.1605101222.git.yifeifz2@illinois.edu>
+References: <cover.1605101222.git.yifeifz2@illinois.edu>
 MIME-Version: 1.0
-In-Reply-To: <20201104094255.GA4981@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,70 +93,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>,
- Wei Yang <richard.weiyang@linux.alibaba.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>
+Cc: linux-sh@vger.kernel.org, Tobin Feldman-Fitzthum <tobin@ibm.com>,
+ Hubertus Franke <frankeh@us.ibm.com>, Jack Chen <jianyan2@illinois.edu>,
+ linux-riscv@lists.infradead.org, Andrea Arcangeli <aarcange@redhat.com>,
+ linux-s390@vger.kernel.org, YiFei Zhu <yifeifz2@illinois.edu>,
+ linux-csky@vger.kernel.org, Tianyin Xu <tyxu@illinois.edu>,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Jann Horn <jannh@google.com>, Valentin Rothberg <vrothber@redhat.com>,
+ Aleksa Sarai <cyphar@cyphar.com>, Josep Torrellas <torrella@illinois.edu>,
+ Will Drewry <wad@chromium.org>, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ Dimitrios Skarlatos <dskarlat@cs.cmu.edu>,
+ David Laight <David.Laight@aculab.com>,
+ Giuseppe Scrivano <gscrivan@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Tycho Andersen <tycho@tycho.pizza>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04.11.20 10:42, osalvador wrote:
-> On Thu, Oct 29, 2020 at 05:27:16PM +0100, David Hildenbrand wrote:
->> Let's print a warning similar to in arch_add_linear_mapping() instead of
->> WARN_ON_ONCE() and eventually crashing the kernel.
->>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Rashmica Gupta <rashmica.g@gmail.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Mike Rapoport <rppt@kernel.org>
->> Cc: Michal Hocko <mhocko@suse.com>
->> Cc: Oscar Salvador <osalvador@suse.de>
->> Cc: Wei Yang <richard.weiyang@linux.alibaba.com>
->> Signed-off-by: David Hildenbrand <david@redhat.com>
->> ---
->>   arch/powerpc/mm/mem.c | 4 +++-
->>   1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
->> index 8a86d81f8df0..685028451dd2 100644
->> --- a/arch/powerpc/mm/mem.c
->> +++ b/arch/powerpc/mm/mem.c
->> @@ -145,7 +145,9 @@ void __ref arch_remove_linear_mapping(u64 start, u64 size)
->>   	flush_dcache_range_chunked(start, start + size, FLUSH_CHUNK_SIZE);
->>   
->>   	ret = remove_section_mapping(start, start + size);
->> -	WARN_ON_ONCE(ret);
->> +	if (ret)
->> +		pr_warn("Unable to remove linear mapping for 0x%llx..0x%llx: %d\n",
->> +			start, start + size, ret);
-> 
-> I guess the fear is to panic on systems that do have panic_on_warn (not
-> sure how many productions systems have this out there).
+From: YiFei Zhu <yifeifz2@illinois.edu>
 
-Exactly.
+To enable seccomp constant action bitmaps, we need to have a static
+mapping to the audit architecture and system call table size. Add these
+for csky.
 
-> But anyway, being coherent with that, I think you should remove the WARN_ON
-> in hash__remove_section_mapping as well.
+Signed-off-by: YiFei Zhu <yifeifz2@illinois.edu>
+---
+ arch/csky/include/asm/Kbuild    |  1 -
+ arch/csky/include/asm/seccomp.h | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+ create mode 100644 arch/csky/include/asm/seccomp.h
 
-Thanks, I'll add a patch doing that.
-
-> 
-> Besides that:
-> 
-> Reviewed-by: Oscar Salvador <osalvador@suse.
-> 
-> Not sure if the functions below that also have any sort of WARN_ON.
-> native_hpte_removebolted has a VM_WARN_ON, but that is on
-> CONFIG_DEBUG_VM so does not really matter.
-
-Right. Thanks!
-
+diff --git a/arch/csky/include/asm/Kbuild b/arch/csky/include/asm/Kbuild
+index 64876e59e2ef..93372255984d 100644
+--- a/arch/csky/include/asm/Kbuild
++++ b/arch/csky/include/asm/Kbuild
+@@ -4,6 +4,5 @@ generic-y += gpio.h
+ generic-y += kvm_para.h
+ generic-y += local64.h
+ generic-y += qrwlock.h
+-generic-y += seccomp.h
+ generic-y += user.h
+ generic-y += vmlinux.lds.h
+diff --git a/arch/csky/include/asm/seccomp.h b/arch/csky/include/asm/seccomp.h
+new file mode 100644
+index 000000000000..d33e758126fb
+--- /dev/null
++++ b/arch/csky/include/asm/seccomp.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASM_SECCOMP_H
++#define _ASM_SECCOMP_H
++
++#include <asm-generic/seccomp.h>
++
++#define SECCOMP_ARCH_NATIVE		AUDIT_ARCH_CSKY
++#define SECCOMP_ARCH_NATIVE_NR		NR_syscalls
++#define SECCOMP_ARCH_NATIVE_NAME	"csky"
++
++#endif /* _ASM_SECCOMP_H */
 -- 
-Thanks,
-
-David / dhildenb
+2.29.2
 
