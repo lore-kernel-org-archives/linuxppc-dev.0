@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E58AC55ABD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 01:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A79FC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 01:11:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8D8820678
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 01:09:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DB5182067D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 01:11:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="oSBX3tGP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8D8820678
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="YBYtK0J7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB5182067D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CWk5R0gxJzDr4F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 12:09:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CWk7m4GktzDr0P
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2020 12:11:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -30,59 +30,62 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=oSBX3tGP; dkim-atps=neutral
+ header.s=pp1 header.b=YBYtK0J7; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CWk0M2cQjzDqKX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2020 12:04:50 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CWk0M6K8vzDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2020 12:04:51 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AC11lxY087370; Wed, 11 Nov 2020 20:04:46 -0500
+ 0AC13PIg005662; Wed, 11 Nov 2020 20:04:49 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=RmsftSqeK+iTEilXtDQxEDiHH74AX0QOs+3P/fEMQIY=;
- b=oSBX3tGPgaPrwYcbfpc+YOtoGYRA33u57CszUSUubbVWIdg9kJPfDUjoF9S398zz8wgv
- UHV67dpg4SJqTnZIMCF27Ex+iaK8pTqtt7H1KJF+axaWh90KCsD0REPwynjiT9cW6Uae
- U5nOmBL76feV+iu6wNRY/Hvtqxa3G0hYEl1f7twFeM/HrNQJrpP4ckVitc9TZ7SrchKp
- DxyX3mliwzGUx5GhigJC0xQ5LlC9gof9bKv2JV6eLHXxBDev5Js8F2aHDsi2Zf4l1nE3
- EmlbRFw6ZSv5xMfNH4QDhgjSjyC+v5x5iteRrYfXYkijssLqksXi68jT7/yCQxCYzYKx yQ== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34rfyeur7m-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=TQt7PPk3rKiO4w1VlOWPOjE2FLAmUGETaXx4+io4RsA=;
+ b=YBYtK0J7eoBggPzZ4cKeFM+dn3PrpR0SSRzhWLtsRN8b6+dZAPHYNtJPczBQhBsU2A+K
+ ePYqCilEx2pMIkQVxet5isG7Dq1T0aaeRJxkL4Bx+q+aodbYAYUfr4EFfb4ZxcADkIj6
+ pm54uMIm10PPU6q/mt6e4NWdky6oMhGb2lBUgwSODRqiF3owx3Tg6TfVH/14zZom3FAL
+ O1pmJEwULp4pv53lwodD9XD+4r26BHbfD5kz9l33Hdc5sBhuE5SjQlxXH+ReaFHiLigQ
+ bT6YS1ro7oTph8PCe1HD6+iyoEr4/Sh/4xf+ApNqwOIuXClRVYFS8E7QLEh3IOjRrYMq Lg== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34rtc40y8v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Nov 2020 20:04:46 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AC0vSTE020667;
- Thu, 12 Nov 2020 01:04:45 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma03dal.us.ibm.com with ESMTP id 34nk79y5sn-1
+ Wed, 11 Nov 2020 20:04:49 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AC0x7bO026875;
+ Thu, 12 Nov 2020 01:04:48 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma01wdc.us.ibm.com with ESMTP id 34nk79dqs0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Nov 2020 01:04:45 +0000
+ Thu, 12 Nov 2020 01:04:48 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AC14iMo11207194
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AC14lOB4194976
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 12 Nov 2020 01:04:44 GMT
+ Thu, 12 Nov 2020 01:04:47 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B15E428058;
- Thu, 12 Nov 2020 01:04:44 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B514328059;
+ Thu, 12 Nov 2020 01:04:47 +0000 (GMT)
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3AE002805E;
- Thu, 12 Nov 2020 01:04:44 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 358DB28058;
+ Thu, 12 Nov 2020 01:04:47 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.40.195.188])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 12 Nov 2020 01:04:44 +0000 (GMT)
+ Thu, 12 Nov 2020 01:04:47 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH 1/6] ibmvfc: byte swap login_buf.resp values in attribute show
- functions
-Date: Wed, 11 Nov 2020 19:04:37 -0600
-Message-Id: <20201112010442.102589-1-tyreld@linux.ibm.com>
+Subject: [PATCH 6/6] ibmvfc: advertise client support for targetWWPN using v2
+ commands
+Date: Wed, 11 Nov 2020 19:04:42 -0600
+Message-Id: <20201112010442.102589-6-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201112010442.102589-1-tyreld@linux.ibm.com>
+References: <20201112010442.102589-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -90,11 +93,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-11_12:2020-11-10,
  2020-11-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0
- lowpriorityscore=0 adultscore=0 mlxscore=0 mlxlogscore=999
- priorityscore=1501 phishscore=0 bulkscore=0 clxscore=1015 suspectscore=1
+ mlxscore=0 bulkscore=0
+ phishscore=0 adultscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=1
+ priorityscore=1501 clxscore=1015 mlxlogscore=999 spamscore=0
  impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011120001
+ engine=8.12.0-2009150000 definitions=main-2011120002
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,41 +116,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Both ibmvfc_show_host_(capabilities|npiv_version) functions retrieve
-values from vhost->login_buf.resp buffer. This is the MAD response
-buffer from the VIOS and as such any multi-byte non-string values are in
-big endian format.
+The previous patch added support for the targetWWPN field in version 2
+MADs and vfcFrame structures.
 
-Byte swap these values to host cpu endian format for better human
-readability.
+Set the IBMVFC_CAN_SEND_VF_WWPN bit in our capabailites flag during NPIV
+Login to inform the VIOS that this client supports this feature.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 070cf516b98f..01fe65de9086 100644
+index 604bccebf7d2..3c72f5a009b8 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3025,7 +3025,7 @@ static ssize_t ibmvfc_show_host_npiv_version(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%d\n", vhost->login_buf->resp.version);
-+	return snprintf(buf, PAGE_SIZE, "%d\n", be32_to_cpu(vhost->login_buf->resp.version));
- }
+@@ -1246,7 +1246,7 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+ 		login_info->flags |= cpu_to_be16(IBMVFC_CLIENT_MIGRATED);
  
- static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
-@@ -3033,7 +3033,7 @@ static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%llx\n", vhost->login_buf->resp.capabilities);
-+	return snprintf(buf, PAGE_SIZE, "%llx\n", be64_to_cpu(vhost->login_buf->resp.capabilities));
- }
- 
- /**
+ 	login_info->max_cmds = cpu_to_be32(max_requests + IBMVFC_NUM_INTERNAL_REQ);
+-	login_info->capabilities = cpu_to_be64(IBMVFC_CAN_MIGRATE);
++	login_info->capabilities = cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN);
+ 	login_info->async.va = cpu_to_be64(vhost->async_crq.msg_token);
+ 	login_info->async.len = cpu_to_be32(vhost->async_crq.size * sizeof(*vhost->async_crq.msgs));
+ 	strncpy(login_info->partition_name, vhost->partition_name, IBMVFC_MAX_NAME);
 -- 
 2.27.0
 
