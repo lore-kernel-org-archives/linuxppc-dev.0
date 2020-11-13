@@ -2,83 +2,87 @@ Return-Path: <SRS0=+Bdk=ET=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CE3BC56202
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 19:45:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26A59C55ABD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 19:57:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AB7E208B6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 19:45:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5BEC821D79
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 19:57:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="oFn/RXDy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AB7E208B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Rz7bo515"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BEC821D79
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CXppR0j8BzDr7Q
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2020 06:45:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CXq5B42VgzDqlm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2020 06:57:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::435;
- helo=mail-pf1-x435.google.com; envelope-from=ndesaulniers@google.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::744;
+ helo=mail-qk1-x744.google.com; envelope-from=natechancellor@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=oFn/RXDy; dkim-atps=neutral
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
- [IPv6:2607:f8b0:4864:20::435])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Rz7bo515; dkim-atps=neutral
+Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
+ [IPv6:2607:f8b0:4864:20::744])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CXplH2WHKzDr3G
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2020 06:42:17 +1100 (AEDT)
-Received: by mail-pf1-x435.google.com with SMTP id c20so8487836pfr.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2020 11:42:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=bpaBEkCKEdHgW1h3duZgowAHWMVwm/wa+XAmGoyCFHI=;
- b=oFn/RXDyVA1j0y1YQDQOB2ftvc0uvORFJdjpj9LDlBrrNhMvbFReEzpWp24e286756
- 4uT8WsjYCxktEdM0u6GrTe3zP/6MtEsFGCS4cmMGgtjYGJJ4FivdbALYSUP1DDjb73Wq
- EICO1cd3IrEkLRz/QdnDx+5qAwOofb0VdoEyfxzyPPvf9aDDudrOp8yJmeKdOO1SPZk+
- aO0NhK5SD16xRb2puDAUjDqglJe/OAjuPVAqxKxXAF0LEycfYydU/hJ7W5yzCKdEXs4B
- CCjEOXDtRhs4YQMdFVA1O8gksAFUltf/8U126y8IgS1rdV2diGiuqZ4VIE1lehcRpMj/
- uLCw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CXq3K0PrRzDr74
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2020 06:56:12 +1100 (AEDT)
+Received: by mail-qk1-x744.google.com with SMTP id 199so9949541qkg.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2020 11:56:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=BuSBR3W0Up+xs4RMbJtfRRlgixduLeoiJlhk7xnEIR0=;
+ b=Rz7bo5155yveyQ9ZrU3UXRmgFVAlpmKkI/wTgDabwLcf/AW274xZWtGwKaoFUHCuWV
+ AlUe5BkWT/spMfkjOhGCLbH/P6zUhfVdE0Ya0L1jSSCP5uofyayDsp4lUMXVQtrOM4iq
+ ymSNPlt7IqY/MlDkIJMQo1VjmPcK94pRwWf4QkNu+vVjHunZEg9cnxjY4plQCq/MKl+H
+ cCHXsuMrxAVYpHLpMIehHAJKLLkv6OrYRA/SZyIZR3JxxDw5jpL2lTKg1vC3GAVhk/rE
+ /vPKiSV5CAXK/3t0WeX1/3ZNsY/Ul5dLS8lV0uol/Cj+UtRt/Zk4sIh6yididMuf64Ba
+ GLBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=bpaBEkCKEdHgW1h3duZgowAHWMVwm/wa+XAmGoyCFHI=;
- b=DAkh+yuN6iGeUAwuZjJg+kUxBhcPMN9exFBZUMpwMTHKc6DMBtM5J1Ja8hlQZi2aqw
- QvFdDR5+c3dmguaoKLQQ7wSHTNC1erG+ZRAyOlHTnqKNnTOgGB6IBAaZQvhiNWwYUtYq
- nhpCbkJSKMWP0v4ZGSLGVYOIhKVcq5K7Vhla1ifcbeJQMW1jqiR9EBIZaE8G7mRVeGvb
- vnt1NRoNM3eB3wC7w1c/ifA2XtgpUeI1irI8YYhTeJp6i3n5gu13e8hGpE3xB5J/sa+C
- iorXg6kgqMgelg48hZCCRYmlenGfBvSqLvmfyRUxX+hGImPAPX3hyMBbhhEWIEAxsXgt
- pL4g==
-X-Gm-Message-State: AOAM532F6OtxeHi/lqGWE0xRbNIEXFhARUGNEH2aa2K5catJhAKvH7l1
- 3Ta7V/Gt1dgmgurR/g7J9nOEi0aGepIs66T+M4dpDw==
-X-Google-Smtp-Source: ABdhPJxBGruW0CFPMXPkH6jCYQnUWGpwTUjThVpylwpIL+AcMQOGFSV+GJvuRANsp1Q7nkVoV1fQ8L8DYU8vKQJ5bkc=
-X-Received: by 2002:a65:4b81:: with SMTP id t1mr3343357pgq.263.1605296534160; 
- Fri, 13 Nov 2020 11:42:14 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=BuSBR3W0Up+xs4RMbJtfRRlgixduLeoiJlhk7xnEIR0=;
+ b=eUid7PqHsH3abMYOHqK4rJoRgggS05/0S8LCsPKMbnFV8NzGIQb1aaVzEqO+S9Bxxe
+ G4Vda105tw8+wjo4Jlo8fjFkQ1wVOg49rpW87vyfJMsN825lvfXcOJLnyC8wo+Vb8CDX
+ XG1BRyyLu/39TZ/9NO3qcEymOVNeWHLi4QX++xrbRgTcq8uDJprWrprOjzJagAZadD0f
+ r6awfQQct7tAlg7aif4yo49vTBlpA8KfcguWX4c6zRK41Dnx01w/jr6upnPXVm7T4UgY
+ ub5/kP0rShBI/h6yorJzMjCz/Okwq7acb7GQIxLdqVkAtT5LNo3tHmpIvzkH7XmIqykB
+ 5DGw==
+X-Gm-Message-State: AOAM530+0By4NzdkB+xE+vg7TNYXmsT90OywxMyxsuHyfWvyHBro3LHB
+ gqCjA+HMu01O+vYyXxhitgE=
+X-Google-Smtp-Source: ABdhPJzdFZIQVJ1DipALLbMQzdXhQ7LqTzyxp6paaFlRduPmNj6wrsGfChmfjhdHmK67f9IFeZWQKQ==
+X-Received: by 2002:ae9:dec5:: with SMTP id s188mr3767153qkf.250.1605297369148; 
+ Fri, 13 Nov 2020 11:56:09 -0800 (PST)
+Received: from localhost.localdomain ([2604:1380:45f1:1d00::1])
+ by smtp.gmail.com with ESMTPSA id z26sm6977757qki.40.2020.11.13.11.56.08
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 13 Nov 2020 11:56:08 -0800 (PST)
+From: Nathan Chancellor <natechancellor@gmail.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>, Kees Cook <keescook@chromium.org>
+Subject: [PATCH 2/2] kbuild: Disable CONFIG_LD_ORPHAN_WARN for ld.lld 10.0.1
+Date: Fri, 13 Nov 2020 12:55:53 -0700
+Message-Id: <20201113195553.1487659-2-natechancellor@gmail.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201113195553.1487659-1-natechancellor@gmail.com>
+References: <20201113195553.1487659-1-natechancellor@gmail.com>
 MIME-Version: 1.0
-References: <202011131146.g8dPLQDD-lkp@intel.com>
- <CAFP8O3LpSmxVnjHfQAN455k1ZRg3PbgZYhWr030evCq1T10k=Q@mail.gmail.com>
- <20201113190824.GA1477315@ubuntu-m3-large-x86>
-In-Reply-To: <20201113190824.GA1477315@ubuntu-m3-large-x86>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 13 Nov 2020 11:42:03 -0800
-Message-ID: <CAKwvOdkEtTQhDRFRV_d66FyhQBe536vRbOW=fQjesiHz3dfeBA@mail.gmail.com>
-Subject: Re: Error: invalid switch -me200
-To: Nathan Chancellor <natechancellor@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Patchwork-Bot: notify
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,112 +94,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kbuild-all@lists.01.org, kernel test robot <lkp@intel.com>,
- =?UTF-8?B?RsSBbmctcnXDrCBTw7JuZw==?= <maskray@google.com>,
- Masahiro Yamada <masahiroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, "kernelci . org bot" <bot@kernelci.org>,
+ linux-kbuild@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Brown <broonie@kernel.org>, x86@kernel.org,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ clang-built-linux@googlegroups.com, Arvind Sankar <nivedita@alum.mit.edu>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
+ Nathan Chancellor <natechancellor@gmail.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-+ MPE, PPC
+ld.lld 10.0.1 spews a bunch of various warnings about .rela sections,
+along with a few others. Newer versions of ld.lld do not have these
+warnings. As a result, do not add '--orphan-handling=warn' to
+LDFLAGS_vmlinux if ld.lld's version is not new enough.
 
-On Fri, Nov 13, 2020 at 11:08 AM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> On Fri, Nov 13, 2020 at 09:28:03AM -0800, F=C4=81ng-ru=C3=AC S=C3=B2ng wr=
-ote:
-> > On Thu, Nov 12, 2020 at 7:22 PM kernel test robot <lkp@intel.com> wrote=
-:
-> > >
-> > > Hi Fangrui,
-> > >
-> > > FYI, the error/warning still remains.
-> > >
-> > > tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linu=
-x.git master
-> > > head:   585e5b17b92dead8a3aca4e3c9876fbca5f7e0ba
-> > > commit: ca9b31f6bb9c6aa9b4e5f0792f39a97bbffb8c51 Makefile: Fix GCC_TO=
-OLCHAIN_DIR prefix for Clang cross compilation
-> > > date:   4 months ago
-> > > config: powerpc-randconfig-r031-20201113 (attached as .config)
+Reported-by: Arvind Sankar <nivedita@alum.mit.edu>
+Reported-by: kernelci.org bot <bot@kernelci.org>
+Reported-by: Mark Brown <broonie@kernel.org>
+Link: https://github.com/ClangBuiltLinux/linux/issues/1187
+Link: https://github.com/ClangBuiltLinux/linux/issues/1193
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ MAINTAINERS            |  1 +
+ init/Kconfig           |  6 +++++-
+ scripts/lld-version.sh | 20 ++++++++++++++++++++
+ 3 files changed, 26 insertions(+), 1 deletion(-)
+ create mode 100755 scripts/lld-version.sh
 
-^ randconfig
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3da6d8c154e4..4b83d3591ec7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4284,6 +4284,7 @@ B:	https://github.com/ClangBuiltLinux/linux/issues
+ C:	irc://chat.freenode.net/clangbuiltlinux
+ F:	Documentation/kbuild/llvm.rst
+ F:	scripts/clang-tools/
++F:	scripts/lld-version.sh
+ K:	\b(?i:clang|llvm)\b
+ 
+ CLEANCACHE API
+diff --git a/init/Kconfig b/init/Kconfig
+index a270716562de..40c9ca60ac1d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -47,6 +47,10 @@ config CLANG_VERSION
+ 	int
+ 	default $(shell,$(srctree)/scripts/clang-version.sh $(CC))
+ 
++config LLD_VERSION
++	int
++	default $(shell,$(srctree)/scripts/lld-version.sh $(LD))
++
+ config CC_CAN_LINK
+ 	bool
+ 	default $(success,$(srctree)/scripts/cc-can-link.sh $(CC) $(CLANG_FLAGS) $(m64-flag)) if 64BIT
+@@ -1349,7 +1353,7 @@ config LD_DEAD_CODE_DATA_ELIMINATION
+ 	  own risk.
+ 
+ config LD_ORPHAN_WARN
+-	def_bool ARCH_WANT_LD_ORPHAN_WARN && $(ld-option,--orphan-handling=warn)
++	def_bool ARCH_WANT_LD_ORPHAN_WARN && $(ld-option,--orphan-handling=warn) && (!LD_IS_LLD || LLD_VERSION >= 110000)
+ 
+ config SYSCTL
+ 	bool
+diff --git a/scripts/lld-version.sh b/scripts/lld-version.sh
+new file mode 100755
+index 000000000000..cc779f412e39
+--- /dev/null
++++ b/scripts/lld-version.sh
+@@ -0,0 +1,20 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0
++#
++# ld.lld-version ld.lld-command
++#
++# Print the linker version of `ld.lld-command' in a 5 or 6-digit form
++# such as `100001' for ld.lld 10.0.1 etc.
++
++linker="$*"
++
++if ! ( $linker --version | grep -q LLD ); then
++	echo 0
++	exit 1
++fi
++
++VERSION=$($linker --version | cut -d ' ' -f 2)
++MAJOR=$(echo $VERSION | cut -d . -f 1)
++MINOR=$(echo $VERSION | cut -d . -f 2)
++PATCHLEVEL=$(echo $VERSION | cut -d . -f 3)
++printf "%d%02d%02d\\n" $MAJOR $MINOR $PATCHLEVEL
+-- 
+2.29.2
 
-> > > compiler: clang version 12.0.0 (https://github.com/llvm/llvm-project =
-9e0c35655b6e8186baef8840b26ba4090503b554)
-> > > reproduce (this is a W=3D1 build):
-> > >         wget https://raw.githubusercontent.com/intel/lkp-tests/master=
-/sbin/make.cross -O ~/bin/make.cross
-> > >         chmod +x ~/bin/make.cross
-> > >         # install powerpc cross compiling tool for clang build
-> > >         # apt-get install binutils-powerpc-linux-gnu
-> > >         # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/li=
-nux.git/commit/?id=3Dca9b31f6bb9c6aa9b4e5f0792f39a97bbffb8c51
-> > >         git remote add linus https://git.kernel.org/pub/scm/linux/ker=
-nel/git/torvalds/linux.git
-> > >         git fetch --no-tags linus master
-> > >         git checkout ca9b31f6bb9c6aa9b4e5f0792f39a97bbffb8c51
-> > >         # save the attached .config to linux build tree
-> > >         COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dclang make.cros=
-s ARCH=3Dpowerpc
-> > >
-> > > If you fix the issue, kindly add following tag as appropriate
-> > > Reported-by: kernel test robot <lkp@intel.com>
-> > >
-> > > All errors (new ones prefixed by >>):
-> > >
-> > >    Assembler messages:
-> > > >> Error: invalid switch -me200
-> > > >> Error: unrecognized option -me200
-> > >    clang-12: error: assembler command failed with exit code 1 (use -v=
- to see invocation)
-> > >    make[2]: *** [scripts/Makefile.build:281: scripts/mod/empty.o] Err=
-or 1
-> > >    make[2]: Target '__build' not remade because of errors.
-> > >    make[1]: *** [Makefile:1174: prepare0] Error 2
-> > >    make[1]: Target 'prepare' not remade because of errors.
-> > >    make: *** [Makefile:185: __sub-make] Error 2
-> > >    make: Target 'prepare' not remade because of errors.
-> > >
-> > > ---
-> > > 0-DAY CI Kernel Test Service, Intel Corporation
-> > > https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
-> >
-> > This can be ignored. The LLVM integrated assembler does not recognize
-> > -me200 (-Wa,-me200 in arch/powerpc/Makefile). I guess the GNU as -m
-> > option is similar to .arch or .machine and controls what instructions
-> > are recognized. The integrated assembler tends to support all
-> > instructions (conditional supporting some instructions has some
-> > challenges; in the end I have patched parsing but ignoring `.arch` for
-> > x86-64 and ignoring `.machine ppc64` for ppc64)
-> >
-> > (In addition, e200 is a 32-bit Power ISA microprocessor. 32-bit
-> > support may get less attention in LLVM.)
->
-> This is also not a clang specific issue, I see the exact same error
-> with GCC 10.2.0 and binutils 2.35.
->
-> $ make -skj64 ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc64-linux- olddefconfi=
-g vmlinux
-
-Does using a non 64b triple produce the same failure?
-
-> ...
-> Error: invalid switch -me200
-> Error: unrecognized option -me200
-
-There's a block in  arch/powerpc/Makefile:
-248 cpu-as-$(CONFIG_40x)    +=3D -Wa,-m405
-249 cpu-as-$(CONFIG_44x)    +=3D -Wa,-m440
-250 cpu-as-$(CONFIG_ALTIVEC)  +=3D $(call
-as-option,-Wa$(comma)-maltivec)
-251 cpu-as-$(CONFIG_E200)   +=3D -Wa,-me200
-252 cpu-as-$(CONFIG_E500)   +=3D -Wa,-me500
-
-Are those all broken configs, or is Kconfig messed up such that
-randconfig can select these when it should not?
---=20
-Thanks,
-~Nick Desaulniers
