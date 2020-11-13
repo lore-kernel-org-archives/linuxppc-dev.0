@@ -2,25 +2,26 @@ Return-Path: <SRS0=+Bdk=ET=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62189C388F7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 11:58:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55D93C4742C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 12:04:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8CCB62224B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 11:58:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 77E892224C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 12:04:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TFLbTK0J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CCB62224B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hIBn1ijb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77E892224C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CXcS36RV2zDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 22:58:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CXcb46kc2zDqH1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2020 23:04:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -32,38 +33,41 @@ Received: from casper.infradead.org (casper.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CXc1V09lCzDr1N
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CXc1V0WVvzDr1Q
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2020 22:38:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Subject:Cc:To:From:Date:Message-ID:
- Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=jl8/r0xaMvasSwPtiqvuXDrfgB86XgTbuKStGFmkiqY=; b=TFLbTK0JP/5BAcXKX2HQt08pv9
- +yfdqZ45zKuzf9IDyKKPjB/o3TbxkGrOMnA79gVfHVP6tSs5G4asBxys+mFaGoEMWLuBcLO7hW0Zh
- BVJbQUkn1tosKYOXrYdlG4NsZaHX+wzJz2Q2DcYFfy6MPe2fw4ensHMnO66kO1pJQB0MAyy5ihv/p
- Mzv6U+/wH/1G2ro5d52EcghpQxybxZ90RovOSSa10Rlvbir/gBzAZ53PlVyso0pC9cQ1IpQr5+ozJ
- OLJWhjtmLBPhD5OSVPcl2Y7vlpY7NIpLM4h75aQjSgy6OhfHNPdj0Xn9qaRak6oiHAsDB2wRC4Flm
- rLXSbwMw==;
+ d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+ Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+ Content-ID:Content-Description:In-Reply-To;
+ bh=TbjAEl0VNgxr5FAZ34L9dbraIDKc0iauYUncRRc0dNs=; b=hIBn1ijbK87tkjZTZ6sN4ALaBs
+ /BuVNPW+2Ch84dUQbzBbsXhoSzlFETz/3kyYtDXUW07UIKnbW/lGU3CSEgCp03HR9qmVo4uEqb8pc
+ blxMH5pjs8m3VCMaPuwnJwkJN8NULegtO6/b6Qf76Y849/SpNnz2SoU12Wer/ZOd12aZtcFVpERWx
+ U0CQOodsii5uMDuSaXnFsUIX0SES6+/SbPtkCs5vK9QYSxJmXODqMTe+Hh/Bs2P9CsqEpC3GF2XXp
+ wyy6O+G4lPnoimRd+Muc7gPxCx7DEY4f5i7gMb8QD62SaLjfWML7HGK19N1oSnzsK88TYWyrPY/cT
+ hni5eehw==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=noisy.programming.kicks-ass.net)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kdXPK-0001jN-TN; Fri, 13 Nov 2020 11:38:23 +0000
+ id 1kdXPK-0001jM-Th; Fri, 13 Nov 2020 11:38:23 +0000
 Received: from hirez.programming.kicks-ass.net
  (hirez.programming.kicks-ass.net [192.168.1.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 53967300238;
- Fri, 13 Nov 2020 12:38:19 +0100 (CET)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 4E5F2307197;
+ Fri, 13 Nov 2020 12:38:20 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
- id 363C72BB8B0D0; Fri, 13 Nov 2020 12:38:19 +0100 (CET)
-Message-ID: <20201113111901.743573013@infradead.org>
+ id 463052BCDBFDC; Fri, 13 Nov 2020 12:38:19 +0100 (CET)
+Message-ID: <20201113113426.655116103@infradead.org>
 User-Agent: quilt/0.66
-Date: Fri, 13 Nov 2020 12:19:01 +0100
+Date: Fri, 13 Nov 2020 12:19:06 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: kan.liang@linux.intel.com, mingo@kernel.org, acme@kernel.org,
  mark.rutland@arm.com, alexander.shishkin@linux.intel.com, jolsa@redhat.com,
  eranian@google.com
-Subject: [PATCH 0/5] perf/mm: Fix PERF_SAMPLE_*_PAGE_SIZE
+Subject: [PATCH 5/5] sparc64/mm: Implement pXX_leaf_size() support
+References: <20201113111901.743573013@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,17 +88,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Sparc64 has non-pagetable aligned large page support; wire up the
+pXX_leaf_size() functions to report the correct TLB page size.
 
-These patches provide generic infrastructure to determine TLB page size from
-page table entries alone. Perf will use this (for either data or code address)
-to aid in profiling TLB issues.
+This enables PERF_SAMPLE_{DATA,CODE}_PAGE_SIZE to report accurate TLB
+page sizes.
 
-While most architectures only have page table aligned large pages, some
-(notably ARM64, Sparc64 and Power) provide non page table aligned large pages
-and need to provide their own implementation of these functions.
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ arch/sparc/include/asm/pgtable_64.h |   13 +++++++++++++
+ arch/sparc/mm/hugetlbpage.c         |   19 +++++++++++++------
+ 2 files changed, 26 insertions(+), 6 deletions(-)
 
-I've provided (completely untested) implementations for ARM64 and Sparc64, but
-failed to penetrate the _many_ Power MMUs. I'm hoping Nick or Aneesh can help
-me out there.
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -1121,6 +1121,19 @@ extern unsigned long cmdline_memory_size
+ 
+ asmlinkage void do_sparc64_fault(struct pt_regs *regs);
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++
++#define pud_leaf_size pud_leaf_size
++extern unsigned long pud_leaf_size(pud_t pud);
++
++#define pmd_leaf_size pmd_leaf_size
++extern unsigned long pmd_leaf_size(pmd_t pmd);
++
++#define pte_leaf_size pte_leaf_size
++extern unsigned long pte_leaf_size(pte_t pte);
++
++#endif /* CONFIG_HUGETLB_PAGE */
++
+ #endif /* !(__ASSEMBLY__) */
+ 
+ #endif /* !(_SPARC64_PGTABLE_H) */
+--- a/arch/sparc/mm/hugetlbpage.c
++++ b/arch/sparc/mm/hugetlbpage.c
+@@ -247,14 +247,17 @@ static unsigned int sun4u_huge_tte_to_sh
+ 	return shift;
+ }
+ 
+-static unsigned int huge_tte_to_shift(pte_t entry)
++static unsigned long tte_to_shift(pte_t entry)
+ {
+-	unsigned long shift;
+-
+ 	if (tlb_type == hypervisor)
+-		shift = sun4v_huge_tte_to_shift(entry);
+-	else
+-		shift = sun4u_huge_tte_to_shift(entry);
++		return sun4v_huge_tte_to_shift(entry);
++
++	return sun4u_huge_tte_to_shift(entry);
++}
++
++static unsigned int huge_tte_to_shift(pte_t entry)
++{
++	unsigned long shift = tte_to_shift(entry);
+ 
+ 	if (shift == PAGE_SHIFT)
+ 		WARN_ONCE(1, "tto_to_shift: invalid hugepage tte=0x%lx\n",
+@@ -272,6 +275,10 @@ static unsigned long huge_tte_to_size(pt
+ 	return size;
+ }
+ 
++unsigned long pud_leaf_size(pud_t pud) { return 1UL << tte_to_shift((pte_t)pud); }
++unsigned long pmd_leaf_size(pmd_t pmd) { return 1UL << tte_to_shift((pte_t)pmd); }
++unsigned long pte_leaf_size(pte_t pte) { return 1UL << tte_to_shift((pte_t)pte); }
++
+ pte_t *huge_pte_alloc(struct mm_struct *mm,
+ 			unsigned long addr, unsigned long sz)
+ {
+
 
