@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B215BC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2020 15:57:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12F00C4742C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2020 15:59:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D69620A8B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2020 15:57:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D69620A8B
+	by mail.kernel.org (Postfix) with ESMTPS id 6EFEF20A8B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2020 15:59:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EFEF20A8B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CZYcS3FFzzDqLd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 02:57:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CZYfL2yc9zDqLK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 02:59:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,37 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CZYWk09c1zDqJW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2020 02:53:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CZYWj70f0zDqJV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2020 02:53:21 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CZYWV1WF6z9vDFb;
- Mon, 16 Nov 2020 16:53:10 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CZYWY1ht4z9vDFh;
+ Mon, 16 Nov 2020 16:53:13 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id SSJpeJkvd8xF; Mon, 16 Nov 2020 16:53:10 +0100 (CET)
+ with ESMTP id GuQQh-CZyMar; Mon, 16 Nov 2020 16:53:13 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CZYWT75MBz9vDFd;
- Mon, 16 Nov 2020 16:53:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CZYWY0v6pz9vDFc;
+ Mon, 16 Nov 2020 16:53:13 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DA0B38B7A8;
- Mon, 16 Nov 2020 16:53:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8829C8B7A3;
+ Mon, 16 Nov 2020 16:53:18 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pv1LfhojYMg9; Mon, 16 Nov 2020 16:53:14 +0100 (CET)
+ with ESMTP id QkII7FUp4hCp; Mon, 16 Nov 2020 16:53:18 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 384CC8B7A5;
- Mon, 16 Nov 2020 16:53:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 370418B7A6;
+ Mon, 16 Nov 2020 16:53:18 +0100 (CET)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BE24066884; Mon, 16 Nov 2020 15:53:13 +0000 (UTC)
-Message-Id: <40ae19c2bf013e3815a6ae0d6016963fdb0f51b7.1605541983.git.christophe.leroy@csgroup.eu>
+ id D5CC266884; Mon, 16 Nov 2020 15:53:17 +0000 (UTC)
+Message-Id: <cc9129bdda1dbc2f0a09cf45fece7d0b0e690784.1605541983.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <40ae19c2bf013e3815a6ae0d6016963fdb0f51b7.1605541983.git.christophe.leroy@csgroup.eu>
+References: <40ae19c2bf013e3815a6ae0d6016963fdb0f51b7.1605541983.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 1/5] powerpc/mm: sanity_check_fault() should work for all, 
- not only BOOK3S
+Subject: [PATCH v2 5/5] powerpc/mm: Don't WARN() on KUAP fault
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Nov 2020 15:53:13 +0000 (UTC)
+Date: Mon, 16 Nov 2020 15:53:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,53 +76,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The verification and message introduced by commit 374f3f5979f9
-("powerpc/mm/hash: Handle user access of kernel address gracefully")
-applies to all platforms, it should not be limited to BOOK3S.
+The WARN() in do_page_fault() is useless the problem is not in
+do_page_fault() but on the place which generated the DSI exception.
 
-Make the BOOK3S version of sanity_check_fault() the one for all,
-and bail out earlier if not BOOK3S.
+We already have a dump from the Oops, no need of a WARN() in addition
+The warning emitted by bad_kernel_fault() is good enough.
 
-Fixes: 374f3f5979f9 ("powerpc/mm/hash: Handle user access of kernel address gracefully")
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/fault.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+v2: New (Partly taken from patch "powerpc/mm: Kill the task on KUAP fault")
+---
+ arch/powerpc/include/asm/book3s/32/kup.h       | 6 +-----
+ arch/powerpc/include/asm/book3s/64/kup-radix.h | 7 ++++---
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h   | 3 +--
+ 3 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 0add963a849b..72e1b51beb10 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -303,7 +303,6 @@ static inline void cmo_account_page_fault(void)
- static inline void cmo_account_page_fault(void) { }
- #endif /* CONFIG_PPC_SMLPAR */
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 32fd4452e960..a0117a9d5b06 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -183,11 +183,7 @@ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ 	unsigned long begin = regs->kuap & 0xf0000000;
+ 	unsigned long end = regs->kuap << 28;
  
--#ifdef CONFIG_PPC_BOOK3S
- static void sanity_check_fault(bool is_write, bool is_user,
- 			       unsigned long error_code, unsigned long address)
- {
-@@ -320,6 +319,9 @@ static void sanity_check_fault(bool is_write, bool is_user,
- 		return;
- 	}
- 
-+	if (!IS_ENABLED(CONFIG_PPC_BOOK3S))
-+		return;
-+
- 	/*
- 	 * For hash translation mode, we should never get a
- 	 * PROTFAULT. Any update to pte to reduce access will result in us
-@@ -354,10 +356,6 @@ static void sanity_check_fault(bool is_write, bool is_user,
- 
- 	WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
+-	if (!is_write)
+-		return false;
+-
+-	return WARN(address < begin || address >= end,
+-		    "Bug: write fault blocked by segment registers !");
++	return is_write && (address < begin || address >= end);
  }
--#else
--static void sanity_check_fault(bool is_write, bool is_user,
--			       unsigned long error_code, unsigned long address) { }
--#endif /* CONFIG_PPC_BOOK3S */
  
- /*
-  * Define the correct "is_write" bit in error_code based
+ #endif /* CONFIG_PPC_KUAP */
+diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+index 3ee1ec60be84..8bdf559a4b32 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+@@ -161,9 +161,10 @@ static inline void restore_user_access(unsigned long flags)
+ static inline bool
+ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+-	return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
+-		    (regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : AMR_KUAP_BLOCK_READ)),
+-		    "Bug: %s fault blocked by AMR!", is_write ? "Write" : "Read");
++	if (!mmu_has_feature(MMU_FTR_RADIX_KUAP))
++		return false;
++
++	return !!(regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : AMR_KUAP_BLOCK_READ));
+ }
+ #else /* CONFIG_PPC_KUAP */
+ static inline void kuap_restore_amr(struct pt_regs *regs, unsigned long amr)
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 567cdc557402..17a4a616436f 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -63,8 +63,7 @@ static inline void restore_user_access(unsigned long flags)
+ static inline bool
+ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+-	return WARN(!((regs->kuap ^ MD_APG_KUAP) & 0xff000000),
+-		    "Bug: fault blocked by AP register !");
++	return !((regs->kuap ^ MD_APG_KUAP) & 0xff000000);
+ }
+ 
+ #endif /* !__ASSEMBLY__ */
 -- 
 2.25.0
 
