@@ -7,54 +7,59 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A2D3C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 03:32:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF1F8C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 05:10:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBE7B2469D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 03:32:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBE7B2469D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id A81822463C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 05:10:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A81822463C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CZs2n2kNqzDqNw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 14:32:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CZvC273BJzDqTJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 16:10:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CZs0x434kzDqMT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2020 14:31:09 +1100 (AEDT)
-IronPort-SDR: EvbSNR2llTykWi0nQUEyeR2HSeP9LyVMuPcO7NuFaeiWdpDvf+S8lGrRH68/lUvqoB1CkNC4m3
- gFDBrHvYVRJA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9807"; a="235006313"
-X-IronPort-AV: E=Sophos;i="5.77,484,1596524400"; d="scan'208";a="235006313"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Nov 2020 19:31:02 -0800
-IronPort-SDR: 3ENWXY+KFD7MxWwBNknTO9Qrr6zKnSo++U65VmUk4A9mNnnY6bZuAOkO4wcHChQ6jNNkznLh1s
- yP585H2WMapQ==
-X-IronPort-AV: E=Sophos;i="5.77,484,1596524400"; d="scan'208";a="475769777"
-Received: from dwillia2-desk3.jf.intel.com (HELO
- dwillia2-desk3.amr.corp.intel.com) ([10.54.39.25])
- by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Nov 2020 19:31:02 -0800
-Subject: [PATCH] powerpc: fix create_section_mapping compile warning
-From: Dan Williams <dan.j.williams@intel.com>
-To: akpm@linux-foundation.org
-Date: Mon, 16 Nov 2020 19:31:01 -0800
-Message-ID: <160558386174.2948926.2740149041249041764.stgit@dwillia2-desk3.amr.corp.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CZv8p0WrqzDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2020 16:08:04 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CZv8b24L7z9vDG6;
+ Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id x9UUr05vZLOG; Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CZv8b1JzCz9vDG4;
+ Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DFBEC8B773;
+ Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 78yuI76GK0ll; Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 675458B75F;
+ Tue, 17 Nov 2020 06:07:59 +0100 (CET)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5EDC166885; Tue, 17 Nov 2020 05:07:59 +0000 (UTC)
+Message-Id: <288b6048597c0fdc495b203fda57a223d89499d2.1605589460.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
+References: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH 2/2] powerpc: Remove ucache_bsize
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 17 Nov 2020 05:07:59 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,70 +71,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-0day robot reports that a recent rework of how
-memory_add_physaddr_to_nid() and phys_to_target_node() are declared
-resulted in the following new compilation warning:
+ppc601 and e200 were the users of ucache_bsize.
+ppc601 and e200 are now gone.
 
-arch/powerpc/mm/mem.c:91:12: warning: no previous prototype for 'create_section_mapping' [-Wmissing-prototypes]
-   91 | int __weak create_section_mapping(unsigned long start, unsigned long end,
-      |            ^~~~~~~~~~~~~~~~~~~~~~
+Remove ucache_bsize.
 
-...fix this by moving the declaration of create_section_mapping()
-outside of the CONFIG_NEED_MULTIPLE_NODES ifdef guard, and include an
-explicit include of asm/mmzone.h in mem.c. An include of linux/mmzone.h
-is not sufficient.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/mmzone.h |    7 +++++--
- arch/powerpc/mm/mem.c             |    1 +
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/elf.h     | 2 +-
+ arch/powerpc/kernel/setup-common.c | 4 ----
+ arch/powerpc/kernel/setup_32.c     | 1 -
+ 3 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 177fd18caf83..6cda76b57c5d 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -33,8 +33,6 @@ extern struct pglist_data *node_data[];
- extern int numa_cpu_lookup_table[];
- extern cpumask_var_t node_to_cpumask_map[];
- #ifdef CONFIG_MEMORY_HOTPLUG
--extern int create_section_mapping(unsigned long start, unsigned long end,
--				  int nid, pgprot_t prot);
- extern unsigned long max_pfn;
- u64 memory_hotplug_max(void);
- #else
-@@ -48,5 +46,10 @@ u64 memory_hotplug_max(void);
- #define __HAVE_ARCH_RESERVED_KERNEL_PAGES
- #endif
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 53ed2ca40151..900b8d7fdffa 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -168,7 +168,7 @@ do {									\
+ 	/* Cache size items */						\
+ 	NEW_AUX_ENT(AT_DCACHEBSIZE, dcache_bsize);			\
+ 	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
+-	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
++	NEW_AUX_ENT(AT_UCACHEBSIZE, 0);					\
+ 	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
+ 	ARCH_DLINFO_CACHE_GEOMETRY;					\
+ } while (0)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 808ec9fab605..c23449a93fef 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -90,8 +90,6 @@ EXPORT_SYMBOL_GPL(boot_cpuid);
+  */
+ int dcache_bsize;
+ int icache_bsize;
+-int ucache_bsize;
+-
  
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+extern int create_section_mapping(unsigned long start, unsigned long end,
-+				  int nid, pgprot_t prot);
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_MMZONE_H_ */
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 01ec2a252f09..3fc325bebe4d 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -50,6 +50,7 @@
- #include <asm/rtas.h>
- #include <asm/kasan.h>
- #include <asm/svm.h>
-+#include <asm/mmzone.h>
+ unsigned long klimit = (unsigned long) _end;
  
- #include <mm/mmu_decl.h>
+@@ -802,8 +800,6 @@ static __init void print_system_info(void)
  
+ 	pr_info("dcache_bsize      = 0x%x\n", dcache_bsize);
+ 	pr_info("icache_bsize      = 0x%x\n", icache_bsize);
+-	if (ucache_bsize != 0)
+-		pr_info("ucache_bsize      = 0x%x\n", ucache_bsize);
+ 
+ 	pr_info("cpu_features      = 0x%016lx\n", cur_cpu_spec->cpu_features);
+ 	pr_info("  possible        = 0x%016lx\n",
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 416e2c7a8b0a..8ba49a6bf515 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -222,5 +222,4 @@ __init void initialize_cache_info(void)
+ 	 */
+ 	dcache_bsize = cur_cpu_spec->dcache_bsize;
+ 	icache_bsize = cur_cpu_spec->icache_bsize;
+-	ucache_bsize = 0;
+ }
+-- 
+2.25.0
 
