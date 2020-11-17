@@ -2,95 +2,52 @@ Return-Path: <SRS0=3gej=EX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA914C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 15:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19F4EC63798
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 15:53:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC6A02463D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 15:49:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="cvbEflrW";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="cvbEflrW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC6A02463D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2536724686
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2020 15:53:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2536724686
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cb9NZ4v0JzDqSv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 02:49:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=63.128.21.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cb9TY5xYWzDqT7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 02:53:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=osalvador@suse.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=cvbEflrW; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvbEflrW; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [63.128.21.124])
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cb9Kp1xMxzDqVR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 02:46:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605628011;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=GBRmGBhgNm5FfbhT75FD7IeQ1qhvmL460Gefj3SG1R4=;
- b=cvbEflrWQKU+hfQVBj15KzazpR/jMGhzxFNvecqbcDQ71r1l8P3yw3hCHVsI050p+Hn0l0
- 8offOO5Vtk+3imyo9evxiNX8p1o2B4xN36CBgn+mv4VWVZsGY81LbzuLNimUkvwVrbkY0v
- dHxmzvXgJ4lGFT1CIlQkYl+nR905yFk=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605628011;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=GBRmGBhgNm5FfbhT75FD7IeQ1qhvmL460Gefj3SG1R4=;
- b=cvbEflrWQKU+hfQVBj15KzazpR/jMGhzxFNvecqbcDQ71r1l8P3yw3hCHVsI050p+Hn0l0
- 8offOO5Vtk+3imyo9evxiNX8p1o2B4xN36CBgn+mv4VWVZsGY81LbzuLNimUkvwVrbkY0v
- dHxmzvXgJ4lGFT1CIlQkYl+nR905yFk=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-22-wYOif9G6MPaT8cDgk148ow-1; Tue, 17 Nov 2020 10:46:46 -0500
-X-MC-Unique: wYOif9G6MPaT8cDgk148ow-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8725C186DD2C;
- Tue, 17 Nov 2020 15:46:44 +0000 (UTC)
-Received: from [10.36.114.99] (ovpn-114-99.ams2.redhat.com [10.36.114.99])
- by smtp.corp.redhat.com (Postfix) with ESMTP id CA5035C1CF;
- Tue, 17 Nov 2020 15:46:41 +0000 (UTC)
-Subject: Re: [PATCH v2 4/8] powerpc/mm: protect linear mapping modifications
- by a mutex
-To: Oscar Salvador <osalvador@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cb9R76y0QzDqDG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 02:51:31 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 8A716AD79;
+ Tue, 17 Nov 2020 15:51:28 +0000 (UTC)
+Date: Tue, 17 Nov 2020 16:51:25 +0100
+From: Oscar Salvador <osalvador@suse.de>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v2 7/8] powerpc/mm: remove linear mapping if
+ __add_pages() fails in arch_add_memory()
+Message-ID: <20201117155125.GF15987@linux>
 References: <20201111145322.15793-1-david@redhat.com>
- <20201111145322.15793-5-david@redhat.com> <20201117153750.GD15987@linux>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat GmbH
-Message-ID: <274264b2-9ec8-bde0-5725-184c8fd5f05e@redhat.com>
-Date: Tue, 17 Nov 2020 16:46:40 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ <20201111145322.15793-8-david@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20201117153750.GD15987@linux>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201111145322.15793-8-david@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,37 +68,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17.11.20 16:37, Oscar Salvador wrote:
-> On Wed, Nov 11, 2020 at 03:53:18PM +0100, David Hildenbrand wrote:
->> @@ -144,7 +147,9 @@ void __ref arch_remove_linear_mapping(u64 start, u64 size)
->>   	start = (unsigned long)__va(start);
->>   	flush_dcache_range_chunked(start, start + size, FLUSH_CHUNK_SIZE);
->>   
->> +	mutex_lock(&linear_mapping_mutex);
->>   	ret = remove_section_mapping(start, start + size);
->> +	mutex_unlock(&linear_mapping_mutex);
->>   	WARN_ON_ONCE(ret);
+On Wed, Nov 11, 2020 at 03:53:21PM +0100, David Hildenbrand wrote:
+> Let's revert what we did in case seomthing goes wrong and we return an
+"something" :-)
+> error - as already done on arm64 and s390x.
 > 
-> My expertise in this area is low, so bear with me.
-> 
-> Why we do not need to protect flush_dcache_range_chunked and
-> vm_unmap_aliases?
-> 
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Oscar Salvador <osalvador@suse.de>
+> Cc: Wei Yang <richard.weiyang@linux.alibaba.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 
-vm_unmap_aliases does own locking and can handle concurrent calls.
-
-
-flush_dcache_range_chunked()->flush_dcache_range() ends up as a sequence 
-of memory barriers paired with dcbf instructions.
-
-dcbf: Copies modified cache blocks to main storage and invalidates the 
-copy in the data cache.
-
-It's called from various places and no global variables seem to be 
-involved, so it looks like it doesn't need any kind of locking.
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 
 -- 
-Thanks,
-
-David / dhildenb
-
+Oscar Salvador
+SUSE L3
