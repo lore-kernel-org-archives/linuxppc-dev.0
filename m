@@ -2,61 +2,83 @@ Return-Path: <SRS0=sQnj=EY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D9CC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 20:30:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBCA7C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:37:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09B5A20B1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 20:30:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E1A702468D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:37:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tk2xsfB/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09B5A20B1F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="c7vIr04t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1A702468D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CbvYy531BzDqdf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 07:29:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CbyPD1C89zDqdb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 09:37:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=flex--morbo.bounces.google.com
+ (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com;
+ envelope-from=3sag1xwukdm468bv808805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--morbo.bounces.google.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Tk2xsfB/; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=c7vIr04t; dkim-atps=neutral
+Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com
+ [IPv6:2607:f8b0:4864:20::649])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CbvWP5sPDzDqWw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 07:27:45 +1100 (AEDT)
-Received: from embeddedor (187-162-31-110.static.axtel.net [187.162.31.110])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C80AA2145D;
- Wed, 18 Nov 2020 20:27:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1605731262;
- bh=d7FWe1BlbjtKurhfO3KPp8dTCNr5OMgkoHGS+KpPmec=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Tk2xsfB/R6tOW3k/29KEexiOlVuxNA4v/ReKorLLX9HVJpkwTcxJ5gyP7oCRyajTz
- VEJpetjg7Oh8ynq42pA903K1njKQrWVsUF0aBbnglvCZWVzD4fciTRs9Nnsa2OTbRO
- dzlwfEBlF9MzzSKr9setF8IqPsLKUtMdLxaGn+uY=
-Date: Wed, 18 Nov 2020 14:27:42 -0600
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Subject: Re: [PATCH v2 0/3] PPC: Fix -Wimplicit-fallthrough for clang
-Message-ID: <20201118202742.GA15147@embeddedor>
-References: <20201118000751.845172-1-ndesaulniers@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201118000751.845172-1-ndesaulniers@google.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CbyLw1cn4zDqbt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 09:35:32 +1100 (AEDT)
+Received: by mail-pl1-x649.google.com with SMTP id w15so2099704plq.17
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 14:35:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=sender:date:in-reply-to:message-id:mime-version:references:subject
+ :from:to:cc; bh=xf0za0EZfzwKq0aLgV3vktclCGzK3lvHX8ldWBW2urc=;
+ b=c7vIr04tr/EOXskts0BeZ8KrPTrhGpS4BCw2qmB7tU57HNSWU/44Vgj82EdVgoe8jP
+ ey56i/RYLo6vG7JnywZs1ZG93wo+W1rRL5EnVX9FoP60uGhU3QgM9ilp90VG6FS3GxRh
+ tIwXpZWR8RqSqOBOlPeRUtQbJfrwXKCws2xAukcegaeYw53R9Gtg6piu8hmj9rMC6Gk/
+ enVV76K5uY3L1D1MwmTPErUXNMZ81FjWY8IWuUSb6vlmisKNEeTi/F4HywGvKtC7rLND
+ nAe6bHfhkqSK9AYwnckm04Cf11FPcYG/Bj8ipli81X3HBSSfUWpLR0cpEbTJPv/ybSnb
+ W4RA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
+ :references:subject:from:to:cc;
+ bh=xf0za0EZfzwKq0aLgV3vktclCGzK3lvHX8ldWBW2urc=;
+ b=gJVo/uDLFI9FK2TvoIgzA/0vtzTPjAHxQIEMtwUWRb6nXOL7wZtOB7qOI3+b8jDpck
+ W2TFWOVO3cNoR+k9xVN9m1WQ+cbkwAadnMKMuh1RVtRj9zlShdGJtwT6OeMe1NnwCzF0
+ eNCmuiyjuezL7CtpjagQQVINde8qMNEP1taLr05uiqfIWr7+1QYbppm20fEd23VdiZn4
+ HHdyUV+aHHBHeKQjWw5NoubjMOIzwbqGzGFVxOlnF8EGkd198vv3FtyIEuwqWlBMDAjP
+ waebyS0oKI3NhAlDUzOnA4jSYn1hwWHknJBdY7giESRL1gBtFXwilwI2gQNaKjvuVVEr
+ fhCQ==
+X-Gm-Message-State: AOAM532Wklq9pdrXpO/52cbRstYVbnojHpINHDjYQNEsuUk84fkET6S6
+ 92tBjHwUtj7xVpvt+xLrAJ7WTG+6
+X-Google-Smtp-Source: ABdhPJy27mmd/3h/9P5sVR8+AzlRZq4hNPgyd4VAQL23Q1sh7UsbcHubrLTfzwRFrsFeYgtpMLYGmtTwPw==
+X-Received: from fawn.svl.corp.google.com ([100.116.77.50]) (user=morbo
+ job=sendgmr) by 2002:a17:902:ee54:b029:d8:b660:122a with SMTP id
+ 20-20020a170902ee54b02900d8b660122amr6395543plo.46.1605738929754; Wed, 18 Nov
+ 2020 14:35:29 -0800 (PST)
+Date: Wed, 18 Nov 2020 14:35:11 -0800
+In-Reply-To: <20201017004752.415054-3-morbo@google.com>
+Message-Id: <20201118223513.2704722-2-morbo@google.com>
+Mime-Version: 1.0
+References: <20201017004752.415054-3-morbo@google.com>
+X-Mailer: git-send-email 2.29.2.454.gaff20da3a2-goog
+Subject: [PATCH 1/3] powerpc/wrapper: add "-z notext" flag to disable
+ diagnostic
+From: Bill Wendling <morbo@google.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,30 +90,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clang-built-linux@googlegroups.com, linux-kernel@vger.kernel.org,
- Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
- Arvind Sankar <nivedita@alum.mit.edu>, Paul Mackerras <paulus@samba.org>,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nick Desaulniers <ndesaulniers@google.com>,
+ Bill Wendling <morbo@google.com>, Fangrui Song <maskray@google.com>,
+ Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nick,
+The "-z notext" flag disables reporting an error if DT_TEXTREL is set.
 
-On Tue, Nov 17, 2020 at 04:07:48PM -0800, Nick Desaulniers wrote:
-> While cleaning up the last few -Wimplicit-fallthrough warnings in tree
-> for Clang, I noticed
-> commit 6a9dc5fd6170d ("lib: Revert use of fallthrough pseudo-keyword in lib/")
-> which seemed to undo a bunch of fixes in lib/ due to breakage in
-> arch/powerpc/boot/ not including compiler_types.h.  We don't need
-> compiler_types.h for the definition of `fallthrough`, simply
-> compiler_attributes.h.  Include that, revert the revert to lib/, and fix
-> the last remaining cases I observed for powernv_defconfig.
+  ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against
+    symbol: _start in readonly segment; recompile object files with
+    -fPIC or pass '-Wl,-z,notext' to allow text relocations in the
+    output
+  >>> defined in
+  >>> referenced by crt0.o:(.text+0x8) in archive arch/powerpc/boot/wrapper.a
 
-I've added the series to my -next tree, together with Miguel's
-suggestions.
+The BFD linker disables this by default (though it's configurable in
+current versions). LLD enables this by default. So we add the flag to
+keep LLD from emitting the error.
 
-Thanks for the Acks and comments, Michael.
+Cc: Fangrui Song <maskray@google.com>
+Cc: Alan Modra <amodra@gmail.com>
+Signed-off-by: Bill Wendling <morbo@google.com>
+---
+ arch/powerpc/boot/wrapper | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---
-Gustavo
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index e1194955adbb..41fa0a8715e3 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -46,6 +46,7 @@ compression=.gz
+ uboot_comp=gzip
+ pie=
+ format=
++notext=
+ rodynamic=
+ 
+ # cross-compilation prefix
+@@ -354,6 +355,7 @@ epapr)
+     platformo="$object/pseries-head.o $object/epapr.o $object/epapr-wrapper.o"
+     link_address='0x20000000'
+     pie=-pie
++    notext='-z notext'
+     rodynamic=$(if ${CROSS}ld -V 2>&1 | grep -q LLD ; then echo "-z rodynamic"; fi)
+     ;;
+ mvme5100)
+@@ -495,7 +497,7 @@ if [ "$platform" != "miboot" ]; then
+         text_start="-Ttext $link_address"
+     fi
+ #link everything
+-    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl $rodynamic -o "$ofile" $map \
++    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl $rodynamic $notext -o "$ofile" $map \
+ 	$platformo $tmp $object/wrapper.a
+     rm $tmp
+ fi
+-- 
+2.29.2.454.gaff20da3a2-goog
+
