@@ -2,79 +2,78 @@ Return-Path: <SRS0=sQnj=EY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C00BC56201
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29323C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:42:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F4F52468D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:39:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 42AE22468D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2020 22:42:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="GGDHAm3c"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F4F52468D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="LS7a0FIt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42AE22468D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CbyRp5yrZzDqcF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 09:39:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CbyVH3NcwzDqc5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 09:41:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=flex--morbo.bounces.google.com
- (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com;
- envelope-from=3r6g1xwukdmw469t6y66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--morbo.bounces.google.com;
+ (client-ip=2607:f8b0:4864:20::f4a; helo=mail-qv1-xf4a.google.com;
+ envelope-from=3tag1xwukdniacfzc4cc492.0ca96bildd0-12j96ghg.cn9yzg.cf4@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=GGDHAm3c; dkim-atps=neutral
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
- [IPv6:2607:f8b0:4864:20::b4a])
+ header.s=20161025 header.b=LS7a0FIt; dkim-atps=neutral
+Received: from mail-qv1-xf4a.google.com (mail-qv1-xf4a.google.com
+ [IPv6:2607:f8b0:4864:20::f4a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CbyLz10GczDqbt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 09:35:31 +1100 (AEDT)
-Received: by mail-yb1-xb4a.google.com with SMTP id v13so4562397ybe.18
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 14:35:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CbyM11ns2zDqbr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 09:35:37 +1100 (AEDT)
+Received: by mail-qv1-xf4a.google.com with SMTP id s8so2588612qvr.20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 14:35:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=sender:date:in-reply-to:message-id:mime-version:references:subject
- :from:to:cc; bh=Miahan6m7tpW6fRqJTx6nONE/ESffi7QnD+KLWja0Ls=;
- b=GGDHAm3cU3+hkb8sL/HNLpy1LYwJv0QJznQ3rADbdarpHNeiTusvzlq28P20g5O7Mu
- KjbDDb/MTwy/hIaDLyOkOZA3bc/LT/Db8EVgBvZWdI200d7LMlUwSUDK3X+Od28FqRZr
- r0eKJMQPBjlbV4jzDjkpfVUxi/TozCUwewBL2kZmdmjMXHt7jVFu+y+NtdGyNKiD5r/U
- tBxVWlDC1Yx6ddpDpSvVU/zIYTqcrTOyxHvd3LgH0GYnsiBFlOTOLM6QKg6mDnVsQOIo
- D0nTx1+5P7MsTHVObFpVypx8z3C8yqEUU+E411z1YJdc18O4yg9i5x3w8Wf8JSxzrxdb
- V5yQ==
+ :from:to:cc; bh=V1Vpf/r+3OfbIuN6VyOcWCKY6n9LDBI1U6QyMc3bnGY=;
+ b=LS7a0FItnZc0gIHOQHFKN77JpJ8UkHUmaeeRrcUPFa1MazuNvTijFA/TKJSnE9PKTi
+ FJMWVqm276iXCwqHHQMKHLpyfzYSXrfpkomqmu9XG47QJl9RiwXz71zML6jQucodhfpK
+ 56L8b3jpP4UEpZ2i4EHOsgW6JvHAgh+aijHHmmgIeyer5pRwfpfaGzyhzNVlnaae8AVI
+ FOLi43PwPKYyBujiUwyD1VmWlEcjfachnZv/xMAjQAr9brCVrkvw/u26l39S1Z+9inMI
+ RW+ga+Jiucvj3o47sL/tG59yxYNgb8n9jGROITvLHCRpABmJo6u4f/VTpQPeoceU+/dN
+ SPvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
  :references:subject:from:to:cc;
- bh=Miahan6m7tpW6fRqJTx6nONE/ESffi7QnD+KLWja0Ls=;
- b=anloM3G2qJfsVHClUMCxJ2Ga9ku6MX0LDzKk678HUE49yoxf3H11kLqg+IwlqMfoQ8
- iLW+ROpuQxpbry9SHHoRqpfzziQtuduh6FnfvzYETRcplrMdod8GnQ+2mgXmFGnOHYQb
- 9eZeXZHiRlkQ5WKFjDqwST4fGJRDhOju4valL3sTjxQJruex8Idkf+9KHHAqUIWaknl1
- muY1Mp+C9N9+BUkMZQxedmByrmfSo4hbhlNjYglGgPMHFLxgHSodsCC4iZ8kTGnLPAKi
- 9RqwGZ3300ROes7CSQziZwbNiqXO1r7m4rETZT2+EY7RKCKctEj16mGHSwcGrx48oGGe
- OlHA==
-X-Gm-Message-State: AOAM5314Y+qI4zSMLaJbxVL7MwWf2exSfh0ZVcAF5PjXA93LMXE62JvH
- 3G44VXklQz0bvOYJ/BwOcRl9EGMK
-X-Google-Smtp-Source: ABdhPJztg46f3n7dIzCjap0ld6dzT0YAXEBB0yFO5ADsLNlXreMB+p72tJ6hjXA44INMgJra5EfyER+WrA==
+ bh=V1Vpf/r+3OfbIuN6VyOcWCKY6n9LDBI1U6QyMc3bnGY=;
+ b=OHUhghUHjftSuYNin3MDnf3ZvTZDnxF75caMCB8zRXzGeS2ABfRsKmRfgqYdDZDoga
+ QwIpUZooNdDm2fQRQfqO8fD8cOm/mH4g3Sg97Ml9zcqbqP+WKLFlYVNyC85KiluO2Zrp
+ H4Cf0Q27y8FYcBsGraqgFLx1Tzj0eFOcAZzzHzuBH+Fu8Htd6e/wKtIwMb6mvFDRVhDl
+ Wwhc4ABwCFt8L48L60tSNrE6QeYUEDV34FA1pwKvxdQvtWRZNepaM5j2ZeDrwmdbvbky
+ +B09JErSGtAA+abIsVRNUxrgDqe3Zz14zjN9FG+cTiE/XsQIsXaJhBslZwBtchY8I8EP
+ Du0Q==
+X-Gm-Message-State: AOAM533GhsXZevwjiHZOFz/V/9rUNGUp2ZbE0+sGhH/eeRy9skw1HbHf
+ B9auE2o8IXnwzfiQzCCbV6arABsr
+X-Google-Smtp-Source: ABdhPJzvRz3hGsBvsWKO5f+Gfe7Rt0OvPt9PbJzdjI+CX0cTcdNsBz3SYabilOnTAZiuh2/8iMIr8bVQ3A==
 X-Received: from fawn.svl.corp.google.com ([100.116.77.50]) (user=morbo
- job=sendgmr) by 2002:a25:c083:: with SMTP id
- c125mr12093154ybf.519.1605738927914; 
- Wed, 18 Nov 2020 14:35:27 -0800 (PST)
-Date: Wed, 18 Nov 2020 14:35:10 -0800
+ job=sendgmr) by 2002:a0c:db8c:: with SMTP id m12mr7355504qvk.11.1605738933668; 
+ Wed, 18 Nov 2020 14:35:33 -0800 (PST)
+Date: Wed, 18 Nov 2020 14:35:13 -0800
 In-Reply-To: <20201017004752.415054-3-morbo@google.com>
-Message-Id: <20201118223513.2704722-1-morbo@google.com>
+Message-Id: <20201118223513.2704722-4-morbo@google.com>
 Mime-Version: 1.0
 References: <20201017004752.415054-3-morbo@google.com>
 X-Mailer: git-send-email 2.29.2.454.gaff20da3a2-goog
-Subject: [PATCH 0/3] PPC: fixes for clang support
+Subject: [PATCH 3/3] powerpc/64s: feature: work around inline asm issues
 From: Bill Wendling <morbo@google.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
@@ -95,21 +94,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series of patches include fixes for clang issues that arose. The
-"powerpc/64s" patch was "inspired" by a similar patch for ARM:
+The clang toolchain treats inline assembly a bit differently than
+straight assembly code. In particular, inline assembly doesn't have the
+complete context available to resolve expressions. This is intentional
+to avoid divergence in the resulting assembly code.
 
-eb7c11ee3c5ce arm64: alternative: Work around .inst assembler bugs
+We can work around this issue by borrowing a workaround done for ARM,
+i.e. not directly testing the labels themselves, but by moving the
+current output pointer by a value that should always be zero. If this
+value is not null, then we will trigger a backward move, which is
+explicitly forbidden.
 
-Bill Wendling (3):
-  powerpc/wrapper: add "-z notext" flag to disable diagnostic
-  powerpc/boot: Use clang when CC is clang
-  powerpc/64s: feature: work around inline asm issues
-
- arch/powerpc/boot/Makefile                |  4 ++++
- arch/powerpc/boot/wrapper                 |  4 +++-
+Signed-off-by: Bill Wendling <morbo@google.com>
+---
  arch/powerpc/include/asm/feature-fixups.h | 19 ++++++++++++++-----
- 3 files changed, 21 insertions(+), 6 deletions(-)
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
+index b0af97add751..34331c4ba61a 100644
+--- a/arch/powerpc/include/asm/feature-fixups.h
++++ b/arch/powerpc/include/asm/feature-fixups.h
+@@ -36,6 +36,18 @@ label##2:						\
+ 	.align 2;					\
+ label##3:
+ 
++/*
++ * If the .org directive fails, it means that the feature instructions
++ * are smaller than the alternate instructions. This used to be written
++ * as
++ *
++ * .ifgt (label##4b-label##3b) - (label##2b-label##1b)
++ *      .error "Feature section else case larger than body"
++ * .endif
++ *
++ * but clang's assembler complains about the expression being non-absolute
++ * when the code appears in an inline assembly statement.
++ */
+ #define MAKE_FTR_SECTION_ENTRY(msk, val, label, sect)		\
+ label##4:							\
+ 	.popsection;						\
+@@ -48,11 +60,8 @@ label##5:							\
+ 	FTR_ENTRY_OFFSET label##2b-label##5b;			\
+ 	FTR_ENTRY_OFFSET label##3b-label##5b;			\
+ 	FTR_ENTRY_OFFSET label##4b-label##5b;			\
+-	.ifgt (label##4b- label##3b)-(label##2b- label##1b);	\
+-	.error "Feature section else case larger than body";	\
+-	.endif;							\
+-	.popsection;
+-
++	.popsection;						\
++	.org . - ((label##4b-label##3b) > (label##2b-label##1b));
+ 
+ /* CPU feature dependent sections */
+ #define BEGIN_FTR_SECTION_NESTED(label)	START_FTR_SECTION(label)
 -- 
 2.29.2.454.gaff20da3a2-goog
 
