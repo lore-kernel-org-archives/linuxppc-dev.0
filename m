@@ -2,89 +2,107 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E939AC388F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 20:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBA35C56201
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 21:01:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0979E20679
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 20:58:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7C3362224A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 21:01:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TuQ+aCJq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0979E20679
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Va1cSq22"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C3362224A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CcX8t3xPfzDqtl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 07:58:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CcXCG5k9SzDqsw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 08:00:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f43;
- helo=mail-qv1-xf43.google.com; envelope-from=natechancellor@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=TuQ+aCJq; dkim-atps=neutral
-Received: from mail-qv1-xf43.google.com (mail-qv1-xf43.google.com
- [IPv6:2607:f8b0:4864:20::f43])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Va1cSq22; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CcX6m1Hc7zDqpK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 07:57:00 +1100 (AEDT)
-Received: by mail-qv1-xf43.google.com with SMTP id e14so3625949qve.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 12:57:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=Vq4heGGOiTGN9G1IkRD8WBrcjSjOcI+6TZTWqb+P7Dk=;
- b=TuQ+aCJqLp/aYCIAvi4OiWm+b3PzclZk3A3w9PPhbIS/Gp6kUjgEgg/xNWO00Mzaok
- EWPH0Lj7OhJMyuPPnfmDHRIbw3W3RR/kgAwscHVkKgJbaIALMGvKVRbOBkyFXFiUWwoe
- J957tfSP19bjmU/BDVr7jhL+rWCh+SzfZ9Kug0ytl1vVN8twrynFqaozdt13kMIs9rjh
- smQbVrXqoG/7uvWlL0y2jERz2uw3rIb9Xog4zAylbIPfqXeKh9v8CAm3RiM+VAoHYkum
- thYoUw+e2O2Q2WZfqNeFfueIoU2BCL1XHXX0cJOg20wURF1Jt/xGFvGwyb6C6kDSDqsA
- mxYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Vq4heGGOiTGN9G1IkRD8WBrcjSjOcI+6TZTWqb+P7Dk=;
- b=tzk/wiFgWgDSQd+Je+rGizdz7cItisOQumbXPL8O6a6/RFbYxWUu8GKWALcXpcooh3
- +85+QDyTLtuHmykeMuP1jDskkRwzOdNa7AO5TpeO8ikWutB5+eL9vzzWsrd7Ifk8XQfq
- ljq0dTPJ+OZZEnboeWh5HEDbpxrW+LbQvYyc8QikJF0+l9Mi6ra4TecPEtK0aqkAJwD5
- 8XmQtmaz9ZeJbqRKdZpw14tMfKDiS62WauoKo6/94hzGT1RY9k8hGeYEDZyld2LLP1LQ
- ogoVCNd3jD2RLubTh/XftLOjZKe2pvzgFpYiFMr7JmD9KIofEcOH3+8n94Uyj5wF0lTf
- 9KFw==
-X-Gm-Message-State: AOAM532f1riyP66Kzg5iEekqH1zW4cSRFG+ZizIKSUuzVJV2150Q9inS
- oSisKkHn1e6gH4JkULqYijg=
-X-Google-Smtp-Source: ABdhPJypZt09uuNdlBqteAvTQS+8+/tHJeQ/+oDwNT1iNOxVBzNrmEik0WF6994ZaxuP6abwAph6dQ==
-X-Received: by 2002:a05:6214:1541:: with SMTP id
- t1mr12336433qvw.61.1605819416229; 
- Thu, 19 Nov 2020 12:56:56 -0800 (PST)
-Received: from localhost.localdomain ([2604:1380:45f1:1d00::1])
- by smtp.gmail.com with ESMTPSA id 82sm714348qke.76.2020.11.19.12.56.55
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 19 Nov 2020 12:56:55 -0800 (PST)
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Masahiro Yamada <masahiroy@kernel.org>,
- Michal Marek <michal.lkml@markovi.net>, Kees Cook <keescook@chromium.org>
-Subject: [PATCH v2 1/2] kbuild: Hoist '--orphan-handling' into Kconfig
-Date: Thu, 19 Nov 2020 13:46:56 -0700
-Message-Id: <20201119204656.3261686-1-natechancellor@gmail.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201113195553.1487659-1-natechancellor@gmail.com>
-References: <20201113195553.1487659-1-natechancellor@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CcWRs5ZJMzDqpG;
+ Fri, 20 Nov 2020 07:26:48 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AJK4DOG167460; Thu, 19 Nov 2020 15:26:37 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type; s=pp1; bh=uXff1xvHP2finD+XGHqtCSefaov6RFvZ1+aCSuTDkjQ=;
+ b=Va1cSq22WSeEMTHvKghDEEtXkMRq36Va/fwPREuNOHPsv+1vwTREY4woQK0sU6cLkDP+
+ H0TWFwnStwYCbJaYWO2v9uCD8lFN2E+CzdXT8AfmP2FCIT8M5e7Wmh232FbBm1Oq4Jft
+ UQ5i5BV4QokJmHgtM8Qpf1xMAy41JuugYWMbELO3Wrkc0L4EvqHZAQ3pu/OLJjD6UZJB
+ zm+tV4DzphBVqXla2xkivPDalDPT+B6fJBuaAS1Ju/6+AlzKGCO2xiAirU1h4czoFFOI
+ WeEnE3D5bwAI2mQBRFq9eYDoOnnr46ZGGBrvPddA7gR7Ilig1WR84NujFANeYz8enyg1 OA== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34wy3vs2xc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 15:26:37 -0500
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AJKMviJ011487;
+ Thu, 19 Nov 2020 20:26:37 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma01dal.us.ibm.com with ESMTP id 34uttrytbv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 20:26:37 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AJKQacs16777840
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 19 Nov 2020 20:26:36 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2F93B124054;
+ Thu, 19 Nov 2020 20:26:36 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 67DC2124053;
+ Thu, 19 Nov 2020 20:26:35 +0000 (GMT)
+Received: from oc7186267434.ibm.com (unknown [9.65.227.245])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 19 Nov 2020 20:26:35 +0000 (GMT)
+Subject: Re: [PATCH net-next v2 9/9] ibmvnic: Do not replenish RX buffers
+ after every polling loop
+To: ljp <ljp@linux.vnet.ibm.com>
+References: <1605748345-32062-1-git-send-email-tlfalcon@linux.ibm.com>
+ <1605748345-32062-10-git-send-email-tlfalcon@linux.ibm.com>
+ <1a4e7b1ef1fb101cbb26fb9d5867ee46@linux.vnet.ibm.com>
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+Message-ID: <83ca37f3-07be-4179-8414-88c8c83bfe56@linux.ibm.com>
+Date: Thu, 19 Nov 2020 14:26:35 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-X-Patchwork-Bot: notify
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1a4e7b1ef1fb101cbb26fb9d5867ee46@linux.vnet.ibm.com>
+Content-Type: multipart/alternative;
+ boundary="------------BB2E899EE748F0AC1E28909F"
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-19_10:2020-11-19,
+ 2020-11-19 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 malwarescore=0
+ bulkscore=0 spamscore=0 priorityscore=1501 suspectscore=0 adultscore=0
+ impostorscore=0 mlxlogscore=628 phishscore=0 lowpriorityscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2011190134
+X-Mailman-Approved-At: Fri, 20 Nov 2020 07:58:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,267 +114,183 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
- Nick Desaulniers <ndesaulniers@google.com>,
- Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- clang-built-linux@googlegroups.com, Arvind Sankar <nivedita@alum.mit.edu>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
- Nathan Chancellor <natechancellor@gmail.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: cforno12@linux.ibm.com, netdev@vger.kernel.org, ricklind@linux.ibm.com,
+ dnbanerg@us.ibm.com,
+ Linuxppc-dev <linuxppc-dev-bounces+ljp=linux.ibm.com@lists.ozlabs.org>,
+ drt@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, kuba@kernel.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, '--orphan-handling=warn' is spread out across four different
-architectures in their respective Makefiles, which makes it a little
-unruly to deal with in case it needs to be disabled for a specific
-linker version (in this case, ld.lld 10.0.1).
+This is a multi-part message in MIME format.
+--------------BB2E899EE748F0AC1E28909F
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-To make it easier to control this, hoist this warning into Kconfig and
-the main Makefile so that disabling it is simpler, as the warning will
-only be enabled in a couple places (main Makefile and a couple of
-compressed boot folders that blow away LDFLAGS_vmlinx) and making it
-conditional is easier due to Kconfig syntax. One small additional
-benefit of this is saving a call to ld-option on incremental builds
-because we will have already evaluated it for CONFIG_LD_ORPHAN_WARN.
+On 11/19/20 3:43 AM, ljp wrote:
+> On 2020-11-18 19:12, Thomas Falcon wrote:
+>> From: "Dwip N. Banerjee" <dnbanerg@us.ibm.com>
+>>
+>> Reduce the amount of time spent replenishing RX buffers by
+>> only doing so once available buffers has fallen under a certain
+>> threshold, in this case half of the total number of buffers, or
+>> if the polling loop exits before the packets processed is less
+>> than its budget.
+>>
+>> Signed-off-by: Dwip N. Banerjee <dnbanerg@us.ibm.com>
+>> ---
+>>  drivers/net/ethernet/ibm/ibmvnic.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
+>> b/drivers/net/ethernet/ibm/ibmvnic.c
+>> index 96df6d8fa277..9fe43ab0496d 100644
+>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>> @@ -2537,7 +2537,10 @@ static int ibmvnic_poll(struct napi_struct
+>> *napi, int budget)
+>>          frames_processed++;
+>>      }
+>>
+>> -    if (adapter->state != VNIC_CLOSING)
+>> +    if (adapter->state != VNIC_CLOSING &&
+>> + ((atomic_read(&adapter->rx_pool[scrq_num].available) <
+>> +          adapter->req_rx_add_entries_per_subcrq / 2) ||
+>> +          frames_processed < budget))
+>
+> 1/2 seems a simple and good algorithm.
+> Explaining why "frames_process < budget" is necessary in the commit 
+> message
+> or source code also helps.
+>
+Hello, Lijun. The patch author, Dwip Banerjee, suggested the modified 
+commit message below:
 
-To keep the list of supported architectures the same, introduce
-CONFIG_ARCH_WANT_LD_ORPHAN_WARN, which an architecture can select to
-gain this automatically after all of the sections are specified and size
-asserted. A special thanks to Kees Cook for the help text on this
-config.
+Reduce the amount of time spent replenishing RX buffers by
+only doing so once available buffers has fallen under a certain
+threshold, in this case half of the total number of buffers, or
+if the polling loop exits before the packets processed is less
+than its budget. Non-exhaustion of NAPI budget implies lower
+incoming packet pressure, allowing the leeway to refill the buffers
+in preparation for any impending burst.
 
-Link: https://github.com/ClangBuiltLinux/linux/issues/1187
-Acked-by: Kees Cook <keescook@chromium.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-Tested-by: Nick Desaulniers <ndesaulniers@google.com>
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
+Would such an update require a v3?
 
-v1 -> v2:
+>
+>>          replenish_rx_pool(adapter, &adapter->rx_pool[scrq_num]);
+>>      if (frames_processed < budget) {
+>>          if (napi_complete_done(napi, frames_processed)) {
 
-* Change
+--------------BB2E899EE748F0AC1E28909F
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-  ifeq ($(CONFIG_LD_ORPHAN_WARN),y)
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <div class="moz-cite-prefix">On 11/19/20 3:43 AM, ljp wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:1a4e7b1ef1fb101cbb26fb9d5867ee46@linux.vnet.ibm.com">On
+      2020-11-18 19:12, Thomas Falcon wrote:
+      <br>
+      <blockquote type="cite">From: "Dwip N. Banerjee"
+        <a class="moz-txt-link-rfc2396E" href="mailto:dnbanerg@us.ibm.com">&lt;dnbanerg@us.ibm.com&gt;</a>
+        <br>
+        <br>
+        Reduce the amount of time spent replenishing RX buffers by
+        <br>
+        only doing so once available buffers has fallen under a certain
+        <br>
+        threshold, in this case half of the total number of buffers, or
+        <br>
+        if the polling loop exits before the packets processed is less
+        <br>
+        than its budget.
+        <br>
+        <br>
+        Signed-off-by: Dwip N. Banerjee <a class="moz-txt-link-rfc2396E" href="mailto:dnbanerg@us.ibm.com">&lt;dnbanerg@us.ibm.com&gt;</a>
+        <br>
+        ---
+        <br>
+         drivers/net/ethernet/ibm/ibmvnic.c | 5 ++++-
+        <br>
+         1 file changed, 4 insertions(+), 1 deletion(-)
+        <br>
+        <br>
+        diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
+        <br>
+        b/drivers/net/ethernet/ibm/ibmvnic.c
+        <br>
+        index 96df6d8fa277..9fe43ab0496d 100644
+        <br>
+        --- a/drivers/net/ethernet/ibm/ibmvnic.c
+        <br>
+        +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+        <br>
+        @@ -2537,7 +2537,10 @@ static int ibmvnic_poll(struct
+        napi_struct
+        <br>
+        *napi, int budget)
+        <br>
+                 frames_processed++;
+        <br>
+             }
+        <br>
+        <br>
+        -    if (adapter-&gt;state != VNIC_CLOSING)
+        <br>
+        +    if (adapter-&gt;state != VNIC_CLOSING &amp;&amp;
+        <br>
+        +       
+        ((atomic_read(&amp;adapter-&gt;rx_pool[scrq_num].available) &lt;
+        <br>
+        +          adapter-&gt;req_rx_add_entries_per_subcrq / 2) ||
+        <br>
+        +          frames_processed &lt; budget))
+        <br>
+      </blockquote>
+      <br>
+      1/2 seems a simple and good algorithm.
+      <br>
+      Explaining why "frames_process &lt; budget" is necessary in the
+      commit message
+      <br>
+      or source code also helps.
+      <br>
+      <br>
+    </blockquote>
+    <p>Hello, Lijun. The patch author, Dwip Banerjee, suggested the
+      modified commit message below:</p>
+    <p><font size="2">Reduce the amount of time spent replenishing RX
+        buffers by<br>
+        only doing so once available buffers has fallen under a certain<br>
+        threshold, in this case half of the total number of buffers, or<br>
+        if the polling loop exits before the packets processed is less<br>
+        than its budget. Non-exhaustion of NAPI budget implies lower<br>
+        incoming packet pressure, allowing the leeway to refill the
+        buffers<br>
+        in preparation for any impending burst.<br>
+      </font></p>
+    <p>Would such an update require a v3?<br>
+    </p>
+    <blockquote type="cite"
+      cite="mid:1a4e7b1ef1fb101cbb26fb9d5867ee46@linux.vnet.ibm.com">
+      <br>
+      <blockquote type="cite">         replenish_rx_pool(adapter,
+        &amp;adapter-&gt;rx_pool[scrq_num]);
+        <br>
+             if (frames_processed &lt; budget) {
+        <br>
+                 if (napi_complete_done(napi, frames_processed)) {
+        <br>
+      </blockquote>
+    </blockquote>
+  </body>
+</html>
 
-  to
-
-  ifdef CONFIG_LD_ORPHAN_WARN
-
-  to improve readability (Michael Ellerman)
-
-* Separate conditions for CONFIG_LD_ORPHAN warn to improve
-  readability (Kees Cook)
-
-* Pick up tags from Kees, Michael, and Nick
-
- Makefile                          | 6 ++++++
- arch/Kconfig                      | 9 +++++++++
- arch/arm/Kconfig                  | 1 +
- arch/arm/Makefile                 | 4 ----
- arch/arm/boot/compressed/Makefile | 4 +++-
- arch/arm64/Kconfig                | 1 +
- arch/arm64/Makefile               | 4 ----
- arch/powerpc/Kconfig              | 1 +
- arch/powerpc/Makefile             | 1 -
- arch/x86/Kconfig                  | 1 +
- arch/x86/Makefile                 | 3 ---
- arch/x86/boot/compressed/Makefile | 4 +++-
- init/Kconfig                      | 5 +++++
- 13 files changed, 30 insertions(+), 14 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index e2c3f65c4721..2c7116299f1f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -984,6 +984,12 @@ ifeq ($(CONFIG_RELR),y)
- LDFLAGS_vmlinux	+= --pack-dyn-relocs=relr
- endif
- 
-+# We never want expected sections to be placed heuristically by the
-+# linker. All sections should be explicitly named in the linker script.
-+ifdef CONFIG_LD_ORPHAN_WARN
-+LDFLAGS_vmlinux += --orphan-handling=warn
-+endif
-+
- # Align the bit size of userspace programs with the kernel
- KBUILD_USERCFLAGS  += $(filter -m32 -m64 --target=%, $(KBUILD_CFLAGS))
- KBUILD_USERLDFLAGS += $(filter -m32 -m64 --target=%, $(KBUILD_CFLAGS))
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 56b6ccc0e32d..ba4e966484ab 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -1028,6 +1028,15 @@ config HAVE_STATIC_CALL_INLINE
- 	bool
- 	depends on HAVE_STATIC_CALL
- 
-+config ARCH_WANT_LD_ORPHAN_WARN
-+	bool
-+	help
-+	  An arch should select this symbol once all linker sections are explicitly
-+	  included, size-asserted, or discarded in the linker scripts. This is
-+	  important because we never want expected sections to be placed heuristically
-+	  by the linker, since the locations of such sections can change between linker
-+	  versions.
-+
- source "kernel/gcov/Kconfig"
- 
- source "scripts/gcc-plugins/Kconfig"
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index fe2f17eb2b50..002e0cf025f5 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -35,6 +35,7 @@ config ARM
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT if MMU
- 	select ARCH_WANT_IPC_PARSE_VERSION
-+	select ARCH_WANT_LD_ORPHAN_WARN
- 	select BINFMT_FLAT_ARGVP_ENVP_ON_STACK
- 	select BUILDTIME_TABLE_SORT if MMU
- 	select CLONE_BACKWARDS
-diff --git a/arch/arm/Makefile b/arch/arm/Makefile
-index 4d76eab2b22d..e15f76ca2887 100644
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@ -16,10 +16,6 @@ LDFLAGS_vmlinux	+= --be8
- KBUILD_LDFLAGS_MODULE	+= --be8
- endif
- 
--# We never want expected sections to be placed heuristically by the
--# linker. All sections should be explicitly named in the linker script.
--LDFLAGS_vmlinux += $(call ld-option, --orphan-handling=warn)
--
- GZFLAGS		:=-9
- #KBUILD_CFLAGS	+=-pipe
- 
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index 47f001ca5499..e1567418a2b1 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -129,7 +129,9 @@ LDFLAGS_vmlinux += --no-undefined
- # Delete all temporary local symbols
- LDFLAGS_vmlinux += -X
- # Report orphan sections
--LDFLAGS_vmlinux += $(call ld-option, --orphan-handling=warn)
-+ifdef CONFIG_LD_ORPHAN_WARN
-+LDFLAGS_vmlinux += --orphan-handling=warn
-+endif
- # Next argument is a linker script
- LDFLAGS_vmlinux += -T
- 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 1515f6f153a0..a6b5b7ef40ae 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -81,6 +81,7 @@ config ARM64
- 	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
- 	select ARCH_WANT_FRAME_POINTERS
- 	select ARCH_WANT_HUGE_PMD_SHARE if ARM64_4K_PAGES || (ARM64_16K_PAGES && !ARM64_VA_BITS_36)
-+	select ARCH_WANT_LD_ORPHAN_WARN
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
- 	select ARM_AMBA
- 	select ARM_ARCH_TIMER
-diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
-index 5789c2d18d43..6a87d592bd00 100644
---- a/arch/arm64/Makefile
-+++ b/arch/arm64/Makefile
-@@ -28,10 +28,6 @@ LDFLAGS_vmlinux	+= --fix-cortex-a53-843419
-   endif
- endif
- 
--# We never want expected sections to be placed heuristically by the
--# linker. All sections should be explicitly named in the linker script.
--LDFLAGS_vmlinux += $(call ld-option, --orphan-handling=warn)
--
- ifeq ($(CONFIG_ARM64_USE_LSE_ATOMICS), y)
-   ifneq ($(CONFIG_ARM64_LSE_ATOMICS), y)
- $(warning LSE atomics not supported by binutils)
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e9f13fe08492..5181872f9452 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -152,6 +152,7 @@ config PPC
- 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
-+	select ARCH_WANT_LD_ORPHAN_WARN
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index a4d56f0a41d9..d9eb0da845e1 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -123,7 +123,6 @@ endif
- LDFLAGS_vmlinux-y := -Bstatic
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
- LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
--LDFLAGS_vmlinux += $(call ld-option,--orphan-handling=warn)
- 
- ifdef CONFIG_PPC64
- ifeq ($(call cc-option-yn,-mcmodel=medium),y)
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f6946b81f74a..fbf26e0f7a6a 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -100,6 +100,7 @@ config X86
- 	select ARCH_WANT_DEFAULT_BPF_JIT	if X86_64
- 	select ARCH_WANTS_DYNAMIC_TASK_STRUCT
- 	select ARCH_WANT_HUGE_PMD_SHARE
-+	select ARCH_WANT_LD_ORPHAN_WARN
- 	select ARCH_WANTS_THP_SWAP		if X86_64
- 	select BUILDTIME_TABLE_SORT
- 	select CLKEVT_I8253
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 154259f18b8b..1bf21746f4ce 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -209,9 +209,6 @@ ifdef CONFIG_X86_64
- LDFLAGS_vmlinux += -z max-page-size=0x200000
- endif
- 
--# We never want expected sections to be placed heuristically by the
--# linker. All sections should be explicitly named in the linker script.
--LDFLAGS_vmlinux += $(call ld-option, --orphan-handling=warn)
- 
- archscripts: scripts_basic
- 	$(Q)$(MAKE) $(build)=arch/x86/tools relocs
-diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index ee249088cbfe..40b8fd375d52 100644
---- a/arch/x86/boot/compressed/Makefile
-+++ b/arch/x86/boot/compressed/Makefile
-@@ -61,7 +61,9 @@ KBUILD_LDFLAGS += $(call ld-option,--no-ld-generated-unwind-info)
- # Compressed kernel should be built as PIE since it may be loaded at any
- # address by the bootloader.
- LDFLAGS_vmlinux := -pie $(call ld-option, --no-dynamic-linker)
--LDFLAGS_vmlinux += $(call ld-option, --orphan-handling=warn)
-+ifdef CONFIG_LD_ORPHAN_WARN
-+LDFLAGS_vmlinux += --orphan-handling=warn
-+endif
- LDFLAGS_vmlinux += -T
- 
- hostprogs	:= mkpiggy
-diff --git a/init/Kconfig b/init/Kconfig
-index c9446911cf41..92c58b45abb8 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1348,6 +1348,11 @@ config LD_DEAD_CODE_DATA_ELIMINATION
- 	  present. This option is not well tested yet, so use at your
- 	  own risk.
- 
-+config LD_ORPHAN_WARN
-+	def_bool y
-+	depends on ARCH_WANT_LD_ORPHAN_WARN
-+	depends on $(ld-option,--orphan-handling=warn)
-+
- config SYSCTL
- 	bool
- 
-
-base-commit: 09162bc32c880a791c6c0668ce0745cf7958f576
--- 
-2.29.2
+--------------BB2E899EE748F0AC1E28909F--
 
