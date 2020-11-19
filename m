@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62491C56201
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 08:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90FCAC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 08:52:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5684D2078E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 08:50:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5684D2078E
+	by mail.kernel.org (Postfix) with ESMTPS id A6A012078E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 08:52:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6A012078E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CcD0H1xG0zDqlW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 19:50:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CcD2S5zDgzDqlg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 19:52:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CcCxY6WX4zDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 19:47:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CcCxY6S24zDqdw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 19:47:58 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CcCxP0gbgz9txtW;
- Thu, 19 Nov 2020 09:47:53 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CcCxN0LhHz9txtY;
+ Thu, 19 Nov 2020 09:47:52 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id RSaFfZRmm4un; Thu, 19 Nov 2020 09:47:53 +0100 (CET)
+ with ESMTP id Wr6RtAVX3TBo; Thu, 19 Nov 2020 09:47:51 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CcCxN5C9nz9txtS;
- Thu, 19 Nov 2020 09:47:52 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CcCxM3vlyz9txtS;
+ Thu, 19 Nov 2020 09:47:51 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AD3C08B78A;
- Thu, 19 Nov 2020 09:47:53 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 88B748B802;
+ Thu, 19 Nov 2020 09:47:52 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id U-DgrBLkV29z; Thu, 19 Nov 2020 09:47:53 +0100 (CET)
+ with ESMTP id U6wMiB3zBo2u; Thu, 19 Nov 2020 09:47:52 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 230C68B802;
- Thu, 19 Nov 2020 09:47:53 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 236778B78A;
+ Thu, 19 Nov 2020 09:47:52 +0100 (CET)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E8BFF6688B; Thu, 19 Nov 2020 08:47:52 +0000 (UTC)
-Message-Id: <9a470c4d9a887ad32acea1d3b49f9aa1f342bb15.1605774918.git.christophe.leroy@csgroup.eu>
+ id E31C06688B; Thu, 19 Nov 2020 08:47:51 +0000 (UTC)
+Message-Id: <02a1a06817a1967a12b4ff767e17cb1de892f732.1605774882.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH for 4.4] powerpc/8xx: Always fault when _PAGE_ACCESSED is not
+Subject: [PATCH for 4.19] powerpc/8xx: Always fault when _PAGE_ACCESSED is not
  set
 To: gregkh@linuxfoundation.org, stable@vger.kernel.org
-Date: Thu, 19 Nov 2020 08:47:52 +0000 (UTC)
+Date: Thu, 19 Nov 2020 08:47:51 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,7 +74,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[This is backport for 4.4 of 29daf869cbab69088fe1755d9dd224e99ba78b56]
+[This is backport for 4.19 of 29daf869cbab69088fe1755d9dd224e99ba78b56]
 
 The kernel expects pte_young() to work regardless of CONFIG_SWAP.
 
@@ -101,35 +101,35 @@ Link: https://lore.kernel.org/r/af834e8a0f1fa97bfae65664950f0984a70c4750.1602492
  1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 01e274e6907b..3d7512e72900 100644
+index 9fd2ff28b8ff..dc99258f2e8c 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -361,11 +361,9 @@ InstructionTLBMiss:
+@@ -356,11 +356,9 @@ _ENTRY(ITLBMiss_cmp)
  	/* Load the MI_TWC with the attributes for this "segment." */
- 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+ 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
  
 -#ifdef CONFIG_SWAP
 -	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	rlwinm	r11, r10, 32-11, _PAGE_PRESENT
++	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
  	and	r11, r11, r10
  	rlwimi	r10, r11, 0, _PAGE_PRESENT
 -#endif
- 	li	r11, RPN_PATTERN
+ 	li	r11, RPN_PATTERN | 0x200
  	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 20-23 and 28 must be clear.
-@@ -436,11 +434,9 @@ DataStoreTLBMiss:
+ 	 * Software indicator bits 20 and 23 must be clear.
+@@ -482,11 +480,9 @@ _ENTRY(DTLBMiss_jmp)
  	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
  	 * r10 = (r10 & ~PRESENT) | r11;
  	 */
 -#ifdef CONFIG_SWAP
 -	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	rlwinm	r11, r10, 32-11, _PAGE_PRESENT
++	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
  	and	r11, r11, r10
  	rlwimi	r10, r11, 0, _PAGE_PRESENT
 -#endif
  	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 22 and 28 must be clear.
  	 * Software indicator bits 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
 -- 
 2.25.0
 
