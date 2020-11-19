@@ -2,107 +2,49 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18479C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 09:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C8CEC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 11:04:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C46A246E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 09:49:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="svva2tcW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C46A246E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C734522248
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 11:04:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C734522248
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CcFJK3d72zDqqY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 20:49:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ljp@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=svva2tcW; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CcFGS6kdMzDqd9;
- Thu, 19 Nov 2020 20:47:44 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AJ9Xcsw008682; Thu, 19 Nov 2020 04:47:41 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=mime-version : date :
- from : to : cc : subject : in-reply-to : references : message-id :
- content-type : content-transfer-encoding; s=pp1;
- bh=JWi0o7wjR7IXvPcRiwdaPZWvWLPYhFBuTh81cC753cA=;
- b=svva2tcWTw7f/wjNshMBPSINJ8gUyWdsOsc4oPugfTUFQnbZjyJigiTEG78GQKix8Gh+
- 0itTTGEcyCdYpDx4gzsh3lRKYEXo+PwI4ZU2o/5XDdNjrTWt4QlaTREI7TOwHlTjUdbk
- 4h5LWNOGFi3Bhcv5C8I1a99AIlGm7cL1Xuzz58kxdj0VUqrvOrfVlhGfEAGfc8HIwabc
- 6xQ6o1Gyb4J6V2Xht2AEgL3p3iSIyX+jW0163lI4afdN1ytEQWPenHKQEP1bwDg5LzC9
- 4FiF7Xvz2tlmG0rmaPXpX1N7ugzRK3nZBNLYAikh6BJXIbf0oq5pn5D3Qtx1wzpB/9LB Vg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34wg12sk55-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Nov 2020 04:47:41 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AJ9SAej002793;
- Thu, 19 Nov 2020 09:47:40 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01wdc.us.ibm.com with ESMTP id 34uyn1m0qq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Nov 2020 09:47:40 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AJ9lX2L40370602
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 19 Nov 2020 09:47:33 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 23727BE056;
- Thu, 19 Nov 2020 09:47:39 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B8BF8BE04F;
- Thu, 19 Nov 2020 09:47:38 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 19 Nov 2020 09:47:38 +0000 (GMT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CcGyP0y5czDqJ5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 22:03:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CcGwY1011zDqld
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 22:02:15 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 627981396;
+ Thu, 19 Nov 2020 03:02:11 -0800 (PST)
+Received: from red-moon.arm.com (unknown [10.57.61.203])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 02D183F718;
+ Thu, 19 Nov 2020 03:02:03 -0800 (PST)
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 00/16] PCI: dwc: Another round of clean-ups
+Date: Thu, 19 Nov 2020 11:01:58 +0000
+Message-Id: <160578351748.1677.14217204071434748520.b4-ty@arm.com>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20201105211159.1814485-1-robh@kernel.org>
+References: <20201105211159.1814485-1-robh@kernel.org>
 MIME-Version: 1.0
-Date: Thu, 19 Nov 2020 03:47:38 -0600
-From: ljp <ljp@linux.vnet.ibm.com>
-To: Thomas Falcon <tlfalcon@linux.ibm.com>
-Subject: Re: [PATCH net-next v2 8/9] ibmvnic: Use netdev_alloc_skb instead of
- alloc_skb to replenish RX buffers
-In-Reply-To: <1605748345-32062-9-git-send-email-tlfalcon@linux.ibm.com>
-References: <1605748345-32062-1-git-send-email-tlfalcon@linux.ibm.com>
- <1605748345-32062-9-git-send-email-tlfalcon@linux.ibm.com>
-Message-ID: <b62e21fcbc4ca1bf08ddf37573940139@linux.vnet.ibm.com>
-X-Sender: ljp@linux.vnet.ibm.com
-User-Agent: Roundcube Webmail/1.0.1
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-19_05:2020-11-17,
- 2020-11-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=830
- impostorscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0 malwarescore=0
- bulkscore=0 phishscore=0 adultscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011190069
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,21 +56,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cforno12@linux.ibm.com, netdev@vger.kernel.org, ricklind@linux.ibm.com,
- dnbanerg@us.ibm.com,
- Linuxppc-dev <linuxppc-dev-bounces+ljp=linux.ibm.com@lists.ozlabs.org>,
- drt@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, kuba@kernel.org,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Neil Armstrong <narmstrong@baylibre.com>, linux-pci@vger.kernel.org,
+ Binghui Wang <wangbinghui@hisilicon.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, linux-tegra@vger.kernel.org,
+ Thierry Reding <thierry.reding@gmail.com>, linux-arm-kernel@axis.com,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ Jonathan Chocron <jonnyc@amazon.com>, Shawn Guo <shawnguo@kernel.org>,
+ Kishon Vijay Abraham I <kishon@ti.com>, Fabio Estevam <festevam@gmail.com>,
+ Jerome Brunet <jbrunet@baylibre.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Kevin Hilman <khilman@baylibre.com>, Pratyush Anand <pratyush.anand@gmail.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>,
+ Murali Karicheri <m-karicheri2@ti.com>, NXP Linux Team <linux-imx@nxp.com>,
+ Xiaowei Song <songxiaowei@hisilicon.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Richard Zhu <hongxing.zhu@nxp.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+ Yue Wang <yue.wang@Amlogic.com>, linux-samsung-soc@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-amlogic@lists.infradead.org,
+ linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>,
+ linux-arm-kernel@lists.infradead.org, Roy Zang <roy.zang@nxp.com>,
+ Minghuan Lian <minghuan.Lian@nxp.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Andy Gross <agross@kernel.org>, Vidya Sagar <vidyas@nvidia.com>,
+ Stanimir Varbanov <svarbanov@mm-sol.com>, Kukjin Kim <kgene@kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Gustavo Pimentel <gustavo.pimentel@synopsys.com>,
+ linuxppc-dev@lists.ozlabs.org, Lucas Stach <l.stach@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2020-11-18 19:12, Thomas Falcon wrote:
-> From: "Dwip N. Banerjee" <dnbanerg@us.ibm.com>
+On Thu, 5 Nov 2020 15:11:43 -0600, Rob Herring wrote:
+> Here's another batch of DWC PCI host refactoring. This series primarily
+> moves more of the MSI, link up, and resource handling to the core
+> code. Beyond a couple of minor fixes, new in this version is runtime
+> detection of iATU regions instead of using DT properties.
 > 
-> Take advantage of the additional optimizations in netdev_alloc_skb when
-> allocating socket buffers to be used for packet reception.
+> No doubt I've probably broken something. Please test. I've run this thru
+> kernelci and checked boards with DWC PCI which currently is just
+> Layerscape boards (hint: add boards and/or enable PCI). A git branch is
+> here[1].
 > 
-> Signed-off-by: Dwip N. Banerjee <dnbanerg@us.ibm.com>
+> [...]
 
-Acked-by: Lijun Pan <ljp@linux.ibm.com>
+Applied to pci/dwc, thanks!
+
+[01/16] PCI: dwc: Support multiple ATU memory regions
+        https://git.kernel.org/lpieralisi/pci/c/9f9e59a480
+[02/16] PCI: dwc/intel-gw: Move ATU offset out of driver match data
+        https://git.kernel.org/lpieralisi/pci/c/1d567aac46
+[03/16] PCI: dwc: Move "dbi", "dbi2", and "addr_space" resource setup into common code
+        https://git.kernel.org/lpieralisi/pci/c/a0fd361db8
+[04/16] PCI: dwc/intel-gw: Remove some unneeded function wrappers
+        https://git.kernel.org/lpieralisi/pci/c/1cc9a55999
+[05/16] PCI: dwc: Ensure all outbound ATU windows are reset
+        https://git.kernel.org/lpieralisi/pci/c/458ad06c4c
+[06/16] PCI: dwc/dra7xx: Use the common MSI irq_chip
+        https://git.kernel.org/lpieralisi/pci/c/7f170d35f5
+[07/16] PCI: dwc: Drop the .set_num_vectors() host op
+        https://git.kernel.org/lpieralisi/pci/c/331e9bcead
+[08/16] PCI: dwc: Move MSI interrupt setup into DWC common code
+        https://git.kernel.org/lpieralisi/pci/c/5bcb1757e6
+[09/16] PCI: dwc: Rework MSI initialization
+        https://git.kernel.org/lpieralisi/pci/c/f78f02638a
+[10/16] PCI: dwc: Move link handling into common code
+        https://git.kernel.org/lpieralisi/pci/c/886a9c1347
+[11/16] PCI: dwc: Move dw_pcie_msi_init() into core
+        https://git.kernel.org/lpieralisi/pci/c/59fbab1ae4
+[12/16] PCI: dwc: Move dw_pcie_setup_rc() to DWC common code
+        https://git.kernel.org/lpieralisi/pci/c/b9ac0f9dc8
+[13/16] PCI: dwc: Remove unnecessary wrappers around dw_pcie_host_init()
+        https://git.kernel.org/lpieralisi/pci/c/60f5b73fa0
+[14/16] Revert "PCI: dwc/keystone: Drop duplicated 'num-viewport'"
+        https://git.kernel.org/lpieralisi/pci/c/fcde397422
+[15/16] PCI: dwc: Move inbound and outbound windows to common struct
+        https://git.kernel.org/lpieralisi/pci/c/9ca17af552
+[16/16] PCI: dwc: Detect number of iATU windows
+        https://git.kernel.org/lpieralisi/pci/c/281f1f99cf
+
+Thanks,
+Lorenzo
