@@ -2,85 +2,79 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6782EC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:03:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31BB3C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:30:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 726F5246EB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:03:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 227BD2224D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:30:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="duj4eOFR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 726F5246EB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qZF2Ygao"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 227BD2224D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc6yn1mBszDqkg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:03:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc7Yz0BnKzDqhC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:30:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::844;
+ helo=mail-qt1-x844.google.com; envelope-from=shengjiu.wang@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=duj4eOFR; dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+ header.s=20161025 header.b=qZF2Ygao; dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc6wd5wn0zDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:01:52 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id q34so3113855pgb.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 21:01:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc7Wh1ycjzDqZb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:28:47 +1100 (AEDT)
+Received: by mail-qt1-x844.google.com with SMTP id m65so3523076qte.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 21:28:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=8cz3enAL5Z5Hmb2tunw3mWVvo6ZiOq4lJnWnZV2/xu4=;
- b=duj4eOFRuuoRo/k2/GT7E5UP1NTqvVMJONO2EmKQx4JwzYhwNLBCLf2SokW5rrlgFI
- uhWxiVtmj9lqv35g4VinjX6jszgACQbXZN7duEVfuwdwZKKl4uV/B3IciP51RklxnBkG
- e9vDOnA4/0ctUOpISUygUux++JCmtPQi4KmCa4b8Ucr2SZw0XB6gshJRf1C+VCQtg5aD
- UOS1W+1wNa3L3RfyXaZhipBSoGV8Esfye1CRoe8MoySnHt8lvt7BmCT3nGmkSI21Uqf1
- s1HrD0GFOsedFunmHzmHcxOR9WA0mqTKLxXl+766u2ircarXMerAhy0XM0VrIG9CmxbF
- ZTDw==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=b7W8v88zLtr+ka2IPAyj56iTGAS8nCyLHMM+2VUflmo=;
+ b=qZF2YgaoXYq0nmLnEFZikoLEWobBAv2ePC78d840jV8fVBGlhwa9cPS53PSvu/xHNN
+ Xqqpc5mi8jp/wBM58SIMpqTJjRowXWQPf1GLHXRWf4LAJ8Wn7XPDBtYy4Jtvpq/Rz6bm
+ LU7/yZrTjFBu93tCO84TwEFiJfha687R8ecfczX9rbZ7ab9QupindBJgfn3i7+J2iTwm
+ mP7Y6rwWR3nITm+rmgWXkK/KQbnhB2YhDhCCSdxV67U9QgxzAiPzMZJMuSjmoLQfeGg/
+ ADv0cjpR4/VioRFC0SMi0XyDlJ+oDitPmwv1+8wjgCRdXVcuMp5oMd81S6jCQPQeSf6k
+ 8UdQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=8cz3enAL5Z5Hmb2tunw3mWVvo6ZiOq4lJnWnZV2/xu4=;
- b=DNNeIis5EgiRNHPYyjsEDztn4x52yNGBQzdt42qLCPgy64OZU8d0PVz47n3OAE+78M
- cRD3miCjosbpGzyAc/eVNKzUk8pJErbOOZOww5pUNo/s6W11GcvTwaLQcAPNJm7hE0xp
- wxwLqgH4dZImQxj06EtCE8NsAs2w8pZpJ3HOxiS9QwFQGG1Gh5n2OBqZ8/ScAc2TuJAc
- svrraV3yun+wqmHC2iYmCMTmxtNqEqmZsVLLUdUpBzLzvrFFkvTUdmRAt0K1w24yLQ+2
- J5VyR217kuqpv4R/9Eih2WD30Yc0gsLJGuSxKwEYKw3g4dtdc+piprDPYcoY6m4HWulS
- okiA==
-X-Gm-Message-State: AOAM532uzLsx2oDzLwJZpKg9VOh94GGlWYMV6/yLhUt6+I6kaooCiE8z
- 5ysWW1ZkeY/OIjS1QZ/6c/s=
-X-Google-Smtp-Source: ABdhPJwQdNXkT3Phmm+Z7AT/H+skvgWBxS2LYjl6sXgqQqAOZ7omgkkvUkEcBl/cAAspL+sft1r/UQ==
-X-Received: by 2002:a63:380d:: with SMTP id f13mr11633900pga.105.1605762108046; 
- Wed, 18 Nov 2020 21:01:48 -0800 (PST)
-Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id k8sm27722420pfh.6.2020.11.18.21.01.46
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 18 Nov 2020 21:01:47 -0800 (PST)
-Date: Wed, 18 Nov 2020 21:01:21 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Correct the clock source for mclk0
-Message-ID: <20201119050120.GA7124@Asurada-Nvidia>
-References: <1605752956-17397-1-git-send-email-shengjiu.wang@nxp.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=b7W8v88zLtr+ka2IPAyj56iTGAS8nCyLHMM+2VUflmo=;
+ b=TDUS3wpKRZQtDY+pSnPvNVQzmjoZ0sPJ03atSlLeEioxXIsbK9agWKwT+TMCqFkOLg
+ mou21RqzdlkdiZm0yf6Xi3Pw8svkFheVYcjWjVzAMHA7Krjb46n8Q4wcdlqOD4d9iUhG
+ sVFxT1RzppAoSHzC8rlrGqtzK3ZLWIcdLtn5l2iZtkq6AhaO7JDOk8Bm5eR/TE96BX5p
+ TxUUIgfG4Y4+uVuyuwzZTAUzSk6qxTWbGczuvxf/Q6qJzLDGDkt0LfRksydRdQPYqb3g
+ SLbKKAizeNTOKZ1Ixg5XhkxbPypD+9WkREDAQB/Y8UYjwtXwa26hnFibCPTAEcDRE8Na
+ 8EYg==
+X-Gm-Message-State: AOAM532YiES2ZjTsobQaQoputj+ikiLkxOl5KN1rJt03GqCMtDfRoi/5
+ AYK8f0bfsmcfoAmnG6oGYCi64Hngx7BQ4WFFV0w=
+X-Google-Smtp-Source: ABdhPJyP01zyLRekqz3HSZ/yOdRNlpFC3KuuNZYSluSSNckhGFZkRWKxMffUcBHvJTq4iZbFHpbs1CpAK1V2ccLnnRo=
+X-Received: by 2002:ac8:5806:: with SMTP id g6mr9224533qtg.292.1605763723217; 
+ Wed, 18 Nov 2020 21:28:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1605752956-17397-1-git-send-email-shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <1605752956-17397-1-git-send-email-shengjiu.wang@nxp.com>
+ <20201119050120.GA7124@Asurada-Nvidia>
+In-Reply-To: <20201119050120.GA7124@Asurada-Nvidia>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 19 Nov 2020 13:28:32 +0800
+Message-ID: <CAA+D8AOuaeZCnvY0h2stzkiMnNCe7zvK_D4M2irT7y7NC+iZFg@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Correct the clock source for mclk0
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,31 +86,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, perex@perex.cz,
- broonie@kernel.org, festevam@gmail.com, linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 19, 2020 at 10:29:16AM +0800, Shengjiu Wang wrote:
-> On VF610, mclk0 = bus_clk;
-> On i.MX6SX/6UL/6ULL/7D, mclk0 = mclk1;
-> On i.MX7ULP, mclk0 = bus_clk;
-> On i.MX8QM/8QXP, mclk0 = bus_clk;
-> On i.MX8MQ/8MN/8MM/8MP, mclk0 = bus_clk;
-> 
-> So add variable mclk0_mclk1_match in fsl_sai_soc_data To
+On Thu, Nov 19, 2020 at 1:02 PM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
+>
+> On Thu, Nov 19, 2020 at 10:29:16AM +0800, Shengjiu Wang wrote:
+> > On VF610, mclk0 = bus_clk;
+> > On i.MX6SX/6UL/6ULL/7D, mclk0 = mclk1;
+> > On i.MX7ULP, mclk0 = bus_clk;
+> > On i.MX8QM/8QXP, mclk0 = bus_clk;
+> > On i.MX8MQ/8MN/8MM/8MP, mclk0 = bus_clk;
+> >
+> > So add variable mclk0_mclk1_match in fsl_sai_soc_data To
+>
+> Not in favor of "mclk0_mclk1_match" as it doesn't sound explicit
+> to me. Instead, "mclk0_is_bus_clk" or "mclk0_is_mclk1" might be
+> better. Or in case that you foresee some other implementation:
+>
+> enum {
+>         MCLK0_IS_BUS_CLK,
+>         MCLK0_IS_MCLK1,
+> };
+>
+> static const struct fsl_sai_soc_data fsl_sai_vf610_data = {
+> +       .mclk0_alias = MCLK0_IS_BUS_CLK,
+> };
 
-Not in favor of "mclk0_mclk1_match" as it doesn't sound explicit
-to me. Instead, "mclk0_is_bus_clk" or "mclk0_is_mclk1" might be
-better. Or in case that you foresee some other implementation:
+No problem.
 
-enum {
-	MCLK0_IS_BUS_CLK,
-	MCLK0_IS_MCLK1,
-};
+But I just find this patch doesn't consider the mqs case.
+MCLK0 can't be used for mqs, it needs MCLK1, even
+the MCLK0 is same as MCLK1,  MCLK1 need to be
+selected for mqs case.
 
-static const struct fsl_sai_soc_data fsl_sai_vf610_data = {
-+	.mclk0_alias = MCLK0_IS_BUS_CLK,
-};
+Is there a decent way for this case?
+
+best regards
+wang shengjiu
