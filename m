@@ -2,94 +2,108 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84BEBC56201
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 18:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF170C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 20:39:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9BBE824199
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 18:24:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ADD3220888
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 20:39:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="SMr5y3ef";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="SMr5y3ef"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BBE824199
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="dPnV+mle"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADD3220888
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CcSkh4X1zzDqRY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 05:24:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CcWkx6vZrzDqqY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 07:39:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ljp@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=SMr5y3ef; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=SMr5y3ef; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=dPnV+mle; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CcShg1VW4zDqkq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 05:22:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605810160;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=fKsj/vAB3tyYOTY5WM4AqOsn+OP/VuYRxWPQE9QnHUA=;
- b=SMr5y3efZVLZQxvMTbhD/8z+pTKGA6sHP1xWKlizLv8tpvtm7jCuj1AGKOr+ViXvbtgWVo
- T0AkZCijN/hTbgQsYg29O8srmMxi96yfZysJ5GzHuE9YAAesyM8QltMpgFMDHpzhOlWGWR
- ZChRlCXwsuz5/JNPrCq/LbUE47zWjcs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1605810160;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=fKsj/vAB3tyYOTY5WM4AqOsn+OP/VuYRxWPQE9QnHUA=;
- b=SMr5y3efZVLZQxvMTbhD/8z+pTKGA6sHP1xWKlizLv8tpvtm7jCuj1AGKOr+ViXvbtgWVo
- T0AkZCijN/hTbgQsYg29O8srmMxi96yfZysJ5GzHuE9YAAesyM8QltMpgFMDHpzhOlWGWR
- ZChRlCXwsuz5/JNPrCq/LbUE47zWjcs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-495-UJ7j9u_7MQucV0NIpAtEiA-1; Thu, 19 Nov 2020 13:22:37 -0500
-X-MC-Unique: UJ7j9u_7MQucV0NIpAtEiA-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id C889680EFA8;
- Thu, 19 Nov 2020 18:22:29 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.192.164])
- by smtp.corp.redhat.com (Postfix) with SMTP id 078855D9C2;
- Thu, 19 Nov 2020 18:22:26 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
- oleg@redhat.com; Thu, 19 Nov 2020 19:22:29 +0100 (CET)
-Date: Thu, 19 Nov 2020 19:22:25 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3 0/2] powerpc/ptrace: Hard wire PT_SOFTE value to 1 in
- gpr_get() too
-Message-ID: <20201119182225.GB5138@redhat.com>
-References: <20201119160154.GA5183@redhat.com>
- <d7c3ed05-b7e7-fac0-871f-4c43c1a7e90c@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CcWhx4qXfzDqpC;
+ Fri, 20 Nov 2020 07:38:09 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AJKXYXh117961; Thu, 19 Nov 2020 15:38:05 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=mime-version : date :
+ from : to : cc : subject : in-reply-to : references : message-id :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=J8JOzrBszYo1HYQhBcjmXPwwN8xdh7+UYUtraPgogWA=;
+ b=dPnV+mleC6DBFvejh1ShOgSDCHFJcSfRXbXw6d4xnaEuY3aa8e0RJw6nST0IJDAy2MQV
+ GH55+x2hrRNiI4gJjHxfWZMWsCk6phETiwFQ/hZz+P+ETyIbI2XFFAHncN1wxGU6IQG2
+ hl+yHayR78Jz06wAHtPWrFCny5++nuxKat9D5bCK+fditJ9s/lVsPphWmKMOxj0HTVUZ
+ 12EmgA5dNhZTBGgNhpAsJJJdHc9yLPRP1XPqFppRM14EQWob46RomZcc5shCUDTSJoYv
+ J8a+crdm1XfZOyk3g++BJHQdNfD44Vn9Pwo8vmMZURlQwPy1DmYSiS/p7B1DmOUapXgU jQ== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34wy6bs8em-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 15:38:05 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AJKOLfl016076;
+ Thu, 19 Nov 2020 20:38:04 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01wdc.us.ibm.com with ESMTP id 34uyn1qrvg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 20:38:04 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AJKc3TK328354
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 19 Nov 2020 20:38:03 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B76AF28059;
+ Thu, 19 Nov 2020 20:38:03 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B831C28058;
+ Thu, 19 Nov 2020 20:38:02 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.16.170.189])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 19 Nov 2020 20:38:02 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d7c3ed05-b7e7-fac0-871f-4c43c1a7e90c@csgroup.eu>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Date: Thu, 19 Nov 2020 14:38:02 -0600
+From: ljp <ljp@linux.vnet.ibm.com>
+To: Thomas Falcon <tlfalcon@linux.ibm.com>
+Subject: Re: [PATCH net-next v2 9/9] ibmvnic: Do not replenish RX buffers
+ after every polling loop
+In-Reply-To: <83ca37f3-07be-4179-8414-88c8c83bfe56@linux.ibm.com>
+References: <1605748345-32062-1-git-send-email-tlfalcon@linux.ibm.com>
+ <1605748345-32062-10-git-send-email-tlfalcon@linux.ibm.com>
+ <1a4e7b1ef1fb101cbb26fb9d5867ee46@linux.vnet.ibm.com>
+ <83ca37f3-07be-4179-8414-88c8c83bfe56@linux.ibm.com>
+Message-ID: <7853649c6c1f2f4ce6d8bf9643cd1a43@linux.vnet.ibm.com>
+X-Sender: ljp@linux.vnet.ibm.com
+User-Agent: Roundcube Webmail/1.0.1
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-19_10:2020-11-19,
+ 2020-11-19 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0
+ mlxlogscore=413 spamscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ mlxscore=0 phishscore=0 adultscore=0 impostorscore=0 lowpriorityscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011190138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,35 +115,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Jan Kratochvil <jan.kratochvil@redhat.com>
+Cc: cforno12@linux.ibm.com, netdev@vger.kernel.org, ricklind@linux.ibm.com,
+ dnbanerg@us.ibm.com,
+ Linuxppc-dev <linuxppc-dev-bounces+ljp=linux.ibm.com@lists.ozlabs.org>,
+ drt@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, kuba@kernel.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/19, Christophe Leroy wrote:
->
->
-> Le 19/11/2020 à 17:01, Oleg Nesterov a écrit :
-> >Can we finally fix this problem? ;)
-> >
-> >My previous attempt was ignored, see
->
-> That doesn't seems right.
->
-> Michael made some suggestion it seems, can you respond to it ?
+On 2020-11-19 14:26, Thomas Falcon wrote:
+> On 11/19/20 3:43 AM, ljp wrote:
+> 
+>> On 2020-11-18 19:12, Thomas Falcon wrote:
+>> 
+>>> From: "Dwip N. Banerjee" <dnbanerg@us.ibm.com>
+>>> 
+>>> Reduce the amount of time spent replenishing RX buffers by
+>>> only doing so once available buffers has fallen under a certain
+>>> threshold, in this case half of the total number of buffers, or
+>>> if the polling loop exits before the packets processed is less
+>>> than its budget.
+>>> 
+>>> Signed-off-by: Dwip N. Banerjee <dnbanerg@us.ibm.com>
+>>> ---
+>>> drivers/net/ethernet/ibm/ibmvnic.c | 5 ++++-
+>>> 1 file changed, 4 insertions(+), 1 deletion(-)
+>>> 
+>>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
+>>> b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> index 96df6d8fa277..9fe43ab0496d 100644
+>>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> @@ -2537,7 +2537,10 @@ static int ibmvnic_poll(struct napi_struct
+>>> 
+>>> *napi, int budget)
+>>> frames_processed++;
+>>> }
+>>> 
+>>> - if (adapter->state != VNIC_CLOSING)
+>>> + if (adapter->state != VNIC_CLOSING &&
+>>> + ((atomic_read(&adapter->rx_pool[scrq_num].available) <
+>>> + adapter->req_rx_add_entries_per_subcrq / 2) ||
+>>> + frames_processed < budget))
+>> 
+>> 1/2 seems a simple and good algorithm.
+>> Explaining why "frames_process < budget" is necessary in the commit
+>> message
+>> or source code also helps.
+> 
+> Hello, Lijun. The patch author, Dwip Banerjee, suggested the modified
+> commit message below:
+> 
+> Reduce the amount of time spent replenishing RX buffers by
+>  only doing so once available buffers has fallen under a certain
+>  threshold, in this case half of the total number of buffers, or
+>  if the polling loop exits before the packets processed is less
+>  than its budget. Non-exhaustion of NAPI budget implies lower
+>  incoming packet pressure, allowing the leeway to refill the buffers
+>  in preparation for any impending burst.
 
-I did, see https://lore.kernel.org/lkml/20200611105830.GB12500@redhat.com/
+It looks good to me.
 
-> >Sorry, uncompiled/untested, I don't have a ppc machine.
->
-> I compiled with ppc64_defconfig, that seems ok. Still untested.
+> 
+> Would such an update require a v3?
 
-Thanks.
+I assume you ask Jakub, right?
 
-Oleg.
 
+>>> replenish_rx_pool(adapter, &adapter->rx_pool[scrq_num]);
+>>> if (frames_processed < budget) {
+>>> if (napi_complete_done(napi, frames_processed)) {
