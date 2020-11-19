@@ -2,106 +2,88 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73A5CC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 191FCC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:56:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B375238E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:45:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 29FF12225E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:56:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="ebKHdeYH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B375238E6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jcTSHx7i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29FF12225E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc7tj0kKBzDql6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:45:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc87D1TJhzDqZH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:56:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
+ helo=mail-pf1-x443.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=ebKHdeYH; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=jcTSHx7i; dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc7pt4BV8zDqc9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:41:55 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AJ5Vgij009016; Thu, 19 Nov 2020 00:41:47 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=qe//0s4wXTq9ZPV3rKhfOykBf8h/xmrRK8Ib5sl3qOM=;
- b=ebKHdeYHZ+uJm2peo7wA2YEbz1iw6SMIeUOayPp69twzeO3FWF7M2tHRQKEcz74sYXie
- RCZ5npKMUwd90KS43XP/gBH5/PFZ4McWL7zyfbpZM6iaTNehRarsXUGTU19ppw3ERXdE
- T4wZeKxdkSl50oF9XAxYOZgIctqGwbJUEJEDkxOisFlmu34b8o4pAppR2ANB9BTgl7GE
- I6zD30SRnBzFPN1FuV1rwzg+6BZqtbeFFnrsLhk1zVkR0TpS1LlpGDPmmcObYTWhG12Z
- nvYsFeEkfAJgm+ElFYu3vuqjH1jgN4VbR82KRB/b44+7MUCQuYVSu6UoM0Fpv92KFo2+ BQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34wg67ubty-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Nov 2020 00:41:47 -0500
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0AJ5fkh1041364;
- Thu, 19 Nov 2020 00:41:47 -0500
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34wg67ubte-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Nov 2020 00:41:46 -0500
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AJ5dC8E020254;
- Thu, 19 Nov 2020 05:41:44 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma05fra.de.ibm.com with ESMTP id 34v69us392-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Nov 2020 05:41:44 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0AJ5ffYa58261798
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 19 Nov 2020 05:41:42 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D757C11C04A;
- Thu, 19 Nov 2020 05:41:41 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 88C8C11C052;
- Thu, 19 Nov 2020 05:41:40 +0000 (GMT)
-Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 19 Nov 2020 05:41:40 +0000 (GMT)
-From: Sandipan Das <sandipan@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH 1/2] powerpc: sstep: Fix load and update instructions
-Date: Thu, 19 Nov 2020 11:11:38 +0530
-Message-Id: <20201119054139.244083-1-sandipan@linux.ibm.com>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc8511rWJzDqXG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:54:11 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id q10so3416574pfn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 21:54:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=W+/WJCvab/Hgugh+VunRbyQx3J7VABdiIFZZOJfo1TY=;
+ b=jcTSHx7ixnOfDz+kuB8ZRPKp/lqdE5UHKP+d8CVEEqI93FNGKZLVph7FLYgD1JN+pv
+ /DdJEYApwcXEIZLUeqkVkaHdbZbUOH0B1Gs3ytKpcYvoa/uCILTYC9BtvWPUyEX3sb9G
+ 07LvFQyVqUQXlZJwa/HQlnkMjFKIYsmwn6vxvq1p4DOlfS8bGa9fWYitBwjGBwIwEAx3
+ +uHf0UhsMiop63FjT2nQ0dQX0SB9YvtOfZdIiGy1vc8lTLzHBQ9BL/1trJJNVtnqOuf0
+ 7eX9aDm4eZYAhwR9NyC5dgDiOaEAqnSa/L/+aT7UnlWsbc6m+pzzStA2bcoYYRUe9ee0
+ yhRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=W+/WJCvab/Hgugh+VunRbyQx3J7VABdiIFZZOJfo1TY=;
+ b=fFKNYmwOeWCp5jIkWFl7xHVRDnt5CgaMeKhTusMrQR7dQwTWEGnY2NaIZ7yI4ozE17
+ Pm7YT0GyeoIvuhiINSvgFRMlY/VpE/An3yqYwns89w7HWfLXlbO7I+djyX36A/cCNP0P
+ WHjb2CeI8zHpNE+jzOP9gro6tA5Yv+4h5XnVbsSdNTu247AGgQf2oHo/Y1NwSQhkvrXG
+ K7GdE0qXdsz9zKyIreKfGHiJTjKdq7gKcdzenn5uiLLsT2ltJD/2OI+x+TDtj2xMZrWH
+ MUQnexiQg6GDZ4157iSLE52Av+OWuF+Xq2XL9mo+72KwnMkXYnzwmBrysQt4HPtzZkL0
+ 8WLg==
+X-Gm-Message-State: AOAM530xld+vzMBjo4QGXZhVze1zk6l0xEXO5U6D90FYpA1gdkhDaO6I
+ SLtLGoyKZxOZ0Nhz/ndarog=
+X-Google-Smtp-Source: ABdhPJynlE37JqiWB11KpgkMSim1NZ0+qLh6TpiXRD+r+aYGCY8JpQYcvhso0TeNNN7BWmAZ7yAP8g==
+X-Received: by 2002:aa7:8c16:0:b029:196:33d2:721f with SMTP id
+ c22-20020aa78c160000b029019633d2721fmr7465723pfd.70.1605765248175; 
+ Wed, 18 Nov 2020 21:54:08 -0800 (PST)
+Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id t9sm4682874pjq.46.2020.11.18.21.54.07
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 18 Nov 2020 21:54:07 -0800 (PST)
+Date: Wed, 18 Nov 2020 21:53:41 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Correct the clock source for mclk0
+Message-ID: <20201119055340.GA1666@Asurada-Nvidia>
+References: <1605752956-17397-1-git-send-email-shengjiu.wang@nxp.com>
+ <20201119050120.GA7124@Asurada-Nvidia>
+ <CAA+D8AOuaeZCnvY0h2stzkiMnNCe7zvK_D4M2irT7y7NC+iZFg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-19_01:2020-11-17,
- 2020-11-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1011
- malwarescore=0 priorityscore=1501 impostorscore=0 bulkscore=0
- mlxlogscore=862 phishscore=0 lowpriorityscore=0 suspectscore=1 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011190037
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAA+D8AOuaeZCnvY0h2stzkiMnNCe7zvK_D4M2irT7y7NC+iZFg@mail.gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,149 +95,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com, paulus@samba.org,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, dja@axtens.net
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Power ISA says that the fixed-point load and update
-instructions must neither use R0 for the base address (RA)
-nor have the destination (RT) and the base address (RA) as
-the same register. In these cases, the instruction is
-invalid. This applies to the following instructions.
-  * Load Byte and Zero with Update (lbzu)
-  * Load Byte and Zero with Update Indexed (lbzux)
-  * Load Halfword and Zero with Update (lhzu)
-  * Load Halfword and Zero with Update Indexed (lhzux)
-  * Load Halfword Algebraic with Update (lhau)
-  * Load Halfword Algebraic with Update Indexed (lhaux)
-  * Load Word and Zero with Update (lwzu)
-  * Load Word and Zero with Update Indexed (lwzux)
-  * Load Word Algebraic with Update Indexed (lwaux)
-  * Load Doubleword with Update (ldu)
-  * Load Doubleword with Update Indexed (ldux)
+On Thu, Nov 19, 2020 at 01:28:32PM +0800, Shengjiu Wang wrote:
+> On Thu, Nov 19, 2020 at 1:02 PM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
+> >
+> > On Thu, Nov 19, 2020 at 10:29:16AM +0800, Shengjiu Wang wrote:
+> > > On VF610, mclk0 = bus_clk;
+> > > On i.MX6SX/6UL/6ULL/7D, mclk0 = mclk1;
+> > > On i.MX7ULP, mclk0 = bus_clk;
+> > > On i.MX8QM/8QXP, mclk0 = bus_clk;
+> > > On i.MX8MQ/8MN/8MM/8MP, mclk0 = bus_clk;
+> > >
+> > > So add variable mclk0_mclk1_match in fsl_sai_soc_data To
+> >
+> > Not in favor of "mclk0_mclk1_match" as it doesn't sound explicit
+> > to me. Instead, "mclk0_is_bus_clk" or "mclk0_is_mclk1" might be
+> > better. Or in case that you foresee some other implementation:
+> >
+> > enum {
+> >         MCLK0_IS_BUS_CLK,
+> >         MCLK0_IS_MCLK1,
+> > };
+> >
+> > static const struct fsl_sai_soc_data fsl_sai_vf610_data = {
+> > +       .mclk0_alias = MCLK0_IS_BUS_CLK,
+> > };
+> 
+> No problem.
+> 
+> But I just find this patch doesn't consider the mqs case.
+> MCLK0 can't be used for mqs, it needs MCLK1, even
+> the MCLK0 is same as MCLK1,  MCLK1 need to be
+> selected for mqs case.
+> 
+> Is there a decent way for this case?
 
-However, the following behaviour is observed using some
-invalid opcodes where RA = RT.
+Is there any use case that we have to use MCLK0 instead of MCLK1
+on SoCs where MCLK0=MCLK1? If no, how about skip MCLK0 at all in
+the for-loop at fsl_sai_set_bclk?
 
-An userspace program using an invalid instruction word like
-0xe9ce0001, i.e. "ldu r14, 0(r14)", runs and exits without
-getting terminated abruptly. The instruction performs the
-load operation but does not write the effective address to
-the base address register. Attaching an uprobe at that
-instruction's address results in emulation which writes the
-effective address to the base register. Thus, the final value
-of the base address register is different.
+	/*
+	 * There is no point in polling MCLK0 if it is identical to MCLK1.
+	 * And given that MQS use case has to use MCLK1 though two clocks
+	 * are the same, we simply skip MCLK0 and start to find from MCLK1.
+	 */
+	id = mclk0_is_mclk1 ? 1 : 0;
 
-To remove any inconsistencies, this adds an additional check
-for the aforementioned instructions to make sure that they
-are treated as unknown by the emulation infrastructure when
-RA = 0 or RA = RT. The kernel will then fallback to executing
-the instruction on hardware.
-
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
----
- arch/powerpc/lib/sstep.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 855457ed09b5..25a5436be6c6 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -2157,11 +2157,15 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 		case 23:	/* lwzx */
- 		case 55:	/* lwzux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, u, 4);
- 			break;
- 
- 		case 87:	/* lbzx */
- 		case 119:	/* lbzux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, u, 1);
- 			break;
- 
-@@ -2215,6 +2219,8 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #ifdef __powerpc64__
- 		case 21:	/* ldx */
- 		case 53:	/* ldux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, u, 8);
- 			break;
- 
-@@ -2236,18 +2242,24 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 		case 279:	/* lhzx */
- 		case 311:	/* lhzux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, u, 2);
- 			break;
- 
- #ifdef __powerpc64__
- 		case 341:	/* lwax */
- 		case 373:	/* lwaux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, SIGNEXT | u, 4);
- 			break;
- #endif
- 
- 		case 343:	/* lhax */
- 		case 375:	/* lhaux */
-+			if (u && (ra == 0 || ra == rd))
-+				return -1;
- 			op->type = MKOP(LOAD, SIGNEXT | u, 2);
- 			break;
- 
-@@ -2540,12 +2552,16 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 	case 32:	/* lwz */
- 	case 33:	/* lwzu */
-+		if (u && (ra == 0 || ra == rd))
-+			return -1;
- 		op->type = MKOP(LOAD, u, 4);
- 		op->ea = dform_ea(word, regs);
- 		break;
- 
- 	case 34:	/* lbz */
- 	case 35:	/* lbzu */
-+		if (u && (ra == 0 || ra == rd))
-+			return -1;
- 		op->type = MKOP(LOAD, u, 1);
- 		op->ea = dform_ea(word, regs);
- 		break;
-@@ -2564,12 +2580,16 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 	case 40:	/* lhz */
- 	case 41:	/* lhzu */
-+		if (u && (ra == 0 || ra == rd))
-+			return -1;
- 		op->type = MKOP(LOAD, u, 2);
- 		op->ea = dform_ea(word, regs);
- 		break;
- 
- 	case 42:	/* lha */
- 	case 43:	/* lhau */
-+		if (u && (ra == 0 || ra == rd))
-+			return -1;
- 		op->type = MKOP(LOAD, SIGNEXT | u, 2);
- 		op->ea = dform_ea(word, regs);
- 		break;
-@@ -2659,6 +2679,8 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			op->type = MKOP(LOAD, 0, 8);
- 			break;
- 		case 1:		/* ldu */
-+			if (ra == 0 || ra == rd)
-+				return -1;
- 			op->type = MKOP(LOAD, UPDATE, 8);
- 			break;
- 		case 2:		/* lwa */
--- 
-2.25.1
-
+	for (; id < FSL_SAI_MCLK_MAX; id++) {
