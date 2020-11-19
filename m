@@ -2,79 +2,109 @@ Return-Path: <SRS0=HG9l=EZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31BB3C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF9F2C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:43:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 227BD2224D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:30:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EC3A720679
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 05:43:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qZF2Ygao"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 227BD2224D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="nCwBy0iw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC3A720679
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc7Yz0BnKzDqhC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:30:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cc7rl5df3zDql5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2020 16:43:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::844;
- helo=mail-qt1-x844.google.com; envelope-from=shengjiu.wang@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=qZF2Ygao; dkim-atps=neutral
-Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
- [IPv6:2607:f8b0:4864:20::844])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=nCwBy0iw; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc7Wh1ycjzDqZb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:28:47 +1100 (AEDT)
-Received: by mail-qt1-x844.google.com with SMTP id m65so3523076qte.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2020 21:28:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=b7W8v88zLtr+ka2IPAyj56iTGAS8nCyLHMM+2VUflmo=;
- b=qZF2YgaoXYq0nmLnEFZikoLEWobBAv2ePC78d840jV8fVBGlhwa9cPS53PSvu/xHNN
- Xqqpc5mi8jp/wBM58SIMpqTJjRowXWQPf1GLHXRWf4LAJ8Wn7XPDBtYy4Jtvpq/Rz6bm
- LU7/yZrTjFBu93tCO84TwEFiJfha687R8ecfczX9rbZ7ab9QupindBJgfn3i7+J2iTwm
- mP7Y6rwWR3nITm+rmgWXkK/KQbnhB2YhDhCCSdxV67U9QgxzAiPzMZJMuSjmoLQfeGg/
- ADv0cjpR4/VioRFC0SMi0XyDlJ+oDitPmwv1+8wjgCRdXVcuMp5oMd81S6jCQPQeSf6k
- 8UdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=b7W8v88zLtr+ka2IPAyj56iTGAS8nCyLHMM+2VUflmo=;
- b=TDUS3wpKRZQtDY+pSnPvNVQzmjoZ0sPJ03atSlLeEioxXIsbK9agWKwT+TMCqFkOLg
- mou21RqzdlkdiZm0yf6Xi3Pw8svkFheVYcjWjVzAMHA7Krjb46n8Q4wcdlqOD4d9iUhG
- sVFxT1RzppAoSHzC8rlrGqtzK3ZLWIcdLtn5l2iZtkq6AhaO7JDOk8Bm5eR/TE96BX5p
- TxUUIgfG4Y4+uVuyuwzZTAUzSk6qxTWbGczuvxf/Q6qJzLDGDkt0LfRksydRdQPYqb3g
- SLbKKAizeNTOKZ1Ixg5XhkxbPypD+9WkREDAQB/Y8UYjwtXwa26hnFibCPTAEcDRE8Na
- 8EYg==
-X-Gm-Message-State: AOAM532YiES2ZjTsobQaQoputj+ikiLkxOl5KN1rJt03GqCMtDfRoi/5
- AYK8f0bfsmcfoAmnG6oGYCi64Hngx7BQ4WFFV0w=
-X-Google-Smtp-Source: ABdhPJyP01zyLRekqz3HSZ/yOdRNlpFC3KuuNZYSluSSNckhGFZkRWKxMffUcBHvJTq4iZbFHpbs1CpAK1V2ccLnnRo=
-X-Received: by 2002:ac8:5806:: with SMTP id g6mr9224533qtg.292.1605763723217; 
- Wed, 18 Nov 2020 21:28:43 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cc7pt477VzDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2020 16:41:55 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AJ5ZMQN007209; Thu, 19 Nov 2020 00:41:48 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=rwlvu4v6zmhxHRxW1AFZfAM4h7H0LJ+/D5n2lUantUw=;
+ b=nCwBy0iwsQ9z7pbWbcbZe0xZUWZcc/MdN9jl8tTHefR1jG5eca/Pt/91YF6EJFhFvFSj
+ CXlqUj+t0BG/fwwXqTBtDrjR75kSlh2My4GdFTf27dwudLTJHGl3onFjIrbhm369+0Ff
+ Pw0DJ9xGisFyRAJgwh8R1RvqNNOH+ni9QPbWxH8BGd13fSsakSXMby6aQYt3q2KHz1sP
+ s6RIF48G8vs4Z037CvdE1EyJuG1t/pzFsCadfkYN/IOV+Wz8YoFSHH2y84OqrttF77Fs
+ WYm3rlhIkgfrtEjDiz5Z+7yYQNaENtII4AucPI+qQDXv1g6VEaBHLShFF+KPvyT3sJQJ Dw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34wg603954-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 00:41:48 -0500
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0AJ5a75l010178;
+ Thu, 19 Nov 2020 00:41:48 -0500
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34wg60394j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 00:41:48 -0500
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AJ5fj3i000457;
+ Thu, 19 Nov 2020 05:41:45 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 34w4yfgkp8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Nov 2020 05:41:45 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AJ5fh4L54460774
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 19 Nov 2020 05:41:43 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7699011C058;
+ Thu, 19 Nov 2020 05:41:43 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28D2311C04A;
+ Thu, 19 Nov 2020 05:41:42 +0000 (GMT)
+Received: from fir03.in.ibm.com (unknown [9.121.59.65])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 19 Nov 2020 05:41:41 +0000 (GMT)
+From: Sandipan Das <sandipan@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 2/2] powerpc: sstep: Fix store and update instructions
+Date: Thu, 19 Nov 2020 11:11:39 +0530
+Message-Id: <20201119054139.244083-2-sandipan@linux.ibm.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20201119054139.244083-1-sandipan@linux.ibm.com>
+References: <20201119054139.244083-1-sandipan@linux.ibm.com>
 MIME-Version: 1.0
-References: <1605752956-17397-1-git-send-email-shengjiu.wang@nxp.com>
- <20201119050120.GA7124@Asurada-Nvidia>
-In-Reply-To: <20201119050120.GA7124@Asurada-Nvidia>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Thu, 19 Nov 2020 13:28:32 +0800
-Message-ID: <CAA+D8AOuaeZCnvY0h2stzkiMnNCe7zvK_D4M2irT7y7NC+iZFg@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Correct the clock source for mclk0
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-19_01:2020-11-17,
+ 2020-11-19 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 mlxscore=0
+ mlxlogscore=873 impostorscore=0 malwarescore=0 phishscore=0 adultscore=0
+ lowpriorityscore=0 suspectscore=1 spamscore=0 bulkscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2011190037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,47 +116,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com, paulus@samba.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 19, 2020 at 1:02 PM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
->
-> On Thu, Nov 19, 2020 at 10:29:16AM +0800, Shengjiu Wang wrote:
-> > On VF610, mclk0 = bus_clk;
-> > On i.MX6SX/6UL/6ULL/7D, mclk0 = mclk1;
-> > On i.MX7ULP, mclk0 = bus_clk;
-> > On i.MX8QM/8QXP, mclk0 = bus_clk;
-> > On i.MX8MQ/8MN/8MM/8MP, mclk0 = bus_clk;
-> >
-> > So add variable mclk0_mclk1_match in fsl_sai_soc_data To
->
-> Not in favor of "mclk0_mclk1_match" as it doesn't sound explicit
-> to me. Instead, "mclk0_is_bus_clk" or "mclk0_is_mclk1" might be
-> better. Or in case that you foresee some other implementation:
->
-> enum {
->         MCLK0_IS_BUS_CLK,
->         MCLK0_IS_MCLK1,
-> };
->
-> static const struct fsl_sai_soc_data fsl_sai_vf610_data = {
-> +       .mclk0_alias = MCLK0_IS_BUS_CLK,
-> };
+The Power ISA says that the fixed-point store and update
+instructions must not use R0 for the base address (RA).
+In this case, the instruction is invalid. This applies
+to the following instructions.
+  * Store Byte with Update (stbu)
+  * Store Byte with Update Indexed (stbux)
+  * Store Halfword with Update (sthu)
+  * Store Halfword with Update Indexed (sthux)
+  * Store Word with Update (stwu)
+  * Store Word with Update Indexed (stwux)
+  * Store Doubleword with Update (stdu)
+  * Store Doubleword with Update Indexed (stdux)
 
-No problem.
+To remove any inconsistencies, this adds an additional check
+for the aforementioned instructions to make sure that they
+are treated as unknown by the emulation infrastructure when
+RA = 0. The kernel will then fallback to executing the
+instruction on hardware.
 
-But I just find this patch doesn't consider the mqs case.
-MCLK0 can't be used for mqs, it needs MCLK1, even
-the MCLK0 is same as MCLK1,  MCLK1 need to be
-selected for mqs case.
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+---
+ arch/powerpc/lib/sstep.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-Is there a decent way for this case?
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 25a5436be6c6..1c20c14f8757 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -2226,17 +2226,23 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 		case 149:	/* stdx */
+ 		case 181:	/* stdux */
++			if (u && ra == 0)
++				return -1;
+ 			op->type = MKOP(STORE, u, 8);
+ 			break;
+ #endif
+ 
+ 		case 151:	/* stwx */
+ 		case 183:	/* stwux */
++			if (u && ra == 0)
++				return -1;
+ 			op->type = MKOP(STORE, u, 4);
+ 			break;
+ 
+ 		case 215:	/* stbx */
+ 		case 247:	/* stbux */
++			if (u && ra == 0)
++				return -1;
+ 			op->type = MKOP(STORE, u, 1);
+ 			break;
+ 
+@@ -2265,6 +2271,8 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 		case 407:	/* sthx */
+ 		case 439:	/* sthux */
++			if (u && ra == 0)
++				return -1;
+ 			op->type = MKOP(STORE, u, 2);
+ 			break;
+ 
+@@ -2568,12 +2576,16 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 	case 36:	/* stw */
+ 	case 37:	/* stwu */
++		if (u && ra == 0)
++			return -1;
+ 		op->type = MKOP(STORE, u, 4);
+ 		op->ea = dform_ea(word, regs);
+ 		break;
+ 
+ 	case 38:	/* stb */
+ 	case 39:	/* stbu */
++		if (u && ra == 0)
++			return -1;
+ 		op->type = MKOP(STORE, u, 1);
+ 		op->ea = dform_ea(word, regs);
+ 		break;
+@@ -2596,6 +2608,8 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 	case 44:	/* sth */
+ 	case 45:	/* sthu */
++		if (u && ra == 0)
++			return -1;
+ 		op->type = MKOP(STORE, u, 2);
+ 		op->ea = dform_ea(word, regs);
+ 		break;
+@@ -2746,6 +2760,8 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			op->type = MKOP(STORE, 0, 8);
+ 			break;
+ 		case 1:		/* stdu */
++			if (ra == 0)
++				return -1;
+ 			op->type = MKOP(STORE, UPDATE, 8);
+ 			break;
+ 		case 2:		/* stq */
+-- 
+2.25.1
 
-best regards
-wang shengjiu
