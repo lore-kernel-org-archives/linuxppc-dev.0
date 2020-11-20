@@ -2,101 +2,104 @@ Return-Path: <SRS0=wfc/=E2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B741C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 16:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22DC3C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 17:34:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1451223BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 16:12:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 36D7A2225B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 17:34:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="WoOpPsDa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1451223BE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="dXFIUrmd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36D7A2225B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cd1m11GFXzDqyk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Nov 2020 03:12:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cd3b04yGSzDqym
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Nov 2020 04:34:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WoOpPsDa; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=dXFIUrmd; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cd1hL1X5fzDqyP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2020 03:09:21 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cd3Xd5XzLzDqyZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2020 04:32:48 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AKG2NfT142190
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 11:09:17 -0500
+ 0AKHVtqB190779
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 12:32:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=L5s/1MftXIulSMYU/LftwYpfQ8i8TybxAiqtsauZtYc=;
- b=WoOpPsDa5nriioXFRPNeotEbuibqRuQ/fS4olbk3y/Wyc2/nkvwtIJmke8wsI+MNXidd
- uzn7WTDPdCHXCHHyGL70CX7fM4nCnX/KgEGAChr/XxKMJi6BUAhbGTkOwKDVGIiX2PjF
- xvQIaJkQW+VSmVdouLCOaBOMiOfaTLvp9SJoZD529j1VPayNNlJJsFzEBwymGxTCEM2F
- Pfqx3SjRBnbchQi+GClTdkxy534vefr/0Cwbw4oFXUjoVrIa9f/CwIypodbeEuDgjeKt
- S6QxE8wmlrcFySn5X8xprRkoiMaRMwV9WvcmtpyQw/HLbFxNqlMpquXcg+ryoiaeKCvS MQ== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34xghf1fxa-1
+ h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=465dPK2UfbGhmtNKHU6p5/PaHKon/F53GUhG0jDTm84=;
+ b=dXFIUrmd1p1d03wB7gmCqCHvXz7jAnGFUvO0R+wouWBJs52zMOE32g6J9h8jt/5b3Jpp
+ h2yGGCECYkKd39dcfSjll3OY+e0ocGGpB+OoITzAN8PJPml0NYB3cRRHo26c4yJOk21/
+ yCj1xxq33OgNFi43mAKxxIDLGkMHIIo9PmP2itSi0KCkkD+rbg9MxH2TCiU2jIXgZkai
+ UYZlBMiAYgptOVtg4US4N0afLDwjKz93zYN3I2C2WU2h2oL6omcp6zk4o9D7fdNqLKiI
+ VtpZz2cD/ccbAeIg3QVs9XVntRF467b7uI+S0qqf2cbJlAGoO6bXnoQi7++kZp3TR5rC hw== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34xdrw2fj4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 11:09:17 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AKG3VsF013392
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 16:09:16 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma05wdc.us.ibm.com with ESMTP id 34t6v9qmya-1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 12:32:46 -0500
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AKHOL95021695
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 17:32:44 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma04fra.de.ibm.com with ESMTP id 34t6v8bc82-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 16:09:16 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AKG9GCt13763264
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 17:32:44 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AKHWgcE8520290
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 20 Nov 2020 16:09:16 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 36398AE060;
- Fri, 20 Nov 2020 16:09:16 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 122EBAE05C;
- Fri, 20 Nov 2020 16:09:16 +0000 (GMT)
-Received: from localhost (unknown [9.80.199.213])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 20 Nov 2020 16:09:15 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 29/29] powerpc/pseries/mobility: refactor node lookup
- during DT update
-In-Reply-To: <20201030011805.1224603-30-nathanl@linux.ibm.com>
-References: <20201030011805.1224603-1-nathanl@linux.ibm.com>
- <20201030011805.1224603-30-nathanl@linux.ibm.com>
-Date: Fri, 20 Nov 2020 10:09:15 -0600
-Message-ID: <877dqgj9hw.fsf@linux.ibm.com>
+ Fri, 20 Nov 2020 17:32:42 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E612FA406B;
+ Fri, 20 Nov 2020 17:32:41 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ABD9EA404D;
+ Fri, 20 Nov 2020 17:32:41 +0000 (GMT)
+Received: from lombard-p52.ibmuc.com (unknown [9.171.3.40])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 20 Nov 2020 17:32:41 +0000 (GMT)
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ ajd@linux.ibm.com
+Subject: [PATCH V2 1/5] ocxl: Assign a register set to a Logical Partition
+Date: Fri, 20 Nov 2020 18:32:37 +0100
+Message-Id: <20201120173241.59229-2-clombard@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201120173241.59229-1-clombard@linux.vnet.ibm.com>
+References: <20201120173241.59229-1-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-20_08:2020-11-20,
+ definitions=2020-11-20_09:2020-11-20,
  2020-11-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=3
- mlxlogscore=999 spamscore=0 impostorscore=0 lowpriorityscore=0
- clxscore=1015 bulkscore=0 malwarescore=0 adultscore=0 mlxscore=0
- priorityscore=1501 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2011200106
+ mlxscore=0 adultscore=0
+ malwarescore=0 bulkscore=0 lowpriorityscore=0 spamscore=0 impostorscore=0
+ phishscore=0 mlxlogscore=999 clxscore=1015 priorityscore=1501
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011200116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,48 +111,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, mmc@linux.vnet.ibm.com,
- cforno12@linux.vnet.ibm.com, drt@linux.vnet.ibm.com, brking@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nathan Lynch <nathanl@linux.ibm.com> writes:
-> In pseries_devicetree_update(), with each call to ibm,update-nodes the
-> partition firmware communicates the node to be deleted or updated by
-> placing its phandle in the work buffer. Each of delete_dt_node(),
-> update_dt_node(), and add_dt_node() have duplicate lookups using the
-> phandle value and corresponding refcount management.
+Platform specific function to assign a register set to a Logical Partition.
+The "ibm,mmio-atsd" property, provided by the firmware, contains the 16
+base ATSD physical addresses (ATSD0 through ATSD15) of the set of MMIO
+registers (XTS MMIO ATSDx LPARID/AVA/launch/status register).
 
-...
+For the time being, the ATSD0 set of registers is used by default.
 
-I noticed that this introduces a reference count imbalance in an error
-path:
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pnv-ocxl.h   |  3 ++
+ arch/powerpc/platforms/powernv/ocxl.c | 48 +++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
 
-> -static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
-> +static int add_dt_node(struct device_node *parent_dn, __be32 drc_index)
->  {
->  	struct device_node *dn;
-> -	struct device_node *parent_dn;
->  	int rc;
->  
-> -	parent_dn = of_find_node_by_phandle(be32_to_cpu(parent_phandle));
-> -	if (!parent_dn)
-> -		return -ENOENT;
-> -
->  	dn = dlpar_configure_connector(drc_index, parent_dn);
->  	if (!dn) {
->  		of_node_put(parent_dn);
+diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
+index d37ededca3ee..3f38aed7100c 100644
+--- a/arch/powerpc/include/asm/pnv-ocxl.h
++++ b/arch/powerpc/include/asm/pnv-ocxl.h
+@@ -28,4 +28,7 @@ int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask, void **p
+ void pnv_ocxl_spa_release(void *platform_data);
+ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
+ 
++int pnv_ocxl_map_lpar(struct pci_dev *dev, uint64_t lparid,
++		      uint64_t lpcr, void __iomem **arva);
++void pnv_ocxl_unmap_lpar(void __iomem **arva);
+ #endif /* _ASM_PNV_OCXL_H */
+diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
+index ecdad219d704..bc20cf867900 100644
+--- a/arch/powerpc/platforms/powernv/ocxl.c
++++ b/arch/powerpc/platforms/powernv/ocxl.c
+@@ -483,3 +483,51 @@ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+ 	return rc;
+ }
+ EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe_from_cache);
++
++int pnv_ocxl_map_lpar(struct pci_dev *dev, uint64_t lparid,
++		      uint64_t lpcr, void __iomem **arva)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	u64 mmio_atsd;
++	int rc;
++
++	/* ATSD physical address.
++	 * ATSD LAUNCH register: write access initiates a shoot down to
++	 * initiate the TLB Invalidate command.
++	 */
++	rc = of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
++					0, &mmio_atsd);
++	if (rc) {
++		dev_info(&dev->dev, "No available ATSD found\n");
++		return rc;
++	}
++
++	/* Assign a register set to a Logical Partition and MMIO ATSD
++	 * LPARID register to the required value.
++	 */
++	if (mmio_atsd)
++		rc = opal_npu_map_lpar(phb->opal_id, pci_dev_id(dev),
++				       lparid, lpcr);
++	if (rc) {
++		dev_err(&dev->dev, "Error mapping device to LPAR: %d\n", rc);
++		return rc;
++	}
++
++	if (mmio_atsd) {
++		*arva = ioremap(mmio_atsd, 24);
++		if (!(*arva)) {
++			dev_warn(&dev->dev, "ioremap failed - mmio_atsd: %#llx\n", mmio_atsd);
++			rc = -ENOMEM;
++		}
++	}
++
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pnv_ocxl_map_lpar);
++
++void pnv_ocxl_unmap_lpar(void __iomem **arva)
++{
++	iounmap(*arva);
++}
++EXPORT_SYMBOL_GPL(pnv_ocxl_unmap_lpar);
+-- 
+2.28.0
 
-here:           ^^^
-
-> @@ -251,7 +230,6 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
->  
->  	pr_debug("added node %pOFfp\n", dn);
->  
-> -	of_node_put(parent_dn);
->  	return rc;
->  }
-
-The change correctly removes the of_node_put() from the happy path but
-the put in the error branch should have been removed too.
