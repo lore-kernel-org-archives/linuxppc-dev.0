@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB3FEC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 04:56:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8F49C56201
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 04:57:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA3282236F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 04:56:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA3282236F
+	by mail.kernel.org (Postfix) with ESMTPS id 319BD2236F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 04:57:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 319BD2236F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ccklb28kLzDqxh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 15:56:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CcknY0Zm0zDqlZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2020 15:57:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -28,15 +28,15 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CckfM5jTqzDqw8
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CckfM5c36zDqw9
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2020 15:51:39 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 508152A45D; Thu, 19 Nov 2020 23:51:37 -0500 (EST)
+ id 2F5FA2A45C; Thu, 19 Nov 2020 23:51:37 -0500 (EST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-Message-Id: <0f0a25855391e7eaa53a50f651aea0124e8525dd.1605847196.git.fthain@telegraphics.com.au>
+Message-Id: <58bba4310da4c29b068345a4b36af8a531397ff7.1605847196.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH] macintosh/adb-iop: Always wait for reply message from IOP
+Subject: [PATCH] macintosh/adb-iop: Send correct poll command
 Date: Fri, 20 Nov 2020 15:39:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,63 +55,107 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A recent patch incorrectly altered the adb-iop state machine behaviour
-and introduced a regression that can appear intermittently as a
-malfunctioning ADB input device. This seems to be caused when reply
-packets from different ADB commands become mixed up, especially during
-the adb bus scan. Fix this by unconditionally entering the awaiting_reply
-state after sending an explicit command, even when the ADB command won't
-generate a reply from the ADB device.
+The behaviour of the IOP firmware is not well documented but we do know
+that IOP message reply data can be used to issue new ADB commands.
+Use the message reply to better control autopoll behaviour by sending
+a Talk Register 0 command after every ADB response, not unlike the
+algorithm in the via-macii driver. This poll command is addressed to
+that device which last received a Talk command (explicit or otherwise).
 
 Cc: Joshua Thompson <funaho@jurai.org>
-Fixes: e2954e5f727f ("macintosh/adb-iop: Implement sending -> idle state transition")
+Fixes: fa3b5a9929fc ("macintosh/adb-iop: Implement idle -> sending state transition")
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/adb-iop.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/macintosh/adb-iop.c | 40 +++++++++++++++++++++++++++----------
+ 1 file changed, 30 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
-index 6b26b6a2c463..0ee327249150 100644
+index f3d1a460fbce..6b26b6a2c463 100644
 --- a/drivers/macintosh/adb-iop.c
 +++ b/drivers/macintosh/adb-iop.c
-@@ -84,10 +84,7 @@ static void adb_iop_complete(struct iop_msg *msg)
+@@ -25,6 +25,7 @@
+ static struct adb_request *current_req;
+ static struct adb_request *last_req;
+ static unsigned int autopoll_devs;
++static u8 autopoll_addr;
+ 
+ static enum adb_iop_state {
+ 	idle,
+@@ -41,6 +42,11 @@ static int adb_iop_autopoll(int);
+ static void adb_iop_poll(void);
+ static int adb_iop_reset_bus(void);
+ 
++/* ADB command byte structure */
++#define ADDR_MASK       0xF0
++#define OP_MASK         0x0C
++#define TALK            0x0C
++
+ struct adb_driver adb_iop_driver = {
+ 	.name         = "ISM IOP",
+ 	.probe        = adb_iop_probe,
+@@ -96,17 +102,24 @@ static void adb_iop_complete(struct iop_msg *msg)
+ static void adb_iop_listen(struct iop_msg *msg)
+ {
+ 	struct adb_iopmsg *amsg = (struct adb_iopmsg *)msg->message;
++	u8 addr = (amsg->cmd & ADDR_MASK) >> 4;
++	u8 op = amsg->cmd & OP_MASK;
+ 	unsigned long flags;
+ 	bool req_done = false;
  
  	local_irq_save(flags);
  
--	if (current_req->reply_expected)
--		adb_iop_state = awaiting_reply;
--	else
--		adb_iop_done();
-+	adb_iop_state = awaiting_reply;
- 
- 	local_irq_restore(flags);
- }
-@@ -95,8 +92,9 @@ static void adb_iop_complete(struct iop_msg *msg)
- /*
-  * Listen for ADB messages from the IOP.
-  *
-- * This will be called when unsolicited messages (usually replies to TALK
-- * commands or autopoll packets) are received.
-+ * This will be called when unsolicited IOP messages are received.
-+ * These IOP messages can carry ADB autopoll responses and also occur
-+ * after explicit ADB commands.
-  */
- 
- static void adb_iop_listen(struct iop_msg *msg)
-@@ -123,8 +121,10 @@ static void adb_iop_listen(struct iop_msg *msg)
+-	/* Handle a timeout. Timeout packets seem to occur even after
+-	 * we've gotten a valid reply to a TALK, presumably because of
+-	 * autopolling.
++	/* Responses to Talk commands may be unsolicited as they are
++	 * produced when the IOP polls devices. They are mostly timeouts.
+ 	 */
+-
+-	if (amsg->flags & ADB_IOP_EXPLICIT) {
++	if (op == TALK && ((1 << addr) & autopoll_devs))
++		autopoll_addr = addr;
++
++	switch (amsg->flags & (ADB_IOP_EXPLICIT |
++			       ADB_IOP_AUTOPOLL |
++			       ADB_IOP_TIMEOUT)) {
++	case ADB_IOP_EXPLICIT:
++	case ADB_IOP_EXPLICIT | ADB_IOP_TIMEOUT:
  		if (adb_iop_state == awaiting_reply) {
  			struct adb_request *req = current_req;
  
--			req->reply_len = amsg->count + 1;
--			memcpy(req->reply, &amsg->cmd, req->reply_len);
-+			if (req->reply_expected) {
-+				req->reply_len = amsg->count + 1;
-+				memcpy(req->reply, &amsg->cmd, req->reply_len);
-+			}
+@@ -115,12 +128,16 @@ static void adb_iop_listen(struct iop_msg *msg)
  
  			req_done = true;
  		}
+-	} else if (!(amsg->flags & ADB_IOP_TIMEOUT)) {
+-		adb_input(&amsg->cmd, amsg->count + 1,
+-			  amsg->flags & ADB_IOP_AUTOPOLL);
++		break;
++	case ADB_IOP_AUTOPOLL:
++		if (((1 << addr) & autopoll_devs) &&
++		    amsg->cmd == ADB_READREG(addr, 0))
++			adb_input(&amsg->cmd, amsg->count + 1, 1);
++		break;
+ 	}
+-
+-	msg->reply[0] = autopoll_devs ? ADB_IOP_AUTOPOLL : 0;
++	msg->reply[0] = autopoll_addr ? ADB_IOP_AUTOPOLL : 0;
++	msg->reply[1] = 0;
++	msg->reply[2] = autopoll_addr ? ADB_READREG(autopoll_addr, 0) : 0;
+ 	iop_complete_message(msg);
+ 
+ 	if (req_done)
+@@ -233,6 +250,9 @@ static void adb_iop_set_ap_complete(struct iop_msg *msg)
+ 	struct adb_iopmsg *amsg = (struct adb_iopmsg *)msg->message;
+ 
+ 	autopoll_devs = (amsg->data[1] << 8) | amsg->data[0];
++	if (autopoll_devs & (1 << autopoll_addr))
++		return;
++	autopoll_addr = autopoll_devs ? (ffs(autopoll_devs) - 1) : 0;
+ }
+ 
+ static int adb_iop_autopoll(int devs)
 -- 
 2.26.2
 
