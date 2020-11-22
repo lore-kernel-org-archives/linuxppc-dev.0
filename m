@@ -2,42 +2,74 @@ Return-Path: <SRS0=KGvS=E4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EA7AC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2020 07:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E1C6C63798
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2020 18:15:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB9162078E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2020 07:42:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB9162078E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 8A00820782
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2020 18:15:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WDjFbtXM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A00820782
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cf2L71T3szDqcx
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2020 18:42:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CfJNw0q8MzDqSv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2020 05:15:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Cf2JJ54c5zDqXd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2020 18:40:32 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id A6F9AAE80249;
- Sun, 22 Nov 2020 02:39:57 -0500 (EST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v2] vfio/pci/nvlink2: Do not attempt NPU2 setup on
- POWER8NVL NPU
-Date: Sun, 22 Nov 2020 18:39:50 +1100
-Message-Id: <20201122073950.15684-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=WDjFbtXM; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CfJLl3rCqzDqP4;
+ Mon, 23 Nov 2020 05:13:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:Cc:From:References:To:Subject:Sender
+ :Reply-To:Content-ID:Content-Description;
+ bh=OAzAw/eat4OIPvzJDoVFVdRswxGI5un7B+I2LBW7FKE=; b=WDjFbtXMAxFQaTnzWVpmjxn6T7
+ 8u86rEkEWDU20FFH6htb8+zxcIgZjgodTzwx9oL2BOoInmNe47le5lJo5feDNQo0kn/MIjJ5bcPT5
+ uADwfu6EHqwcVoaDmaNuQQMWkYtHCJlDwF87R1/4d2hbu/iwWt6JGTagWHxZqI3aM+z3v/os1bRVj
+ DeITX6xVnwiqiTdQdf2E2B7o1WfwbSiIkmWrPPPwzZv7cS+qbmofH2SZcExPlEdo00fAoJBde5xI/
+ v0yakYiFogmlv//aMHTK3ezTal9WAQrLsLDYhwnuLAtvuq8xr6s3bPoo66MblCk6VMU6K8tXdZWrn
+ JNqvF1LA==;
+Received: from [2602:306:37b0:7840:9e7b:efff:fe40:2b26]
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1kgtra-0005Mt-8C; Sun, 22 Nov 2020 18:13:26 +0000
+Subject: Re: Fwd: Petitboot for PS3
+To: Carlos Eduardo de Paula <me@carlosedp.com>
+References: <CADnnUqfcrYD--zExJ6RB_KFBhr=1TXC8bAnE7AqBQJ7ND9F0Vw@mail.gmail.com>
+ <8106659a-16dd-8eb0-08f6-84d5df8ddadb@infradead.org>
+ <CADnnUqfCOxyGL-4SUc7OOVh=+3Mah6-gCS4C=9DumJsM5jFbLg@mail.gmail.com>
+ <930e55eb-7636-d609-e93a-9319c6b3af94@infradead.org>
+ <CADnnUqcJ1DpFW7VNphxMM7Pjo73KguRS0CZfhFSJpg2C9g48tg@mail.gmail.com>
+ <CADnnUqcAGigWgKQtu6=tud=V0-7f2aYqNP3MjP=-bRonD1R7_w@mail.gmail.com>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <782f576b-0e38-b151-1d47-5785d876347f@infradead.org>
+Date: Sun, 22 Nov 2020 10:13:22 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <CADnnUqcAGigWgKQtu6=tud=V0-7f2aYqNP3MjP=-bRonD1R7_w@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,74 +81,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- stable@vger.kernel.org,
- =?UTF-8?q?Leonardo=20Augusto=20Guimar=C3=A3es=20Garcia?= <lagarcia@br.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ petitboot@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We execute certain NPU2 setup code (such as mapping an LPID to a device
-in NPU2) unconditionally if an Nvlink bridge is detected. However this
-cannot succeed on POWER8NVL machines as the init helpers return an error
-other than ENODEV which means the device is there is and setup failed so
-vfio_pci_enable() fails and pass through is not possible.
+Hi Carlos,
 
-This changes the two NPU2 related init helpers to return -ENODEV if
-there is no "memory-region" device tree property as this is
-the distinction between NPU and NPU2.
+On 11/19/20 1:07 PM, Carlos Eduardo de Paula wrote:
+> I was able in the petitboot shell to set the timeout for booting an image by using ps3-bl-options (that uses ps3-flash-util itself) but if I use these utilities in my booted linux, I get "magic_num failed" error and can't do any flash operations. I tried loading the ps3flash module and /dev/ps3flash device appears but still can't set it. Also in linux, the devices ps3vflash and etc doesn't show up. Any tips on accessing the flash from booted linux?
 
-Tested on
-- POWER9 pvr=004e1201, Ubuntu 19.04 host, Ubuntu 18.04 vm,
-  NVIDIA GV100 10de:1db1 driver 418.39
-- POWER8 pvr=004c0100, RHEL 7.6 host, Ubuntu 16.10 vm,
-  NVIDIA P100 10de:15f9 driver 396.47
+Your kernel needs to be built with CONFIG_PS3_FLASH set, as it is
+with ps3_defconfig.  I guess this is not your problem though since
+it seems you can open and read the ps3flash device, but get an
+error in the data returned.
 
-Fixes: 7f92891778df ("vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] subdriver")
-Cc: stable@vger.kernel.org # 5.0
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* updated commit log with tested configs and replaced P8+ with POWER8NVL for clarity
----
- drivers/vfio/pci/vfio_pci_nvlink2.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+You could add the line '#define DEBUG' to the very top of
+'drivers/char/ps3flash.c' to print some driver debug output to
+the console.
 
-diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
-index 65c61710c0e9..9adcf6a8f888 100644
---- a/drivers/vfio/pci/vfio_pci_nvlink2.c
-+++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
-@@ -231,7 +231,7 @@ int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
- 		return -EINVAL;
+That "magic_num failed" message is coming from the routine
+os_area_header_verify() here:
  
- 	if (of_property_read_u32(npu_node, "memory-region", &mem_phandle))
--		return -EINVAL;
-+		return -ENODEV;
- 
- 	mem_node = of_find_node_by_phandle(mem_phandle);
- 	if (!mem_node)
-@@ -393,7 +393,7 @@ int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
- 	int ret;
- 	struct vfio_pci_npu2_data *data;
- 	struct device_node *nvlink_dn;
--	u32 nvlink_index = 0;
-+	u32 nvlink_index = 0, mem_phandle = 0;
- 	struct pci_dev *npdev = vdev->pdev;
- 	struct device_node *npu_node = pci_device_to_OF_node(npdev);
- 	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
-@@ -408,6 +408,9 @@ int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
- 	if (!pnv_pci_get_gpu_dev(vdev->pdev))
- 		return -ENODEV;
- 
-+	if (of_property_read_u32(npu_node, "memory-region", &mem_phandle))
-+		return -ENODEV;
-+
- 	/*
- 	 * NPU2 normally has 8 ATSD registers (for concurrency) and 6 links
- 	 * so we can allocate one register per link, using nvlink index as
--- 
-2.17.1
+ https://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-utils.git/tree/lib/flash.c#n321
 
+Which I guess in your case is called by os_area_header_read().
+
+My recommendation is to compare the os_area header from petitboot
+and from the booted kernel to see how it compares.  You could use
+the os_area_db_dump_header() routine from ps3-utils (show-settings).
+Another thing is to add some code to the built kernel to dump the
+os_area header for comparison to the petitboot data.
+
+> Another question, I generated a kernel patch from your tree diff'ing stock 5.8.0 from your 5.8.0, then I fetched mainline 5.9.8 and applied this patch, built it and added to yaboot.
+> 
+> The kernel boots fine but I don't get network although the interface is there and after some minutes, I get a kernel oops in the gelic driver. Here's a print from the error.
+> 20201119_151317.jpg
+
+Not sure about that error, but if I were to guess, you are running out of memory...
+
+-Geoff
