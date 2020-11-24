@@ -2,69 +2,68 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B19C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:34:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB6A5C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 18:47:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4A72206C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:34:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4A72206C0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6ADF9206E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 18:47:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ADF9206E5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgWN85Y0czDqgw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 04:34:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgY152WvlzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 05:47:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.42.229; helo=4.mo51.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1206 seconds by postgrey-1.36 at bilbo;
- Wed, 25 Nov 2020 04:32:04 AEDT
-Received: from 4.mo51.mail-out.ovh.net (4.mo51.mail-out.ovh.net
- [188.165.42.229])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgWKw72grzDqgq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 04:32:02 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.16.148])
- by mo51.mail-out.ovh.net (Postfix) with ESMTPS id 45AE023CE84;
- Tue, 24 Nov 2020 17:54:18 +0100 (CET)
-Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Tue, 24 Nov
- 2020 17:54:16 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-105G006f441115f-3859-42e7-9d6d-ccd259b89853,
- 970ACD818314199E15927CBC8014A4D4C9EA8B7B) smtp.auth=clg@kaod.org
-Subject: Re: [PATCH kernel v4 1/8] genirq/ipi: Simplify irq_reserve_ipi
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, <linux-kernel@vger.kernel.org>
-References: <20201124061720.86766-1-aik@ozlabs.ru>
- <20201124061720.86766-2-aik@ozlabs.ru>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <d12fcee6-f83a-5b09-6208-face2ea5ec39@kaod.org>
-Date: Tue, 24 Nov 2020 17:54:16 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgXz12QWBzDqTn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 05:45:42 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CgXyl4Vmkz9v0cg;
+ Tue, 24 Nov 2020 19:45:35 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Vcy8JMl4wVTb; Tue, 24 Nov 2020 19:45:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CgXyl31sBz9v0cY;
+ Tue, 24 Nov 2020 19:45:35 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C1B48B7B7;
+ Tue, 24 Nov 2020 19:45:37 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 6aKrn2LfXqNO; Tue, 24 Nov 2020 19:45:37 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E0EBB8B7AF;
+ Tue, 24 Nov 2020 19:45:36 +0100 (CET)
+Subject: Re: eBPF on powerpc
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <d69650b0-4024-5759-3ccb-ede5c0394500@csgroup.eu>
+ <1606234192.xvkulhfr3y.naveen@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <4d588481-0c8d-6adf-53f5-e7332ddca7c4@csgroup.eu>
+Date: Tue, 24 Nov 2020 19:45:30 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201124061720.86766-2-aik@ozlabs.ru>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
+In-Reply-To: <1606234192.xvkulhfr3y.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.105]
-X-ClientProxiedBy: DAG6EX2.mxp5.local (172.16.2.52) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: abd77706-b6fe-4c7a-b8f7-b22673109b15
-X-Ovh-Tracer-Id: 4231413326248905534
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudegkedgleehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegrihhksehoiihlrggsshdrrhhu
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,72 +75,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Matt Redfearn <matt.redfearn@mips.com>,
- Qais Yousef <qsyousef@gmail.com>, Marc Zyngier <maz@kernel.org>,
- x86@kernel.org, linux-gpio@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/24/20 7:17 AM, Alexey Kardashevskiy wrote:
-> __irq_domain_alloc_irqs() can already handle virq==-1 and free
-> descriptors if it failed allocating hardware interrupts so let's skip
-> this extra step.
+
+
+Le 24/11/2020 à 17:35, Naveen N. Rao a écrit :
+> Hi Christophe,
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-LGTM,
-
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-Copying the MIPS folks since the IPI interface is only used under arch/mips.
-
-C.
- 
-> ---
->  kernel/irq/ipi.c | 16 +++-------------
->  1 file changed, 3 insertions(+), 13 deletions(-)
+> Christophe Leroy wrote:
+>> Hi Naveen,
+>>
+>> Few years ago, you implemented eBPF on PPC64.
+>>
+>> Is there any reason for implementing it for PPC64 only ?
 > 
-> diff --git a/kernel/irq/ipi.c b/kernel/irq/ipi.c
-> index 43e3d1be622c..1b2807318ea9 100644
-> --- a/kernel/irq/ipi.c
-> +++ b/kernel/irq/ipi.c
-> @@ -75,18 +75,12 @@ int irq_reserve_ipi(struct irq_domain *domain,
->  		}
->  	}
->  
-> -	virq = irq_domain_alloc_descs(-1, nr_irqs, 0, NUMA_NO_NODE, NULL);
-> -	if (virq <= 0) {
-> -		pr_warn("Can't reserve IPI, failed to alloc descs\n");
-> -		return -ENOMEM;
-> -	}
-> -
-> -	virq = __irq_domain_alloc_irqs(domain, virq, nr_irqs, NUMA_NO_NODE,
-> -				       (void *) dest, true, NULL);
-> +	virq = __irq_domain_alloc_irqs(domain, -1, nr_irqs, NUMA_NO_NODE,
-> +				       (void *) dest, false, NULL);
->  
->  	if (virq <= 0) {
->  		pr_warn("Can't reserve IPI, failed to alloc hw irqs\n");
-> -		goto free_descs;
-> +		return -EBUSY;
->  	}
->  
->  	for (i = 0; i < nr_irqs; i++) {
-> @@ -96,10 +90,6 @@ int irq_reserve_ipi(struct irq_domain *domain,
->  		irq_set_status_flags(virq + i, IRQ_NO_BALANCING);
->  	}
->  	return virq;
-> -
-> -free_descs:
-> -	irq_free_descs(virq, nr_irqs);
-> -	return -EBUSY;
->  }
->  
->  /**
+> I focused on ppc64 since eBPF is a 64-bit VM and it was more straight-forward to target.
 > 
+>> Is there something that makes it impossible to have eBPF for PPC32 as well ?
+> 
+> No, I just wasn't sure if it would be performant enough to warrant it. Since then however, there 
+> have been arm32 and riscv 32-bit JIT implementations and atleast the arm32 JIT seems to be showing 
+> ~50% better performance compared to the interpreter (*). So, it would be worthwhile to add support 
+> for ppc32.
 
+That's great.
+
+I know close to nothing about eBPF. Is there any interesting documentation on it somewhere that 
+would allow me to easily understand how it works and allow me to extend the 64 bit powerpc to 32 bits ?
+
+> 
+> Note that there might be a few instructions which would be difficult to support on 32-bit, but those 
+> can fallback to the interpreter, while allowing other programs to be JIT'ed.
+> 
+> 
+> - Naveen
+> 
+> (*) http://lkml.kernel.org/r/CAGXu5jLYunVCJGCfHPebKDaoQ71hdMGq4HhdDxTYpBQw_HXUYQ@mail.gmail.com
+> (*) http://lkml.kernel.org/r/b63fae4b-cb74-1928-b210-80914f3c8995@fb.com
+> (*) http://lkml.kernel.org/r/20200305050207.4159-1-luke.r.nels@gmail.com
+
+Christophe
