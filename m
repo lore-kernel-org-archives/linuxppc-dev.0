@@ -2,106 +2,64 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAA39C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 19:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DFCC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 19:58:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0ED62208DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 19:56:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="gAGDYzFs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0ED62208DB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5BC3B2053B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 19:58:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BC3B2053B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgZXV4cgTzDqDM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 06:56:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=gAGDYzFs; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgZb85XxjzDqG8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 06:58:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgZQv1MFFzDqLT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 06:51:34 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AOJX2fH101598; Tue, 24 Nov 2020 14:51:25 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : subject :
- to : references : in-reply-to : mime-version : message-id : content-type :
- content-transfer-encoding; s=pp1;
- bh=Ifth+TJCelaA3ZjPgo8Idwa32A+j7cupSzNNiUmUIls=;
- b=gAGDYzFsBG0q+mKwNgV5C76F7vYrgeECj4V+TdLTQyuBBC66miD++6OeeP44Oy9WHaSg
- 8LqGJ+JRSluia4qxe5wiIcYAx3ALYeKId6+wiyAqKzhYiswatwtvsk1BATFdqSlilMF3
- LMC3W9NVSLjsyaGYnZJDfvBT4UHsDtcf/fFERUTHVqUYlxNVEiqDH9koGTUxErVOfoJf
- WdEcY/oOaxD/X5YRlFZ9Luv0xHNURVNDJVBupFnWWASE5q0dpG55W/kueuEuMzBCfAEa
- /Zy9rPQKsYtUGurxjOv4H7epojXw2jSttmTRFfUvq9MGYVtvLt1MuhO860qgOZMiZFrg HQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 350rnb86u3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 14:51:24 -0500
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AOJgTBd018392;
- Tue, 24 Nov 2020 19:51:23 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03fra.de.ibm.com with ESMTP id 34yy8r1588-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 19:51:23 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0AOJpKRB11272682
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Nov 2020 19:51:20 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C821F42041;
- Tue, 24 Nov 2020 19:51:20 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BEC1542045;
- Tue, 24 Nov 2020 19:51:19 +0000 (GMT)
-Received: from localhost (unknown [9.85.88.148])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 24 Nov 2020 19:51:19 +0000 (GMT)
-Date: Wed, 25 Nov 2020 01:21:14 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: eBPF on powerpc
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <d69650b0-4024-5759-3ccb-ede5c0394500@csgroup.eu>
- <1606234192.xvkulhfr3y.naveen@linux.ibm.com>
- <4d588481-0c8d-6adf-53f5-e7332ddca7c4@csgroup.eu>
-In-Reply-To: <4d588481-0c8d-6adf-53f5-e7332ddca7c4@csgroup.eu>
-MIME-Version: 1.0
-User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
-Message-Id: <1606247281.yz5qee0fl7.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-24_06:2020-11-24,
- 2020-11-24 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxlogscore=999
- malwarescore=0 phishscore=0 bulkscore=0 priorityscore=1501 clxscore=1015
- suspectscore=0 impostorscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011240112
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgZRR0cR4zDqW8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 06:52:00 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CgZRJ6hJWz9v0DP;
+ Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id NXRSA4NxUpNN; Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CgZRJ5QHsz9v0DM;
+ Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B9BEC8B7B7;
+ Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 3xv1ibxVlHXJ; Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7312C8B7AF;
+ Tue, 24 Nov 2020 20:51:56 +0100 (CET)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 504726688D; Tue, 24 Nov 2020 19:51:56 +0000 (UTC)
+Message-Id: <3907199974c89b85a3441cf3f528751173b7649c.1606247495.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <6470ab99e58c84a5445af43ce4d1d772b0dc3e93.1606247495.git.christophe.leroy@csgroup.eu>
+References: <6470ab99e58c84a5445af43ce4d1d772b0dc3e93.1606247495.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 2/3] powerpc/32s: In add_hash_page(), calculate VSID later
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 24 Nov 2020 19:51:56 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,54 +71,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy wrote:
->=20
->=20
-> Le 24/11/2020 =C3=A0 17:35, Naveen N. Rao a =C3=A9crit=C2=A0:
->> Hi Christophe,
->>=20
->> Christophe Leroy wrote:
->>> Hi Naveen,
->>>
->>> Few years ago, you implemented eBPF on PPC64.
->>>
->>> Is there any reason for implementing it for PPC64 only ?
->>=20
->> I focused on ppc64 since eBPF is a 64-bit VM and it was more straight-fo=
-rward to target.
->>=20
->>> Is there something that makes it impossible to have eBPF for PPC32 as w=
-ell ?
->>=20
->> No, I just wasn't sure if it would be performant enough to warrant it. S=
-ince then however, there=20
->> have been arm32 and riscv 32-bit JIT implementations and atleast the arm=
-32 JIT seems to be showing=20
->> ~50% better performance compared to the interpreter (*). So, it would be=
- worthwhile to add support=20
->> for ppc32.
->=20
-> That's great.
->=20
-> I know close to nothing about eBPF. Is there any interesting documentatio=
-n on it somewhere that=20
-> would allow me to easily understand how it works and allow me to extend t=
-he 64 bit powerpc to 32 bits ?
+VSID is only for create_hpte(). When _PAGE_HASHPTE is
+already set, add_hash_page() bails out without calling
+create_hpte() and doesn't need the value of VSID.
 
-I don't think there was ever a formal spec written for the eBPF VM. Here=20
-are a few resources which should help, alongside the existing JIT=20
-implementations:
-- BPF Kernel Internals: =20
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
-ocumentation/networking/filter.rst#n604
-- https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
-ocumentation/bpf
-- BPF and XDP Reference Guide: https://docs.cilium.io/en/stable/bpf/
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/mm/book3s32/hash_low.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-
-- Naveen
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index f964fd34dad9..1366e8e4fc05 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -188,12 +188,6 @@ _GLOBAL(add_hash_page)
+ 	mflr	r0
+ 	stw	r0,4(r1)
+ 
+-	/* Convert context and va to VSID */
+-	mulli	r3,r3,897*16		/* multiply context by context skew */
+-	rlwinm	r0,r4,4,28,31		/* get ESID (top 4 bits of va) */
+-	mulli	r0,r0,0x111		/* multiply by ESID skew */
+-	add	r3,r3,r0		/* note create_hpte trims to 24 bits */
+-
+ #ifdef CONFIG_SMP
+ 	lwz	r8,TASK_CPU(r2)		/* to go in mmu_hash_lock */
+ 	oris	r8,r8,12
+@@ -257,6 +251,12 @@ _GLOBAL(add_hash_page)
+ 	stwcx.	r5,0,r8
+ 	bne-	1b
+ 
++	/* Convert context and va to VSID */
++	mulli	r3,r3,897*16		/* multiply context by context skew */
++	rlwinm	r0,r4,4,28,31		/* get ESID (top 4 bits of va) */
++	mulli	r0,r0,0x111		/* multiply by ESID skew */
++	add	r3,r3,r0		/* note create_hpte trims to 24 bits */
++
+ 	bl	create_hpte
+ 
+ 9:
+-- 
+2.25.0
 
