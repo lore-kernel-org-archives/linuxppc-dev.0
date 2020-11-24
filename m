@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E42ECC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 12:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32688C56201
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 12:24:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F23A52076B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 12:17:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DC489206B5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 12:24:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="qJF165E3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F23A52076B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Ad99/KcO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC489206B5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgNM84tDCzDqZH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 23:17:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgNVl1xvvzDqbX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 23:24:15 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgN5h12dlzDqXC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 23:06:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgN5g2rwfzDqWp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 23:05:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=qJF165E3; 
+ header.a=rsa-sha256 header.s=201909 header.b=Ad99/KcO; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4CgN5f5Wy9z9sTR; Tue, 24 Nov 2020 23:05:58 +1100 (AEDT)
+ id 4CgN5d6MQnz9sSs; Tue, 24 Nov 2020 23:05:57 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CgN5f3Gssz9sVH; Tue, 24 Nov 2020 23:05:58 +1100 (AEDT)
+ id 4CgN5d577jz9sT6; Tue, 24 Nov 2020 23:05:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1606219558;
- bh=UFB5goYMCSNWLA3ekhjEPCzg/ejfWWNKc/J0LqLxKfE=;
+ s=201909; t=1606219557;
+ bh=OeXCM+BgRBE+9EkqR7SmDDccO0biv15P7s7oRm9Wjhg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=qJF165E3VOErhVY56Dlx2r1cpuVGF0e6BhJJOzp3AyNJfEABQNiEetG51MF8a8Rin
- Nkv7iJrNGrGLQ4ZhJlOs6kRAIwKWDmYrUZGv1is4qVoMTeKpvYcAXtFVGPoKKGokkr
- JcL6FNz1ojMe41dRYwHjBE3K3pqbdXFN3T2G8rh5sd/IGsCcxat6Hs7dKGi24NHEcU
- ZY2wfKbFnynHoSkTwMfbqjBodYLlCmsDJv20dfliWNwOP/V1oUIU5q7/Hlq42KLzt5
- JFEJ+srd0rWITHw9Oo4qOEeHJf/cWWT2tCugjFeg7qA1wzxjDXTsEid34AEexGiPRW
- sB44ocbq34gNg==
+ b=Ad99/KcOj0K7Ay/CN1Dnw52Ly2m/BVU48cHzlnt05u6Ub6SHBoBtLyV2RbrgD0Npa
+ Xba+gi2NKntiUWjojoHQGL3OpIcnY9/1MdKReHJ41DB6hVMiL7Nzs4uLgRiWsczZ6x
+ D0rN+OgBePNra34xRdd2uQWyl3gULRKKkKyJNp+3hD/Vo/EUEDrivtIUob8boSsv91
+ TRWWX9SuTo0cVuEPv+RSbnFMux2YsJTfKy+Ji3oxdueuqSk6xMlNbjWe/JCOXhnbdP
+ 2xBlgJOWkD78LfhniJqxRPBSseXXk1Jh5jeydWupg17VWqiUhjtftBfqAzZ1e4my4k
+ o2JmkzbByzCRA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc: Update NUMA Kconfig description & help text
-Date: Tue, 24 Nov 2020 23:05:47 +1100
-Message-Id: <20201124120547.1940635-3-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc: Make NUMA default y for powernv
+Date: Tue, 24 Nov 2020 23:05:46 +1100
+Message-Id: <20201124120547.1940635-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201124120547.1940635-1-mpe@ellerman.id.au>
 References: <20201124120547.1940635-1-mpe@ellerman.id.au>
@@ -74,32 +74,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update the NUMA Kconfig description to match other architectures, and
-add some help text. Shamelessly borrowed from x86/arm64.
+Our NUMA option is default y for pseries, but not powernv. The bulk of
+powernv systems are NUMA, so make NUMA default y for powernv also.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4d688b426353..7f4995b245a3 100644
+index a22db3db6b96..4d688b426353 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -659,9 +659,15 @@ config IRQ_ALL_CPUS
- 	  reported with SMP Power Macintoshes with this option enabled.
- 
+@@ -661,7 +661,7 @@ config IRQ_ALL_CPUS
  config NUMA
--	bool "NUMA support"
-+	bool "NUMA Memory Allocation and Scheduler Support"
+ 	bool "NUMA support"
  	depends on PPC64 && SMP
- 	default y if PPC_PSERIES || PPC_POWERNV
-+	help
-+	  Enable NUMA (Non-Uniform Memory Access) support.
-+
-+	  The kernel will try to allocate memory used by a CPU on the
-+	  local memory controller of the CPU and add some more
-+	  NUMA awareness to the kernel.
+-	default y if SMP && PPC_PSERIES
++	default y if PPC_PSERIES || PPC_POWERNV
  
  config NODES_SHIFT
  	int
