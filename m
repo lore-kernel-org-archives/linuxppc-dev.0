@@ -3,43 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F1A0C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:26:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D722C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:28:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A86E42068D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:26:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A86E42068D
+	by mail.kernel.org (Postfix) with ESMTPS id 4CA2B20644
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:28:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CA2B20644
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDYc53lPzDqVv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:26:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDbl5TjHzDqRB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:28:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CgDNG5jZ7zDqNb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:18:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CgDNX3ML6zDqJc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:18:20 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 28792AE80001;
- Tue, 24 Nov 2020 01:17:29 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id A6A2EAE80255;
+ Tue, 24 Nov 2020 01:18:14 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v4 0/8] genirq/irqdomain: Add reference counting to IRQs
-Date: Tue, 24 Nov 2020 17:17:12 +1100
-Message-Id: <20201124061720.86766-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 7/8] genirq/irqdomain: Reference irq_desc for
+ already mapped irqs
+Date: Tue, 24 Nov 2020 17:17:19 +1100
+Message-Id: <20201124061720.86766-8-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201124061720.86766-1-aik@ozlabs.ru>
+References: <20201124061720.86766-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,80 +62,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is another attempt to add reference counting to IRQ
-descriptors; or - more to the point - reuse already existing
-kobj from irq_desc. This allows the same IRQ to be used several
-times (such as legacy PCI INTx) and when disposing those, only
-the last reference drop clears the hardware mappings.
-Domains do not add references to irq_desc as the whole point of
-this exercise is to move actual cleanup in hardware to
-the last reference drop. This only changes sparse interrupts
-(no idea about the other case yet).
+This references an irq_desc if already mapped interrupt requested to map
+again. This happends for PCI legacy interrupts where 4 interrupts are
+shared among all devices on the same PCI host bus adapter.
 
-No changelog as it is all completely rewritten. I am still running
-tests but I hope this demonstrates the idea.
+From now on, the users shall call irq_dispose_mapping() for every
+irq_create_fwspec_mapping(). Most (all?) users do not bother with
+disposing though so it is not very likely to break many things.
 
-Some context from Cedric:
-The background context for such a need is that the POWER9 and POWER10
-processors have a new XIVE interrupt controller which uses MMIO pages
-for interrupt management. Each interrupt has a pair of pages which are
-required to be unmapped in some environment, like PHB removal. And so,
-all interrupts need to be unmmaped.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ kernel/irq/irqdomain.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-1/8 .. 3/8 are removing confusing "realloc" which not strictly required
-but I was touching this anyway and legacy interrupts should probably use
-the new counting anyway;
-
-4/8 .. 6/8 is reordering irq_desc disposal;
-
-7/8 adds extra references (probably missed other places);
-
-8/8 is the fix for the original XIVE bug; it is here for demonstration.
-
-I am cc'ing ppc list so people can pull the patches from that patchworks.
-
-This is based on sha1
-418baf2c28f3 Linus Torvalds "Linux 5.10-rc5".
-
-and pushed out to
-https://github.com/aik/linux/commits/irqs
-sha1 3955f97c448242f6a
-
-Please comment. Thanks.
-
-
-Alexey Kardashevskiy (7):
-  genirq/ipi:  Simplify irq_reserve_ipi
-  genirq/irqdomain: Clean legacy IRQ allocation
-  genirq/irqdomain: Drop unused realloc parameter from
-    __irq_domain_alloc_irqs
-  genirq: Free IRQ descriptor via embedded kobject
-  genirq: Add free_irq hook for IRQ descriptor and use for mapping
-    disposal
-  genirq/irqdomain: Move hierarchical IRQ cleanup to kobject_release
-  genirq/irqdomain: Reference irq_desc for already mapped irqs
-
-Oliver O'Halloran (1):
-  powerpc/pci: Remove LSI mappings on device teardown
-
- include/linux/irqdesc.h             |   1 +
- include/linux/irqdomain.h           |   9 +-
- include/linux/irqhandler.h          |   1 +
- arch/powerpc/kernel/pci-common.c    |  21 ++++
- arch/x86/kernel/apic/io_apic.c      |  13 ++-
- drivers/gpio/gpiolib.c              |   1 -
- drivers/irqchip/irq-armada-370-xp.c |   2 +-
- drivers/irqchip/irq-bcm2836.c       |   3 +-
- drivers/irqchip/irq-gic-v3.c        |   3 +-
- drivers/irqchip/irq-gic-v4.c        |   6 +-
- drivers/irqchip/irq-gic.c           |   3 +-
- drivers/irqchip/irq-ixp4xx.c        |   1 -
- kernel/irq/ipi.c                    |  16 +--
- kernel/irq/irqdesc.c                |  45 +++-----
- kernel/irq/irqdomain.c              | 160 +++++++++++++++++-----------
- kernel/irq/msi.c                    |   2 +-
- 16 files changed, 158 insertions(+), 129 deletions(-)
-
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index a0a81cc6c524..07f4bde87de5 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -663,7 +663,9 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+ 	/* Check if mapping already exists */
+ 	virq = irq_find_mapping(domain, hwirq);
+ 	if (virq) {
++		desc = irq_to_desc(virq);
+ 		pr_debug("-> existing mapping on virq %d\n", virq);
++		kobject_get(&desc->kobj);
+ 		return virq;
+ 	}
+ 
+@@ -762,6 +764,7 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
+ 	irq_hw_number_t hwirq;
+ 	unsigned int type = IRQ_TYPE_NONE;
+ 	int virq;
++	struct irq_desc *desc;
+ 
+ 	if (fwspec->fwnode) {
+ 		domain = irq_find_matching_fwspec(fwspec, DOMAIN_BUS_WIRED);
+@@ -798,8 +801,11 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
+ 		 * current trigger type then we are done so return the
+ 		 * interrupt number.
+ 		 */
+-		if (type == IRQ_TYPE_NONE || type == irq_get_trigger_type(virq))
++		if (type == IRQ_TYPE_NONE || type == irq_get_trigger_type(virq)) {
++			desc = irq_to_desc(virq);
++			kobject_get(&desc->kobj);
+ 			return virq;
++		}
+ 
+ 		/*
+ 		 * If the trigger type has not been set yet, then set
+@@ -811,6 +817,8 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
+ 				return 0;
+ 
+ 			irqd_set_trigger_type(irq_data, type);
++			desc = irq_to_desc(virq);
++			kobject_get(&desc->kobj);
+ 			return virq;
+ 		}
+ 
 -- 
 2.17.1
 
