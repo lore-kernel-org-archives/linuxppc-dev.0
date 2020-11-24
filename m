@@ -2,103 +2,96 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07A37C63777
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 16:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BCE6C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:28:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5EDD206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 16:38:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4A9ED206F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:28:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="qH9LQCNV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5EDD206D5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="SvUGd9qb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A9ED206F7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgV7Z6vFmzDqdr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 03:38:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgWFs6njRzDqdw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 04:28:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=qH9LQCNV; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=SvUGd9qb; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgV5K1vHczDqYJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 03:36:00 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AOGV8Vj120196; Tue, 24 Nov 2020 11:35:50 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgWCV5tb1zDqcQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 04:26:28 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AOH4ZIs159506; Tue, 24 Nov 2020 12:26:26 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : subject :
- to : references : in-reply-to : mime-version : message-id : content-type :
- content-transfer-encoding; s=pp1;
- bh=Kr0JycnOOtnJYYU3dEq7lvelJoVh6pLWR1C/tyHl9JE=;
- b=qH9LQCNVfLmRNmzcRsgJhPGO/e/pRgy04h+MtjinJWTAwr+FTRMOfj+l8h1EpgTuZp5i
- dtTNMwXrtSabXOW18Qa9BNMP+GCMRcm5pGrBVhyCwDj3mmh5e5KTeOTWuoX6lO7rRMcK
- RAJ5CQrAujAYMLjYq3UqQd/MAI5DtrazYxcecqeykVEHxRUlq7Z6LcxYFsCoEoTZrghC
- RW5qOi8arK2oHh220ZL5aa7ec6XNbJqe7rlu56+mtoIQYyJIF5OhstIwEwgm74A+MWGw
- vv5+BD1MYr2OWy7Dw3Qfwv8OaXjcQ12JfitcJwQpqjqCZlKO7vdS1n9CcJMBWqiuG6hE 8Q== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3513uwcgmx-1
+ h=from : to : cc : subject : date : message-id; s=pp1;
+ bh=vTB1+f0FDreX/k8U727Z/d3cLYhfd2XTM4Dj4d7tRzY=;
+ b=SvUGd9qbIK1bRJA7RYE91sPGx2O5WgL0LDXhbZJNc10sjIAM4GCC5UYyXhhZbF+9AW1w
+ 8ckbwZMrT5Qg+p8g58Vjxs457Xw9fxPDz/kTltr7kTCXOPAkdfszNa8e/xWBKD0x2jal
+ eJeH+HIVORM14lcx8OD7h4m0H2Tuc6CZgMMKq/Ng8wt7R8JPWy3TW0jREG1+aJUowNxb
+ C2zDCTCnUVARiqW7mmbzlZ1bqzMcd2vsJMxsyKPDzWdkka9D5v52xpXGoPL6Dtukk1Ka
+ SGQphRAq5uIcTwOF3jXN/lDjtUBha1tuesAf4A7c9Mw3As7iOJSr651M02VTJF48dCre Bw== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350fe1e62t-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 11:35:50 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AOGWYta002773;
- Tue, 24 Nov 2020 16:35:48 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 34xth8knqq-1
+ Tue, 24 Nov 2020 12:26:26 -0500
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AOHN9df004578;
+ Tue, 24 Nov 2020 17:26:25 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03wdc.us.ibm.com with ESMTP id 35133nsg7a-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 16:35:48 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AOGZkAM7406230
+ Tue, 24 Nov 2020 17:26:25 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AOHQOtS47317342
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Nov 2020 16:35:46 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 856D54203F;
- Tue, 24 Nov 2020 16:35:46 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D56D42042;
- Tue, 24 Nov 2020 16:35:46 +0000 (GMT)
-Received: from localhost (unknown [9.85.88.148])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 24 Nov 2020 16:35:45 +0000 (GMT)
-Date: Tue, 24 Nov 2020 22:05:41 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: eBPF on powerpc
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <d69650b0-4024-5759-3ccb-ede5c0394500@csgroup.eu>
-In-Reply-To: <d69650b0-4024-5759-3ccb-ede5c0394500@csgroup.eu>
-MIME-Version: 1.0
-User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
-Message-Id: <1606234192.xvkulhfr3y.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+ Tue, 24 Nov 2020 17:26:24 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26DE76A04F;
+ Tue, 24 Nov 2020 17:26:24 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DF50D6A04D;
+ Tue, 24 Nov 2020 17:26:21 +0000 (GMT)
+Received: from oc7186267434.ibm.com (unknown [9.160.17.166])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 24 Nov 2020 17:26:21 +0000 (GMT)
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net 0/2] ibmvnic: Bug fixes for queue descriptor processing
+Date: Tue, 24 Nov 2020 11:26:14 -0600
+Message-Id: <1606238776-30259-1-git-send-email-tlfalcon@linux.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-24_04:2020-11-24,
+ definitions=2020-11-24_05:2020-11-24,
  2020-11-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 spamscore=0 phishscore=0
- mlxscore=0 mlxlogscore=999 clxscore=1011 impostorscore=0 adultscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011240100
+ bulkscore=0 mlxlogscore=937
+ phishscore=0 impostorscore=0 suspectscore=1 mlxscore=0 spamscore=0
+ clxscore=1015 adultscore=0 malwarescore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011240104
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,40 +103,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: cforno12@linux.ibm.com, ljp@linux.vnet.ibm.com, ricklind@linux.ibm.com,
+ dnbanerg@us.ibm.com, tlfalcon@linux.ibm.com, drt@linux.vnet.ibm.com,
+ brking@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+This series resolves a few issues in the ibmvnic driver's
+RX buffer and TX completion processing. The first patch
+includes memory barriers to synchronize queue descriptor
+reads. The second patch fixes a memory leak that could
+occur if the device returns a TX completion with an error
+code in the descriptor, in which case the respective socket
+buffer and other relevant data structures may not be freed
+or updated properly.
 
-Christophe Leroy wrote:
-> Hi Naveen,
->=20
-> Few years ago, you implemented eBPF on PPC64.
->=20
-> Is there any reason for implementing it for PPC64 only ?
+Thomas Falcon (2):
+  ibmvnic: Ensure that SCRQ entry reads are correctly ordered
+  ibmvnic: Fix TX completion error handling
 
-I focused on ppc64 since eBPF is a 64-bit VM and it was more=20
-straight-forward to target.
+ drivers/net/ethernet/ibm/ibmvnic.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-> Is there something that makes it impossible to have eBPF for PPC32 as=20
-> well ?
+-- 
+1.8.3.1
 
-No, I just wasn't sure if it would be performant enough to warrant it. =20
-Since then however, there have been arm32 and riscv 32-bit JIT=20
-implementations and atleast the arm32 JIT seems to be showing ~50%=20
-better performance compared to the interpreter (*). So, it would be=20
-worthwhile to add support for ppc32.
-
-Note that there might be a few instructions which would be difficult to=20
-support on 32-bit, but those can fallback to the interpreter, while=20
-allowing other programs to be JIT'ed.
-
-
-- Naveen
-
-(*)=20
-http://lkml.kernel.org/r/CAGXu5jLYunVCJGCfHPebKDaoQ71hdMGq4HhdDxTYpBQw_HXUY=
-Q@mail.gmail.com
-(*) http://lkml.kernel.org/r/b63fae4b-cb74-1928-b210-80914f3c8995@fb.com
-(*) http://lkml.kernel.org/r/20200305050207.4159-1-luke.r.nels@gmail.com
