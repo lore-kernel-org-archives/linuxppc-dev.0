@@ -7,96 +7,97 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21F8EC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:06:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC863C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:09:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2039D206FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:06:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9DCA120637
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:09:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="bH9TD3yY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2039D206FA
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="IbUKqMWZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DCA120637
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgKRb13gmzDqLP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 21:06:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgKVw4myLzDqLl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 21:09:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=bH9TD3yY; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=IbUKqMWZ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgKGt5fThzDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 20:58:46 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgKGv5CHbzDqMn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 20:58:47 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AO9WhrK035256
+ 0AO9Vsbe030059
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 04:58:44 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : subject :
- date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=2tZdERRCI3BMq/zWUK9WHEQAO7yI67z7GCO6+ZqDgw8=;
- b=bH9TD3yYyM3c2hkuGyWkNYsIvN1nK1IJqCgpEVWHDI6+e5W3syAn/47whjFnsboMFOZa
- V8aT8IInexj33kRY4splmUzKaZLLYlZ5ZwfE6jygFmDDY7ue6WqLSXpWIK7Xa2U44QxM
- XAEms2xjNPwUKjrNX9AsM0zlcOQ71cFeYYvLEoj9TqyVowlAJCxee+ynMSxy3yXol29I
- nrrd1BmKzrlGBhcS+ob2eoJqfuXvob5AMaMrhK+oL7H8cAS8AqPDA8cseai4HEMqyvmB
- RhxC+lz4d53rYR31nkotoytxG2UokA6MqOhvALfTFfcPi+B7Q8pHcY019A1IRz+8csrJ Pw== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 350nsdj08e-1
+ date : message-id : in-reply-to : references : mime-version : content-type
+ : content-transfer-encoding; s=pp1;
+ bh=8g8t0Jp9X/Nhrqcc+3ZVQm6e6VItMOtazvFf6GucFxc=;
+ b=IbUKqMWZoZASRQY7L/qzI/giBGOR2PifCLhPE7ZV1kA43X451nLGg8kJbxpWkclk5mM/
+ khHVwSM8yfwZRTwtQes31NESl/5agZ89X4NiEeMc/mc4c2hKqhX1TbB4ZaVsLXOqnpGM
+ lFDpenJ4lP9aQkE5/1K/uBxqKJ49g2ffc+kLhWuutNFHLne9XGwreGhYFDXivtB0Vfbx
+ IRO+IPGlEKB6REZU0RoDywls6we/MIvybR+PUKWkkPd75EWNZQ6HK6vmOHqlHp2BkRXj
+ ZQSQk75OpCvqTuO+d/l/pCnxHwGOvvSD7iFjeHAWgiNX6LSf+7OVPiFkjQ/OfBwpzPIJ qg== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350ga2v7x6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 04:58:44 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AO9wHOZ004882
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AO9wXLk001408
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 09:58:42 GMT
 Received: from b06avi18878370.portsmouth.uk.ibm.com
  (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma04ams.nl.ibm.com with ESMTP id 34xth8kb0v-1
+ by ppma02fra.de.ibm.com with ESMTP id 350cvrrxsq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 09:58:42 +0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
  by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0AO9wdPA55116122
+ id 0AO9wdjd58524142
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Tue, 24 Nov 2020 09:58:39 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BAD7A52051;
+ by IMSVA (Postfix) with ESMTP id 3877B5204F;
  Tue, 24 Nov 2020 09:58:39 +0000 (GMT)
 Received: from lombard-p52.ibmuc.com (unknown [9.171.68.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 816205205A;
- Tue, 24 Nov 2020 09:58:39 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id EFE9352050;
+ Tue, 24 Nov 2020 09:58:38 +0000 (GMT)
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
  ajd@linux.ibm.com
-Subject: [PATCH V3 4/5] ocxl: Add mmu notifier
-Date: Tue, 24 Nov 2020 10:58:37 +0100
-Message-Id: <20201124095838.18665-5-clombard@linux.vnet.ibm.com>
+Subject: [PATCH V3 2/5] ocxl: Initiate a TLB invalidate command
+Date: Tue, 24 Nov 2020 10:58:35 +0100
+Message-Id: <20201124095838.18665-3-clombard@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
 References: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-24_03:2020-11-24,
  2020-11-23 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0
- mlxlogscore=999 malwarescore=0 bulkscore=0 impostorscore=0 clxscore=1015
- lowpriorityscore=0 phishscore=0 mlxscore=0 priorityscore=1501 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011240056
+ lowpriorityscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 mlxscore=0 phishscore=0
+ priorityscore=1501 clxscore=1015 adultscore=0 spamscore=0 bulkscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011240056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,165 +113,172 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add invalidate_range mmu notifier, when required (ATSD access of MMIO
-registers is available), to initiate TLB invalidation commands.
-For the time being, the ATSD0 set of registers is used by default.
+When a TLB Invalidate is required for the Logical Partition, the following
+sequence has to be performed:
 
-The pasid and bdf values have to be configured in the Process Element
-Entry.
-The PEE must be set up to match the BDF/PASID of the AFU.
+1. Load MMIO ATSD AVA register with the necessary value, if required.
+2. Write the MMIO ATSD launch register to initiate the TLB Invalidate
+command.
+3. Poll the MMIO ATSD status register to determine when the TLB Invalidate
+   has been completed.
 
 Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 ---
- drivers/misc/ocxl/link.c | 62 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 61 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/pnv-ocxl.h   | 51 +++++++++++++++++++
+ arch/powerpc/platforms/powernv/ocxl.c | 70 +++++++++++++++++++++++++++
+ 2 files changed, 121 insertions(+)
 
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index 77381dda2c45..129d4eddc4d2 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -2,8 +2,10 @@
- // Copyright 2017 IBM Corp.
- #include <linux/sched/mm.h>
- #include <linux/mutex.h>
-+#include <linux/mm.h>
- #include <linux/mm_types.h>
- #include <linux/mmu_context.h>
-+#include <linux/mmu_notifier.h>
- #include <asm/copro.h>
- #include <asm/pnv-ocxl.h>
- #include <asm/xive.h>
-@@ -33,6 +35,7 @@
+diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
+index 60c3c74427d9..9acd1fbf1197 100644
+--- a/arch/powerpc/include/asm/pnv-ocxl.h
++++ b/arch/powerpc/include/asm/pnv-ocxl.h
+@@ -3,12 +3,59 @@
+ #ifndef _ASM_PNV_OCXL_H
+ #define _ASM_PNV_OCXL_H
  
- #define SPA_PE_VALID		0x80000000
++#include <linux/bitfield.h>
+ #include <linux/pci.h>
  
-+struct ocxl_link;
+ #define PNV_OCXL_TL_MAX_TEMPLATE        63
+ #define PNV_OCXL_TL_BITS_PER_RATE       4
+ #define PNV_OCXL_TL_RATE_BUF_SIZE       ((PNV_OCXL_TL_MAX_TEMPLATE+1) * PNV_OCXL_TL_BITS_PER_RATE / 8)
  
- struct pe_data {
- 	struct mm_struct *mm;
-@@ -41,6 +44,8 @@ struct pe_data {
- 	/* opaque pointer to be passed to the above callback */
- 	void *xsl_err_data;
- 	struct rcu_head rcu;
-+	struct ocxl_link *link;
-+	struct mmu_notifier mmu_notifier;
- };
- 
- struct spa {
-@@ -83,6 +88,8 @@ struct ocxl_link {
- 	int domain;
- 	int bus;
- 	int dev;
-+	void __iomem *arva;     /* ATSD register virtual address */
-+	spinlock_t atsd_lock;   /* to serialize shootdowns */
- 	atomic_t irq_available;
- 	struct spa *spa;
- 	void *platform_data;
-@@ -388,6 +395,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_l
- 	link->bus = dev->bus->number;
- 	link->dev = PCI_SLOT(dev->devfn);
- 	atomic_set(&link->irq_available, MAX_IRQ_PER_LINK);
-+	spin_lock_init(&link->atsd_lock);
- 
- 	rc = alloc_spa(dev, link);
- 	if (rc)
-@@ -403,6 +411,13 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_l
- 	if (rc)
- 		goto err_xsl_irq;
- 
-+	/* if link->arva is not defeined, MMIO registers are not used to
-+	 * generate TLB invalidate. PowerBus snooping is enabled.
-+	 * Otherwise, PowerBus snooping is disabled. TLB Invalidates are
-+	 * initiated using MMIO registers.
-+	 */
-+	pnv_ocxl_map_lpar(dev, mfspr(SPRN_LPID), 0, &link->arva);
++#define PNV_OCXL_ATSD_TIMEOUT		1
 +
- 	*out_link = link;
- 	return 0;
- 
-@@ -454,6 +469,11 @@ static void release_xsl(struct kref *ref)
- {
- 	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
- 
-+	if (link->arva) {
-+		pnv_ocxl_unmap_lpar(link->arva);
-+		link->arva = NULL;
-+	}
++/* TLB Management Instructions */
++#define PNV_OCXL_ATSD_LNCH		0x00
++/* Radix Invalidate */
++#define   PNV_OCXL_ATSD_LNCH_R		PPC_BIT(0)
++/* Radix Invalidation Control
++ * 0b00 Just invalidate TLB.
++ * 0b01 Invalidate just Page Walk Cache.
++ * 0b10 Invalidate TLB, Page Walk Cache, and any
++ * caching of Partition and Process Table Entries.
++ */
++#define   PNV_OCXL_ATSD_LNCH_RIC	PPC_BITMASK(1, 2)
++/* Number and Page Size of translations to be invalidated */
++#define   PNV_OCXL_ATSD_LNCH_LP		PPC_BITMASK(3, 10)
++/* Invalidation Criteria
++ * 0b00 Invalidate just the target VA.
++ * 0b01 Invalidate matching PID.
++ */
++#define   PNV_OCXL_ATSD_LNCH_IS		PPC_BITMASK(11, 12)
++/* 0b1: Process Scope, 0b0: Partition Scope */
++#define   PNV_OCXL_ATSD_LNCH_PRS	PPC_BIT(13)
++/* Invalidation Flag */
++#define   PNV_OCXL_ATSD_LNCH_B		PPC_BIT(14)
++/* Actual Page Size to be invalidated
++ * 000 4KB
++ * 101 64KB
++ * 001 2MB
++ * 010 1GB
++ */
++#define   PNV_OCXL_ATSD_LNCH_AP		PPC_BITMASK(15, 17)
++/* Defines the large page select
++ * L=0b0 for 4KB pages
++ * L=0b1 for large pages)
++ */
++#define   PNV_OCXL_ATSD_LNCH_L		PPC_BIT(18)
++/* Process ID */
++#define   PNV_OCXL_ATSD_LNCH_PID	PPC_BITMASK(19, 38)
++/* NoFlush – Assumed to be 0b0 */
++#define   PNV_OCXL_ATSD_LNCH_F		PPC_BIT(39)
++#define   PNV_OCXL_ATSD_LNCH_OCAPI_SLBI	PPC_BIT(40)
++#define   PNV_OCXL_ATSD_LNCH_OCAPI_SINGLETON	PPC_BIT(41)
++#define PNV_OCXL_ATSD_AVA		0x08
++#define   PNV_OCXL_ATSD_AVA_AVA		PPC_BITMASK(0, 51)
++#define PNV_OCXL_ATSD_STAT		0x10
 +
- 	list_del(&link->list);
- 	/* call platform code before releasing data */
- 	pnv_ocxl_spa_release(link->platform_data);
-@@ -470,6 +490,26 @@ void ocxl_link_release(struct pci_dev *dev, void *link_handle)
+ int pnv_ocxl_get_actag(struct pci_dev *dev, u16 *base, u16 *enabled, u16 *supported);
+ int pnv_ocxl_get_pasid_count(struct pci_dev *dev, int *count);
+ 
+@@ -31,4 +78,8 @@ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
+ int pnv_ocxl_map_lpar(struct pci_dev *dev, uint64_t lparid,
+ 		      uint64_t lpcr, void __iomem **arva);
+ void pnv_ocxl_unmap_lpar(void __iomem *arva);
++void pnv_ocxl_tlb_invalidate(void __iomem *arva,
++			     unsigned long pid,
++			     unsigned long addr,
++			     unsigned long page_size);
+ #endif /* _ASM_PNV_OCXL_H */
+diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
+index 57fc1062677b..f665846d2b28 100644
+--- a/arch/powerpc/platforms/powernv/ocxl.c
++++ b/arch/powerpc/platforms/powernv/ocxl.c
+@@ -528,3 +528,73 @@ void pnv_ocxl_unmap_lpar(void __iomem *arva)
+ 	iounmap(arva);
  }
- EXPORT_SYMBOL_GPL(ocxl_link_release);
- 
-+static void invalidate_range(struct mmu_notifier *mn,
-+			     struct mm_struct *mm,
-+			     unsigned long start, unsigned long end)
+ EXPORT_SYMBOL_GPL(pnv_ocxl_unmap_lpar);
++
++void pnv_ocxl_tlb_invalidate(void __iomem *arva,
++			     unsigned long pid,
++			     unsigned long addr,
++			     unsigned long page_size)
 +{
-+	struct pe_data *pe_data = container_of(mn, struct pe_data, mmu_notifier);
-+	struct ocxl_link *link = pe_data->link;
-+	unsigned long addr, pid, page_size = PAGE_SIZE;
++	unsigned long timeout = jiffies + (HZ * PNV_OCXL_ATSD_TIMEOUT);
++	u64 val = 0ull;
++	int pend;
++	u8 size;
 +
-+	pid = mm->context.id;
++	if (!(arva))
++		return;
 +
-+	spin_lock(&link->atsd_lock);
-+	for (addr = start; addr < end; addr += page_size)
-+		pnv_ocxl_tlb_invalidate(link->arva, pid, addr, page_size);
-+	spin_unlock(&link->atsd_lock);
-+}
-+
-+static const struct mmu_notifier_ops ocxl_mmu_notifier_ops = {
-+	.invalidate_range = invalidate_range,
-+};
-+
- static u64 calculate_cfg_state(bool kernel)
- {
- 	u64 state;
-@@ -526,6 +566,8 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 	pe_data->mm = mm;
- 	pe_data->xsl_err_cb = xsl_err_cb;
- 	pe_data->xsl_err_data = xsl_err_data;
-+	pe_data->link = link;
-+	pe_data->mmu_notifier.ops = &ocxl_mmu_notifier_ops;
- 
- 	memset(pe, 0, sizeof(struct ocxl_process_element));
- 	pe->config_state = cpu_to_be64(calculate_cfg_state(pidr == 0));
-@@ -542,8 +584,16 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 	 * by the nest MMU. If we have a kernel context, TLBIs are
- 	 * already global.
- 	 */
--	if (mm)
-+	if (mm) {
- 		mm_context_add_copro(mm);
-+		if (link->arva) {
-+			/* Use MMIO registers for the TLB Invalidate
-+			 * operations.
-+			 */
-+			mmu_notifier_register(&pe_data->mmu_notifier, mm);
-+		}
++	if (addr) {
++		/* load Abbreviated Virtual Address register with
++		 * the necessary value
++		 */
++		val |= FIELD_PREP(PNV_OCXL_ATSD_AVA_AVA, addr >> (63-51));
++		out_be64(arva + PNV_OCXL_ATSD_AVA, val);
 +	}
 +
- 	/*
- 	 * Barrier is to make sure PE is visible in the SPA before it
- 	 * is used by the device. It also helps with the global TLBI
-@@ -674,6 +724,16 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
- 		WARN(1, "Couldn't find pe data when removing PE\n");
- 	} else {
- 		if (pe_data->mm) {
-+			if (link->arva) {
-+				mmu_notifier_unregister(&pe_data->mmu_notifier,
-+							pe_data->mm);
-+				spin_lock(&link->atsd_lock);
-+				pnv_ocxl_tlb_invalidate(link->arva,
-+							pe_data->mm->context.id,
-+							0ull,
-+							PAGE_SIZE);
-+				spin_unlock(&link->atsd_lock);
-+			}
- 			mm_context_remove_copro(pe_data->mm);
- 			mmdrop(pe_data->mm);
- 		}
++	/* Write access initiates a shoot down to initiate the
++	 * TLB Invalidate command
++	 */
++	val = PNV_OCXL_ATSD_LNCH_R;
++	if (addr) {
++		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_RIC, 0b00);
++		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_IS, 0b00);
++	} else {
++		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_RIC, 0b10);
++		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_IS, 0b01);
++		val |= PNV_OCXL_ATSD_LNCH_OCAPI_SINGLETON;
++	}
++	val |= PNV_OCXL_ATSD_LNCH_PRS;
++	/* Actual Page Size to be invalidated
++	 * 000 4KB
++	 * 101 64KB
++	 * 001 2MB
++	 * 010 1GB
++	 */
++	size = 0b101;
++	if (page_size == 0x10000)
++		size = 0b000;
++	if (page_size == 0x200000)
++		size = 0b001;
++	if (page_size == 0x40000000)
++		size = 0b010;
++	val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_AP, size);
++	val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_PID, pid);
++	out_be64(arva + PNV_OCXL_ATSD_LNCH, val);
++
++	/* Poll the ATSD status register to determine when the
++	 * TLB Invalidate has been completed.
++	 */
++	val = in_be64(arva + PNV_OCXL_ATSD_STAT);
++	pend = val >> 63;
++
++	while (pend) {
++		if (time_after_eq(jiffies, timeout)) {
++			pr_err("%s - Timeout while reading XTS MMIO ATSD status register (val=%#llx, pidr=0x%lx)\n",
++			       __func__, val, pid);
++			return;
++		}
++		cpu_relax();
++		val = in_be64(arva + PNV_OCXL_ATSD_STAT);
++		pend = val >> 63;
++	}
++}
++EXPORT_SYMBOL_GPL(pnv_ocxl_tlb_invalidate);
 -- 
 2.28.0
 
