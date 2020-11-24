@@ -2,109 +2,101 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCF8AC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 09:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89D7FC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:03:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8036520657
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 09:47:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5EE16206FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:03:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="rB7ybnh0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8036520657
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="kAM7AeY+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EE16206FA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgK1L544dzDqTZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 20:47:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgKMw21lNzDqMF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 21:03:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=rB7ybnh0; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=kAM7AeY+; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgJyW5X3fzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 20:44:29 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgKGv28G6zDqKP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 20:58:46 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AO9X5dU144025; Tue, 24 Nov 2020 04:44:21 -0500
+ 0AO9WfiI035163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 04:58:44 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : content-transfer-encoding : in-reply-to; s=pp1;
- bh=1vZhDxrI0UH7+tnSnDGhw+6VjE+lwO1okY22M3IqcgU=;
- b=rB7ybnh0/GiVIvl+NDmTcMPKqhQROD1uaENqmgNk2U0arcAw+uHYAalB6PuT7XyiU8h7
- CsS/sPWUC++KP2ZnlkNrL5WCIK+4wyg/gyIUtCbizZukEgm+R3W07OImgnPgio24hSC5
- V/c2waixGOKq1HpKfnauw/e6Pz0UhRn3aZyrO1et1ufSw6OvhWA7QfV2XqAiXR0vq/c5
- +EZfKhjv3qxSDZewkY8+gb2Z/NSprKiyCXWKnYn0DcvdWJky6wx5sXIORnOF2rnzGHo5
- BZjcd2ydLFMA9PNOxIYWurV6tbZzQ52MAFZAfJb8pHyrWqy7QLFEA+Lr7rLUZXJjUmfH nA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 350rb0wduq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 04:44:21 -0500
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0AO9XC9Y144581;
- Tue, 24 Nov 2020 04:44:20 -0500
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 350rb0wdtj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 04:44:20 -0500
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AO9X29h016220;
- Tue, 24 Nov 2020 09:44:18 GMT
+ h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=dALcnJkvAr+Dj8f0/890ZkMXmCG+0HaTsTFNxYg5NBo=;
+ b=kAM7AeY+7fl7OtFc0jutVsMYcnS2wdjtoapMu5+kDbudibjDPRnIhT/oiEuk3er5I+rk
+ 6DA1NUmn6bdzZR/KqGdvzs/+l6/UTo/2+/09Lt7yQkwVeF0W5FjJY4q6ISCka2UiOuwt
+ OjzPwCtiNm1f12FrgWykKx1VV/R0Uowxe7K/a2QTszFMFMuCglFKRBZCPP0Sa3+XORjv
+ FwJBwDOxw7GWQCrwVPDZ+o3z3sOanj7aTxl3B2Qb7M7ZGQVhqroqMOJ1M+GEkA0MWtGU
+ tafKOaH2bMbnww0wbVvdBWvbhi8Y+HUweH77RjsiSlv0rA5R2RIP+PL4GY+SKQmzv77+ aA== 
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350nsdj08a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 04:58:44 -0500
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AO9vqgp003365
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 09:58:42 GMT
 Received: from b06avi18878370.portsmouth.uk.ibm.com
  (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma05fra.de.ibm.com with ESMTP id 34y6k4sh6g-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Nov 2020 09:44:17 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by ppma06fra.de.ibm.com with ESMTP id 34xt5h9s43-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 09:58:42 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
  by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0AO9iFOM63439202
+ id 0AO9wdap63635770
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Nov 2020 09:44:15 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BC289A4054;
- Tue, 24 Nov 2020 09:44:15 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0389FA4065;
- Tue, 24 Nov 2020 09:44:14 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.199.46.179])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Tue, 24 Nov 2020 09:44:13 +0000 (GMT)
-Date: Tue, 24 Nov 2020 15:14:11 +0530
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v1 0/2] Use H_RPT_INVALIDATE for nested guest
-Message-ID: <20201124094411.GA72234@in.ibm.com>
-References: <20201019112642.53016-1-bharata@linux.ibm.com>
+ Tue, 24 Nov 2020 09:58:39 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 78E5152057;
+ Tue, 24 Nov 2020 09:58:39 +0000 (GMT)
+Received: from lombard-p52.ibmuc.com (unknown [9.171.68.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 40A475204E;
+ Tue, 24 Nov 2020 09:58:39 +0000 (GMT)
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ ajd@linux.ibm.com
+Subject: [PATCH V3 3/5] ocxl: Update the Process Element Entry
+Date: Tue, 24 Nov 2020 10:58:36 +0100
+Message-Id: <20201124095838.18665-4-clombard@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
+References: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20201019112642.53016-1-bharata@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-24_03:2020-11-24,
  2020-11-23 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0
- mlxscore=0 priorityscore=1501 adultscore=0 clxscore=1011 spamscore=0
- lowpriorityscore=0 suspectscore=0 bulkscore=0 mlxlogscore=999
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011240056
+ suspectscore=0 spamscore=0
+ mlxlogscore=999 malwarescore=0 bulkscore=0 impostorscore=0 clxscore=1015
+ lowpriorityscore=0 phishscore=0 mlxscore=0 priorityscore=1501 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2011240056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,115 +108,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: bharata@linux.ibm.com
-Cc: aneesh.kumar@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+To complete the MMIO based mechanism, the fields: PASID, bus, device and
+function of the Process Element Entry have to be filled. (See
+OpenCAPI Power Platform Architecture document)
 
-Any comments on this patchset? Anything specific to be addressed
-before it could be considered for inclusion?
+                   Hypervisor Process Element Entry
+Word
+    0 1 .... 7  8  ...... 12  13 ..15  16.... 19  20 ........... 31
+0                  OSL Configuration State (0:31)
+1                  OSL Configuration State (32:63)
+2               PASID                      |    Reserved
+3       Bus   |   Device    |Function |        Reserved
+4                             Reserved
+5                             Reserved
+6                               ....
 
-Regards,
-Bharata.
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+---
+ drivers/misc/ocxl/context.c       | 4 +++-
+ drivers/misc/ocxl/link.c          | 4 +++-
+ drivers/misc/ocxl/ocxl_internal.h | 9 ++++++---
+ drivers/scsi/cxlflash/ocxl_hw.c   | 6 ++++--
+ include/misc/ocxl.h               | 2 +-
+ 5 files changed, 17 insertions(+), 8 deletions(-)
 
-On Mon, Oct 19, 2020 at 04:56:40PM +0530, Bharata B Rao wrote:
-> This patchset adds support for the new hcall H_RPT_INVALIDATE
-> (currently handles nested case only) and replaces the nested tlb flush
-> calls with this new hcall if the support for the same exists.
-> 
-> Changes in v1:
-> -------------
-> - Removed the bits that added the FW_FEATURE_RPT_INVALIDATE feature
->   as they are already upstream.
-> 
-> v0: https://lore.kernel.org/linuxppc-dev/20200703104420.21349-1-bharata@linux.ibm.com/T/#m1800c5f5b3d4f6a154ae58fc1c617c06f286358f
-> 
-> H_RPT_INVALIDATE
-> ================
-> Syntax:
-> int64   /* H_Success: Return code on successful completion */
->         /* H_Busy - repeat the call with the same */
->         /* H_Parameter, H_P2, H_P3, H_P4, H_P5 : Invalid parameters */
->         hcall(const uint64 H_RPT_INVALIDATE, /* Invalidate RPT translation lookaside information */
->               uint64 pid,       /* PID/LPID to invalidate */
->               uint64 target,    /* Invalidation target */
->               uint64 type,      /* Type of lookaside information */
->               uint64 pageSizes,     /* Page sizes */
->               uint64 start,     /* Start of Effective Address (EA) range (inclusive) */
->               uint64 end)       /* End of EA range (exclusive) */
-> 
-> Invalidation targets (target)
-> -----------------------------
-> Core MMU        0x01 /* All virtual processors in the partition */
-> Core local MMU  0x02 /* Current virtual processor */
-> Nest MMU        0x04 /* All nest/accelerator agents in use by the partition */
-> 
-> A combination of the above can be specified, except core and core local.
-> 
-> Type of translation to invalidate (type)
-> ---------------------------------------
-> NESTED       0x0001  /* Invalidate nested guest partition-scope */
-> TLB          0x0002  /* Invalidate TLB */
-> PWC          0x0004  /* Invalidate Page Walk Cache */
-> PRT          0x0008  /* Invalidate Process Table Entries if NESTED is clear */
-> PAT          0x0008  /* Invalidate Partition Table Entries if NESTED is set */
-> 
-> A combination of the above can be specified.
-> 
-> Page size mask (pageSizes)
-> --------------------------
-> 4K              0x01
-> 64K             0x02
-> 2M              0x04
-> 1G              0x08
-> All sizes       (-1UL)
-> 
-> A combination of the above can be specified.
-> All page sizes can be selected with -1.
-> 
-> Semantics: Invalidate radix tree lookaside information
->            matching the parameters given.
-> * Return H_P2, H_P3 or H_P4 if target, type, or pageSizes parameters are
->   different from the defined values.
-> * Return H_PARAMETER if NESTED is set and pid is not a valid nested
->   LPID allocated to this partition
-> * Return H_P5 if (start, end) doesn't form a valid range. Start and end
->   should be a valid Quadrant address and  end > start.
-> * Return H_NotSupported if the partition is not in running in radix
->   translation mode.
-> * May invalidate more translation information than requested.
-> * If start = 0 and end = -1, set the range to cover all valid addresses.
->   Else start and end should be aligned to 4kB (lower 11 bits clear).
-> * If NESTED is clear, then invalidate process scoped lookaside information.
->   Else pid specifies a nested LPID, and the invalidation is performed
->   on nested guest partition table and nested guest partition scope real
->   addresses.
-> * If pid = 0 and NESTED is clear, then valid addresses are quadrant 3 and
->   quadrant 0 spaces, Else valid addresses are quadrant 0.
-> * Pages which are fully covered by the range are to be invalidated.
->   Those which are partially covered are considered outside invalidation
->   range, which allows a caller to optimally invalidate ranges that may
->   contain mixed page sizes.
-> * Return H_SUCCESS on success.
-> 
-> Bharata B Rao (2):
->   KVM: PPC: Book3S HV: Add support for H_RPT_INVALIDATE (nested case
->     only)
->   KVM: PPC: Book3S HV: Use H_RPT_INVALIDATE in nested KVM
-> 
->  Documentation/virt/kvm/api.rst                |  17 +++
->  .../include/asm/book3s/64/tlbflush-radix.h    |  18 +++
->  arch/powerpc/include/asm/kvm_book3s.h         |   3 +
->  arch/powerpc/kvm/book3s_64_mmu_radix.c        |  26 ++++-
->  arch/powerpc/kvm/book3s_hv.c                  |  32 ++++++
->  arch/powerpc/kvm/book3s_hv_nested.c           | 107 +++++++++++++++++-
->  arch/powerpc/kvm/powerpc.c                    |   3 +
->  arch/powerpc/mm/book3s64/radix_tlb.c          |   4 -
->  include/uapi/linux/kvm.h                      |   1 +
->  9 files changed, 200 insertions(+), 11 deletions(-)
-> 
-> -- 
-> 2.26.2
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index c21f65a5c762..9eb0d93b01c6 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -70,6 +70,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
+ {
+ 	int rc;
+ 	unsigned long pidr = 0;
++	struct pci_dev *dev;
+ 
+ 	// Locks both status & tidr
+ 	mutex_lock(&ctx->status_mutex);
+@@ -81,8 +82,9 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
+ 	if (mm)
+ 		pidr = mm->context.id;
+ 
++	dev = to_pci_dev(ctx->afu->fn->dev.parent);
+ 	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid, pidr, ctx->tidr,
+-			      amr, mm, xsl_fault_error, ctx);
++			      amr, pci_dev_id(dev), mm, xsl_fault_error, ctx);
+ 	if (rc)
+ 		goto out;
+ 
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index fd73d3bc0eb6..77381dda2c45 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -494,7 +494,7 @@ static u64 calculate_cfg_state(bool kernel)
+ }
+ 
+ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+-		u64 amr, struct mm_struct *mm,
++		u64 amr, u16 bdf, struct mm_struct *mm,
+ 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+ 		void *xsl_err_data)
+ {
+@@ -529,6 +529,8 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+ 
+ 	memset(pe, 0, sizeof(struct ocxl_process_element));
+ 	pe->config_state = cpu_to_be64(calculate_cfg_state(pidr == 0));
++	pe->pasid = cpu_to_be32(pasid << (31 - 19));
++	pe->bdf = cpu_to_be16(bdf);
+ 	pe->lpid = cpu_to_be32(mfspr(SPRN_LPID));
+ 	pe->pid = cpu_to_be32(pidr);
+ 	pe->tid = cpu_to_be32(tidr);
+diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+index 0bad0a123af6..10125a22d5a5 100644
+--- a/drivers/misc/ocxl/ocxl_internal.h
++++ b/drivers/misc/ocxl/ocxl_internal.h
+@@ -84,13 +84,16 @@ struct ocxl_context {
+ 
+ struct ocxl_process_element {
+ 	__be64 config_state;
+-	__be32 reserved1[11];
++	__be32 pasid;
++	__be16 bdf;
++	__be16 reserved1;
++	__be32 reserved2[9];
+ 	__be32 lpid;
+ 	__be32 tid;
+ 	__be32 pid;
+-	__be32 reserved2[10];
++	__be32 reserved3[10];
+ 	__be64 amr;
+-	__be32 reserved3[3];
++	__be32 reserved4[3];
+ 	__be32 software_state;
+ };
+ 
+diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
+index e4e0d767b98e..244fc27215dc 100644
+--- a/drivers/scsi/cxlflash/ocxl_hw.c
++++ b/drivers/scsi/cxlflash/ocxl_hw.c
+@@ -329,6 +329,7 @@ static int start_context(struct ocxlflash_context *ctx)
+ 	struct ocxl_hw_afu *afu = ctx->hw_afu;
+ 	struct ocxl_afu_config *acfg = &afu->acfg;
+ 	void *link_token = afu->link_token;
++	struct pci_dev *pdev = afu->pdev;
+ 	struct device *dev = afu->dev;
+ 	bool master = ctx->master;
+ 	struct mm_struct *mm;
+@@ -360,8 +361,9 @@ static int start_context(struct ocxlflash_context *ctx)
+ 		mm = current->mm;
+ 	}
+ 
+-	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0, mm,
+-			      ocxlflash_xsl_fault, ctx);
++	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0,
++			      pci_dev_id(pdev), mm, ocxlflash_xsl_fault,
++			      ctx);
+ 	if (unlikely(rc)) {
+ 		dev_err(dev, "%s: ocxl_link_add_pe failed rc=%d\n",
+ 			__func__, rc);
+diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+index e013736e275d..3ed736da02c8 100644
+--- a/include/misc/ocxl.h
++++ b/include/misc/ocxl.h
+@@ -447,7 +447,7 @@ void ocxl_link_release(struct pci_dev *dev, void *link_handle);
+  * defined
+  */
+ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+-		u64 amr, struct mm_struct *mm,
++		u64 amr, u16 bdf, struct mm_struct *mm,
+ 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+ 		void *xsl_err_data);
+ 
+-- 
+2.28.0
+
