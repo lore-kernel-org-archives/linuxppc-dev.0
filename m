@@ -2,100 +2,43 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 695F0C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15A4EC56201
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:20:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 880B12076C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:14:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="YKZDVTrk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 880B12076C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id DDBE020678
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:20:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDBE020678
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDJB00jyzDqSm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:14:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDQk5F5vzDqTY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:20:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=YKZDVTrk; 
- dkim-atps=neutral
-X-Greylist: delayed 8032 seconds by postgrey-1.36 at bilbo;
- Tue, 24 Nov 2020 17:12:24 AEDT
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgDFh6WkvzDqSF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:12:24 +1100 (AEDT)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0AO3uT0w079281;
- Tue, 24 Nov 2020 03:58:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2020-01-29;
- bh=bA7CzgRK1lXS7YiO5uGQArtgq38/15OaAjPlpfNXVa4=;
- b=YKZDVTrkPQ+QL6MsFQFXGg8gpsa52kXodr/P7BXImhEyc6s1pb3Nv7CBx2psctAESLAU
- B8Nq5DV8OVoBhOA5zrSXnFqxQ15vYZ7q5+HL4B1CoosrLs/KYP/ZdLFQL2YYzFErpc4E
- PrblC9K58c5IieniXQ9zKgO+I13U4ukUxSjMGC4zhEMA2cvVVLZqYK0LVkrUe2U3kgrK
- fEPWveN2iX5SKlpc5fnUG1tgpMUCH1UkifKmieMcxtCu5nub9ncG74VCa6CCtwh/s+ku
- ai46SI6qrJR2+Bfr8lHtGSpR4SQcg+GZ+NB1cetpKJxCTPx3OGcMrND0T9b9pH8sVbAD fA== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
- by userp2130.oracle.com with ESMTP id 34xtaqkykx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 24 Nov 2020 03:58:23 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
- by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0AO3ssEH115654;
- Tue, 24 Nov 2020 03:58:23 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by userp3030.oracle.com with ESMTP id 34yctvu0wk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Nov 2020 03:58:23 +0000
-Received: from abhmp0008.oracle.com (abhmp0008.oracle.com [141.146.116.14])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0AO3wLV0006685;
- Tue, 24 Nov 2020 03:58:21 GMT
-Received: from ca-mkp.ca.oracle.com (/10.156.108.201)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Mon, 23 Nov 2020 19:58:20 -0800
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: james.bottomley@hansenpartnership.com,
- Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: Re: [PATCH v3 0/6] ibmvfc: Protocol definition updates and new
- targetWWPN Support
-Date: Mon, 23 Nov 2020 22:58:09 -0500
-Message-Id: <160618683552.24173.5839850324071459334.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201118011104.296999-1-tyreld@linux.ibm.com>
-References: <20201118011104.296999-1-tyreld@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9814
- signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
- suspectscore=0
- malwarescore=0 spamscore=0 phishscore=0 mlxlogscore=999 adultscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011240021
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9814
- signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
- spamscore=0 phishscore=0
- mlxlogscore=999 clxscore=1015 suspectscore=0 lowpriorityscore=0
- priorityscore=1501 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011240021
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CgDN34FPXzDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:17:52 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 55E0EAE80241;
+ Tue, 24 Nov 2020 01:17:45 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH kernel v4 2/8] genirq/irqdomain: Clean legacy IRQ allocation
+Date: Tue, 24 Nov 2020 17:17:14 +1100
+Message-Id: <20201124061720.86766-3-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201124061720.86766-1-aik@ozlabs.ru>
+References: <20201124061720.86766-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,42 +50,198 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Marc Zyngier <maz@kernel.org>,
+ x86@kernel.org, linux-gpio@vger.kernel.org,
+ Oliver O'Halloran <oohall@gmail.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 17 Nov 2020 19:10:58 -0600, Tyrel Datwyler wrote:
+There are 10 users of __irq_domain_alloc_irqs() and only one - IOAPIC -
+passes realloc==true. There is no obvious reason for handling this
+specific case in the generic code.
 
-> Several Management Datagrams (MADs) have been reversioned to add a targetWWPN
-> field that is intended to better identify a target over in place of the scsi_id.
-> This patchset adds the new protocol definitions and implements support for using
-> the new targetWWPN field and exposing the capability to the VIOS. This
-> targetWWPN support is a prerequisuite for upcoming channelization/MQ support.
-> 
-> changes in v3:
-> * addressed field naming consistency in Patches 2 & 5 in response to [brking]
-> * fixed commit log typos
-> * fixed bad rebase of Patch 4 such that it now compiles
-> 
-> [...]
+This splits out __irq_domain_alloc_irqs_data() to make it clear what
+IOAPIC does and makes __irq_domain_alloc_irqs() cleaner.
 
-Applied to 5.11/scsi-queue, thanks!
+This should cause no behavioral change.
 
-[1/6] scsi: ibmvfc: Deduplicate common ibmvfc_cmd init code
-      https://git.kernel.org/mkp/scsi/c/fad74a1be2db
-[2/6] scsi: ibmvfc: Add new fields for version 2 of several MADs
-      https://git.kernel.org/mkp/scsi/c/c16b8a6d8af1
-[3/6] scsi: ibmvfc: Add helper for testing capability flags
-      https://git.kernel.org/mkp/scsi/c/a318c2b71cce
-[4/6] scsi: ibmvfc: Add FC payload retrieval routines for versioned vfcFrames
-      https://git.kernel.org/mkp/scsi/c/5a9d16f71c26
-[5/6] scsi: ibmvfc: Add support for target_wwpn field in v2 MADs and vfcFrame
-      https://git.kernel.org/mkp/scsi/c/ebc7c74bd2dc
-[6/6] scsi: ibmvfc: Advertise client support for targetWWPN using v2 commands
-      https://git.kernel.org/mkp/scsi/c/e4af87b7079e
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ include/linux/irqdomain.h      |  3 ++
+ arch/x86/kernel/apic/io_apic.c | 13 +++--
+ kernel/irq/irqdomain.c         | 89 ++++++++++++++++++++--------------
+ 3 files changed, 65 insertions(+), 40 deletions(-)
 
+diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+index 71535e87109f..6cc37bba9951 100644
+--- a/include/linux/irqdomain.h
++++ b/include/linux/irqdomain.h
+@@ -470,6 +470,9 @@ static inline struct irq_domain *irq_domain_add_hierarchy(struct irq_domain *par
+ 					   ops, host_data);
+ }
+ 
++extern int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
++					unsigned int nr_irqs, int node, void *arg,
++					const struct irq_affinity_desc *affinity);
+ extern int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
+ 				   unsigned int nr_irqs, int node, void *arg,
+ 				   bool realloc,
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 7b3c7e0d4a09..df9c0ab3a119 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -970,9 +970,14 @@ static int alloc_irq_from_domain(struct irq_domain *domain, int ioapic, u32 gsi,
+ 		return -1;
+ 	}
+ 
+-	return __irq_domain_alloc_irqs(domain, irq, 1,
+-				       ioapic_alloc_attr_node(info),
+-				       info, legacy, NULL);
++	if (irq == -1 || !legacy)
++		return __irq_domain_alloc_irqs(domain, irq, 1,
++					       ioapic_alloc_attr_node(info),
++					       info, false, NULL);
++
++	return __irq_domain_alloc_irqs_data(domain, irq, 1,
++					    ioapic_alloc_attr_node(info),
++					    info, NULL);
+ }
+ 
+ /*
+@@ -1006,7 +1011,7 @@ static int alloc_isa_irq_from_domain(struct irq_domain *domain,
+ 			return -ENOMEM;
+ 	} else {
+ 		info->flags |= X86_IRQ_ALLOC_LEGACY;
+-		irq = __irq_domain_alloc_irqs(domain, irq, 1, node, info, true,
++		irq = __irq_domain_alloc_irqs_data(domain, irq, 1, node, info,
+ 					      NULL);
+ 		if (irq >= 0) {
+ 			irq_data = irq_domain_get_irq_data(domain, irq);
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index cf8b374b892d..ca5c78366c85 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -1386,6 +1386,51 @@ int irq_domain_alloc_irqs_hierarchy(struct irq_domain *domain,
+ 	return domain->ops->alloc(domain, irq_base, nr_irqs, arg);
+ }
+ 
++int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
++				 unsigned int nr_irqs, int node, void *arg,
++				 const struct irq_affinity_desc *affinity)
++{
++	int i, ret;
++
++	if (domain == NULL) {
++		domain = irq_default_domain;
++		if (WARN(!domain, "domain is NULL; cannot allocate IRQ\n"))
++			return -EINVAL;
++	}
++
++	if (irq_domain_alloc_irq_data(domain, virq, nr_irqs)) {
++		pr_debug("cannot allocate memory for IRQ%d\n", virq);
++		ret = -ENOMEM;
++		goto out_free_irq_data;
++	}
++
++	mutex_lock(&irq_domain_mutex);
++	ret = irq_domain_alloc_irqs_hierarchy(domain, virq, nr_irqs, arg);
++	if (ret < 0) {
++		mutex_unlock(&irq_domain_mutex);
++		goto out_free_irq_data;
++	}
++
++	for (i = 0; i < nr_irqs; i++) {
++		ret = irq_domain_trim_hierarchy(virq + i);
++		if (ret) {
++			mutex_unlock(&irq_domain_mutex);
++			goto out_free_irq_data;
++		}
++	}
++
++	for (i = 0; i < nr_irqs; i++) {
++		irq_domain_insert_irq(virq + i);
++	}
++	mutex_unlock(&irq_domain_mutex);
++
++	return virq;
++
++out_free_irq_data:
++	irq_domain_free_irq_data(virq, nr_irqs);
++	return ret;
++}
++
+ /**
+  * __irq_domain_alloc_irqs - Allocate IRQs from domain
+  * @domain:	domain to allocate from
+@@ -1412,7 +1457,7 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
+ 			    unsigned int nr_irqs, int node, void *arg,
+ 			    bool realloc, const struct irq_affinity_desc *affinity)
+ {
+-	int i, ret, virq;
++	int ret, virq;
+ 
+ 	if (domain == NULL) {
+ 		domain = irq_default_domain;
+@@ -1420,47 +1465,19 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
+ 			return -EINVAL;
+ 	}
+ 
+-	if (realloc && irq_base >= 0) {
+-		virq = irq_base;
+-	} else {
+-		virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node,
+-					      affinity);
+-		if (virq < 0) {
+-			pr_debug("cannot allocate IRQ(base %d, count %d)\n",
+-				 irq_base, nr_irqs);
+-			return virq;
+-		}
++	virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node, affinity);
++	if (virq < 0) {
++		pr_debug("cannot allocate IRQ(base %d, count %d)\n",
++			 irq_base, nr_irqs);
++		return virq;
+ 	}
+ 
+-	if (irq_domain_alloc_irq_data(domain, virq, nr_irqs)) {
+-		pr_debug("cannot allocate memory for IRQ%d\n", virq);
+-		ret = -ENOMEM;
++	ret = __irq_domain_alloc_irqs_data(domain, virq, nr_irqs, node, arg, affinity);
++	if (ret <= 0)
+ 		goto out_free_desc;
+-	}
+-
+-	mutex_lock(&irq_domain_mutex);
+-	ret = irq_domain_alloc_irqs_hierarchy(domain, virq, nr_irqs, arg);
+-	if (ret < 0) {
+-		mutex_unlock(&irq_domain_mutex);
+-		goto out_free_irq_data;
+-	}
+-
+-	for (i = 0; i < nr_irqs; i++) {
+-		ret = irq_domain_trim_hierarchy(virq + i);
+-		if (ret) {
+-			mutex_unlock(&irq_domain_mutex);
+-			goto out_free_irq_data;
+-		}
+-	}
+-	
+-	for (i = 0; i < nr_irqs; i++)
+-		irq_domain_insert_irq(virq + i);
+-	mutex_unlock(&irq_domain_mutex);
+ 
+ 	return virq;
+ 
+-out_free_irq_data:
+-	irq_domain_free_irq_data(virq, nr_irqs);
+ out_free_desc:
+ 	irq_free_descs(virq, nr_irqs);
+ 	return ret;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.17.1
+
