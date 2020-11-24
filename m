@@ -2,95 +2,109 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38913C2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:59:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2248FC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 11:03:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4AA1B2076B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 10:59:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3E28220708
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 11:03:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="SSOV3AHK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AA1B2076B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="mDco5F5w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E28220708
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgLcN0f1kzDqY7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 21:59:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgLjJ2d9mzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 22:03:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::444;
- helo=mail-pf1-x444.google.com; envelope-from=aik@ozlabs.ru;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=SSOV3AHK; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=mDco5F5w; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgLYy2tkbzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 21:56:48 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id e8so6227684pfh.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 02:56:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=ho+OU1gWIbxlU6vkFFYhPItLBY/4CgC1Ux1l0SznRAg=;
- b=SSOV3AHKcYwB6+VVY1RKwf3eonAoK6VB7pgCtKHR8LD3fRuhXLehOkIUQSnbQIDI4/
- p3q0lllVhyARw/nFniVJuSZDSA1nyuupwNNDJFfBpDHPMhOE1FaqJl/r4F+EjejdwGh6
- JcTYJjpYmkK5vvITW2a+tZh4AjKcXiOtBFjVSdkurRhJSjv91DLg2qu+cCdrKbmCH2ek
- XlPQWnIeN1dG8UEFO7U6FU5ocZw0syYsyS7a7xM2lRPAMw13hOx8/vzLXyLbY8/o4EiN
- 9GUnx1vWcyBeLGNll61sm78qt98gQpFgpeGDJx/kqBx4w5ovOS0zJDPQfVVMkvsWOSLZ
- 1UcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=ho+OU1gWIbxlU6vkFFYhPItLBY/4CgC1Ux1l0SznRAg=;
- b=XAdfHBQO7FrFdKGhCyewfImWGZdfGdlyKFPfZ+zaSsnUXtZjUHo5dv24lXEybhhn51
- 84hnHcwyVbAUH6OiOYcbVgsxwNksO4EcImmIIUYXP8DT13Hc+6E2Oxbhhj2GQSzb+uYz
- ggViw4HCrDHKUotU1Y+yNTZcxYw60UyTbrbgQxjExfQXFMTexGP40C3OI0HpzO3rehCc
- PZNzjb59oav66Fc/xKx18YrhMAUobgoKoMl0rEUR+hwC09EVnd8jaHVVNnGj7r4RMtFZ
- XOVpE9r5JFXHcIu7s7moewsD1dNata0JfEzlXkvdbtRzyi6W44qqa31waJc2NBTuijv2
- zGPQ==
-X-Gm-Message-State: AOAM530z44HHat447cT9bKO/FwLtqI/nN4WNfI+kqZhjJQ5/9mIx0LiD
- CGJi477HMWlv78EWHqzh0o0v2Rxo6nEEqQ==
-X-Google-Smtp-Source: ABdhPJx7aupXyGjbsXOlPp/GgIVXYWhXASJLws7GvUy6w0exJM/+0lrVY6h+M0ix3HjuU4jTiROcvg==
-X-Received: by 2002:a17:90b:4398:: with SMTP id
- in24mr4069757pjb.188.1606215404113; 
- Tue, 24 Nov 2020 02:56:44 -0800 (PST)
-Received: from [0.0.0.0] (124-171-134-245.dyn.iinet.net.au. [124.171.134.245])
- by smtp.gmail.com with UTF8SMTPSA id
- j10sm1087588pji.29.2020.11.24.02.56.38
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 24 Nov 2020 02:56:43 -0800 (PST)
-Subject: Re: [PATCH kernel v4 2/8] genirq/irqdomain: Clean legacy IRQ
- allocation
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-References: <20201124061720.86766-1-aik@ozlabs.ru>
- <20201124061720.86766-3-aik@ozlabs.ru>
- <CAHp75VfV4mG23C9Ep1vNLk2oBjB=LTQGyU=fhWPhw4PX-Ci-7A@mail.gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <38b803db-2d67-dfa0-7e7b-e4ce816576ad@ozlabs.ru>
-Date: Tue, 24 Nov 2020 21:56:36 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101
- Thunderbird/84.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgLf80FrVzDqST
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 22:00:31 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AOAYs38089830; Tue, 24 Nov 2020 06:00:24 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=dp+Dm2v3MWsC92DWNxSIQBihQu51aEEGwTEfMlSNYz8=;
+ b=mDco5F5wU+ZD/AX2s3zd4v/jjmQQ1TPd1onomEc2JCyPFysx6/f1EPqFqIiil5YxTOAv
+ wU7WeiHbg3bcND6kAOFNXtorMziThid3A483hYwi+rNIf+fh6H9YtO7Yfgb7BbTyKT9S
+ 9oc6KE3yrTJkPrwTUD1kWP6GEV/UgqCJWguJ4vDJvh8Iksu5PTsM4RijJNua7gnpDrHI
+ hERmd/lPTDQuO6xBfvvQo6TPR7uNyqZvqHFUlAA+dWjzCfWrZ1JeFdDTya1ewMS+deID
+ aICt6uI4EBjO5YfCi5dk5usi0b7wt2pdMssoSBAMp786Lfd8YKNom5JsE9wGx0Ddgj3H hA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350fe119w4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 24 Nov 2020 06:00:23 -0500
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0AOAhsS9119503;
+ Tue, 24 Nov 2020 06:00:23 -0500
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350fe119sv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 24 Nov 2020 06:00:23 -0500
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AOAsDSC019584;
+ Tue, 24 Nov 2020 11:00:20 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06fra.de.ibm.com with ESMTP id 34xt5h9t6m-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 24 Nov 2020 11:00:20 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AOB0I3j48955888
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 24 Nov 2020 11:00:18 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 086964204B;
+ Tue, 24 Nov 2020 11:00:18 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 370BC42052;
+ Tue, 24 Nov 2020 11:00:15 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.199.32.189])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 24 Nov 2020 11:00:14 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, paulus@samba.org
+Subject: [PATCH v2 2/4] KVM: PPC: Rename current DAWR macros and variables
+Date: Tue, 24 Nov 2020 16:29:51 +0530
+Message-Id: <20201124105953.39325-3-ravi.bangoria@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201124105953.39325-1-ravi.bangoria@linux.ibm.com>
+References: <20201124105953.39325-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAHp75VfV4mG23C9Ep1vNLk2oBjB=LTQGyU=fhWPhw4PX-Ci-7A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-24_04:2020-11-24,
+ 2020-11-23 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxlogscore=997
+ phishscore=0 impostorscore=0 suspectscore=0 mlxscore=0 spamscore=0
+ clxscore=1011 adultscore=0 malwarescore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011240064
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,51 +116,217 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marc Zyngier <maz@kernel.org>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- Oliver O'Halloran <oohall@gmail.com>,
- =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+Cc: christophe.leroy@c-s.fr, ravi.bangoria@linux.ibm.com, mikey@neuling.org,
+ kvm@vger.kernel.org, leobras.c@gmail.com, jniethe5@gmail.com,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, kvm-ppc@vger.kernel.org,
+ pbonzini@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Power10 is introducing second DAWR. Use real register names (with
+suffix 0) from ISA for current macros and variables used by kvm.
+One exception is KVM_REG_PPC_DAWR. Keep it as it is because it's
+uapi so changing it will break userspace.
 
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_host.h     |  4 ++--
+ arch/powerpc/kernel/asm-offsets.c       |  4 ++--
+ arch/powerpc/kvm/book3s_hv.c            | 24 ++++++++++++------------
+ arch/powerpc/kvm/book3s_hv_nested.c     |  8 ++++----
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 20 ++++++++++----------
+ 5 files changed, 30 insertions(+), 30 deletions(-)
 
-On 11/24/20 8:19 PM, Andy Shevchenko wrote:
-> On Tue, Nov 24, 2020 at 8:20 AM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>
->> There are 10 users of __irq_domain_alloc_irqs() and only one - IOAPIC -
->> passes realloc==true. There is no obvious reason for handling this
->> specific case in the generic code.
->>
->> This splits out __irq_domain_alloc_irqs_data() to make it clear what
->> IOAPIC does and makes __irq_domain_alloc_irqs() cleaner.
->>
->> This should cause no behavioral change.
-> 
->> +       ret = __irq_domain_alloc_irqs_data(domain, virq, nr_irqs, node, arg, affinity);
->> +       if (ret <= 0)
->>                  goto out_free_desc;
-> 
-> Was or wasn't 0 considered as error code previously?
-
-Oh. I need to clean this up, the idea is since this does not allocate 
-IRQs, this should return error code and not an irq, I'll make this explicit.
-
-> 
->>          return virq;
-> 
->>   out_free_desc:
->>          irq_free_descs(virq, nr_irqs);
->>          return ret;
-> 
-
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index d67a470e95a3..62cadf1a596e 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -584,8 +584,8 @@ struct kvm_vcpu_arch {
+ 	u32 ctrl;
+ 	u32 dabrx;
+ 	ulong dabr;
+-	ulong dawr;
+-	ulong dawrx;
++	ulong dawr0;
++	ulong dawrx0;
+ 	ulong ciabr;
+ 	ulong cfar;
+ 	ulong ppr;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 8711c2164b45..e4256f5b4602 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -547,8 +547,8 @@ int main(void)
+ 	OFFSET(VCPU_CTRL, kvm_vcpu, arch.ctrl);
+ 	OFFSET(VCPU_DABR, kvm_vcpu, arch.dabr);
+ 	OFFSET(VCPU_DABRX, kvm_vcpu, arch.dabrx);
+-	OFFSET(VCPU_DAWR, kvm_vcpu, arch.dawr);
+-	OFFSET(VCPU_DAWRX, kvm_vcpu, arch.dawrx);
++	OFFSET(VCPU_DAWR0, kvm_vcpu, arch.dawr0);
++	OFFSET(VCPU_DAWRX0, kvm_vcpu, arch.dawrx0);
+ 	OFFSET(VCPU_CIABR, kvm_vcpu, arch.ciabr);
+ 	OFFSET(VCPU_HFLAGS, kvm_vcpu, arch.hflags);
+ 	OFFSET(VCPU_DEC, kvm_vcpu, arch.dec);
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 490a0f6a7285..d5c6efc8a76e 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -782,8 +782,8 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
+ 			return H_UNSUPPORTED_FLAG_START;
+ 		if (value2 & DABRX_HYP)
+ 			return H_P4;
+-		vcpu->arch.dawr  = value1;
+-		vcpu->arch.dawrx = value2;
++		vcpu->arch.dawr0  = value1;
++		vcpu->arch.dawrx0 = value2;
+ 		return H_SUCCESS;
+ 	case H_SET_MODE_RESOURCE_ADDR_TRANS_MODE:
+ 		/* KVM does not support mflags=2 (AIL=2) */
+@@ -1747,10 +1747,10 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 		*val = get_reg_val(id, vcpu->arch.vcore->vtb);
+ 		break;
+ 	case KVM_REG_PPC_DAWR:
+-		*val = get_reg_val(id, vcpu->arch.dawr);
++		*val = get_reg_val(id, vcpu->arch.dawr0);
+ 		break;
+ 	case KVM_REG_PPC_DAWRX:
+-		*val = get_reg_val(id, vcpu->arch.dawrx);
++		*val = get_reg_val(id, vcpu->arch.dawrx0);
+ 		break;
+ 	case KVM_REG_PPC_CIABR:
+ 		*val = get_reg_val(id, vcpu->arch.ciabr);
+@@ -1979,10 +1979,10 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 		vcpu->arch.vcore->vtb = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_DAWR:
+-		vcpu->arch.dawr = set_reg_val(id, *val);
++		vcpu->arch.dawr0 = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_DAWRX:
+-		vcpu->arch.dawrx = set_reg_val(id, *val) & ~DAWRX_HYP;
++		vcpu->arch.dawrx0 = set_reg_val(id, *val) & ~DAWRX_HYP;
+ 		break;
+ 	case KVM_REG_PPC_CIABR:
+ 		vcpu->arch.ciabr = set_reg_val(id, *val);
+@@ -3437,8 +3437,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	int trap;
+ 	unsigned long host_hfscr = mfspr(SPRN_HFSCR);
+ 	unsigned long host_ciabr = mfspr(SPRN_CIABR);
+-	unsigned long host_dawr = mfspr(SPRN_DAWR0);
+-	unsigned long host_dawrx = mfspr(SPRN_DAWRX0);
++	unsigned long host_dawr0 = mfspr(SPRN_DAWR0);
++	unsigned long host_dawrx0 = mfspr(SPRN_DAWRX0);
+ 	unsigned long host_psscr = mfspr(SPRN_PSSCR);
+ 	unsigned long host_pidr = mfspr(SPRN_PID);
+ 
+@@ -3477,8 +3477,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	mtspr(SPRN_SPURR, vcpu->arch.spurr);
+ 
+ 	if (dawr_enabled()) {
+-		mtspr(SPRN_DAWR0, vcpu->arch.dawr);
+-		mtspr(SPRN_DAWRX0, vcpu->arch.dawrx);
++		mtspr(SPRN_DAWR0, vcpu->arch.dawr0);
++		mtspr(SPRN_DAWRX0, vcpu->arch.dawrx0);
+ 	}
+ 	mtspr(SPRN_CIABR, vcpu->arch.ciabr);
+ 	mtspr(SPRN_IC, vcpu->arch.ic);
+@@ -3530,8 +3530,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
+ 	mtspr(SPRN_HFSCR, host_hfscr);
+ 	mtspr(SPRN_CIABR, host_ciabr);
+-	mtspr(SPRN_DAWR0, host_dawr);
+-	mtspr(SPRN_DAWRX0, host_dawrx);
++	mtspr(SPRN_DAWR0, host_dawr0);
++	mtspr(SPRN_DAWRX0, host_dawrx0);
+ 	mtspr(SPRN_PID, host_pidr);
+ 
+ 	/*
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 2b433c3bacea..1d4b335485d0 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -33,8 +33,8 @@ void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+ 	hr->dpdes = vc->dpdes;
+ 	hr->hfscr = vcpu->arch.hfscr;
+ 	hr->tb_offset = vc->tb_offset;
+-	hr->dawr0 = vcpu->arch.dawr;
+-	hr->dawrx0 = vcpu->arch.dawrx;
++	hr->dawr0 = vcpu->arch.dawr0;
++	hr->dawrx0 = vcpu->arch.dawrx0;
+ 	hr->ciabr = vcpu->arch.ciabr;
+ 	hr->purr = vcpu->arch.purr;
+ 	hr->spurr = vcpu->arch.spurr;
+@@ -151,8 +151,8 @@ static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+ 	vc->pcr = hr->pcr | PCR_MASK;
+ 	vc->dpdes = hr->dpdes;
+ 	vcpu->arch.hfscr = hr->hfscr;
+-	vcpu->arch.dawr = hr->dawr0;
+-	vcpu->arch.dawrx = hr->dawrx0;
++	vcpu->arch.dawr0 = hr->dawr0;
++	vcpu->arch.dawrx0 = hr->dawrx0;
+ 	vcpu->arch.ciabr = hr->ciabr;
+ 	vcpu->arch.purr = hr->purr;
+ 	vcpu->arch.spurr = hr->spurr;
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 799d6d0f4ead..8e3fb393a980 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -52,8 +52,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ #define STACK_SLOT_PID		(SFS-32)
+ #define STACK_SLOT_IAMR		(SFS-40)
+ #define STACK_SLOT_CIABR	(SFS-48)
+-#define STACK_SLOT_DAWR		(SFS-56)
+-#define STACK_SLOT_DAWRX	(SFS-64)
++#define STACK_SLOT_DAWR0	(SFS-56)
++#define STACK_SLOT_DAWRX0	(SFS-64)
+ #define STACK_SLOT_HFSCR	(SFS-72)
+ #define STACK_SLOT_AMR		(SFS-80)
+ #define STACK_SLOT_UAMOR	(SFS-88)
+@@ -711,8 +711,8 @@ BEGIN_FTR_SECTION
+ 	mfspr	r7, SPRN_DAWRX0
+ 	mfspr	r8, SPRN_IAMR
+ 	std	r5, STACK_SLOT_CIABR(r1)
+-	std	r6, STACK_SLOT_DAWR(r1)
+-	std	r7, STACK_SLOT_DAWRX(r1)
++	std	r6, STACK_SLOT_DAWR0(r1)
++	std	r7, STACK_SLOT_DAWRX0(r1)
+ 	std	r8, STACK_SLOT_IAMR(r1)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 
+@@ -801,8 +801,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	lbz	r5, 0(r5)
+ 	cmpdi	r5, 0
+ 	beq	1f
+-	ld	r5, VCPU_DAWR(r4)
+-	ld	r6, VCPU_DAWRX(r4)
++	ld	r5, VCPU_DAWR0(r4)
++	ld	r6, VCPU_DAWRX0(r4)
+ 	mtspr	SPRN_DAWR0, r5
+ 	mtspr	SPRN_DAWRX0, r6
+ 1:
+@@ -1759,8 +1759,8 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	/* Restore host values of some registers */
+ BEGIN_FTR_SECTION
+ 	ld	r5, STACK_SLOT_CIABR(r1)
+-	ld	r6, STACK_SLOT_DAWR(r1)
+-	ld	r7, STACK_SLOT_DAWRX(r1)
++	ld	r6, STACK_SLOT_DAWR0(r1)
++	ld	r7, STACK_SLOT_DAWRX0(r1)
+ 	mtspr	SPRN_CIABR, r5
+ 	/*
+ 	 * If the DAWR doesn't work, it's ok to write these here as
+@@ -2566,8 +2566,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
+ 	rlwimi	r5, r4, 2, DAWRX_WT
+ 	clrrdi	r4, r4, 3
+-	std	r4, VCPU_DAWR(r3)
+-	std	r5, VCPU_DAWRX(r3)
++	std	r4, VCPU_DAWR0(r3)
++	std	r5, VCPU_DAWRX0(r3)
+ 	/*
+ 	 * If came in through the real mode hcall handler then it is necessary
+ 	 * to write the registers since the return path won't. Otherwise it is
 -- 
-Alexey
+2.26.2
+
