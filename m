@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAD1FC2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B003AC2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:31:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA3842068D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:29:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA3842068D
+	by mail.kernel.org (Postfix) with ESMTPS id 1FD172068D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:31:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FD172068D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDdc1zvGzDqMH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:29:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDgj1226zDqXC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:31:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CgDNh0ZQSzDqQj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:18:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CgDNv2mC1zDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:18:39 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id E89CEAE8024C;
- Tue, 24 Nov 2020 01:17:51 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 2A578AE80251;
+ Tue, 24 Nov 2020 01:18:02 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v4 3/8] genirq/irqdomain: Drop unused realloc parameter
- from __irq_domain_alloc_irqs
-Date: Tue, 24 Nov 2020 17:17:15 +1100
-Message-Id: <20201124061720.86766-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 5/8] genirq: Add free_irq hook for IRQ descriptor
+ and use for mapping disposal
+Date: Tue, 24 Nov 2020 17:17:17 +1100
+Message-Id: <20201124061720.86766-6-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201124061720.86766-1-aik@ozlabs.ru>
 References: <20201124061720.86766-1-aik@ozlabs.ru>
@@ -62,214 +62,128 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The two previous patches made @realloc obsolete. This finishes removing it.
+We want to make the irq_desc.kobj's release hook free associated resources
+but we do not want to pollute the irqdesc code with domains.
+
+This adds a free_irq hook which is called when the last reference to
+the descriptor is dropped.
+
+The first user is mapped irqs. This potentially can break the existing
+users; however they seem to do the right thing and call dispose once
+per mapping.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/linux/irqdomain.h           | 4 +---
- arch/x86/kernel/apic/io_apic.c      | 2 +-
- drivers/gpio/gpiolib.c              | 1 -
- drivers/irqchip/irq-armada-370-xp.c | 2 +-
- drivers/irqchip/irq-bcm2836.c       | 3 +--
- drivers/irqchip/irq-gic-v3.c        | 3 +--
- drivers/irqchip/irq-gic-v4.c        | 6 ++----
- drivers/irqchip/irq-gic.c           | 3 +--
- drivers/irqchip/irq-ixp4xx.c        | 1 -
- kernel/irq/ipi.c                    | 2 +-
- kernel/irq/irqdomain.c              | 4 +---
- kernel/irq/msi.c                    | 2 +-
- 12 files changed, 11 insertions(+), 22 deletions(-)
+ include/linux/irqdesc.h    |  1 +
+ include/linux/irqdomain.h  |  2 --
+ include/linux/irqhandler.h |  1 +
+ kernel/irq/irqdesc.c       |  3 +++
+ kernel/irq/irqdomain.c     | 14 ++++++++++++--
+ 5 files changed, 17 insertions(+), 4 deletions(-)
 
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index 5745491303e0..6d44cb6a20ad 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -57,6 +57,7 @@ struct irq_desc {
+ 	struct irq_data		irq_data;
+ 	unsigned int __percpu	*kstat_irqs;
+ 	irq_flow_handler_t	handle_irq;
++	irq_free_handler_t	free_irq;
+ 	struct irqaction	*action;	/* IRQ action list */
+ 	unsigned int		status_use_accessors;
+ 	unsigned int		core_internal_state__do_not_mess_with_it;
 diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index 6cc37bba9951..a353b93ddf9e 100644
+index a353b93ddf9e..ccca87cd3d15 100644
 --- a/include/linux/irqdomain.h
 +++ b/include/linux/irqdomain.h
-@@ -475,7 +475,6 @@ extern int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
- 					const struct irq_affinity_desc *affinity);
- extern int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
- 				   unsigned int nr_irqs, int node, void *arg,
--				   bool realloc,
- 				   const struct irq_affinity_desc *affinity);
- extern void irq_domain_free_irqs(unsigned int virq, unsigned int nr_irqs);
- extern int irq_domain_activate_irq(struct irq_data *irq_data, bool early);
-@@ -484,8 +483,7 @@ extern void irq_domain_deactivate_irq(struct irq_data *irq_data);
- static inline int irq_domain_alloc_irqs(struct irq_domain *domain,
- 			unsigned int nr_irqs, int node, void *arg)
- {
--	return __irq_domain_alloc_irqs(domain, -1, nr_irqs, node, arg, false,
--				       NULL);
-+	return __irq_domain_alloc_irqs(domain, -1, nr_irqs, node, arg, NULL);
- }
+@@ -381,8 +381,6 @@ extern int irq_domain_associate(struct irq_domain *domain, unsigned int irq,
+ extern void irq_domain_associate_many(struct irq_domain *domain,
+ 				      unsigned int irq_base,
+ 				      irq_hw_number_t hwirq_base, int count);
+-extern void irq_domain_disassociate(struct irq_domain *domain,
+-				    unsigned int irq);
  
- extern int irq_domain_alloc_irqs_hierarchy(struct irq_domain *domain,
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index df9c0ab3a119..5b45f0874571 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -973,7 +973,7 @@ static int alloc_irq_from_domain(struct irq_domain *domain, int ioapic, u32 gsi,
- 	if (irq == -1 || !legacy)
- 		return __irq_domain_alloc_irqs(domain, irq, 1,
- 					       ioapic_alloc_attr_node(info),
--					       info, false, NULL);
-+					       info, NULL);
+ extern unsigned int irq_create_mapping(struct irq_domain *host,
+ 				       irq_hw_number_t hwirq);
+diff --git a/include/linux/irqhandler.h b/include/linux/irqhandler.h
+index c30f454a9518..3dbc2bb764f3 100644
+--- a/include/linux/irqhandler.h
++++ b/include/linux/irqhandler.h
+@@ -10,5 +10,6 @@
+ struct irq_desc;
+ struct irq_data;
+ typedef	void (*irq_flow_handler_t)(struct irq_desc *desc);
++typedef	void (*irq_free_handler_t)(struct irq_desc *desc);
  
- 	return __irq_domain_alloc_irqs_data(domain, irq, 1,
- 					    ioapic_alloc_attr_node(info),
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 089ddcaa9bc6..b7cfecb5c701 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1059,7 +1059,6 @@ static void gpiochip_set_hierarchical_irqchip(struct gpio_chip *gc,
- 						      1,
- 						      NUMA_NO_NODE,
- 						      &fwspec,
--						      false,
- 						      NULL);
- 			if (ret < 0) {
- 				chip_err(gc,
-diff --git a/drivers/irqchip/irq-armada-370-xp.c b/drivers/irqchip/irq-armada-370-xp.c
-index d7eb2e93db8f..bf17eb312669 100644
---- a/drivers/irqchip/irq-armada-370-xp.c
-+++ b/drivers/irqchip/irq-armada-370-xp.c
-@@ -431,7 +431,7 @@ static __init void armada_xp_ipi_init(struct device_node *node)
+ #endif
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 75374b7944b5..071363da8688 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -427,6 +427,9 @@ static void irq_kobj_release(struct kobject *kobj)
+ 	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
+ 	unsigned int irq = desc->irq_data.irq;
  
- 	irq_domain_update_bus_token(ipi_domain, DOMAIN_BUS_IPI);
- 	base_ipi = __irq_domain_alloc_irqs(ipi_domain, -1, IPI_DOORBELL_END,
--					   NUMA_NO_NODE, NULL, false, NULL);
-+					   NUMA_NO_NODE, NULL, NULL);
- 	if (WARN_ON(!base_ipi))
- 		return;
++	if (desc->free_irq)
++		desc->free_irq(desc);
++
+ 	irq_remove_debugfs_entry(desc);
+ 	unregister_irq_proc(irq, desc);
  
-diff --git a/drivers/irqchip/irq-bcm2836.c b/drivers/irqchip/irq-bcm2836.c
-index cbc7c740e4dc..fe9ff90940d3 100644
---- a/drivers/irqchip/irq-bcm2836.c
-+++ b/drivers/irqchip/irq-bcm2836.c
-@@ -269,8 +269,7 @@ static void __init bcm2836_arm_irqchip_smp_init(void)
- 	irq_domain_update_bus_token(ipi_domain, DOMAIN_BUS_IPI);
- 
- 	base_ipi = __irq_domain_alloc_irqs(ipi_domain, -1, BITS_PER_MBOX,
--					   NUMA_NO_NODE, NULL,
--					   false, NULL);
-+					   NUMA_NO_NODE, NULL, NULL);
- 
- 	if (WARN_ON(!base_ipi))
- 		return;
-diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
-index 16fecc0febe8..ff20fd54921f 100644
---- a/drivers/irqchip/irq-gic-v3.c
-+++ b/drivers/irqchip/irq-gic-v3.c
-@@ -1163,8 +1163,7 @@ static void __init gic_smp_init(void)
- 
- 	/* Register all 8 non-secure SGIs */
- 	base_sgi = __irq_domain_alloc_irqs(gic_data.domain, -1, 8,
--					   NUMA_NO_NODE, &sgi_fwspec,
--					   false, NULL);
-+					   NUMA_NO_NODE, &sgi_fwspec, NULL);
- 	if (WARN_ON(base_sgi <= 0))
- 		return;
- 
-diff --git a/drivers/irqchip/irq-gic-v4.c b/drivers/irqchip/irq-gic-v4.c
-index 0c18714ae13e..dd64dc50610c 100644
---- a/drivers/irqchip/irq-gic-v4.c
-+++ b/drivers/irqchip/irq-gic-v4.c
-@@ -117,8 +117,7 @@ static int its_alloc_vcpu_sgis(struct its_vpe *vpe, int idx)
- 		goto err;
- 
- 	sgi_base = __irq_domain_alloc_irqs(vpe->sgi_domain, -1, 16,
--					       NUMA_NO_NODE, vpe,
--					       false, NULL);
-+					       NUMA_NO_NODE, vpe, NULL);
- 	if (sgi_base <= 0)
- 		goto err;
- 
-@@ -154,8 +153,7 @@ int its_alloc_vcpu_irqs(struct its_vm *vm)
- 	}
- 
- 	vpe_base_irq = __irq_domain_alloc_irqs(vm->domain, -1, vm->nr_vpes,
--					       NUMA_NO_NODE, vm,
--					       false, NULL);
-+					       NUMA_NO_NODE, vm, NULL);
- 	if (vpe_base_irq <= 0)
- 		goto err;
- 
-diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
-index 6053245a4754..28e5e5e4836a 100644
---- a/drivers/irqchip/irq-gic.c
-+++ b/drivers/irqchip/irq-gic.c
-@@ -846,8 +846,7 @@ static __init void gic_smp_init(void)
- 				  gic_starting_cpu, NULL);
- 
- 	base_sgi = __irq_domain_alloc_irqs(gic_data[0].domain, -1, 8,
--					   NUMA_NO_NODE, &sgi_fwspec,
--					   false, NULL);
-+					   NUMA_NO_NODE, &sgi_fwspec, NULL);
- 	if (WARN_ON(base_sgi <= 0))
- 		return;
- 
-diff --git a/drivers/irqchip/irq-ixp4xx.c b/drivers/irqchip/irq-ixp4xx.c
-index 37e0749215c7..9dafcc22b592 100644
---- a/drivers/irqchip/irq-ixp4xx.c
-+++ b/drivers/irqchip/irq-ixp4xx.c
-@@ -353,7 +353,6 @@ void __init ixp4xx_irq_init(resource_size_t irqbase,
- 					      chunk->nr_irqs,
- 					      NUMA_NO_NODE,
- 					      &fwspec,
--					      false,
- 					      NULL);
- 		if (ret < 0) {
- 			pr_crit("IXP4XX: can not allocate irqs in hierarchy %d\n",
-diff --git a/kernel/irq/ipi.c b/kernel/irq/ipi.c
-index 1b2807318ea9..fc20adf7ee0d 100644
---- a/kernel/irq/ipi.c
-+++ b/kernel/irq/ipi.c
-@@ -76,7 +76,7 @@ int irq_reserve_ipi(struct irq_domain *domain,
- 	}
- 
- 	virq = __irq_domain_alloc_irqs(domain, -1, nr_irqs, NUMA_NO_NODE,
--				       (void *) dest, false, NULL);
-+				       (void *) dest, NULL);
- 
- 	if (virq <= 0) {
- 		pr_warn("Can't reserve IPI, failed to alloc hw irqs\n");
 diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index ca5c78366c85..805478f81d96 100644
+index 805478f81d96..4779d912bb86 100644
 --- a/kernel/irq/irqdomain.c
 +++ b/kernel/irq/irqdomain.c
-@@ -1438,12 +1438,10 @@ int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
-  * @nr_irqs:	number of IRQs to allocate
-  * @node:	NUMA node id for memory allocation
-  * @arg:	domain specific argument
-- * @realloc:	IRQ descriptors have already been allocated if true
-  * @affinity:	Optional irq affinity mask for multiqueue devices
-  *
-  * Allocate IRQ numbers and initialized all data structures to support
-  * hierarchy IRQ domains.
-- * Parameter @realloc is mainly to support legacy IRQs.
-  * Returns error code or allocated IRQ number
-  *
-  * The whole process to setup an IRQ has been split into two steps.
-@@ -1455,7 +1453,7 @@ int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
-  */
- int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
- 			    unsigned int nr_irqs, int node, void *arg,
--			    bool realloc, const struct irq_affinity_desc *affinity)
-+			    const struct irq_affinity_desc *affinity)
+@@ -485,7 +485,7 @@ static void irq_domain_set_mapping(struct irq_domain *domain,
+ 	}
+ }
+ 
+-void irq_domain_disassociate(struct irq_domain *domain, unsigned int irq)
++static void irq_domain_disassociate(struct irq_domain *domain, unsigned int irq)
  {
- 	int ret, virq;
+ 	struct irq_data *irq_data = irq_get_irq_data(irq);
+ 	irq_hw_number_t hwirq;
+@@ -582,6 +582,13 @@ void irq_domain_associate_many(struct irq_domain *domain, unsigned int irq_base,
+ }
+ EXPORT_SYMBOL_GPL(irq_domain_associate_many);
  
-diff --git a/kernel/irq/msi.c b/kernel/irq/msi.c
-index 2c0c4d6d0f83..b1898514d9dc 100644
---- a/kernel/irq/msi.c
-+++ b/kernel/irq/msi.c
-@@ -414,7 +414,7 @@ int __msi_domain_alloc_irqs(struct irq_domain *domain, struct device *dev,
- 		ops->set_desc(&arg, desc);
++static void irq_mapped_free_desc(struct irq_desc *desc)
++{
++	unsigned int virq = desc->irq_data.irq;
++
++	irq_domain_disassociate(desc->irq_data.domain, virq);
++}
++
+ /**
+  * irq_create_direct_mapping() - Allocate an irq for direct mapping
+  * @domain: domain to allocate the irq for or NULL for default domain
+@@ -638,6 +645,7 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+ {
+ 	struct device_node *of_node;
+ 	int virq;
++	struct irq_desc *desc;
  
- 		virq = __irq_domain_alloc_irqs(domain, -1, desc->nvec_used,
--					       dev_to_node(dev), &arg, false,
-+					       dev_to_node(dev), &arg,
- 					       desc->affinity);
- 		if (virq < 0) {
- 			ret = -ENOSPC;
+ 	pr_debug("irq_create_mapping(0x%p, 0x%lx)\n", domain, hwirq);
+ 
+@@ -674,6 +682,9 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+ 	pr_debug("irq %lu on domain %s mapped to virtual irq %u\n",
+ 		hwirq, of_node_full_name(of_node), virq);
+ 
++	desc = irq_to_desc(virq);
++	desc->free_irq = irq_mapped_free_desc;
++
+ 	return virq;
+ }
+ EXPORT_SYMBOL_GPL(irq_create_mapping);
+@@ -865,7 +876,6 @@ void irq_dispose_mapping(unsigned int virq)
+ 	if (irq_domain_is_hierarchy(domain)) {
+ 		irq_domain_free_irqs(virq, 1);
+ 	} else {
+-		irq_domain_disassociate(domain, virq);
+ 		irq_free_desc(virq);
+ 	}
+ }
 -- 
 2.17.1
 
