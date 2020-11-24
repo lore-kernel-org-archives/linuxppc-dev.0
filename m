@@ -2,40 +2,40 @@ Return-Path: <SRS0=+0eX=E6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15A4EC56201
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:20:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4042C56201
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:22:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDBE020678
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:20:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDBE020678
+	by mail.kernel.org (Postfix) with ESMTPS id 9FAA720678
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 06:22:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FAA720678
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDQk5F5vzDqTY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:20:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CgDSv20r0zDqT6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2020 17:22:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CgDN34FPXzDq5t
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:17:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CgDN35kLGzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2020 17:17:55 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 55E0EAE80241;
- Tue, 24 Nov 2020 01:17:45 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 82CBCAE8022C;
+ Tue, 24 Nov 2020 01:17:40 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v4 2/8] genirq/irqdomain: Clean legacy IRQ allocation
-Date: Tue, 24 Nov 2020 17:17:14 +1100
-Message-Id: <20201124061720.86766-3-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 1/8] genirq/ipi:  Simplify irq_reserve_ipi
+Date: Tue, 24 Nov 2020 17:17:13 +1100
+Message-Id: <20201124061720.86766-2-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201124061720.86766-1-aik@ozlabs.ru>
 References: <20201124061720.86766-1-aik@ozlabs.ru>
@@ -61,187 +61,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are 10 users of __irq_domain_alloc_irqs() and only one - IOAPIC -
-passes realloc==true. There is no obvious reason for handling this
-specific case in the generic code.
-
-This splits out __irq_domain_alloc_irqs_data() to make it clear what
-IOAPIC does and makes __irq_domain_alloc_irqs() cleaner.
-
-This should cause no behavioral change.
+__irq_domain_alloc_irqs() can already handle virq==-1 and free
+descriptors if it failed allocating hardware interrupts so let's skip
+this extra step.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/linux/irqdomain.h      |  3 ++
- arch/x86/kernel/apic/io_apic.c | 13 +++--
- kernel/irq/irqdomain.c         | 89 ++++++++++++++++++++--------------
- 3 files changed, 65 insertions(+), 40 deletions(-)
+ kernel/irq/ipi.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index 71535e87109f..6cc37bba9951 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -470,6 +470,9 @@ static inline struct irq_domain *irq_domain_add_hierarchy(struct irq_domain *par
- 					   ops, host_data);
- }
- 
-+extern int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
-+					unsigned int nr_irqs, int node, void *arg,
-+					const struct irq_affinity_desc *affinity);
- extern int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
- 				   unsigned int nr_irqs, int node, void *arg,
- 				   bool realloc,
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 7b3c7e0d4a09..df9c0ab3a119 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -970,9 +970,14 @@ static int alloc_irq_from_domain(struct irq_domain *domain, int ioapic, u32 gsi,
- 		return -1;
+diff --git a/kernel/irq/ipi.c b/kernel/irq/ipi.c
+index 43e3d1be622c..1b2807318ea9 100644
+--- a/kernel/irq/ipi.c
++++ b/kernel/irq/ipi.c
+@@ -75,18 +75,12 @@ int irq_reserve_ipi(struct irq_domain *domain,
+ 		}
  	}
  
--	return __irq_domain_alloc_irqs(domain, irq, 1,
--				       ioapic_alloc_attr_node(info),
--				       info, legacy, NULL);
-+	if (irq == -1 || !legacy)
-+		return __irq_domain_alloc_irqs(domain, irq, 1,
-+					       ioapic_alloc_attr_node(info),
-+					       info, false, NULL);
-+
-+	return __irq_domain_alloc_irqs_data(domain, irq, 1,
-+					    ioapic_alloc_attr_node(info),
-+					    info, NULL);
- }
- 
- /*
-@@ -1006,7 +1011,7 @@ static int alloc_isa_irq_from_domain(struct irq_domain *domain,
- 			return -ENOMEM;
- 	} else {
- 		info->flags |= X86_IRQ_ALLOC_LEGACY;
--		irq = __irq_domain_alloc_irqs(domain, irq, 1, node, info, true,
-+		irq = __irq_domain_alloc_irqs_data(domain, irq, 1, node, info,
- 					      NULL);
- 		if (irq >= 0) {
- 			irq_data = irq_domain_get_irq_data(domain, irq);
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index cf8b374b892d..ca5c78366c85 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -1386,6 +1386,51 @@ int irq_domain_alloc_irqs_hierarchy(struct irq_domain *domain,
- 	return domain->ops->alloc(domain, irq_base, nr_irqs, arg);
- }
- 
-+int __irq_domain_alloc_irqs_data(struct irq_domain *domain, int virq,
-+				 unsigned int nr_irqs, int node, void *arg,
-+				 const struct irq_affinity_desc *affinity)
-+{
-+	int i, ret;
-+
-+	if (domain == NULL) {
-+		domain = irq_default_domain;
-+		if (WARN(!domain, "domain is NULL; cannot allocate IRQ\n"))
-+			return -EINVAL;
-+	}
-+
-+	if (irq_domain_alloc_irq_data(domain, virq, nr_irqs)) {
-+		pr_debug("cannot allocate memory for IRQ%d\n", virq);
-+		ret = -ENOMEM;
-+		goto out_free_irq_data;
-+	}
-+
-+	mutex_lock(&irq_domain_mutex);
-+	ret = irq_domain_alloc_irqs_hierarchy(domain, virq, nr_irqs, arg);
-+	if (ret < 0) {
-+		mutex_unlock(&irq_domain_mutex);
-+		goto out_free_irq_data;
-+	}
-+
-+	for (i = 0; i < nr_irqs; i++) {
-+		ret = irq_domain_trim_hierarchy(virq + i);
-+		if (ret) {
-+			mutex_unlock(&irq_domain_mutex);
-+			goto out_free_irq_data;
-+		}
-+	}
-+
-+	for (i = 0; i < nr_irqs; i++) {
-+		irq_domain_insert_irq(virq + i);
-+	}
-+	mutex_unlock(&irq_domain_mutex);
-+
-+	return virq;
-+
-+out_free_irq_data:
-+	irq_domain_free_irq_data(virq, nr_irqs);
-+	return ret;
-+}
-+
- /**
-  * __irq_domain_alloc_irqs - Allocate IRQs from domain
-  * @domain:	domain to allocate from
-@@ -1412,7 +1457,7 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
- 			    unsigned int nr_irqs, int node, void *arg,
- 			    bool realloc, const struct irq_affinity_desc *affinity)
- {
--	int i, ret, virq;
-+	int ret, virq;
- 
- 	if (domain == NULL) {
- 		domain = irq_default_domain;
-@@ -1420,47 +1465,19 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
- 			return -EINVAL;
- 	}
- 
--	if (realloc && irq_base >= 0) {
--		virq = irq_base;
--	} else {
--		virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node,
--					      affinity);
--		if (virq < 0) {
--			pr_debug("cannot allocate IRQ(base %d, count %d)\n",
--				 irq_base, nr_irqs);
--			return virq;
--		}
-+	virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node, affinity);
-+	if (virq < 0) {
-+		pr_debug("cannot allocate IRQ(base %d, count %d)\n",
-+			 irq_base, nr_irqs);
-+		return virq;
- 	}
- 
--	if (irq_domain_alloc_irq_data(domain, virq, nr_irqs)) {
--		pr_debug("cannot allocate memory for IRQ%d\n", virq);
--		ret = -ENOMEM;
-+	ret = __irq_domain_alloc_irqs_data(domain, virq, nr_irqs, node, arg, affinity);
-+	if (ret <= 0)
- 		goto out_free_desc;
+-	virq = irq_domain_alloc_descs(-1, nr_irqs, 0, NUMA_NO_NODE, NULL);
+-	if (virq <= 0) {
+-		pr_warn("Can't reserve IPI, failed to alloc descs\n");
+-		return -ENOMEM;
 -	}
 -
--	mutex_lock(&irq_domain_mutex);
--	ret = irq_domain_alloc_irqs_hierarchy(domain, virq, nr_irqs, arg);
--	if (ret < 0) {
--		mutex_unlock(&irq_domain_mutex);
--		goto out_free_irq_data;
--	}
--
--	for (i = 0; i < nr_irqs; i++) {
--		ret = irq_domain_trim_hierarchy(virq + i);
--		if (ret) {
--			mutex_unlock(&irq_domain_mutex);
--			goto out_free_irq_data;
--		}
--	}
--	
--	for (i = 0; i < nr_irqs; i++)
--		irq_domain_insert_irq(virq + i);
--	mutex_unlock(&irq_domain_mutex);
+-	virq = __irq_domain_alloc_irqs(domain, virq, nr_irqs, NUMA_NO_NODE,
+-				       (void *) dest, true, NULL);
++	virq = __irq_domain_alloc_irqs(domain, -1, nr_irqs, NUMA_NO_NODE,
++				       (void *) dest, false, NULL);
  
+ 	if (virq <= 0) {
+ 		pr_warn("Can't reserve IPI, failed to alloc hw irqs\n");
+-		goto free_descs;
++		return -EBUSY;
+ 	}
+ 
+ 	for (i = 0; i < nr_irqs; i++) {
+@@ -96,10 +90,6 @@ int irq_reserve_ipi(struct irq_domain *domain,
+ 		irq_set_status_flags(virq + i, IRQ_NO_BALANCING);
+ 	}
  	return virq;
+-
+-free_descs:
+-	irq_free_descs(virq, nr_irqs);
+-	return -EBUSY;
+ }
  
--out_free_irq_data:
--	irq_domain_free_irq_data(virq, nr_irqs);
- out_free_desc:
- 	irq_free_descs(virq, nr_irqs);
- 	return ret;
+ /**
 -- 
 2.17.1
 
