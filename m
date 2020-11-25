@@ -2,109 +2,72 @@ Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D039AC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:39:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C754C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:41:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85DE22076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:39:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="hoXySxZG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85DE22076B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A78E52083E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:41:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A78E52083E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch3S12pjqzDqgZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:39:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch3Vq5HBpzDqKh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:41:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hoXySxZG; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2pS6mmmzDqLX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 01:10:08 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0APE1c0g012834
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 09:10:04 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=D4aMLqqbJNBZfkRbc+iX1kniDy5eal89qOIZYB3/tHA=;
- b=hoXySxZGr+ZXquoU3ofuCxNuCdmHnJ6ArO28/DGT/CGmEpq+pQknMWQVpGHBOEUsH0Um
- nZmwso0wykN5B1HklvKD2kzB+mf6OIUjqnGwRyquJkNeIXlvy/tZ4fHbnWNSze70j0T9
- tIcTcQWDQCtVwKq10vhwOphv6ux6yf0/RPSkzJCmZv5/IeX/vWzbIF87PYaDHasqL/rU
- 4pH0kywXQBvN9C3RyXNtp5FEsgVxjx0wwFs5D0/zfSMA9NTPLQjNA174h1eTvC3YP40v
- 5A86UmQTT0CtULBs5n0ZrbuEn2/2rDRTbImRISiPKkUVskczvUAauPyKraoCP6xIXc+w DQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34ygtv2ae0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 09:10:03 -0500
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APE8hHg006798
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 14:10:00 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03fra.de.ibm.com with ESMTP id 34yy8r1mf7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 14:09:59 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0APE8gVI8585770
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Nov 2020 14:08:42 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8F21EA405F;
- Wed, 25 Nov 2020 14:08:42 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6AD17A4055;
- Wed, 25 Nov 2020 14:08:42 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.145.70.43])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 25 Nov 2020 14:08:42 +0000 (GMT)
-Subject: Re: [PATCH V3 3/5] ocxl: Update the Process Element Entry
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- ajd@linux.ibm.com
-References: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
- <20201124095838.18665-4-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Message-ID: <46e5496a-22fa-fa4d-04c0-18a101e065a6@linux.ibm.com>
-Date: Wed, 25 Nov 2020 15:08:42 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2yL6tNTzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 01:16:57 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Ch2yD5VPmzB09ZR;
+ Wed, 25 Nov 2020 15:16:52 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 64YuBe0REcDv; Wed, 25 Nov 2020 15:16:52 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Ch2yD4S9pzB09ZL;
+ Wed, 25 Nov 2020 15:16:52 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0920A8B7DD;
+ Wed, 25 Nov 2020 15:16:54 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 85R0g-darUVa; Wed, 25 Nov 2020 15:16:53 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E4AC28B7DC;
+ Wed, 25 Nov 2020 15:16:52 +0100 (CET)
+Subject: Re: [PATCH v6 10/22] powerpc/book3s64/pkeys: Store/restore userspace
+ AMR/IAMR correctly on entry and exit from kernel
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+References: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
+ <20201125051634.509286-11-aneesh.kumar@linux.ibm.com>
+ <5f7a467a-c4c7-76b1-5837-34db0f4db51e@csgroup.eu>
+ <5a471282-ff4f-cfea-8d30-a0479f0385a1@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <80677c01-8eaf-fa5f-dedd-65f2d883b8d2@csgroup.eu>
+Date: Wed, 25 Nov 2020 15:16:51 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201124095838.18665-4-clombard@linux.vnet.ibm.com>
+In-Reply-To: <5a471282-ff4f-cfea-8d30-a0479f0385a1@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-25_08:2020-11-25,
- 2020-11-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015
- mlxscore=0 impostorscore=0 malwarescore=0 mlxlogscore=999 suspectscore=0
- bulkscore=0 spamscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011250084
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,146 +79,226 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Sandipan Das <sandipan@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 24/11/2020 10:58, Christophe Lombard wrote:
-> To complete the MMIO based mechanism, the fields: PASID, bus, device and
-> function of the Process Element Entry have to be filled. (See
-> OpenCAPI Power Platform Architecture document)
+Le 25/11/2020 à 14:55, Aneesh Kumar K.V a écrit :
+> On 11/25/20 7:22 PM, Christophe Leroy wrote:
+>>
+>>
+>> Le 25/11/2020 à 06:16, Aneesh Kumar K.V a écrit :
+>>> This prepare kernel to operate with a different value than userspace AMR/IAMR.
+>>> For this, AMR/IAMR need to be saved and restored on entry and return from the
+>>> kernel.
+>>>
+>>> With KUAP we modify kernel AMR when accessing user address from the kernel
+>>> via copy_to/from_user interfaces. We don't need to modify IAMR value in
+>>> similar fashion.
+>>>
+>>> If MMU_FTR_PKEY is enabled we need to save AMR/IAMR in pt_regs on entering
+>>> kernel from userspace. If not we can assume that AMR/IAMR is not modified
+>>> from userspace.
+>>>
+>>> We need to save AMR if we have MMU_FTR_KUAP feature enabled and we are
+>>> interrupted within kernel. This is required so that if we get interrupted
+>>> within copy_to/from_user we continue with the right AMR value.
+>>>
+>>> If we hae MMU_FTR_KUEP enabled we need to restore IAMR on return to userspace
+>>> beause kernel will be running with a different IAMR value.
+>>>
+>>> Reviewed-by: Sandipan Das <sandipan@linux.ibm.com>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>> ---
+>>>   arch/powerpc/include/asm/book3s/64/kup.h | 222 +++++++++++++++++++----
+>>>   arch/powerpc/include/asm/ptrace.h        |   5 +-
+>>>   arch/powerpc/kernel/asm-offsets.c        |   2 +
+>>>   arch/powerpc/kernel/entry_64.S           |   6 +-
+>>>   arch/powerpc/kernel/exceptions-64s.S     |   4 +-
+>>>   arch/powerpc/kernel/syscall_64.c         |  32 +++-
+>>>   6 files changed, 225 insertions(+), 46 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+>>> index 1d38eab83d48..4dbb2d53fd8f 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/kup.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/kup.h
+>>> @@ -13,17 +13,46 @@
+>>>   #ifdef __ASSEMBLY__
+>>> -.macro kuap_restore_amr    gpr1, gpr2
+>>> -#ifdef CONFIG_PPC_KUAP
+>>> +.macro kuap_restore_user_amr gpr1
+>>> +#if defined(CONFIG_PPC_PKEY)
+>>>       BEGIN_MMU_FTR_SECTION_NESTED(67)
+>>> -    mfspr    \gpr1, SPRN_AMR
+>>> +    /*
+>>> +     * AMR and IAMR are going to be different when
+>>> +     * returning to userspace.
+>>> +     */
+>>> +    ld    \gpr1, STACK_REGS_AMR(r1)
+>>> +    isync
+>>> +    mtspr    SPRN_AMR, \gpr1
+>>> +    /*
+>>> +     * Restore IAMR only when returning to userspace
+>>> +     */
+>>> +    ld    \gpr1, STACK_REGS_IAMR(r1)
+>>> +    mtspr    SPRN_IAMR, \gpr1
+>>> +
+>>> +    /* No isync required, see kuap_restore_user_amr() */
+>>> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_PKEY, 67)
+>>> +#endif
+>>> +.endm
+>>> +
+>>> +.macro kuap_restore_kernel_amr    gpr1, gpr2
+>>> +#if defined(CONFIG_PPC_PKEY)
+>>> +
+>>> +    BEGIN_MMU_FTR_SECTION_NESTED(67)
+>>> +    /*
+>>> +     * AMR is going to be mostly the same since we are
+>>> +     * returning to the kernel. Compare and do a mtspr.
+>>> +     */
+>>>       ld    \gpr2, STACK_REGS_AMR(r1)
+>>> +    mfspr    \gpr1, SPRN_AMR
+>>>       cmpd    \gpr1, \gpr2
+>>> -    beq    998f
+>>> +    beq    100f
+>>>       isync
+>>>       mtspr    SPRN_AMR, \gpr2
+>>> -    /* No isync required, see kuap_restore_amr() */
+>>> -998:
+>>> +    /*
+>>> +     * No isync required, see kuap_restore_amr()
+>>> +     * No need to restore IAMR when returning to kernel space.
+>>> +     */
+>>> +100:
+>>>       END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
+>>>   #endif
+>>>   .endm
+>>> @@ -42,23 +71,98 @@
+>>>   .endm
+>>>   #endif
+>>> +/*
+>>> + *    if (pkey) {
+>>> + *
+>>> + *        save AMR -> stack;
+>>> + *        if (kuap) {
+>>> + *            if (AMR != BLOCKED)
+>>> + *                KUAP_BLOCKED -> AMR;
+>>> + *        }
+>>> + *        if (from_user) {
+>>> + *            save IAMR -> stack;
+>>> + *            if (kuep) {
+>>> + *                KUEP_BLOCKED ->IAMR
+>>> + *            }
+>>> + *        }
+>>> + *        return;
+>>> + *    }
+>>> + *
+>>> + *    if (kuap) {
+>>> + *        if (from_kernel) {
+>>> + *            save AMR -> stack;
+>>> + *            if (AMR != BLOCKED)
+>>> + *                KUAP_BLOCKED -> AMR;
+>>> + *        }
+>>> + *
+>>> + *    }
+>>> + */
+>>>   .macro kuap_save_amr_and_lock gpr1, gpr2, use_cr, msr_pr_cr
+>>> -#ifdef CONFIG_PPC_KUAP
+>>> +#if defined(CONFIG_PPC_PKEY)
+>>> +
+>>> +    /*
+>>> +     * if both pkey and kuap is disabled, nothing to do
+>>> +     */
+>>> +    BEGIN_MMU_FTR_SECTION_NESTED(68)
+>>> +    b    100f  // skip_save_amr
+>>> +    END_MMU_FTR_SECTION_NESTED_IFCLR(MMU_FTR_PKEY | MMU_FTR_KUAP, 68)
+>>> +
+>>> +    /*
+>>> +     * if pkey is disabled and we are entering from userspace
+>>> +     * don't do anything.
+>>> +     */
+>>>       BEGIN_MMU_FTR_SECTION_NESTED(67)
+>>>       .ifnb \msr_pr_cr
+>>> -    bne    \msr_pr_cr, 99f
+>>> +    /*
+>>> +     * Without pkey we are not changing AMR outside the kernel
+>>> +     * hence skip this completely.
+>>> +     */
+>>> +    bne    \msr_pr_cr, 100f  // from userspace
+>>>       .endif
+>>> +        END_MMU_FTR_SECTION_NESTED_IFCLR(MMU_FTR_PKEY, 67)
+>>> +
+>>> +    /*
+>>> +     * pkey is enabled or pkey is disabled but entering from kernel
+>>> +     */
+>>>       mfspr    \gpr1, SPRN_AMR
+>>>       std    \gpr1, STACK_REGS_AMR(r1)
+>>> -    li    \gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
+>>> -    sldi    \gpr2, \gpr2, AMR_KUAP_SHIFT
+>>> +
+>>> +    /*
+>>> +     * update kernel AMR with AMR_KUAP_BLOCKED only
+>>> +     * if KUAP feature is enabled
+>>> +     */
+>>> +    BEGIN_MMU_FTR_SECTION_NESTED(69)
+>>> +    LOAD_REG_IMMEDIATE(\gpr2, AMR_KUAP_BLOCKED)
+>>>       cmpd    \use_cr, \gpr1, \gpr2
+>>> -    beq    \use_cr, 99f
+>>> -    // We don't isync here because we very recently entered via rfid
+>>> +    beq    \use_cr, 102f
+>>> +    /*
+>>> +     * We don't isync here because we very recently entered via an interrupt
+>>> +     */
+>>>       mtspr    SPRN_AMR, \gpr2
+>>>       isync
+>>> -99:
+>>> -    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
+>>> +102:
+>>> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 69)
+>>> +
+>>> +    /*
+>>> +     * if entering from kernel we don't need save IAMR
+>>> +     */
+>>> +    .ifnb \msr_pr_cr
+>>> +    beq    \msr_pr_cr, 100f // from kernel space
+>>> +    mfspr    \gpr1, SPRN_IAMR
+>>> +    std    \gpr1, STACK_REGS_IAMR(r1)
+>>> +
+>>> +    /*
+>>> +     * update kernel IAMR with AMR_KUEP_BLOCKED only
+>>> +     * if KUEP feature is enabled
+>>> +     */
+>>> +    BEGIN_MMU_FTR_SECTION_NESTED(70)
+>>> +    LOAD_REG_IMMEDIATE(\gpr2, AMR_KUEP_BLOCKED)
+>>> +    mtspr    SPRN_IAMR, \gpr2
+>>> +    isync
+>>> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUEP, 70)
+>>> +    .endif
+>>> +
+>>> +100: // skip_save_amr
+>>>   #endif
+>>>   .endm
+>>> @@ -66,22 +170,42 @@
+>>>   DECLARE_STATIC_KEY_FALSE(uaccess_flush_key);
+>>> -#ifdef CONFIG_PPC_KUAP
+>>> +#ifdef CONFIG_PPC_PKEY
+>>>   #include <asm/mmu.h>
+>>>   #include <asm/ptrace.h>
+>>> -static inline void kuap_restore_amr(struct pt_regs *regs, unsigned long amr)
+>>> +static inline void kuap_restore_user_amr(struct pt_regs *regs)
+>>
+>> While we are at changing the function's names, could we remove the _amr from the names in order to 
+>> make it more generic and allow to re-use that name when we migrate PPC32 to C interrupt/syscall 
+>> entries/exits ? (see 
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/302a0e88e15ce4569d9619631b36248041d5ed27.1586196948.git.christophe.leroy@c-s.fr/) 
+>>
 > 
->                     Hypervisor Process Element Entry
-> Word
->      0 1 .... 7  8  ...... 12  13 ..15  16.... 19  20 ........... 31
-> 0                  OSL Configuration State (0:31)
-> 1                  OSL Configuration State (32:63)
-> 2               PASID                      |    Reserved
-> 3       Bus   |   Device    |Function |        Reserved
-> 4                             Reserved
-> 5                             Reserved
-> 6                               ....
+> How do you suggest we rename it? kuap_restore_user is a bit ambiguous right?
 > 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
 
+I have never been really good at finding names.
 
-LGTM
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
->   drivers/misc/ocxl/context.c       | 4 +++-
->   drivers/misc/ocxl/link.c          | 4 +++-
->   drivers/misc/ocxl/ocxl_internal.h | 9 ++++++---
->   drivers/scsi/cxlflash/ocxl_hw.c   | 6 ++++--
->   include/misc/ocxl.h               | 2 +-
->   5 files changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-> index c21f65a5c762..9eb0d93b01c6 100644
-> --- a/drivers/misc/ocxl/context.c
-> +++ b/drivers/misc/ocxl/context.c
-> @@ -70,6 +70,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
->   {
->   	int rc;
->   	unsigned long pidr = 0;
-> +	struct pci_dev *dev;
-> 
->   	// Locks both status & tidr
->   	mutex_lock(&ctx->status_mutex);
-> @@ -81,8 +82,9 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
->   	if (mm)
->   		pidr = mm->context.id;
-> 
-> +	dev = to_pci_dev(ctx->afu->fn->dev.parent);
->   	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid, pidr, ctx->tidr,
-> -			      amr, mm, xsl_fault_error, ctx);
-> +			      amr, pci_dev_id(dev), mm, xsl_fault_error, ctx);
->   	if (rc)
->   		goto out;
-> 
-> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-> index fd73d3bc0eb6..77381dda2c45 100644
-> --- a/drivers/misc/ocxl/link.c
-> +++ b/drivers/misc/ocxl/link.c
-> @@ -494,7 +494,7 @@ static u64 calculate_cfg_state(bool kernel)
->   }
-> 
->   int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-> -		u64 amr, struct mm_struct *mm,
-> +		u64 amr, u16 bdf, struct mm_struct *mm,
->   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->   		void *xsl_err_data)
->   {
-> @@ -529,6 +529,8 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-> 
->   	memset(pe, 0, sizeof(struct ocxl_process_element));
->   	pe->config_state = cpu_to_be64(calculate_cfg_state(pidr == 0));
-> +	pe->pasid = cpu_to_be32(pasid << (31 - 19));
-> +	pe->bdf = cpu_to_be16(bdf);
->   	pe->lpid = cpu_to_be32(mfspr(SPRN_LPID));
->   	pe->pid = cpu_to_be32(pidr);
->   	pe->tid = cpu_to_be32(tidr);
-> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-> index 0bad0a123af6..10125a22d5a5 100644
-> --- a/drivers/misc/ocxl/ocxl_internal.h
-> +++ b/drivers/misc/ocxl/ocxl_internal.h
-> @@ -84,13 +84,16 @@ struct ocxl_context {
-> 
->   struct ocxl_process_element {
->   	__be64 config_state;
-> -	__be32 reserved1[11];
-> +	__be32 pasid;
-> +	__be16 bdf;
-> +	__be16 reserved1;
-> +	__be32 reserved2[9];
->   	__be32 lpid;
->   	__be32 tid;
->   	__be32 pid;
-> -	__be32 reserved2[10];
-> +	__be32 reserved3[10];
->   	__be64 amr;
-> -	__be32 reserved3[3];
-> +	__be32 reserved4[3];
->   	__be32 software_state;
->   };
-> 
-> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-> index e4e0d767b98e..244fc27215dc 100644
-> --- a/drivers/scsi/cxlflash/ocxl_hw.c
-> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-> @@ -329,6 +329,7 @@ static int start_context(struct ocxlflash_context *ctx)
->   	struct ocxl_hw_afu *afu = ctx->hw_afu;
->   	struct ocxl_afu_config *acfg = &afu->acfg;
->   	void *link_token = afu->link_token;
-> +	struct pci_dev *pdev = afu->pdev;
->   	struct device *dev = afu->dev;
->   	bool master = ctx->master;
->   	struct mm_struct *mm;
-> @@ -360,8 +361,9 @@ static int start_context(struct ocxlflash_context *ctx)
->   		mm = current->mm;
->   	}
-> 
-> -	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0, mm,
-> -			      ocxlflash_xsl_fault, ctx);
-> +	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0,
-> +			      pci_dev_id(pdev), mm, ocxlflash_xsl_fault,
-> +			      ctx);
->   	if (unlikely(rc)) {
->   		dev_err(dev, "%s: ocxl_link_add_pe failed rc=%d\n",
->   			__func__, rc);
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index e013736e275d..3ed736da02c8 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -447,7 +447,7 @@ void ocxl_link_release(struct pci_dev *dev, void *link_handle);
->    * defined
->    */
->   int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-> -		u64 amr, struct mm_struct *mm,
-> +		u64 amr, u16 bdf, struct mm_struct *mm,
->   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->   		void *xsl_err_data);
-> 
+What about kuap_user_restore() and kuap_kernel_restore() ?
