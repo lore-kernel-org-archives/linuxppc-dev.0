@@ -2,109 +2,95 @@ Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E110BC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:33:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A62A9C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:36:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 182D72076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:33:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BF80B2076B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:36:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="EX3Yigf/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 182D72076B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="NEXbUicR";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="bXADDBx/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF80B2076B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch3Kg6P2LzDqyX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:33:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch3P44hHrzDqJ8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:36:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=lvivier@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=EX3Yigf/; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=NEXbUicR; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=bXADDBx/; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2kF4xJ3zDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 01:06:29 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0APE4cmP060167
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 09:06:26 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=jWWoyzhcZhRsQPBmR/boTdA9ww3Jokt33tLbSITfGro=;
- b=EX3Yigf/embCZ2gdf2LKhWU14hXj3nBNqFc43FDBPLNJ5+V9NXvX5WB5tbcYAG5iJqRv
- pT5UnHpsgc5qWmmN5alkkkzjuyNUwdfvsILhunllod50vQct69PFEIjxbXT/5S13/fS2
- 4PkYFOhcRTe/y1r8jXfhQKUB7ODmPcxx6YjrAzAsrOA4XsbrZWVL/a+AiURE12T/PQ7v
- 7P+9WY6az/GPXOh85rSPkqfXOf5B0v1m1lSGE9O7NokSwcbUh/olPfRVKNNGsBMcCu/b
- cqLVXlsnzicrbZWDcLxqxUge4AlTjkfdVthkyi5sGOnJI3+v/nkVSpg0YLksKUbJLgR+ WQ== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 351347q0m3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 09:06:25 -0500
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APDwREY007979
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 14:06:24 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03ams.nl.ibm.com with ESMTP id 34xth8cq9v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 14:06:23 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0APE6LDK48169300
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Nov 2020 14:06:21 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B77DAA4051;
- Wed, 25 Nov 2020 14:06:21 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C93BA4065;
- Wed, 25 Nov 2020 14:06:21 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.145.70.43])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 25 Nov 2020 14:06:21 +0000 (GMT)
-Subject: Re: [PATCH V3 2/5] ocxl: Initiate a TLB invalidate command
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- ajd@linux.ibm.com
-References: <20201124095838.18665-1-clombard@linux.vnet.ibm.com>
- <20201124095838.18665-3-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Message-ID: <4f392167-beec-3a20-dfee-dd6b6b7ea65d@linux.ibm.com>
-Date: Wed, 25 Nov 2020 15:06:21 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2pK6fg7zDqPv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 01:10:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1606313395;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=L7x1+zQZq5AdNReGA03HZCNw2qvTVYRyYsN6XftQCxU=;
+ b=NEXbUicRAKa+i1bJ0W2VHi3TH1RDv5AQejaUfVnSbgz/sC9687g2Bbe9LUI8rDlye5hL8d
+ DuiusWeIlzQHHH7jCrPnSmGXJpu6ehOMCWXsGxk6nPL5eOZE8F8HlBpmfjyKkqEbv31PKB
+ KC/M+W3lW0QsgkpldwuA1oolTLDYTN4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1606313396;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=L7x1+zQZq5AdNReGA03HZCNw2qvTVYRyYsN6XftQCxU=;
+ b=bXADDBx/agRl1zGw5WYFPLmJEbPiOMjh8w2JtDe769ovQsbsPN6pWDOImIKYvbO9qLOLPj
+ Lp9vkfPdxleoLSxJOB0ATdo62ne8AmMSms9BhHrKgbhwF6bxxtUmwqp1JtyGASVSMRkEQz
+ BFP8kXOkANm5x6fYYX/MlUga4kV5l5g=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-73-oVkqOzzQNAWKywPe2GBTeA-1; Wed, 25 Nov 2020 09:09:52 -0500
+X-MC-Unique: oVkqOzzQNAWKywPe2GBTeA-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 3D261185E482;
+ Wed, 25 Nov 2020 14:09:50 +0000 (UTC)
+Received: from [10.36.113.83] (ovpn-113-83.ams2.redhat.com [10.36.113.83])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 1CB195D9CA;
+ Wed, 25 Nov 2020 14:09:42 +0000 (UTC)
+Subject: Re: [PATCH v2 1/2] genirq: add an irq_create_mapping_affinity()
+ function
+To: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+References: <20201125111657.1141295-1-lvivier@redhat.com>
+ <20201125111657.1141295-2-lvivier@redhat.com>
+ <87sg8xk1yi.fsf@nanos.tec.linutronix.de>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <e32641f7-0993-8923-7d74-5ac57a60f10d@redhat.com>
+Date: Wed, 25 Nov 2020 15:09:42 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.4.0
 MIME-Version: 1.0
-In-Reply-To: <20201124095838.18665-3-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <87sg8xk1yi.fsf@nanos.tec.linutronix.de>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-25_08:2020-11-25,
- 2020-11-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- lowpriorityscore=0 malwarescore=0 clxscore=1015 priorityscore=1501
- spamscore=0 adultscore=0 mlxlogscore=999 bulkscore=0 mlxscore=0
- phishscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2011250084
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,184 +102,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Marc Zyngier <maz@kernel.org>, "Michael S . Tsirkin" <mst@redhat.com>,
+ linux-pci@vger.kernel.org, Greg Kurz <groug@kaod.org>,
+ linux-block@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 25/11/2020 14:20, Thomas Gleixner wrote:
+> Laurent,
+> 
+> On Wed, Nov 25 2020 at 12:16, Laurent Vivier wrote:
+> 
+> The proper subsystem prefix is: 'genirq/irqdomain:' and the first letter
+> after the colon wants to be uppercase.
 
+Ok.
 
-On 24/11/2020 10:58, Christophe Lombard wrote:
-> When a TLB Invalidate is required for the Logical Partition, the following
-> sequence has to be performed:
+>> This function adds an affinity parameter to irq_create_mapping().
+>> This parameter is needed to pass it to irq_domain_alloc_descs().
 > 
-> 1. Load MMIO ATSD AVA register with the necessary value, if required.
-> 2. Write the MMIO ATSD launch register to initiate the TLB Invalidate
-> command.
-> 3. Poll the MMIO ATSD status register to determine when the TLB Invalidate
->     has been completed.
+> A changelog has to explain the WHY. 'The parameter is needed' is not
+> really useful information.
 > 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/asm/pnv-ocxl.h   | 51 +++++++++++++++++++
->   arch/powerpc/platforms/powernv/ocxl.c | 70 +++++++++++++++++++++++++++
->   2 files changed, 121 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-> index 60c3c74427d9..9acd1fbf1197 100644
-> --- a/arch/powerpc/include/asm/pnv-ocxl.h
-> +++ b/arch/powerpc/include/asm/pnv-ocxl.h
-> @@ -3,12 +3,59 @@
->   #ifndef _ASM_PNV_OCXL_H
->   #define _ASM_PNV_OCXL_H
-> 
-> +#include <linux/bitfield.h>
->   #include <linux/pci.h>
-> 
->   #define PNV_OCXL_TL_MAX_TEMPLATE        63
->   #define PNV_OCXL_TL_BITS_PER_RATE       4
->   #define PNV_OCXL_TL_RATE_BUF_SIZE       ((PNV_OCXL_TL_MAX_TEMPLATE+1) * PNV_OCXL_TL_BITS_PER_RATE / 8)
-> 
-> +#define PNV_OCXL_ATSD_TIMEOUT		1
-> +
-> +/* TLB Management Instructions */
-> +#define PNV_OCXL_ATSD_LNCH		0x00
-> +/* Radix Invalidate */
-> +#define   PNV_OCXL_ATSD_LNCH_R		PPC_BIT(0)
-> +/* Radix Invalidation Control
-> + * 0b00 Just invalidate TLB.
-> + * 0b01 Invalidate just Page Walk Cache.
-> + * 0b10 Invalidate TLB, Page Walk Cache, and any
-> + * caching of Partition and Process Table Entries.
-> + */
-> +#define   PNV_OCXL_ATSD_LNCH_RIC	PPC_BITMASK(1, 2)
-> +/* Number and Page Size of translations to be invalidated */
-> +#define   PNV_OCXL_ATSD_LNCH_LP		PPC_BITMASK(3, 10)
-> +/* Invalidation Criteria
-> + * 0b00 Invalidate just the target VA.
-> + * 0b01 Invalidate matching PID.
-> + */
-> +#define   PNV_OCXL_ATSD_LNCH_IS		PPC_BITMASK(11, 12)
-> +/* 0b1: Process Scope, 0b0: Partition Scope */
-> +#define   PNV_OCXL_ATSD_LNCH_PRS	PPC_BIT(13)
-> +/* Invalidation Flag */
-> +#define   PNV_OCXL_ATSD_LNCH_B		PPC_BIT(14)
-> +/* Actual Page Size to be invalidated
-> + * 000 4KB
-> + * 101 64KB
-> + * 001 2MB
-> + * 010 1GB
-> + */
-> +#define   PNV_OCXL_ATSD_LNCH_AP		PPC_BITMASK(15, 17)
-> +/* Defines the large page select
-> + * L=0b0 for 4KB pages
-> + * L=0b1 for large pages)
-> + */
-> +#define   PNV_OCXL_ATSD_LNCH_L		PPC_BIT(18)
-> +/* Process ID */
-> +#define   PNV_OCXL_ATSD_LNCH_PID	PPC_BITMASK(19, 38)
-> +/* NoFlush – Assumed to be 0b0 */
-> +#define   PNV_OCXL_ATSD_LNCH_F		PPC_BIT(39)
-> +#define   PNV_OCXL_ATSD_LNCH_OCAPI_SLBI	PPC_BIT(40)
-> +#define   PNV_OCXL_ATSD_LNCH_OCAPI_SINGLETON	PPC_BIT(41)
-> +#define PNV_OCXL_ATSD_AVA		0x08
-> +#define   PNV_OCXL_ATSD_AVA_AVA		PPC_BITMASK(0, 51)
-> +#define PNV_OCXL_ATSD_STAT		0x10
-> +
->   int pnv_ocxl_get_actag(struct pci_dev *dev, u16 *base, u16 *enabled, u16 *supported);
->   int pnv_ocxl_get_pasid_count(struct pci_dev *dev, int *count);
-> 
-> @@ -31,4 +78,8 @@ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
->   int pnv_ocxl_map_lpar(struct pci_dev *dev, uint64_t lparid,
->   		      uint64_t lpcr, void __iomem **arva);
->   void pnv_ocxl_unmap_lpar(void __iomem *arva);
-> +void pnv_ocxl_tlb_invalidate(void __iomem *arva,
-> +			     unsigned long pid,
-> +			     unsigned long addr,
-> +			     unsigned long page_size);
->   #endif /* _ASM_PNV_OCXL_H */
-> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-> index 57fc1062677b..f665846d2b28 100644
-> --- a/arch/powerpc/platforms/powernv/ocxl.c
-> +++ b/arch/powerpc/platforms/powernv/ocxl.c
-> @@ -528,3 +528,73 @@ void pnv_ocxl_unmap_lpar(void __iomem *arva)
->   	iounmap(arva);
->   }
->   EXPORT_SYMBOL_GPL(pnv_ocxl_unmap_lpar);
-> +
-> +void pnv_ocxl_tlb_invalidate(void __iomem *arva,
-> +			     unsigned long pid,
-> +			     unsigned long addr,
-> +			     unsigned long page_size)
-> +{
-> +	unsigned long timeout = jiffies + (HZ * PNV_OCXL_ATSD_TIMEOUT);
-> +	u64 val = 0ull;
-> +	int pend;
-> +	u8 size;
-> +
-> +	if (!(arva))
-> +		return;
-> +
-> +	if (addr) {
-> +		/* load Abbreviated Virtual Address register with
-> +		 * the necessary value
-> +		 */
-> +		val |= FIELD_PREP(PNV_OCXL_ATSD_AVA_AVA, addr >> (63-51));
-> +		out_be64(arva + PNV_OCXL_ATSD_AVA, val);
-> +	}
-> +
-> +	/* Write access initiates a shoot down to initiate the
-> +	 * TLB Invalidate command
-> +	 */
-> +	val = PNV_OCXL_ATSD_LNCH_R;
-> +	if (addr) {
-> +		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_RIC, 0b00);
-> +		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_IS, 0b00);
-> +	} else {
-> +		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_RIC, 0b10);
-> +		val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_IS, 0b01);
-> +		val |= PNV_OCXL_ATSD_LNCH_OCAPI_SINGLETON;
-> +	}
-> +	val |= PNV_OCXL_ATSD_LNCH_PRS;
-> +	/* Actual Page Size to be invalidated
-> +	 * 000 4KB
-> +	 * 101 64KB
-> +	 * 001 2MB
-> +	 * 010 1GB
-> +	 */
-> +	size = 0b101;
-> +	if (page_size == 0x10000)
-> +		size = 0b000;
 
+The reason of this change is explained in PATCH 2.
 
-Ooops, typo, we want page_size == 0x1000
+I have two patches, one to change the interface with no functional change (PATCH 1) and
+one to fix the problem (PATCH 2). Moreover they don't cover the same subsystems.
 
-   Fred
+I can either:
+- merge the two patches
+- or make a reference in the changelog of PATCH 1 to PATCH 2
+  (something like "(see folowing patch "powerpc/pseries: pass MSI affinity to
+   irq_create_mapping()")")
+- or copy some information from PATCH 2
+  (something like "this parameter is needed by rtas_setup_msi_irqs() to pass the affinity
+   to irq_domain_alloc_descs() to fix multiqueue affinity")
 
+What do you prefer?
 
-> +	if (page_size == 0x200000)
-> +		size = 0b001;
-> +	if (page_size == 0x40000000)
-> +		size = 0b010;
-> +	val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_AP, size);
-> +	val |= FIELD_PREP(PNV_OCXL_ATSD_LNCH_PID, pid);
-> +	out_be64(arva + PNV_OCXL_ATSD_LNCH, val);
-> +
-> +	/* Poll the ATSD status register to determine when the
-> +	 * TLB Invalidate has been completed.
-> +	 */
-> +	val = in_be64(arva + PNV_OCXL_ATSD_STAT);
-> +	pend = val >> 63;
-> +
-> +	while (pend) {
-> +		if (time_after_eq(jiffies, timeout)) {
-> +			pr_err("%s - Timeout while reading XTS MMIO ATSD status register (val=%#llx, pidr=0x%lx)\n",
-> +			       __func__, val, pid);
-> +			return;
-> +		}
-> +		cpu_relax();
-> +		val = in_be64(arva + PNV_OCXL_ATSD_STAT);
-> +		pend = val >> 63;
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_ocxl_tlb_invalidate);
-> 
+Thanks,
+Laurent
+
