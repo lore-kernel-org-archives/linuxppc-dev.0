@@ -7,97 +7,98 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CE45C63798
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 15:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 831DCC56202
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 15:55:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9129205CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 15:52:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 52AC22145D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 15:55:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="PJOtRyyx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9129205CB
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="SlexHC0V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52AC22145D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch54v6TfBzDr0v
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 02:52:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch57l1qqNzDqvn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 02:55:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=PJOtRyyx; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=SlexHC0V; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch5261jWDzDqw8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 02:50:21 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0APFW1SD006348
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 10:50:18 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch5274GxVzDqw8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 02:50:23 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0APFWP2a145036
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 10:50:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : subject :
- date : message-id : mime-version : content-type :
+ date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=W0l5ef+qJ5KVmWwSB+FRmYZhdx3gGsiCQhJWq/Esres=;
- b=PJOtRyyxJOxokqmk8o2PN6CSw77wZFPtK7uM3+a1d1lqMWGkWAdhofeEkGcs2j45TRli
- GQ+bVCreT/rCLiGlCBDZJaA1g+LxPtNnsWFjBO4i+nRoSa2Z7iflQDFQJLN9EOYf9y/v
- pKeO6Dimxj+LAX1YO9n/fPZPfBrI9D4tXu2hNiRQM26vMRP/iVlvAjG4q8+CTZcfMl5c
- h0gpZSv55jMW57bJwQQwaZ42PB52e9X5dtBbfguRVbwD7PAVOHRYGl/tqbfuMGZ/JZe+
- yHvZiaSp/jnqwC/kJPPZyI8/kHJXkUvtxi/fakQmBVJtB3NhkUK4mzwYXfF06xk6EjPq Sw== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 351347suvt-1
+ bh=dN8LC4b/jcFI2yBh6PfcN7ukjSusP9zweZhKP46yvgo=;
+ b=SlexHC0VpCBZyVYbe9rpltHWwwSdpN0hZaHKCQV3BZxMRxXJ1Lul0NqCckpAP1Un4Y/5
+ Swp+kgnHqXoc56tWNfysSgYzaGwzgabe684tRs6aIMYBr4oQSwkJ6YlZyvYoj089BVlH
+ bq6/OZhpxPEAK7b4D5zNdcwFbpd9vMvTx9PD9h57wYiq451Dds9yiLsvvQ3UYJ0z6Uw5
+ WqtgG4mO3Of1lLg4N3HfAgu+SrpLMxeh6Dr98F/oauD/e7QFZX8NVNcrHRehyWZua0Gj
+ mQjL880Qr2ZCYEk3+TBJ/+uSL2NhI9iSTyIgUp5s1pCU0HJUsEiTbvWnxTVEfKgtGc/v Dg== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 351qy5559v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 10:50:18 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APFbgAW014472
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 15:50:16 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma04ams.nl.ibm.com with ESMTP id 3518j8guf8-1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 10:50:20 -0500
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APFWaEH000705
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 15:50:18 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma05fra.de.ibm.com with ESMTP id 34y6k4t83w-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 15:50:16 +0000
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 15:50:17 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0APFoD1M8323710
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0APFoE8549480040
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Nov 2020 15:50:13 GMT
+ Wed, 25 Nov 2020 15:50:15 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6BB464204D;
- Wed, 25 Nov 2020 15:50:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 65F4D42054;
+ Wed, 25 Nov 2020 15:50:14 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 39F934203F;
- Wed, 25 Nov 2020 15:50:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2C7A04204B;
+ Wed, 25 Nov 2020 15:50:14 +0000 (GMT)
 Received: from lombard-p52.ibmuc.com (unknown [9.171.47.8])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 25 Nov 2020 15:50:13 +0000 (GMT)
+ Wed, 25 Nov 2020 15:50:14 +0000 (GMT)
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
  ajd@linux.ibm.com
-Subject: [PATCH V4 0/5] ocxl: Mmio invalidation support 
-Date: Wed, 25 Nov 2020 16:50:08 +0100
-Message-Id: <20201125155013.39955-1-clombard@linux.vnet.ibm.com>
+Subject: [PATCH V4 3/5] ocxl: Update the Process Element Entry
+Date: Wed, 25 Nov 2020 16:50:11 +0100
+Message-Id: <20201125155013.39955-4-clombard@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201125155013.39955-1-clombard@linux.vnet.ibm.com>
+References: <20201125155013.39955-1-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-25_09:2020-11-25,
  2020-11-25 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- lowpriorityscore=0 malwarescore=0 clxscore=1015 priorityscore=1501
- spamscore=0 adultscore=0 mlxlogscore=999 bulkscore=0 mlxscore=0
- phishscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2011250096
+ suspectscore=0 bulkscore=0
+ impostorscore=0 phishscore=0 priorityscore=1501 mlxlogscore=966
+ malwarescore=0 spamscore=0 lowpriorityscore=0 clxscore=1015 mlxscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011250096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,64 +114,137 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-OpenCAPI 4.0/5.0 with TLBI/SLBI Snooping, is not used due to performance
-problems caused by the PAU having to process all incoming TLBI/SLBI
-commands which will cause them to back up on the PowerBus.
+To complete the MMIO based mechanism, the fields: PASID, bus, device and
+function of the Process Element Entry have to be filled. (See
+OpenCAPI Power Platform Architecture document)
 
-When the Address Translation Mode requires TLB operations to be initiated
-using MMIO registers, a set of registers like the following is used:
-• XTS MMIO ATSD0 LPARID register
-• XTS MMIO ATSD0 AVA register
-• XTS MMIO ATSD0 launch register, write access initiates a shoot down
-• XTS MMIO ATSD0 status register
+                   Hypervisor Process Element Entry
+Word
+    0 1 .... 7  8  ...... 12  13 ..15  16.... 19  20 ........... 31
+0                  OSL Configuration State (0:31)
+1                  OSL Configuration State (32:63)
+2               PASID                      |    Reserved
+3       Bus   |   Device    |Function |        Reserved
+4                             Reserved
+5                             Reserved
+6                               ....
 
-The MMIO based mechanism also blocks the NPU/PAU from snooping TLBIE
-commands from the PowerBus.
-
-The Shootdown commands (ATSD) will be generated using MMIO registers
-in the NPU/PAU and sent to the device.
-
+Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
 Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-
 ---
-Changelog[v4]
- - Rebase to latest upstream.
- - Correct a typo in page size
+ drivers/misc/ocxl/context.c       | 4 +++-
+ drivers/misc/ocxl/link.c          | 4 +++-
+ drivers/misc/ocxl/ocxl_internal.h | 9 ++++++---
+ drivers/scsi/cxlflash/ocxl_hw.c   | 6 ++++--
+ include/misc/ocxl.h               | 2 +-
+ 5 files changed, 17 insertions(+), 8 deletions(-)
 
-Changelog[v3]
- - Rebase to latest upstream.
- - Add page_size argument in pnv_ocxl_tlb_invalidate()
- - Remove double pointer
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index c21f65a5c762..9eb0d93b01c6 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -70,6 +70,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
+ {
+ 	int rc;
+ 	unsigned long pidr = 0;
++	struct pci_dev *dev;
  
-Changelog[v2]
- - Rebase to latest upstream.
- - Create a set of smaller patches
- - Move the device tree parsing and ioremap() for the shootdown page in a
-   platform-specific file (powernv)
- - Release the shootdown page in release_xsl()
- - Initialize atsd_lock
- - Move the code to initiate the TLB Invalidate command in a
-   platform-specific file (powernv)
- - Use the notifier invalidate_range
----
-
-Christophe Lombard (5):
-  ocxl: Assign a register set to a Logical Partition
-  ocxl: Initiate a TLB invalidate command
-  ocxl: Update the Process Element Entry
-  ocxl: Add mmu notifier
-  ocxl: Add new kernel traces
-
- arch/powerpc/include/asm/pnv-ocxl.h   |  54 ++++++++++++
- arch/powerpc/platforms/powernv/ocxl.c | 114 ++++++++++++++++++++++++++
- drivers/misc/ocxl/context.c           |   4 +-
- drivers/misc/ocxl/link.c              |  70 +++++++++++++++-
- drivers/misc/ocxl/ocxl_internal.h     |   9 +-
- drivers/misc/ocxl/trace.h             |  64 +++++++++++++++
- drivers/scsi/cxlflash/ocxl_hw.c       |   6 +-
- include/misc/ocxl.h                   |   2 +-
- 8 files changed, 314 insertions(+), 9 deletions(-)
-
+ 	// Locks both status & tidr
+ 	mutex_lock(&ctx->status_mutex);
+@@ -81,8 +82,9 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr, struct mm_struct *mm)
+ 	if (mm)
+ 		pidr = mm->context.id;
+ 
++	dev = to_pci_dev(ctx->afu->fn->dev.parent);
+ 	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid, pidr, ctx->tidr,
+-			      amr, mm, xsl_fault_error, ctx);
++			      amr, pci_dev_id(dev), mm, xsl_fault_error, ctx);
+ 	if (rc)
+ 		goto out;
+ 
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index fd73d3bc0eb6..77381dda2c45 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -494,7 +494,7 @@ static u64 calculate_cfg_state(bool kernel)
+ }
+ 
+ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+-		u64 amr, struct mm_struct *mm,
++		u64 amr, u16 bdf, struct mm_struct *mm,
+ 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+ 		void *xsl_err_data)
+ {
+@@ -529,6 +529,8 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+ 
+ 	memset(pe, 0, sizeof(struct ocxl_process_element));
+ 	pe->config_state = cpu_to_be64(calculate_cfg_state(pidr == 0));
++	pe->pasid = cpu_to_be32(pasid << (31 - 19));
++	pe->bdf = cpu_to_be16(bdf);
+ 	pe->lpid = cpu_to_be32(mfspr(SPRN_LPID));
+ 	pe->pid = cpu_to_be32(pidr);
+ 	pe->tid = cpu_to_be32(tidr);
+diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+index 0bad0a123af6..10125a22d5a5 100644
+--- a/drivers/misc/ocxl/ocxl_internal.h
++++ b/drivers/misc/ocxl/ocxl_internal.h
+@@ -84,13 +84,16 @@ struct ocxl_context {
+ 
+ struct ocxl_process_element {
+ 	__be64 config_state;
+-	__be32 reserved1[11];
++	__be32 pasid;
++	__be16 bdf;
++	__be16 reserved1;
++	__be32 reserved2[9];
+ 	__be32 lpid;
+ 	__be32 tid;
+ 	__be32 pid;
+-	__be32 reserved2[10];
++	__be32 reserved3[10];
+ 	__be64 amr;
+-	__be32 reserved3[3];
++	__be32 reserved4[3];
+ 	__be32 software_state;
+ };
+ 
+diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
+index e4e0d767b98e..244fc27215dc 100644
+--- a/drivers/scsi/cxlflash/ocxl_hw.c
++++ b/drivers/scsi/cxlflash/ocxl_hw.c
+@@ -329,6 +329,7 @@ static int start_context(struct ocxlflash_context *ctx)
+ 	struct ocxl_hw_afu *afu = ctx->hw_afu;
+ 	struct ocxl_afu_config *acfg = &afu->acfg;
+ 	void *link_token = afu->link_token;
++	struct pci_dev *pdev = afu->pdev;
+ 	struct device *dev = afu->dev;
+ 	bool master = ctx->master;
+ 	struct mm_struct *mm;
+@@ -360,8 +361,9 @@ static int start_context(struct ocxlflash_context *ctx)
+ 		mm = current->mm;
+ 	}
+ 
+-	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0, mm,
+-			      ocxlflash_xsl_fault, ctx);
++	rc = ocxl_link_add_pe(link_token, ctx->pe, pid, 0, 0,
++			      pci_dev_id(pdev), mm, ocxlflash_xsl_fault,
++			      ctx);
+ 	if (unlikely(rc)) {
+ 		dev_err(dev, "%s: ocxl_link_add_pe failed rc=%d\n",
+ 			__func__, rc);
+diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+index e013736e275d..3ed736da02c8 100644
+--- a/include/misc/ocxl.h
++++ b/include/misc/ocxl.h
+@@ -447,7 +447,7 @@ void ocxl_link_release(struct pci_dev *dev, void *link_handle);
+  * defined
+  */
+ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+-		u64 amr, struct mm_struct *mm,
++		u64 amr, u16 bdf, struct mm_struct *mm,
+ 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+ 		void *xsl_err_data);
+ 
 -- 
 2.28.0
 
