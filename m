@@ -7,52 +7,53 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF45C56201
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:48:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCC19C56201
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:49:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C3D9206F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:48:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C3D9206F9
+	by mail.kernel.org (Postfix) with ESMTPS id 110D1206F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:49:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 110D1206F9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChCdb1grWzDr41
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 07:48:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChCgK2QldzDqjh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 07:49:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChCZv3ZdjzDr1N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 07:45:38 +1100 (AEDT)
-IronPort-SDR: eWKcZckGU/rSbeReXCgzl3IvtH+xshjJJGNgo9vRJsyMSa1TvG1T461Eo5zsRYJh+BsVmShZeD
- kKckadUOW6hQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9816"; a="172355284"
-X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="172355284"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChCbx4NMCzDr24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 07:46:37 +1100 (AEDT)
+IronPort-SDR: 9UiPLSEx5TALMswUBabAYxnpjFmeVLGCEA0ptcF8xfAktkjyRxuBcbMixSvzig/2g4yh8Lql/O
+ 4PGTJ51cRL3w==
+X-IronPort-AV: E=McAfee;i="6000,8403,9816"; a="159967192"
+X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="159967192"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Nov 2020 12:45:34 -0800
-IronPort-SDR: laVzEyH6mDNRsRG2o0itqQMlYjJoIdAoC8GU/hNoC7aRyoPnaVTavOj3WZsLDp2atE7SD89udz
- YYEeYpOcQSeQ==
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Nov 2020 12:46:34 -0800
+IronPort-SDR: j0tzttd62yXMTBskos9nYHNUzanEFTe2AunzE2J4O8UEj4r/UR9SRbOpydhja9+jHLtulCKROK
+ CqZOF2ev6hzQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="333137030"
+X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="370908056"
 Received: from lkp-server01.sh.intel.com (HELO f59a693d3a73) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 25 Nov 2020 12:45:33 -0800
+ by orsmga007.jf.intel.com with ESMTP; 25 Nov 2020 12:46:33 -0800
 Received: from kbuild by f59a693d3a73 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1ki1fQ-0000Fz-N8; Wed, 25 Nov 2020 20:45:32 +0000
-Date: Thu, 26 Nov 2020 04:45:26 +0800
+ id 1ki1gO-0000G5-TH; Wed, 25 Nov 2020 20:46:32 +0000
+Date: Thu, 26 Nov 2020 04:45:37 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 4c202167192a77481310a3cacae9f12618b92216
-Message-ID: <5fbec266.dGfCubBa1C614dyP%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 6cc5522b62bbc176e1a5666c401466a37ffc746e
+Message-ID: <5fbec271.QdOJ8BPIPHgPWZ7m%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,13 +74,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 4c202167192a77481310a3cacae9f12618b92216  Automatic merge of 'next' into merge (2020-11-25 15:11)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 6cc5522b62bbc176e1a5666c401466a37ffc746e  powerpc: inline iomap accessors
 
 elapsed time: 960m
 
-configs tested: 130
-configs skipped: 2
+configs tested: 142
+configs skipped: 3
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -94,6 +95,12 @@ powerpc                 xes_mpc85xx_defconfig
 powerpc                     ep8248e_defconfig
 powerpc                     sequoia_defconfig
 arm                        oxnas_v6_defconfig
+nds32                               defconfig
+m68k                            q40_defconfig
+powerpc                     asp8347_defconfig
+parisc                generic-32bit_defconfig
+powerpc64                        alldefconfig
+arm                          collie_defconfig
 arm                           corgi_defconfig
 powerpc               mpc834x_itxgp_defconfig
 sh                               allmodconfig
@@ -102,8 +109,8 @@ ia64                          tiger_defconfig
 sh                           se7722_defconfig
 arm                      tct_hammer_defconfig
 sh                           se7721_defconfig
-arm                         nhk8815_defconfig
 mips                      maltaaprp_defconfig
+arm                         nhk8815_defconfig
 mips                            ar7_defconfig
 sh                            titan_defconfig
 powerpc                     mpc83xx_defconfig
@@ -115,14 +122,13 @@ powerpc64                           defconfig
 sh                         apsh4a3a_defconfig
 powerpc                     mpc512x_defconfig
 s390                                defconfig
-sh                          rsk7264_defconfig
-arm                        vexpress_defconfig
-mips                          ath25_defconfig
-powerpc                 canyonlands_defconfig
-arm                            pleb_defconfig
-x86_64                           alldefconfig
-arm                        neponset_defconfig
-sh                            migor_defconfig
+nios2                               defconfig
+mips                           rs90_defconfig
+nios2                         3c120_defconfig
+arm                            qcom_defconfig
+mips                         db1xxx_defconfig
+powerpc                        fsp2_defconfig
+c6x                        evmc6472_defconfig
 sh                          rsk7203_defconfig
 arm                        mvebu_v7_defconfig
 mips                 decstation_r4k_defconfig
@@ -142,10 +148,19 @@ sparc                            alldefconfig
 arm                        magician_defconfig
 powerpc                     tqm8548_defconfig
 sh                        sh7785lcr_defconfig
+arm                        clps711x_defconfig
+powerpc                     sbc8548_defconfig
+arm                         lpc32xx_defconfig
+sh                        dreamcast_defconfig
+mips                     cu1000-neo_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                        neponset_defconfig
 powerpc                 mpc8313_rdb_defconfig
 xtensa                           alldefconfig
 arm                          lpd270_defconfig
 powerpc                     ppa8548_defconfig
+mips                           ip27_defconfig
+sh                          rsk7201_defconfig
 arm                             pxa_defconfig
 mips                      malta_kvm_defconfig
 riscv                            alldefconfig
@@ -155,11 +170,9 @@ ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                             allyesconfig
-nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
-nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
@@ -212,9 +225,9 @@ x86_64                                  kexec
 
 clang tested configs:
 x86_64               randconfig-a006-20201125
+x86_64               randconfig-a005-20201125
 x86_64               randconfig-a003-20201125
 x86_64               randconfig-a004-20201125
-x86_64               randconfig-a005-20201125
 x86_64               randconfig-a002-20201125
 x86_64               randconfig-a001-20201125
 
