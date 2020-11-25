@@ -2,109 +2,70 @@ Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 285A7C5519F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:11:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C629EC5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:16:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37F0B2063A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:11:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="hAInKD8F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37F0B2063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 675F8206D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 14:16:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 675F8206D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch2qz19kWzDqH6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:11:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch2xZ6pQgzDqnp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 01:16:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hAInKD8F; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2Qb22RzzDqvH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 00:52:54 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0APDVOjE031033; Wed, 25 Nov 2020 08:52:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=KZDp7mrPhsBOZ+mrq5RIKkNH1+g4ZoU2j0nT2YwAFB4=;
- b=hAInKD8FONcw39FbS4GTULDYNieCmSmvpccXqFLC+9xy7+WjUsQX0E6asebOPZdB99L1
- dbcnrF8sTqvbvNDuWZfDqPuzj4VTWLxX2K/PXynttNTykLRunvSKXtPBrJHjfZErYSX0
- RH4AfLO5voFjwgM7sq4Ix5Y1Sr7aLtk2+1Z7KpczHz6HP5nkccsSnSdQIjorGCHUF04o
- zi5TRPQ7DFbj36F89RL6O0O6RcJUx5WjOXH0kllu2QwMPBglXUytc0Nc9GTuvZTbVUpK
- EfZvX9r+RQMEbX1dQU5SQZLGDBqoboFVgJdZkQSyYmIjEnPb2/H7+IysutO3iOb9FDur tg== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 351nr6pame-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 08:52:41 -0500
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APDqeSL003234;
- Wed, 25 Nov 2020 13:52:40 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 34xth8cpxn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 13:52:40 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0APDqbDv6881810
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Nov 2020 13:52:38 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B314742047;
- Wed, 25 Nov 2020 13:52:37 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C365C42045;
- Wed, 25 Nov 2020 13:52:36 +0000 (GMT)
-Received: from [9.77.195.3] (unknown [9.77.195.3])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 25 Nov 2020 13:52:36 +0000 (GMT)
-Subject: Re: [PATCH v6 07/22] powerpc/book3s64/kuap: Rename MMU_FTR_RADIX_KUAP
- to MMU_FTR_KUAP
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch2SR2fxYzDqpG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 00:54:30 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Ch2SK2cHFzB09ZG;
+ Wed, 25 Nov 2020 14:54:25 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 4jm7-KhAdYFg; Wed, 25 Nov 2020 14:54:25 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Ch2SK0vvJzB09ZC;
+ Wed, 25 Nov 2020 14:54:25 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 735D98B7D9;
+ Wed, 25 Nov 2020 14:54:26 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id m6XK8pDP-eJM; Wed, 25 Nov 2020 14:54:26 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 08E518B7D3;
+ Wed, 25 Nov 2020 14:54:25 +0100 (CET)
+Subject: Re: [PATCH v6 11/22] powerpc/book3s64/pkeys: Inherit correctly on
+ fork.
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
 References: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
- <20201125051634.509286-8-aneesh.kumar@linux.ibm.com>
- <49af7fc3-c9f0-ff2c-507e-595c3be8c8f6@csgroup.eu>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <a501b386-5985-91c2-aa90-c8dc23a78422@linux.ibm.com>
-Date: Wed, 25 Nov 2020 19:22:35 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ <20201125051634.509286-12-aneesh.kumar@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <38a05d5e-5009-9a00-c1fb-5dd60bba1802@csgroup.eu>
+Date: Wed, 25 Nov 2020 14:54:23 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <49af7fc3-c9f0-ff2c-507e-595c3be8c8f6@csgroup.eu>
+In-Reply-To: <20201125051634.509286-12-aneesh.kumar@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-25_08:2020-11-25,
- 2020-11-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- suspectscore=0 phishscore=0 priorityscore=1501 adultscore=0 spamscore=0
- impostorscore=0 bulkscore=0 mlxscore=0 mlxlogscore=999 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011250080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,179 +77,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Sandipan Das <sandipan@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/25/20 7:13 PM, Christophe Leroy wrote:
+
+
+Le 25/11/2020 à 06:16, Aneesh Kumar K.V a écrit :
+> Child thread.kuap value is inherited from the parent in copy_thread_tls. We still
+> need to make sure when the child returns from a fork in the kernel we start with the kernel
+> default AMR value.
 > 
+> Reviewed-by: Sandipan Das <sandipan@linux.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>   arch/powerpc/kernel/process.c | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
 > 
-> Le 25/11/2020 à 06:16, Aneesh Kumar K.V a écrit :
->> This is in preparate to adding support for kuap with hash translation.
->> In preparation for that rename/move kuap related functions to
->> non radix names. Also move the feature bit closer to MMU_FTR_KUEP.
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index b6b8a845e454..733680de0ba4 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1768,6 +1768,17 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+>   		childregs->ppr = DEFAULT_PPR;
+>   
+>   	p->thread.tidr = 0;
+> +#endif
+> +	/*
+> +	 * Run with the current AMR value of the kernel
+> +	 */
+> +#ifdef CONFIG_PPC_KUAP
+> +	if (mmu_has_feature(MMU_FTR_KUAP))
+> +		kregs->kuap = AMR_KUAP_BLOCKED;
+> +#endif
+
+Do we need that ifdef at all ?
+
+Shouldn't mmu_has_feature(MMU_FTR_KUAP) be always false and get optimised out when CONFIG_PPC_KUAP 
+is not defined ?
+
+> +#ifdef CONFIG_PPC_KUEP
+> +	if (mmu_has_feature(MMU_FTR_KUEP))
+> +		kregs->iamr = AMR_KUEP_BLOCKED;
+
+Same ?
+
+>   #endif
+>   	kregs->nip = ppc_function_entry(f);
+>   	return 0;
 > 
-> It was obvious with MMU_FTR_RADIX_KUAP that it was only for Radix PPC64.
-> Now, do we expect it to be applies on PPC32 as well or is it still for 
-> PPC64 only ?
-
-Right now this is PPC64 only. I added
-
-+config PPC_PKEY
-+	def_bool y
-+	depends on PPC_BOOK3S_64
-+	depends on PPC_MEM_KEYS || PPC_KUAP || PPC_KUEP
-
-to select the base bits needed for both KUAP and MEM_KEYS. I haven't 
-looked at PPC32 to see if we can implement it there also.
-
-> 
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->>   arch/powerpc/include/asm/book3s/64/kup.h | 18 +++++++++---------
->>   arch/powerpc/include/asm/mmu.h           | 14 +++++++-------
->>   arch/powerpc/mm/book3s64/pkeys.c         |  2 +-
->>   3 files changed, 17 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/kup.h 
->> b/arch/powerpc/include/asm/book3s/64/kup.h
->> index 39d2e3a0d64d..1d38eab83d48 100644
->> --- a/arch/powerpc/include/asm/book3s/64/kup.h
->> +++ b/arch/powerpc/include/asm/book3s/64/kup.h
->> @@ -24,7 +24,7 @@
->>       mtspr    SPRN_AMR, \gpr2
->>       /* No isync required, see kuap_restore_amr() */
->>   998:
->> -    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
->> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
->>   #endif
->>   .endm
->> @@ -37,7 +37,7 @@
->>       sldi    \gpr2, \gpr2, AMR_KUAP_SHIFT
->>   999:    tdne    \gpr1, \gpr2
->>       EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | 
->> BUGFLAG_ONCE)
->> -    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
->> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
->>   #endif
->>   .endm
->>   #endif
->> @@ -58,7 +58,7 @@
->>       mtspr    SPRN_AMR, \gpr2
->>       isync
->>   99:
->> -    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
->> +    END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
->>   #endif
->>   .endm
->> @@ -73,7 +73,7 @@ DECLARE_STATIC_KEY_FALSE(uaccess_flush_key);
->>   static inline void kuap_restore_amr(struct pt_regs *regs, unsigned 
->> long amr)
->>   {
->> -    if (mmu_has_feature(MMU_FTR_RADIX_KUAP) && unlikely(regs->kuap != 
->> amr)) {
->> +    if (mmu_has_feature(MMU_FTR_KUAP) && unlikely(regs->kuap != amr)) {
->>           isync();
->>           mtspr(SPRN_AMR, regs->kuap);
->>           /*
->> @@ -86,7 +86,7 @@ static inline void kuap_restore_amr(struct pt_regs 
->> *regs, unsigned long amr)
->>   static inline unsigned long kuap_get_and_check_amr(void)
->>   {
->> -    if (mmu_has_feature(MMU_FTR_RADIX_KUAP)) {
->> +    if (mmu_has_feature(MMU_FTR_KUAP)) {
->>           unsigned long amr = mfspr(SPRN_AMR);
->>           if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG)) /* kuap_check_amr() */
->>               WARN_ON_ONCE(amr != AMR_KUAP_BLOCKED);
->> @@ -97,7 +97,7 @@ static inline unsigned long 
->> kuap_get_and_check_amr(void)
->>   static inline void kuap_check_amr(void)
->>   {
->> -    if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && 
->> mmu_has_feature(MMU_FTR_RADIX_KUAP))
->> +    if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && 
->> mmu_has_feature(MMU_FTR_KUAP))
->>           WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
->>   }
->> @@ -116,7 +116,7 @@ static inline unsigned long get_kuap(void)
->>        * This has no effect in terms of actually blocking things on hash,
->>        * so it doesn't break anything.
->>        */
->> -    if (!early_mmu_has_feature(MMU_FTR_RADIX_KUAP))
->> +    if (!early_mmu_has_feature(MMU_FTR_KUAP))
->>           return AMR_KUAP_BLOCKED;
->>       return mfspr(SPRN_AMR);
->> @@ -124,7 +124,7 @@ static inline unsigned long get_kuap(void)
->>   static inline void set_kuap(unsigned long value)
->>   {
->> -    if (!early_mmu_has_feature(MMU_FTR_RADIX_KUAP))
->> +    if (!early_mmu_has_feature(MMU_FTR_KUAP))
->>           return;
->>       /*
->> @@ -139,7 +139,7 @@ static inline void set_kuap(unsigned long value)
->>   static inline bool
->>   bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool 
->> is_write)
->>   {
->> -    return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
->> +    return WARN(mmu_has_feature(MMU_FTR_KUAP) &&
->>               (regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : 
->> AMR_KUAP_BLOCK_READ)),
->>               "Bug: %s fault blocked by AMR!", is_write ? "Write" : 
->> "Read");
->>   }
->> diff --git a/arch/powerpc/include/asm/mmu.h 
->> b/arch/powerpc/include/asm/mmu.h
->> index 255a1837e9f7..f5c7a17c198a 100644
->> --- a/arch/powerpc/include/asm/mmu.h
->> +++ b/arch/powerpc/include/asm/mmu.h
->> @@ -28,6 +28,11 @@
->>    * Individual features below.
->>    */
->> +/*
->> + * Supports KUAP (key 0 controlling userspace addresses) on radix
->> + */
->> +#define MMU_FTR_KUAP            ASM_CONST(0x00000200)
->> +
->>   /*
->>    * Support for KUEP feature.
->>    */
->> @@ -120,11 +125,6 @@
->>    */
->>   #define MMU_FTR_1T_SEGMENT        ASM_CONST(0x40000000)
->> -/*
->> - * Supports KUAP (key 0 controlling userspace addresses) on radix
->> - */
->> -#define MMU_FTR_RADIX_KUAP        ASM_CONST(0x80000000)
->> -
->>   /* MMU feature bit sets for various CPUs */
->>   #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2    \
->>       MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
->> @@ -187,10 +187,10 @@ enum {
->>   #ifdef CONFIG_PPC_RADIX_MMU
->>           MMU_FTR_TYPE_RADIX |
->>           MMU_FTR_GTSE |
->> +#endif /* CONFIG_PPC_RADIX_MMU */
->>   #ifdef CONFIG_PPC_KUAP
->> -        MMU_FTR_RADIX_KUAP |
->> +    MMU_FTR_KUAP |
->>   #endif /* CONFIG_PPC_KUAP */
->> -#endif /* CONFIG_PPC_RADIX_MMU */
->>   #ifdef CONFIG_PPC_MEM_KEYS
->>       MMU_FTR_PKEY |
->>   #endif
->> diff --git a/arch/powerpc/mm/book3s64/pkeys.c 
->> b/arch/powerpc/mm/book3s64/pkeys.c
->> index 82c722fbce52..bfc27f1f0ab0 100644
->> --- a/arch/powerpc/mm/book3s64/pkeys.c
->> +++ b/arch/powerpc/mm/book3s64/pkeys.c
->> @@ -258,7 +258,7 @@ void __init setup_kuap(bool disabled)
->>       if (smp_processor_id() == boot_cpuid) {
->>           pr_info("Activating Kernel Userspace Access Prevention\n");
->> -        cur_cpu_spec->mmu_features |= MMU_FTR_RADIX_KUAP;
->> +        cur_cpu_spec->mmu_features |= MMU_FTR_KUAP;
->>       }
->>       /*
->>
-
