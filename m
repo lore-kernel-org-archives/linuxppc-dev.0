@@ -2,87 +2,90 @@ Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3440FC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 05:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10360C63777
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 05:24:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 59A672075A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 05:23:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 469312075A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 05:24:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="IkzyhuK4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59A672075A
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="TC7eeqTz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 469312075A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cgq696h0qzDqch
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:22:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cgq7s4XLRzDqfN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:24:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=IkzyhuK4; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=TC7eeqTz; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgpzL3tq3zDqNN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 16:16:56 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgpzM55BfzDqNN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 16:17:03 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AP52UIN069106; Wed, 25 Nov 2020 00:16:51 -0500
+ 0AP52n9I075645; Wed, 25 Nov 2020 00:16:58 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=uiwHqls2aJtiF0KKstjwvxMh1KUjfqdLcncIxjNWuyI=;
- b=IkzyhuK4Qzbdepx8RuQcTFfmQ7BmXiuQrB/tpQRW6LghtpKhfxGFwmsnbXTCeWZgDYsQ
- oegr6OwXnAhvMRYe4osGVPNectedzD7ICDSuGZ045Uu+a4cvjrTDNfqlDdOsWIB8r0aE
- 0YKlzU/Yrzpz/576HxcrckIi77ebaVltmCQNsaWDIHReK12aSwYN+1xcUx/FuNpqx/Rk
- nDZTYIUXZPzktvcgpJnLFtEIE4IfwWEP//P5va2Cy1l8JFIHYE75G/ajMTmNpI/4Hn6D
- +FSoMINrjtrIBdBoXw47leAE7258b+2lLOeEFlzP9nbUYZa6pQmzcATPmWI2lKMmWvxm 5A== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 351dgsvtaj-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=JNOkGLwP4dvye6CV2O4BIM0HSdy7TlfjSKkhd0xe1qs=;
+ b=TC7eeqTzHmLOJm3/pt/hInqhvmXzQ0NJsDRwhuNxgrwcXcPLYTcM5+x8LF7ZwQQ/1HZT
+ JnNND+0RGhwWcgRH2oyK6B6AC41bOwolcBAwv8MT8XjMo5rP5ohWW5SFn1Bpe+Dagflf
+ EYMjVn4RW8EBcSynVrbLWwarUqMjAWB8Qf4BLjlZ5y7ihdtQtMs/+tgznnXrlEgO3FEq
+ arAuM7ZYbcZYTGvu/Zw6HdpTAzGFbQEmAfM3EUdAW9T07AB8m4qIO/1T4EZrMYgslouW
+ crNfEJVPqMfTkNqYXeC1UlDk0kWjTUsV2JRliT3aPdHAhKH4B78Anr39cSy1x8a624lE 9A== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 350vbvxw8x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 00:16:51 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AP5DVHI012449;
- Wed, 25 Nov 2020 05:16:50 GMT
+ Wed, 25 Nov 2020 00:16:58 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AP5ClbW018130;
+ Wed, 25 Nov 2020 05:16:58 GMT
 Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma05wdc.us.ibm.com with ESMTP id 34xth94uj3-1
+ [9.57.198.23]) by ppma04wdc.us.ibm.com with ESMTP id 34xth94vfm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 05:16:50 +0000
+ Wed, 25 Nov 2020 05:16:58 +0000
 Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
  [9.57.199.107])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AP5GoYT58720644
+ 0AP5Gv7O26935758
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Nov 2020 05:16:50 GMT
+ Wed, 25 Nov 2020 05:16:57 GMT
 Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E9543124052;
- Wed, 25 Nov 2020 05:16:49 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CD036124054;
+ Wed, 25 Nov 2020 05:16:57 +0000 (GMT)
 Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F2945124054;
- Wed, 25 Nov 2020 05:16:47 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A7F9B124053;
+ Wed, 25 Nov 2020 05:16:55 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.77.195.3])
  by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 25 Nov 2020 05:16:47 +0000 (GMT)
+ Wed, 25 Nov 2020 05:16:55 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v6 00/22] Kernel userspace access/execution prevention with
- hash translation
-Date: Wed, 25 Nov 2020 10:46:12 +0530
-Message-Id: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v6 03/22] powerpc/book3s64/kuap/kuep: Make KUAP and KUEP a
+ subfeature of PPC_MEM_KEYS
+Date: Wed, 25 Nov 2020 10:46:15 +0530
+Message-Id: <20201125051634.509286-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
+References: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -90,10 +93,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-24_07:2020-11-24,
  2020-11-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0
- clxscore=1011 suspectscore=0 mlxscore=0 spamscore=0 impostorscore=0
- bulkscore=0 priorityscore=1501 mlxlogscore=999 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ phishscore=0 spamscore=0
+ mlxscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
+ adultscore=0 mlxlogscore=999 clxscore=1015 impostorscore=0 suspectscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2011240121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -111,116 +114,194 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series implements KUAP and KUEP with hash translation mode using
-memory keys. The kernel now uses memory protection key 3 to control access
-to the kernel. Kernel page table entries are now configured with key 3.
-Access to locations configured with any other key value is denied when in
-kernel mode (MSR_PR=0). This includes userspace which is by default configured
-with key 0.
+The next set of patches adds support for kuap with hash translation.
+Hence make KUAP a BOOK3S_64 feature. Also make it a subfeature of
+PPC_MEM_KEYS. Hash translation is going to use pkeys to support
+KUAP/KUEP. Adding this dependency reduces the code complexity and
+enables us to move some of the initialization code to pkeys.c
 
-null-syscall benchmark results:
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ .../powerpc/include/asm/book3s/64/kup-radix.h |  4 ++--
+ arch/powerpc/include/asm/book3s/64/mmu.h      |  2 +-
+ arch/powerpc/include/asm/ptrace.h             |  7 +++++-
+ arch/powerpc/kernel/asm-offsets.c             |  3 +++
+ arch/powerpc/mm/book3s64/Makefile             |  2 +-
+ arch/powerpc/mm/book3s64/pkeys.c              | 24 ++++++++++++-------
+ arch/powerpc/platforms/Kconfig.cputype        |  5 ++++
+ 7 files changed, 33 insertions(+), 14 deletions(-)
 
-With smap/smep disabled:
-Without patch:
-	845.29 ns    2451.44 cycles
-With patch series:
-	858.38 ns    2489.30 cycles
-
-With smap/smep enabled:
-Without patch:
-	NA
-With patch series:
-	1021.51 ns    2962.44 cycles
-
-Changes from v5:
-* Rework the patch based on suggestion from Michael to avoid the
-  usage of CONFIG_PPC_PKEY on BOOKE platforms. 
-
-Changes from v4:
-* Repost with other pkey related changes split out as a separate series.
-* Improve null-syscall benchmark by optimizing SPRN save and restore.
-
-Changes from v3:
-* Fix build error reported by kernel test robot <lkp@intel.com>
-
-Changes from v2:
-* Rebase to the latest kernel.
-* Fixed a bug with disabling KUEP/KUAP on kernel command line
-* Added a patch to make kup key dynamic.
-
-Changes from V1:
-* Rebased on latest kernel
-
-Aneesh Kumar K.V (22):
-  powerpc: Add new macro to handle NESTED_IFCLR
-  KVM: PPC: BOOK3S: PR: Ignore UAMOR SPR
-  powerpc/book3s64/kuap/kuep: Make KUAP and KUEP a subfeature of
-    PPC_MEM_KEYS
-  powerpc/book3s64/kuap/kuep: Move uamor setup to pkey init
-  powerpc/book3s64/kuap: Move KUAP related function outside radix
-  powerpc/book3s64/kuep: Move KUEP related function outside radix
-  powerpc/book3s64/kuap: Rename MMU_FTR_RADIX_KUAP to MMU_FTR_KUAP
-  powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash
-    translation
-  powerpc/exec: Set thread.regs early during exec
-  powerpc/book3s64/pkeys: Store/restore userspace AMR/IAMR correctly on
-    entry and exit from kernel
-  powerpc/book3s64/pkeys: Inherit correctly on fork.
-  powerpc/book3s64/pkeys: Reset userspace AMR correctly on exec
-  powerpc/ptrace-view: Use pt_regs values instead of thread_struct based
-    one.
-  powerpc/book3s64/pkeys: Don't update SPRN_AMR when in kernel mode.
-  powerpc/book3s64/kuap: Restrict access to userspace based on userspace
-    AMR
-  powerpc/book3s64/kuap: Improve error reporting with KUAP
-  powerpc/book3s64/kuap: Use Key 3 to implement KUAP with hash
-    translation.
-  powerpc/book3s64/kuep: Use Key 3 to implement KUEP with hash
-    translation.
-  powerpc/book3s64/hash/kuap: Enable kuap on hash
-  powerpc/book3s64/hash/kuep: Enable KUEP on hash
-  powerpc/book3s64/hash/kup: Don't hardcode kup key
-  powerpc/book3s64/pkeys: Optimize FTR_KUAP and FTR_KUEP disabled case
-
- arch/powerpc/include/asm/book3s/32/kup.h      |   4 +-
- .../powerpc/include/asm/book3s/64/hash-pkey.h |  10 +-
- arch/powerpc/include/asm/book3s/64/hash.h     |   2 +-
- .../powerpc/include/asm/book3s/64/kup-radix.h | 203 --------
- arch/powerpc/include/asm/book3s/64/kup.h      | 440 ++++++++++++++++++
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
- arch/powerpc/include/asm/book3s/64/mmu.h      |   2 +-
- arch/powerpc/include/asm/book3s/64/pkeys.h    |   3 +
- arch/powerpc/include/asm/feature-fixups.h     |   3 +
- arch/powerpc/include/asm/kup.h                |   8 +-
- arch/powerpc/include/asm/mmu.h                |  14 +-
- arch/powerpc/include/asm/mmu_context.h        |   2 +-
- arch/powerpc/include/asm/nohash/32/kup-8xx.h  |   4 +-
- arch/powerpc/include/asm/processor.h          |   4 -
- arch/powerpc/include/asm/ptrace.h             |  12 +-
- arch/powerpc/include/asm/thread_info.h        |   2 -
- arch/powerpc/kernel/asm-offsets.c             |   5 +
- arch/powerpc/kernel/entry_64.S                |   6 +-
- arch/powerpc/kernel/exceptions-64s.S          |   4 +-
- arch/powerpc/kernel/process.c                 |  58 ++-
- arch/powerpc/kernel/ptrace/ptrace-view.c      |   7 +-
- arch/powerpc/kernel/syscall_64.c              |  38 +-
- arch/powerpc/kernel/traps.c                   |   6 -
- arch/powerpc/kvm/book3s_emulate.c             |   6 +
- arch/powerpc/mm/book3s64/Makefile             |   2 +-
- arch/powerpc/mm/book3s64/hash_4k.c            |   2 +-
- arch/powerpc/mm/book3s64/hash_64k.c           |   4 +-
- arch/powerpc/mm/book3s64/hash_hugepage.c      |   2 +-
- arch/powerpc/mm/book3s64/hash_hugetlbpage.c   |   2 +-
- arch/powerpc/mm/book3s64/hash_pgtable.c       |   2 +-
- arch/powerpc/mm/book3s64/hash_utils.c         |  10 +-
- arch/powerpc/mm/book3s64/pkeys.c              | 177 ++++---
- arch/powerpc/mm/book3s64/radix_pgtable.c      |  47 +-
- arch/powerpc/mm/fault.c                       |   2 +-
- arch/powerpc/platforms/Kconfig.cputype        |   5 +
- 35 files changed, 715 insertions(+), 384 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/book3s/64/kup-radix.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/kup.h
-
+diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+index 28716e2f13e3..68eaa2fac3ab 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+@@ -16,7 +16,7 @@
+ #ifdef CONFIG_PPC_KUAP
+ 	BEGIN_MMU_FTR_SECTION_NESTED(67)
+ 	mfspr	\gpr1, SPRN_AMR
+-	ld	\gpr2, STACK_REGS_KUAP(r1)
++	ld	\gpr2, STACK_REGS_AMR(r1)
+ 	cmpd	\gpr1, \gpr2
+ 	beq	998f
+ 	isync
+@@ -48,7 +48,7 @@
+ 	bne	\msr_pr_cr, 99f
+ 	.endif
+ 	mfspr	\gpr1, SPRN_AMR
+-	std	\gpr1, STACK_REGS_KUAP(r1)
++	std	\gpr1, STACK_REGS_AMR(r1)
+ 	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
+ 	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
+ 	cmpd	\use_cr, \gpr1, \gpr2
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index e0b52940e43c..a2a015066bae 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -199,7 +199,7 @@ extern int mmu_io_psize;
+ void mmu_early_init_devtree(void);
+ void hash__early_init_devtree(void);
+ void radix__early_init_devtree(void);
+-#ifdef CONFIG_PPC_MEM_KEYS
++#ifdef CONFIG_PPC_PKEY
+ void pkey_early_init_devtree(void);
+ #else
+ static inline void pkey_early_init_devtree(void) {}
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index e2c778c176a3..e7f1caa007a4 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -53,9 +53,14 @@ struct pt_regs
+ #ifdef CONFIG_PPC64
+ 			unsigned long ppr;
+ #endif
++			union {
+ #ifdef CONFIG_PPC_KUAP
+-			unsigned long kuap;
++				unsigned long kuap;
+ #endif
++#ifdef CONFIG_PPC_PKEY
++				unsigned long amr;
++#endif
++			};
+ 		};
+ 		unsigned long __pad[2];	/* Maintain 16 byte interrupt stack alignment */
+ 	};
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c2722ff36e98..418a0b314a33 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -354,6 +354,9 @@ int main(void)
+ 	STACK_PT_REGS_OFFSET(_PPR, ppr);
+ #endif /* CONFIG_PPC64 */
+ 
++#ifdef CONFIG_PPC_PKEY
++	STACK_PT_REGS_OFFSET(STACK_REGS_AMR, amr);
++#endif
+ #ifdef CONFIG_PPC_KUAP
+ 	STACK_PT_REGS_OFFSET(STACK_REGS_KUAP, kuap);
+ #endif
+diff --git a/arch/powerpc/mm/book3s64/Makefile b/arch/powerpc/mm/book3s64/Makefile
+index fd393b8be14f..1b56d3af47d4 100644
+--- a/arch/powerpc/mm/book3s64/Makefile
++++ b/arch/powerpc/mm/book3s64/Makefile
+@@ -17,7 +17,7 @@ endif
+ obj-$(CONFIG_TRANSPARENT_HUGEPAGE) += hash_hugepage.o
+ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage_prot.o
+ obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= iommu_api.o
+-obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
++obj-$(CONFIG_PPC_PKEY)	+= pkeys.o
+ 
+ # Instrumenting the SLB fault path can lead to duplicate SLB entries
+ KCOV_INSTRUMENT_slb.o := n
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index b1d091a97611..7dc71f85683d 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -89,12 +89,14 @@ static int scan_pkey_feature(void)
+ 		}
+ 	}
+ 
++#ifdef CONFIG_PPC_MEM_KEYS
+ 	/*
+ 	 * Adjust the upper limit, based on the number of bits supported by
+ 	 * arch-neutral code.
+ 	 */
+ 	pkeys_total = min_t(int, pkeys_total,
+ 			    ((ARCH_VM_PKEY_FLAGS >> VM_PKEY_SHIFT) + 1));
++#endif
+ 	return pkeys_total;
+ }
+ 
+@@ -102,6 +104,7 @@ void __init pkey_early_init_devtree(void)
+ {
+ 	int pkeys_total, i;
+ 
++#ifdef CONFIG_PPC_MEM_KEYS
+ 	/*
+ 	 * We define PKEY_DISABLE_EXECUTE in addition to the arch-neutral
+ 	 * generic defines for PKEY_DISABLE_ACCESS and PKEY_DISABLE_WRITE.
+@@ -117,7 +120,7 @@ void __init pkey_early_init_devtree(void)
+ 	BUILD_BUG_ON(__builtin_clzl(ARCH_VM_PKEY_FLAGS >> VM_PKEY_SHIFT) +
+ 		     __builtin_popcountl(ARCH_VM_PKEY_FLAGS >> VM_PKEY_SHIFT)
+ 				!= (sizeof(u64) * BITS_PER_BYTE));
+-
++#endif
+ 	/*
+ 	 * Only P7 and above supports SPRN_AMR update with MSR[PR] = 1
+ 	 */
+@@ -223,14 +226,6 @@ void __init pkey_early_init_devtree(void)
+ 	return;
+ }
+ 
+-void pkey_mm_init(struct mm_struct *mm)
+-{
+-	if (!mmu_has_feature(MMU_FTR_PKEY))
+-		return;
+-	mm_pkey_allocation_map(mm) = initial_allocation_mask;
+-	mm->context.execute_only_pkey = execute_only_key;
+-}
+-
+ static inline u64 read_amr(void)
+ {
+ 	return mfspr(SPRN_AMR);
+@@ -257,6 +252,15 @@ static inline void write_iamr(u64 value)
+ 	mtspr(SPRN_IAMR, value);
+ }
+ 
++#ifdef CONFIG_PPC_MEM_KEYS
++void pkey_mm_init(struct mm_struct *mm)
++{
++	if (!mmu_has_feature(MMU_FTR_PKEY))
++		return;
++	mm_pkey_allocation_map(mm) = initial_allocation_mask;
++	mm->context.execute_only_pkey = execute_only_key;
++}
++
+ static inline void init_amr(int pkey, u8 init_bits)
+ {
+ 	u64 new_amr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
+@@ -445,3 +449,5 @@ void arch_dup_pkeys(struct mm_struct *oldmm, struct mm_struct *mm)
+ 	mm_pkey_allocation_map(mm) = mm_pkey_allocation_map(oldmm);
+ 	mm->context.execute_only_pkey = oldmm->context.execute_only_pkey;
+ }
++
++#endif /* CONFIG_PPC_MEM_KEYS */
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index c194c4ae8bc7..f255e8f32155 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -395,6 +395,11 @@ config PPC_KUAP_DEBUG
+ 	  Add extra debugging for Kernel Userspace Access Protection (KUAP)
+ 	  If you're unsure, say N.
+ 
++config PPC_PKEY
++	def_bool y
++	depends on PPC_BOOK3S_64
++	depends on PPC_MEM_KEYS || PPC_KUAP || PPC_KUEP
++
+ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+ 	def_bool y
+ 	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
 -- 
 2.28.0
 
