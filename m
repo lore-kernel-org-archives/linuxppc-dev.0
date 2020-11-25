@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B20C56201
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 07:13:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9DE6C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 07:15:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F039420857
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 07:13:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F039420857
+	by mail.kernel.org (Postfix) with ESMTPS id CAA2020B1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 07:15:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAA2020B1F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CgsYC263pzDqgs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 18:13:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cgsc24jNyzDqgb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 18:15:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,37 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CgsVj44rCzDqg3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 18:10:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CgsVj3zvCzDqfy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 18:10:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CgsVY5L4Kz9tyTR;
- Wed, 25 Nov 2020 08:10:45 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CgsVd1b6Fz9typm;
+ Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 2D5r1qhoXvQi; Wed, 25 Nov 2020 08:10:45 +0100 (CET)
+ with ESMTP id 7vg6gIYlPopL; Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CgsVY4SmQz9tyTJ;
- Wed, 25 Nov 2020 08:10:45 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CgsVd0V1jz9tynD;
+ Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 82EB18B7C2;
- Wed, 25 Nov 2020 08:10:46 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D931F8B7B7;
+ Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Mxo7yPnDQRmT; Wed, 25 Nov 2020 08:10:46 +0100 (CET)
+ with ESMTP id I5zEMI5S4Eu7; Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 374D08B7B7;
- Wed, 25 Nov 2020 08:10:46 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3DA358B7C2;
+ Wed, 25 Nov 2020 08:10:49 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 0AAD1668BA; Wed, 25 Nov 2020 07:10:46 +0000 (UTC)
-Message-Id: <da51f7ec632825a4ce43290a904aad61648408c0.1606285013.git.christophe.leroy@csgroup.eu>
+ id 1CCD0668BA; Wed, 25 Nov 2020 07:10:49 +0000 (UTC)
+Message-Id: <4adca19b7120cdf619956768ed09e74fc6a558f3.1606285014.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <da51f7ec632825a4ce43290a904aad61648408c0.1606285013.git.christophe.leroy@csgroup.eu>
+References: <da51f7ec632825a4ce43290a904aad61648408c0.1606285013.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 1/8] powerpc/32s: Always map kernel text and rodata with
- BATs
+Subject: [PATCH v1 4/8] powerpc/32s: Don't use SPRN_SPRG_PGDIR in hash_page
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 25 Nov 2020 07:10:46 +0000 (UTC)
+Date: Wed, 25 Nov 2020 07:10:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,61 +76,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit 2b279c0348af ("powerpc/32s: Allow mapping with BATs with
-DEBUG_PAGEALLOC"), there is no real situation where mapping without
-BATs is required.
+SPRN_SPRG_PGDIR is there mainly to speedup SW TLB miss handlers
+for powerpc 603.
 
-In order to simplify memory handling, always map kernel text
-and rodata with BATs even when "nobats" kernel parameter is set.
+We need to free SPRN_SPRG2 to reduce the mess with CONFIG_VMAP_STACK.
 
-Also fix the 603 TLB miss exceptions that don't require anymore
-kernel page table if DEBUG_PAGEALLOC.
+In hash_page(), reading PGDIR from thread_struct will be in the noise
+performance wise.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_book3s_32.S | 4 ++--
- arch/powerpc/mm/book3s32/mmu.c       | 8 +++-----
- 2 files changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/mm/book3s32/hash_low.S | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index a0dda2a1f2df..27767f3e7ec1 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -453,13 +453,13 @@ InstructionTLBMiss:
-  */
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index 48415c857d80..aca353d1c5f4 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -65,13 +65,14 @@ _GLOBAL(hash_page)
  	/* Get PTE (linux-style) and check access */
- 	mfspr	r3,SPRN_IMISS
--#if defined(CONFIG_MODULES) || defined(CONFIG_DEBUG_PAGEALLOC)
-+#ifdef CONFIG_MODULES
- 	lis	r1, TASK_SIZE@h		/* check if kernel address */
- 	cmplw	0,r1,r3
- #endif
- 	mfspr	r2, SPRN_SPRG_PGDIR
- 	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
--#if defined(CONFIG_MODULES) || defined(CONFIG_DEBUG_PAGEALLOC)
-+#ifdef CONFIG_MODULES
- 	bgt-	112f
- 	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
- 	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index a59e7ec98180..5c60dcade90a 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -157,11 +157,9 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- 	unsigned long done;
- 	unsigned long border = (unsigned long)__init_begin - PAGE_OFFSET;
- 
--	if (__map_without_bats) {
--		pr_debug("RAM mapped without BATs\n");
--		return base;
--	}
--	if (debug_pagealloc_enabled()) {
-+
-+	if (debug_pagealloc_enabled() || __map_without_bats) {
-+		pr_debug_once("Read-Write memory mapped without BATs\n");
- 		if (base >= border)
- 			return base;
- 		if (top >= border)
+ 	lis	r0, TASK_SIZE@h		/* check if kernel address */
+ 	cmplw	0,r4,r0
++	mfspr	r8,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
+ 	ori	r3,r3,_PAGE_USER|_PAGE_PRESENT /* test low addresses as user */
+-	mfspr	r5, SPRN_SPRG_PGDIR	/* phys page-table root */
++	lwz	r5,PGDIR(r8)		/* virt page-table root */
+ 	blt+	112f			/* assume user more likely */
+-	lis	r5, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
+-	addi	r5 ,r5 ,(swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
++	lis	r5,swapper_pg_dir@ha	/* if kernel address, use */
++	addi	r5,r5,swapper_pg_dir@l	/* kernel page table */
+ 	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
+-112:
++112:	tophys(r5, r5)
+ #ifndef CONFIG_PTE_64BIT
+ 	rlwimi	r5,r4,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r8,0(r5)		/* get pmd entry */
 -- 
 2.25.0
 
