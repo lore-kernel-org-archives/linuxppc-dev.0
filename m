@@ -2,86 +2,68 @@ Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F3A7C56202
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:08:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60F6AC56202
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:23:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9ABA206F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:08:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linux-powerpc-org.20150623.gappssmtp.com header.i=@linux-powerpc-org.20150623.gappssmtp.com header.b="hMOkWMlq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9ABA206F7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-powerpc.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0B4112067C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 16:23:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B4112067C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch5QQ1J8zzDqfF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 03:07:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux-powerpc.org (client-ip=2a00:1450:4864:20::541;
- helo=mail-ed1-x541.google.com; envelope-from=kda@linux-powerpc.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-powerpc.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linux-powerpc-org.20150623.gappssmtp.com
- header.i=@linux-powerpc-org.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=hMOkWMlq; dkim-atps=neutral
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
- [IPv6:2a00:1450:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ch5ml5gtNzDr4q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 03:23:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=188.165.45.220; helo=5.mo52.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 4204 seconds by postgrey-1.36 at bilbo;
+ Thu, 26 Nov 2020 03:22:09 AEDT
+Received: from 5.mo52.mail-out.ovh.net (5.mo52.mail-out.ovh.net
+ [188.165.45.220])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch5NG4sXZzDq9b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 03:06:01 +1100 (AEDT)
-Received: by mail-ed1-x541.google.com with SMTP id t9so3090276edq.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2020 08:06:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-powerpc-org.20150623.gappssmtp.com; s=20150623;
- h=mime-version:in-reply-to:references:from:date:message-id:subject:to
- :cc; bh=sFDVHTtkdm3pyH75COND6ic4pQck9okc86/RtBFvaVI=;
- b=hMOkWMlqnjT5T3KheRXSvbIdWc0NiEKFzBE+kepT432F8AjcasejaLcbsYL3gRcK6J
- ktpTpW0CXLElE2ZL7r4kx+Sf/JXLCyemIYnO5j9/Gtw70XK0s4XXnBiaQW1OpYZgcm0q
- dGisF1IsRKDGTQLvcv56O+lvXfQSSNi1VCt5gnxq2iutLJThlpEoZzYNE2JMcFjo9gJ1
- qon852mKOuNW3HCJUF3xnnG6FWaC8o5Tn4RA6g/rPsz7N8e/gK1ml4P2l5sPsFQaq5Rt
- a9Tkd8knovVbgYgj9lrrk9Cc7sHyCadeUeHiOh3wMvr2n8O1sX2mb1g3YhHY5xXTyHGc
- RdQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:in-reply-to:references:from:date
- :message-id:subject:to:cc;
- bh=sFDVHTtkdm3pyH75COND6ic4pQck9okc86/RtBFvaVI=;
- b=O/i0xiLvkBEImme69BDImnToYfiq49gPfZ8v3sghAhoJjAOTYQ+e+/Q+s2yuW7Th1h
- Imp0TPEb3WfTbovt7lUu6JtqbXB7VMsFxOomdkkLts24fgkhry+eTce3wPrI1Hx1yziv
- ZBuiSSssl9DYDuAxRh6eTsR8owATkUEdumBAExWw1fTiLvWeIrzvPCcpjIXBb+VdwMeG
- jJ3zeC01Bw7ONHCpQoPgAWP36a7wSORRK9drPnF94D1eBcSdPQ1hnwvQknrJT2xMl/IM
- xTGRSegZrOteqAWb1zCLWZXEYkyvl+OcIclyxcbObSXbTXPSuhWp3QiNiU6wHRTw2c9D
- arSw==
-X-Gm-Message-State: AOAM530v9zN4FW1Y++Z10OHY6pQXFAAuwxpjhWc5Vb6M1fwTJa3D3UzK
- 5FkIdQW6UviR84kX7C82mYwuIdTrvRNtmFWbqN4SnA==
-X-Google-Smtp-Source: ABdhPJy6ob6fmz+u3HhkWotLkhYtQfkABfyx5NZ0czbNVWC4DVmL/HNnVx5U7U6w0UNe2yt5Khw04Spvyi6e7OSzN8E=
-X-Received: by 2002:a05:6402:22e3:: with SMTP id
- dn3mr4377399edb.136.1606320357550; 
- Wed, 25 Nov 2020 08:05:57 -0800 (PST)
-MIME-Version: 1.0
-Received: by 2002:a54:3cc7:0:0:0:0:0 with HTTP; Wed, 25 Nov 2020 08:05:56
- -0800 (PST)
-X-Originating-IP: [5.35.99.104]
-In-Reply-To: <20201125150932.1150619-3-lvivier@redhat.com>
-References: <20201125150932.1150619-1-lvivier@redhat.com>
- <20201125150932.1150619-3-lvivier@redhat.com>
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Wed, 25 Nov 2020 19:05:56 +0300
-Message-ID: <CAOJe8K1Q7sGf67bdj-2Mthkj4XNR4fOSskV1dyh62AdzefhpAQ@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] powerpc/pseries: pass MSI affinity to
- irq_create_mapping()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ch5kn5KPrzDqyX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 03:22:02 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.16.164])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 35B1B21BD52;
+ Wed, 25 Nov 2020 13:45:40 +0100 (CET)
+Received: from kaod.org (37.59.142.100) by DAG8EX1.mxp5.local (172.16.2.71)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Wed, 25 Nov
+ 2020 13:45:39 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-100R003764d7788-e883-4b91-8c12-09b64416a181,
+ 13817E1CA0648EB9EE095497159C33290D197662) smtp.auth=groug@kaod.org
+Date: Wed, 25 Nov 2020 13:45:38 +0100
+From: Greg Kurz <groug@kaod.org>
 To: Laurent Vivier <lvivier@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v2 1/2] genirq: add an irq_create_mapping_affinity()
+ function
+Message-ID: <20201125134538.71895275@bahia.lan>
+In-Reply-To: <20201125111657.1141295-2-lvivier@redhat.com>
+References: <20201125111657.1141295-1-lvivier@redhat.com>
+ <20201125111657.1141295-2-lvivier@redhat.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [37.59.142.100]
+X-ClientProxiedBy: DAG5EX2.mxp5.local (172.16.2.42) To DAG8EX1.mxp5.local
+ (172.16.2.71)
+X-Ovh-Tracer-GUID: d00713c1-4f18-4b54-a786-baae8bb63fee
+X-Ovh-Tracer-Id: 5905345013404899832
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudehtddggeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvffukfgjfhfogggtgfhisehtjeeftdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeetgffffffggfekgeffteekhffhueelffdvhedvgfdthfeiudetvddulefgveevteenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddttdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdrrghu
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,65 +75,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marc Zyngier <maz@kernel.org>, "Michael S . Tsirkin" <mst@redhat.com>,
- linux-pci@vger.kernel.org, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: "Michael S . Tsirkin" <mst@redhat.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, Paul
+ Mackerras <paulus@samba.org>, Marc Zyngier <maz@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/25/20, Laurent Vivier <lvivier@redhat.com> wrote:
-> With virtio multiqueue, normally each queue IRQ is mapped to a CPU.
->
-> But since commit 0d9f0a52c8b9f ("virtio_scsi: use virtio IRQ affinity")
-> this is broken on pseries.
+On Wed, 25 Nov 2020 12:16:56 +0100
+Laurent Vivier <lvivier@redhat.com> wrote:
 
-Please add "Fixes" tag.
-
-Thanks!
-
->
-> The affinity is correctly computed in msi_desc but this is not applied
-> to the system IRQs.
->
-> It appears the affinity is correctly passed to rtas_setup_msi_irqs() but
-> lost at this point and never passed to irq_domain_alloc_descs()
-> (see commit 06ee6d571f0e ("genirq: Add affinity hint to irq allocation"))
-> because irq_create_mapping() doesn't take an affinity parameter.
->
-> As the previous patch has added the affinity parameter to
-> irq_create_mapping() we can forward the affinity from rtas_setup_msi_irqs()
-> to irq_domain_alloc_descs().
->
-> With this change, the virtqueues are correctly dispatched between the CPUs
-> on pseries.
->
-> BugId: https://bugzilla.redhat.com/show_bug.cgi?id=1702939
+> This function adds an affinity parameter to irq_create_mapping().
+> This parameter is needed to pass it to irq_domain_alloc_descs().
+> 
+> irq_create_mapping() is a wrapper around irq_create_mapping_affinity()
+> to pass NULL for the affinity parameter.
+> 
+> No functional change.
+> 
 > Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
 > ---
->  arch/powerpc/platforms/pseries/msi.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/msi.c
-> b/arch/powerpc/platforms/pseries/msi.c
-> index 133f6adcb39c..b3ac2455faad 100644
-> --- a/arch/powerpc/platforms/pseries/msi.c
-> +++ b/arch/powerpc/platforms/pseries/msi.c
-> @@ -458,7 +458,8 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int
-> nvec_in, int type)
->  			return hwirq;
->  		}
->
-> -		virq = irq_create_mapping(NULL, hwirq);
-> +		virq = irq_create_mapping_affinity(NULL, hwirq,
-> +						   entry->affinity);
->
->  		if (!virq) {
->  			pr_debug("rtas_msi: Failed mapping hwirq %d\n", hwirq);
-> --
-> 2.28.0
->
->
+
+Reviewed-by: Greg Kurz <groug@kaod.org>
+
+>  include/linux/irqdomain.h | 12 ++++++++++--
+>  kernel/irq/irqdomain.c    | 13 ++++++++-----
+>  2 files changed, 18 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+> index 71535e87109f..ea5a337e0f8b 100644
+> --- a/include/linux/irqdomain.h
+> +++ b/include/linux/irqdomain.h
+> @@ -384,11 +384,19 @@ extern void irq_domain_associate_many(struct irq_domain *domain,
+>  extern void irq_domain_disassociate(struct irq_domain *domain,
+>  				    unsigned int irq);
+>  
+> -extern unsigned int irq_create_mapping(struct irq_domain *host,
+> -				       irq_hw_number_t hwirq);
+> +extern unsigned int irq_create_mapping_affinity(struct irq_domain *host,
+> +				      irq_hw_number_t hwirq,
+> +				      const struct irq_affinity_desc *affinity);
+>  extern unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec);
+>  extern void irq_dispose_mapping(unsigned int virq);
+>  
+> +static inline unsigned int irq_create_mapping(struct irq_domain *host,
+> +					      irq_hw_number_t hwirq)
+> +{
+> +	return irq_create_mapping_affinity(host, hwirq, NULL);
+> +}
+> +
+> +
+>  /**
+>   * irq_linear_revmap() - Find a linux irq from a hw irq number.
+>   * @domain: domain owning this hardware interrupt
+> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+> index cf8b374b892d..e4ca69608f3b 100644
+> --- a/kernel/irq/irqdomain.c
+> +++ b/kernel/irq/irqdomain.c
+> @@ -624,17 +624,19 @@ unsigned int irq_create_direct_mapping(struct irq_domain *domain)
+>  EXPORT_SYMBOL_GPL(irq_create_direct_mapping);
+>  
+>  /**
+> - * irq_create_mapping() - Map a hardware interrupt into linux irq space
+> + * irq_create_mapping_affinity() - Map a hardware interrupt into linux irq space
+>   * @domain: domain owning this hardware interrupt or NULL for default domain
+>   * @hwirq: hardware irq number in that domain space
+> + * @affinity: irq affinity
+>   *
+>   * Only one mapping per hardware interrupt is permitted. Returns a linux
+>   * irq number.
+>   * If the sense/trigger is to be specified, set_irq_type() should be called
+>   * on the number returned from that call.
+>   */
+> -unsigned int irq_create_mapping(struct irq_domain *domain,
+> -				irq_hw_number_t hwirq)
+> +unsigned int irq_create_mapping_affinity(struct irq_domain *domain,
+> +				       irq_hw_number_t hwirq,
+> +				       const struct irq_affinity_desc *affinity)
+>  {
+>  	struct device_node *of_node;
+>  	int virq;
+> @@ -660,7 +662,8 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+>  	}
+>  
+>  	/* Allocate a virtual interrupt number */
+> -	virq = irq_domain_alloc_descs(-1, 1, hwirq, of_node_to_nid(of_node), NULL);
+> +	virq = irq_domain_alloc_descs(-1, 1, hwirq, of_node_to_nid(of_node),
+> +				      affinity);
+>  	if (virq <= 0) {
+>  		pr_debug("-> virq allocation failed\n");
+>  		return 0;
+> @@ -676,7 +679,7 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+>  
+>  	return virq;
+>  }
+> -EXPORT_SYMBOL_GPL(irq_create_mapping);
+> +EXPORT_SYMBOL_GPL(irq_create_mapping_affinity);
+>  
+>  /**
+>   * irq_create_strict_mappings() - Map a range of hw irqs to fixed linux irqs
+
