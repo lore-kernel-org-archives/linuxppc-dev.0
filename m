@@ -2,26 +2,26 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31972C56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 16:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28E07C56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:00:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4728D221EB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 16:58:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6C1C9221EB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:00:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="cUxjjPzO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4728D221EB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="PYtMvcej"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C1C9221EB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChkVS1F8QzDrPx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 03:58:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChkXK4DYszDqHp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 04:00:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
@@ -30,71 +30,67 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=cUxjjPzO; dkim-atps=neutral
+ header.s=pp1 header.b=PYtMvcej; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChkQL62bCzDrNY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChkQL60cmzDrNX
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 03:55:06 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQGWDvH182953; Thu, 26 Nov 2020 11:55:02 -0500
+ 0AQGauK9140702; Thu, 26 Nov 2020 11:54:59 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references; s=pp1;
- bh=NwrrRi/6sL+znTQfwy6WBI4fgOfbf0sfOiN1VQkKtkw=;
- b=cUxjjPzO+EClVRveqhlZltE+NkelztzA78QkkfqzmoHqnBFH4dt/40EXfjZznecpFVV6
- 2xmHq/MKGQRE2oT05XT1EOe7mN77o5fZ/2P+KqKwpnN0kd9apgvvujDR21CYDQuSDk7n
- v5bmW/Cx2r1rwejAqETv6MpCKuMUKu9vFSzUwuZ6sWjPTLvyk7fw1gdqGEDt4ifzrGcT
- lhh6gEX2A03hFWsbvdmf31GhVjFZiIVOSjOEi+FZbrPLrXF5tywhX1g96dsb6eSp+LOY
- 6GJlifWMOrx85PtMOjZk5oWcn/R4ROti9dNepDotjyMY8d5y5ItXD1r+M5aCi4Q3JD2+ UA== 
+ h=from : to : cc : subject : date : message-id; s=pp1;
+ bh=BNbnPNSgkc/AV0WmozNHuAEjyIKseDFpCfFajwpOnEc=;
+ b=PYtMvcejeca0q7Iu7FF/J4XdML7q1TUPy46PKPruJAPXx5IFFmtEpludMr+v1zUiOBB8
+ KHmzEegJLFhygLlNWFAafKZHii/YGFht2HBmuhBooA984ct37f/Z87x2oXilDRH76yKR
+ SZeqflucA1ZjZqNTKYpH84UgBqveKgJCSDR4V2RDBdrTR+vXO5hmuG9AEqKYB0hwWklL
+ rDjuJ0Em74NZ8Y88yb+MwaAIBKzlDENf7sWx3NGfdR2C1cpdFeM/P5hm3nokRpeGoSoN
+ JuXA3QXcMFawrNW0YPBYu7px7Ty5ws87Uv1FAiHSjtqXlgB2ZdMJYX5vF5OnzooqdP/e Sw== 
 Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
  [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 352971cr29-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 352d5un4pv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 11:55:02 -0500
+ Thu, 26 Nov 2020 11:54:59 -0500
 Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQGrTfr014594;
- Thu, 26 Nov 2020 16:54:59 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04fra.de.ibm.com with ESMTP id 352drkg2y7-1
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQGquV6014472;
+ Thu, 26 Nov 2020 16:54:56 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma04fra.de.ibm.com with ESMTP id 352drkg2y5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 16:54:59 +0000
+ Thu, 26 Nov 2020 16:54:56 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0AQGsuB054395140
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AQGsr7q5112328
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 16:54:57 GMT
+ Thu, 26 Nov 2020 16:54:53 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E08514C044;
- Thu, 26 Nov 2020 16:54:56 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8D0684C046;
+ Thu, 26 Nov 2020 16:54:53 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E31064C046;
- Thu, 26 Nov 2020 16:54:55 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id EDF114C044;
+ Thu, 26 Nov 2020 16:54:50 +0000 (GMT)
 Received: from localhost.localdomain.localdomain (unknown [9.79.231.24])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 16:54:55 +0000 (GMT)
+ Thu, 26 Nov 2020 16:54:50 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH V2 2/7] powerpc/perf: Update the PMU group constraints for
- l2l3 events in power10
-Date: Thu, 26 Nov 2020 11:54:39 -0500
-Message-Id: <1606409684-1589-3-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 0/7] powerpc/perf: Fixes for power10 PMU
+Date: Thu, 26 Nov 2020 11:54:37 -0500
+Message-Id: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-26_06:2020-11-26,
  2020-11-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- spamscore=0 phishscore=0 clxscore=1015 impostorscore=0 malwarescore=0
- mlxscore=0 bulkscore=0 priorityscore=1501 suspectscore=1 adultscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ malwarescore=0 clxscore=1015
+ adultscore=0 impostorscore=0 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 phishscore=0 mlxlogscore=999 suspectscore=1 bulkscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2011260097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -112,46 +108,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In Power9, L2/L3 bus events are always available as a
-"bank" of 4 events. To obtain the counts for any of the
-l2/l3 bus events in a given bank, the user will have to
-program PMC4 with corresponding l2/l3 bus event for that
-bank.
+Patchset contains PMU fixes for power10.
 
-Commit 59029136d750 ("powerpc/perf: Add constraints for power9 l2/l3 bus events")
-enforced this rule in Power9. But this is not valid for
-Power10, since in Power10 Monitor Mode Control Register2
-(MMCR2) has bits to configure l2/l3 event bits. Hence remove
-this PMC4 constraint check from power10.
+This patchset contains 7 patches.
+Patch1 includes fix to update event code with radix_scope_qual
+bit in power10.
+Patch2 and Patch3 updates the event group constraints for L2/L3
+and threshold events in power10.
+Patch4, patch5 and patch6 includes the event code changes for
+l2/l3 events and some of the generic events.
+Patch7 adds fixes for PMCCEXT bit in power10.
 
-Since the l2/l3 bits in MMCR2 are not per-pmc, patch handles
-group constrints checks for l2/l3 bits in MMCR2.
+Changelog:
+Changes from v1 -> v2
+- Addressed Michael Ellerman's comments in the patchset.
+  Split patch 2 to address l2l3 and threshold events
+  group constraints fixes separately.
+  Split Patch 3 also to address event code updates
+  separately for generic and cache events.
+  Fixed commit messages and also PMCCEXT bit setting
+  during event enable.
 
-Fixes: a64e697cef23 ("powerpc/perf: power10 Performance Monitoring support")
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Athira Rajeev (7):
+  powerpc/perf: Fix to update radix_scope_qual in power10
+  powerpc/perf: Update the PMU group constraints for l2l3 events in
+    power10
+  powerpc/perf: Fix the PMU group constraints for threshold events in
+    power10
+  powerpc/perf: Add generic and cache event list for power10 DD1
+  powerpc/perf: Fix to update generic event codes for power10
+  powerpc/perf: Fix to update cache events with l2l3 events in power10
+  powerpc/perf: MMCR0 control for PMU registers under PMCC=00
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index f57f54f..38ed450c 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -311,9 +311,11 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- 	}
- 
- 	if (unit >= 6 && unit <= 9) {
--		if (cpu_has_feature(CPU_FTR_ARCH_31) && (unit == 6)) {
--			mask |= CNST_L2L3_GROUP_MASK;
--			value |= CNST_L2L3_GROUP_VAL(event >> p10_L2L3_EVENT_SHIFT);
-+		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-+			if (unit == 6) {
-+				mask |= CNST_L2L3_GROUP_MASK;
-+				value |= CNST_L2L3_GROUP_VAL(event >> p10_L2L3_EVENT_SHIFT);
-+			}
- 		} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
- 			mask  |= CNST_CACHE_GROUP_MASK;
- 			value |= CNST_CACHE_GROUP_VAL(event & 0xff);
+ arch/powerpc/include/asm/reg.h          |   1 +
+ arch/powerpc/kernel/cpu_setup_power.c   |   1 +
+ arch/powerpc/kernel/dt_cpu_ftrs.c       |   1 +
+ arch/powerpc/perf/core-book3s.c         |   4 +
+ arch/powerpc/perf/isa207-common.c       |  35 ++++++-
+ arch/powerpc/perf/isa207-common.h       |  16 ++-
+ arch/powerpc/perf/power10-events-list.h |   9 ++
+ arch/powerpc/perf/power10-pmu.c         | 178 ++++++++++++++++++++++++++++++--
+ 8 files changed, 231 insertions(+), 14 deletions(-)
+
 -- 
 1.8.3.1
 
