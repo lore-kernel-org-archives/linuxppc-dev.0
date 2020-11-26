@@ -2,65 +2,55 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CCF4C56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 05:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B99EFC56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 06:23:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5431A20770
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 05:25:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ao43ezJo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5431A20770
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B3E3F20B80
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 06:23:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3E3F20B80
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChR6m1p33zDrBn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 16:25:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=jarkko@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChSPW1X3szDr8V
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:23:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Ao43ezJo; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChNgZ44mzzDqpk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 14:35:22 +1100 (AEDT)
-Received: from suppilovahvero.lan (83-245-197-237.elisa-laajakaista.fi
- [83.245.197.237])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 96B3520578;
- Thu, 26 Nov 2020 03:35:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1606361719;
- bh=Pm86dA96vUB8ve/WV9A5oJB00MJ+s60jMcnkxr4UFJo=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=Ao43ezJomqCbc8UXSXpuCxDN6NNJmTWH9EJcqzDgLvZaJZ9Wg6lnU4GQFDMO0AYw+
- d+DefLfOulwbgxAPWLfgHsJrqlzxao1dhx6WLIFrGh2fBDv5BqHqrlWxgIvK9vCWTA
- vNIrbJDnVXQs47LMpv0bSM8ltuFv7p9/om+dkb3g=
-Message-ID: <4192b5a07ebd0539dd8244afe9e065b4996f4f4a.camel@kernel.org>
-Subject: Re: [PATCH] tpm: ibmvtpm: fix error return code in tpm_ibmvtpm_probe()
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Wang Hai <wanghai38@huawei.com>, mpe@ellerman.id.au, 
- benh@kernel.crashing.org, paulus@samba.org, peterhuewe@gmx.de,
- jgg@ziepe.ca,  stefanb@linux.ibm.com, nayna@linux.ibm.com
-Date: Thu, 26 Nov 2020 05:35:15 +0200
-In-Reply-To: <20201124135244.31932-1-wanghai38@huawei.com>
-References: <20201124135244.31932-1-wanghai38@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.1-1 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 26 Nov 2020 16:24:11 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChSN208M3zDr7H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 17:22:08 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E18571A0A4C;
+ Thu, 26 Nov 2020 07:22:04 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D25B61A010B;
+ Thu, 26 Nov 2020 07:22:00 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 1C49F402A6;
+ Thu, 26 Nov 2020 07:21:54 +0100 (CET)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl: Fix config name of CONFIG_ARCH_MXC
+Date: Thu, 26 Nov 2020 14:14:53 +0800
+Message-Id: <1606371293-29099-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,42 +62,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-11-24 at 21:52 +0800, Wang Hai wrote:
-> Fix to return a negative error code from the error handling
-> case instead of 0, as done elsewhere in this function.
-> 
-> Fixes: d8d74ea3c002 ("tpm: ibmvtpm: Wait for buffer to be set before
-> proceeding")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wang Hai <wanghai38@huawei.com>
+CONFIG_ARCH_MXC should be ARCH_MXC
 
-Provide a reasoning for -ETIMEOUT in the commit message.
+Fixes: 674226db62ec ("ASoC: fsl: SND_SOC_FSL_AUD2HTX should depend on ARCH_MXC")
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-/Jarkko
-
-> ---
->  drivers/char/tpm/tpm_ibmvtpm.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c
-> b/drivers/char/tpm/tpm_ibmvtpm.c
-> index 994385bf37c0..813eb2cac0ce 100644
-> --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> @@ -687,6 +687,7 @@ static int tpm_ibmvtpm_probe(struct vio_dev
-> *vio_dev,
->                                 ibmvtpm->rtce_buf != NULL,
->                                 HZ)) {
->                 dev_err(dev, "CRQ response timed out\n");
-> +               rc = -ETIMEDOUT;
->                 goto init_irq_cleanup;
->         }
->  
-
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 7d48f4f98e8b..835a14821360 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -107,7 +107,7 @@ config SND_SOC_FSL_XCVR
+ 
+ config SND_SOC_FSL_AUD2HTX
+ 	tristate "AUDIO TO HDMI TX module support"
+-	depends on CONFIG_ARCH_MXC || COMPILE_TEST
++	depends on ARCH_MXC || COMPILE_TEST
+ 	help
+ 	  Say Y if you want to add AUDIO TO HDMI TX support for NXP.
+ 
+-- 
+2.27.0
 
