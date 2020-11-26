@@ -2,87 +2,87 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55B32C63697
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFE9AC56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:11:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 86CD821D1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:09:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2712F206B5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:11:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="fDiEl/qY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86CD821D1A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="N8tWr3ot"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2712F206B5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Chkl13qvfzDrFL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 04:09:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Chknl2FSmzDrHb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 04:11:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=fDiEl/qY; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=N8tWr3ot; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChkQX0phVzDrNh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 03:55:15 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQGVNAX089499; Thu, 26 Nov 2020 11:55:10 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChkRs0hS6zDrP8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 03:56:24 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AQGu6Fq066840; Thu, 26 Nov 2020 11:56:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references; s=pp1;
- bh=mEqWrpzUiNswLxJ8bno9Ea0X/pSYRruLi4pmTX1SDfA=;
- b=fDiEl/qYUH+aV97rjVdRSi5ypYV9LBFhNvv94YSuuQ3LlNXjE9jAzD34aaLHKPleOnOs
- L+0Dl6QBkDygf9GTt7fe9ZgnyJ6HxTyJauWXKVNnfyWIkqt+QqqabbkJ9FalcydD6i6n
- I3s+P6UZ8vmFBdXaRaBEZcjOReLpJC4SXK6TN4SufhnarXtS+JAKd/JrZHu4U6dz5j4z
- pHZvEjaUtRbZkGKlkkZ95TsYUsbElh3lPkCWXwf0Idu/VOyG9NX2muwvvafAryiJSWyt
- JAr+vgL38lUAtojEqtG2MJ3GKEfWbf6OjeFxegJbjURtmTLV3A1/u0KC4NR2H1Mi3tLK /g== 
+ bh=enjyidaL/03SOJMqWhQ2SWNHm5MC2kWjLI0aU4W036s=;
+ b=N8tWr3otxAl8uHNAN/eLqPiyaXwMrvfMrrjFntkTGhMS0txOElDo+45LsXnLUfn1hQHb
+ 129CwNRqb/fueikN9LFi8fHRM0URmqEh1eu8G9ydhymGlwkcJJsSpjQ+iercoS9n5Crf
+ bgm7rmyCmAjb0Zda1J2IeGeSXXTCNUXWY+b1mp4mtZp/L5K3wNXNBx3dYPz4oo9NXZ0O
+ VoZ1CHjg6QvJ2b200rlIM35e22A2SeJqqmV6CkJqQWzQgKu6VYNwjmXAsTQ55sXdNAlj
+ yaLIUH+YFP642Bq5IrMp7+FpduJtNdtrMxQbuk3ttDRVWLZf2taNpOnk8cGH9T4nYYzc wQ== 
 Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
  [149.81.74.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 352d2n5tvk-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 352gar006j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 11:55:10 -0500
+ Thu, 26 Nov 2020 11:56:20 -0500
 Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQGqhFP005108;
- Thu, 26 Nov 2020 16:55:08 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03fra.de.ibm.com with ESMTP id 34yy8r38tr-1
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQGqnBS005281;
+ Thu, 26 Nov 2020 16:56:18 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03fra.de.ibm.com with ESMTP id 34yy8r38uv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 16:55:08 +0000
+ Thu, 26 Nov 2020 16:56:18 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQGt5PW6816434
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AQGt0tr5571178
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 16:55:06 GMT
+ Thu, 26 Nov 2020 16:55:01 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CE48D4C05E;
- Thu, 26 Nov 2020 16:55:05 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C5E674C04A;
+ Thu, 26 Nov 2020 16:55:00 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BE8EA4C040;
- Thu, 26 Nov 2020 16:55:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CEEB84C044;
+ Thu, 26 Nov 2020 16:54:58 +0000 (GMT)
 Received: from localhost.localdomain.localdomain (unknown [9.79.231.24])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 16:55:04 +0000 (GMT)
+ Thu, 26 Nov 2020 16:54:58 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH V2 7/7] powerpc/perf: MMCR0 control for PMU registers under
- PMCC=00
-Date: Thu, 26 Nov 2020 11:54:44 -0500
-Message-Id: <1606409684-1589-8-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 4/7] powerpc/perf: Add generic and cache event list for
+ power10 DD1
+Date: Thu, 26 Nov 2020 11:54:41 -0500
+Message-Id: <1606409684-1589-5-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 References: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
@@ -91,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-26_06:2020-11-26,
  2020-11-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0
- lowpriorityscore=0 adultscore=0 impostorscore=0 clxscore=1015 phishscore=0
- mlxlogscore=795 priorityscore=1501 spamscore=0 mlxscore=0 suspectscore=1
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2011260097
+ malwarescore=0
+ mlxlogscore=999 spamscore=0 impostorscore=0 bulkscore=0 clxscore=1015
+ priorityscore=1501 mlxscore=0 suspectscore=1 lowpriorityscore=0
+ phishscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011260097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,105 +112,217 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerISA v3.1 introduces new control bit (PMCCEXT) for restricting
-access to group B PMU registers in problem state when
-MMCR0 PMCC=0b00. In problem state and when MMCR0 PMCC=0b00,
-setting the Monitor Mode Control Register bit 54 (MMCR0 PMCCEXT),
-will restrict read permission on Group B Performance Monitor
-Registers (SIER, SIAR, SDAR and MMCR1). When this bit is set to zero,
-group B registers will be readable. In other platforms (like power9),
-the older behaviour is retained where group B PMU SPRs are readable.
-
-Patch adds support for MMCR0 PMCCEXT bit in power10 by enabling
-this bit during boot and during the PMU event enable/disable callback
-functions.
+There are event code updates for some of the generic events
+and cache events for power10. Inorder to maintain the current
+event codes work with DD1 also, create a new array of generic_events,
+cache_events and pmu_attr_groups with suffix _dd1, example,
+power10_events_attr_dd1. So that further updates to event codes
+can be made in the original list, ie, power10_events_attr. Update the
+power10 pmu init code to pick the dd1 list while registering
+the power PMU, based on the pvr (Processor Version Register) value.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/reg.h        | 1 +
- arch/powerpc/kernel/cpu_setup_power.c | 1 +
- arch/powerpc/kernel/dt_cpu_ftrs.c     | 1 +
- arch/powerpc/perf/core-book3s.c       | 4 ++++
- arch/powerpc/perf/isa207-common.c     | 8 ++++++++
- 5 files changed, 15 insertions(+)
+ arch/powerpc/perf/power10-pmu.c | 152 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 152 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f877a57..cba9965 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -864,6 +864,7 @@
- #define   MMCR0_BHRBA	0x00200000UL /* BHRB Access allowed in userspace */
- #define   MMCR0_EBE	0x00100000UL /* Event based branch enable */
- #define   MMCR0_PMCC	0x000c0000UL /* PMC control */
-+#define   MMCR0_PMCCEXT	ASM_CONST(0x00000200) /* PMCCEXT control */
- #define   MMCR0_PMCC_U6	0x00080000UL /* PMC1-6 are R/W by user (PR) */
- #define   MMCR0_PMC1CE	0x00008000UL /* PMC1 count enable*/
- #define   MMCR0_PMCjCE	ASM_CONST(0x00004000) /* PMCj count enable*/
-diff --git a/arch/powerpc/kernel/cpu_setup_power.c b/arch/powerpc/kernel/cpu_setup_power.c
-index 0c2191e..3cca88e 100644
---- a/arch/powerpc/kernel/cpu_setup_power.c
-+++ b/arch/powerpc/kernel/cpu_setup_power.c
-@@ -123,6 +123,7 @@ static void init_PMU_ISA31(void)
- {
- 	mtspr(SPRN_MMCR3, 0);
- 	mtspr(SPRN_MMCRA, MMCRA_BHRB_DISABLE);
-+	mtspr(SPRN_MMCR0, MMCR0_PMCCEXT);
- }
+diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c
+index 88c5430..bc3d4dd 100644
+--- a/arch/powerpc/perf/power10-pmu.c
++++ b/arch/powerpc/perf/power10-pmu.c
+@@ -129,6 +129,31 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
+ CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
  
- /*
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 1098863..9d07965 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -454,6 +454,7 @@ static void init_pmu_power10(void)
- 
- 	mtspr(SPRN_MMCR3, 0);
- 	mtspr(SPRN_MMCRA, MMCRA_BHRB_DISABLE);
-+	mtspr(SPRN_MMCR0, MMCR0_PMCCEXT);
- }
- 
- static int __init feat_enable_pmu_power10(struct dt_cpu_feature *f)
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 3c8c6ce..35cf93c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -95,6 +95,7 @@ struct cpu_hw_events {
- #define SPRN_SIER3		0
- #define MMCRA_SAMPLE_ENABLE	0
- #define MMCRA_BHRB_DISABLE     0
-+#define MMCR0_PMCCEXT		0
- 
- static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
- {
-@@ -1270,6 +1271,9 @@ static void power_pmu_disable(struct pmu *pmu)
- 		val |= MMCR0_FC;
- 		val &= ~(MMCR0_EBE | MMCR0_BHRBA | MMCR0_PMCC | MMCR0_PMAO |
- 			 MMCR0_FC56);
-+		/* Set mmcr0 PMCCEXT for p10 */
-+		if (ppmu->flags & PPMU_ARCH_31)
-+			val |= MMCR0_PMCCEXT;
- 
- 		/*
- 		 * The barrier is to make sure the mtspr has been
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 0f4983e..24f0a90 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -558,6 +558,14 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 	if (!(pmc_inuse & 0x60))
- 		mmcr->mmcr0 |= MMCR0_FC56;
- 
-+	/*
-+	 * Set mmcr0 (PMCCEXT) for p10 which
-+	 * will restrict access to group B registers
-+	 * when MMCR0 PMCC=0b00.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_31))
-+		mmcr->mmcr0 |= MMCR0_PMCCEXT;
++static struct attribute *power10_events_attr_dd1[] = {
++	GENERIC_EVENT_PTR(PM_RUN_CYC),
++	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
++	GENERIC_EVENT_PTR(PM_BR_CMPL),
++	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
++	GENERIC_EVENT_PTR(PM_LD_REF_L1),
++	GENERIC_EVENT_PTR(PM_LD_MISS_L1),
++	GENERIC_EVENT_PTR(MEM_LOADS),
++	GENERIC_EVENT_PTR(MEM_STORES),
++	CACHE_EVENT_PTR(PM_LD_MISS_L1),
++	CACHE_EVENT_PTR(PM_LD_REF_L1),
++	CACHE_EVENT_PTR(PM_LD_PREFETCH_CACHE_LINE_MISS),
++	CACHE_EVENT_PTR(PM_ST_MISS_L1),
++	CACHE_EVENT_PTR(PM_L1_ICACHE_MISS),
++	CACHE_EVENT_PTR(PM_INST_FROM_L1),
++	CACHE_EVENT_PTR(PM_IC_PREF_REQ),
++	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
++	CACHE_EVENT_PTR(PM_DATA_FROM_L3),
++	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
++	CACHE_EVENT_PTR(PM_BR_CMPL),
++	CACHE_EVENT_PTR(PM_DTLB_MISS),
++	CACHE_EVENT_PTR(PM_ITLB_MISS),
++	NULL
++};
 +
- 	mmcr->mmcr1 = mmcr1;
- 	mmcr->mmcra = mmcra;
- 	mmcr->mmcr2 = mmcr2;
+ static struct attribute *power10_events_attr[] = {
+ 	GENERIC_EVENT_PTR(PM_RUN_CYC),
+ 	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
+@@ -154,6 +179,11 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	NULL
+ };
+ 
++static struct attribute_group power10_pmu_events_group_dd1 = {
++	.name = "events",
++	.attrs = power10_events_attr_dd1,
++};
++
+ static struct attribute_group power10_pmu_events_group = {
+ 	.name = "events",
+ 	.attrs = power10_events_attr,
+@@ -205,12 +235,27 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	.attrs = power10_pmu_format_attr,
+ };
+ 
++static const struct attribute_group *power10_pmu_attr_groups_dd1[] = {
++	&power10_pmu_format_group,
++	&power10_pmu_events_group_dd1,
++	NULL,
++};
++
+ static const struct attribute_group *power10_pmu_attr_groups[] = {
+ 	&power10_pmu_format_group,
+ 	&power10_pmu_events_group,
+ 	NULL,
+ };
+ 
++static int power10_generic_events_dd1[] = {
++	[PERF_COUNT_HW_CPU_CYCLES] =			PM_RUN_CYC,
++	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_RUN_INST_CMPL,
++	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_CMPL,
++	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
++	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
++	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
++};
++
+ static int power10_generic_events[] = {
+ 	[PERF_COUNT_HW_CPU_CYCLES] =			PM_RUN_CYC,
+ 	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_RUN_INST_CMPL,
+@@ -276,6 +321,107 @@ static void power10_config_bhrb(u64 pmu_bhrb_filter)
+  * 0 means not supported, -1 means nonsensical, other values
+  * are event codes.
+  */
++static u64 power10_cache_events_dd1[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = PM_LD_REF_L1,
++			[C(RESULT_MISS)] = PM_LD_MISS_L1,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = 0,
++			[C(RESULT_MISS)] = PM_ST_MISS_L1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = PM_LD_PREFETCH_CACHE_LINE_MISS,
++			[C(RESULT_MISS)] = 0,
++		},
++	},
++	[C(L1I)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = PM_INST_FROM_L1,
++			[C(RESULT_MISS)] = PM_L1_ICACHE_MISS,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = PM_INST_FROM_L1MISS,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = PM_IC_PREF_REQ,
++			[C(RESULT_MISS)] = 0,
++		},
++	},
++	[C(LL)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = PM_DATA_FROM_L3,
++			[C(RESULT_MISS)] = PM_DATA_FROM_L3MISS,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = 0,
++		},
++	},
++	 [C(DTLB)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = 0,
++			[C(RESULT_MISS)] = PM_DTLB_MISS,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++	},
++	[C(ITLB)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = 0,
++			[C(RESULT_MISS)] = PM_ITLB_MISS,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++	},
++	[C(BPU)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = PM_BR_CMPL,
++			[C(RESULT_MISS)] = PM_BR_MPRED_CMPL,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++	},
++	[C(NODE)] = {
++		[C(OP_READ)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_WRITE)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++		[C(OP_PREFETCH)] = {
++			[C(RESULT_ACCESS)] = -1,
++			[C(RESULT_MISS)] = -1,
++		},
++	},
++};
++
+ static u64 power10_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	[C(L1D)] = {
+ 		[C(OP_READ)] = {
+@@ -422,6 +568,12 @@ int init_power10_pmu(void)
+ 	/* Set the PERF_REG_EXTENDED_MASK here */
+ 	PERF_REG_EXTENDED_MASK = PERF_REG_PMU_MASK_31;
+ 
++	if ((PVR_CFG(pvr) == 1)) {
++		power10_pmu.generic_events = power10_generic_events_dd1;
++		power10_pmu.attr_groups = power10_pmu_attr_groups_dd1;
++		power10_pmu.cache_events = &power10_cache_events_dd1;
++	}
++
+ 	rc = register_power_pmu(&power10_pmu);
+ 	if (rc)
+ 		return rc;
 -- 
 1.8.3.1
 
