@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A984C56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:36:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E58FC63697
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:38:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36049206B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:36:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9A1A1206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:38:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="m7qT+At/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36049206B7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="G1T87rTz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A1A1206B7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChmgW1xjJzDsMN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 05:36:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChmjG4Dy8zF0YC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 05:38:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
@@ -30,60 +30,60 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=m7qT+At/; dkim-atps=neutral
+ header.s=pp1 header.b=G1T87rTz; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chm6P530VzDrN8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 05:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Chm6v094yzDrNG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 05:11:50 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQI2SrX010883; Thu, 26 Nov 2020 13:11:05 -0500
+ 0AQI2RVR183015; Thu, 26 Nov 2020 13:11:17 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=1sFhh/W277Uq17/fL+ArloyRS3Z5ALEi6yijAXDfcRc=;
- b=m7qT+At/WvCgAr5SVVnaurZ+VlU6NPzl6zyPrjNnhpHncwnb/CFql8QakJVa/xg9Z9/g
- 6myjgCbLbSXKNF4aEtHHWq53WFkwTyrPZAemZAoxiWQg/qncKYE8/ZFupV7sk1Y56oQB
- On7vU/r8E8JFC+TFCDbD/A2n1pqRR6YuUJe4MWxw6N+W4R0iDzzXVopJ5BFHmcondCo9
- fMkNnN9ef20UrXqoxXc1UBI9nTnqSEexYOI3Z8pLp964Rsk7wxstQMVZZ+SUAaGWIbby
- qlMtXT0WkkKNzDUG9XTuItrlqy8FwdONMj3ontZu0GMNTmA5gnq4bGTFLgaoIKKTHKBJ uQ== 
+ bh=yErNLQzXf4H49Yf5isNvlY0rkReaN+BMh29dfprf0vE=;
+ b=G1T87rTzHzExL5xLLKR/2b4jmIcdgVdpf0bt7Gpge3VPj8xjjmrzjwjy8jd96kJAX3CA
+ FNe/gnquuRLw5LCra51xYI+/zMtGw51FAvb4WALz3mbTKXm2Y6fhBR3OIO5CDcMsTOuz
+ 5K3XHR7N4GwiWuM39OZcmS4bEAjzV2PaymPTNauhHc2gOhNq3239J3nbfWkca9sfEwOO
+ /jW8OgI4QAOFXXFHwTLiOuUdbCcQrJt2q3SL44Kfj+4LfcRiWnepjIQkPcZ2SnZ/LTZR
+ PIZ/yVhf+kd/PWkpXC/YUrXs1jLHWo/JWK5tbUEvxe+aSFaQKyasSmnWMsiH8nxhyC+z 9A== 
 Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
  [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 352ccerjyy-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 352cqur37f-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 13:11:05 -0500
+ Thu, 26 Nov 2020 13:11:16 -0500
 Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQI8iop016109;
- Thu, 26 Nov 2020 18:11:03 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03fra.de.ibm.com with ESMTP id 34yy8r3b6e-1
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQI8jNV016127;
+ Thu, 26 Nov 2020 18:11:14 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma03fra.de.ibm.com with ESMTP id 34yy8r3b6n-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 18:11:03 +0000
+ Thu, 26 Nov 2020 18:11:14 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQI9koP11272914
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 0AQI9veI58327376
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 18:09:46 GMT
+ Thu, 26 Nov 2020 18:09:57 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2F97AA405F;
- Thu, 26 Nov 2020 18:09:46 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3E518A405C;
+ Thu, 26 Nov 2020 18:09:57 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 74BA2A4054;
- Thu, 26 Nov 2020 18:09:43 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B436BA4054;
+ Thu, 26 Nov 2020 18:09:53 +0000 (GMT)
 Received: from naverao1-tp.ibmuc.com (unknown [9.85.81.45])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 18:09:43 +0000 (GMT)
+ Thu, 26 Nov 2020 18:09:53 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [RFC PATCH 11/14] powerpc/ftrace: Use GPR save/restore macros in
- ftrace_graph_caller()
-Date: Thu, 26 Nov 2020 23:38:48 +0530
-Message-Id: <ab421e41485fe48faabdb9371abdd45f4f6899e2.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [RFC PATCH 14/14] samples/ftrace: Add powerpc support for ftrace
+ direct samples
+Date: Thu, 26 Nov 2020 23:38:51 +0530
+Message-Id: <820ababd519a6901d21e5927bbc89445ea110151.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <cover.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
@@ -91,13 +91,13 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-26_08:2020-11-26,
+ definitions=2020-11-26_06:2020-11-26,
  2020-11-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=0
- lowpriorityscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
- clxscore=1015 spamscore=0 phishscore=0 priorityscore=1501 adultscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ priorityscore=1501
+ phishscore=0 mlxlogscore=999 lowpriorityscore=0 impostorscore=0
+ bulkscore=0 clxscore=1015 adultscore=0 mlxscore=0 suspectscore=0
+ spamscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2011260108
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,76 +115,279 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use SAVE_8GPRS(), REST_8GPRS() and _NIP(), along with using the standard
-SWITCH_FRAME_SIZE for the stack frame in ftrace_graph_caller() to
-simplify code. This increases the stack frame size, but it is unlikely
-to be an issue since ftrace_[regs_]caller() have just used a similar
-stack frame size, and it isn't evident that the graph caller has too
-deep a call stack to cause issues.
+Add a simple powerpc trampoline to demonstrate use of ftrace direct on
+powerpc.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- .../powerpc/kernel/trace/ftrace_64_mprofile.S | 28 +++++--------------
- 1 file changed, 7 insertions(+), 21 deletions(-)
+ samples/Kconfig                       |  2 +-
+ samples/ftrace/ftrace-direct-modify.c | 58 +++++++++++++++++++++++++++
+ samples/ftrace/ftrace-direct-too.c    | 48 ++++++++++++++++++++--
+ samples/ftrace/ftrace-direct.c        | 45 +++++++++++++++++++--
+ 4 files changed, 144 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index f9fd5f743eba34..bbe871b47ade58 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -279,24 +279,17 @@ livepatch_handler:
+diff --git a/samples/Kconfig b/samples/Kconfig
+index 0ed6e4d71d87b1..fdc9e44dba3b95 100644
+--- a/samples/Kconfig
++++ b/samples/Kconfig
+@@ -26,7 +26,7 @@ config SAMPLE_TRACE_PRINTK
+ config SAMPLE_FTRACE_DIRECT
+ 	tristate "Build register_ftrace_direct() example"
+ 	depends on DYNAMIC_FTRACE_WITH_DIRECT_CALLS && m
+-	depends on X86_64 # has x86_64 inlined asm
++	depends on X86_64 || PPC64 # has inlined asm
+ 	help
+ 	  This builds an ftrace direct function example
+ 	  that hooks to wake_up_process and prints the parameters.
+diff --git a/samples/ftrace/ftrace-direct-modify.c b/samples/ftrace/ftrace-direct-modify.c
+index c13a5bc5095bea..89d66a12d300e1 100644
+--- a/samples/ftrace/ftrace-direct-modify.c
++++ b/samples/ftrace/ftrace-direct-modify.c
+@@ -2,6 +2,7 @@
+ #include <linux/module.h>
+ #include <linux/kthread.h>
+ #include <linux/ftrace.h>
++#include <linux/kprobes.h>
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- _GLOBAL(ftrace_graph_caller)
--	stdu	r1, -112(r1)
-+	stdu	r1,-SWITCH_FRAME_SIZE(r1)
- 	/* with -mprofile-kernel, parameter regs are still alive at _mcount */
--	std	r10, 104(r1)
--	std	r9, 96(r1)
--	std	r8, 88(r1)
--	std	r7, 80(r1)
--	std	r6, 72(r1)
--	std	r5, 64(r1)
--	std	r4, 56(r1)
--	std	r3, 48(r1)
-+	SAVE_8GPRS(3, r1)
+ void my_direct_func1(void)
+ {
+@@ -18,6 +19,7 @@ extern void my_tramp2(void *);
  
- 	/* Save callee's TOC in the ABI compliant location */
- 	std	r2, 24(r1)
- 	ld	r2, PACATOC(r13)	/* get kernel TOC in r2 */
+ static unsigned long my_ip = (unsigned long)schedule;
  
--	addi	r5, r1, 112
-+	addi	r5, r1, SWITCH_FRAME_SIZE
- 	mfctr	r4		/* ftrace_caller has moved local addr here */
--	std	r4, 40(r1)
-+	std	r4, _NIP(r1)
- 	mflr	r3		/* ftrace_caller has restored LR from stack */
- 	subi	r4, r4, MCOUNT_INSN_SIZE
++#ifdef CONFIG_X86
+ asm (
+ "	.pushsection    .text, \"ax\", @progbits\n"
+ "	.type		my_tramp1, @function\n"
+@@ -38,6 +40,58 @@ asm (
+ "	.size		my_tramp2, .-my_tramp2\n"
+ "	.popsection\n"
+ );
++#elif CONFIG_PPC64
++asm (
++"	.pushsection	.text, \"ax\", @progbits\n"
++"	.type		my_tramp1, @function\n"
++"	.global		my_tramp1\n"
++"   my_tramp1:\n"
++"	std	0, 16(1)\n"
++"	stdu	1, -480(1)\n"
++"	std	2, 24(1)\n"
++"	mflr	7\n"
++"	std	7, 368(1)\n"
++"	bcl	20, 31, 1f\n"
++"1:	mflr	12\n"
++"	ld	2, (3f - 1b)(12)\n"
++"	bl	my_direct_func1\n"
++"	nop\n"
++"	ld	2, 24(1)\n"
++"	ld	7, 368(1)\n"
++"	mtctr	7\n"
++"	addi	1, 1, 480\n"
++"	ld	0, 16(1)\n"
++"	mtlr	0\n"
++"	bctr\n"
++"	.size		my_tramp1, .-my_tramp1\n"
++"	nop\n"
++"	.type		my_tramp2, @function\n"
++"	.global		my_tramp2\n"
++"   my_tramp2:\n"
++"	std	0, 16(1)\n"
++"	stdu	1, -480(1)\n"
++"	std	2, 24(1)\n"
++"	mflr	7\n"
++"	std	7, 368(1)\n"
++"	bcl	20, 31, 2f\n"
++"2:	mflr	12\n"
++"	ld	2, (3f - 2b)(12)\n"
++"	bl	my_direct_func2\n"
++"	nop\n"
++"	ld	2, 24(1)\n"
++"	ld	7, 368(1)\n"
++"	mtctr	7\n"
++"	addi	1, 1, 480\n"
++"	ld	0, 16(1)\n"
++"	mtlr	0\n"
++"	bctr\n"
++"	.size		my_tramp2, .-my_tramp2\n"
++"3:\n"
++"	.quad		.TOC.@tocbase\n"
++"	.popsection\n"
++);
++#endif
++
  
-@@ -309,21 +302,14 @@ _GLOBAL(ftrace_graph_caller)
- 	 */
- 	mtlr	r3
+ static unsigned long my_tramp = (unsigned long)my_tramp1;
+ static unsigned long tramps[2] = {
+@@ -72,6 +126,10 @@ static int __init ftrace_direct_init(void)
+ {
+ 	int ret;
  
--	ld	r0, 40(r1)
-+	ld	r0, _NIP(r1)
- 	mtctr	r0
--	ld	r10, 104(r1)
--	ld	r9, 96(r1)
--	ld	r8, 88(r1)
--	ld	r7, 80(r1)
--	ld	r6, 72(r1)
--	ld	r5, 64(r1)
--	ld	r4, 56(r1)
--	ld	r3, 48(r1)
-+	REST_8GPRS(3, r1)
++#ifdef CONFIG_PPC64
++	my_ip = ppc_function_entry((void *)my_ip) + 4;
++#endif
++
+ 	ret = register_ftrace_direct(my_ip, my_tramp);
+ 	if (!ret)
+ 		simple_tsk = kthread_run(simple_thread, NULL, "event-sample-fn");
+diff --git a/samples/ftrace/ftrace-direct-too.c b/samples/ftrace/ftrace-direct-too.c
+index d5c5022be66429..9a82abecbe0dcc 100644
+--- a/samples/ftrace/ftrace-direct-too.c
++++ b/samples/ftrace/ftrace-direct-too.c
+@@ -3,6 +3,7 @@
  
- 	/* Restore callee's TOC */
- 	ld	r2, 24(r1)
+ #include <linux/mm.h> /* for handle_mm_fault() */
+ #include <linux/ftrace.h>
++#include <linux/kprobes.h>
  
--	addi	r1, r1, 112
-+	addi	r1, r1, SWITCH_FRAME_SIZE
- 	mflr	r0
- 	std	r0, LRSAVE(r1)
- 	bctr
+ void my_direct_func(struct vm_area_struct *vma,
+ 			unsigned long address, unsigned int flags)
+@@ -13,6 +14,9 @@ void my_direct_func(struct vm_area_struct *vma,
+ 
+ extern void my_tramp(void *);
+ 
++static unsigned long my_ip = (unsigned long)handle_mm_fault;
++
++#ifdef CONFIG_X86
+ asm (
+ "	.pushsection    .text, \"ax\", @progbits\n"
+ "	.type		my_tramp, @function\n"
+@@ -31,18 +35,54 @@ asm (
+ "	.size		my_tramp, .-my_tramp\n"
+ "	.popsection\n"
+ );
++#elif CONFIG_PPC64
++asm (
++"	.pushsection	.text, \"ax\", @progbits\n"
++"	.type		my_tramp, @function\n"
++"	.global		my_tramp\n"
++"   my_tramp:\n"
++"	std	0, 16(1)\n"
++"	stdu	1, -480(1)\n"
++"	std	2, 24(1)\n"
++"	std	3, 136(1)\n"
++"	std	4, 144(1)\n"
++"	std	5, 152(1)\n"
++"	mflr	7\n"
++"	std	7, 368(1)\n"
++"	bcl	20, 31, 1f\n"
++"1:	mflr	12\n"
++"	ld	2, (2f - 1b)(12)\n"
++"	bl	my_direct_func\n"
++"	nop\n"
++"	ld	5, 152(1)\n"
++"	ld	4, 144(1)\n"
++"	ld	3, 136(1)\n"
++"	ld	2, 24(1)\n"
++"	ld	7, 368(1)\n"
++"	mtctr	7\n"
++"	addi	1, 1, 480\n"
++"	ld	0, 16(1)\n"
++"	mtlr	0\n"
++"	bctr\n"
++"	.size		my_tramp, .-my_tramp\n"
++"2:\n"
++"	.quad		.TOC.@tocbase\n"
++"	.popsection\n"
++);
++#endif
+ 
+ 
+ static int __init ftrace_direct_init(void)
+ {
+-	return register_ftrace_direct((unsigned long)handle_mm_fault,
+-				     (unsigned long)my_tramp);
++#ifdef CONFIG_PPC64
++	my_ip = ppc_function_entry((void *)my_ip) + 4;
++#endif
++	return register_ftrace_direct(my_ip, (unsigned long)my_tramp);
+ }
+ 
+ static void __exit ftrace_direct_exit(void)
+ {
+-	unregister_ftrace_direct((unsigned long)handle_mm_fault,
+-				 (unsigned long)my_tramp);
++	unregister_ftrace_direct(my_ip, (unsigned long)my_tramp);
+ }
+ 
+ module_init(ftrace_direct_init);
+diff --git a/samples/ftrace/ftrace-direct.c b/samples/ftrace/ftrace-direct.c
+index 63ca06d42c803f..da67b6217f91d2 100644
+--- a/samples/ftrace/ftrace-direct.c
++++ b/samples/ftrace/ftrace-direct.c
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/sched.h> /* for wake_up_process() */
+ #include <linux/ftrace.h>
++#include <linux/kprobes.h> /* for ppc_function_entry() */
+ 
+ void my_direct_func(struct task_struct *p)
+ {
+@@ -11,6 +12,9 @@ void my_direct_func(struct task_struct *p)
+ 
+ extern void my_tramp(void *);
+ 
++static unsigned long my_ip = (unsigned long)wake_up_process;
++
++#ifdef CONFIG_X86
+ asm (
+ "	.pushsection    .text, \"ax\", @progbits\n"
+ "	.type		my_tramp, @function\n"
+@@ -25,18 +29,51 @@ asm (
+ "	.size		my_tramp, .-my_tramp\n"
+ "	.popsection\n"
+ );
++#elif CONFIG_PPC64
++asm (
++"	.pushsection	.text, \"ax\", @progbits\n"
++"	.type		my_tramp, @function\n"
++"	.global		my_tramp\n"
++"   my_tramp:\n"
++"	std	0, 16(1)\n"
++"	stdu	1, -480(1)\n"
++"	std	2, 24(1)\n"
++"	std	3, 136(1)\n"
++"	mflr	7\n"
++"	std	7, 368(1)\n"
++"	bcl	20, 31, 1f\n"
++"1:	mflr	12\n"
++"	ld	2, (2f - 1b)(12)\n"
++"	bl	my_direct_func\n"
++"	nop\n"
++"	ld	3, 136(1)\n"
++"	ld	2, 24(1)\n"
++"	ld	7, 368(1)\n"
++"	mtctr	7\n"
++"	addi	1, 1, 480\n"
++"	ld	0, 16(1)\n"
++"	mtlr	0\n"
++"	bctr\n"
++"	.size		my_tramp, .-my_tramp\n"
++"2:\n"
++"	.quad		.TOC.@tocbase\n"
++"	.popsection\n"
++);
++#endif
+ 
+ 
+ static int __init ftrace_direct_init(void)
+ {
+-	return register_ftrace_direct((unsigned long)wake_up_process,
+-				     (unsigned long)my_tramp);
++#ifdef CONFIG_PPC64
++	/* Ftrace location is (usually) the second instruction at a function's local entry point */
++	my_ip = ppc_function_entry((void *)my_ip) + 4;
++#endif
++	return register_ftrace_direct(my_ip, (unsigned long)my_tramp);
+ }
+ 
+ static void __exit ftrace_direct_exit(void)
+ {
+-	unregister_ftrace_direct((unsigned long)wake_up_process,
+-				 (unsigned long)my_tramp);
++	unregister_ftrace_direct(my_ip, (unsigned long)my_tramp);
+ }
+ 
+ module_init(ftrace_direct_init);
 -- 
 2.25.4
 
