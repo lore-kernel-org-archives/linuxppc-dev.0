@@ -2,26 +2,26 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77ED7C56201
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:11:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A40A9C56201
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:13:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 882CE20872
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:11:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E226C20872
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:13:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="SCRhkuwN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 882CE20872
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="R1NuxDwt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E226C20872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChJ801QHCzDqwy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 11:11:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChJBK3sKszDqx1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 11:13:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0b-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
@@ -30,58 +30,61 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=SCRhkuwN; dkim-atps=neutral
+ header.s=pp1 header.b=R1NuxDwt; dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChJ5k54gYzDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 11:09:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChJ6C50BCzDr2h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 11:09:39 +1100 (AEDT)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQ02o3D127438; Wed, 25 Nov 2020 19:09:08 -0500
+ 0AQ02p8l127529; Wed, 25 Nov 2020 19:09:37 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=Qf3gLvQ/R57sxawcKZK++b9HkZEdRMhhDbo9dSMTBqc=;
- b=SCRhkuwNwmP+ASUC3+56VGsRcaVl6DX2E9u1oPM3eVrDZZmFa8fj8/KI58KHMjdoPZNS
- 1vQvReiMOdem0qt6RDNrLEgaYhYI4CJ2ZIygdfEB5RuEiBwH2fCbXwony17CPm6ApAFW
- TAGDiNUF9CdHbMI+iKEgqVuASC3C8pTEd6PkEBpz06vKFSCO6pEtwEVj91EU90TEBieY
- MDMjzY2DYNR4Hu1BJCnIQPQaNsqQjDW1QucnmaNFBxSnJtmvv2bKScyqv1wuNnW/Vx9X
- UlJyp5wrcOCiMA2waqerj85jbE4b9Vg2ZqE9bFi+34haKtdJXuWOgsb2VfpDvPon6iPb bw== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 351yjcjkpj-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=ufFDuUsOLLTxrA0S0tG0aMXmRaCyLMJ842UgHxqusag=;
+ b=R1NuxDwtRFk+a/FnvSnYmB+9TBEDwOBMNJI+Yh1AdGJ0vBdj+2Y7D/9UZT7Yewtf3Ux8
+ XG1F697xt0cBaCmvbhKjXLJ2NCa5ru3gzx+CZqezEzjzY9sPzDfnll32ugc41N8f+ZRY
+ NnFmLXtRDmtDRYnmcYNqI+U3VDlQjr0Q4ICZK3mbirsnGBqy+NeshhqaqzrKWy/lTVgR
+ 45Om0RY2J1WmPCXiZAg+FHk1BqX3EMsimiEmW7zjUBQSbn40+h4nP2raUsbvrSSllYGB
+ Y2FwCXk4ln/v8Ro7vH/VZJFYEYdn+AzPIJUokKV8f8aLLtVzoM99egYctjeAW+ejQm3p cw== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 351yjcjkyh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 19:09:08 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQ07XlJ001035;
- Thu, 26 Nov 2020 00:09:07 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma05wdc.us.ibm.com with ESMTP id 34xth9b559-1
+ Wed, 25 Nov 2020 19:09:37 -0500
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQ07CNO009967;
+ Thu, 26 Nov 2020 00:09:37 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma03wdc.us.ibm.com with ESMTP id 35133p3hpg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 00:09:07 +0000
+ Thu, 26 Nov 2020 00:09:37 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQ097ai11141884
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AQ09ali2884228
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 00:09:07 GMT
+ Thu, 26 Nov 2020 00:09:36 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4E0F5AC064;
- Thu, 26 Nov 2020 00:09:07 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A5A76AC05B;
+ Thu, 26 Nov 2020 00:09:36 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DA084AC05E;
- Thu, 26 Nov 2020 00:09:06 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 471FAAC067;
+ Thu, 26 Nov 2020 00:09:36 +0000 (GMT)
 Received: from linux-i8xm.aus.stglabs.ibm.com (unknown [9.40.195.200])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 00:09:06 +0000 (GMT)
+ Thu, 26 Nov 2020 00:09:36 +0000 (GMT)
 From: Dany Madden <drt@linux.ibm.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net v3 0/9] ibmvnic: assorted bug fixes
-Date: Wed, 25 Nov 2020 18:04:23 -0600
-Message-Id: <20201126000432.29897-1-drt@linux.ibm.com>
+Subject: [PATCH net v3 4/9] ibmvnic: restore adapter state on failed reset
+Date: Wed, 25 Nov 2020 18:04:27 -0600
+Message-Id: <20201126000432.29897-5-drt@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201126000432.29897-1-drt@linux.ibm.com>
+References: <20201126000432.29897-1-drt@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -90,8 +93,8 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  2020-11-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  bulkscore=0 impostorscore=0
- suspectscore=3 mlxscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
- phishscore=0 mlxlogscore=714 priorityscore=1501 adultscore=0
+ suspectscore=1 mlxscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ phishscore=0 mlxlogscore=999 priorityscore=1501 adultscore=0
  malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2011240121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -111,40 +114,181 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Assorted fixes for ibmvnic originated from "[PATCH net 00/15] ibmvnic:
-assorted bug fixes" sent by Lijun Pan.
+In a failed reset, driver could end up in VNIC_PROBED or VNIC_CLOSED
+state and cannot recover in subsequent resets, leaving it offline.
+This patch restores the adapter state to reset_state, the original
+state when reset was called.
 
-v3 Changes as suggested by Jakub Kicinski:
-- Add a space between variable declaration and code in patch 3/9. Checkpatch
-  does not catch this.
-- Unwrapped FIXES lines in patch 9/9.
-- Removed all extra line between Fixes and Signed-off-by lines in all patches.
+Fixes: b27507bb59ed5 ("net/ibmvnic: unlock rtnl_lock in reset so linkwatch_event can run")
+Fixes: 2770a7984db58 ("ibmvnic: Introduce hard reset recovery")
+Signed-off-by: Dany Madden <drt@linux.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 67 ++++++++++++++++--------------
+ 1 file changed, 36 insertions(+), 31 deletions(-)
 
-V2 Changes as suggested by Jakub Kicinski:
-- Added "Fixes" to each patch.
-- Remove "ibmvnic: process HMC disable command" from the series. Submitting it
-  separately to net-next.
-- Squash V1 "ibmvnic: remove free_all_rwi function" into
-  ibmvnic: stop free_all_rwi on failed reset.
-
-
-Dany Madden (7):
-  ibmvnic: handle inconsistent login with reset
-  ibmvnic: stop free_all_rwi on failed reset
-  ibmvnic: avoid memset null scrq msgs
-  ibmvnic: restore adapter state on failed reset
-  ibmvnic: send_login should check for crq errors
-  ibmvnic: no reset timeout for 5 seconds after reset
-  ibmvnic: reduce wait for completion time
-
-Sukadev Bhattiprolu (2):
-  ibmvnic: delay next reset if hard reset fails
-  ibmvnic: track pending login
-
- drivers/net/ethernet/ibm/ibmvnic.c | 168 ++++++++++++++++++-----------
- drivers/net/ethernet/ibm/ibmvnic.h |   3 +
- 2 files changed, 106 insertions(+), 65 deletions(-)
-
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index b08f95017825..ff474a790181 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1857,7 +1857,7 @@ static int do_change_param_reset(struct ibmvnic_adapter *adapter,
+ 	if (reset_state == VNIC_OPEN) {
+ 		rc = __ibmvnic_close(netdev);
+ 		if (rc)
+-			return rc;
++			goto out;
+ 	}
+ 
+ 	release_resources(adapter);
+@@ -1875,24 +1875,25 @@ static int do_change_param_reset(struct ibmvnic_adapter *adapter,
+ 	}
+ 
+ 	rc = ibmvnic_reset_init(adapter, true);
+-	if (rc)
+-		return IBMVNIC_INIT_FAILED;
++	if (rc) {
++		rc = IBMVNIC_INIT_FAILED;
++		goto out;
++	}
+ 
+ 	/* If the adapter was in PROBE state prior to the reset,
+ 	 * exit here.
+ 	 */
+ 	if (reset_state == VNIC_PROBED)
+-		return 0;
++		goto out;
+ 
+ 	rc = ibmvnic_login(netdev);
+ 	if (rc) {
+-		adapter->state = reset_state;
+-		return rc;
++		goto out;
+ 	}
+ 
+ 	rc = init_resources(adapter);
+ 	if (rc)
+-		return rc;
++		goto out;
+ 
+ 	ibmvnic_disable_irqs(adapter);
+ 
+@@ -1902,8 +1903,10 @@ static int do_change_param_reset(struct ibmvnic_adapter *adapter,
+ 		return 0;
+ 
+ 	rc = __ibmvnic_open(netdev);
+-	if (rc)
+-		return IBMVNIC_OPEN_FAILED;
++	if (rc) {
++		rc = IBMVNIC_OPEN_FAILED;
++		goto out;
++	}
+ 
+ 	/* refresh device's multicast list */
+ 	ibmvnic_set_multi(netdev);
+@@ -1912,7 +1915,10 @@ static int do_change_param_reset(struct ibmvnic_adapter *adapter,
+ 	for (i = 0; i < adapter->req_rx_queues; i++)
+ 		napi_schedule(&adapter->napi[i]);
+ 
+-	return 0;
++out:
++	if (rc)
++		adapter->state = reset_state;
++	return rc;
+ }
+ 
+ /**
+@@ -2015,7 +2021,6 @@ static int do_reset(struct ibmvnic_adapter *adapter,
+ 
+ 		rc = ibmvnic_login(netdev);
+ 		if (rc) {
+-			adapter->state = reset_state;
+ 			goto out;
+ 		}
+ 
+@@ -2083,6 +2088,9 @@ static int do_reset(struct ibmvnic_adapter *adapter,
+ 	rc = 0;
+ 
+ out:
++	/* restore the adapter state if reset failed */
++	if (rc)
++		adapter->state = reset_state;
+ 	rtnl_unlock();
+ 
+ 	return rc;
+@@ -2115,43 +2123,46 @@ static int do_hard_reset(struct ibmvnic_adapter *adapter,
+ 	if (rc) {
+ 		netdev_err(adapter->netdev,
+ 			   "Couldn't initialize crq. rc=%d\n", rc);
+-		return rc;
++		goto out;
+ 	}
+ 
+ 	rc = ibmvnic_reset_init(adapter, false);
+ 	if (rc)
+-		return rc;
++		goto out;
+ 
+ 	/* If the adapter was in PROBE state prior to the reset,
+ 	 * exit here.
+ 	 */
+ 	if (reset_state == VNIC_PROBED)
+-		return 0;
++		goto out;
+ 
+ 	rc = ibmvnic_login(netdev);
+-	if (rc) {
+-		adapter->state = VNIC_PROBED;
+-		return 0;
+-	}
++	if (rc)
++		goto out;
+ 
+ 	rc = init_resources(adapter);
+ 	if (rc)
+-		return rc;
++		goto out;
+ 
+ 	ibmvnic_disable_irqs(adapter);
+ 	adapter->state = VNIC_CLOSED;
+ 
+ 	if (reset_state == VNIC_CLOSED)
+-		return 0;
++		goto out;
+ 
+ 	rc = __ibmvnic_open(netdev);
+-	if (rc)
+-		return IBMVNIC_OPEN_FAILED;
++	if (rc) {
++		rc = IBMVNIC_OPEN_FAILED;
++		goto out;
++	}
+ 
+ 	call_netdevice_notifiers(NETDEV_NOTIFY_PEERS, netdev);
+ 	call_netdevice_notifiers(NETDEV_RESEND_IGMP, netdev);
+-
+-	return 0;
++out:
++	/* restore adapter state if reset failed */
++	if (rc)
++		adapter->state = reset_state;
++	return rc;
+ }
+ 
+ static struct ibmvnic_rwi *get_next_rwi(struct ibmvnic_adapter *adapter)
+@@ -2236,13 +2247,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 			rc = do_reset(adapter, rwi, reset_state);
+ 		}
+ 		kfree(rwi);
+-		if (rc == IBMVNIC_OPEN_FAILED) {
+-			if (list_empty(&adapter->rwi_list))
+-				adapter->state = VNIC_CLOSED;
+-			else
+-				adapter->state = reset_state;
+-			rc = 0;
+-		}
++
+ 		if (rc)
+ 			netdev_dbg(adapter->netdev, "Reset failed, rc=%d\n", rc);
+ 
 -- 
 2.26.2
 
