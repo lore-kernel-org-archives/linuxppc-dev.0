@@ -7,71 +7,61 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3739C56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:40:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23C92C63777
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:45:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0C4120B80
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:40:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 34C3020B80
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:45:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="g9Z7CJbv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0C4120B80
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="FXZZHVTp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34C3020B80
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Chcmz1VSqzDqTm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 23:40:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Chct42bChzDr3F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 23:45:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=merlin.20170209 header.b=g9Z7CJbv; 
+ header.s=casper.20170209 header.b=FXZZHVTp; 
  dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chc823yPCzDrD2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 23:12:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChcfT6H2KzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 23:35:13 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=Content-Type:MIME-Version:References:
- Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
- Content-ID:Content-Description:In-Reply-To;
- bh=nQU58GhLv/YhL/CnKMq9LOU9L3P5zbRnBo0bVoBpllY=; b=g9Z7CJbvq8z03P119GJb3YyqLg
- EmSmlqKMxmwXOCV7tCdZuyjLYQPU5qUympPmdeuxtiEm0rOtIm9inAnRenSzxFpnWXgwnkvecQg3a
- 9dX374bP5qWuOT1pAdIuwkrJXczu8C22p9JnORdA1jfjWLyRJ9WjGN+Y+465HKmQQiE2dO4J2Teb4
- vQ12Y+Mu8CinRUeFi+s6o4+po9G9z/A5d1CiajtXnPLZ+7/c0xcSlj6eUhtBgtDN9A9mg+ziYc785
- P2+Z1x+nIqUruVx92DW5XbwR2jxv1oZNuaVYJ2Rd18r+mTkKMGSHoRfOcvjKDfEVxkbw+0t2cYM5Q
- UUzCmQ+w==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kiG7d-0006MA-HD; Thu, 26 Nov 2020 12:11:37 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 31D753070AB;
- Thu, 26 Nov 2020 13:11:34 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
- id E988C200E74B0; Thu, 26 Nov 2020 13:11:33 +0100 (CET)
-Message-ID: <20201126121121.036370527@infradead.org>
-User-Agent: quilt/0.66
-Date: Thu, 26 Nov 2020 13:01:15 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: kan.liang@linux.intel.com, mingo@kernel.org, acme@kernel.org,
- mark.rutland@arm.com, alexander.shishkin@linux.intel.com, jolsa@redhat.com,
- eranian@google.com
-Subject: [PATCH v2 1/6] mm/gup: Provide gup_get_pte() more generic
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=9ejhLH5luSTjMivR8iBYSZAH/Td+wNgIzWpOtcETQ6g=; b=FXZZHVTpXmN6oW30ah+VdZoImZ
+ r0gdA4IuETmU07lnHrKQyWFWueUkBOKhmc9k2unLHzbEK+BQLqnERF8pGBN9seyfPC64GVcPrbiJW
+ K6hTKulAQXrVVZza5zeIwRjiiOcG1jEAgjqT2XLHdduiFxUxp3aKPSyH9wAohbr5niFIJZRi+0Vgb
+ pf/Q/nFuDLIr4e4qeeWW7rE7oW8CnCBDvokxVk+dDS7909dW10l2XWVu3kI+IXyizvkYF2X+qYpZ6
+ b6XUF2rL1joGwLOOBnfqdTTid6nkGyHh3XR7fxFTy5BlrNqlArurE9wejW7fxoGnqqyKLVK1YrRdP
+ g1GM83Iw==;
+Received: from willy by casper.infradead.org with local (Exim 4.92.3 #3 (Red
+ Hat Linux)) id 1kiGUE-0001rB-D8; Thu, 26 Nov 2020 12:34:58 +0000
+Date: Thu, 26 Nov 2020 12:34:58 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 3/6] perf/core: Fix arch_perf_get_page_size()
+Message-ID: <20201126123458.GO4327@casper.infradead.org>
 References: <20201126120114.071913521@infradead.org>
+ <20201126121121.164675154@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201126121121.164675154@infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,162 +73,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, ak@linux.intel.com, catalin.marinas@arm.com,
- peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, willy@infradead.org,
- linux-kernel@vger.kernel.org, dave.hansen@intel.com, npiggin@gmail.com,
- aneesh.kumar@linux.ibm.com, sparclinux@vger.kernel.org, will@kernel.org,
- davem@davemloft.net, kirill.shutemov@linux.intel.com
+Cc: mark.rutland@arm.com, aneesh.kumar@linux.ibm.com,
+ linux-arch@vger.kernel.org, catalin.marinas@arm.com, will@kernel.org,
+ alexander.shishkin@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ npiggin@gmail.com, linux-kernel@vger.kernel.org, acme@kernel.org,
+ davem@davemloft.net, dave.hansen@intel.com, ak@linux.intel.com,
+ eranian@google.com, sparclinux@vger.kernel.org, jolsa@redhat.com,
+ mingo@kernel.org, kirill.shutemov@linux.intel.com, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to write another lockless page-table walker, we need
-gup_get_pte() exposed. While doing that, rename it to
-ptep_get_lockless() to match the existing ptep_get() naming.
+On Thu, Nov 26, 2020 at 01:01:17PM +0100, Peter Zijlstra wrote:
+> The (new) page-table walker in arch_perf_get_page_size() is broken in
+> various ways. Specifically while it is used in a lockless manner, it
+> doesn't depend on CONFIG_HAVE_FAST_GUP nor uses the proper _lockless
+> offset methods, nor is careful to only read each entry only once.
+> 
+> Also the hugetlb support is broken due to calling pte_page() without
+> first checking pte_special().
+> 
+> Rewrite the whole thing to be a proper lockless page-table walker and
+> employ the new pXX_leaf_size() pgtable functions to determine the
+> pagetable size without looking at the page-frames.
+> 
+> Fixes: 51b646b2d9f8 ("perf,mm: Handle non-page-table-aligned hugetlbfs")
+> Fixes: 8d97e71811aa ("perf/core: Add PERF_SAMPLE_DATA_PAGE_SIZE")
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Tested-by: Kan Liang <kan.liang@linux.intel.com>
+> ---
+>  arch/arm64/include/asm/pgtable.h    |    3 +
+>  arch/sparc/include/asm/pgtable_64.h |   13 ++++
+>  arch/sparc/mm/hugetlbpage.c         |   19 ++++--
+>  include/linux/pgtable.h             |   16 +++++
+>  kernel/events/core.c                |  102 +++++++++++++-----------------------
+>  5 files changed, 82 insertions(+), 71 deletions(-)
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
----
- include/linux/pgtable.h |   55 +++++++++++++++++++++++++++++++++++++++++++++
- mm/gup.c                |   58 ------------------------------------------------
- 2 files changed, 56 insertions(+), 57 deletions(-)
+This diffstat doesn't match the patch in this email ...
 
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -258,6 +258,61 @@ static inline pte_t ptep_get(pte_t *ptep
- }
- #endif
- 
-+#ifdef CONFIG_GUP_GET_PTE_LOW_HIGH
-+/*
-+ * WARNING: only to be used in the get_user_pages_fast() implementation.
-+ *
-+ * With get_user_pages_fast(), we walk down the pagetables without taking any
-+ * locks.  For this we would like to load the pointers atomically, but sometimes
-+ * that is not possible (e.g. without expensive cmpxchg8b on x86_32 PAE).  What
-+ * we do have is the guarantee that a PTE will only either go from not present
-+ * to present, or present to not present or both -- it will not switch to a
-+ * completely different present page without a TLB flush in between; something
-+ * that we are blocking by holding interrupts off.
-+ *
-+ * Setting ptes from not present to present goes:
-+ *
-+ *   ptep->pte_high = h;
-+ *   smp_wmb();
-+ *   ptep->pte_low = l;
-+ *
-+ * And present to not present goes:
-+ *
-+ *   ptep->pte_low = 0;
-+ *   smp_wmb();
-+ *   ptep->pte_high = 0;
-+ *
-+ * We must ensure here that the load of pte_low sees 'l' IFF pte_high sees 'h'.
-+ * We load pte_high *after* loading pte_low, which ensures we don't see an older
-+ * value of pte_high.  *Then* we recheck pte_low, which ensures that we haven't
-+ * picked up a changed pte high. We might have gotten rubbish values from
-+ * pte_low and pte_high, but we are guaranteed that pte_low will not have the
-+ * present bit set *unless* it is 'l'. Because get_user_pages_fast() only
-+ * operates on present ptes we're safe.
-+ */
-+static inline pte_t ptep_get_lockless(pte_t *ptep)
-+{
-+	pte_t pte;
-+
-+	do {
-+		pte.pte_low = ptep->pte_low;
-+		smp_rmb();
-+		pte.pte_high = ptep->pte_high;
-+		smp_rmb();
-+	} while (unlikely(pte.pte_low != ptep->pte_low));
-+
-+	return pte;
-+}
-+#else /* CONFIG_GUP_GET_PTE_LOW_HIGH */
-+/*
-+ * We require that the PTE can be read atomically.
-+ */
-+static inline pte_t ptep_get_lockless(pte_t *ptep)
-+{
-+	return ptep_get(ptep);
-+}
-+#endif /* CONFIG_GUP_GET_PTE_LOW_HIGH */
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- #ifndef __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
- static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -2079,62 +2079,6 @@ static void put_compound_head(struct pag
- 	put_page(page);
- }
- 
--#ifdef CONFIG_GUP_GET_PTE_LOW_HIGH
--
--/*
-- * WARNING: only to be used in the get_user_pages_fast() implementation.
-- *
-- * With get_user_pages_fast(), we walk down the pagetables without taking any
-- * locks.  For this we would like to load the pointers atomically, but sometimes
-- * that is not possible (e.g. without expensive cmpxchg8b on x86_32 PAE).  What
-- * we do have is the guarantee that a PTE will only either go from not present
-- * to present, or present to not present or both -- it will not switch to a
-- * completely different present page without a TLB flush in between; something
-- * that we are blocking by holding interrupts off.
-- *
-- * Setting ptes from not present to present goes:
-- *
-- *   ptep->pte_high = h;
-- *   smp_wmb();
-- *   ptep->pte_low = l;
-- *
-- * And present to not present goes:
-- *
-- *   ptep->pte_low = 0;
-- *   smp_wmb();
-- *   ptep->pte_high = 0;
-- *
-- * We must ensure here that the load of pte_low sees 'l' IFF pte_high sees 'h'.
-- * We load pte_high *after* loading pte_low, which ensures we don't see an older
-- * value of pte_high.  *Then* we recheck pte_low, which ensures that we haven't
-- * picked up a changed pte high. We might have gotten rubbish values from
-- * pte_low and pte_high, but we are guaranteed that pte_low will not have the
-- * present bit set *unless* it is 'l'. Because get_user_pages_fast() only
-- * operates on present ptes we're safe.
-- */
--static inline pte_t gup_get_pte(pte_t *ptep)
--{
--	pte_t pte;
--
--	do {
--		pte.pte_low = ptep->pte_low;
--		smp_rmb();
--		pte.pte_high = ptep->pte_high;
--		smp_rmb();
--	} while (unlikely(pte.pte_low != ptep->pte_low));
--
--	return pte;
--}
--#else /* CONFIG_GUP_GET_PTE_LOW_HIGH */
--/*
-- * We require that the PTE can be read atomically.
-- */
--static inline pte_t gup_get_pte(pte_t *ptep)
--{
--	return ptep_get(ptep);
--}
--#endif /* CONFIG_GUP_GET_PTE_LOW_HIGH */
--
- static void __maybe_unused undo_dev_pagemap(int *nr, int nr_start,
- 					    unsigned int flags,
- 					    struct page **pages)
-@@ -2160,7 +2104,7 @@ static int gup_pte_range(pmd_t pmd, unsi
- 
- 	ptem = ptep = pte_offset_map(&pmd, addr);
- 	do {
--		pte_t pte = gup_get_pte(ptep);
-+		pte_t pte = ptep_get_lockless(ptep);
- 		struct page *head, *page;
- 
- 		/*
-
-
+> --- a/kernel/events/core.c
+> +++ b/kernel/events/core.c
+> @@ -52,6 +52,7 @@
+>  #include <linux/mount.h>
+>  #include <linux/min_heap.h>
+>  #include <linux/highmem.h>
+> +#include <linux/pgtable.h>
+>  
+>  #include "internal.h"
+>  
+> @@ -7001,90 +7001,62 @@ static u64 perf_virt_to_phys(u64 virt)
+>  	return phys_addr;
+>  }
+>  
+> -#ifdef CONFIG_MMU
+> -
+>  /*
+> - * Return the MMU page size of a given virtual address.
+> - *
+> - * This generic implementation handles page-table aligned huge pages, as well
+> - * as non-page-table aligned hugetlbfs compound pages.
+> - *
+> - * If an architecture supports and uses non-page-table aligned pages in their
+> - * kernel mapping it will need to provide it's own implementation of this
+> - * function.
+> + * Return the pagetable size of a given virtual address.
+>   */
+> -__weak u64 arch_perf_get_page_size(struct mm_struct *mm, unsigned long addr)
+> +static u64 perf_get_pgtable_size(struct mm_struct *mm, unsigned long addr)
+>  {
+> -	struct page *page;
+> -	pgd_t *pgd;
+> -	p4d_t *p4d;
+> -	pud_t *pud;
+> -	pmd_t *pmd;
+> -	pte_t *pte;
+> +	u64 size = 0;
+>  
+> -	pgd = pgd_offset(mm, addr);
+> -	if (pgd_none(*pgd))
+> -		return 0;
+> +#ifdef CONFIG_HAVE_FAST_GUP
+> +	pgd_t *pgdp, pgd;
+> +	p4d_t *p4dp, p4d;
+> +	pud_t *pudp, pud;
+> +	pmd_t *pmdp, pmd;
+> +	pte_t *ptep, pte;
+>  
+> -	p4d = p4d_offset(pgd, addr);
+> -	if (!p4d_present(*p4d))
+> +	pgdp = pgd_offset(mm, addr);
+> +	pgd = READ_ONCE(*pgdp);
+> +	if (pgd_none(pgd))
+>  		return 0;
+>  
+> -	if (p4d_leaf(*p4d))
+> -		return 1ULL << P4D_SHIFT;
+> +	if (pgd_leaf(pgd))
+> +		return pgd_leaf_size(pgd);
+>  
+> -	pud = pud_offset(p4d, addr);
+> -	if (!pud_present(*pud))
+> +	p4dp = p4d_offset_lockless(pgdp, pgd, addr);
+> +	p4d = READ_ONCE(*p4dp);
+> +	if (!p4d_present(p4d))
+>  		return 0;
+>  
+> -	if (pud_leaf(*pud)) {
+> -#ifdef pud_page
+> -		page = pud_page(*pud);
+> -		if (PageHuge(page))
+> -			return page_size(compound_head(page));
+> -#endif
+> -		return 1ULL << PUD_SHIFT;
+> -	}
+> +	if (p4d_leaf(p4d))
+> +		return p4d_leaf_size(p4d);
+>  
+> -	pmd = pmd_offset(pud, addr);
+> -	if (!pmd_present(*pmd))
+> +	pudp = pud_offset_lockless(p4dp, p4d, addr);
+> +	pud = READ_ONCE(*pudp);
+> +	if (!pud_present(pud))
+>  		return 0;
+>  
+> -	if (pmd_leaf(*pmd)) {
+> -#ifdef pmd_page
+> -		page = pmd_page(*pmd);
+> -		if (PageHuge(page))
+> -			return page_size(compound_head(page));
+> -#endif
+> -		return 1ULL << PMD_SHIFT;
+> -	}
+> +	if (pud_leaf(pud))
+> +		return pud_leaf_size(pud);
+>  
+> -	pte = pte_offset_map(pmd, addr);
+> -	if (!pte_present(*pte)) {
+> -		pte_unmap(pte);
+> +	pmdp = pmd_offset_lockless(pudp, pud, addr);
+> +	pmd = READ_ONCE(*pmdp);
+> +	if (!pmd_present(pmd))
+>  		return 0;
+> -	}
+>  
+> -	page = pte_page(*pte);
+> -	if (PageHuge(page)) {
+> -		u64 size = page_size(compound_head(page));
+> -		pte_unmap(pte);
+> -		return size;
+> -	}
+> -
+> -	pte_unmap(pte);
+> -	return PAGE_SIZE;
+> -}
+> +	if (pmd_leaf(pmd))
+> +		return pmd_leaf_size(pmd);
+>  
+> -#else
+> +	ptep = pte_offset_map(&pmd, addr);
+> +	pte = ptep_get_lockless(ptep);
+> +	if (pte_present(pte))
+> +		size = pte_leaf_size(pte);
+> +	pte_unmap(ptep);
+> +#endif /* CONFIG_HAVE_FAST_GUP */
+>  
+> -static u64 arch_perf_get_page_size(struct mm_struct *mm, unsigned long addr)
+> -{
+> -	return 0;
+> +	return size;
+>  }
+>  
+> -#endif
+> -
+>  static u64 perf_get_page_size(unsigned long addr)
+>  {
+>  	struct mm_struct *mm;
+> @@ -7109,7 +7081,7 @@ static u64 perf_get_page_size(unsigned l
+>  		mm = &init_mm;
+>  	}
+>  
+> -	size = arch_perf_get_page_size(mm, addr);
+> +	size = perf_get_pgtable_size(mm, addr);
+>  
+>  	local_irq_restore(flags);
+>  
+> 
+> 
