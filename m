@@ -2,66 +2,65 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4E49C56201
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 03:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CCF4C56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 05:25:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B679A21741
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 03:29:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5431A20770
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 05:25:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="pNqni0Cn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B679A21741
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ao43ezJo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5431A20770
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChNY24q29zDqsq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 14:29:42 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChR6m1p33zDrBn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 16:25:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=jarkko@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Ao43ezJo; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChNWN0gRNzDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 14:28:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=pNqni0Cn; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4ChNWM6GC3z9sRK;
- Thu, 26 Nov 2020 14:28:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1606361295;
- bh=JeXbhqzrtPmg4rJYX0q0j0uEabWtbH2W+EYspiTNMGY=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=pNqni0Cncm3R71SA98AtxaRi9bg2wNEm2ckVk61g0qDTfXquAbblujf7+jsGbLcDw
- 4pOrI67kEJmjHWbnX0cYQZmzI2lEspX1voEnGx0eKE2oSNx01ZUfX1YWzg+va8nD3n
- q9MomgFZd9mhRVPdjysA666631ncdNJyhtRhSn1pKHYXIKjfQxUZbnryUuxKtdGuf5
- sixIFr/6715Tw5ork0/h/Ox1GCO7OPOXEMJjuv+zbgf42ZeRgxrB3Cmi7gKHGiwXXX
- D2v57CggFyF6/gkR9zQXHukM4GSrC8g4jIdJ09q4Ow8T3jeBv5zblpbWBlydRjPF3s
- 0mezdqUkWQEDA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 04/22] powerpc/book3s64/kuap/kuep: Move uamor setup to
- pkey init
-In-Reply-To: <20201125051634.509286-5-aneesh.kumar@linux.ibm.com>
-References: <20201125051634.509286-1-aneesh.kumar@linux.ibm.com>
- <20201125051634.509286-5-aneesh.kumar@linux.ibm.com>
-Date: Thu, 26 Nov 2020 14:28:15 +1100
-Message-ID: <87tutcyey8.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChNgZ44mzzDqpk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 14:35:22 +1100 (AEDT)
+Received: from suppilovahvero.lan (83-245-197-237.elisa-laajakaista.fi
+ [83.245.197.237])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 96B3520578;
+ Thu, 26 Nov 2020 03:35:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1606361719;
+ bh=Pm86dA96vUB8ve/WV9A5oJB00MJ+s60jMcnkxr4UFJo=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=Ao43ezJomqCbc8UXSXpuCxDN6NNJmTWH9EJcqzDgLvZaJZ9Wg6lnU4GQFDMO0AYw+
+ d+DefLfOulwbgxAPWLfgHsJrqlzxao1dhx6WLIFrGh2fBDv5BqHqrlWxgIvK9vCWTA
+ vNIrbJDnVXQs47LMpv0bSM8ltuFv7p9/om+dkb3g=
+Message-ID: <4192b5a07ebd0539dd8244afe9e065b4996f4f4a.camel@kernel.org>
+Subject: Re: [PATCH] tpm: ibmvtpm: fix error return code in tpm_ibmvtpm_probe()
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: Wang Hai <wanghai38@huawei.com>, mpe@ellerman.id.au, 
+ benh@kernel.crashing.org, paulus@samba.org, peterhuewe@gmx.de,
+ jgg@ziepe.ca,  stefanb@linux.ibm.com, nayna@linux.ibm.com
+Date: Thu, 26 Nov 2020 05:35:15 +0200
+In-Reply-To: <20201124135244.31932-1-wanghai38@huawei.com>
+References: <20201124135244.31932-1-wanghai38@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.1-1 
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 26 Nov 2020 16:24:11 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,52 +72,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> This patch consolidates UAMOR update across pkey, kuap and kuep features.
-> The boot cpu initialize UAMOR via pkey init and both radix/hash do the
-> secondary cpu UAMOR init in early_init_mmu_secondary.
->
-> We don't check for mmu_feature in radix secondary init because UAMOR
-> is a supported SPRN with all CPUs supporting radix translation.
-> The old code was not updating UAMOR if we had smap disabled and smep enabled.
-> This change handles that case.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+On Tue, 2020-11-24 at 21:52 +0800, Wang Hai wrote:
+> Fix to return a negative error code from the error handling
+> case instead of 0, as done elsewhere in this function.
+> 
+> Fixes: d8d74ea3c002 ("tpm: ibmvtpm: Wait for buffer to be set before
+> proceeding")
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Wang Hai <wanghai38@huawei.com>
+
+Provide a reasoning for -ETIMEOUT in the commit message.
+
+/Jarkko
+
 > ---
->  arch/powerpc/mm/book3s64/radix_pgtable.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> index 3adcf730f478..bfe441af916a 100644
-> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -620,9 +620,6 @@ void setup_kuap(bool disabled)
->  		cur_cpu_spec->mmu_features |= MMU_FTR_RADIX_KUAP;
->  	}
->  
-> -	/* Make sure userspace can't change the AMR */
-> -	mtspr(SPRN_UAMOR, 0);
-> -
->  	/*
->  	 * Set the default kernel AMR values on all cpus.
->  	 */
-> @@ -721,6 +718,11 @@ void radix__early_init_mmu_secondary(void)
->  
->  	radix__switch_mmu_context(NULL, &init_mm);
->  	tlbiel_all();
-> +
-> +#ifdef CONFIG_PPC_PKEY
-> +	/* Make sure userspace can't change the AMR */
-> +	mtspr(SPRN_UAMOR, 0);
-> +#endif
+>  drivers/char/tpm/tpm_ibmvtpm.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c
+> b/drivers/char/tpm/tpm_ibmvtpm.c
+> index 994385bf37c0..813eb2cac0ce 100644
+> --- a/drivers/char/tpm/tpm_ibmvtpm.c
+> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
+> @@ -687,6 +687,7 @@ static int tpm_ibmvtpm_probe(struct vio_dev
+> *vio_dev,
+>                                 ibmvtpm->rtce_buf != NULL,
+>                                 HZ)) {
+>                 dev_err(dev, "CRQ response timed out\n");
+> +               rc = -ETIMEDOUT;
+>                 goto init_irq_cleanup;
+>         }
+>  
 
-If PPC_PKEY is disabled I think this leaves UAMOR unset, which means it
-could potentially allow AMR to be used as a covert channel between
-processes.
 
-cheers
