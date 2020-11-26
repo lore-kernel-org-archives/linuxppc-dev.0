@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF6FC56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ACE2C63697
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:31:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F18021D91
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:29:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8A5CC206CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 18:31:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="iCXybexI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F18021D91
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="r1mxnto1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A5CC206CA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChmWF25C2zDrhQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 05:29:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChmYT5lrKzDrcP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 05:31:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
@@ -30,60 +30,60 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=iCXybexI; dkim-atps=neutral
+ header.s=pp1 header.b=r1mxnto1; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chm552BT9zDrP1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 05:10:17 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Chm5B1SfHzDrN1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 05:10:21 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQI2N2o147229; Thu, 26 Nov 2020 13:09:54 -0500
+ 0AQI3Frt126777; Thu, 26 Nov 2020 13:09:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=rHVJ1RTVN5SEQ2AW+ma2UsJK0hIwmSUjz/r2nWve1/k=;
- b=iCXybexI4LasVqM+NcfhskMWLbgBOuuzDV/RsQ4+ZJp3/KJBiyjHa15XCNPdyXhfEQ5a
- 5EwYsJ/FX8rk5fGEaXyau8N4W410nN359G5RKCprQBK+SfuW+DnzZMkYxpP346Fmy7oN
- ld/iaW/5EvhAjrGqEbtz08xtlxNWQXlb1ZwcUC6Wm2kmgckKx2Y8aLt68J15UVK7SYQ/
- Ini8ZkxsRqlBNQtmzZL6dWFi8XEat9gRmt4jHht4MBGYmMFV5qblTX3fOkUrt852lMV4
- k1OVznoopHJM89xo1YSSYggNMq3jOja2jtnOrtMnub294lGwV9kgRnG1DuO8E4YlBWNL mw== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 352ft12hya-1
+ bh=5C45SA8tSbg7iyu0298Eb4LClwalZRJYloG1JYXsk2g=;
+ b=r1mxnto1kTQkjl7wivJ0IOBO7iITF4QMHFSS+pwO8LHRGXnko7J50J+3xVgtb9FEC79Y
+ eXZTdQEJI4+mOkZSdIUtj1uL4JUP+cF+xr2ik0O+33dTHM/rW9YbdS+wW6PcpqDdQ/hD
+ 1eiV4zs8cT0iJLJHj3jhn80Yg9U7wcOYOZdGeWFyF1giT/QL7hN+zZ4sVMyLIdRfcxPF
+ GEVSurljFHkIHDk9BAwxYOSLU4ldCEqmVezNrP2Bj1Bjc9tW95TYl+2vuXhHPGpr1P0X
+ aytH+t4+3glqaMsWGaIqSuIpSO7/wgN7zSzHy3U1WXhLGgq4Qp/h/d0Li9Cj5aA7+Ucj XQ== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 352gu48s01-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 13:09:53 -0500
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQI8xwk012509;
- Thu, 26 Nov 2020 18:09:52 GMT
+ Thu, 26 Nov 2020 13:09:46 -0500
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQI6hoG031786;
+ Thu, 26 Nov 2020 18:09:45 GMT
 Received: from b06cxnps4076.portsmouth.uk.ibm.com
  (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma03ams.nl.ibm.com with ESMTP id 34xth8dw77-1
+ by ppma05fra.de.ibm.com with ESMTP id 352ata06n4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 18:09:51 +0000
+ Thu, 26 Nov 2020 18:09:45 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQI9nPL8782578
+ 0AQI9g1v4325982
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 18:09:49 GMT
+ Thu, 26 Nov 2020 18:09:43 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CA9C2A405C;
- Thu, 26 Nov 2020 18:09:49 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D4614A4054;
+ Thu, 26 Nov 2020 18:09:42 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7249FA4054;
- Thu, 26 Nov 2020 18:09:47 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 095D1A405B;
+ Thu, 26 Nov 2020 18:09:41 +0000 (GMT)
 Received: from naverao1-tp.ibmuc.com (unknown [9.85.81.45])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 18:09:47 +0000 (GMT)
+ Thu, 26 Nov 2020 18:09:40 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [RFC PATCH 12/14] powerpc/ftrace: Drop saving LR to stack save area
- for -mprofile-kernel
-Date: Thu, 26 Nov 2020 23:38:49 +0530
-Message-Id: <b40cb303a22f75b85ec0c8d45160e983baff9299.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [RFC PATCH 10/14] powerpc/ftrace: Drop assumptions about ftrace
+ trampoline target
+Date: Thu, 26 Nov 2020 23:38:47 +0530
+Message-Id: <0ed4e63f6b3be1abdd59aa7b28a5dbdb99baeba1.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <cover.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
@@ -94,11 +94,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-26_08:2020-11-26,
  2020-11-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0
- impostorscore=0 malwarescore=0 mlxlogscore=999 mlxscore=0
- lowpriorityscore=0 bulkscore=0 adultscore=0 clxscore=1015 spamscore=0
+ malwarescore=0
+ mlxlogscore=999 clxscore=1015 spamscore=0 bulkscore=0 lowpriorityscore=0
+ suspectscore=0 mlxscore=0 adultscore=0 impostorscore=0 phishscore=0
  priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011260108
+ engine=8.12.0-2009150000 definitions=main-2011260112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,29 +115,171 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In -mprofile-kernel variant of ftrace_graph_caller(), we save the
-optionally-updated LR address into the stack save area at the end. This
-is likely an offshoot of the initial -mprofile-kernel implementation in
-gcc emitting the same as part of the -mprofile-kernel instruction
-sequence. However, this is not required. Drop it.
+We currently assume that ftrace locations are patched to go to either
+ftrace_caller or ftrace_regs_caller. Drop this assumption in preparation
+for supporting ftrace direct calls.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/kernel/trace/ftrace.c | 107 +++++++++++++++++++++++------
+ 1 file changed, 86 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index bbe871b47ade58..c5602e9b07faa3 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -310,7 +310,5 @@ _GLOBAL(ftrace_graph_caller)
- 	ld	r2, 24(r1)
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 7ddb6e4b527c39..fcb21a9756e456 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -322,14 +322,15 @@ static int add_ftrace_tramp(unsigned long tramp, unsigned long target)
+  */
+ static int setup_mcount_compiler_tramp(unsigned long tramp)
+ {
++	int i;
+ 	struct ppc_inst op;
+ 	struct ppc_inst instr;
+ 	struct ppc_ftrace_stub_data *stub;
+ 	unsigned long ptr, ftrace_target = ppc_global_function_entry((void *)FTRACE_REGS_ADDR);
  
- 	addi	r1, r1, SWITCH_FRAME_SIZE
--	mflr	r0
--	std	r0, LRSAVE(r1)
- 	bctr
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+-	/* Is this a known long jump tramp? */
+-	hash_for_each_possible(ppc_ftrace_stubs, stub, hentry, ftrace_target)
+-		if (stub->target == ftrace_target && stub->addr == tramp)
++	/* Is this a known tramp? */
++	hash_for_each(ppc_ftrace_stubs, i, stub, hentry)
++		if (stub->addr == tramp)
+ 			return 0;
+ 
+ 	/* New trampoline -- read where this goes */
+@@ -608,23 +609,16 @@ static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
+ {
+ 	struct ppc_inst op;
+ 	void *ip = (void *)rec->ip;
+-	unsigned long tramp, entry, ptr;
++	unsigned long tramp, ptr;
+ 
+-	/* Make sure we're being asked to patch branch to a known ftrace addr */
+-	entry = ppc_global_function_entry((void *)ftrace_caller);
+ 	ptr = ppc_global_function_entry((void *)addr);
+ 
+-	if (ptr != entry) {
+ #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+-		entry = ppc_global_function_entry((void *)ftrace_regs_caller);
+-		if (ptr != entry) {
++	/* Make sure we branch to ftrace_regs_caller since we only setup stubs for that */
++	tramp = ppc_global_function_entry((void *)ftrace_caller);
++	if (ptr == tramp)
++		ptr = ppc_global_function_entry((void *)FTRACE_REGS_ADDR);
+ #endif
+-			pr_err("Unknown ftrace addr to patch: %ps\n", (void *)ptr);
+-			return -EINVAL;
+-#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+-		}
+-#endif
+-	}
+ 
+ 	/* Make sure we have a nop */
+ 	if (probe_kernel_read_inst(&op, ip)) {
+@@ -637,7 +631,7 @@ static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
+ 		return -EINVAL;
+ 	}
+ 
+-	tramp = find_ftrace_tramp((unsigned long)ip, FTRACE_REGS_ADDR);
++	tramp = find_ftrace_tramp((unsigned long)ip, ptr);
+ 	if (!tramp) {
+ 		pr_err("No ftrace trampolines reachable from %ps\n", ip);
+ 		return -EINVAL;
+@@ -783,6 +777,81 @@ __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ }
+ #endif
+ 
++static int
++__ftrace_modify_call_kernel(struct dyn_ftrace *rec, unsigned long old_addr, unsigned long addr)
++{
++	struct ppc_inst op;
++	unsigned long ip = rec->ip;
++	unsigned long entry, ptr, tramp;
++
++	/* read where this goes */
++	if (probe_kernel_read_inst(&op, (void *)ip)) {
++		pr_err("Fetching opcode failed.\n");
++		return -EFAULT;
++	}
++
++	/* Make sure that this is still a 24bit jump */
++	if (!is_bl_op(op)) {
++		pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
++		return -EINVAL;
++	}
++
++	/* lets find where the pointer goes */
++	tramp = find_bl_target(ip, op);
++	entry = ppc_global_function_entry((void *)old_addr);
++
++	pr_devel("ip:%lx jumps to %lx", ip, tramp);
++
++	if (tramp != entry) {
++		/* old_addr is not within range, so we must have used a trampoline */
++		struct ppc_ftrace_stub_data *stub;
++
++		hash_for_each_possible(ppc_ftrace_stubs, stub, hentry, entry)
++			if (stub->target == entry && stub->addr == tramp)
++				break;
++
++		if (stub->target != entry || stub->addr != tramp) {
++			pr_err("we don't know about the tramp at %lx!\n", tramp);
++			return -EFAULT;
++		}
++	}
++
++	/* The new target may be within range */
++	if (test_24bit_addr(ip, addr)) {
++		/* within range */
++		if (patch_branch((struct ppc_inst *)ip, addr, BRANCH_SET_LINK)) {
++			pr_err("REL24 out of range!\n");
++			return -EINVAL;
++		}
++
++		return 0;
++	}
++
++	ptr = ppc_global_function_entry((void *)addr);
++
++#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
++	/* Make sure we branch to ftrace_regs_caller since we only setup stubs for that */
++	entry = ppc_global_function_entry((void *)ftrace_caller);
++	if (ptr == entry)
++		ptr = ppc_global_function_entry((void *)FTRACE_REGS_ADDR);
++#endif
++
++	tramp = find_ftrace_tramp(ip, ptr);
++
++	if (!tramp) {
++		pr_err("Couldn't find a trampoline\n");
++		return -EFAULT;
++	}
++
++	pr_devel("trampoline %lx target %lx", tramp, ptr);
++
++	if (patch_branch((struct ppc_inst *)ip, tramp, BRANCH_SET_LINK)) {
++		pr_err("REL24 out of range!\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
+ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 			unsigned long addr)
+ {
+@@ -800,11 +869,7 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 		new = ftrace_call_replace(ip, addr, 1);
+ 		return ftrace_modify_code(ip, old, new);
+ 	} else if (core_kernel_text(ip)) {
+-		/*
+-		 * We always patch out of range locations to go to the regs
+-		 * variant, so there is nothing to do here
+-		 */
+-		return 0;
++		return __ftrace_modify_call_kernel(rec, old_addr, addr);
+ 	}
+ 
+ #ifdef CONFIG_MODULES
 -- 
 2.25.4
 
