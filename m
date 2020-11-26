@@ -7,81 +7,81 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0254C56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:19:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A97EC56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:20:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E746A20770
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:19:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 82B0E20770
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:20:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="ADFpXKQ/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E746A20770
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="oZRz/Oxi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82B0E20770
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChJJy6MV3zDr5y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 11:18:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChJLw3TjjzDr1d
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 11:20:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=ADFpXKQ/; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=oZRz/Oxi; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChJ6D5fH7zDr2j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 11:09:40 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChJ6F4QW8zDr1N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 11:09:41 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQ04O4o131415; Wed, 25 Nov 2020 19:09:37 -0500
+ 0AQ01rOw044782; Wed, 25 Nov 2020 19:09:38 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=hS/O9oko7cMPTPnm8CEazRg2cfwhVlziRShqKg7dlj0=;
- b=ADFpXKQ/xNTh52P7n4xP9vWZr1MwQtTIjmPFkdaIcGiJSdDTZfgWvzx2H5Kuw1ygJkS9
- kcEoH/b/TQryzJVksKV9qOz0fHXibcwcIbCTaJfO9WOk+SpENH9UuvG/fvLfJAAhwW92
- xFlKiBAE6Z+8u+iK7Iz/6F0Kec4S5tYfQhZvu6QWlb45jpsDZL79g8yanT3rK/TamiQw
- HvzL6GrZ5Ktfn6E7lsJFT0UHtdrZJ0kUjKnfYC6Tfz2qJ1sld8HHLrsNJKm6bjMnQ7Hj
- 7jh8nbcDJ3k3T1GG8K9NuQHKZg31nqHlkCvANB9WWAygHli3pEuz7We1x80+H2TU24iX sQ== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 351suemd9t-1
+ bh=GznAOiMUBTMy45YnONg4DDcO9hsFx92aPFKYOHdvnpc=;
+ b=oZRz/OxiEdbeXhuG5WgF7fOx01nFOOBuHDUqwfwl+VH9mS5KS+IIQ5FMvH8GaQcNxb06
+ 73X+r3bmCEB8snFzs39VHTLOjcVCs4gyDcSCC/UoMaMmaTJ7QZMrHVP2NeI86cbuKj4n
+ 3sbjats5LZksQYSLl0gfYj/YpLByiYoywv1FixsHzhfUv7jqzBQOTCRfBBCCXWU/OR7m
+ 3NgKVVA7ia4xZu3b3rEF1TZ+RKTMSFJiYKSzu7B6RYrKqoIDo9Cr24HaMO+N+10sC43X
+ C39/B01e+TU2iyIBNKT3am0I5RGiMKDtRhTbufOkjtV2e7EQDjCFL4mlF0zoaM51H0j8 bg== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 351wndn3hf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Nov 2020 19:09:37 -0500
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQ07bXt027081;
- Thu, 26 Nov 2020 00:09:36 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01dal.us.ibm.com with ESMTP id 34xth9mann-1
+ Wed, 25 Nov 2020 19:09:38 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0APNsJTE030726;
+ Thu, 26 Nov 2020 00:09:38 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01wdc.us.ibm.com with ESMTP id 34xth9b45f-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 00:09:36 +0000
+ Thu, 26 Nov 2020 00:09:38 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQ09ZaP721658
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AQ09bSb16253626
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 00:09:35 GMT
+ Thu, 26 Nov 2020 00:09:37 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9F569AC05B;
- Thu, 26 Nov 2020 00:09:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 91487AC05F;
+ Thu, 26 Nov 2020 00:09:37 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 402B0AC059;
- Thu, 26 Nov 2020 00:09:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3ED0DAC05B;
+ Thu, 26 Nov 2020 00:09:37 +0000 (GMT)
 Received: from linux-i8xm.aus.stglabs.ibm.com (unknown [9.40.195.200])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 00:09:35 +0000 (GMT)
+ Thu, 26 Nov 2020 00:09:37 +0000 (GMT)
 From: Dany Madden <drt@linux.ibm.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net v3 2/9] ibmvnic: stop free_all_rwi on failed reset
-Date: Wed, 25 Nov 2020 18:04:25 -0600
-Message-Id: <20201126000432.29897-3-drt@linux.ibm.com>
+Subject: [PATCH net v3 6/9] ibmvnic: track pending login
+Date: Wed, 25 Nov 2020 18:04:29 -0600
+Message-Id: <20201126000432.29897-7-drt@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201126000432.29897-1-drt@linux.ibm.com>
 References: <20201126000432.29897-1-drt@linux.ibm.com>
@@ -92,10 +92,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-11-24_07:2020-11-24,
  2020-11-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxlogscore=999
- bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0
- suspectscore=3 phishscore=0 priorityscore=1501 spamscore=0 mlxscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ clxscore=1015 phishscore=0
+ lowpriorityscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
+ bulkscore=0 suspectscore=3 adultscore=0 spamscore=0 mlxlogscore=892
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2011240121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -108,72 +108,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dany Madden <drt@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- sukadev@linux.ibm.com, ljp@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, sukadev@linux.ibm.com, ljp@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When ibmvnic fails to reset, it breaks out of the reset loop and frees
-all of the remaining resets from the workqueue. Doing so prevents the
-adapter from recovering if no reset is scheduled after that. Instead,
-have the driver continue to process resets on the workqueue.
+From: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
 
-Remove the no longer need free_all_rwi().
+If after ibmvnic sends a LOGIN it gets a FAILOVER, it is possible that
+the worker thread will start reset process and free the login response
+buffer before it gets a (now stale) LOGIN_RSP. The ibmvnic tasklet will
+then try to access the login response buffer and crash.
 
-Fixes: ed651a10875f1 ("ibmvnic: Updated reset handling")
-Signed-off-by: Dany Madden <drt@linux.ibm.com>
+Have ibmvnic track pending logins and discard any stale login responses.
+
+Fixes: 032c5e82847a ("Driver for IBM System i/p VNIC protocol")
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 17 +++++++++++++++++
+ drivers/net/ethernet/ibm/ibmvnic.h |  1 +
+ 2 files changed, 18 insertions(+)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index dcb23015b6b4..d5a927bb4954 100644
+index e2f9b0e9dea8..55b07bd4c741 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -2173,17 +2173,6 @@ static struct ibmvnic_rwi *get_next_rwi(struct ibmvnic_adapter *adapter)
- 	return rwi;
- }
+@@ -3839,6 +3839,8 @@ static int send_login(struct ibmvnic_adapter *adapter)
+ 	crq.login.cmd = LOGIN;
+ 	crq.login.ioba = cpu_to_be32(buffer_token);
+ 	crq.login.len = cpu_to_be32(buffer_size);
++
++	adapter->login_pending = true;
+ 	ibmvnic_send_crq(adapter, &crq);
  
--static void free_all_rwi(struct ibmvnic_adapter *adapter)
--{
--	struct ibmvnic_rwi *rwi;
--
--	rwi = get_next_rwi(adapter);
--	while (rwi) {
--		kfree(rwi);
--		rwi = get_next_rwi(adapter);
--	}
--}
--
- static void __ibmvnic_reset(struct work_struct *work)
- {
- 	struct ibmvnic_rwi *rwi;
-@@ -2253,9 +2242,9 @@ static void __ibmvnic_reset(struct work_struct *work)
- 			else
- 				adapter->state = reset_state;
- 			rc = 0;
--		} else if (rc && rc != IBMVNIC_INIT_FAILED &&
--		    !adapter->force_reset_recovery)
--			break;
-+		}
-+		if (rc)
-+			netdev_dbg(adapter->netdev, "Reset failed, rc=%d\n", rc);
+ 	return 0;
+@@ -4391,6 +4393,15 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
+ 	u64 *size_array;
+ 	int i;
  
- 		rwi = get_next_rwi(adapter);
++	/* CHECK: Test/set of login_pending does not need to be atomic
++	 * because only ibmvnic_tasklet tests/clears this.
++	 */
++	if (!adapter->login_pending) {
++		netdev_warn(netdev, "Ignoring unexpected login response\n");
++		return 0;
++	}
++	adapter->login_pending = false;
++
+ 	dma_unmap_single(dev, adapter->login_buf_token, adapter->login_buf_sz,
+ 			 DMA_TO_DEVICE);
+ 	dma_unmap_single(dev, adapter->login_rsp_buf_token,
+@@ -4762,6 +4773,11 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
+ 		case IBMVNIC_CRQ_INIT:
+ 			dev_info(dev, "Partner initialized\n");
+ 			adapter->from_passive_init = true;
++			/* Discard any stale login responses from prev reset.
++			 * CHECK: should we clear even on INIT_COMPLETE?
++			 */
++			adapter->login_pending = false;
++
+ 			if (!completion_done(&adapter->init_done)) {
+ 				complete(&adapter->init_done);
+ 				adapter->init_done_rc = -EIO;
+@@ -5191,6 +5207,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 	dev_set_drvdata(&dev->dev, netdev);
+ 	adapter->vdev = dev;
+ 	adapter->netdev = netdev;
++	adapter->login_pending = false;
  
-@@ -2269,11 +2258,6 @@ static void __ibmvnic_reset(struct work_struct *work)
- 		complete(&adapter->reset_done);
- 	}
+ 	ether_addr_copy(adapter->mac_addr, mac_addr_p);
+ 	ether_addr_copy(netdev->dev_addr, adapter->mac_addr);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 217dcc7ded70..6f0a701c4a38 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1087,6 +1087,7 @@ struct ibmvnic_adapter {
+ 	struct delayed_work ibmvnic_delayed_reset;
+ 	unsigned long resetting;
+ 	bool napi_enabled, from_passive_init;
++	bool login_pending;
  
--	if (rc) {
--		netdev_dbg(adapter->netdev, "Reset failed\n");
--		free_all_rwi(adapter);
--	}
--
- 	clear_bit_unlock(0, &adapter->resetting);
- }
- 
+ 	bool failover_pending;
+ 	bool force_reset_recovery;
 -- 
 2.26.2
 
