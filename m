@@ -2,85 +2,64 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABCEEC63697
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 14:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6094C56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 14:52:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2B4520B80
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 14:47:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B8F4020B80
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 14:52:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CRjmklKz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2B4520B80
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NBpBmf5V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8F4020B80
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChgZc4clvzDrF2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 01:47:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChghZ27ylzDqbC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 01:52:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::442;
- helo=mail-wr1-x442.google.com; envelope-from=lee.jones@linaro.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=CRjmklKz; dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=NBpBmf5V; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chf4g4K5RzDrDD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 00:39:31 +1100 (AEDT)
-Received: by mail-wr1-x442.google.com with SMTP id 64so2161266wra.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 05:39:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=xRpAJlbq6+V+ePZQw5yqXL7428RUL9OWlsKS5RA6BKg=;
- b=CRjmklKzjv8jTVM8y5ehKKzL+Eel4+NeZfyvFpAJcJJCxkpaa/dQY/KI+1cxh1uKQ4
- x31XOW25cX4mFhG9B7f7Iq2OIMx1+YfwDvE8nsKg8nvngYAjmgAV1fdsiTKsLKsqr20d
- AVbJvZ+6JOoefJT03HN8cVZvAS/fcbeQr1wDFZHm80j3PrkvXxeRl91q4S97uqp5DDi6
- c8V8JkOpiN+wGrHi1sLekRUKouPglPzl1kSpPXorZqMDILV4Mo6Nd0z19ltIH1Hu0zoN
- wUZihn3nrw73DDDpfNkwdhmP6qJozeDF8vGvP60mgCrsT6gXef46skpBc28THKvD2tXQ
- 6Iwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=xRpAJlbq6+V+ePZQw5yqXL7428RUL9OWlsKS5RA6BKg=;
- b=X2p5qrqxrSZJo/1s2u6dz0TV658r8PkYXu+M7k21ZxO7b9eaI+iWR4jsPzPgS+/Sqm
- lpqRBCcs3lcUw0kayfPTbUvf92nYkE8IACVHLbuxBbk/3eRY0FhM7/yX8ejAZJ5Yd35g
- DZlNkz6WrPN5gApXqQj5sQ51loQc0+GJfUl4bTrGBhR3U+6Y0nGNelt/XwOp/6Bwdzcr
- /Jds0c8tj21Om8n0IB8YYUXFq1ggbzwEf23yO0j6HlVtjE0kBZ4kuaX4+MSQukKlBBdj
- CSC/poOUM39W0bTpB3wdCXYM3Acf+7gfvsE5zfePpTePwpWLjoTiqR3r2McZHOUXqKfy
- oMQw==
-X-Gm-Message-State: AOAM530HsQdZ2J7rldx4Y6cgR4FUblSFXWoOF4NmjVj8j4+xrMp0JGdr
- /M8LMNq1uLdvosTRY0djwA7y7w==
-X-Google-Smtp-Source: ABdhPJyLZT0V4+zVqDNFo6SwnsBmTFtnBfv+6D8SII+64k4pMDJ9qNUY8G8xUyMfkpwcg4n/U1GplQ==
-X-Received: by 2002:a5d:66cd:: with SMTP id k13mr3908174wrw.365.1606397949075; 
- Thu, 26 Nov 2020 05:39:09 -0800 (PST)
-Received: from dell.default ([91.110.221.235])
- by smtp.gmail.com with ESMTPSA id s133sm7035825wmf.38.2020.11.26.05.39.07
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Nov 2020 05:39:08 -0800 (PST)
-From: Lee Jones <lee.jones@linaro.org>
-To: lee.jones@linaro.org
-Subject: [PATCH 8/8] net: ethernet: ibm: ibmvnic: Fix some kernel-doc issues
-Date: Thu, 26 Nov 2020 13:38:53 +0000
-Message-Id: <20201126133853.3213268-9-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201126133853.3213268-1-lee.jones@linaro.org>
-References: <20201126133853.3213268-1-lee.jones@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChgGN6KgMzDqst
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 01:33:00 +1100 (AEDT)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2EEC42065E;
+ Thu, 26 Nov 2020 14:32:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1606401178;
+ bh=5dY8cbJVS6zfD7uZoLaby4Q2OOwNKKL2V1i9udJweeM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NBpBmf5VIbEXO88WpbzA6/iIU7KMKeADvAYkqkUzwv1+1V2haTEx2Ph0bDJb0KmlY
+ s1ebOaFIn/gppwqJN43nLeT+6RcP0IDfD2unluy9hcIsWJUDt1xc18gs4uuGOWCHNg
+ 0HUeP5Xqav3l1507RgGTmw4lRaV28Zv5UHxU3gi8=
+Date: Thu, 26 Nov 2020 14:32:50 +0000
+From: Will Deacon <will@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 4/6] arm64/mm: Implement pXX_leaf_size() support
+Message-ID: <20201126143249.GA18344@willie-the-truck>
+References: <20201126120114.071913521@infradead.org>
+ <20201126121121.226210959@infradead.org>
+ <20201126125747.GG2414@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201126125747.GG2414@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,80 +71,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Santiago Leon <santi_leon@yahoo.com>, Jakub Kicinski <kuba@kernel.org>,
- netdev@vger.kernel.org, Lijun Pan <ljp@linux.ibm.com>,
- Dany Madden <drt@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: mark.rutland@arm.com, aneesh.kumar@linux.ibm.com, willy@infradead.org,
+ catalin.marinas@arm.com, alexander.shishkin@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ acme@kernel.org, davem@davemloft.net, dave.hansen@intel.com,
+ ak@linux.intel.com, eranian@google.com, linux-arch@vger.kernel.org,
+ sparclinux@vger.kernel.org, jolsa@redhat.com, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes the following W=1 kernel build warning(s):
+On Thu, Nov 26, 2020 at 01:57:47PM +0100, Peter Zijlstra wrote:
+> 
+> Now with pmd_cont() defined...
+> 
+> ---
+> Subject: arm64/mm: Implement pXX_leaf_size() support
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Fri Nov 13 11:46:06 CET 2020
+> 
+> ARM64 has non-pagetable aligned large page support with PTE_CONT, when
+> this bit is set the page is part of a super-page. Match the hugetlb
+> code and support these super pages for PTE and PMD levels.
+> 
+> This enables PERF_SAMPLE_{DATA,CODE}_PAGE_SIZE to report accurate
+> pagetable leaf sizes.
+> 
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> ---
+>  arch/arm64/include/asm/pgtable.h |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -407,6 +407,7 @@ static inline int pmd_trans_huge(pmd_t p
+>  #define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+>  #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
+>  #define pmd_valid(pmd)		pte_valid(pmd_pte(pmd))
+> +#define pmd_cont(pmd)		pte_cont(pmd_pte(pmd))
+>  #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+>  #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+>  #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+> @@ -503,6 +504,9 @@ extern pgprot_t phys_mem_access_prot(str
+>  				 PMD_TYPE_SECT)
+>  #define pmd_leaf(pmd)		pmd_sect(pmd)
+>  
+> +#define pmd_leaf_size(pmd)	(pmd_cont(pmd) ? CONT_PMD_SIZE : PMD_SIZE)
+> +#define pte_leaf_size(pte)	(pte_cont(pte) ? CONT_PTE_SIZE : PAGE_SIZE)
+> +
+>  #if defined(CONFIG_ARM64_64K_PAGES) || CONFIG_PGTABLE_LEVELS < 3
+>  static inline bool pud_sect(pud_t pud) { return false; }
+>  static inline bool pud_table(pud_t pud) { return true; }
 
- from drivers/net/ethernet/ibm/ibmvnic.c:35:
- inlined from ‘handle_vpd_rsp’ at drivers/net/ethernet/ibm/ibmvnic.c:4124:3:
- drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter or member 'hdr_data' not described in 'build_hdr_data'
- drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Excess function parameter 'tot_len' description in 'build_hdr_data'
- drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'hdr_data' not described in 'create_hdr_descs'
- drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Excess function parameter 'data' description in 'create_hdr_descs'
- drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter or member 'txbuff' not described in 'build_hdr_descs_arr'
- drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Excess function parameter 'skb' description in 'build_hdr_descs_arr'
- drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Excess function parameter 'subcrq' description in 'build_hdr_descs_arr'
+Acked-by: Will Deacon <will@kernel.org>
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Dany Madden <drt@linux.ibm.com>
-Cc: Lijun Pan <ljp@linux.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Santiago Leon <santi_leon@yahoo.com>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Cc: John Allen <jallen@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: netdev@vger.kernel.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+I'm still highly dubious about the utility of this feature in perf, since
+the TLB entry size is pretty much independent of the page-table
+configuration, but that's a problem for all architectures I suspect.
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 36ea37721e3c8..0687f6cb0c7a2 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1379,7 +1379,7 @@ static int ibmvnic_close(struct net_device *netdev)
-  * @hdr_field: bitfield determining needed headers
-  * @skb: socket buffer
-  * @hdr_len: array of header lengths
-- * @tot_len: total length of data
-+ * @hdr_data: buffer to write the header to
-  *
-  * Reads hdr_field to determine which headers are needed by firmware.
-  * Builds a buffer containing these headers.  Saves individual header
-@@ -1437,7 +1437,7 @@ static int build_hdr_data(u8 hdr_field, struct sk_buff *skb,
- /**
-  * create_hdr_descs - create header and header extension descriptors
-  * @hdr_field: bitfield determining needed headers
-- * @data: buffer containing header data
-+ * @hdr_data: buffer containing header data
-  * @len: length of data buffer
-  * @hdr_len: array of individual header lengths
-  * @scrq_arr: descriptor array
-@@ -1488,9 +1488,8 @@ static int create_hdr_descs(u8 hdr_field, u8 *hdr_data, int len, int *hdr_len,
- 
- /**
-  * build_hdr_descs_arr - build a header descriptor array
-- * @skb: socket buffer
-+ * @txbuff: tx buffer
-  * @num_entries: number of descriptors to be sent
-- * @subcrq: first TX descriptor
-  * @hdr_field: bit field determining which headers will be sent
-  *
-  * This function will build a TX descriptor array with applicable
--- 
-2.25.1
-
+Will
