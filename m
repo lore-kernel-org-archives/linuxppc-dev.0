@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82C1AC56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FA35C56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:25:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57DB12087C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:20:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2843A2087C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 12:25:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vBt34Bck"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57DB12087C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="b/jro0EA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2843A2087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChcK11R1QzDrHZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 23:20:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChcRN53lyzDr49
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 23:25:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -30,45 +30,45 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=vBt34Bck; 
+ header.s=casper.20170209 header.b=b/jro0EA; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chc7r5vX6zDrCm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Chc7r6tRgzDrCp
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 23:12:08 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
  Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
  Content-ID:Content-Description:In-Reply-To;
- bh=WXAvlj8sBk2RdzEpcLbJIMj6YxrEqCvZ8aLKdoJEykM=; b=vBt34BckTzuxfPdRs6WzS6jl4U
- VMOgpb4TEclazpBWZFkBbC8RDZzxfyaCCsqZTH10v33Y9GOCdAchDmgd6bC8otUGCCPj1bOt0oACC
- u10faOlb2zRaRVENzRze4mruA5lUFRcTwut9JpdIhzKkqPyyAet1vZRoUhpTwN3KsL6Xuh2qhDYsb
- MNxFGsfN+kP/94UUc8oj7U/AWLpIgnf6qmwssN0L3COcdvoIaJNwgXkMSzyjn0zvb9KjalQIBX1Fq
- 5utgHyiFydFkKzl2tMDsnnLgOlK/BgCGb/3/drFLdfgrh8UTj+JUn/oJ6fDra3kDabeuw3NgnPvj5
- IcE5bbnA==;
+ bh=x9yV4MsXYN4evctZVqtcAzH/k7fEYwzyTJA1mVQojdk=; b=b/jro0EAjRk9MVIUYG9HS+fW/3
+ hQeipYAoaciICIAXFSNoYpO8L00XWfDKB3ZewmWxlbskGKaId+H1j2tegtmICsyq5ZtWQRvf/t0z3
+ 8o3IhsZmflSd+ew+6aO3V8Fp/MW9nhqtz1931ruCjacJjznuxw0AIY3gQom/yH20bZ60oIf/g0qeG
+ cf/tfPV5eR03FvXWAVxAq4hrL2urC9LwM89RDGnWP9guOOTcPfNh6EuU1yyrM1rcCidRqTWO22yjg
+ wDXdNqjxI2TqnVuZDk++W1rFZdWwNlBCj0toDHq8mLhsa2vGU42auBG0qUqKyte2RQLqvT6oldcNn
+ QVIe2Kig==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=noisy.programming.kicks-ass.net)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kiG7c-0000OT-Ol; Thu, 26 Nov 2020 12:11:36 +0000
+ id 1kiG7b-0000OH-S8; Thu, 26 Nov 2020 12:11:36 +0000
 Received: from hirez.programming.kicks-ass.net
  (hirez.programming.kicks-ass.net [192.168.1.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1342330280E;
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E3D0530767C;
  Thu, 26 Nov 2020 13:11:34 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
- id EBF8E25F0FB42; Thu, 26 Nov 2020 13:11:33 +0100 (CET)
-Message-ID: <20201126121121.102580109@infradead.org>
+ id 087362D167BEA; Thu, 26 Nov 2020 13:11:34 +0100 (CET)
+Message-ID: <20201126121121.364451610@infradead.org>
 User-Agent: quilt/0.66
-Date: Thu, 26 Nov 2020 13:01:16 +0100
+Date: Thu, 26 Nov 2020 13:01:20 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: kan.liang@linux.intel.com, mingo@kernel.org, acme@kernel.org,
  mark.rutland@arm.com, alexander.shishkin@linux.intel.com, jolsa@redhat.com,
  eranian@google.com
-Subject: [PATCH v2 2/6] mm: Introduce pXX_leaf_size()
+Subject: [PATCH v2 6/6] powerpc/8xx: Implement pXX_leaf_size() support
 References: <20201126120114.071913521@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -92,38 +92,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A number of architectures have non-pagetable aligned huge/large pages.
-For such architectures a leaf can actually be part of a larger entry.
+Christophe Leroy wrote:
 
-Provide generic helpers to determine the size of a page-table leaf.
+> I can help with powerpc 8xx. It is a 32 bits powerpc. The PGD has 1024
+> entries, that means each entry maps 4M.
+>
+> Page sizes are 4k, 16k, 512k and 8M.
+>
+> For the 8M pages we use hugepd with a single entry. The two related PGD
+> entries point to the same hugepd.
+>
+> For the other sizes, they are in standard page tables. 16k pages appear
+> 4 times in the page table. 512k entries appear 128 times in the page
+> table.
+>
+> When the PGD entry has _PMD_PAGE_8M bits, the PMD entry points to a
+> hugepd with holds the single 8M entry.
+>
+> In the PTE, we have two bits: _PAGE_SPS and _PAGE_HUGE
+>
+> _PAGE_HUGE means it is a 512k page
+> _PAGE_SPS means it is not a 4k page
+>
+> The kernel can by build either with 4k pages as standard page size, or
+> 16k pages. It doesn't change the page table layout though.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- include/linux/pgtable.h |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -1536,4 +1536,20 @@ typedef unsigned int pgtbl_mod_mask;
- #define pmd_leaf(x)	0
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -135,6 +135,29 @@ static inline pte_t pte_mkhuge(pte_t pte
+ }
+ 
+ #define pte_mkhuge pte_mkhuge
++
++static inline unsigned long pgd_leaf_size(pgd_t pgd)
++{
++	if (pgd_val(pgd) & _PMD_PAGE_8M)
++		return SZ_8M;
++	return SZ_4M;
++}
++
++#define pgd_leaf_size pgd_leaf_size
++
++static inline unsigned long pte_leaf_size(pte_t pte)
++{
++	pte_basic_t val = pte_val(pte);
++
++	if (val & _PAGE_HUGE)
++		return SZ_512K;
++	if (val & _PAGE_SPS)
++		return SZ_16K;
++	return SZ_4K;
++}
++
++#define pte_leaf_size pte_leaf_size
++
  #endif
  
-+#ifndef pgd_leaf_size
-+#define pgd_leaf_size(x) (1ULL << PGDIR_SHIFT)
-+#endif
-+#ifndef p4d_leaf_size
-+#define p4d_leaf_size(x) P4D_SIZE
-+#endif
-+#ifndef pud_leaf_size
-+#define pud_leaf_size(x) PUD_SIZE
-+#endif
-+#ifndef pmd_leaf_size
-+#define pmd_leaf_size(x) PMD_SIZE
-+#endif
-+#ifndef pte_leaf_size
-+#define pte_leaf_size(x) PAGE_SIZE
-+#endif
-+
- #endif /* _LINUX_PGTABLE_H */
+ #endif /* __KERNEL__ */
 
 
