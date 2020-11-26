@@ -2,100 +2,73 @@ Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFE9AC56202
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFF3EC56202
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:21:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2712F206B5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:11:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="N8tWr3ot"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2712F206B5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AAC9D21D1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 17:20:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAC9D21D1A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Chknl2FSmzDrHb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 04:11:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Chl095P9HzDr9C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 04:20:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=N8tWr3ot; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChkRs0hS6zDrP8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 03:56:24 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0AQGu6Fq066840; Thu, 26 Nov 2020 11:56:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references; s=pp1;
- bh=enjyidaL/03SOJMqWhQ2SWNHm5MC2kWjLI0aU4W036s=;
- b=N8tWr3otxAl8uHNAN/eLqPiyaXwMrvfMrrjFntkTGhMS0txOElDo+45LsXnLUfn1hQHb
- 129CwNRqb/fueikN9LFi8fHRM0URmqEh1eu8G9ydhymGlwkcJJsSpjQ+iercoS9n5Crf
- bgm7rmyCmAjb0Zda1J2IeGeSXXTCNUXWY+b1mp4mtZp/L5K3wNXNBx3dYPz4oo9NXZ0O
- VoZ1CHjg6QvJ2b200rlIM35e22A2SeJqqmV6CkJqQWzQgKu6VYNwjmXAsTQ55sXdNAlj
- yaLIUH+YFP642Bq5IrMp7+FpduJtNdtrMxQbuk3ttDRVWLZf2taNpOnk8cGH9T4nYYzc wQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 352gar006j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 11:56:20 -0500
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQGqnBS005281;
- Thu, 26 Nov 2020 16:56:18 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03fra.de.ibm.com with ESMTP id 34yy8r38uv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Nov 2020 16:56:18 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0AQGt0tr5571178
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Nov 2020 16:55:01 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5E674C04A;
- Thu, 26 Nov 2020 16:55:00 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CEEB84C044;
- Thu, 26 Nov 2020 16:54:58 +0000 (GMT)
-Received: from localhost.localdomain.localdomain (unknown [9.79.231.24])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Nov 2020 16:54:58 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH V2 4/7] powerpc/perf: Add generic and cache event list for
- power10 DD1
-Date: Thu, 26 Nov 2020 11:54:41 -0500
-Message-Id: <1606409684-1589-5-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1606409684-1589-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-26_06:2020-11-26,
- 2020-11-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- mlxlogscore=999 spamscore=0 impostorscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 mlxscore=0 suspectscore=1 lowpriorityscore=0
- phishscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011260097
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=pengutronix.de
+X-Greylist: delayed 1064 seconds by postgrey-1.36 at bilbo;
+ Fri, 27 Nov 2020 04:19:02 AEDT
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Chkxy6gVtzDr4M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 04:19:02 +1100 (AEDT)
+Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1kiKcr-0001Kk-AC; Thu, 26 Nov 2020 18:00:09 +0100
+Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1kiKch-0002s0-J8; Thu, 26 Nov 2020 17:59:59 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Geoff Levand <geoff@infradead.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 2/2] powerpc/ps3: make system bus's remove and shutdown
+ callbacks return void
+Date: Thu, 26 Nov 2020 17:59:50 +0100
+Message-Id: <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,222 +80,354 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linux-scsi@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are event code updates for some of the generic events
-and cache events for power10. Inorder to maintain the current
-event codes work with DD1 also, create a new array of generic_events,
-cache_events and pmu_attr_groups with suffix _dd1, example,
-power10_events_attr_dd1. So that further updates to event codes
-can be made in the original list, ie, power10_events_attr. Update the
-power10 pmu init code to pick the dd1 list while registering
-the power PMU, based on the pvr (Processor Version Register) value.
+The driver core ignores the return value of struct device_driver::remove
+because there is only little that can be done. For the shutdown callback
+it's ps3_system_bus_shutdown() which ignores the return value.
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To simplify the quest to make struct device_driver::remove return void,
+let struct ps3_system_bus_driver::remove return void, too. All users
+already unconditionally return 0, this commit makes it obvious that
+returning an error code is a bad idea and ensures future users behave
+accordingly.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/powerpc/perf/power10-pmu.c | 152 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 152 insertions(+)
+ arch/powerpc/include/asm/ps3.h               |  4 ++--
+ arch/powerpc/platforms/ps3/system-bus.c      |  5 ++---
+ drivers/block/ps3disk.c                      |  3 +--
+ drivers/block/ps3vram.c                      |  3 +--
+ drivers/char/ps3flash.c                      |  3 +--
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c |  3 +--
+ drivers/ps3/ps3-lpm.c                        |  3 +--
+ drivers/ps3/ps3-vuart.c                      | 10 ++++------
+ drivers/scsi/ps3rom.c                        |  3 +--
+ drivers/usb/host/ehci-ps3.c                  |  4 +---
+ drivers/usb/host/ohci-ps3.c                  |  4 +---
+ drivers/video/fbdev/ps3fb.c                  |  4 +---
+ sound/ppc/snd_ps3.c                          |  3 +--
+ 13 files changed, 18 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c
-index 88c5430..bc3d4dd 100644
---- a/arch/powerpc/perf/power10-pmu.c
-+++ b/arch/powerpc/perf/power10-pmu.c
-@@ -129,6 +129,31 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
- CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
- 
-+static struct attribute *power10_events_attr_dd1[] = {
-+	GENERIC_EVENT_PTR(PM_RUN_CYC),
-+	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
-+	GENERIC_EVENT_PTR(PM_BR_CMPL),
-+	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
-+	GENERIC_EVENT_PTR(PM_LD_REF_L1),
-+	GENERIC_EVENT_PTR(PM_LD_MISS_L1),
-+	GENERIC_EVENT_PTR(MEM_LOADS),
-+	GENERIC_EVENT_PTR(MEM_STORES),
-+	CACHE_EVENT_PTR(PM_LD_MISS_L1),
-+	CACHE_EVENT_PTR(PM_LD_REF_L1),
-+	CACHE_EVENT_PTR(PM_LD_PREFETCH_CACHE_LINE_MISS),
-+	CACHE_EVENT_PTR(PM_ST_MISS_L1),
-+	CACHE_EVENT_PTR(PM_L1_ICACHE_MISS),
-+	CACHE_EVENT_PTR(PM_INST_FROM_L1),
-+	CACHE_EVENT_PTR(PM_IC_PREF_REQ),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3),
-+	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
-+	CACHE_EVENT_PTR(PM_BR_CMPL),
-+	CACHE_EVENT_PTR(PM_DTLB_MISS),
-+	CACHE_EVENT_PTR(PM_ITLB_MISS),
-+	NULL
-+};
-+
- static struct attribute *power10_events_attr[] = {
- 	GENERIC_EVENT_PTR(PM_RUN_CYC),
- 	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
-@@ -154,6 +179,11 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- 	NULL
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index cb89e4bf55ce..e646c7f218bc 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -378,8 +378,8 @@ struct ps3_system_bus_driver {
+ 	enum ps3_match_sub_id match_sub_id;
+ 	struct device_driver core;
+ 	int (*probe)(struct ps3_system_bus_device *);
+-	int (*remove)(struct ps3_system_bus_device *);
+-	int (*shutdown)(struct ps3_system_bus_device *);
++	void (*remove)(struct ps3_system_bus_device *);
++	void (*shutdown)(struct ps3_system_bus_device *);
+ /*	int (*suspend)(struct ps3_system_bus_device *, pm_message_t); */
+ /*	int (*resume)(struct ps3_system_bus_device *); */
  };
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index c62aaa29a9d5..b431f41c6cb5 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -382,7 +382,6 @@ static int ps3_system_bus_probe(struct device *_dev)
  
-+static struct attribute_group power10_pmu_events_group_dd1 = {
-+	.name = "events",
-+	.attrs = power10_events_attr_dd1,
-+};
-+
- static struct attribute_group power10_pmu_events_group = {
- 	.name = "events",
- 	.attrs = power10_events_attr,
-@@ -205,12 +235,27 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- 	.attrs = power10_pmu_format_attr,
- };
+ static int ps3_system_bus_remove(struct device *_dev)
+ {
+-	int result = 0;
+ 	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
+ 	struct ps3_system_bus_driver *drv;
  
-+static const struct attribute_group *power10_pmu_attr_groups_dd1[] = {
-+	&power10_pmu_format_group,
-+	&power10_pmu_events_group_dd1,
-+	NULL,
-+};
-+
- static const struct attribute_group *power10_pmu_attr_groups[] = {
- 	&power10_pmu_format_group,
- 	&power10_pmu_events_group,
- 	NULL,
- };
+@@ -393,13 +392,13 @@ static int ps3_system_bus_remove(struct device *_dev)
+ 	BUG_ON(!drv);
  
-+static int power10_generic_events_dd1[] = {
-+	[PERF_COUNT_HW_CPU_CYCLES] =			PM_RUN_CYC,
-+	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_RUN_INST_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_CMPL,
-+	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
-+	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
-+	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
-+};
-+
- static int power10_generic_events[] = {
- 	[PERF_COUNT_HW_CPU_CYCLES] =			PM_RUN_CYC,
- 	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_RUN_INST_CMPL,
-@@ -276,6 +321,107 @@ static void power10_config_bhrb(u64 pmu_bhrb_filter)
-  * 0 means not supported, -1 means nonsensical, other values
-  * are event codes.
+ 	if (drv->remove)
+-		result = drv->remove(dev);
++		drv->remove(dev);
+ 	else
+ 		dev_dbg(&dev->core, "%s:%d %s: no remove method\n",
+ 			__func__, __LINE__, drv->core.name);
+ 
+ 	pr_debug(" <- %s:%d: %s\n", __func__, __LINE__, dev_name(&dev->core));
+-	return result;
++	return 0;
+ }
+ 
+ static void ps3_system_bus_shutdown(struct device *_dev)
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index 7b55811c2a81..ba3ece56cbb3 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -507,7 +507,7 @@ static int ps3disk_probe(struct ps3_system_bus_device *_dev)
+ 	return error;
+ }
+ 
+-static int ps3disk_remove(struct ps3_system_bus_device *_dev)
++static void ps3disk_remove(struct ps3_system_bus_device *_dev)
+ {
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+ 	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+@@ -526,7 +526,6 @@ static int ps3disk_remove(struct ps3_system_bus_device *_dev)
+ 	kfree(dev->bounce_buf);
+ 	kfree(priv);
+ 	ps3_system_bus_set_drvdata(_dev, NULL);
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3disk = {
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index 1088798c8dd0..b71d28372ef3 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -797,7 +797,7 @@ static int ps3vram_probe(struct ps3_system_bus_device *dev)
+ 	return error;
+ }
+ 
+-static int ps3vram_remove(struct ps3_system_bus_device *dev)
++static void ps3vram_remove(struct ps3_system_bus_device *dev)
+ {
+ 	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
+ 
+@@ -817,7 +817,6 @@ static int ps3vram_remove(struct ps3_system_bus_device *dev)
+ 	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
+ 	kfree(priv);
+ 	ps3_system_bus_set_drvdata(dev, NULL);
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3vram = {
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index 1a07fee33f66..23871cde41fb 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -403,7 +403,7 @@ static int ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 	return error;
+ }
+ 
+-static int ps3flash_remove(struct ps3_system_bus_device *_dev)
++static void ps3flash_remove(struct ps3_system_bus_device *_dev)
+ {
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+ 
+@@ -413,7 +413,6 @@ static int ps3flash_remove(struct ps3_system_bus_device *_dev)
+ 	kfree(ps3_system_bus_get_drvdata(&dev->sbd));
+ 	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
+ 	ps3flash_dev = NULL;
+-	return 0;
+ }
+ 
+ 
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index d9a5722f561b..3d1fc8d2ca66 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -1791,7 +1791,7 @@ static int ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
+  * ps3_gelic_driver_remove - remove a device from the control of this driver
   */
-+static u64 power10_cache_events_dd1[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
-+	[C(L1D)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_LD_REF_L1,
-+			[C(RESULT_MISS)] = PM_LD_MISS_L1,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_ST_MISS_L1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = PM_LD_PREFETCH_CACHE_LINE_MISS,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	[C(L1I)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_INST_FROM_L1,
-+			[C(RESULT_MISS)] = PM_L1_ICACHE_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = PM_INST_FROM_L1MISS,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = PM_IC_PREF_REQ,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	[C(LL)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_DATA_FROM_L3,
-+			[C(RESULT_MISS)] = PM_DATA_FROM_L3MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	 [C(DTLB)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_DTLB_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(ITLB)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_ITLB_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(BPU)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_BR_CMPL,
-+			[C(RESULT_MISS)] = PM_BR_MPRED_CMPL,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(NODE)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+};
-+
- static u64 power10_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
- 	[C(L1D)] = {
- 		[C(OP_READ)] = {
-@@ -422,6 +568,12 @@ int init_power10_pmu(void)
- 	/* Set the PERF_REG_EXTENDED_MASK here */
- 	PERF_REG_EXTENDED_MASK = PERF_REG_PMU_MASK_31;
  
-+	if ((PVR_CFG(pvr) == 1)) {
-+		power10_pmu.generic_events = power10_generic_events_dd1;
-+		power10_pmu.attr_groups = power10_pmu_attr_groups_dd1;
-+		power10_pmu.cache_events = &power10_cache_events_dd1;
-+	}
-+
- 	rc = register_power_pmu(&power10_pmu);
- 	if (rc)
- 		return rc;
+-static int ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
++static void ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
+ {
+ 	struct gelic_card *card = ps3_system_bus_get_drvdata(dev);
+ 	struct net_device *netdev0;
+@@ -1840,7 +1840,6 @@ static int ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
+ 	ps3_close_hv_device(dev);
+ 
+ 	pr_debug("%s: done\n", __func__);
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3_gelic_driver = {
+diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
+index e54aa2d82f50..65512b6cc6fd 100644
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -1196,7 +1196,7 @@ static int ps3_lpm_probe(struct ps3_system_bus_device *dev)
+ 	return 0;
+ }
+ 
+-static int ps3_lpm_remove(struct ps3_system_bus_device *dev)
++static void ps3_lpm_remove(struct ps3_system_bus_device *dev)
+ {
+ 	dev_dbg(&dev->core, " -> %s:%u:\n", __func__, __LINE__);
+ 
+@@ -1206,7 +1206,6 @@ static int ps3_lpm_remove(struct ps3_system_bus_device *dev)
+ 	lpm_priv = NULL;
+ 
+ 	dev_info(&dev->core, " <- %s:%u:\n", __func__, __LINE__);
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3_lpm_driver = {
+diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
+index 4ed131eaff51..e34ae6a442c7 100644
+--- a/drivers/ps3/ps3-vuart.c
++++ b/drivers/ps3/ps3-vuart.c
+@@ -1102,7 +1102,7 @@ static int ps3_vuart_cleanup(struct ps3_system_bus_device *dev)
+  * device can no longer be used.
+  */
+ 
+-static int ps3_vuart_remove(struct ps3_system_bus_device *dev)
++static void ps3_vuart_remove(struct ps3_system_bus_device *dev)
+ {
+ 	struct ps3_vuart_port_priv *priv = to_port_priv(dev);
+ 	struct ps3_vuart_port_driver *drv;
+@@ -1118,7 +1118,7 @@ static int ps3_vuart_remove(struct ps3_system_bus_device *dev)
+ 		dev_dbg(&dev->core, "%s:%d: no driver bound\n", __func__,
+ 			__LINE__);
+ 		mutex_unlock(&vuart_bus_priv.probe_mutex);
+-		return 0;
++		return;
+ 	}
+ 
+ 	drv = ps3_system_bus_dev_to_vuart_drv(dev);
+@@ -1141,7 +1141,6 @@ static int ps3_vuart_remove(struct ps3_system_bus_device *dev)
+ 
+ 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+ 	mutex_unlock(&vuart_bus_priv.probe_mutex);
+-	return 0;
+ }
+ 
+ /**
+@@ -1154,7 +1153,7 @@ static int ps3_vuart_remove(struct ps3_system_bus_device *dev)
+  * sequence.
+  */
+ 
+-static int ps3_vuart_shutdown(struct ps3_system_bus_device *dev)
++static void ps3_vuart_shutdown(struct ps3_system_bus_device *dev)
+ {
+ 	struct ps3_vuart_port_driver *drv;
+ 
+@@ -1169,7 +1168,7 @@ static int ps3_vuart_shutdown(struct ps3_system_bus_device *dev)
+ 		dev_dbg(&dev->core, "%s:%d: no driver bound\n", __func__,
+ 			__LINE__);
+ 		mutex_unlock(&vuart_bus_priv.probe_mutex);
+-		return 0;
++		return;
+ 	}
+ 
+ 	drv = ps3_system_bus_dev_to_vuart_drv(dev);
+@@ -1193,7 +1192,6 @@ static int ps3_vuart_shutdown(struct ps3_system_bus_device *dev)
+ 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+ 
+ 	mutex_unlock(&vuart_bus_priv.probe_mutex);
+-	return 0;
+ }
+ 
+ static int __init ps3_vuart_bus_init(void)
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index f75c0b5cd587..ccb5771f1cb7 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -402,7 +402,7 @@ static int ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 	return error;
+ }
+ 
+-static int ps3rom_remove(struct ps3_system_bus_device *_dev)
++static void ps3rom_remove(struct ps3_system_bus_device *_dev)
+ {
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+ 	struct Scsi_Host *host = ps3_system_bus_get_drvdata(&dev->sbd);
+@@ -412,7 +412,6 @@ static int ps3rom_remove(struct ps3_system_bus_device *_dev)
+ 	scsi_host_put(host);
+ 	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
+ 	kfree(dev->bounce_buf);
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3rom = {
+diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
+index fb52133c3557..98568b046a1a 100644
+--- a/drivers/usb/host/ehci-ps3.c
++++ b/drivers/usb/host/ehci-ps3.c
+@@ -200,7 +200,7 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+ 	return result;
+ }
+ 
+-static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
++static void ps3_ehci_remove(struct ps3_system_bus_device *dev)
+ {
+ 	unsigned int tmp;
+ 	struct usb_hcd *hcd = ps3_system_bus_get_drvdata(dev);
+@@ -227,8 +227,6 @@ static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_dma_region_free(dev->d_region);
+ 	ps3_close_hv_device(dev);
+-
+-	return 0;
+ }
+ 
+ static int __init ps3_ehci_driver_register(struct ps3_system_bus_driver *drv)
+diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
+index f77cd6af0ccf..4f5af929c3e4 100644
+--- a/drivers/usb/host/ohci-ps3.c
++++ b/drivers/usb/host/ohci-ps3.c
+@@ -184,7 +184,7 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
+ 	return result;
+ }
+ 
+-static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
++static void ps3_ohci_remove(struct ps3_system_bus_device *dev)
+ {
+ 	unsigned int tmp;
+ 	struct usb_hcd *hcd = ps3_system_bus_get_drvdata(dev);
+@@ -212,8 +212,6 @@ static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_dma_region_free(dev->d_region);
+ 	ps3_close_hv_device(dev);
+-
+-	return 0;
+ }
+ 
+ static int __init ps3_ohci_driver_register(struct ps3_system_bus_driver *drv)
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 203c254f8f6c..2fe08b67eda7 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -1208,7 +1208,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+ 	return retval;
+ }
+ 
+-static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
++static void ps3fb_shutdown(struct ps3_system_bus_device *dev)
+ {
+ 	struct fb_info *info = ps3_system_bus_get_drvdata(dev);
+ 	u64 xdr_lpar = ps3_mm_phys_to_lpar(__pa(ps3fb_videomemory.address));
+@@ -1241,8 +1241,6 @@ static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
+ 	lv1_gpu_memory_free(ps3fb.memory_handle);
+ 	ps3_close_hv_device(dev);
+ 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
+-
+-	return 0;
+ }
+ 
+ static struct ps3_system_bus_driver ps3fb_driver = {
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 6ab796a5d936..8e44fa5d4dc7 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -1049,7 +1049,7 @@ static int snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
+ }; /* snd_ps3_probe */
+ 
+ /* called when module removal */
+-static int snd_ps3_driver_remove(struct ps3_system_bus_device *dev)
++static void snd_ps3_driver_remove(struct ps3_system_bus_device *dev)
+ {
+ 	int ret;
+ 	pr_info("%s:start id=%d\n", __func__,  dev->match_id);
+@@ -1075,7 +1075,6 @@ static int snd_ps3_driver_remove(struct ps3_system_bus_device *dev)
+ 	lv1_gpu_device_unmap(2);
+ 	ps3_close_hv_device(dev);
+ 	pr_info("%s:end id=%d\n", __func__, dev->match_id);
+-	return 0;
+ } /* snd_ps3_remove */
+ 
+ static struct ps3_system_bus_driver snd_ps3_bus_driver_info = {
 -- 
-1.8.3.1
+2.29.2
 
