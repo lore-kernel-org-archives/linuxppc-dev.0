@@ -1,62 +1,99 @@
-Return-Path: <SRS0=IR6y=E7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=1PmZ=FA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B10EC56201
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77ED7C56201
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:11:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2FA0A206F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2020 20:51:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FA0A206F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 882CE20872
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 00:11:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="SCRhkuwN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 882CE20872
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ChCjf1hmMzDr2s
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 07:51:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChJ801QHCzDqwy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2020 11:11:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=SCRhkuwN; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ChCby4T9FzDr24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 07:46:38 +1100 (AEDT)
-IronPort-SDR: uLB/Bo7xElr3qGsDjtWw4Nc3x5eZH2SGCXymZcCiNsYrRousM1/Si+R16QMcEK51IPGzYP1aDZ
- mlV25Bkvy4Iw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9816"; a="233805770"
-X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="233805770"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Nov 2020 12:46:34 -0800
-IronPort-SDR: 570mlL3y+OXCkbstBPRZyhOFec28CE2VKITgE7G0R67oXEfhKD0YLaMwwxCMFTlHyB7+Lyhd3R
- h5VqTfm7eTYg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,370,1599548400"; d="scan'208";a="371019573"
-Received: from lkp-server01.sh.intel.com (HELO f59a693d3a73) ([10.239.97.150])
- by FMSMGA003.fm.intel.com with ESMTP; 25 Nov 2020 12:46:33 -0800
-Received: from kbuild by f59a693d3a73 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1ki1gO-0000G2-Ot; Wed, 25 Nov 2020 20:46:32 +0000
-Date: Thu, 26 Nov 2020 04:45:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 0bd4b96d99108b7ea9bac0573957483be7781d70
-Message-ID: <5fbec26b.rfuB4zl8tpnrsWCv%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ChJ5k54gYzDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 11:09:12 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AQ02o3D127438; Wed, 25 Nov 2020 19:09:08 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=Qf3gLvQ/R57sxawcKZK++b9HkZEdRMhhDbo9dSMTBqc=;
+ b=SCRhkuwNwmP+ASUC3+56VGsRcaVl6DX2E9u1oPM3eVrDZZmFa8fj8/KI58KHMjdoPZNS
+ 1vQvReiMOdem0qt6RDNrLEgaYhYI4CJ2ZIygdfEB5RuEiBwH2fCbXwony17CPm6ApAFW
+ TAGDiNUF9CdHbMI+iKEgqVuASC3C8pTEd6PkEBpz06vKFSCO6pEtwEVj91EU90TEBieY
+ MDMjzY2DYNR4Hu1BJCnIQPQaNsqQjDW1QucnmaNFBxSnJtmvv2bKScyqv1wuNnW/Vx9X
+ UlJyp5wrcOCiMA2waqerj85jbE4b9Vg2ZqE9bFi+34haKtdJXuWOgsb2VfpDvPon6iPb bw== 
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 351yjcjkpj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Nov 2020 19:09:08 -0500
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AQ07XlJ001035;
+ Thu, 26 Nov 2020 00:09:07 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma05wdc.us.ibm.com with ESMTP id 34xth9b559-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 26 Nov 2020 00:09:07 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AQ097ai11141884
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 26 Nov 2020 00:09:07 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4E0F5AC064;
+ Thu, 26 Nov 2020 00:09:07 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA084AC05E;
+ Thu, 26 Nov 2020 00:09:06 +0000 (GMT)
+Received: from linux-i8xm.aus.stglabs.ibm.com (unknown [9.40.195.200])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 26 Nov 2020 00:09:06 +0000 (GMT)
+From: Dany Madden <drt@linux.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net v3 0/9] ibmvnic: assorted bug fixes
+Date: Wed, 25 Nov 2020 18:04:23 -0600
+Message-Id: <20201126000432.29897-1-drt@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-24_07:2020-11-24,
+ 2020-11-24 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 impostorscore=0
+ suspectscore=3 mlxscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ phishscore=0 mlxlogscore=714 priorityscore=1501 adultscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2011240121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,156 +105,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Dany Madden <drt@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ sukadev@linux.ibm.com, ljp@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
-branch HEAD: 0bd4b96d99108b7ea9bac0573957483be7781d70  powernv/memtrace: don't abuse memory hot(un)plug infrastructure for memory allocations
+Assorted fixes for ibmvnic originated from "[PATCH net 00/15] ibmvnic:
+assorted bug fixes" sent by Lijun Pan.
 
-elapsed time: 960m
+v3 Changes as suggested by Jakub Kicinski:
+- Add a space between variable declaration and code in patch 3/9. Checkpatch
+  does not catch this.
+- Unwrapped FIXES lines in patch 9/9.
+- Removed all extra line between Fixes and Signed-off-by lines in all patches.
 
-configs tested: 130
-configs skipped: 3
+V2 Changes as suggested by Jakub Kicinski:
+- Added "Fixes" to each patch.
+- Remove "ibmvnic: process HMC disable command" from the series. Submitting it
+  separately to net-next.
+- Squash V1 "ibmvnic: remove free_all_rwi function" into
+  ibmvnic: stop free_all_rwi on failed reset.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                     sequoia_defconfig
-arm                        oxnas_v6_defconfig
-powerpc                     ep8248e_defconfig
-arm                           corgi_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                               allmodconfig
-powerpc                   lite5200b_defconfig
-ia64                          tiger_defconfig
-sh                           se7722_defconfig
-arm                      tct_hammer_defconfig
-sh                           se7721_defconfig
-mips                      maltaaprp_defconfig
-arm                         nhk8815_defconfig
-mips                            ar7_defconfig
-sh                            titan_defconfig
-powerpc                     mpc83xx_defconfig
-powerpc                          allmodconfig
-m68k                        stmark2_defconfig
-powerpc                  mpc866_ads_defconfig
-m68k                         apollo_defconfig
-powerpc64                           defconfig
-sh                         apsh4a3a_defconfig
-powerpc                     mpc512x_defconfig
-s390                                defconfig
-nios2                               defconfig
-mips                           rs90_defconfig
-nios2                         3c120_defconfig
-arm                            qcom_defconfig
-mips                         db1xxx_defconfig
-powerpc                        fsp2_defconfig
-c6x                        evmc6472_defconfig
-sh                          rsk7203_defconfig
-arm                        mvebu_v7_defconfig
-mips                 decstation_r4k_defconfig
-parisc                           alldefconfig
-mips                          rm200_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                    gamecube_defconfig
-arm                        trizeps4_defconfig
-powerpc                 mpc836x_mds_defconfig
-mips                  cavium_octeon_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                         mv78xx0_defconfig
-mips                      maltasmvp_defconfig
-m68k                                defconfig
-sh                        sh7763rdp_defconfig
-sparc                            alldefconfig
-arm                        magician_defconfig
-powerpc                     tqm8548_defconfig
-sh                        sh7785lcr_defconfig
-arm                        clps711x_defconfig
-powerpc                     sbc8548_defconfig
-arm                         lpc32xx_defconfig
-sh                        dreamcast_defconfig
-powerpc                 mpc8313_rdb_defconfig
-xtensa                           alldefconfig
-arm                          lpd270_defconfig
-powerpc                     ppa8548_defconfig
-mips                           ip27_defconfig
-sh                          rsk7201_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201125
-i386                 randconfig-a003-20201125
-i386                 randconfig-a002-20201125
-i386                 randconfig-a005-20201125
-i386                 randconfig-a001-20201125
-i386                 randconfig-a006-20201125
-x86_64               randconfig-a015-20201125
-x86_64               randconfig-a011-20201125
-x86_64               randconfig-a014-20201125
-x86_64               randconfig-a016-20201125
-x86_64               randconfig-a012-20201125
-x86_64               randconfig-a013-20201125
-i386                 randconfig-a012-20201125
-i386                 randconfig-a013-20201125
-i386                 randconfig-a011-20201125
-i386                 randconfig-a016-20201125
-i386                 randconfig-a014-20201125
-i386                 randconfig-a015-20201125
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Dany Madden (7):
+  ibmvnic: handle inconsistent login with reset
+  ibmvnic: stop free_all_rwi on failed reset
+  ibmvnic: avoid memset null scrq msgs
+  ibmvnic: restore adapter state on failed reset
+  ibmvnic: send_login should check for crq errors
+  ibmvnic: no reset timeout for 5 seconds after reset
+  ibmvnic: reduce wait for completion time
 
-clang tested configs:
-x86_64               randconfig-a006-20201125
-x86_64               randconfig-a005-20201125
-x86_64               randconfig-a003-20201125
-x86_64               randconfig-a004-20201125
-x86_64               randconfig-a002-20201125
-x86_64               randconfig-a001-20201125
+Sukadev Bhattiprolu (2):
+  ibmvnic: delay next reset if hard reset fails
+  ibmvnic: track pending login
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/net/ethernet/ibm/ibmvnic.c | 168 ++++++++++++++++++-----------
+ drivers/net/ethernet/ibm/ibmvnic.h |   3 +
+ 2 files changed, 106 insertions(+), 65 deletions(-)
+
+-- 
+2.26.2
+
