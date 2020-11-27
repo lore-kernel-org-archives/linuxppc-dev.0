@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD9DC64E75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 12:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A38D5C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 12:17:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DDEE208D5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 12:12:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DDEE208D5
+	by mail.kernel.org (Postfix) with ESMTPS id C6D872087C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 12:17:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6D872087C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CjD6D1CWSzDrg3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 23:12:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CjDCB3pqzzDqBN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 23:17:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
@@ -28,13 +28,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CjD1N3JZ6zDrQ0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 23:08:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CjD2x4YR8zDrg3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 23:10:01 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 209869] Kernel 5.10-rc1 fails to boot on a PowerMac G4 3,6 at
- an early stage
-Date: Fri, 27 Nov 2020 12:08:37 +0000
+Subject: [Bug 203699] Kernel 5.2-rc1 fails to boot on a Mac Mini G4:
+ dt_headr_start=0x01501000
+Date: Fri, 27 Nov 2020 12:09:58 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -42,17 +42,17 @@ X-Bugzilla-Product: Platform Specific/Hardware
 X-Bugzilla-Component: PPC-32
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
+X-Bugzilla-Severity: blocking
 X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: CODE_FIX
+X-Bugzilla-Status: NEEDINFO
+X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc resolution
-Message-ID: <bug-209869-206035-NIHtDCdnL0@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-209869-206035@https.bugzilla.kernel.org/>
-References: <bug-209869-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: bug_status cc
+Message-ID: <bug-203699-206035-qgnkFQ3wc0@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-203699-206035@https.bugzilla.kernel.org/>
+References: <bug-203699-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -73,20 +73,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D209869
+https://bugzilla.kernel.org/show_bug.cgi?id=3D203699
 
 Michael Ellerman (michael@ellerman.id.au) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
+             Status|NEW                         |NEEDINFO
                  CC|                            |michael@ellerman.id.au
-         Resolution|---                         |CODE_FIX
 
---- Comment #13 from Michael Ellerman (michael@ellerman.id.au) ---
-Fixed in:
-  01776f070ffc ("powerpc/32s: Use relocation offset when setting early hash
-table")
+--- Comment #2 from Michael Ellerman (michael@ellerman.id.au) ---
+Did this get fixed along the way?
 
 --=20
 You are receiving this mail because:
