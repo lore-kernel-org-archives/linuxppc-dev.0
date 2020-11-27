@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB2E8C63777
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 08:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56E89C2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 08:42:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12B0422226
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 08:37:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12B0422226
+	by mail.kernel.org (Postfix) with ESMTPS id 663A822226
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 08:42:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 663A822226
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cj7Kf3QF8zDrhK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:37:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cj7R11XlKzDrg3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:42:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
  envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
- [209.85.210.66])
+Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
+ [209.85.210.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cj7Ht3J1gzDrfQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 19:35:53 +1100 (AEDT)
-Received: by mail-ot1-f66.google.com with SMTP id f12so4015515oto.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 00:35:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cj7Ny0YbRzDrTM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 19:40:17 +1100 (AEDT)
+Received: by mail-ot1-f67.google.com with SMTP id f12so4024241oto.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 00:40:17 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc:content-transfer-encoding;
- bh=xh1hHzZVurhLLa9A5bjYyJ5OP5iFGRKbQx8AzvX3xN4=;
- b=J3tbwtBzwfY9biRVd4q6xqNtIhaKw1ehl3O5Lo3sqgyWTCfrZObNlOge72SluyrsWY
- kCFOQKCzZIb7F2ZP52w3/JzE4A7rca8aHy/WHaRlEZYiAlEnRgBVoqM91PoTT2r1OcXv
- fR/hjQIHleTMJRbQyUyTi/CTl3AAzMEJgOm2u5DnIBMyCl+uFgeSQ+/va6+ulfUEkaS4
- 3OfKP/q8z05hpW8xIE6ZCcKmpNq0Q0Jk3ezarV4vXsSHXUr8gZHy/3Cjvzb6INs2lpem
- B7xOXrCE/dqIgt7cSCv+q1xMlCzNg7sCuhEltJT3VABcxjUxyfoXvI2dr7lHLP2uzybc
- f76Q==
-X-Gm-Message-State: AOAM531U0MGv8CQfUPE213vJaidllLYc7Tr9cRIHmyp+O54wrshNdvVa
- Sl1cAjBpp2JOxuNuuZoWbhXeqgyO+XoPOkR4zLY=
-X-Google-Smtp-Source: ABdhPJxi+ycxEsm5KsGHfXpYVjf0qoqXVdSm5mG1czf/VSu3Ar1g/6kPH+lbgaSp8/Ea4xlpW0yThv8dOVha3z28GvM=
-X-Received: by 2002:a05:6830:210a:: with SMTP id
- i10mr4949297otc.145.1606466150802; 
- Fri, 27 Nov 2020 00:35:50 -0800 (PST)
+ bh=/D+lVsFpiig9p8Mfv+F/WnI4wKF69UpUHln9lDG06g4=;
+ b=ACo988DjGxPfrrpqZ/JOA5es7MXvgV+nUDA0zqSJo5eaUnG7hLAvz5Ry9z87m0BVpI
+ 6Qqtmgmydw4nRO0Mfj8T+zzVR5xCOdh3f+LzXrLrYEvdXQah8T/LrnuzfaTtn8pHAr7H
+ 4dc1TgE9HJXm4Z5nwdYiDV8x7+JPRhiL7Z7MHzIsPElV5cH3Pw+SzqhZ2ZW1WPxI0ZEu
+ T9oxhbdK4YgSlni4gm9c0t3O0m47xcfHByb87UUnqvj11ewOzIWprJrbsDzc37Owq+pa
+ cPya8ldt0QidIhG7I3Nju2xP7aggkIeDit50DKlPuFD1/J8XhAHbXhDdk0mJPD22ADrW
+ zytw==
+X-Gm-Message-State: AOAM532GAbgkLzrWRPgxEDB4OrBqikl8N8rQoI8wxho5jA3/WbzKkOtJ
+ KJF+eJ1Fi7p5pDzu+aUwjfqVtip0vXv1dzG6q8fvQnzzh1oQJA==
+X-Google-Smtp-Source: ABdhPJy2I/IdfAm6V2ydZbwLB9NPNLYo9PucEpxX/NL/qzuCx8bfpYwJU7BhpITpgvBGwlFRBVNr8EmnqamS0CIYUsg=
+X-Received: by 2002:a9d:686:: with SMTP id 6mr4709371otx.107.1606466415531;
+ Fri, 27 Nov 2020 00:40:15 -0800 (PST)
 MIME-Version: 1.0
 References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+ <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 27 Nov 2020 09:35:39 +0100
-Message-ID: <CAMuHMdUbfT7ax4BhjMT_DBweab8TDm5e=xMv5f61t9QpQJt1mw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] ALSA: ppc: drop if block with always false condition
+Date: Fri, 27 Nov 2020 09:40:04 +0100
+Message-ID: <CAMuHMdW4J0xA6T4AWqZdo1go1kxWqVSSo5JXQpUAM4yWEpDdOw@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/ps3: make system bus's remove and shutdown
+ callbacks return void
 To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -95,10 +96,15 @@ Hi Uwe,
 
 On Thu, Nov 26, 2020 at 6:03 PM Uwe Kleine-K=C3=B6nig
 <u.kleine-koenig@pengutronix.de> wrote:
-> The remove callback is only called for devices that were probed
-> successfully before. As the matching probe function cannot complete
-> without error if dev->match_id !=3D PS3_MATCH_ID_SOUND, we don't have to
-> check this here.
+> The driver core ignores the return value of struct device_driver::remove
+> because there is only little that can be done. For the shutdown callback
+> it's ps3_system_bus_shutdown() which ignores the return value.
+>
+> To simplify the quest to make struct device_driver::remove return void,
+> let struct ps3_system_bus_driver::remove return void, too. All users
+> already unconditionally return 0, this commit makes it obvious that
+> returning an error code is a bad idea and ensures future users behave
+> accordingly.
 >
 > Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 
@@ -106,13 +112,7 @@ Thanks for your patch!
 
 Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Note that there are similar checks in snd_ps3_driver_probe(), which
-can be removed, too:
-
-        if (WARN_ON(!firmware_has_feature(FW_FEATURE_PS3_LV1)))
-                return -ENODEV;
-        if (WARN_ON(dev->match_id !=3D PS3_MATCH_ID_SOUND))
-                return -ENODEV;
+Note that the same can be done for ps3_vuart_port_driver.remove().
 
 Gr{oetje,eeting}s,
 
