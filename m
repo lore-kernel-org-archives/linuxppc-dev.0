@@ -2,60 +2,75 @@ Return-Path: <SRS0=TXb4=FB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E116C3E8C5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:21:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C50C3E8C5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:39:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B30E120885
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:21:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DC26B23A32
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 19:39:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oFEL9yoH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B30E120885
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nl6On1uj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC26B23A32
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CjPd144S4zDsMP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 06:21:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CjQ1g196PzDrQt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 06:39:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=oFEL9yoH; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CjPZy2J8MzDrqB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:19:54 +1100 (AEDT)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.10-4 tag
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1606504791;
- bh=h68Lr1H/1qqNs5nStKe8J/yiTz0SMFs27L3RiWvJkA0=;
- h=From:In-Reply-To:References:Date:To:Cc:From;
- b=oFEL9yoHkuXPmM6X06yYW5KXRwGyegZ3nAHP42XxUpKY83j/YXiuT9vUUEYQHxXrE
- hq67h6tpsDGp13t39UwD4uzdGtBsG4zZPz1YJTImnE2WffWfYorcLdo+uytXqSxf5b
- zuu7OuG66XT6rpOIsO9hL2Pzvg/YkwWDmba14RpM=
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <877dq7x91s.fsf@mpe.ellerman.id.au>
-References: <877dq7x91s.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <877dq7x91s.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- tags/powerpc-5.10-4
-X-PR-Tracked-Commit-Id: b6b79dd53082db11070b4368d85dd6699ff0b063
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 95e1c7b1dd4a91451040ff0f41c5b5173503a38e
-Message-Id: <160650479188.7570.124440902242648321.pr-tracker-bot@kernel.org>
-Date: Fri, 27 Nov 2020 19:19:51 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CjPzK6WgjzDrqX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:37:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+ :Reply-To:Content-ID:Content-Description;
+ bh=euM/zmZmiU7XynopsfsNk5VEQJ/eikhYtJwXlpq8tno=; b=nl6On1ujk9wd9PEKkJgg2KJ2Am
+ m8AA3an/yzFOvOzfdYyYfcRQEQMV6C+rNHKxGHpqDzm49BkSsw+5EhhU0P154qkYr9MXuNpi7PREG
+ fPLa8hJsj9oN6M7qgVOHMRcPTnFhMtktGs8woTspm5p63HB4LfTCBfTY+3w6jPlLDCe5rI6brlPWe
+ Wzm7YdlXRMuEt8mo+EDmAHmVkjUP3io6h5+Bil+IHytP1lZ1245P0R6S0s2IchExPIzcixOwncumC
+ FhBV3gK43XgwhLQNaxt5pUzXLAu2p81YKnwCaC/q+zrjSo81jdUaUUkBqIuXwnd/oQ3fdltyGRC9o
+ jz4txzgg==;
+Received: from [2602:306:c5a2:a380:9e7b:efff:fe40:2b26]
+ by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1kijYQ-0005Xk-FY; Fri, 27 Nov 2020 19:37:14 +0000
+Subject: Re: [PATCH 1/2] ALSA: ppc: drop if block with always false condition
+To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ Jim Paris <jim@jtan.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Leonard Goehrs <l.goehrs@pengutronix.de>
+References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <fdaedef8-4734-7ab3-9334-b628f8207c9e@infradead.org>
+Date: Fri, 27 Nov 2020 11:37:07 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,22 +82,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sfr@canb.auug.org.au, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, oss@buserror.net,
- clg@kaod.org, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linux-scsi@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Fri, 27 Nov 2020 23:45:35 +1100:
+Hi Uwe,
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.10-4
+On 11/26/20 8:59 AM, Uwe Kleine-König wrote:
+> The remove callback is only called for devices that were probed
+> successfully before. As the matching probe function cannot complete
+> without error if dev->match_id != PS3_MATCH_ID_SOUND, we don't have to
+> check this here.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/95e1c7b1dd4a91451040ff0f41c5b5173503a38e
+I tested your two patches plus Leonard's patch 'ALSA: ppc: remove
+redundant checks in PS3 driver probe' applied to v5.9 on the PS3,
+and they seem to work fine.
 
-Thank you!
+Thanks for both your efforts.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Tested by: Geoff Levand <geoff@infradead.org>
