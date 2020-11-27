@@ -2,62 +2,81 @@ Return-Path: <SRS0=TXb4=FB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59DEAC63777
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 02:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A15F6C63697
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 03:04:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 545F722202
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 02:28:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 545F722202
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C0E242222A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 03:04:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DH89CHaJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0E242222A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Chz7P0HVrzDrVB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 13:28:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ChzxR45zJzDrdL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2020 14:04:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=DH89CHaJ; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Chz5d52P8zDrKh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 13:26:29 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Chzvg0fl0zDrPh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2020 14:02:54 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id r2so2020519pls.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2020 19:02:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=y38YfYHzNFWW0uhDjfdEY4kwJxb1uk0ec4aPIfuK6ps=;
+ b=DH89CHaJvmprl1aDYerkSTOwsMY47u7V+WpQoIWewQiEmsNxPkd6YtCYd+DdK93tgW
+ IZ4xGxyPIw26O6s/gYO8W0+uzARKJ8YV0yt4BDJrKwuBptR1hYEymt8Ge2/KzJBjin/2
+ 8XHK4GeC8dYVMr5zUpcTtU4xV98yU4dV22GatM31FIkpmcfCdpUJjCcs4sxOQ2sSxYYs
+ YI0L6SC37U2bTx20UdiIZSlQ5hcw1XAuR+Ae6UpqiDYjo9VjhwuiU+MdRQ3gl6uWWuME
+ fd97riPzGaROdTC/ih8IJvGHg20qExYsEXBsQuIAMqT8fFRHVdTPUO43g99ryBXgs9P2
+ UDLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=y38YfYHzNFWW0uhDjfdEY4kwJxb1uk0ec4aPIfuK6ps=;
+ b=RiExmkecl80RMisnrSjSWJp7gQ+OqUhCXGDGN6D0w9Xrpy6rmIPZFwlhB9kUbfuy0c
+ a0ChsyZe3SJp+lPkyqWyayEsesyFNofCd07FKVdhZljL2NJn9xigR6xU8RWLsLkRfiRN
+ Fnw2+Ua4WH9MpR/o9x/6KQ4pcqtmfVu8bvFC0WAPH9q4Eok4L3EAdQn78Exb3zYnSjlp
+ HPQ/vMW0JSlv9sMb7nMNkzZZd29FVo8R68xnOngPr2L5gLQthkFolPCN1bCZpDirQc0T
+ d5PHwo42+1NZ8SUUpT1LQC/yD0L8ThV5DXw7lNgI7iBDnKQJ9Suhv1mV9dGDwUebk1IK
+ +m3w==
+X-Gm-Message-State: AOAM530ZR97KfAM0K6/TGONBhO2eyytoiCR6HIKvVWyrCwgpRH18lqvX
+ O1OGhbFP46dG2mZJjKl+cu7jxP29r8CIVg==
+X-Google-Smtp-Source: ABdhPJwLgqJamIkiMOZQeZsEkHZhI6aJ+dj5uVxaVhsLr78aV+J4bGV2C7NeTbKgWfqtBTy+ksQmnQ==
+X-Received: by 2002:a17:902:848e:b029:d6:d2c9:1d4c with SMTP id
+ c14-20020a170902848eb02900d6d2c91d4cmr4896726plo.40.1606446171170; 
+ Thu, 26 Nov 2020 19:02:51 -0800 (PST)
+Received: from tee480.ibm.com (180-150-65-4.b49641.syd.nbn.aussiebb.net.
+ [180.150.65.4])
+ by smtp.gmail.com with ESMTPSA id w22sm5760609pge.25.2020.11.26.19.02.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 26 Nov 2020 19:02:50 -0800 (PST)
+From: Jordan Niethe <jniethe5@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 209733] Starting new KVM virtual machines on PPC64 starts to
- hang after box is up for a while
-Date: Fri, 27 Nov 2020 02:26:26 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Virtualization
-X-Bugzilla-Component: kvm
-X-Bugzilla-Version: unspecified
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: high
-X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: CLOSED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status
-Message-ID: <bug-209733-206035-Xzn10d7jie@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-209733-206035@https.bugzilla.kernel.org/>
-References: <bug-209733-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+Subject: [PATCH] powerpc: Allow relative pointers in bug table entries
+Date: Fri, 27 Nov 2020 14:02:38 +1100
+Message-Id: <20201127030238.763-1-jniethe5@gmail.com>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,22 +88,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Jordan Niethe <jniethe5@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D209733
+This enables GENERIC_BUG_RELATIVE_POINTERS on Power so that 32-bit
+offsets are stored in the bug entries rather than 64-bit pointers.
 
-Michael Ellerman (michael@ellerman.id.au) changed:
+Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+---
+ arch/powerpc/Kconfig           |  4 ++++
+ arch/powerpc/include/asm/bug.h | 37 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/xmon/xmon.c       | 17 ++++++++++++++--
+ 3 files changed, 54 insertions(+), 4 deletions(-)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e9f13fe08492..294108e0e5c6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -311,6 +311,10 @@ config GENERIC_BUG
+ 	default y
+ 	depends on BUG
+ 
++config GENERIC_BUG_RELATIVE_POINTERS
++	def_bool y
++	depends on GENERIC_BUG
++
+ config SYS_SUPPORTS_APM_EMULATION
+ 	default y if PMAC_APM_EMU
+ 	bool
+diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+index 338f36cd9934..d03d834042a1 100644
+--- a/arch/powerpc/include/asm/bug.h
++++ b/arch/powerpc/include/asm/bug.h
+@@ -12,7 +12,11 @@
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ .macro EMIT_BUG_ENTRY addr,file,line,flags
+ 	 .section __bug_table,"aw"
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+ 5001:	 PPC_LONG \addr, 5002f
++#else
++5001:	 .4byte \addr - 5001b, 5002f - 5001b
++#endif /* CONFIG_GENERIC_BUG_RELATIVE_POINTERS */
+ 	 .short \line, \flags
+ 	 .org 5001b+BUG_ENTRY_SIZE
+ 	 .previous
+@@ -23,7 +27,11 @@
+ #else
+ .macro EMIT_BUG_ENTRY addr,file,line,flags
+ 	 .section __bug_table,"aw"
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+ 5001:	 PPC_LONG \addr
++#else
++5001:	 .4byte \addr - 5001b
++#endif /* CONFIG_GENERIC_BUG_RELATIVE_POINTERS */
+ 	 .short \flags
+ 	 .org 5001b+BUG_ENTRY_SIZE
+ 	 .previous
+@@ -34,20 +42,45 @@
+ /* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+    sizeof(struct bug_entry), respectively */
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+ #define _EMIT_BUG_ENTRY				\
+ 	".section __bug_table,\"aw\"\n"		\
+ 	"2:\t" PPC_LONG "1b, %0\n"		\
+ 	"\t.short %1, %2\n"			\
+ 	".org 2b+%3\n"				\
+ 	".previous\n"
+-#else
++
++#else /* relative pointers */
++
++#define _EMIT_BUG_ENTRY				\
++	".section __bug_table,\"aw\"\n"		\
++	"2:\t.4byte 1b - 2b, %0 - 2b\n"		\
++	"\t.short %1, %2\n"			\
++	".org 2b+%3\n"				\
++	".previous\n"
++#endif /* relative pointers */
++
++#else /* verbose */
++
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+ #define _EMIT_BUG_ENTRY				\
+ 	".section __bug_table,\"aw\"\n"		\
+ 	"2:\t" PPC_LONG "1b\n"			\
+ 	"\t.short %2\n"				\
+ 	".org 2b+%3\n"				\
+ 	".previous\n"
+-#endif
++
++#else /* relative pointers */
++
++#define _EMIT_BUG_ENTRY				\
++	".section __bug_table,\"aw\"\n"		\
++	"2:\t.4byte 1b - 2b\n"		\
++	"\t.short %2\n"				\
++	".org 2b+%3\n"				\
++	".previous\n"
++
++#endif /* relative pointers */
++#endif /* verbose */
+ 
+ #define BUG_ENTRY(insn, flags, ...)			\
+ 	__asm__ __volatile__(				\
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 55c43a6c9111..5f7cf7e95767 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1731,6 +1731,9 @@ static void print_bug_trap(struct pt_regs *regs)
+ #ifdef CONFIG_BUG
+ 	const struct bug_entry *bug;
+ 	unsigned long addr;
++#ifdef CONFIG_DEBUG_BUGVERBOSE
++	char *file;
++#endif
+ 
+ 	if (regs->msr & MSR_PR)
+ 		return;		/* not in kernel */
+@@ -1744,10 +1747,20 @@ static void print_bug_trap(struct pt_regs *regs)
+ 		return;
+ 
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
++	file = bug->file;
++#else /* relative pointers */
++	file = (char *)bug + bug->file_disp;
++#endif /* relative pointers */
+ 	printf("kernel BUG at %s:%u!\n",
+-	       bug->file, bug->line);
++	       file, bug->line);
+ #else
+-	printf("kernel BUG at %px!\n", (void *)bug->bug_addr);
++#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
++	addr = bug->addr;
++#else /* relative pointers */
++	addr = (unsigned long)bug + bug->bug_addr_disp;
++#endif /* relative pointers */
++	printf("kernel BUG at %px!\n", (void *)addr);
+ #endif
+ #endif /* CONFIG_BUG */
+ }
+-- 
+2.17.1
 
---- Comment #6 from Michael Ellerman (michael@ellerman.id.au) ---
-Nick pointed out that it was actually:
-  2da9f6305f30 ("mm/vmscan: fix NR_ISOLATED_FILE corruption on 64-bit")
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
