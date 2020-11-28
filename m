@@ -8,76 +8,77 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78DA2C63697
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DC5C63697
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:07:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7292246A5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:06:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2FD5A246A5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:07:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oswvTewl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7292246A5
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AvV+rP27"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FD5A246A5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cjvvg2134zF1f3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:06:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CjvxP2XB7zF14h
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:07:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oswvTewl; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ header.s=20161025 header.b=AvV+rP27; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CjvMj5rmkzDsM9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 01:41:53 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id 34so6599354pgp.10
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:41:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CjvMk6vgxzDsNP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 01:41:54 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id w16so6603136pga.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:41:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=oLnmutyJfFM4IdwVIFttl2OG+zX3XwPjUqRfqEGeS+g=;
- b=oswvTewlyFFDTmlh8BoKE+zqg+qKNOWLyrvHY3+mv2kALEtnPcLvJvs9Wv3RDrZcJR
- ph914jefvLP+83XmtcSZ/k7OUAJG1kNp3U7M1aKO3FQDYfu+MFzWj2B8YKJDZhyGjGz0
- d82lVDUgb8WVPJN7Cv5HB5RZYccA5LjPDjXFTK+9kjQmqOyOT/QIl0JzSFdyWrmrccdv
- r3TSqk0pB3mQGWfhA2UsBGR/PMC53IZsVKguUCQUY4WiTw0LjVvS7MMuVhBtp4YIgH9K
- lh8Hf+oK4Ft1e9rS5TPZ9JydzxSpLGUlo9mirp9Iw12geLtvWE0W75b//mfr3OMrmR+Q
- Q3UQ==
+ bh=Q1oxRS5FyyLJX4t9U5i9EoJMPiKHbvtMI0FvqNKIIcM=;
+ b=AvV+rP27q9xJ2GyuJ8hOuvObTUy8eB7wRkg8FPkGxZEr5ImnnN2pdijfNmeXHkPX9P
+ BH8YxUw4q65C00CHJZ16WsQQkQk98Vjp1ZBiXCgy9d3SCXUNedMjbjVop+BprBnzWsWX
+ 8vO2rEQG26r8WbOgJy+1WsMojWd0VYglqMTntF3jM6acGFhGSVcwaN9Y6YexbHtAVnml
+ 9/MtsDZBdEgDGsUlssNKYsPqT1AG13DVX8l4OfoeZon3iEHVdUXNhGMjuQb6zYO7QfKg
+ ybQERm9T9IfJbqBQW+TH0o9pgrZP2zy9GwEtCH+ucSOIZhOpMw/wwRcphBrr/WCv1k2T
+ OIHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=oLnmutyJfFM4IdwVIFttl2OG+zX3XwPjUqRfqEGeS+g=;
- b=Uczxuga/q4nfLXnpTn7OJWwVCo6afxRVdtgCYXmq/4Aenz1LsSy73NvPlsLHycRhyG
- wvzoHbGB54Ss8rRHjMqTuFhfjcOWuYS/aJg+1M7ReJ6YP8sKxr7o39L3rr7isFa/FDEt
- AeO1BWeOoGuNAVlFCJOOfOurPujmOYgCe5VVCTtiOV65xSF0E4tEZervACwLc1HW+80F
- OorPv6DV1fm8iAn7bmTbnnwj/zbmcVjDUrpjJx2fqz3WebGaQRKcjnq+u0u7ea9jyMr5
- Xw0d27I7zTJvcvdK5uQkZi0/EbOnr7DWK1sMXbNfIOa4Y8iKw2czZVn1yE7JcBKCL2WG
- JecA==
-X-Gm-Message-State: AOAM5304NUZ1T5KjR1nLte0LBFKgrgQSRpl99FY6Y8g06Tf0yXi2+a8g
- fsHEtzfpSA1zZbPedhfOgRcRfj9FQ6g=
-X-Google-Smtp-Source: ABdhPJykMNDmj3bXm0MZATWWwDCNjUDOfk4KhvyUwnW++52byuKtjOi9a9qJvQlqnxIxR7Qj4VpvEQ==
-X-Received: by 2002:a63:d1b:: with SMTP id c27mr10711420pgl.25.1606574508823; 
- Sat, 28 Nov 2020 06:41:48 -0800 (PST)
+ bh=Q1oxRS5FyyLJX4t9U5i9EoJMPiKHbvtMI0FvqNKIIcM=;
+ b=fBA6nvhYF3qYxdr2Q61GRVxOFg0Ensozsd1dUVT4OW+gsmfVnUFi6BX5OdH/Zk1n3I
+ C1OD8u+lUmVLNmTNMpRCCIZlhJzIcxNl5TkNZZVsSKsJkYg0C+rprozpC/qjOMKWFDwr
+ lQ59VcrC78NpjM/ecj28uuHogGgRdy0XfRic0Ot0uLMb7si3Ybt8jHn9dIUSHzZElLjn
+ C+1dBSfpb+mTlSx23HtEQ7nrsSy/AKCD8xUbYJlF+XzKfcAN/3X3IzUvWoL9/jFFR4nG
+ KN0HwDVPIWNTYRpwoaA7tCILUK516MSbdY58BOMqDkK39kHtYC4lyQB0oldlp/2FF2IB
+ RWrg==
+X-Gm-Message-State: AOAM530c5xN2vfYo9isMIWayWpC6hPf/Gv235i6G9cNhgy5oiSZJVEv4
+ eBhlrId7m15j6vbUgxbZT+qM8A7si+4=
+X-Google-Smtp-Source: ABdhPJyqEgNf49sqNkfLx54MlJsiy1K7+FLF58N0D43zW5jghHFkgp4OoJhL6wxUkObxlV2kYFIyVg==
+X-Received: by 2002:a17:90a:5518:: with SMTP id
+ b24mr16951346pji.138.1606574513157; 
+ Sat, 28 Nov 2020 06:41:53 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (193-116-103-132.tpgi.com.au.
  [193.116.103.132])
- by smtp.gmail.com with ESMTPSA id y201sm10750764pfb.2.2020.11.28.06.41.47
+ by smtp.gmail.com with ESMTPSA id y201sm10750764pfb.2.2020.11.28.06.41.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 28 Nov 2020 06:41:48 -0800 (PST)
+ Sat, 28 Nov 2020 06:41:52 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 12/19] powerpc/64s: move context tracking exit to interrupt
- exit path
-Date: Sun, 29 Nov 2020 00:41:07 +1000
-Message-Id: <20201128144114.944000-13-npiggin@gmail.com>
+Subject: [PATCH v3 14/19] powerpc/64: move account_stolen_time into its own
+ function
+Date: Sun, 29 Nov 2020 00:41:09 +1000
+Message-Id: <20201128144114.944000-15-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20201128144114.944000-1-npiggin@gmail.com>
 References: <20201128144114.944000-1-npiggin@gmail.com>
@@ -99,122 +100,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The interrupt handler wrapper functions are not the ideal place to
-maintain context tracking because after they return, the low level exit
-code must then determine if there are interrupts to replay, or if the
-task should be preempted, etc. Those paths (e.g., schedule_user) include
-their own exception_enter/exit pairs to fix this up but it's a bit hacky
-(see schedule_user() comments).
-
-Ideally context tracking will go to user mode only when there are no
-more interrupts or context switches or other exit processing work to
-handle.
-
-64e can not do this because it does not use the C interrupt exit code.
+This will be used by interrupt entry as well.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/interrupt.h | 34 +++++++++++++++++++++++++---
- arch/powerpc/kernel/syscall_64.c     |  9 ++++++++
- 2 files changed, 40 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/cputime.h | 15 +++++++++++++++
+ arch/powerpc/kernel/syscall_64.c   | 10 +---------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index 21acf0d0154f..542ad8e9c313 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -7,16 +7,30 @@
- #include <asm/ftrace.h>
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index ed75d1c318e3..3f61604e1fcf 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -87,6 +87,18 @@ static notrace inline void account_cpu_user_exit(void)
+ 	acct->starttime_user = tb;
+ }
  
- struct interrupt_state {
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	enum ctx_state ctx_state;
- #endif
- };
- 
- static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
- {
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	state->ctx_state = exception_enter();
- #endif
++static notrace inline void account_stolen_time(void)
++{
++#ifdef CONFIG_PPC_SPLPAR
++	if (IS_ENABLED(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) &&
++	    firmware_has_feature(FW_FEATURE_SPLPAR)) {
++		struct lppaca *lp = local_paca->lppaca_ptr;
 +
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (user_mode(regs)) {
-+		CT_WARN_ON(ct_state() != CONTEXT_USER);
-+		user_exit_irqoff();
-+	} else {
-+		/*
-+		 * CT_WARN_ON comes here via program_check_exception,
-+		 * so avoid recursion.
-+		 */
-+		if (TRAP(regs) != 0x700)
-+			CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
++		if (unlikely(local_paca->dtl_ridx != be64_to_cpu(lp->dtl_idx)))
++			accumulate_stolen_time();
 +	}
 +#endif
- }
++}
  
- /*
-@@ -35,9 +49,23 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
-  */
- static inline void interrupt_exit_prepare(struct pt_regs *regs, struct interrupt_state *state)
+ #endif /* __KERNEL__ */
+ #else /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+@@ -96,5 +108,8 @@ static inline void account_cpu_user_entry(void)
+ static inline void account_cpu_user_exit(void)
  {
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	exception_exit(state->ctx_state);
- #endif
-+
-+	/*
-+	 * Book3S exits to user via interrupt_exit_user_prepare(), which does
-+	 * context tracking, which is a cleaner way to handle PREEMPT=y
-+	 * and avoid context entry/exit in e.g., preempt_schedule_irq()),
-+	 * which is likely to be where the core code wants to end up.
-+	 *
-+	 * The above comment explains why we can't do the
-+	 *
-+	 *     if (user_mode(regs))
-+	 *         user_exit_irqoff();
-+	 *
-+	 * sequence here.
-+	 */
  }
- 
- static inline void interrupt_async_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
++static notrace inline void account_stolen_time(void)
++{
++}
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+ #endif /* __POWERPC_CPUTIME_H */
 diff --git a/arch/powerpc/kernel/syscall_64.c b/arch/powerpc/kernel/syscall_64.c
-index 9e855b25bd15..668a4557fc3f 100644
+index 668a4557fc3f..8ab5e16d640c 100644
 --- a/arch/powerpc/kernel/syscall_64.c
 +++ b/arch/powerpc/kernel/syscall_64.c
-@@ -275,6 +275,7 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned
- 	BUG_ON(!(regs->msr & MSR_PR));
- 	BUG_ON(!FULL_REGS(regs));
- 	BUG_ON(regs->softe != IRQS_ENABLED);
-+	CT_WARN_ON(ct_state() == CONTEXT_USER);
+@@ -45,15 +45,7 @@ notrace long system_call_exception(long r3, long r4, long r5,
+ 
+ 	account_cpu_user_entry();
+ 
+-#ifdef CONFIG_PPC_SPLPAR
+-	if (IS_ENABLED(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) &&
+-	    firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		struct lppaca *lp = local_paca->lppaca_ptr;
+-
+-		if (unlikely(local_paca->dtl_ridx != be64_to_cpu(lp->dtl_idx)))
+-			accumulate_stolen_time();
+-	}
+-#endif
++	account_stolen_time();
  
  	/*
- 	 * We don't need to restore AMR on the way back to userspace for KUAP.
-@@ -317,7 +318,9 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned
- 		}
- 	}
- 
-+	user_enter_irqoff();
- 	if (unlikely(!prep_irq_for_enabled_exit(true))) {
-+		user_exit_irqoff();
- 		local_irq_enable();
- 		local_irq_disable();
- 		goto again;
-@@ -358,6 +361,12 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsign
- 		unrecoverable_exception(regs);
- 	BUG_ON(regs->msr & MSR_PR);
- 	BUG_ON(!FULL_REGS(regs));
-+	/*
-+	 * CT_WARN_ON comes here via program_check_exception,
-+	 * so avoid recursion.
-+	 */
-+	if (TRAP(regs) != 0x700)
-+		CT_WARN_ON(ct_state() == CONTEXT_USER);
- 
- 	amr = kuap_get_and_check_amr();
- 
+ 	 * This is not required for the syscall exit path, but makes the
 -- 
 2.23.0
 
