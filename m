@@ -8,76 +8,76 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB3FCC63697
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:00:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7D7FC63697
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:02:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F74C246A5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:00:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E8AB1246A5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:02:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rB4hmXRJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F74C246A5
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N4O7tgQ8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8AB1246A5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CjvnL54VFzF1DG
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:00:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cjvqc0vhpzDqSv
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:02:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=rB4hmXRJ; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ header.s=20161025 header.b=N4O7tgQ8; dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CjvMZ29RwzDsRw
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 01:41:46 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id q10so7002569pfn.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:41:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CjvMj4F54zDsLx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 01:41:53 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id q10so7002721pfn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 06:41:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=U3KknA0alFa0IGxG++tGNKRflaQXroTilKw3EbRtEOs=;
- b=rB4hmXRJBlp+cXRzy+y6WUVOjPK0eqMGilp8/6sqpyGa1kUQF/B3bqpcZd/t//GYdJ
- 8+SyHt7CZfXarnoOhb+gZbTWSGSxhZNN2WS2A4pyn1D5WSXx39JIHPQC1ZrkUOwLGFQ/
- G312A8w5FOxAHdnMTOtTZPw9ooMcFNR423rIU7J1A4FyBMeripp93/GqKYrGs9m085E2
- 9II+fHf4EKJCH7d7iF5I0ylkF4/Duj2TI0UEssf0QqpgYiUCJLpPvqkfXT2z6BX6sdbh
- oCVB34HzRBw6au0iEybhqGn+AJeDKZqgFEZ8uhc0RrXGS3ksXDZxL0ZJ8JOS1wZkV2tu
- 1qfw==
+ bh=JJZxCyhduZmE4fi5z/tF73PdntvTsu7Wek2XFB59zGA=;
+ b=N4O7tgQ8FP5nhglvfQiAUgapDFGbMw+51zWz53zMoVxxR1VHmImNhBXxq+aJizYC2o
+ 3TasK1/ayzwr1IMych+5OKRYzH/mwPLIG4v7gphB0glP/bNWiNz4cNu9Ag3jyH171Xi1
+ pJBYQfG/66z137d3o0X5z/x+Si5N65B0223MCh+l8xwXLlCqoGA+MLENyWcj2yGHmlRX
+ 1apwnkJhAd3CzdBGjBL+9aFovzdu+g402s7roKhl5Fywopc0RELQ13skNDaEbP74xnkr
+ NB/5Wfx4QqZuegJSerzEC/IIhTXtSmtGQWTZcVzcz0B479RdcUJrKayOXws58LjE4WZL
+ dlFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=U3KknA0alFa0IGxG++tGNKRflaQXroTilKw3EbRtEOs=;
- b=KAZxKBlWrOMqG8tpnLi9jk3ad+sMtKYG8e4JelrNIw8kWu6V4VnTp5FI1ECicRiu8F
- tdLkAjxs+5fkbTmhCNmXrDPvyrdKHvTskN9R9an7Pa1KIeXljCbIwBH90/h1wbyJSi8e
- Ej9AT69HwZul8IiG2tvwD179SeCuDe3t8AX8kssqdqeLT/xGRed3I1Zp5ubHLMvnDwKF
- 2Awr1Dq6wWHTnph3m8pTejjX+PX4W5fkz+6gO2ccOw+6o4y8T+hMCu0C0Gd3tZD3gssL
- A5qMqh+jqSygqT9ApQKLjpnnfYuOdDqz8Z5VfAnjk8z5tAzwQeN+E6YMpPpAL7lQxWkz
- iZhA==
-X-Gm-Message-State: AOAM531kvqxrmEJE4N06vS8JZe+poDAJ7y7MwzDnlZUF5olkqu0CoQvG
- jGUqp3VoGJsUaFLFHWktxcbP8J/eb5I=
-X-Google-Smtp-Source: ABdhPJw3ywDG/HAgl27vOpBDXMnYf+eKgEbBzoOwEy+n/M4ncekKKoYY4nAPqw6zKqZ08uakvzYdYg==
-X-Received: by 2002:a63:797:: with SMTP id 145mr10953398pgh.264.1606574504443; 
- Sat, 28 Nov 2020 06:41:44 -0800 (PST)
+ bh=JJZxCyhduZmE4fi5z/tF73PdntvTsu7Wek2XFB59zGA=;
+ b=nq8st4+B/9Jhu6+Hs4ZrR+4yIsvz7XzkXD9GnKSN6LSGbFcbkekSrR3wZO8+deDnMU
+ nF2Jv6LEPJOA4d7VnDYYf9nfvOgJhveOE4nDcg5PrbxXrnueM90e7JFh+YLr1yStkeLi
+ 83ytaWbJDiGyL7ygaHq9huDArfaEf29sxSEqYc4yeGomknbsjK8l0qS+tZnsmiQUGhdw
+ reeCFYbLM9ExgrTjw4t6s7ZKPcl0P9ANITUNUfRSHQHplefjSkKMYpSgvjkFFA7Y0BLZ
+ nO5tjYnFWBNSYoKab6L0qrzDLw75T+9urtgvfeYZAFj8ANd5Kl5yvlW+bNVZHJVmzn8t
+ n9Cw==
+X-Gm-Message-State: AOAM533ySH6ItAgZ2qwL4ph4Zyaq4VrK9NnDuEnxsrs1BnmDJ2DaOCs+
+ gCvAt2AFkkBwQUSPEgDkR4S3omZvw6w=
+X-Google-Smtp-Source: ABdhPJyDTpLRP41a+xJsq7bOnlqjwjK7wqaz0j4PeKD0PeILnf2ECdRna6PqvwDJPb0NyGgwHv7big==
+X-Received: by 2002:a62:7b47:0:b029:197:cd7f:e044 with SMTP id
+ w68-20020a627b470000b0290197cd7fe044mr11413301pfc.68.1606574511020; 
+ Sat, 28 Nov 2020 06:41:51 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (193-116-103-132.tpgi.com.au.
  [193.116.103.132])
- by smtp.gmail.com with ESMTPSA id y201sm10750764pfb.2.2020.11.28.06.41.42
+ by smtp.gmail.com with ESMTPSA id y201sm10750764pfb.2.2020.11.28.06.41.49
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 28 Nov 2020 06:41:44 -0800 (PST)
+ Sat, 28 Nov 2020 06:41:50 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 10/19] powerpc/64: add context tracking to asynchronous
- interrupts
-Date: Sun, 29 Nov 2020 00:41:05 +1000
-Message-Id: <20201128144114.944000-11-npiggin@gmail.com>
+Subject: [PATCH v3 13/19] powerpc/64s: reconcile interrupts in C
+Date: Sun, 29 Nov 2020 00:41:08 +1000
+Message-Id: <20201128144114.944000-14-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20201128144114.944000-1-npiggin@gmail.com>
 References: <20201128144114.944000-1-npiggin@gmail.com>
@@ -99,37 +99,225 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously context tracking was not done for asynchronous interrupts,
-(those that run in interrupt context), and if those would cause a
-reschedule when they exit, then scheduling functions (schedule_user,
-preempt_schedule_irq) call exception_enter/exit to fix this up and
-exit user context.
-
-This is a hack we would like to get away from, so do context tracking
-for asynchronous interrupts too.
+There is no need for this to be in asm, use the new intrrupt entry wrapper.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/interrupt.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/interrupt.h | 15 +++++++++++----
+ arch/powerpc/kernel/exceptions-64s.S | 26 --------------------------
+ 2 files changed, 11 insertions(+), 30 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index e2410f54c6e9..8f7db1c8cbe0 100644
+index 542ad8e9c313..c31fa26b3f60 100644
 --- a/arch/powerpc/include/asm/interrupt.h
 +++ b/arch/powerpc/include/asm/interrupt.h
-@@ -42,10 +42,12 @@ static inline void interrupt_exit_prepare(struct pt_regs *regs, struct interrupt
+@@ -14,11 +14,14 @@ struct interrupt_state {
  
- static inline void interrupt_async_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
+ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
  {
-+	interrupt_enter_prepare(regs, state);
+-#ifdef CONFIG_PPC_BOOK3E_64
+-	state->ctx_state = exception_enter();
+-#endif
+-
++	/*
++	 * Book3E reconciles irq soft mask in asm
++	 */
+ #ifdef CONFIG_PPC_BOOK3S_64
++	if (irq_soft_mask_set_return(IRQS_ALL_DISABLED) == IRQS_ENABLED)
++		trace_hardirqs_off();
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
++
+ 	if (user_mode(regs)) {
+ 		CT_WARN_ON(ct_state() != CONTEXT_USER);
+ 		user_exit_irqoff();
+@@ -31,6 +34,10 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+ 			CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
+ 	}
+ #endif
++
++#ifdef CONFIG_PPC_BOOK3E_64
++	state->ctx_state = exception_enter();
++#endif
  }
  
- static inline void interrupt_async_exit_prepare(struct pt_regs *regs, struct interrupt_state *state)
- {
-+	interrupt_exit_prepare(regs, state);
- }
+ /*
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index f6ec455db13c..647b7743bc9c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -139,7 +139,6 @@ name:
+ #define IKVM_VIRT	.L_IKVM_VIRT_\name\()	/* Virt entry tests KVM */
+ #define ISTACK		.L_ISTACK_\name\()	/* Set regular kernel stack */
+ #define __ISTACK(name)	.L_ISTACK_ ## name
+-#define IRECONCILE	.L_IRECONCILE_\name\()	/* Do RECONCILE_IRQ_STATE */
+ #define IKUAP		.L_IKUAP_\name\()	/* Do KUAP lock */
  
- struct interrupt_nmi_state {
+ #define INT_DEFINE_BEGIN(n)						\
+@@ -203,9 +202,6 @@ do_define_int n
+ 	.ifndef ISTACK
+ 		ISTACK=1
+ 	.endif
+-	.ifndef IRECONCILE
+-		IRECONCILE=1
+-	.endif
+ 	.ifndef IKUAP
+ 		IKUAP=1
+ 	.endif
+@@ -653,10 +649,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	.if ISTACK
+ 	ACCOUNT_STOLEN_TIME
+ 	.endif
+-
+-	.if IRECONCILE
+-	RECONCILE_IRQ_STATE(r10, r11)
+-	.endif
+ .endm
+ 
+ /*
+@@ -935,7 +927,6 @@ INT_DEFINE_BEGIN(system_reset)
+ 	 */
+ 	ISET_RI=0
+ 	ISTACK=0
+-	IRECONCILE=0
+ 	IKVM_REAL=1
+ INT_DEFINE_END(system_reset)
+ 
+@@ -1123,7 +1114,6 @@ INT_DEFINE_BEGIN(machine_check_early)
+ 	ISTACK=0
+ 	IDAR=1
+ 	IDSISR=1
+-	IRECONCILE=0
+ 	IKUAP=0 /* We don't touch AMR here, we never go to virtual mode */
+ INT_DEFINE_END(machine_check_early)
+ 
+@@ -1476,7 +1466,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ INT_DEFINE_BEGIN(data_access_slb)
+ 	IVEC=0x380
+ 	IAREA=PACA_EXSLB
+-	IRECONCILE=0
+ 	IDAR=1
+ 	IKVM_SKIP=1
+ 	IKVM_REAL=1
+@@ -1503,7 +1492,6 @@ MMU_FTR_SECTION_ELSE
+ 	li	r3,-EFAULT
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	std	r3,RESULT(r1)
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	do_bad_slb_fault
+ 	b	interrupt_return
+@@ -1565,7 +1553,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ INT_DEFINE_BEGIN(instruction_access_slb)
+ 	IVEC=0x480
+ 	IAREA=PACA_EXSLB
+-	IRECONCILE=0
+ 	IISIDE=1
+ 	IDAR=1
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+@@ -1594,7 +1581,6 @@ MMU_FTR_SECTION_ELSE
+ 	li	r3,-EFAULT
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	std	r3,RESULT(r1)
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	do_bad_slb_fault
+ 	b	interrupt_return
+@@ -1754,7 +1740,6 @@ EXC_COMMON_BEGIN(program_check_common)
+  */
+ INT_DEFINE_BEGIN(fp_unavailable)
+ 	IVEC=0x800
+-	IRECONCILE=0
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	IKVM_REAL=1
+ #endif
+@@ -1769,7 +1754,6 @@ EXC_VIRT_END(fp_unavailable, 0x4800, 0x100)
+ EXC_COMMON_BEGIN(fp_unavailable_common)
+ 	GEN_COMMON fp_unavailable
+ 	bne	1f			/* if from user, just load it up */
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	kernel_fp_unavailable_exception
+ 0:	trap
+@@ -1788,7 +1772,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ 	b	fast_interrupt_return
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	fp_unavailable_tm
+ 	b	interrupt_return
+@@ -1853,7 +1836,6 @@ INT_DEFINE_BEGIN(hdecrementer)
+ 	IVEC=0x980
+ 	IHSRR=1
+ 	ISTACK=0
+-	IRECONCILE=0
+ 	IKVM_REAL=1
+ 	IKVM_VIRT=1
+ INT_DEFINE_END(hdecrementer)
+@@ -2227,7 +2209,6 @@ INT_DEFINE_BEGIN(hmi_exception_early)
+ 	IHSRR=1
+ 	IREALMODE_COMMON=1
+ 	ISTACK=0
+-	IRECONCILE=0
+ 	IKUAP=0 /* We don't touch AMR here, we never go to virtual mode */
+ 	IKVM_REAL=1
+ INT_DEFINE_END(hmi_exception_early)
+@@ -2401,7 +2382,6 @@ EXC_COMMON_BEGIN(performance_monitor_common)
+  */
+ INT_DEFINE_BEGIN(altivec_unavailable)
+ 	IVEC=0xf20
+-	IRECONCILE=0
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	IKVM_REAL=1
+ #endif
+@@ -2431,7 +2411,6 @@ BEGIN_FTR_SECTION
+ 	b	fast_interrupt_return
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	altivec_unavailable_tm
+ 	b	interrupt_return
+@@ -2439,7 +2418,6 @@ BEGIN_FTR_SECTION
+ 1:
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	altivec_unavailable_exception
+ 	b	interrupt_return
+@@ -2455,7 +2433,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  */
+ INT_DEFINE_BEGIN(vsx_unavailable)
+ 	IVEC=0xf40
+-	IRECONCILE=0
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	IKVM_REAL=1
+ #endif
+@@ -2484,7 +2461,6 @@ BEGIN_FTR_SECTION
+ 	b	load_up_vsx
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	vsx_unavailable_tm
+ 	b	interrupt_return
+@@ -2492,7 +2468,6 @@ BEGIN_FTR_SECTION
+ 1:
+ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+-	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	vsx_unavailable_exception
+ 	b	interrupt_return
+@@ -2827,7 +2802,6 @@ EXC_VIRT_NONE(0x5800, 0x100)
+ INT_DEFINE_BEGIN(soft_nmi)
+ 	IVEC=0x900
+ 	ISTACK=0
+-	IRECONCILE=0	/* Soft-NMI may fire under local_irq_disable */
+ INT_DEFINE_END(soft_nmi)
+ 
+ /*
 -- 
 2.23.0
 
