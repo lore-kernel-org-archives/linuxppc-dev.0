@@ -5,78 +5,79 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9B5DC63697
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:31:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93150C63697
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:33:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49F66246AB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:31:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7C6B246AB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2020 15:33:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ijz5c75/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49F66246AB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pH6PNRVu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7C6B246AB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CjwTR2jLbzDrq8
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:31:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CjwWC1WsszDrRX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 02:33:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
+ helo=mail-pg1-x542.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ijz5c75/; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+ header.s=20161025 header.b=pH6PNRVu; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CjwN66ppPzDrRQ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 02:26:25 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id w187so7046462pfd.5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 07:26:25 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CjwN709jvzDrRc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 02:26:47 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id f17so6677754pge.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 07:26:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Wf66xeGBT+zLBJ325IKif/6Ivp+txfeM6xGRJ6CQfBE=;
- b=ijz5c75/E/ELd5qQgEJTSiT2ArdpJ9bA3PqbAX6GvlMdjXweWhLfILo7qXEC1nBBCB
- kiL7mvl+4JvgigcgzmmQWU6r8CFTjcR5F4nW6rOV7VSX3aBMX+jA2gLYrvke2pP52R6E
- 9hfHLSZPWV/d4spjtxIXptVb6ugMHWXtgfYxTHVySAWJTR+b0rqxYn2NCqDNPiTD03Ke
- cPdqn1MUJz5Zr6yIMZcHwNlJWm9bD/6VUoaXcVxWdRuoAPSJqfBh3VEo8ZD8MrcGPXyK
- 1nLp7ZH1pU+U3eqJl8WS9Fo+49LWEK4bagk7cMGxWjXQbG+mEHrcIUj3p523q0J4Ymx1
- 3rtQ==
+ bh=2t14GdngmnBtNB8+/S//c7VFoU994BC7ZHYuUgeTwNA=;
+ b=pH6PNRVuB8W6ejdkNH3ADRpKa2W1yQTGs2uU27Q8i7HpUKO3f9uyVcg2lRsJjmeWnr
+ CiWh29MZg2oMTns1m7LAECpYdglWBb9TEXCNmSY44Jwy/3iyE/MRgMHlIGdFSJgnet8U
+ emuQiBlCAi8w0ffhQXAYctwll7O/kyGHvFhQ0Z7RtYpYLlvN1gvIL0pL4v6vYzymtT1V
+ i3rIbiCybtP/Htpdz1JlFe+Ct15QTpTUtpdx9LPu4zt7b2JJ4oZXtEnOzKBqd+qE9mpz
+ PlrgKef1AmLQ8sJ9gD1dJDm0gPddF7toAYOAk+ufdiUyOMpg4lI+zkagdwDZCE3RFmKV
+ GGkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Wf66xeGBT+zLBJ325IKif/6Ivp+txfeM6xGRJ6CQfBE=;
- b=oxP5BDXk9y+rOa81qweNVV+DBI/dkVYl7EyFv/RaPWJ3RSbB6r7PZtS8Q6VNRXm+pH
- nif25SPe9mZIlgMovky0H39QegTm8KgoAqHygJ03wwC4t5Ia+uXyvBQIrWQtkAjf9adG
- 2VHg6sGa/xsFCdRfFdIusgbNsDlRM5HK3TuCEbdvsf4Fn4hx2I3Tf31DbCUFrCN+4vt1
- NV1feY0cHqCxw7Itq9VfK+dN2xcsLV0qoOzEtdinwrOuVTmaDMS3OPnlzMESlIWaDXgq
- osSmXiAn+ipZwKBMsV3Pg+uRQpD72BDmZvHIqnN2DU1MlXGn+fVtclCpgVzNptzxhUkT
- znew==
-X-Gm-Message-State: AOAM531Be4uG07a3s454GfPTGwdZ3XYK6NC6wAx0Dp34AmkKQqxedyDq
- xuagVQmW/NBpiwniZBrWuXA=
-X-Google-Smtp-Source: ABdhPJzeEOSEN3KeDp8OFJg9EFuSGss5z2RgYshFkeIZ0nmjG+43w6JLsJfj3kymtZAT+aAIMK/HZg==
-X-Received: by 2002:a63:7847:: with SMTP id t68mr10960254pgc.422.1606577183113; 
- Sat, 28 Nov 2020 07:26:23 -0800 (PST)
+ bh=2t14GdngmnBtNB8+/S//c7VFoU994BC7ZHYuUgeTwNA=;
+ b=cit3SwsUkFgx4XwBxtu5z906y4C1QiAP+HTv/NpbcMLJYaR5IwWiOYZQTdMpVSBsH6
+ p/+kvlpcqRRSM7NkZpnsHnJVlzwl4NOqofIR5PWJquegGraEUtWL96kW9On2UQ7xzYaY
+ B47w2DfmSc/uUuz/2X4+glwc7InU6Fq/rjq5T0fk9aFL/JORAxroo+31IN9S5Gbtujbt
+ vLY8d+aXN/Gc71yblwutKm08/9CZAcZSEK17LSGd4+UmX3BiOU3EGOKcviTY17i/BT/G
+ Oy5PoIAvbhUlxpiVLHvyvlTEnh/uXu0V8Yhc50a2W4S2+18gdi35Kay0QOrsTYV/O7T2
+ XHjg==
+X-Gm-Message-State: AOAM5323NAfJWWSBbz7p2eXApkjjxy3SHaUsgy5Yeq3nlMgoHReidGHK
+ YvaBKGlIJmjFRCcVURNmtN4=
+X-Google-Smtp-Source: ABdhPJwbSE66/EBjkO/guBAlsNqxs6UVD22zZF2Hggp9t9mmJq3WRouLuCXyrm4l63WYf2fRiPF/9w==
+X-Received: by 2002:a17:90b:350b:: with SMTP id
+ ls11mr16480555pjb.193.1606577205467; 
+ Sat, 28 Nov 2020 07:26:45 -0800 (PST)
 Received: from bobo.ibm.com (193-116-103-132.tpgi.com.au. [193.116.103.132])
- by smtp.gmail.com with ESMTPSA id d22sm15500173pjw.11.2020.11.28.07.26.18
+ by smtp.gmail.com with ESMTPSA id d22sm15500173pjw.11.2020.11.28.07.26.40
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 28 Nov 2020 07:26:22 -0800 (PST)
+ Sat, 28 Nov 2020 07:26:44 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linux-mm@kvack.org,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v8 03/12] mm/vmalloc: rename vmap_*_range vmap_pages_*_range
-Date: Sun, 29 Nov 2020 01:25:50 +1000
-Message-Id: <20201128152559.999540-4-npiggin@gmail.com>
+Subject: [PATCH v8 07/12] arm64: inline huge vmap supported functions
+Date: Sun, 29 Nov 2020 01:25:54 +1000
+Message-Id: <20201128152559.999540-8-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20201128152559.999540-1-npiggin@gmail.com>
 References: <20201128152559.999540-1-npiggin@gmail.com>
@@ -93,94 +94,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: linux-arch@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
  Nicholas Piggin <npiggin@gmail.com>, Christoph Hellwig <hch@infradead.org>,
  Zefan Li <lizefan@huawei.com>, Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
- linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The vmalloc mapper operates on a struct page * array rather than a
-linear physical address, re-name it to make this distinction clear.
+This allows unsupported levels to be constant folded away, and so
+p4d_free_pud_page can be removed because it's no longer linked to.
 
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- mm/vmalloc.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/arm64/include/asm/vmalloc.h | 23 ++++++++++++++++++++---
+ arch/arm64/mm/mmu.c              | 26 --------------------------
+ 2 files changed, 20 insertions(+), 29 deletions(-)
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index f85124e88bdb..42326dbffaf0 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -189,7 +189,7 @@ void unmap_kernel_range_noflush(unsigned long start, unsigned long size)
- 		arch_sync_kernel_mappings(start, end);
+diff --git a/arch/arm64/include/asm/vmalloc.h b/arch/arm64/include/asm/vmalloc.h
+index 597b40405319..fc9a12d6cc1a 100644
+--- a/arch/arm64/include/asm/vmalloc.h
++++ b/arch/arm64/include/asm/vmalloc.h
+@@ -4,9 +4,26 @@
+ #include <asm/page.h>
+ 
+ #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+-bool arch_vmap_p4d_supported(pgprot_t prot);
+-bool arch_vmap_pud_supported(pgprot_t prot);
+-bool arch_vmap_pmd_supported(pgprot_t prot);
++static inline bool arch_vmap_p4d_supported(pgprot_t prot)
++{
++	return false;
++}
++
++static inline bool arch_vmap_pud_supported(pgprot_t prot)
++{
++	/*
++	 * Only 4k granule supports level 1 block mappings.
++	 * SW table walks can't handle removal of intermediate entries.
++	 */
++	return IS_ENABLED(CONFIG_ARM64_4K_PAGES) &&
++	       !IS_ENABLED(CONFIG_PTDUMP_DEBUGFS);
++}
++
++static inline bool arch_vmap_pmd_supported(pgprot_t prot)
++{
++	/* See arch_vmap_pud_supported() */
++	return !IS_ENABLED(CONFIG_PTDUMP_DEBUGFS);
++}
+ #endif
+ 
+ #endif /* _ASM_ARM64_VMALLOC_H */
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 1b60079c1cef..0af5b5cfb9c6 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -1315,27 +1315,6 @@ void *__init fixmap_remap_fdt(phys_addr_t dt_phys, int *size, pgprot_t prot)
+ 	return dt_virt;
  }
  
--static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
-+static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
- 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
- 		pgtbl_mod_mask *mask)
+-bool arch_vmap_p4d_supported(pgprot_t prot)
+-{
+-	return false;
+-}
+-
+-bool arch_vmap_pud_supported(pgprot_t prot);
+-{
+-	/*
+-	 * Only 4k granule supports level 1 block mappings.
+-	 * SW table walks can't handle removal of intermediate entries.
+-	 */
+-	return IS_ENABLED(CONFIG_ARM64_4K_PAGES) &&
+-	       !IS_ENABLED(CONFIG_PTDUMP_DEBUGFS);
+-}
+-
+-bool arch_vmap_pmd_supported(pgprot_t prot)
+-{
+-	/* See arch_vmap_pud_supported() */
+-	return !IS_ENABLED(CONFIG_PTDUMP_DEBUGFS);
+-}
+-
+ int pud_set_huge(pud_t *pudp, phys_addr_t phys, pgprot_t prot)
  {
-@@ -217,7 +217,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
- 	return 0;
+ 	pud_t new_pud = pfn_pud(__phys_to_pfn(phys), mk_pud_sect_prot(prot));
+@@ -1427,11 +1406,6 @@ int pud_free_pmd_page(pud_t *pudp, unsigned long addr)
+ 	return 1;
  }
  
--static int vmap_pmd_range(pud_t *pud, unsigned long addr,
-+static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
- 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
- 		pgtbl_mod_mask *mask)
+-int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
+-{
+-	return 0;	/* Don't attempt a block mapping */
+-}
+-
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ static void __remove_pgd_mapping(pgd_t *pgdir, unsigned long start, u64 size)
  {
-@@ -229,13 +229,13 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr,
- 		return -ENOMEM;
- 	do {
- 		next = pmd_addr_end(addr, end);
--		if (vmap_pte_range(pmd, addr, next, prot, pages, nr, mask))
-+		if (vmap_pages_pte_range(pmd, addr, next, prot, pages, nr, mask))
- 			return -ENOMEM;
- 	} while (pmd++, addr = next, addr != end);
- 	return 0;
- }
- 
--static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
-+static int vmap_pages_pud_range(p4d_t *p4d, unsigned long addr,
- 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
- 		pgtbl_mod_mask *mask)
- {
-@@ -247,13 +247,13 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
- 		return -ENOMEM;
- 	do {
- 		next = pud_addr_end(addr, end);
--		if (vmap_pmd_range(pud, addr, next, prot, pages, nr, mask))
-+		if (vmap_pages_pmd_range(pud, addr, next, prot, pages, nr, mask))
- 			return -ENOMEM;
- 	} while (pud++, addr = next, addr != end);
- 	return 0;
- }
- 
--static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
-+static int vmap_pages_p4d_range(pgd_t *pgd, unsigned long addr,
- 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
- 		pgtbl_mod_mask *mask)
- {
-@@ -265,7 +265,7 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
- 		return -ENOMEM;
- 	do {
- 		next = p4d_addr_end(addr, end);
--		if (vmap_pud_range(p4d, addr, next, prot, pages, nr, mask))
-+		if (vmap_pages_pud_range(p4d, addr, next, prot, pages, nr, mask))
- 			return -ENOMEM;
- 	} while (p4d++, addr = next, addr != end);
- 	return 0;
-@@ -306,7 +306,7 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
- 		next = pgd_addr_end(addr, end);
- 		if (pgd_bad(*pgd))
- 			mask |= PGTBL_PGD_MODIFIED;
--		err = vmap_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
-+		err = vmap_pages_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
- 		if (err)
- 			return err;
- 	} while (pgd++, addr = next, addr != end);
 -- 
 2.23.0
 
