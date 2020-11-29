@@ -2,25 +2,25 @@ Return-Path: <SRS0=3W5+=FD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EAF0C63777
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 00:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E30EDC64E7D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 03:57:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B39920731
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 00:41:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E7C902078D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 03:57:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="a0taiRYT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B39920731
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RIa5z40g"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7C902078D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ck8gn5qbmzDrJt
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 11:41:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CkF1R2mTczF0bG
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Nov 2020 14:57:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=luto@kernel.org; receiver=<UNKNOWN>)
@@ -28,41 +28,42 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=a0taiRYT; dkim-atps=neutral
+ header.s=default header.b=RIa5z40g; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ck8cT5TdQzDrK2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 11:38:49 +1100 (AEDT)
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com
- [209.85.128.45])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CkDz71m77zF0Qm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 14:55:15 +1100 (AEDT)
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com
+ [209.85.221.50])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9F7B22087C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 00:38:46 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id EF15320825
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2020 03:55:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1606610326;
- bh=lWw5TMojtbxaKw7VvjVfQ7hiJVxsrMbwUI8CIDgcSZY=;
+ s=default; t=1606622112;
+ bh=SFN0cW7ogqkomQKOXYAGwHhs99pK+M7jTK6kr0JdxhQ=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=a0taiRYTV5hE9MJz5yrB/E4wLTcpu6J4VhuvST+LEVmSTVkna4nUBPRDjdWVBTVMJ
- fuTCF7fuMt1843shzrtQziGt1E6DLo44ThR0PCOZcAPf5A0Sg0lmg8AcXiordCw4sf
- uiPYBlSLwsDESf2UJUzrOy9iNR4XYHvtnQJKiDYs=
-Received: by mail-wm1-f45.google.com with SMTP id w24so12637409wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 16:38:46 -0800 (PST)
-X-Gm-Message-State: AOAM530K0ctz6u4B7pR9WxuD+duFDx+4tafGJ8yLKKFlOKzonLua50o/
- Xh0R6yY8g9v0YXxWnBBvrdGXBU6WRzlV9GFBiAYzGA==
-X-Google-Smtp-Source: ABdhPJwLyYJ+CcbT9yQXWivpvUJZnHSwXyqV4grvoj5mlZ4cyzQ891rccLTwbv5dzdTuLdNLgiIWQRFmH9pj5WLHwsU=
-X-Received: by 2002:a7b:cb41:: with SMTP id v1mr4301883wmj.36.1606610325224;
- Sat, 28 Nov 2020 16:38:45 -0800 (PST)
+ b=RIa5z40goQIQDLMNaAtltuoB/wE0qEzVAOMGYNuhmvzVHq0LWbHfJof2wjKw7TPOs
+ 1XgBacK+PIBgAGvGw0Z1NTuKx/2qpjY45VH0QJbKQ3LKZmBA0wjqH9YalNQOkGM0iH
+ Xd0UudwbagjBtu41fJaBX4gb+sXd87B5VGO25xGg=
+Received: by mail-wr1-f50.google.com with SMTP id p8so10356557wrx.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2020 19:55:11 -0800 (PST)
+X-Gm-Message-State: AOAM533tQy4B8YyrWzsuQmkpTDTL8jeFr24FDvaVbsMDclMkexXMEXs9
+ icd2QMkPrmR2ccawgz0axrpELHYpe6VYgIGgXmkQ+w==
+X-Google-Smtp-Source: ABdhPJwS4QIa9ZSC36DmJxGBf/plpbJObGJjJ0ZkOhBf+B6z5NpaaqPHMyKoPNucQWoi6SiCDnzDwGiIMEAs9GwV6rw=
+X-Received: by 2002:adf:e449:: with SMTP id t9mr20484863wrm.257.1606622110451; 
+ Sat, 28 Nov 2020 19:55:10 -0800 (PST)
 MIME-Version: 1.0
 References: <20201128160141.1003903-1-npiggin@gmail.com>
- <20201128160141.1003903-2-npiggin@gmail.com>
-In-Reply-To: <20201128160141.1003903-2-npiggin@gmail.com>
+ <20201128160141.1003903-7-npiggin@gmail.com>
+In-Reply-To: <20201128160141.1003903-7-npiggin@gmail.com>
 From: Andy Lutomirski <luto@kernel.org>
-Date: Sat, 28 Nov 2020 16:38:33 -0800
-X-Gmail-Original-Message-ID: <CALCETrVbFm7gZ7G_5DWa6UGYtCzZTQvC_CPRVDZ0Lb-tiMnjSg@mail.gmail.com>
-Message-ID: <CALCETrVbFm7gZ7G_5DWa6UGYtCzZTQvC_CPRVDZ0Lb-tiMnjSg@mail.gmail.com>
-Subject: Re: [PATCH 1/8] lazy tlb: introduce exit_lazy_tlb
+Date: Sat, 28 Nov 2020 19:54:57 -0800
+X-Gmail-Original-Message-ID: <CALCETrVXUbe8LfNn-Qs+DzrOQaiw+sFUg1J047yByV31SaTOZw@mail.gmail.com>
+Message-ID: <CALCETrVXUbe8LfNn-Qs+DzrOQaiw+sFUg1J047yByV31SaTOZw@mail.gmail.com>
+Subject: Re: [PATCH 6/8] lazy tlb: shoot lazies,
+ a non-refcounting lazy tlb option
 To: Nicholas Piggin <npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,96 +86,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 28, 2020 at 8:01 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+On Sat, Nov 28, 2020 at 8:02 AM Nicholas Piggin <npiggin@gmail.com> wrote:
 >
-> This is called at points where a lazy mm is switched away or made not
-> lazy (by its owner switching back).
+> On big systems, the mm refcount can become highly contented when doing
+> a lot of context switching with threaded applications (particularly
+> switching between the idle thread and an application thread).
 >
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/arm/mach-rpc/ecard.c            |  1 +
->  arch/powerpc/mm/book3s64/radix_tlb.c |  1 +
->  fs/exec.c                            |  6 ++++--
->  include/asm-generic/mmu_context.h    | 21 +++++++++++++++++++++
->  kernel/kthread.c                     |  1 +
->  kernel/sched/core.c                  |  2 ++
->  6 files changed, 30 insertions(+), 2 deletions(-)
+> Abandoning lazy tlb slows switching down quite a bit in the important
+> user->idle->user cases, so so instead implement a non-refcounted scheme
+> that causes __mmdrop() to IPI all CPUs in the mm_cpumask and shoot down
+> any remaining lazy ones.
 >
-> diff --git a/arch/arm/mach-rpc/ecard.c b/arch/arm/mach-rpc/ecard.c
-> index 827b50f1c73e..43eb1bfba466 100644
-> --- a/arch/arm/mach-rpc/ecard.c
-> +++ b/arch/arm/mach-rpc/ecard.c
-> @@ -253,6 +253,7 @@ static int ecard_init_mm(void)
->         current->mm = mm;
->         current->active_mm = mm;
->         activate_mm(active_mm, mm);
-> +       exit_lazy_tlb(active_mm, current);
->         mmdrop(active_mm);
->         ecard_init_pgtables(mm);
->         return 0;
-> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-> index b487b489d4b6..ac3fec03926a 100644
-> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
-> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-> @@ -661,6 +661,7 @@ static void do_exit_flush_lazy_tlb(void *arg)
->                 mmgrab(&init_mm);
->                 current->active_mm = &init_mm;
->                 switch_mm_irqs_off(mm, &init_mm, current);
-> +               exit_lazy_tlb(mm, current);
->                 mmdrop(mm);
->         }
->
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 547a2390baf5..4b4dea1bb7ba 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -1017,6 +1017,8 @@ static int exec_mmap(struct mm_struct *mm)
->         if (!IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
->                 local_irq_enable();
->         activate_mm(active_mm, mm);
-> +       if (!old_mm)
-> +               exit_lazy_tlb(active_mm, tsk);
->         if (IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
->                 local_irq_enable();
->         tsk->mm->vmacache_seqnum = 0;
-> @@ -1028,9 +1030,9 @@ static int exec_mmap(struct mm_struct *mm)
->                 setmax_mm_hiwater_rss(&tsk->signal->maxrss, old_mm);
->                 mm_update_next_owner(old_mm);
->                 mmput(old_mm);
-> -               return 0;
-> +       } else {
-> +               mmdrop(active_mm);
->         }
-> -       mmdrop(active_mm);
+> Shootdown IPIs are some concern, but they have not been observed to be
+> a big problem with this scheme (the powerpc implementation generated
+> 314 additional interrupts on a 144 CPU system during a kernel compile).
+> There are a number of strategies that could be employed to reduce IPIs
+> if they turn out to be a problem for some workload.
 
-This looks like an unrelated change.
+I'm still wondering whether we can do even better.
 
->         return 0;
->  }
->
-> diff --git a/include/asm-generic/mmu_context.h b/include/asm-generic/mmu_context.h
-> index 91727065bacb..4626d0020e65 100644
-> --- a/include/asm-generic/mmu_context.h
-> +++ b/include/asm-generic/mmu_context.h
-> @@ -24,6 +24,27 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
->  }
->  #endif
->
-> +/*
-> + * exit_lazy_tlb - Called after switching away from a lazy TLB mode mm.
-> + *
-> + * mm:  the lazy mm context that was switched
-> + * tsk: the task that was switched to (with a non-lazy mm)
-> + *
-> + * mm may equal tsk->mm.
-> + * mm and tsk->mm will not be NULL.
-> + *
-> + * Note this is not symmetrical to enter_lazy_tlb, this is not
-> + * called when tasks switch into the lazy mm, it's called after the
-> + * lazy mm becomes non-lazy (either switched to a different mm or the
-> + * owner of the mm returns).
-> + */
-> +#ifndef exit_lazy_tlb
-> +static inline void exit_lazy_tlb(struct mm_struct *mm,
+The IPIs you're doing aren't really necessary -- we don't
+fundamentally need to free the pagetables immediately when all
+non-lazy users are done with them (and current kernels don't) -- what
+we need to do is to synchronize all the bookkeeping.  So, with
+adequate locking (famous last words), a couple of alternative schemes
+ought to be possible.
 
-Maybe name this parameter prev_lazy_mm?
+a) Instead of sending an IPI, increment mm_count on behalf of the
+remote CPU and do something to make sure that the remote CPU knows we
+did this on its behalf.  Then free the mm when mm_count hits zero.
+
+b) Treat mm_cpumask as part of the refcount.  Add one to mm_count when
+an mm is created.  Once mm_users hits zero, whoever clears the last
+bit in mm_cpumask is responsible for decrementing a single reference
+from mm_count, and whoever sets it to zero frees the mm.
+
+Version (b) seems fairly straightforward to implement -- add RCU
+protection and a atomic_t special_ref_cleared (initially 0) to struct
+mm_struct itself.  After anyone clears a bit to mm_cpumask (which is
+already a barrier), they read mm_users.  If it's zero, then they scan
+mm_cpumask and see if it's empty.  If it is, they atomically swap
+special_ref_cleared to 1.  If it was zero before the swap, they do
+mmdrop().  I can imagine some tweaks that could make this a big
+faster, at least in the limit of a huge number of CPUs.
+
+Version (a) seems a bit harder to reason about.  Maybe it could be
+done like this.  Add a percpu variable mm_with_extra_count.  This
+variable can be NULL, but it can also be an mm that has an extra
+reference on behalf of the cpu in question.
+
+__mmput scans mm_cpumask and, for each cpu in the mask, mmgrabs the mm
+and cmpxchgs that cpu's mm_with_extra_count from NULL to mm.  If it
+succeeds, then we win.  If it fails, further thought is required, and
+maybe we have to send an IPI, although maybe some other cleverness is
+possible.  Any time a CPU switches mms, it does atomic swaps
+mm_with_extra_count to NULL and mmdrops whatever the mm was.  (Maybe
+it needs to check the mm isn't equal to the new mm, although it would
+be quite bizarre for this to happen.)  Other than these mmgrab and
+mmdrop calls, the mm switching code doesn't mmgrab or mmdrop at all.
+
+
+Version (a) seems like it could have excellent performance.
+
+
+*However*, I think we should consider whether we want to do something
+even bigger first.  Even with any of these changes, we still need to
+maintain mm_cpumask(), and that itself can be a scalability problem.
+I wonder if we can solve this problem too.  Perhaps the switch_mm()
+paths could only ever set mm_cpumask bits, and anyone who would send
+an IPI because a bit is set in mm_cpumask would first check some
+percpu variable (cpu_rq(cpu)->something?  an entirely new variable) to
+see if the bit in mm_cpumask is spurious.  Or perhaps mm_cpumask could
+be split up across multiple cachelines, one per node.
+
+We should keep the recent lessons from Apple in mind, though: x86 is a
+dinosaur.  The future of atomics is going to look a lot more like
+ARM's LSE than x86's rather anemic set.  This means that mm_cpumask
+operations won't need to be full barriers forever, and we might not
+want to take the implied full barriers in set_bit() and clear_bit()
+for granted.
+
+--Andy
