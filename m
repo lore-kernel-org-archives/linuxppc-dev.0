@@ -2,62 +2,66 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E07C64E8A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 01:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF92C64E7B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 01:44:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0EFC720757
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 01:38:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EFC720757
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7B58420757
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 01:44:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="cwT9HXeo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B58420757
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cknty4Z6xzDrRv
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 12:38:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ckp1m0VWnzDqQL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 12:44:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ckns42phJzDqwW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 12:36:56 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 209869] Kernel 5.10-rc1 fails to boot on a PowerMac G4 3,6 at
- an early stage
-Date: Mon, 30 Nov 2020 01:36:52 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: CLOSED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status
-Message-ID: <bug-209869-206035-9jyvZIjRRR@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-209869-206035@https.bugzilla.kernel.org/>
-References: <bug-209869-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cknzr18ttzDqPb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 12:42:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=cwT9HXeo; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Cknzq3lhlz9sTc;
+ Mon, 30 Nov 2020 12:42:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1606700567;
+ bh=nTmvkAgp/a6j6G1JPow/zeZXjJMv2DMIhVNr42sxwHY=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=cwT9HXeoVCHV+1SUO9aUOUPmgvSBo7QGgAdixyFZtWqNwk2RUb3Ftn2/y67vfSgVv
+ UzQHx6k/FuDtXTj4Nv1Z1EJnjyxYBeX8Zb2mTOsTExul24clzTRycmYJ/1ufgh/WJX
+ yXgnilg9gHUN4rfdR+mN5z7lZqrNaQrVx2r5e6ANPi/IWSAQDsFgjvjwxopyobwPue
+ n8x2Oemxz9TNzt869KGJm3n+/r+V64n4O7XIxg2UpyeVXHV2EwyNpDSzXYDx9fp+Mj
+ n3M0yGSksDhu2PVWkML++5dqC5HfTIDVP5W8UIfvdoV6Tf0NLY1zZqsfwFH4LPuW9l
+ Ov2CihOEHrx0A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Allow relative pointers in bug table entries
+In-Reply-To: <5c997bc4-c859-0db6-f167-37ca37819059@csgroup.eu>
+References: <20201127030238.763-1-jniethe5@gmail.com>
+ <5c997bc4-c859-0db6-f167-37ca37819059@csgroup.eu>
+Date: Mon, 30 Nov 2020 12:42:46 +1100
+Message-ID: <874kl7y609.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,17 +77,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D209869
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 27/11/2020 =C3=A0 04:02, Jordan Niethe a =C3=A9crit=C2=A0:
+>> This enables GENERIC_BUG_RELATIVE_POINTERS on Power so that 32-bit
+>> offsets are stored in the bug entries rather than 64-bit pointers.
+>>=20
+>> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+>> ---
+>>   arch/powerpc/Kconfig           |  4 ++++
+>>   arch/powerpc/include/asm/bug.h | 37 ++++++++++++++++++++++++++++++++--
+>>   arch/powerpc/xmon/xmon.c       | 17 ++++++++++++++--
+>>   3 files changed, 54 insertions(+), 4 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index e9f13fe08492..294108e0e5c6 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -311,6 +311,10 @@ config GENERIC_BUG
+>>   	default y
+>>   	depends on BUG
+>>=20=20=20
+>> +config GENERIC_BUG_RELATIVE_POINTERS
+>> +	def_bool y
+>> +	depends on GENERIC_BUG
+>> +
+>>   config SYS_SUPPORTS_APM_EMULATION
+>>   	default y if PMAC_APM_EMU
+>>   	bool
+>> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/b=
+ug.h
+>> index 338f36cd9934..d03d834042a1 100644
+>> --- a/arch/powerpc/include/asm/bug.h
+>> +++ b/arch/powerpc/include/asm/bug.h
+>> @@ -12,7 +12,11 @@
+>>   #ifdef CONFIG_DEBUG_BUGVERBOSE
+>>   .macro EMIT_BUG_ENTRY addr,file,line,flags
+>>   	 .section __bug_table,"aw"
+>> +#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+>
+> As far as I understand, as soon as CONFIG_BUG is selected, GENERIC_BUG is=
+ automatically selected so=20
+> GENERIC_BUG_RELATIVE_POINTERS is selected as well. Therefore this #ifndef=
+ is never possible.
 
-Michael Ellerman (michael@ellerman.id.au) changed:
+Yeah.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
+There is one place in the generic code that has an ifndef CONFIG_GENERIC_BU=
+G_RELATIVE_POINTERS
+but that's because it has to support arches that don't select it.
 
---- Comment #15 from Michael Ellerman (michael@ellerman.id.au) ---
-And the fix is in mainline as of v5.10-rc6.
+In the arch code we know that it's enabled, so there should be no need
+for any ifdefs.
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+cheers
