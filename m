@@ -2,68 +2,99 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 517D4C64E7B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A8BC63777
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:09:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B9BA206CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:02:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B9BA206CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8D68E20691
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:09:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="STeElyyg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D68E20691
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ClF3J6jftzDqVl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 06:02:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ClFCN51GqzDqbW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 06:09:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.66; helo=mail-wr1-f66.google.com;
- envelope-from=k.kozlowski.k@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com
- [209.85.221.66])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=STeElyyg; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ClDsn31GBzDqty
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 05:54:05 +1100 (AEDT)
-Received: by mail-wr1-f66.google.com with SMTP id 64so17600395wra.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 10:54:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=J0Y4dG+GSInC75horYKTdpMJ72uEPkG0rsUqEhklRfs=;
- b=RAjhU/mpJgTP1cKv/xReptXvhEe8Sf8jvz1nAqbJlJYHHANDD7t3augINEg1uKyXPV
- 6bcSZqz+eZ6TPbJ9vXp9pDqPeCwRz4HBGeSkSozunIyS+Nc2fKMNRmCJiONsYWCs8aPP
- cvW1M6q7+DQcb7Q83pl0xumP74aV9Pn0aKvid3HUhSCWNE4sMgNqPLRJPD5Ydo8XQapN
- ehDWQQI6u9repejG/4VHEXTlLRWM+B/lP7or/rsLAO5Gsc5Y/1Wp8Oj3ByN9G1hUFNVx
- o59EUYNujACYSz3p3rztcGmPXMad+EvcyfJFvKavdgQhtlk+O8E/MBcl7MhrI7JB56Fb
- ssIw==
-X-Gm-Message-State: AOAM530wUjNP2g9IPwPf4mq7+reMb1lExXmS64x5s+5Aec4Dy3hfywIa
- KDrl8/ObAoxANRTsUC+KKEQ=
-X-Google-Smtp-Source: ABdhPJzaY6oSMK9XtE7h+p3mGfqluRRVSwB1Bil1Ye28LiLYVgIzYdnlv4x47IHxrw1EjuGuSJVlFg==
-X-Received: by 2002:a5d:688b:: with SMTP id h11mr29587757wru.417.1606762442112; 
- Mon, 30 Nov 2020 10:54:02 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
- by smtp.googlemail.com with ESMTPSA id w5sm24515754wrm.29.2020.11.30.10.54.00
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 30 Nov 2020 10:54:00 -0800 (PST)
-Date: Mon, 30 Nov 2020 20:53:59 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
-Subject: Re: [PATCH 5/5] powerpc/configs: drop unused BACKLIGHT_GENERIC option
-Message-ID: <20201130185359.GE29434@kozik-lap>
-References: <20201130152137.24909-1-andrey.zhizhikin@leica-geosystems.com>
- <20201130152137.24909-6-andrey.zhizhikin@leica-geosystems.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20201130152137.24909-6-andrey.zhizhikin@leica-geosystems.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ClF9S4LB6zDqVv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 06:07:40 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0AUJ1mNf164833; Mon, 30 Nov 2020 14:07:32 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=EZWTFGro04oEtz5pg4Ckd/01mafqCzMu7ZNtjhdnNOk=;
+ b=STeElyygk9FcMI0ALiWarl5ibmcuIlgCsAKpUlaq2jVrE9RKwF7B2ur2dncl2KD/bvYQ
+ OC678+nGaFsaRVnLn/+4LbBaqZXo/WUNedq5aaAYrZ9m18mrompjogLJJm4e62L71Crq
+ u0YBVKsyZXvD2j113zCwqiFYTk8PX4w8RkfpFEljwBTewxui/iJrPBSZRLNKmDIcDr4B
+ TGZpkepShqgOQFKfbCi72Xacn+yUV4UvMntlmVrnebS0r9hDB8OgI2LFGcyAS41mPY/d
+ 1CjaMfHuTgKZiEie5KYtCtYogbZlislPWfIS+qBATmIGz/p7v6DPgJyripdd8CVFsrC6 mg== 
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3556640t9x-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 30 Nov 2020 14:07:32 -0500
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0AUJ28Eg012973;
+ Mon, 30 Nov 2020 19:07:32 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma02wdc.us.ibm.com with ESMTP id 353e68t2bg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 30 Nov 2020 19:07:32 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0AUJ7Vko50594302
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 30 Nov 2020 19:07:31 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4D0812805E;
+ Mon, 30 Nov 2020 19:07:31 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3449628065;
+ Mon, 30 Nov 2020 19:07:30 +0000 (GMT)
+Received: from oc7186267434.ibm.com (unknown [9.160.4.131])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 30 Nov 2020 19:07:30 +0000 (GMT)
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH net v2 1/2] ibmvnic: Ensure that SCRQ entry reads are
+ correctly ordered
+Date: Mon, 30 Nov 2020 13:07:23 -0600
+Message-Id: <1606763244-28111-2-git-send-email-tlfalcon@linux.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1606763244-28111-1-git-send-email-tlfalcon@linux.ibm.com>
+References: <1606763244-28111-1-git-send-email-tlfalcon@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-11-30_08:2020-11-30,
+ 2020-11-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=1 clxscore=1015
+ phishscore=0 adultscore=0 impostorscore=0 lowpriorityscore=0 mlxscore=0
+ bulkscore=0 mlxlogscore=999 spamscore=0 malwarescore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2011300120
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,37 +106,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alexandre.belloni@bootlin.com, tony@atomide.com,
- linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
- thierry.reding@gmail.com, paulus@samba.org, sam@ravnborg.org,
- daniel.thompson@linaro.org, linux-omap@vger.kernel.org, deller@gmx.de,
- linux@armlinux.org.uk, jonathanh@nvidia.com, ludovic.desroches@microchip.com,
- catalin.marinas@arm.com, linux-mips@vger.kernel.org, will@kernel.org,
- mripard@kernel.org, linux-tegra@vger.kernel.org, lee.jones@linaro.org,
- wens@csie.org, linux-arm-kernel@lists.infradead.org, jernej.skrabec@siol.net,
- tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
- emil.l.velikov@gmail.com, nicolas.ferre@microchip.com,
+Cc: cforno12@linux.ibm.com, netdev@vger.kernel.org, ljp@linux.vnet.ibm.com,
+ ricklind@linux.ibm.com, dnbanerg@us.ibm.com, tlfalcon@linux.ibm.com,
+ drt@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 30, 2020 at 03:21:37PM +0000, Andrey Zhizhikin wrote:
-> Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
-> unused") removed geenric_bl driver from the tree, together with
-> corresponding config option.
-> 
-> Remove BACKLIGHT_GENERIC config item from generic-64bit_defconfig.
-> 
-> Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is unused")
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
-> ---
->  arch/powerpc/configs/powernv_defconfig | 1 -
->  1 file changed, 1 deletion(-)
-> 
+Ensure that received Subordinate Command-Response Queue (SCRQ)
+entries are properly read in order by the driver. These queues
+are used in the ibmvnic device to process RX buffer and TX completion
+descriptors. dma_rmb barriers have been added after checking for a
+pending descriptor to ensure the correct descriptor entry is checked
+and after reading the SCRQ descriptor to ensure the entire
+descriptor is read before processing.
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Fixes: 032c5e828 ("Driver for IBM System i/p VNIC protocol")
+Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 2aa40b2..5ea9f5c 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -2403,6 +2403,12 @@ static int ibmvnic_poll(struct napi_struct *napi, int budget)
+ 
+ 		if (!pending_scrq(adapter, adapter->rx_scrq[scrq_num]))
+ 			break;
++		/* The queue entry at the current index is peeked at above
++		 * to determine that there is a valid descriptor awaiting
++		 * processing. We want to be sure that the current slot
++		 * holds a valid descriptor before reading its contents.
++		 */
++		dma_rmb();
+ 		next = ibmvnic_next_scrq(adapter, adapter->rx_scrq[scrq_num]);
+ 		rx_buff =
+ 		    (struct ibmvnic_rx_buff *)be64_to_cpu(next->
+@@ -3098,6 +3104,13 @@ static int ibmvnic_complete_tx(struct ibmvnic_adapter *adapter,
+ 		unsigned int pool = scrq->pool_index;
+ 		int num_entries = 0;
+ 
++		/* The queue entry at the current index is peeked at above
++		 * to determine that there is a valid descriptor awaiting
++		 * processing. We want to be sure that the current slot
++		 * holds a valid descriptor before reading its contents.
++		 */
++		dma_rmb();
++
+ 		next = ibmvnic_next_scrq(adapter, scrq);
+ 		for (i = 0; i < next->tx_comp.num_comps; i++) {
+ 			if (next->tx_comp.rcs[i]) {
+@@ -3498,6 +3511,11 @@ static union sub_crq *ibmvnic_next_scrq(struct ibmvnic_adapter *adapter,
+ 	}
+ 	spin_unlock_irqrestore(&scrq->lock, flags);
+ 
++	/* Ensure that the entire buffer descriptor has been
++	 * loaded before reading its contents
++	 */
++	dma_rmb();
++
+ 	return entry;
+ }
+ 
+-- 
+1.8.3.1
+
