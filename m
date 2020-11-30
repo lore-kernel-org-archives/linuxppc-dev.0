@@ -2,54 +2,70 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26D47C8301F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68122C63777
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 16:40:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C656205F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:58:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C656205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77DB6206F9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 16:40:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77DB6206F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl8zK2hw7zDqsJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:58:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl9vq36cnzDqkT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 03:40:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.178.242;
- helo=mslow2.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.166.67; helo=mail-io1-f67.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=bootlin.com
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl8ww4pXmzDqhK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 02:56:20 +1100 (AEDT)
-Received: from relay1-d.mail.gandi.net (unknown [217.70.183.193])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id DF3033E4508
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 15:38:29 +0000 (UTC)
-X-Originating-IP: 86.194.74.19
-Received: from localhost (lfbn-lyo-1-997-19.w86-194.abo.wanadoo.fr
- [86.194.74.19]) (Authenticated sender: alexandre.belloni@bootlin.com)
- by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id C9B63240008;
- Mon, 30 Nov 2020 15:37:43 +0000 (UTC)
-Date: Mon, 30 Nov 2020 16:37:43 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
-Subject: Re: [PATCH 1/5] ARM: configs: drop unused BACKLIGHT_GENERIC option
-Message-ID: <20201130153743.GO1296649@piout.net>
-References: <20201130152137.24909-1-andrey.zhizhikin@leica-geosystems.com>
- <20201130152137.24909-2-andrey.zhizhikin@leica-geosystems.com>
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-io1-f67.google.com (mail-io1-f67.google.com
+ [209.85.166.67])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl9sV2jCvzDqWP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 03:38:38 +1100 (AEDT)
+Received: by mail-io1-f67.google.com with SMTP id o8so12442559ioh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 08:38:38 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=tFYu+zcPVaijJyMJm5EUKsYsvWv061fpjh0clpgn5vA=;
+ b=OXtmhuTUtA9BfOWZ3uU+VTEQNnCLEE4CHDFzvD6lFgzN3jGP7rmV49rllVpyWKiP6Z
+ R5jB74b0C02FRtLrbvx4P21cmO+G7VHPpoMja2+WtEKGrJUdWqOcy45C+9KzdTIXs5gH
+ nXVzz11EuERqQ1pMmo429tXt7xJwV9Ot9Ia0ZUnKY5Ff9Blblnu3BUAXeqm1DDV95cF8
+ mWDTN2IB/votqUkYpXUGLqEb9MniK/d/7GYRLl49SksjYh5s0rE1hI7Gfri1CCkvZrFt
+ ViC+XNJh8k6Z4yAHD10v7xwqpEo8C1/wLy9mtkMxgvFOMDIBjv6cuGrZ6fRU7Tc7J0VX
+ mIKw==
+X-Gm-Message-State: AOAM530QRJB+LMhO9aNaq9cJPe4irZSaukymUmkNpqtXQ8WKXESwkPEs
+ O7ILoAhGDr7lk+P3jnZcrA==
+X-Google-Smtp-Source: ABdhPJwO8/AKHHQtotzeksDXX1wp3u3t+G5jA46XRQZErHhLBCCcrUV6i188c/xtoojwacdGbzMMXA==
+X-Received: by 2002:a6b:b514:: with SMTP id e20mr17078716iof.105.1606754313679; 
+ Mon, 30 Nov 2020 08:38:33 -0800 (PST)
+Received: from xps15 ([64.188.179.253])
+ by smtp.gmail.com with ESMTPSA id u11sm8273653iol.51.2020.11.30.08.38.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 30 Nov 2020 08:38:32 -0800 (PST)
+Received: (nullmailer pid 2592217 invoked by uid 1000);
+ Mon, 30 Nov 2020 16:38:29 -0000
+Date: Mon, 30 Nov 2020 09:38:29 -0700
+From: Rob Herring <robh@kernel.org>
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Subject: Re: [PATCH v4] dt-bindings: misc: convert fsl,qoriq-mc from txt to
+ YAML
+Message-ID: <20201130163829.GA2590579@robh.at.kernel.org>
+References: <20201123090035.15734-1-laurentiu.tudor@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201130152137.24909-2-andrey.zhizhikin@leica-geosystems.com>
+In-Reply-To: <20201123090035.15734-1-laurentiu.tudor@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,210 +77,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tony@atomide.com, linux-kernel@vger.kernel.org,
- James.Bottomley@hansenpartnership.com, ludovic.desroches@microchip.com,
- paulus@samba.org, sam@ravnborg.org, daniel.thompson@linaro.org, deller@gmx.de,
- linux@armlinux.org.uk, krzk@kernel.org, jonathanh@nvidia.com, wens@csie.org,
- catalin.marinas@arm.com, linux-mips@vger.kernel.org, will@kernel.org,
- mripard@kernel.org, linux-tegra@vger.kernel.org, lee.jones@linaro.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- jernej.skrabec@siol.net, tsbogend@alpha.franken.de,
- linux-parisc@vger.kernel.org, emil.l.velikov@gmail.com,
- nicolas.ferre@microchip.com, thierry.reding@gmail.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+ netdev@vger.kernel.org, corbet@lwn.net, linux-kernel@vger.kernel.org,
+ leoyang.li@nxp.com, robh+dt@kernel.org, ioana.ciornei@nxp.com,
+ Ionut-robert Aron <ionut-robert.aron@nxp.com>, kuba@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 30/11/2020 15:21:33+0000, Andrey Zhizhikin wrote:
-> Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
-> unused") removed geenric_bl driver from the tree, together with
-> corresponding config option.
+On Mon, 23 Nov 2020 11:00:35 +0200, Laurentiu Tudor wrote:
+> From: Ionut-robert Aron <ionut-robert.aron@nxp.com>
 > 
-> Remove BACKLIGHT_GENERIC config item from all ARM configurations.
+> Convert fsl,qoriq-mc to YAML in order to automate the verification
+> process of dts files. In addition, update MAINTAINERS accordingly
+> and, while at it, add some missing files.
 > 
-> Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is unused")
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-
+> Signed-off-by: Ionut-robert Aron <ionut-robert.aron@nxp.com>
+> [laurentiu.tudor@nxp.com: update MINTAINERS, updates & fixes in schema]
+> Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 > ---
->  arch/arm/configs/at91_dt_defconfig        | 1 -
->  arch/arm/configs/cm_x300_defconfig        | 1 -
->  arch/arm/configs/colibri_pxa300_defconfig | 1 -
->  arch/arm/configs/jornada720_defconfig     | 1 -
->  arch/arm/configs/magician_defconfig       | 1 -
->  arch/arm/configs/mini2440_defconfig       | 1 -
->  arch/arm/configs/omap2plus_defconfig      | 1 -
->  arch/arm/configs/pxa3xx_defconfig         | 1 -
->  arch/arm/configs/qcom_defconfig           | 1 -
->  arch/arm/configs/sama5_defconfig          | 1 -
->  arch/arm/configs/sunxi_defconfig          | 1 -
->  arch/arm/configs/tegra_defconfig          | 1 -
->  arch/arm/configs/u8500_defconfig          | 1 -
->  13 files changed, 13 deletions(-)
+> Changes in v4:
+>  - use $ref to point to fsl,qoriq-mc-dpmac binding
 > 
-> diff --git a/arch/arm/configs/at91_dt_defconfig b/arch/arm/configs/at91_dt_defconfig
-> index 4a0ba2ae1a25..6e52c9c965e6 100644
-> --- a/arch/arm/configs/at91_dt_defconfig
-> +++ b/arch/arm/configs/at91_dt_defconfig
-> @@ -132,7 +132,6 @@ CONFIG_DRM_ATMEL_HLCDC=y
->  CONFIG_DRM_PANEL_SIMPLE=y
->  CONFIG_FB_ATMEL=y
->  CONFIG_BACKLIGHT_ATMEL_LCDC=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_LOGO=y
-> diff --git a/arch/arm/configs/cm_x300_defconfig b/arch/arm/configs/cm_x300_defconfig
-> index 2f7acde2d921..502a9d870ca4 100644
-> --- a/arch/arm/configs/cm_x300_defconfig
-> +++ b/arch/arm/configs/cm_x300_defconfig
-> @@ -87,7 +87,6 @@ CONFIG_FB=y
->  CONFIG_FB_PXA=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_LCD_TDO24M=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_DA903X=m
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-> diff --git a/arch/arm/configs/colibri_pxa300_defconfig b/arch/arm/configs/colibri_pxa300_defconfig
-> index 0dae3b185284..26e5a67f8e2d 100644
-> --- a/arch/arm/configs/colibri_pxa300_defconfig
-> +++ b/arch/arm/configs/colibri_pxa300_defconfig
-> @@ -34,7 +34,6 @@ CONFIG_FB=y
->  CONFIG_FB_PXA=y
->  # CONFIG_LCD_CLASS_DEVICE is not set
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  # CONFIG_VGA_CONSOLE is not set
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_LOGO=y
-> diff --git a/arch/arm/configs/jornada720_defconfig b/arch/arm/configs/jornada720_defconfig
-> index 9f079be2b84b..069f60ffdcd8 100644
-> --- a/arch/arm/configs/jornada720_defconfig
-> +++ b/arch/arm/configs/jornada720_defconfig
-> @@ -48,7 +48,6 @@ CONFIG_FB=y
->  CONFIG_FB_S1D13XXX=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  # CONFIG_VGA_CONSOLE is not set
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-> diff --git a/arch/arm/configs/magician_defconfig b/arch/arm/configs/magician_defconfig
-> index d2e684f6565a..b4670d42f378 100644
-> --- a/arch/arm/configs/magician_defconfig
-> +++ b/arch/arm/configs/magician_defconfig
-> @@ -95,7 +95,6 @@ CONFIG_FB_PXA_OVERLAY=y
->  CONFIG_FB_W100=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  # CONFIG_VGA_CONSOLE is not set
->  CONFIG_FRAMEBUFFER_CONSOLE=y
-> diff --git a/arch/arm/configs/mini2440_defconfig b/arch/arm/configs/mini2440_defconfig
-> index 301f29a1fcc3..898490aaa39e 100644
-> --- a/arch/arm/configs/mini2440_defconfig
-> +++ b/arch/arm/configs/mini2440_defconfig
-> @@ -158,7 +158,6 @@ CONFIG_FB_S3C2410=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_LCD_PLATFORM=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-> diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-> index de3b7813a1ce..7eae097a75d2 100644
-> --- a/arch/arm/configs/omap2plus_defconfig
-> +++ b/arch/arm/configs/omap2plus_defconfig
-> @@ -388,7 +388,6 @@ CONFIG_FB_TILEBLITTING=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_LCD_PLATFORM=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -CONFIG_BACKLIGHT_GENERIC=m
->  CONFIG_BACKLIGHT_PWM=m
->  CONFIG_BACKLIGHT_PANDORA=m
->  CONFIG_BACKLIGHT_GPIO=m
-> diff --git a/arch/arm/configs/pxa3xx_defconfig b/arch/arm/configs/pxa3xx_defconfig
-> index 06bbc7a59b60..f0c34017f2aa 100644
-> --- a/arch/arm/configs/pxa3xx_defconfig
-> +++ b/arch/arm/configs/pxa3xx_defconfig
-> @@ -74,7 +74,6 @@ CONFIG_FB_PXA=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_LCD_TDO24M=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_DA903X=y
->  # CONFIG_VGA_CONSOLE is not set
->  CONFIG_FRAMEBUFFER_CONSOLE=y
-> diff --git a/arch/arm/configs/qcom_defconfig b/arch/arm/configs/qcom_defconfig
-> index c882167e1496..d6733e745b80 100644
-> --- a/arch/arm/configs/qcom_defconfig
-> +++ b/arch/arm/configs/qcom_defconfig
-> @@ -159,7 +159,6 @@ CONFIG_FB=y
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  # CONFIG_LCD_CLASS_DEVICE is not set
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_LM3630A=y
->  CONFIG_BACKLIGHT_LP855X=y
->  CONFIG_SOUND=y
-> diff --git a/arch/arm/configs/sama5_defconfig b/arch/arm/configs/sama5_defconfig
-> index 037d3a718a60..0a167891eb05 100644
-> --- a/arch/arm/configs/sama5_defconfig
-> +++ b/arch/arm/configs/sama5_defconfig
-> @@ -161,7 +161,6 @@ CONFIG_DRM_ATMEL_HLCDC=y
->  CONFIG_DRM_PANEL_SIMPLE=y
->  CONFIG_LCD_CLASS_DEVICE=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_SOUND=y
-> diff --git a/arch/arm/configs/sunxi_defconfig b/arch/arm/configs/sunxi_defconfig
-> index 244126172fd6..af6e80d1a0f2 100644
-> --- a/arch/arm/configs/sunxi_defconfig
-> +++ b/arch/arm/configs/sunxi_defconfig
-> @@ -111,7 +111,6 @@ CONFIG_DRM_SIMPLE_BRIDGE=y
->  CONFIG_DRM_LIMA=y
->  CONFIG_FB_SIMPLE=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  CONFIG_SOUND=y
->  CONFIG_SND=y
-> diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
-> index fff5fae0db30..74739a52a8ad 100644
-> --- a/arch/arm/configs/tegra_defconfig
-> +++ b/arch/arm/configs/tegra_defconfig
-> @@ -205,7 +205,6 @@ CONFIG_DRM_PANEL_SIMPLE=y
->  CONFIG_DRM_LVDS_CODEC=y
->  # CONFIG_LCD_CLASS_DEVICE is not set
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -# CONFIG_BACKLIGHT_GENERIC is not set
->  CONFIG_BACKLIGHT_PWM=y
->  CONFIG_FRAMEBUFFER_CONSOLE=y
->  CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
-> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
-> index 28dd7cf56048..24aacc255021 100644
-> --- a/arch/arm/configs/u8500_defconfig
-> +++ b/arch/arm/configs/u8500_defconfig
-> @@ -92,7 +92,6 @@ CONFIG_DRM_PANEL_SONY_ACX424AKP=y
->  CONFIG_DRM_LIMA=y
->  CONFIG_DRM_MCDE=y
->  CONFIG_BACKLIGHT_CLASS_DEVICE=y
-> -CONFIG_BACKLIGHT_GENERIC=m
->  CONFIG_BACKLIGHT_GPIO=y
->  CONFIG_LOGO=y
->  CONFIG_SOUND=y
-> -- 
-> 2.17.1
+> Changes in v3:
+>  - dropped duplicated "fsl,qoriq-mc-dpmac" schema and replaced with
+>    reference to it
+>  - fixed a dt_binding_check warning
+> 
+> Changes in v2:
+>  - fixed errors reported by yamllint
+>  - dropped multiple unnecessary quotes
+>  - used schema instead of text in description
+>  - added constraints on dpmac reg property
+> 
+>  .../devicetree/bindings/misc/fsl,qoriq-mc.txt | 196 ------------------
+>  .../bindings/misc/fsl,qoriq-mc.yaml           | 186 +++++++++++++++++
+>  .../ethernet/freescale/dpaa2/overview.rst     |   5 +-
+>  MAINTAINERS                                   |   4 +-
+>  4 files changed, 193 insertions(+), 198 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
+>  create mode 100644 Documentation/devicetree/bindings/misc/fsl,qoriq-mc.yaml
 > 
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+As there's a dependency on fsl,qoriq-mc-dpmac, this needs to go via 
+netdev tree.
+
+Reviewed-by: Rob Herring <robh@kernel.org>
