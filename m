@@ -2,65 +2,76 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C733C63777
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:41:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7D82C63777
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:43:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51DAC20706
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:41:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4649920706
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:43:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TRWg1GIg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51DAC20706
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TGtTQIAP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4649920706
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl8bx5NN4zDqYM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:41:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl8dq4z1xzDqZN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:43:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=TRWg1GIg; dkim-atps=neutral
+ header.s=default header.b=TGtTQIAP; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl8V75y2zzDqC7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 02:36:47 +1100 (AEDT)
-Received: from mail.kernel.org (ip5f5ad5b3.dynamic.kabel-deutschland.de
- [95.90.213.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl8X74n0BzDqlF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 02:38:31 +1100 (AEDT)
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com
+ [209.85.218.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2E293208FE;
- Mon, 30 Nov 2020 15:36:45 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B876121D7F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 15:38:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1606750605;
- bh=0DZIgPt81ePJ9MlFFkPWiF0x1oIC/jHfOBLqtU2LcVQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=TRWg1GIgqep5FzBHzkhpbCADpinxgS3ZjWHDVNibMKTRwXUJQmJyz7Cx5qxuqtlb0
- C1IRZBGOAVGVeXjpV5tj7szk81cPRFjh/SC/zJkd+dJOYYH5AisFE3uHGXVbuxprSq
- xv247OkjYg7f0ThknaQ0sapQBHmSRChC6tg3L3Jw=
-Received: from mchehab by mail.kernel.org with local (Exim 4.94)
- (envelope-from <mchehab@kernel.org>)
- id 1kjlEI-00CjvU-Hk; Mon, 30 Nov 2020 16:36:42 +0100
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Subject: [PATCH 6/6] docs: archis: add a per-architecture features list
-Date: Mon, 30 Nov 2020 16:36:35 +0100
-Message-Id: <9c39d4dd93e05c0008205527d2c3450912f029ed.1606748711.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <cover.1606748711.git.mchehab+huawei@kernel.org>
-References: <cover.1606748711.git.mchehab+huawei@kernel.org>
+ s=default; t=1606750709;
+ bh=/mwcAGKismYKxXjOUto0bcfFSTR7WENjNq8FNtV/FvQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=TGtTQIAPJ9GJO83pkypK6YRWOwz5+SHe0ZTJRql4oB+vhBWwbPXl/3SeqookpuJeF
+ FcWzRE4DfKNaT7RsTLr/GIxS3efT+YrckzTnJIxA2dqFVYQLuB5aiNChcHwl9NcLLG
+ BeQLy9vQX71V4qBvt462uq3i0tce7SBxNiT+R/D0=
+Received: by mail-ej1-f43.google.com with SMTP id f9so20417819ejw.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 07:38:28 -0800 (PST)
+X-Gm-Message-State: AOAM533GxxwU6fr0+boDXm9LzfJltnBEXk4DwmJojEZyJSN7zKgLnSym
+ qIumHEwpeuTV02rmk/atI2kXcJ/5W1+JSkNP3A==
+X-Google-Smtp-Source: ABdhPJwfi/bEMZouaafRm5GbGn1YKFdYDmO1WDNjm1A+nVHVN3DMiM3lra3WgVaV1huC2tZ8DwNzz0146k2O8pmy8Hk=
+X-Received: by 2002:a17:907:2718:: with SMTP id
+ w24mr15750107ejk.525.1606750707036; 
+ Mon, 30 Nov 2020 07:38:27 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20201111090853.14112-1-Sergey.Semin@baikalelectronics.ru>
+ <20201111090853.14112-11-Sergey.Semin@baikalelectronics.ru>
+ <20201111201423.GA1938179@bogus>
+ <20201112102946.ipcsiidty4ut4kap@mobilestation>
+ <20201121124228.GA2039998@robh.at.kernel.org>
+ <20201125083202.ytoyd62bg3s7kvvg@mobilestation>
+In-Reply-To: <20201125083202.ytoyd62bg3s7kvvg@mobilestation>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 30 Nov 2020 08:38:13 -0700
+X-Gmail-Original-Message-ID: <CAL_JsqKscjEgArQDbdEgbdNfC7PGVku7Wmk1myjADpsBWqJt+g@mail.gmail.com>
+Message-ID: <CAL_JsqKscjEgArQDbdEgbdNfC7PGVku7Wmk1myjADpsBWqJt+g@mail.gmail.com>
+Subject: Re: [PATCH v4 10/18] dt-bindings: usb: Convert DWC USB3 bindings to
+ DT schema
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,410 +83,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Jonas Bonn <jonas@southpole.se>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
- Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>, linux-kernel@vger.kernel.org,
- openrisc@lists.librecores.org, Palmer Dabbelt <palmer@dabbelt.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Neil Armstrong <narmstrong@baylibre.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ Kevin Hilman <khilman@baylibre.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Andy Gross <agross@kernel.org>, Chunfeng Yun <chunfeng.yun@mediatek.com>,
+ arcml <linux-snps-arc@lists.infradead.org>, devicetree@vger.kernel.org,
+ Mathias Nyman <mathias.nyman@intel.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ Linux USB List <linux-usb@vger.kernel.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ Serge Semin <fancer.lancer@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Manu Gautam <mgautam@codeaurora.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a feature list matrix for each architecture to their
-respective Kernel books.
+On Wed, Nov 25, 2020 at 1:32 AM Serge Semin
+<Sergey.Semin@baikalelectronics.ru> wrote:
+>
+> On Sat, Nov 21, 2020 at 06:42:28AM -0600, Rob Herring wrote:
+> > On Thu, Nov 12, 2020 at 01:29:46PM +0300, Serge Semin wrote:
+> > > On Wed, Nov 11, 2020 at 02:14:23PM -0600, Rob Herring wrote:
+> > > > On Wed, Nov 11, 2020 at 12:08:45PM +0300, Serge Semin wrote:
+> > > > > DWC USB3 DT node is supposed to be compliant with the Generic xHCI
+> > > > > Controller schema, but with additional vendor-specific properties, the
+> > > > > controller-specific reference clocks and PHYs. So let's convert the
+> > > > > currently available legacy text-based DWC USB3 bindings to the DT schema
+> > > > > and make sure the DWC USB3 nodes are also validated against the
+> > > > > usb-xhci.yaml schema.
+> > > > >
+> > > > > Note we have to discard the nodename restriction of being prefixed with
+> > > > > "dwc3@" string, since in accordance with the usb-hcd.yaml schema USB nodes
+> > > > > are supposed to be named as "^usb(@.*)".
+> > > > >
+> > > > > Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> > > > >
+> > > > > ---
+> > > > >
+> > > > > Changelog v2:
+> > > > > - Discard '|' from the descriptions, since we don't need to preserve
+> > > > >   the text formatting in any of them.
+> > > > > - Drop quotes from around the string constants.
+> > > > > - Fix the "clock-names" prop description to be referring the enumerated
+> > > > >   clock-names instead of the ones from the Databook.
+> > > > >
+> > > > > Changelog v3:
+> > > > > - Apply usb-xhci.yaml# schema only if the controller is supposed to work
+> > > > >   as either host or otg.
+> > > > >
+> > > > > Changelog v4:
+> > > > > - Apply usb-drd.yaml schema first. If the controller is configured
+> > > > >   to work in a gadget mode only, then apply the usb.yaml schema too,
+> > > > >   otherwise apply the usb-xhci.yaml schema.
+> > > > > - Discard the Rob'es Reviewed-by tag. Please review the patch one more
+> > > > >   time.
+> > > > > ---
+> > > > >  .../devicetree/bindings/usb/dwc3.txt          | 125 --------
+> > > > >  .../devicetree/bindings/usb/snps,dwc3.yaml    | 303 ++++++++++++++++++
+> > > > >  2 files changed, 303 insertions(+), 125 deletions(-)
+> > > > >  delete mode 100644 Documentation/devicetree/bindings/usb/dwc3.txt
+> > > > >  create mode 100644 Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+> >
+> >
+> > > > > diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+> > > > > new file mode 100644
+> > > > > index 000000000000..079617891da6
+> > > > > --- /dev/null
+> > > > > +++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+> > > > > @@ -0,0 +1,303 @@
+> > > > > +# SPDX-License-Identifier: GPL-2.0
+> > > > > +%YAML 1.2
+> > > > > +---
+> > > > > +$id: http://devicetree.org/schemas/usb/snps,dwc3.yaml#
+> > > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > > +
+> > > > > +title: Synopsys DesignWare USB3 Controller
+> > > > > +
+> > > > > +maintainers:
+> > > > > +  - Felipe Balbi <balbi@kernel.org>
+> > > > > +
+> > > > > +description:
+> > > > > +  This is usually a subnode to DWC3 glue to which it is connected, but can also
+> > > > > +  be presented as a standalone DT node with an optional vendor-specific
+> > > > > +  compatible string.
+> > > > > +
+> > >
+> > > > > +allOf:
+> > > > > +  - $ref: usb-drd.yaml#
+> > > > > +  - if:
+> > > > > +      properties:
+> > > > > +        dr_mode:
+> > > > > +          const: peripheral
+> >
+>
+> > Another thing, this evaluates to true if dr_mode is not present. You
+> > need to add 'required'?
+>
+> Right. Will something like this do that?
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- Documentation/arm/features.rst      |  3 +++
- Documentation/arm/index.rst         |  2 ++
- Documentation/arm64/features.rst    |  3 +++
- Documentation/arm64/index.rst       |  2 ++
- Documentation/ia64/features.rst     |  3 +++
- Documentation/ia64/index.rst        |  2 ++
- Documentation/index.rst             |  2 +-
- Documentation/m68k/features.rst     |  3 +++
- Documentation/m68k/index.rst        |  2 ++
- Documentation/mips/features.rst     |  3 +++
- Documentation/mips/index.rst        |  2 ++
- Documentation/nios2/index.rst       | 12 ++++++++++++
- Documentation/openrisc/features.rst |  3 +++
- Documentation/openrisc/index.rst    |  2 ++
- Documentation/parisc/features.rst   |  3 +++
- Documentation/parisc/index.rst      |  2 ++
- Documentation/powerpc/features.rst  |  3 +++
- Documentation/powerpc/index.rst     |  2 ++
- Documentation/riscv/features.rst    |  3 +++
- Documentation/riscv/index.rst       |  2 ++
- Documentation/s390/features.rst     |  3 +++
- Documentation/s390/index.rst        |  2 ++
- Documentation/sh/features.rst       |  3 +++
- Documentation/sh/index.rst          |  2 ++
- Documentation/sparc/features.rst    |  3 +++
- Documentation/sparc/index.rst       |  2 ++
- Documentation/x86/features.rst      |  3 +++
- Documentation/x86/index.rst         |  1 +
- Documentation/xtensa/features.rst   |  3 +++
- Documentation/xtensa/index.rst      |  2 ++
- 30 files changed, 82 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/arm/features.rst
- create mode 100644 Documentation/arm64/features.rst
- create mode 100644 Documentation/ia64/features.rst
- create mode 100644 Documentation/m68k/features.rst
- create mode 100644 Documentation/mips/features.rst
- create mode 100644 Documentation/nios2/index.rst
- create mode 100644 Documentation/openrisc/features.rst
- create mode 100644 Documentation/parisc/features.rst
- create mode 100644 Documentation/powerpc/features.rst
- create mode 100644 Documentation/riscv/features.rst
- create mode 100644 Documentation/s390/features.rst
- create mode 100644 Documentation/sh/features.rst
- create mode 100644 Documentation/sparc/features.rst
- create mode 100644 Documentation/x86/features.rst
- create mode 100644 Documentation/xtensa/features.rst
+Yes.
 
-diff --git a/Documentation/arm/features.rst b/Documentation/arm/features.rst
-new file mode 100644
-index 000000000000..7414ec03dd15
---- /dev/null
-+++ b/Documentation/arm/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features arm
-diff --git a/Documentation/arm/index.rst b/Documentation/arm/index.rst
-index 5fc072dd0c5e..a2e9e1bba7b9 100644
---- a/Documentation/arm/index.rst
-+++ b/Documentation/arm/index.rst
-@@ -23,6 +23,8 @@ ARM Architecture
-    vlocks
-    porting
- 
-+   features
-+
- SoC-specific documents
- ======================
- 
-diff --git a/Documentation/arm64/features.rst b/Documentation/arm64/features.rst
-new file mode 100644
-index 000000000000..dfa4cb3cd3ef
---- /dev/null
-+++ b/Documentation/arm64/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features arm64
-diff --git a/Documentation/arm64/index.rst b/Documentation/arm64/index.rst
-index 937634c49979..97d65ba12a35 100644
---- a/Documentation/arm64/index.rst
-+++ b/Documentation/arm64/index.rst
-@@ -24,6 +24,8 @@ ARM64 Architecture
-     tagged-address-abi
-     tagged-pointers
- 
-+    features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/ia64/features.rst b/Documentation/ia64/features.rst
-new file mode 100644
-index 000000000000..d7226fdcf5f8
---- /dev/null
-+++ b/Documentation/ia64/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features ia64
-diff --git a/Documentation/ia64/index.rst b/Documentation/ia64/index.rst
-index 4bdfe28067ee..761f2154dfa2 100644
---- a/Documentation/ia64/index.rst
-+++ b/Documentation/ia64/index.rst
-@@ -15,3 +15,5 @@ IA-64 Architecture
-    irq-redir
-    mca
-    serial
-+
-+   features
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index 57719744774c..5888e8a7272f 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -160,7 +160,7 @@ implementation.
-    ia64/index
-    m68k/index
-    mips/index
--   nios2/nios2
-+   nios2/index
-    openrisc/index
-    parisc/index
-    powerpc/index
-diff --git a/Documentation/m68k/features.rst b/Documentation/m68k/features.rst
-new file mode 100644
-index 000000000000..5107a2119472
---- /dev/null
-+++ b/Documentation/m68k/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features m68k
-diff --git a/Documentation/m68k/index.rst b/Documentation/m68k/index.rst
-index b89cb6a86d9b..0f890dbb5fe2 100644
---- a/Documentation/m68k/index.rst
-+++ b/Documentation/m68k/index.rst
-@@ -10,6 +10,8 @@ m68k Architecture
-    kernel-options
-    buddha-driver
- 
-+   features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/mips/features.rst b/Documentation/mips/features.rst
-new file mode 100644
-index 000000000000..1973d729b29a
---- /dev/null
-+++ b/Documentation/mips/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features mips
-diff --git a/Documentation/mips/index.rst b/Documentation/mips/index.rst
-index 35cceea4e8bc..037f85a08fe3 100644
---- a/Documentation/mips/index.rst
-+++ b/Documentation/mips/index.rst
-@@ -11,6 +11,8 @@ MIPS-specific Documentation
-    booting
-    ingenic-tcu
- 
-+   features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/nios2/index.rst b/Documentation/nios2/index.rst
-new file mode 100644
-index 000000000000..4468fe1a1037
---- /dev/null
-+++ b/Documentation/nios2/index.rst
-@@ -0,0 +1,12 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+==============================
-+Nios II Specific Documentation
-+==============================
-+
-+.. toctree::
-+   :maxdepth: 2
-+   :numbered:
-+
-+   nios2
-+   features
-diff --git a/Documentation/openrisc/features.rst b/Documentation/openrisc/features.rst
-new file mode 100644
-index 000000000000..3f7c40d219f2
---- /dev/null
-+++ b/Documentation/openrisc/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features openrisc
-diff --git a/Documentation/openrisc/index.rst b/Documentation/openrisc/index.rst
-index 748b3eea1707..6879f998b87a 100644
---- a/Documentation/openrisc/index.rst
-+++ b/Documentation/openrisc/index.rst
-@@ -10,6 +10,8 @@ OpenRISC Architecture
-    openrisc_port
-    todo
- 
-+   features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/parisc/features.rst b/Documentation/parisc/features.rst
-new file mode 100644
-index 000000000000..501d7c450037
---- /dev/null
-+++ b/Documentation/parisc/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features parisc
-diff --git a/Documentation/parisc/index.rst b/Documentation/parisc/index.rst
-index aa3ee0470425..240685751825 100644
---- a/Documentation/parisc/index.rst
-+++ b/Documentation/parisc/index.rst
-@@ -10,6 +10,8 @@ PA-RISC Architecture
-    debugging
-    registers
- 
-+   features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/powerpc/features.rst b/Documentation/powerpc/features.rst
-new file mode 100644
-index 000000000000..aeae73df86b0
---- /dev/null
-+++ b/Documentation/powerpc/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features powerpc
-diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
-index 6ec64b0d5257..bf5f1a2bdbdf 100644
---- a/Documentation/powerpc/index.rst
-+++ b/Documentation/powerpc/index.rst
-@@ -34,6 +34,8 @@ powerpc
-     vas-api
-     vcpudispatch_stats
- 
-+    features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/riscv/features.rst b/Documentation/riscv/features.rst
-new file mode 100644
-index 000000000000..c70ef6ac2368
---- /dev/null
-+++ b/Documentation/riscv/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features riscv
-diff --git a/Documentation/riscv/index.rst b/Documentation/riscv/index.rst
-index fa33bffd8992..6e6e39482502 100644
---- a/Documentation/riscv/index.rst
-+++ b/Documentation/riscv/index.rst
-@@ -9,6 +9,8 @@ RISC-V architecture
-     pmu
-     patch-acceptance
- 
-+    features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/s390/features.rst b/Documentation/s390/features.rst
-new file mode 100644
-index 000000000000..57c296a9d8f3
---- /dev/null
-+++ b/Documentation/s390/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features s390
-diff --git a/Documentation/s390/index.rst b/Documentation/s390/index.rst
-index cf71df5776b4..b10ca9192557 100644
---- a/Documentation/s390/index.rst
-+++ b/Documentation/s390/index.rst
-@@ -19,6 +19,8 @@ s390 Architecture
- 
-     text_files
- 
-+    features
-+
- .. only::  subproject and html
- 
-    Indices
-diff --git a/Documentation/sh/features.rst b/Documentation/sh/features.rst
-new file mode 100644
-index 000000000000..f722af3b6c99
---- /dev/null
-+++ b/Documentation/sh/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features sh
-diff --git a/Documentation/sh/index.rst b/Documentation/sh/index.rst
-index 7b9a79a28167..c64776738cf6 100644
---- a/Documentation/sh/index.rst
-+++ b/Documentation/sh/index.rst
-@@ -11,6 +11,8 @@ SuperH Interfaces Guide
-     new-machine
-     register-banks
- 
-+    features
-+
- Memory Management
- =================
- 
-diff --git a/Documentation/sparc/features.rst b/Documentation/sparc/features.rst
-new file mode 100644
-index 000000000000..c0c92468b0fe
---- /dev/null
-+++ b/Documentation/sparc/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features sparc
-diff --git a/Documentation/sparc/index.rst b/Documentation/sparc/index.rst
-index 71cff621f243..ae884224eec2 100644
---- a/Documentation/sparc/index.rst
-+++ b/Documentation/sparc/index.rst
-@@ -9,3 +9,5 @@ Sparc Architecture
-    adi
- 
-    oradax/oracle-dax
-+
-+   features
-diff --git a/Documentation/x86/features.rst b/Documentation/x86/features.rst
-new file mode 100644
-index 000000000000..b663f15053ce
---- /dev/null
-+++ b/Documentation/x86/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features x86
-diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-index b224d12c880b..b4fcb6f258b2 100644
---- a/Documentation/x86/index.rst
-+++ b/Documentation/x86/index.rst
-@@ -33,3 +33,4 @@ x86-specific Documentation
-    i386/index
-    x86_64/index
-    sva
-+   features
-diff --git a/Documentation/xtensa/features.rst b/Documentation/xtensa/features.rst
-new file mode 100644
-index 000000000000..6b92c7bfa19d
---- /dev/null
-+++ b/Documentation/xtensa/features.rst
-@@ -0,0 +1,3 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+.. kernel-feat:: $srctree/Documentation/features xtensa
-diff --git a/Documentation/xtensa/index.rst b/Documentation/xtensa/index.rst
-index 52fa04eb39a3..69952446a9be 100644
---- a/Documentation/xtensa/index.rst
-+++ b/Documentation/xtensa/index.rst
-@@ -10,3 +10,5 @@ Xtensa Architecture
-    atomctl
-    booting
-    mmu
-+
-+   features
--- 
-2.28.0
+>
+> + allOf:
+> +  - $ref: usb-drd.yaml#
+> +  - if:
+> +      properties:
+> +        dr_mode:
+> +          const: peripheral
+> +
+> +      required:
+> +        - dr_mode
+> +    then:
+> +      $ref: usb.yaml#
+> +    else
+> +      $ref: usb-xhci.yaml#
+>
+> > If dr_mode is otg, then don't you need to apply
+> > both usb.yaml and usb-xhci.yaml?
+>
+> No I don't. Since there is no peripheral-specific DT schema, then the
+> only schema any USB-gadget node needs to pass is usb.yaml, which
+> is already included into the usb-xhci.yaml schema. So for pure OTG devices
+> with xHCI host and gadget capabilities it's enough to evaluate: allOf:
+> [$ref: usb-drd.yaml#, $ref: usb-xhci.yaml#].  Please see the
+> sketch/ASCII-figure below and the following text for details.
 
+Okay.
+
+Rob
