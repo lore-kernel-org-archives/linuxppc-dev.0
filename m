@@ -2,68 +2,54 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C557AC63777
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:46:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26D47C8301F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:58:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF79420706
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:46:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF79420706
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C656205F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:58:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C656205F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl8jJ4HvFzDqTN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:46:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cl8zK2hw7zDqsJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:58:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.128.67; helo=mail-wm1-f67.google.com;
- envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=bootlin.com (client-ip=217.70.178.242;
+ helo=mslow2.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.com
-Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com
- [209.85.128.67])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl8fC1PNzzDqty
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 02:43:46 +1100 (AEDT)
-Received: by mail-wm1-f67.google.com with SMTP id c198so18886970wmd.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 07:43:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=wrXxUQ92cZjqbtsEEoadFbidu9p7SlbrPzlM2q7qXbQ=;
- b=L3UIAn3knrTby5OeNbOWeQa3xtOfz1A7iw+VcNR2z6hkrFo//2Mezthnmg104fxeB4
- UdB3ui4BQEmmEBKmetsJqd9CJC9CucpsrFvenXgLqqDk34h/6UmVNiAZJvLvLiBju5kH
- GR/fCqY3TAp94qFAWVf8aT6mSQ1rziM2LX5jgrlYMh9pGHgLvssT7adWIqwye+2cmNU6
- p0AmDsFiKQIAWxK3gzgfMbJClDGHjpKlyLMQ+Gq7osoT2HmtSwRYweLwyRglFeBas3sa
- +mjkLE37bkvkj8amOBZMIzGeuo1yPKXzRwsGEdNfzeUQUjLNSnc9+dhQEkHGF6Kb49Iq
- vs+Q==
-X-Gm-Message-State: AOAM530Mht/vKI2XcIM/MD0FniQ2/PVxuZ5+DTU4Y1Ko5sV0XXlEbSo+
- CO/Ui8snKERYRCm3O8iybt8=
-X-Google-Smtp-Source: ABdhPJwrrDJzMhj73fjDkT0ADgqZ22ISWQCdbgUESE4glj3y9mWsdL0QCouWmsg3hBrKTtQdmgQ/Kw==
-X-Received: by 2002:a1c:1d85:: with SMTP id d127mr7724937wmd.39.1606751023484; 
- Mon, 30 Nov 2020 07:43:43 -0800 (PST)
-Received: from rocinante ([95.155.85.46])
- by smtp.gmail.com with ESMTPSA id x5sm29038317wrm.96.2020.11.30.07.43.41
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 30 Nov 2020 07:43:42 -0800 (PST)
-Date: Mon, 30 Nov 2020 16:43:41 +0100
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5] PCI: Unify ECAM constants in native PCI Express drivers
-Message-ID: <X8UTLQTXVX2iPCOn@rocinante>
-References: <20201127104626.3979165-1-kw@linux.com>
- <20201128183516.GA897329@bjorn-Precision-5520>
+ dmarc=none (p=none dis=none) header.from=bootlin.com
+Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cl8ww4pXmzDqhK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 02:56:20 +1100 (AEDT)
+Received: from relay1-d.mail.gandi.net (unknown [217.70.183.193])
+ by mslow2.mail.gandi.net (Postfix) with ESMTP id DF3033E4508
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 15:38:29 +0000 (UTC)
+X-Originating-IP: 86.194.74.19
+Received: from localhost (lfbn-lyo-1-997-19.w86-194.abo.wanadoo.fr
+ [86.194.74.19]) (Authenticated sender: alexandre.belloni@bootlin.com)
+ by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id C9B63240008;
+ Mon, 30 Nov 2020 15:37:43 +0000 (UTC)
+Date: Mon, 30 Nov 2020 16:37:43 +0100
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+Subject: Re: [PATCH 1/5] ARM: configs: drop unused BACKLIGHT_GENERIC option
+Message-ID: <20201130153743.GO1296649@piout.net>
+References: <20201130152137.24909-1-andrey.zhizhikin@leica-geosystems.com>
+ <20201130152137.24909-2-andrey.zhizhikin@leica-geosystems.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201128183516.GA897329@bjorn-Precision-5520>
+In-Reply-To: <20201130152137.24909-2-andrey.zhizhikin@leica-geosystems.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,132 +61,210 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Stuebner <heiko@sntech.de>, Shawn Lin <shawn.lin@rock-chips.com>,
- Paul Mackerras <paulus@samba.org>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Jonathan Chocron <jonnyc@amazon.com>, Toan Le <toan@os.amperecomputing.com>,
- Will Deacon <will@kernel.org>, Rob Herring <robh@kernel.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Michal Simek <michal.simek@xilinx.com>, linux-rockchip@lists.infradead.org,
- David Laight <david.laight@aculab.com>, bcm-kernel-feedback-list@broadcom.com,
- linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
- Ray Jui <rjui@broadcom.com>, Florian Fainelli <f.fainelli@gmail.com>,
- linux-rpi-kernel@lists.infradead.org,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Jonathan Derrick <jonathan.derrick@intel.com>,
- Scott Branden <sbranden@broadcom.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- Robert Richter <rrichter@marvell.com>, linuxppc-dev@lists.ozlabs.org,
- Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: tony@atomide.com, linux-kernel@vger.kernel.org,
+ James.Bottomley@hansenpartnership.com, ludovic.desroches@microchip.com,
+ paulus@samba.org, sam@ravnborg.org, daniel.thompson@linaro.org, deller@gmx.de,
+ linux@armlinux.org.uk, krzk@kernel.org, jonathanh@nvidia.com, wens@csie.org,
+ catalin.marinas@arm.com, linux-mips@vger.kernel.org, will@kernel.org,
+ mripard@kernel.org, linux-tegra@vger.kernel.org, lee.jones@linaro.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ jernej.skrabec@siol.net, tsbogend@alpha.franken.de,
+ linux-parisc@vger.kernel.org, emil.l.velikov@gmail.com,
+ nicolas.ferre@microchip.com, thierry.reding@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+CC David for visibility]
-
-Hi Bjorn,
-
-Thank you for the review!
-
-On 20-11-28 12:35:16, Bjorn Helgaas wrote:
-[...]
-> It's ironic that we don't use PCIE_ECAM_OFFSET in drivers/pci/ecam.c.
-> We could do something like this, which would also let us drop
-> .bus_shift completely in all the conforming implementations.  It also
-> closes the hole that we didn't limit "where" to 4K for
-> pci_ecam_map_bus() users.
+On 30/11/2020 15:21:33+0000, Andrey Zhizhikin wrote:
+> Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
+> unused") removed geenric_bl driver from the tree, together with
+> corresponding config option.
 > 
->   if (per_bus_mapping) {
->     base = cfg->winp[busn];
->     busn = 0;
->   } else {
->     base = cfg->win;
->   }
+> Remove BACKLIGHT_GENERIC config item from all ARM configurations.
 > 
->   if (cfg->ops->bus_shift) {
->     u32 bus_offset = (busn & 0xff) << cfg->ops->bus_shift;
->     u32 devfn_offset = (devfn & 0xff) << (cfg->ops->bus_shift - 8);
+> Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is unused")
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+
+> ---
+>  arch/arm/configs/at91_dt_defconfig        | 1 -
+>  arch/arm/configs/cm_x300_defconfig        | 1 -
+>  arch/arm/configs/colibri_pxa300_defconfig | 1 -
+>  arch/arm/configs/jornada720_defconfig     | 1 -
+>  arch/arm/configs/magician_defconfig       | 1 -
+>  arch/arm/configs/mini2440_defconfig       | 1 -
+>  arch/arm/configs/omap2plus_defconfig      | 1 -
+>  arch/arm/configs/pxa3xx_defconfig         | 1 -
+>  arch/arm/configs/qcom_defconfig           | 1 -
+>  arch/arm/configs/sama5_defconfig          | 1 -
+>  arch/arm/configs/sunxi_defconfig          | 1 -
+>  arch/arm/configs/tegra_defconfig          | 1 -
+>  arch/arm/configs/u8500_defconfig          | 1 -
+>  13 files changed, 13 deletions(-)
 > 
->     where &= 0xfff;
+> diff --git a/arch/arm/configs/at91_dt_defconfig b/arch/arm/configs/at91_dt_defconfig
+> index 4a0ba2ae1a25..6e52c9c965e6 100644
+> --- a/arch/arm/configs/at91_dt_defconfig
+> +++ b/arch/arm/configs/at91_dt_defconfig
+> @@ -132,7 +132,6 @@ CONFIG_DRM_ATMEL_HLCDC=y
+>  CONFIG_DRM_PANEL_SIMPLE=y
+>  CONFIG_FB_ATMEL=y
+>  CONFIG_BACKLIGHT_ATMEL_LCDC=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_LOGO=y
+> diff --git a/arch/arm/configs/cm_x300_defconfig b/arch/arm/configs/cm_x300_defconfig
+> index 2f7acde2d921..502a9d870ca4 100644
+> --- a/arch/arm/configs/cm_x300_defconfig
+> +++ b/arch/arm/configs/cm_x300_defconfig
+> @@ -87,7 +87,6 @@ CONFIG_FB=y
+>  CONFIG_FB_PXA=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_LCD_TDO24M=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_DA903X=m
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+> diff --git a/arch/arm/configs/colibri_pxa300_defconfig b/arch/arm/configs/colibri_pxa300_defconfig
+> index 0dae3b185284..26e5a67f8e2d 100644
+> --- a/arch/arm/configs/colibri_pxa300_defconfig
+> +++ b/arch/arm/configs/colibri_pxa300_defconfig
+> @@ -34,7 +34,6 @@ CONFIG_FB=y
+>  CONFIG_FB_PXA=y
+>  # CONFIG_LCD_CLASS_DEVICE is not set
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  # CONFIG_VGA_CONSOLE is not set
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_LOGO=y
+> diff --git a/arch/arm/configs/jornada720_defconfig b/arch/arm/configs/jornada720_defconfig
+> index 9f079be2b84b..069f60ffdcd8 100644
+> --- a/arch/arm/configs/jornada720_defconfig
+> +++ b/arch/arm/configs/jornada720_defconfig
+> @@ -48,7 +48,6 @@ CONFIG_FB=y
+>  CONFIG_FB_S1D13XXX=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  # CONFIG_VGA_CONSOLE is not set
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+> diff --git a/arch/arm/configs/magician_defconfig b/arch/arm/configs/magician_defconfig
+> index d2e684f6565a..b4670d42f378 100644
+> --- a/arch/arm/configs/magician_defconfig
+> +++ b/arch/arm/configs/magician_defconfig
+> @@ -95,7 +95,6 @@ CONFIG_FB_PXA_OVERLAY=y
+>  CONFIG_FB_W100=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  # CONFIG_VGA_CONSOLE is not set
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+> diff --git a/arch/arm/configs/mini2440_defconfig b/arch/arm/configs/mini2440_defconfig
+> index 301f29a1fcc3..898490aaa39e 100644
+> --- a/arch/arm/configs/mini2440_defconfig
+> +++ b/arch/arm/configs/mini2440_defconfig
+> @@ -158,7 +158,6 @@ CONFIG_FB_S3C2410=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_LCD_PLATFORM=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+> diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+> index de3b7813a1ce..7eae097a75d2 100644
+> --- a/arch/arm/configs/omap2plus_defconfig
+> +++ b/arch/arm/configs/omap2plus_defconfig
+> @@ -388,7 +388,6 @@ CONFIG_FB_TILEBLITTING=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_LCD_PLATFORM=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -CONFIG_BACKLIGHT_GENERIC=m
+>  CONFIG_BACKLIGHT_PWM=m
+>  CONFIG_BACKLIGHT_PANDORA=m
+>  CONFIG_BACKLIGHT_GPIO=m
+> diff --git a/arch/arm/configs/pxa3xx_defconfig b/arch/arm/configs/pxa3xx_defconfig
+> index 06bbc7a59b60..f0c34017f2aa 100644
+> --- a/arch/arm/configs/pxa3xx_defconfig
+> +++ b/arch/arm/configs/pxa3xx_defconfig
+> @@ -74,7 +74,6 @@ CONFIG_FB_PXA=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_LCD_TDO24M=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_DA903X=y
+>  # CONFIG_VGA_CONSOLE is not set
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+> diff --git a/arch/arm/configs/qcom_defconfig b/arch/arm/configs/qcom_defconfig
+> index c882167e1496..d6733e745b80 100644
+> --- a/arch/arm/configs/qcom_defconfig
+> +++ b/arch/arm/configs/qcom_defconfig
+> @@ -159,7 +159,6 @@ CONFIG_FB=y
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  # CONFIG_LCD_CLASS_DEVICE is not set
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_LM3630A=y
+>  CONFIG_BACKLIGHT_LP855X=y
+>  CONFIG_SOUND=y
+> diff --git a/arch/arm/configs/sama5_defconfig b/arch/arm/configs/sama5_defconfig
+> index 037d3a718a60..0a167891eb05 100644
+> --- a/arch/arm/configs/sama5_defconfig
+> +++ b/arch/arm/configs/sama5_defconfig
+> @@ -161,7 +161,6 @@ CONFIG_DRM_ATMEL_HLCDC=y
+>  CONFIG_DRM_PANEL_SIMPLE=y
+>  CONFIG_LCD_CLASS_DEVICE=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_SOUND=y
+> diff --git a/arch/arm/configs/sunxi_defconfig b/arch/arm/configs/sunxi_defconfig
+> index 244126172fd6..af6e80d1a0f2 100644
+> --- a/arch/arm/configs/sunxi_defconfig
+> +++ b/arch/arm/configs/sunxi_defconfig
+> @@ -111,7 +111,6 @@ CONFIG_DRM_SIMPLE_BRIDGE=y
+>  CONFIG_DRM_LIMA=y
+>  CONFIG_FB_SIMPLE=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  CONFIG_SOUND=y
+>  CONFIG_SND=y
+> diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+> index fff5fae0db30..74739a52a8ad 100644
+> --- a/arch/arm/configs/tegra_defconfig
+> +++ b/arch/arm/configs/tegra_defconfig
+> @@ -205,7 +205,6 @@ CONFIG_DRM_PANEL_SIMPLE=y
+>  CONFIG_DRM_LVDS_CODEC=y
+>  # CONFIG_LCD_CLASS_DEVICE is not set
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -# CONFIG_BACKLIGHT_GENERIC is not set
+>  CONFIG_BACKLIGHT_PWM=y
+>  CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
+> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
+> index 28dd7cf56048..24aacc255021 100644
+> --- a/arch/arm/configs/u8500_defconfig
+> +++ b/arch/arm/configs/u8500_defconfig
+> @@ -92,7 +92,6 @@ CONFIG_DRM_PANEL_SONY_ACX424AKP=y
+>  CONFIG_DRM_LIMA=y
+>  CONFIG_DRM_MCDE=y
+>  CONFIG_BACKLIGHT_CLASS_DEVICE=y
+> -CONFIG_BACKLIGHT_GENERIC=m
+>  CONFIG_BACKLIGHT_GPIO=y
+>  CONFIG_LOGO=y
+>  CONFIG_SOUND=y
+> -- 
+> 2.17.1
 > 
->     return base + (bus_offset | devfn_offset | where);
->   }
-> 
->   return base + PCIE_ECAM_OFFSET(busn, devfn, where);
-[...]
 
-Thank you for suggesting this!  I sent v6 recently that includes this.
-
-> >  static void __iomem *ppc4xx_pciex_get_config_base(struct ppc4xx_pciex_port *port,
-> >  						  struct pci_bus *bus,
-> > -						  unsigned int devfn)
-> > +						  unsigned int devfn,
-> > +						  int offset)
-> 
-> The interface change (to add "offset") could be a preparatory patch by
-> itself.
-> 
-> But I'm actually not sure it's worth even touching this file.  This is
-> the only place outside drivers/pci that includes linux/pci-ecam.h.  I
-> think I might rather put PCIE_ECAM_OFFSET() and related things in
-> drivers/pci/pci.h and keep it all inside drivers/pci.
-
-Makes sense to drop it.  We can always introduce chances on PPC 4xx
-platform in the future if we ever want it to leverage all the new macros
-and constants.
-
-These changes are not included in v6.
-
-> >  static const struct pci_ecam_ops pci_thunder_pem_ops = {
-> > -	.bus_shift	= 24,
-> > +	.bus_shift	= THUNDER_PCIE_ECAM_BUS_SHIFT,
-> >  	.init		= thunder_pem_platform_init,
-> >  	.pci_ops	= {
-> >  		.map_bus	= pci_ecam_map_bus,
-> 
-> This could be split to its own patch, no big deal either way.
-
-Done.  v6 is now a series that includes this as a separate patch.
-
-> >  const struct pci_ecam_ops xgene_v2_pcie_ecam_ops = {
-> > -	.bus_shift	= 16,
-> >  	.init		= xgene_v2_pcie_ecam_init,
-> >  	.pci_ops	= {
-> >  		.map_bus	= xgene_pcie_map_bus,
-> 
-> Thanks for mentioning this change in the cover letter.  It could also
-> be split off to a preparatory patch, since it's not related to
-> PCIE_ECAM_OFFSET(), which is the main point of this patch.
-
-Done.
- 
-> >  static void __iomem *iproc_pcie_map_ep_cfg_reg(struct iproc_pcie *pcie,
-> >  					       unsigned int busno,
-> > -					       unsigned int slot,
-> > -					       unsigned int fn,
-> > +					       unsigned int devfn,
-> 
-> This interface change *could* be a separate preparatory patch, too,
-> but I'm starting to feel even more OCD than usual :)
-
-Done.  It's a separate patch in v6, although I kept it together with the
-change to introduce the PCIE_ECAM_OFFSET() macro since I was retiring the
-use of PCI_SLOT() and PCI_FUNC() macros.
-
-> > @@ -94,7 +95,7 @@ struct vmd_dev {
-> >  	struct pci_dev		*dev;
-> >  
-> >  	spinlock_t		cfg_lock;
-> > -	char __iomem		*cfgbar;
-> > +	void __iomem		*cfgbar;
-> 
-> This type change might be worth pushing to a separate patch since the
-> casting issues are not completely trivial.
-
-Done.
-
-The patch included in the series as part of v6 already got a review from
-David Laight (thank you!) who suggests that this might not be a good
-idea to do, and keeping existing type would be better.
-
-Krzysztof
+-- 
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
