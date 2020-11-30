@@ -2,57 +2,70 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAFFDC63777
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 04:08:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 394FEC63777
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 06:29:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D355F20756
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 04:08:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D355F20756
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id C227D20644
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 06:29:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C227D20644
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CksDD5LWczDrQh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 15:08:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CkwLK6fB3zDrCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 17:29:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cks8K219lzDrJB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 15:05:19 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2473C20074A;
- Mon, 30 Nov 2020 05:05:16 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0922320073E;
- Mon, 30 Nov 2020 05:05:11 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C89D540326;
- Mon, 30 Nov 2020 05:05:04 +0100 (CET)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH 1/2] ASoC: fsl-asoc-card: Add support for si476x codec
-Date: Mon, 30 Nov 2020 11:57:47 +0800
-Message-Id: <1606708668-28786-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CkwJR0FpnzDqP2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 17:27:28 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CkwJ64mHpz9tyfJ;
+ Mon, 30 Nov 2020 07:27:18 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id tZQorIQ8EJWZ; Mon, 30 Nov 2020 07:27:18 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CkwJ63kvfz9tyfH;
+ Mon, 30 Nov 2020 07:27:18 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5FFAB8B788;
+ Mon, 30 Nov 2020 07:27:23 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 8c374VPuk53l; Mon, 30 Nov 2020 07:27:23 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CCF88B75B;
+ Mon, 30 Nov 2020 07:27:23 +0100 (CET)
+Subject: Re: [PATCH] powerpc: Allow relative pointers in bug table entries
+To: Jordan Niethe <jniethe5@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20201127030238.763-1-jniethe5@gmail.com>
+ <5c997bc4-c859-0db6-f167-37ca37819059@csgroup.eu>
+ <874kl7y609.fsf@mpe.ellerman.id.au>
+ <CACzsE9r6GoFANSGw_6SK0R7SZGbU+U0_UvDLH9Pzj_LRBsHJQw@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <8036ce19-74fa-9663-91b8-edc69b0ed9f2@csgroup.eu>
+Date: Mon, 30 Nov 2020 07:27:21 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
+MIME-Version: 1.0
+In-Reply-To: <CACzsE9r6GoFANSGw_6SK0R7SZGbU+U0_UvDLH9Pzj_LRBsHJQw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,56 +77,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The si476x codec is used for FM radio function on i.MX6
-auto board, it only supports recording function.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl-asoc-card.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index a2dd3b6b7fec..f62f81ceab0d 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -131,6 +131,13 @@ static const struct snd_soc_dapm_route audio_map_tx[] = {
- 	{"CPU-Playback",  NULL, "ASRC-Playback"},
- };
- 
-+static const struct snd_soc_dapm_route audio_map_rx[] = {
-+	/* 1st half -- Normal DAPM routes */
-+	{"CPU-Capture",  NULL, "Capture"},
-+	/* 2nd half -- ASRC DAPM routes */
-+	{"ASRC-Capture",  NULL, "CPU-Capture"},
-+};
-+
- /* Add all possible widgets into here without being redundant */
- static const struct snd_soc_dapm_widget fsl_asoc_card_dapm_widgets[] = {
- 	SND_SOC_DAPM_LINE("Line Out Jack", NULL),
-@@ -653,6 +660,11 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 		priv->cpu_priv.slot_width = 32;
- 		priv->card.dapm_routes = audio_map_tx;
- 		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
-+	} else if (of_device_is_compatible(np, "fsl,imx-audio-si476x")) {
-+		codec_dai_name = "si476x-codec";
-+		priv->dai_fmt |= SND_SOC_DAIFMT_CBS_CFS;
-+		priv->card.dapm_routes = audio_map_rx;
-+		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_rx);
- 	} else {
- 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
- 		ret = -EINVAL;
-@@ -869,6 +881,7 @@ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
- 	{ .compatible = "fsl,imx-audio-wm8960", },
- 	{ .compatible = "fsl,imx-audio-mqs", },
- 	{ .compatible = "fsl,imx-audio-wm8524", },
-+	{ .compatible = "fsl,imx-audio-si476x", },
- 	{}
- };
- MODULE_DEVICE_TABLE(of, fsl_asoc_card_dt_ids);
--- 
-2.27.0
+Le 30/11/2020 à 02:50, Jordan Niethe a écrit :
+> On Mon, Nov 30, 2020 at 12:42 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>>> Le 27/11/2020 à 04:02, Jordan Niethe a écrit :
+>>>> This enables GENERIC_BUG_RELATIVE_POINTERS on Power so that 32-bit
+>>>> offsets are stored in the bug entries rather than 64-bit pointers.
+>>>>
+>>>> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+>>>> ---
+>>>>    arch/powerpc/Kconfig           |  4 ++++
+>>>>    arch/powerpc/include/asm/bug.h | 37 ++++++++++++++++++++++++++++++++--
+>>>>    arch/powerpc/xmon/xmon.c       | 17 ++++++++++++++--
+>>>>    3 files changed, 54 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>>> index e9f13fe08492..294108e0e5c6 100644
+>>>> --- a/arch/powerpc/Kconfig
+>>>> +++ b/arch/powerpc/Kconfig
+>>>> @@ -311,6 +311,10 @@ config GENERIC_BUG
+>>>>       default y
+>>>>       depends on BUG
+>>>>
+>>>> +config GENERIC_BUG_RELATIVE_POINTERS
+>>>> +    def_bool y
+>>>> +    depends on GENERIC_BUG
+>>>> +
+>>>>    config SYS_SUPPORTS_APM_EMULATION
+>>>>       default y if PMAC_APM_EMU
+>>>>       bool
+>>>> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+>>>> index 338f36cd9934..d03d834042a1 100644
+>>>> --- a/arch/powerpc/include/asm/bug.h
+>>>> +++ b/arch/powerpc/include/asm/bug.h
+>>>> @@ -12,7 +12,11 @@
+>>>>    #ifdef CONFIG_DEBUG_BUGVERBOSE
+>>>>    .macro EMIT_BUG_ENTRY addr,file,line,flags
+>>>>        .section __bug_table,"aw"
+>>>> +#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+>>>
+>>> As far as I understand, as soon as CONFIG_BUG is selected, GENERIC_BUG is automatically selected so
+>>> GENERIC_BUG_RELATIVE_POINTERS is selected as well. Therefore this #ifndef is never possible.
+>>
+>> Yeah.
+>>
+>> There is one place in the generic code that has an ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+>> but that's because it has to support arches that don't select it.
+>>
+>> In the arch code we know that it's enabled, so there should be no need
+>> for any ifdefs.
+> For 32bit, pointers are 4 bytes anyway so it would be pointless to
+> store a displacement, so won't we need some ifdefs for that?
 
+I'd say it the other way round:
+
+For 32bit, pointers are 4 bytes anyway so it would be pointless to
+make it different from 64bit.
+
+We are definitely not on a performance critical path when dealing with bug entries, so I think it is 
+better to keep a common code for PPC32 and PPC64.
+
+Christophe
