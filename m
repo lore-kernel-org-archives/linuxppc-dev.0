@@ -2,65 +2,63 @@ Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FD78C5519F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8687CC5519F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 09:02:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F8162074A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:59:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F8162074A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+	by mail.kernel.org (Postfix) with ESMTPS id E23272074A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 09:02:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E23272074A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CkzhC6QkjzDr1S
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:59:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=2a02:1800:110:4::f00:d; helo=leibniz.telenet-ops.be;
- envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=glider.be
-X-Greylist: delayed 276 seconds by postgrey-1.36 at bilbo;
- Mon, 30 Nov 2020 19:57:59 AEDT
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be
- [IPv6:2a02:1800:110:4::f00:d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CkzlN0QLZzDqNw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 20:02:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
+ [209.85.210.68])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ckzdz6sMbzDqdl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 19:57:52 +1100 (AEDT)
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:13])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 4Ckzdn3hfjzMqpFv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 09:57:49 +0100 (CET)
-Received: from ramsan.of.borg ([84.195.186.194])
- by baptiste.telenet-ops.be with bizsmtp
- id yYxl2300R4C55Sk01YxloH; Mon, 30 Nov 2020 09:57:48 +0100
-Received: from rox.of.borg ([192.168.97.57])
- by ramsan.of.borg with esmtps (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
- (envelope-from <geert@linux-m68k.org>)
- id 1kjf0D-006v1U-7H; Mon, 30 Nov 2020 09:57:45 +0100
-Received: from geert by rox.of.borg with local (Exim 4.93)
- (envelope-from <geert@linux-m68k.org>)
- id 1kjf0C-006wyu-PQ; Mon, 30 Nov 2020 09:57:44 +0100
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2] clk: renesas: r9a06g032: Drop __packed for portability
-Date: Mon, 30 Nov 2020 09:57:43 +0100
-Message-Id: <20201130085743.1656317-1-geert+renesas@glider.be>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ckzfj4nnPzDr1x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 19:58:37 +1100 (AEDT)
+Received: by mail-ot1-f68.google.com with SMTP id f12so10560863oto.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 00:58:37 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=X8FoExwOHfGwv6em4eg1AHlrFN+EBui3VH6c7kGHW8M=;
+ b=e37xd/qfA5t30h1rHnNc/NNeYfDBN4XYMvILHUz/GdnatDV+a/V9bzd01eVmfCkAAK
+ QEnvtN3ROVAYGQ+1Mci+8AOyA+lG46xUgpmSyJApk86YXpStAPjRttr0ZS4/wMU6+yN1
+ J3/0S8psLn64bbCKGcXjvT9sReG3j/aop2QMiv1tDWo4gXk4vyPJOPu2vNVsno/tbTZ3
+ Ca7qqzxcrA5GYK7SB1/EHrG0B/NcdD5Q+Q8YxwsM4nEZl8zi/JsaqB4iR7RqdzfKor9k
+ 70vP9pW4BMY2UkPRxXpN0D84TXz2YYe5b/YY0Hivlp7pgX887sQqTQ0z2KgUeoo/2zIP
+ LJQQ==
+X-Gm-Message-State: AOAM532HlLKZUEy8UwIeeoocmszRiEGp4uTohk5kpeCIKBCfIy4ZsDgC
+ VZiKPDT7Tx+qydkpPtfcjaU9iJeXM7FUkk96yHw=
+X-Google-Smtp-Source: ABdhPJyrxbQKboqBlxNa7SnfyzU9JOt4/0bUzb0T5TziKWmjRC/+Hn6sbqGLcmZKse22Dhoci+I3ZQs7I9ocW0SW4DY=
+X-Received: by 2002:a9d:686:: with SMTP id 6mr14830891otx.107.1606726714613;
+ Mon, 30 Nov 2020 00:58:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20201128122819.32187696@canb.auug.org.au>
+In-Reply-To: <20201128122819.32187696@canb.auug.org.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 30 Nov 2020 09:58:23 +0100
+Message-ID: <CAMuHMdVJKarCRRRJq_hmvvv0NcSpREdqDbH8L5NitZmFUEbqmw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: fix the allyesconfig build
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,55 +70,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-kernel@vger.kernel.org,
- Gareth Williams <gareth.williams.jx@renesas.com>,
- linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-clk@vger.kernel.org
+Cc: Salil Mehta <salil.mehta@huawei.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-clk <linux-clk@vger.kernel.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Joel Stanley <joel@jms.id.au>,
+ netdev <netdev@vger.kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The R9A06G032 clock driver uses an array of packed structures to reduce
-kernel size.  However, this array contains pointers, which are no longer
-aligned naturally, and cannot be relocated on PPC64.  Hence when
-compile-testing this driver on PPC64 with CONFIG_RELOCATABLE=y (e.g.
-PowerPC allyesconfig), the following warnings are produced:
+Hi Stephen,
 
-    WARNING: 136 bad relocations
-    c000000000616be3 R_PPC64_UADDR64   .rodata+0x00000000000cf338
-    c000000000616bfe R_PPC64_UADDR64   .rodata+0x00000000000cf370
-    ...
+On Sat, Nov 28, 2020 at 2:28 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> There are 2 drivers that have arrays of packed structures that contain
+> pointers that end up at unaligned offsets.  These produce warnings in
+> the PowerPC allyesconfig build like this:
+>
+> WARNING: 148 bad relocations
+> c00000000e56510b R_PPC64_UADDR64   .rodata+0x0000000001c72378
+> c00000000e565126 R_PPC64_UADDR64   .rodata+0x0000000001c723c0
+>
+> They are not drivers that are used on PowerPC (I assume), so mark them
+> to not be built on PPC64 when CONFIG_RELOCATABLE is enabled.
+>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: Yisen Zhuang <yisen.zhuang@huawei.com>
+> Cc: Salil Mehta <salil.mehta@huawei.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Nicholas Piggin  <npiggin@gmail.com>
+> Cc: Daniel Axtens <dja@axtens.net>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Fix this by dropping the __packed attribute from the r9a06g032_clkdesc
-definition, trading a small size increase for portability.
+Thanks for your patch!
 
-This increases the 156-entry clock table by 1 byte per entry, but due to
-the compiler generating more efficient code for unpacked accesses, the
-net size increase is only 76 bytes (gcc 9.3.0 on arm32).
+> --- a/drivers/clk/renesas/Kconfig
+> +++ b/drivers/clk/renesas/Kconfig
+> @@ -151,6 +151,10 @@ config CLK_R8A779A0
+>         select CLK_RENESAS_CPG_MSSR
+>
+>  config CLK_R9A06G032
+> +       # PPC64 RELOCATABLE kernels cannot handle relocations to
+> +       # unaligned locations that are produced by the array of
+> +       # packed structures in this driver.
+> +       depends on !(PPC64 && RELOCATABLE)
+>         bool "Renesas R9A06G032 clock driver"
+>         help
+>           This is a driver for R9A06G032 clocks
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Fixes: 4c3d88526eba2143 ("clk: renesas: Renesas R9A06G032 clock driver")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v2:
-  - Fix authorship.
----
- drivers/clk/renesas/r9a06g032-clocks.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I prefer to fix this in the driver instead.  The space saving by packing the
+structure is minimal.
+I've sent a patch
+https://lore.kernel.org/r/20201130085743.1656317-1-geert+renesas@glider.be
+(when lore is back)
 
-diff --git a/drivers/clk/renesas/r9a06g032-clocks.c b/drivers/clk/renesas/r9a06g032-clocks.c
-index d900f6bf53d0b944..892e91b92f2c80f5 100644
---- a/drivers/clk/renesas/r9a06g032-clocks.c
-+++ b/drivers/clk/renesas/r9a06g032-clocks.c
-@@ -55,7 +55,7 @@ struct r9a06g032_clkdesc {
- 			u16 sel, g1, r1, g2, r2;
- 		} dual;
- 	};
--} __packed;
-+};
- 
- #define I_GATE(_clk, _rst, _rdy, _midle, _scon, _mirack, _mistat) \
- 	{ .gate = _clk, .reset = _rst, \
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.25.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
