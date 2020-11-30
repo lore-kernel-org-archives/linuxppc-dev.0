@@ -7,54 +7,57 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 274DDC5519F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:55:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FD78C5519F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:59:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 501562074A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:55:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 501562074A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2F8162074A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 08:59:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F8162074A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CkzZd4hH2zDr2w
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:55:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CkzhC6QkjzDr1S
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 19:59:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
+ (client-ip=2a02:1800:110:4::f00:d; helo=leibniz.telenet-ops.be;
  envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=glider.be
+X-Greylist: delayed 276 seconds by postgrey-1.36 at bilbo;
+ Mon, 30 Nov 2020 19:57:59 AEDT
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be
+ [IPv6:2a02:1800:110:4::f00:d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CkzXk408FzDr1Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 19:53:26 +1100 (AEDT)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:15])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 4CkzXV0sqkzMqp0D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 09:53:14 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ckzdz6sMbzDqdl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 19:57:52 +1100 (AEDT)
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:13])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 4Ckzdn3hfjzMqpFv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2020 09:57:49 +0100 (CET)
 Received: from ramsan.of.borg ([84.195.186.194])
- by andre.telenet-ops.be with bizsmtp
- id yYt92300d4C55Sk01Yt99w; Mon, 30 Nov 2020 09:53:13 +0100
+ by baptiste.telenet-ops.be with bizsmtp
+ id yYxl2300R4C55Sk01YxloH; Mon, 30 Nov 2020 09:57:48 +0100
 Received: from rox.of.borg ([192.168.97.57])
  by ramsan.of.borg with esmtps (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
  (envelope-from <geert@linux-m68k.org>)
- id 1kjevl-006uxW-He; Mon, 30 Nov 2020 09:53:09 +0100
+ id 1kjf0D-006v1U-7H; Mon, 30 Nov 2020 09:57:45 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
  (envelope-from <geert@linux-m68k.org>)
- id 1kjevl-006a5y-0Z; Mon, 30 Nov 2020 09:53:09 +0100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+ id 1kjf0C-006wyu-PQ; Mon, 30 Nov 2020 09:57:44 +0100
+From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Stephen Rothwell <sfr@canb.auug.org.au>,
  Michael Turquette <mturquette@baylibre.com>,
  Stephen Boyd <sboyd@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] clk: renesas: r9a06g032: Drop __packed for portability
-Date: Mon, 30 Nov 2020 09:53:03 +0100
-Message-Id: <20201130085303.1566901-1-geert@linux-m68k.org>
+Subject: [PATCH v2] clk: renesas: r9a06g032: Drop __packed for portability
+Date: Mon, 30 Nov 2020 09:57:43 +0100
+Message-Id: <20201130085743.1656317-1-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -69,10 +72,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org,
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-kernel@vger.kernel.org,
  Gareth Williams <gareth.williams.jx@renesas.com>,
- linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org
+ linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-clk@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -97,13 +100,11 @@ net size increase is only 76 bytes (gcc 9.3.0 on arm32).
 
 Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Fixes: 4c3d88526eba2143 ("clk: renesas: Renesas R9A06G032 clock driver")
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Please take directly (ppc or clk), as this is a build fix.
-https://lore.kernel.org/linux-clk/20201128122819.32187696@canb.auug.org.au/
-
-Compile-tested only due to lack of hardware.
-
+v2:
+  - Fix authorship.
+---
  drivers/clk/renesas/r9a06g032-clocks.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
