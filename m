@@ -2,79 +2,82 @@ Return-Path: <SRS0=H/Sv=FF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A694C64E7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:10:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 870C1C64E7A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:37:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B9E8207FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:10:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6B17320770
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:37:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZbPk4tHw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B9E8207FF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="THr+eUx4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B17320770
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CljBL72pSzDqPQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 00:10:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::142;
- helo=mail-il1-x142.google.com; envelope-from=pankaj.gupta.linux@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cljp01YD3zDqsy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 00:37:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.91;
+ helo=conssluserg-06.nifty.com; envelope-from=masahiroy@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ZbPk4tHw; dkim-atps=neutral
-Received: from mail-il1-x142.google.com (mail-il1-x142.google.com
- [IPv6:2607:f8b0:4864:20::142])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=THr+eUx4; 
+ dkim-atps=neutral
+X-Greylist: delayed 186 seconds by postgrey-1.36 at bilbo;
+ Wed, 02 Dec 2020 00:32:40 AEDT
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Clj1k6GjwzDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 00:02:34 +1100 (AEDT)
-Received: by mail-il1-x142.google.com with SMTP id q1so1569316ilt.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2020 05:02:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=GujISGwhlbmPBHTK++whZ1M7hVGM+4rvkVOJDvu+Tpw=;
- b=ZbPk4tHwP3WguKetrkTHklUy3UcrKSyWgK6Uym2IZE3wBAOwdVH5c/IDdmwjZPuuqm
- 3fBZ1XS0IiiaE//0AYRql3RFisscyQgiDg3DEC725uSg82KNi8qLfcIY1mvrrp0em8t0
- cxqPnFLueiusSfO/++oRYAXbjidQLywBD922gkvVqYDTx9GKI06POfQJ55if1kit6p9l
- cg0MpVzrpdbtvktESIAkHgYo8wSaE+CQbZcaXpPVaoXZGPd0UtmUXya+z7CZOP0Jcy7S
- /Gr2+bDlQj6GL3O6CRxPAO5tEP7e/pd5kFNcYys5eFtWBBHnhM55CGW1MYspSPy7xfnQ
- RBKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=GujISGwhlbmPBHTK++whZ1M7hVGM+4rvkVOJDvu+Tpw=;
- b=qt0896t3LUAbJ+sAAbORBTLTfDP9KfX5yD9oxsfuwo3ryTHXPRPf5iToV+fFLr3daq
- Tyes+EWUqydo9ze3KkhgNbvdK7yhuxRrAS/5xXh6SYE3h7slj376GyayJ5hbWv8yRdy7
- w/NA9d8NmFmBgepSRFeY20lPxn3+Eq15WafQuHYnb+0VDHHXMkTIoI4teZP8aSt3xH7G
- al2RMGdCj/YO9YvDmo9k6WYRW/zgJOCNwXpZWldTA5jmuvuZ15+tYNHcIdPBvlawvhrz
- gf1sI3heBRu72EiF/eDnz1yiwd8LTJSDJnf31fa3wYIdMzbieWB2HmuzjBelMwEQP/N8
- OYzw==
-X-Gm-Message-State: AOAM533WZKEKmbB8za3yvQow9DPsk5I9RkDzIrEKToey7QQs7/rf5IB6
- jVvFIwhwI0KA7Z3QKr8ntx1iae8G/WRZBb7ke6w=
-X-Google-Smtp-Source: ABdhPJxpbyyKEZVcWXZZ5bWcz5/0zeLgENsm2YN9RmeGEPYwjqWjjZ85QRhCQWvD9e7ZGl2BamxNDQpt1lIwTNgMtII=
-X-Received: by 2002:a92:d40d:: with SMTP id q13mr2324683ilm.253.1606827739426; 
- Tue, 01 Dec 2020 05:02:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CljhS12H1zDqRC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 00:32:39 +1100 (AEDT)
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com
+ [209.85.214.175]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id 0B1DWG8S011889
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2020 22:32:16 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com 0B1DWG8S011889
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1606829537;
+ bh=BCmIt+mXGDdopPkiBBw+3x1M8rDQB/5oH9HpU4uQ5qA=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=THr+eUx4SWCPegG1uRLmRHq1mlzwZIBJZfMOhYfUi9PvS1ZmkPpZzJJvSBKEXI9sU
+ hGC9IjavC/i0M1vYGEAMjvM98V1iWPC3aWRaEJSIOHHtzxpNfyiU+Xwd2P6gXrIQPS
+ SBI2ODfn0nhkwR8fjb1OQE+Yjh/NV9bSiWHzDE2LI9RpqgZs+QdPfBpe51hHlxXvAJ
+ RCvvpEU+nYui6Z2WZAO+0K3fgTe6V0Jz2Wi18KbjOr7S2LM8NCEoX5aV0ocxOflfoN
+ 1puiE9MAIrJw5ZvQfSeKd0GYgw0KCnvdZxS7Qn+x0fA5AwGdHaaXZErK79XdW2aK8u
+ bNGE8JRlo2tXA==
+X-Nifty-SrcIP: [209.85.214.175]
+Received: by mail-pl1-f175.google.com with SMTP id u2so1127534pls.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2020 05:32:16 -0800 (PST)
+X-Gm-Message-State: AOAM532+kch0hKrlAeIL4BaZtOgtUW4aXiTfZr0HazWyEdj4Ato+WGk5
+ Wgzv5v3dzkl3E5Mge1hxErOcgKfxwIp9redKMzw=
+X-Google-Smtp-Source: ABdhPJxkfQ9oggzotEcl6XRa/pHYRdnHTVyaDTtBNoctn5AxYzZdCy2G1D8jd7raU+usum4j5kNizUmaOheYMGClFnM=
+X-Received: by 2002:a17:902:402:b029:da:2cb9:56e8 with SMTP id
+ 2-20020a1709020402b02900da2cb956e8mr2703980ple.1.1606829536018; Tue, 01 Dec
+ 2020 05:32:16 -0800 (PST)
 MIME-Version: 1.0
-References: <160682501436.2579014.14501834468510806255.stgit@lep8c.aus.stglabs.ibm.com>
- <CAM9Jb+iPV470063QYq145znYW8CmqjNgdL=q6=3JXUJJt+z5gw@mail.gmail.com>
- <20035bbc-a1e0-82fd-105d-999e1afff029@linux.ibm.com>
-In-Reply-To: <20035bbc-a1e0-82fd-105d-999e1afff029@linux.ibm.com>
-From: Pankaj Gupta <pankaj.gupta.linux@gmail.com>
-Date: Tue, 1 Dec 2020 14:02:08 +0100
-Message-ID: <CAM9Jb+gS6z603kLwgB62zrHNpLOqW6FAEtDcbwiG5mGRzvZUVg@mail.gmail.com>
-Subject: Re: [RFC PATCH] powerpc/papr_scm: Implement scm async flush
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+References: <20201113195553.1487659-1-natechancellor@gmail.com>
+ <20201119204656.3261686-2-natechancellor@gmail.com>
+ <CAKwvOdkPgwL8H4EGF6=-VuxTdmxA8JHhGbLHVYcLJj9MmAvW=g@mail.gmail.com>
+ <202011241421.A2F3062A70@keescook>
+In-Reply-To: <202011241421.A2F3062A70@keescook>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Tue, 1 Dec 2020 22:31:37 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAR=_+1K7EtpvGzgyM+ans-iNOT0PBXdLRApnsyAzakQ3w@mail.gmail.com>
+Message-ID: <CAK7LNAR=_+1K7EtpvGzgyM+ans-iNOT0PBXdLRApnsyAzakQ3w@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] kbuild: Disable CONFIG_LD_ORPHAN_WARN for ld.lld
+ 10.0.1
+To: Kees Cook <keescook@chromium.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,35 +90,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ellerman@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Shivaprasad G Bhat <sbhat@linux.ibm.com>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ "kernelci . org bot" <bot@kernelci.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Mark Brown <broonie@kernel.org>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Russell King <linux@armlinux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Arvind Sankar <nivedita@alum.mit.edu>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>,
+ clang-built-linux <clang-built-linux@googlegroups.com>,
+ Nathan Chancellor <natechancellor@gmail.com>, Will Deacon <will@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> >> Tha patch implements SCM async-flush hcall and sets the
-> >> ND_REGION_ASYNC capability when the platform device tree
-> >> has "ibm,async-flush-required" set.
-> >
-> > So, you are reusing the existing ND_REGION_ASYNC flag for the
-> > hypercall based async flush with device tree discovery?
-> >
-> > Out of curiosity, does virtio based flush work in ppc? Was just thinking
-> > if we can reuse virtio based flush present in virtio-pmem? Or anything
-> > else we are trying to achieve here?
-> >
+On Wed, Nov 25, 2020 at 7:22 AM Kees Cook <keescook@chromium.org> wrote:
 >
+> On Thu, Nov 19, 2020 at 01:13:27PM -0800, Nick Desaulniers wrote:
+> > On Thu, Nov 19, 2020 at 12:57 PM Nathan Chancellor
+> > <natechancellor@gmail.com> wrote:
+> > >
+> > > ld.lld 10.0.1 spews a bunch of various warnings about .rela sections,
+> > > along with a few others. Newer versions of ld.lld do not have these
+> > > warnings. As a result, do not add '--orphan-handling=warn' to
+> > > LDFLAGS_vmlinux if ld.lld's version is not new enough.
+> > >
+> > > Link: https://github.com/ClangBuiltLinux/linux/issues/1187
+> > > Link: https://github.com/ClangBuiltLinux/linux/issues/1193
+> > > Reported-by: Arvind Sankar <nivedita@alum.mit.edu>
+> > > Reported-by: kernelci.org bot <bot@kernelci.org>
+> > > Reported-by: Mark Brown <broonie@kernel.org>
+> > > Reviewed-by: Kees Cook <keescook@chromium.org>
+> > > Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> >
+> > Thanks for the additions in v2.
+> > Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
 >
-> Not with PAPR based pmem driver papr_scm.ko. The devices there are
-> considered platform device and we use hypercalls to configure the
-> device. On similar fashion we are now using hypercall to flush the host
-> based caches.
-
-o.k. Thanks for answering.
-
-Best regards,
-Pankaj
-
+> I'm going to carry this for a few days in -next, and if no one screams,
+> ask Linus to pull it for v5.10-rc6.
 >
-> -aneesh
+> Thanks!
+>
+> --
+> Kees Cook
+
+
+Sorry for the delay.
+Applied to linux-kbuild.
+
+But, I already see this in linux-next.
+
+Please let me know if I should drop it from my tree.
+
+
+-- 
+Best Regards
+Masahiro Yamada
