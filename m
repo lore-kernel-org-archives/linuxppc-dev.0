@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E4FC83014
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 16:55:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CEFBC64E7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 16:58:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23E66208C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 16:55:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23E66208C3
+	by mail.kernel.org (Postfix) with ESMTPS id 8455F20758
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 16:58:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8455F20758
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ClpBR0kRdzDqmF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 03:55:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ClpFZ5RC0zDqkf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 03:58:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,43 +28,43 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Clp7z6qpKzDqVb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 03:53:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Clp9m1lqGzDqk8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 03:54:48 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Clp7s63DZz9v400;
- Tue,  1 Dec 2020 17:53:13 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Clp9b1pFmz9v401;
+ Tue,  1 Dec 2020 17:54:43 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id wq3KDCIGPUsp; Tue,  1 Dec 2020 17:53:13 +0100 (CET)
+ with ESMTP id nxZDn_ePIsb5; Tue,  1 Dec 2020 17:54:43 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Clp7s52ZQz9v3yy;
- Tue,  1 Dec 2020 17:53:13 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Clp9b0kvcz9v3yy;
+ Tue,  1 Dec 2020 17:54:43 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 161398B7BD;
- Tue,  1 Dec 2020 17:53:15 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 519FA8B7BD;
+ Tue,  1 Dec 2020 17:54:44 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7Dn2a6jQZQ1y; Tue,  1 Dec 2020 17:53:14 +0100 (CET)
+ with ESMTP id Yy_vIq-izRbX; Tue,  1 Dec 2020 17:54:43 +0100 (CET)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A77558B7B7;
- Tue,  1 Dec 2020 17:53:08 +0100 (CET)
-Subject: Re: [PATCH v9 2/6] kasan: allow architectures to provide an outline
- readiness check
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7FBEA8B7B7;
+ Tue,  1 Dec 2020 17:54:39 +0100 (CET)
+Subject: Re: [PATCH v9 3/6] kasan: define and use MAX_PTRS_PER_* for early
+ shadow tables
 To: Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  kasan-dev@googlegroups.com, christophe.leroy@c-s.fr,
  aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
 References: <20201201161632.1234753-1-dja@axtens.net>
- <20201201161632.1234753-3-dja@axtens.net>
+ <20201201161632.1234753-4-dja@axtens.net>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <bc92b30f-f087-ced6-cf00-a62370eae733@csgroup.eu>
-Date: Tue, 1 Dec 2020 17:53:02 +0100
+Message-ID: <dc20689a-27cd-b629-7dd3-c29b81b285ba@csgroup.eu>
+Date: Tue, 1 Dec 2020 17:54:34 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201201161632.1234753-3-dja@axtens.net>
+In-Reply-To: <20201201161632.1234753-4-dja@axtens.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -79,7 +79,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -87,100 +86,92 @@ Sender: "Linuxppc-dev"
 
 
 Le 01/12/2020 à 17:16, Daniel Axtens a écrit :
-> Allow architectures to define a kasan_arch_is_ready() hook that bails
-> out of any function that's about to touch the shadow unless the arch
-> says that it is ready for the memory to be accessed. This is fairly
-> uninvasive and should have a negligible performance penalty.
+> powerpc has a variable number of PTRS_PER_*, set at runtime based
+> on the MMU that the kernel is booted under.
 > 
-> This will only work in outline mode, so an arch must specify
-> HAVE_ARCH_NO_KASAN_INLINE if it requires this.
+> This means the PTRS_PER_* are no longer constants, and therefore
+> breaks the build.
 > 
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Define default MAX_PTRS_PER_*s in the same style as MAX_PTRS_PER_P4D.
+> As KASAN is the only user at the moment, just define them in the kasan
+> header, and have them default to PTRS_PER_* unless overridden in arch
+> code.
+> 
+> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Did I signed that off one day ? I can't remember.
+My neww address is : christophe.leroy@csgroup.eu
 
-Please update my email address, and maybe change it to a Suggested-by: ? I think the first 
-Signed-off-by: has to be the author of the patch.
+> Suggested-by: Balbir Singh <bsingharora@gmail.com>
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
+Same
+
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
 > Signed-off-by: Daniel Axtens <dja@axtens.net>
-> 
-> --
-> 
-> I discuss the justfication for this later in the series. Also,
-> both previous RFCs for ppc64 - by 2 different people - have
-> needed this trick! See:
->   - https://lore.kernel.org/patchwork/patch/592820/ # ppc64 hash series
->   - https://patchwork.ozlabs.org/patch/795211/      # ppc radix series
 > ---
->   include/linux/kasan.h |  4 ++++
->   mm/kasan/common.c     | 10 ++++++++++
->   mm/kasan/generic.c    |  3 +++
->   3 files changed, 17 insertions(+)
+>   include/linux/kasan.h | 18 +++++++++++++++---
+>   mm/kasan/init.c       |  6 +++---
+>   2 files changed, 18 insertions(+), 6 deletions(-)
 > 
 > diff --git a/include/linux/kasan.h b/include/linux/kasan.h
-> index 30d343b4a40a..3df66fdf6662 100644
+> index 3df66fdf6662..893d054aad6f 100644
 > --- a/include/linux/kasan.h
 > +++ b/include/linux/kasan.h
-> @@ -20,6 +20,10 @@ struct kunit_kasan_expectation {
->   	bool report_found;
->   };
+> @@ -24,10 +24,22 @@ struct kunit_kasan_expectation {
+>   static inline bool kasan_arch_is_ready(void)	{ return true; }
+>   #endif
 >   
-> +#ifndef kasan_arch_is_ready
-> +static inline bool kasan_arch_is_ready(void)	{ return true; }
+> +#ifndef MAX_PTRS_PER_PTE
+> +#define MAX_PTRS_PER_PTE PTRS_PER_PTE
+> +#endif
+> +
+> +#ifndef MAX_PTRS_PER_PMD
+> +#define MAX_PTRS_PER_PMD PTRS_PER_PMD
+> +#endif
+> +
+> +#ifndef MAX_PTRS_PER_PUD
+> +#define MAX_PTRS_PER_PUD PTRS_PER_PUD
 > +#endif
 > +
 >   extern unsigned char kasan_early_shadow_page[PAGE_SIZE];
->   extern pte_t kasan_early_shadow_pte[PTRS_PER_PTE];
->   extern pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD];
-> diff --git a/mm/kasan/common.c b/mm/kasan/common.c
-> index 950fd372a07e..ba7744d3e319 100644
-> --- a/mm/kasan/common.c
-> +++ b/mm/kasan/common.c
-> @@ -117,6 +117,9 @@ void kasan_poison_shadow(const void *address, size_t size, u8 value)
+> -extern pte_t kasan_early_shadow_pte[PTRS_PER_PTE];
+> -extern pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD];
+> -extern pud_t kasan_early_shadow_pud[PTRS_PER_PUD];
+> +extern pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE];
+> +extern pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD];
+> +extern pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD];
+>   extern p4d_t kasan_early_shadow_p4d[MAX_PTRS_PER_P4D];
+>   
+>   int kasan_populate_early_shadow(const void *shadow_start,
+> diff --git a/mm/kasan/init.c b/mm/kasan/init.c
+> index fe6be0be1f76..42bca3d27db8 100644
+> --- a/mm/kasan/init.c
+> +++ b/mm/kasan/init.c
+> @@ -46,7 +46,7 @@ static inline bool kasan_p4d_table(pgd_t pgd)
+>   }
+>   #endif
+>   #if CONFIG_PGTABLE_LEVELS > 3
+> -pud_t kasan_early_shadow_pud[PTRS_PER_PUD] __page_aligned_bss;
+> +pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD] __page_aligned_bss;
+>   static inline bool kasan_pud_table(p4d_t p4d)
 >   {
->   	void *shadow_start, *shadow_end;
->   
-> +	if (!kasan_arch_is_ready())
-> +		return;
-> +
->   	/*
->   	 * Perform shadow offset calculation based on untagged address, as
->   	 * some of the callers (e.g. kasan_poison_object_data) pass tagged
-> @@ -134,6 +137,9 @@ void kasan_unpoison_shadow(const void *address, size_t size)
+>   	return p4d_page(p4d) == virt_to_page(lm_alias(kasan_early_shadow_pud));
+> @@ -58,7 +58,7 @@ static inline bool kasan_pud_table(p4d_t p4d)
+>   }
+>   #endif
+>   #if CONFIG_PGTABLE_LEVELS > 2
+> -pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD] __page_aligned_bss;
+> +pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD] __page_aligned_bss;
+>   static inline bool kasan_pmd_table(pud_t pud)
 >   {
->   	u8 tag = get_tag(address);
+>   	return pud_page(pud) == virt_to_page(lm_alias(kasan_early_shadow_pmd));
+> @@ -69,7 +69,7 @@ static inline bool kasan_pmd_table(pud_t pud)
+>   	return false;
+>   }
+>   #endif
+> -pte_t kasan_early_shadow_pte[PTRS_PER_PTE] __page_aligned_bss;
+> +pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE] __page_aligned_bss;
 >   
-> +	if (!kasan_arch_is_ready())
-> +		return;
-> +
->   	/*
->   	 * Perform shadow offset calculation based on untagged address, as
->   	 * some of the callers (e.g. kasan_unpoison_object_data) pass tagged
-> @@ -406,6 +412,10 @@ static bool __kasan_slab_free(struct kmem_cache *cache, void *object,
->   	if (unlikely(cache->flags & SLAB_TYPESAFE_BY_RCU))
->   		return false;
->   
-> +	/* We can't read the shadow byte if the arch isn't ready */
-> +	if (!kasan_arch_is_ready())
-> +		return false;
-> +
->   	shadow_byte = READ_ONCE(*(s8 *)kasan_mem_to_shadow(object));
->   	if (shadow_invalid(tag, shadow_byte)) {
->   		kasan_report_invalid_free(tagged_object, ip);
-> diff --git a/mm/kasan/generic.c b/mm/kasan/generic.c
-> index 248264b9cb76..e87404026b2b 100644
-> --- a/mm/kasan/generic.c
-> +++ b/mm/kasan/generic.c
-> @@ -169,6 +169,9 @@ static __always_inline bool check_memory_region_inline(unsigned long addr,
->   						size_t size, bool write,
->   						unsigned long ret_ip)
+>   static inline bool kasan_pte_table(pmd_t pmd)
 >   {
-> +	if (!kasan_arch_is_ready())
-> +		return true;
-> +
->   	if (unlikely(size == 0))
->   		return true;
->   
 > 
