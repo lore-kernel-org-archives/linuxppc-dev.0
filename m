@@ -2,57 +2,72 @@ Return-Path: <SRS0=H/Sv=FF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76EF4C64E7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 15:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA639C64E7A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 15:53:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E42920870
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 15:43:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E42920870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
+	by mail.kernel.org (Postfix) with ESMTPS id C78D920870
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 15:53:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="d0BXfp9B"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C78D920870
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Clmbl73XZzDqRf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 02:43:47 +1100 (AEDT)
+Received: from bilbo.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ClmpW5ZxXzDqjJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 02:53:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.183.193;
- helo=relay1-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=bootlin.com
-X-Greylist: delayed 86639 seconds by postgrey-1.36 at bilbo;
- Wed, 02 Dec 2020 02:42:01 AEDT
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
- [217.70.183.193])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=d0BXfp9B; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ClmYj0Z14zDqB4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 02:41:51 +1100 (AEDT)
-X-Originating-IP: 86.194.74.19
-Received: from localhost (lfbn-lyo-1-997-19.w86-194.abo.wanadoo.fr
- [86.194.74.19]) (Authenticated sender: alexandre.belloni@bootlin.com)
- by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id 533AA240006;
- Tue,  1 Dec 2020 15:41:39 +0000 (UTC)
-Date: Tue, 1 Dec 2020 16:41:39 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH 1/5] ARM: configs: drop unused BACKLIGHT_GENERIC option
-Message-ID: <20201201154139.GF2401593@piout.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Clmlm2vbrzDqDW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 02:50:44 +1100 (AEDT)
+Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com
+ [209.85.210.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id E8B7922256
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 15:50:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1606837841;
+ bh=ocP+REHyvc3INvCyRToWa0BDelMYpVNAD4Ht4bVMxw4=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=d0BXfp9B678drYtWqDBUlknaZrgIENz3/9P8PkQTHdjgiToHebGZd6AT15QYDi9o3
+ of85a0gKvoI/ETgfnp9XrwnI4Xto0nyM976m+c8Ye8M6eJpwXu4nGmsJDnNTU34Hh9
+ 6/i/TQQ1NbuyKJYpe4hPrtWe70ECqRFJoCOWZgsU=
+Received: by mail-ot1-f44.google.com with SMTP id f12so2053559oto.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2020 07:50:40 -0800 (PST)
+X-Gm-Message-State: AOAM530c14SfurbtyR9rOFy/GSB6acWYfNr1ZSZePSCqFdeM44AuWKsW
+ nreCk/kNcEjpJCf6XueIg7Ktq2GtqGw0e9wenNw=
+X-Google-Smtp-Source: ABdhPJwlRbiyuko5jdeqhi5YEFdXPQ6zEuSN349AgsmyyWjcElmhcbPPjEuYreBsAU023iCYpnCQs8p8Rs/BnCHJ/AM=
+X-Received: by 2002:a4a:eac1:: with SMTP id s1mr2310247ooh.15.1606837839133;
+ Tue, 01 Dec 2020 07:50:39 -0800 (PST)
+MIME-Version: 1.0
 References: <20201130152137.24909-1-andrey.zhizhikin@leica-geosystems.com>
  <20201130152137.24909-2-andrey.zhizhikin@leica-geosystems.com>
  <20201130185227.GA29434@kozik-lap>
  <AM6PR06MB4691EC52BA41B86AB16EE14FA6F50@AM6PR06MB4691.eurprd06.prod.outlook.com>
- <20201201144052.GE31404@gaia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201201144052.GE31404@gaia>
+ <20201201144052.GE31404@gaia> <20201201154139.GF2401593@piout.net>
+In-Reply-To: <20201201154139.GF2401593@piout.net>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Tue, 1 Dec 2020 16:50:22 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a0N24zuQ+CM-_t66CS8AprzdtdfirfLWwGpjgcXjWjn=Q@mail.gmail.com>
+Message-ID: <CAK8P3a0N24zuQ+CM-_t66CS8AprzdtdfirfLWwGpjgcXjWjn=Q@mail.gmail.com>
+Subject: Re: [PATCH 1/5] ARM: configs: drop unused BACKLIGHT_GENERIC option
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,7 +92,8 @@ Cc: "tony@atomide.com" <tony@atomide.com>,
  Krzysztof Kozlowski <krzk@kernel.org>,
  "jonathanh@nvidia.com" <jonathanh@nvidia.com>,
  "ludovic.desroches@microchip.com" <ludovic.desroches@microchip.com>,
- arm@kernel.org, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ arm-soc <arm@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
  "will@kernel.org" <will@kernel.org>, "mripard@kernel.org" <mripard@kernel.org>,
  ZHIZHIKIN Andrey <andrey.zhizhikin@leica-geosystems.com>,
  "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
@@ -94,77 +110,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/12/2020 14:40:53+0000, Catalin Marinas wrote:
-> On Mon, Nov 30, 2020 at 07:50:25PM +0000, ZHIZHIKIN Andrey wrote:
-> > From Krzysztof Kozlowski <krzk@kernel.org>:
-> > > On Mon, Nov 30, 2020 at 03:21:33PM +0000, Andrey Zhizhikin wrote:
-> > > > Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
-> > > > unused") removed geenric_bl driver from the tree, together with
-> > > > corresponding config option.
-> > > >
-> > > > Remove BACKLIGHT_GENERIC config item from all ARM configurations.
-> > > >
-> > > > Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it
-> > > > is unused")
-> > > > Cc: Sam Ravnborg <sam@ravnborg.org>
-> > > > Signed-off-by: Andrey Zhizhikin
-> > > > <andrey.zhizhikin@leica-geosystems.com>
-> > > > ---
-> > > >  arch/arm/configs/at91_dt_defconfig        | 1 -
-> > > >  arch/arm/configs/cm_x300_defconfig        | 1 -
-> > > >  arch/arm/configs/colibri_pxa300_defconfig | 1 -
-> > > >  arch/arm/configs/jornada720_defconfig     | 1 -
-> > > >  arch/arm/configs/magician_defconfig       | 1 -
-> > > >  arch/arm/configs/mini2440_defconfig       | 1 -
-> > > >  arch/arm/configs/omap2plus_defconfig      | 1 -
-> > > >  arch/arm/configs/pxa3xx_defconfig         | 1 -
-> > > >  arch/arm/configs/qcom_defconfig           | 1 -
-> > > >  arch/arm/configs/sama5_defconfig          | 1 -
-> > > >  arch/arm/configs/sunxi_defconfig          | 1 -
-> > > >  arch/arm/configs/tegra_defconfig          | 1 -
-> > > >  arch/arm/configs/u8500_defconfig          | 1 -
-> > > >  13 files changed, 13 deletions(-)
-> > > 
-> > > You need to send it to arm-soc maintainers, otherwise no one might feel
-> > > responsible enough to pick it up.
-> > 
-> > Good point, thanks a lot!
-> > 
-> > I was not aware of the fact that there is a separate ML that should
-> > receive patches targeted ARM SOCs. Can you (or anyone else) please
-> > share it, so I can re-send it there as well?
-> 
-> It's not a mailing list as such (with archives etc.), just an alias to
-> the arm-soc maintainers: arm@kernel.org.
-> 
-> > > Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > > 
-> > > +CC Arnd and Olof,
-> > > 
-> > > Dear Arnd and Olof,
-> > > 
-> > > Maybe it is worth to add arm-soc entry to the MAINTAINERS file?
-> > > Otherwise how one could get your email address? Not mentioning the
-> > > secret-soc address. :)
-> 
-> I tried to convince them before, it didn't work. I guess they don't like
-> to be spammed ;).
+On Tue, Dec 1, 2020 at 4:41 PM Alexandre Belloni
+<alexandre.belloni@bootlin.com> wrote:
+> On 01/12/2020 14:40:53+0000, Catalin Marinas wrote:
+> > On Mon, Nov 30, 2020 at 07:50:25PM +0000, ZHIZHIKIN Andrey wrote:
+> > > From Krzysztof Kozlowski <krzk@kernel.org>:
 
-The first rule of arm-soc is: you do not talk about arm@ and soc@
+> > I tried to convince them before, it didn't work. I guess they don't like
+> > to be spammed ;).
+>
+> The first rule of arm-soc is: you do not talk about arm@ and soc@
 
-> Or rather, SoC-specific patches, even to defconfig,
-> should go through the specific SoC maintainers. However, there are
-> occasional defconfig patches which are more generic or affecting
-> multiple SoCs. I just ignore them as the arm64 defconfig is usually
-> handled by the arm-soc folk (when I need a defconfig change, I go for
-> arch/arm64/Kconfig directly ;)).
-> 
+I don't mind having the addresses documented better, but it needs to
+be done in a way that avoids having any patch for arch/arm*/boot/dts
+and arch/arm/*/configs Cc:d to soc@kernel.org.
 
-IIRC, the plan was indeed to get defconfig changes through the platform
-sub-trees. It is also supposed to be how multi_v5 and multi_v7 are
-handled and they will take care of the merge.
+If anyone has suggestions for how to do that, let me know.
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+> > Or rather, SoC-specific patches, even to defconfig,
+> > should go through the specific SoC maintainers. However, there are
+> > occasional defconfig patches which are more generic or affecting
+> > multiple SoCs. I just ignore them as the arm64 defconfig is usually
+> > handled by the arm-soc folk (when I need a defconfig change, I go for
+> > arch/arm64/Kconfig directly ;)).
+>
+> IIRC, the plan was indeed to get defconfig changes through the platform
+> sub-trees. It is also supposed to be how multi_v5 and multi_v7 are
+> handled and they will take care of the merge.
+
+For cross-platform changes like this one, I'm definitely happy to
+pick up the patch directly from soc@kernel.org, or from mailing
+list if I know about it.
+
+We usually do the merges for the soc tree in batches and rely
+on patchwork to keep track of what I'm missing, so if Olof and
+I are just on Cc to a mail, we might have forgotten about it
+by the time we do the next merges.
+
+      Arnd
