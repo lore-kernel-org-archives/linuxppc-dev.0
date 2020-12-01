@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E994C63777
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F1BC71155
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:40:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E37820809
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:38:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E37820809
+	by mail.kernel.org (Postfix) with ESMTPS id 83B4420809
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 02:40:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83B4420809
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ClR9W50DxzDqyS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:38:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ClRCZ4Vp5zDr0k
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 13:40:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=qnpz=ff=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
@@ -28,23 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ClR6w1Hw1zDqkC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 13:36:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ClR7R3yzYzDqtY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 13:36:35 +1100 (AEDT)
 Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
  [66.24.58.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id BBE6520809;
- Tue,  1 Dec 2020 02:36:04 +0000 (UTC)
-Date: Mon, 30 Nov 2020 21:36:02 -0500
+ by mail.kernel.org (Postfix) with ESMTPSA id 1A87120857;
+ Tue,  1 Dec 2020 02:36:32 +0000 (UTC)
+Date: Mon, 30 Nov 2020 21:36:29 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 02/14] ftrace: Fix DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- dependency
-Message-ID: <20201130213602.3647f2b8@oasis.local.home>
-In-Reply-To: <fc4b257ea8689a36f086d2389a9ed989496ca63a.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 03/14] ftrace: Fix cleanup in error path of
+ register_ftrace_direct()
+Message-ID: <20201130213629.185216e8@oasis.local.home>
+In-Reply-To: <5a10d77b845633fbd13f1c3c71e7f9777bbbe601.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
- <fc4b257ea8689a36f086d2389a9ed989496ca63a.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5a10d77b845633fbd13f1c3c71e7f9777bbbe601.1606412433.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -65,34 +65,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 26 Nov 2020 23:38:39 +0530
+On Thu, 26 Nov 2020 23:38:40 +0530
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> DYNAMIC_FTRACE_WITH_DIRECT_CALLS should depend on
-> DYNAMIC_FTRACE_WITH_REGS since we need ftrace_regs_caller().
-> 
-> Fixes: 763e34e74bb7d5c ("ftrace: Add register_ftrace_direct()")
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> We need to remove hash entry if register_ftrace_function() fails.
+> Consolidate the cleanup to be done after register_ftrace_function() at
+> the end.
 
-I'm pulling this in for stable as well.
+Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
 -- Steve
 
-> ---
->  kernel/trace/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index a4020c0b4508c9..e1bf5228fb692a 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -202,7 +202,7 @@ config DYNAMIC_FTRACE_WITH_REGS
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  kernel/trace/ftrace.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 9c1bba8cc51b03..3844a4a1346a9c 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -5136,8 +5136,6 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
+>  	__add_hash_entry(direct_functions, entry);
 >  
->  config DYNAMIC_FTRACE_WITH_DIRECT_CALLS
->  	def_bool y
-> -	depends on DYNAMIC_FTRACE
-> +	depends on DYNAMIC_FTRACE_WITH_REGS
->  	depends on HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+>  	ret = ftrace_set_filter_ip(&direct_ops, ip, 0, 0);
+> -	if (ret)
+> -		remove_hash_entry(direct_functions, entry);
 >  
->  config FUNCTION_PROFILER
+>  	if (!ret && !(direct_ops.flags & FTRACE_OPS_FL_ENABLED)) {
+>  		ret = register_ftrace_function(&direct_ops);
+> @@ -5146,6 +5144,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
+>  	}
+>  
+>  	if (ret) {
+> +		remove_hash_entry(direct_functions, entry);
+>  		kfree(entry);
+>  		if (!direct->count) {
+>  			list_del_rcu(&direct->next);
 
