@@ -1,74 +1,75 @@
-Return-Path: <SRS0=CZBu=FE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=H/Sv=FF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A1C1C63777
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 23:15:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA30DC63777
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 00:49:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DFBF20725
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Nov 2020 23:15:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1AE4920809
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 00:49:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="TErIi0LR";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="OBqVQNWA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DFBF20725
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="B7L/JpGs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AE4920809
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ClLgN1mNzzDr3f
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 10:15:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
- helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=TErIi0LR; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=OBqVQNWA; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ClNlV4NMBzDqxZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Dec 2020 11:49:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ClLdT3bV7zDqtv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 10:13:48 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1606778024;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=DcIojZeNBXirIxPuzck5gKL+B2GaAAVvbLMSbnv7A4o=;
- b=TErIi0LRzrxWtp2w0jaDbQs3wM0sxhxyGGuNXb8yCoSc19jwyWuTOLBKnvHCQCuVB92XB7
- U8bleVUuBzWgRMnH9UGQbNX9UJU1aATJ3/YACH9xpT2TQ28H7n6zBeosQVWyUDwLhsclsu
- iBmtG3PLr6EVBA9vzkJ2dN2nxSoEl77RRKFyUPL1iJRoLiXoQE/hvD7OuotKPcwa+Lvy9V
- GkYyESZNsVaNTsQHjBmTN/OSf4JuKlnUIPkFLAl5f1dQHxjSPXt8xoGGv0afpOS0RoEDrL
- vkEM6fM2/ruRi/txjDpqSV9joZSgnJFSMw6uQvHtLX2JLfic/ZSKE2dJ5uRKuQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1606778024;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=DcIojZeNBXirIxPuzck5gKL+B2GaAAVvbLMSbnv7A4o=;
- b=OBqVQNWAecaT77Y/D1j/uIFIdsyYMUuCsILx3O7iOBPONrreeEGV9ZZIdUy8tDebOhwOw5
- JTAGOz1sV1hhrSCQ==
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v4 6/8] genirq/irqdomain: Move hierarchical IRQ
- cleanup to kobject_release
-In-Reply-To: <20201124061720.86766-7-aik@ozlabs.ru>
-References: <20201124061720.86766-1-aik@ozlabs.ru>
- <20201124061720.86766-7-aik@ozlabs.ru>
-Date: Tue, 01 Dec 2020 00:13:44 +0100
-Message-ID: <871rgaigk7.fsf@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ClNjC0BKpzDqkB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2020 11:47:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=B7L/JpGs; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4ClNj03z8kz9sT6;
+ Tue,  1 Dec 2020 11:47:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1606783630;
+ bh=e10QAc16NaqVN44J1Hr1vgfh7E2SKLFwF1tipzVH8TM=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=B7L/JpGsTjzwc1HcKznrIXmRcrxBRIrym7aN8qydKWJFeslXKQQ3S+88dDsBJ3atA
+ ICgQ4xVzl8mS04fa+JitQnIARV+Ch/K5dsJLTcG7CVgL3Fkr+k207+1HkMCbQhJINU
+ VBD4lUo+c3jz+s1yTU151EDkTrnyvsE1RFNs0t5ZmMG99AaYXTeI5CICrmcZ2H6dUl
+ Vvg1ej1Q60nEv0wb6xXsNKSIOd5YbXq/ODo1l/1d14DNsnPPuO2V7pIAsWo4KrPhf6
+ BFI8ddBD7AtJX9OL7JU1IR3erwJiDVWixj6BQJu5e1Q6dF+8vTlAYnp92VgcVQd9LV
+ hM8pxbdtxcAfw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>,
+ linux@armlinux.org.uk, nicolas.ferre@microchip.com,
+ alexandre.belloni@bootlin.com, ludovic.desroches@microchip.com,
+ tony@atomide.com, mripard@kernel.org, wens@csie.org, jernej.skrabec@siol.net,
+ thierry.reding@gmail.com, jonathanh@nvidia.com, catalin.marinas@arm.com,
+ will@kernel.org, tsbogend@alpha.franken.de,
+ James.Bottomley@HansenPartnership.com, deller@gmx.de, benh@kernel.crashing.org,
+ paulus@samba.org, lee.jones@linaro.org, sam@ravnborg.org,
+ emil.l.velikov@gmail.com, daniel.thompson@linaro.org, krzk@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 5/5] powerpc/configs: drop unused BACKLIGHT_GENERIC option
+In-Reply-To: <20201130152137.24909-6-andrey.zhizhikin@leica-geosystems.com>
+References: <20201130152137.24909-1-andrey.zhizhikin@leica-geosystems.com>
+ <20201130152137.24909-6-andrey.zhizhikin@leica-geosystems.com>
+Date: Tue, 01 Dec 2020 11:46:55 +1100
+Message-ID: <87tut6wdxc.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,104 +83,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Marc Zyngier <maz@kernel.org>,
- x86@kernel.org, linux-gpio@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>,
- =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey,
+Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com> writes:
+> Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
+> unused") removed geenric_bl driver from the tree, together with
+> corresponding config option.
+>
+> Remove BACKLIGHT_GENERIC config item from generic-64bit_defconfig.
+                                            ^
+                                            powernv_defconfig
 
-On Tue, Nov 24 2020 at 17:17, Alexey Kardashevskiy wrote:
-> This moves hierarchical domain's irqs cleanup into the kobject release
-> hook to make irq_domain_free_irqs() as simple as kobject_put.
+> Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is unused")
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+> ---
+>  arch/powerpc/configs/powernv_defconfig | 1 -
+>  1 file changed, 1 deletion(-)
 
-Truly simple: Simply broken in multiple ways.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-CONFIG_SPARSE_IRQ=n is now completely buggered. It does not even compile
-anymore. Running core code changes through a larger set of cross
-compilers is neither rocket science nor optional.
+cheers
 
-For CONFIG_SPARSE_IRQ=y, see below.
-
-> @@ -1675,14 +1679,11 @@ void irq_domain_free_irqs(unsigned int virq, unsigned int nr_irqs)
->  		 "NULL pointer, cannot free irq\n"))
->  		return;
->  
-> -	mutex_lock(&irq_domain_mutex);
-> -	for (i = 0; i < nr_irqs; i++)
-> -		irq_domain_remove_irq(virq + i);
-> -	irq_domain_free_irqs_hierarchy(data->domain, virq, nr_irqs);
-> -	mutex_unlock(&irq_domain_mutex);
-> +	for (i = 0; i < nr_irqs; i++) {
-> +		struct irq_desc *desc = irq_to_desc(virq + i);
->  
-> -	irq_domain_free_irq_data(virq, nr_irqs);
-> -	irq_free_descs(virq, nr_irqs);
-> +		kobject_put(&desc->kobj);
-
-So up to this point both irq_dispose_mapping() _and_
-irq_domain_free_irqs() invoked irq_free_descs().
-
-Let's look at the call chains:
-
-   irq_domain_free_irqs()
-     irq_free_descs()
-       mutex_lock(&sparse_irq_lock);
-         for (i...)
-           free_desc(from + i)
-             irq_remove_debugfs_entry();
-             unregister_irq_proc();
-             irq_sysfs_del();
-             delete_irq_desc();
-             call_rcu();
-       bitmap_clear(allocated_irqs, ...);
-       mutex_unlock(&sparse_irq_lock);
-
-with your modifications it does:
-
-   irq_domain_free_irqs()
-     for (i...)
-          kobject_put(&desc->kobj)
-            irq_kobj_release()
-              if (desc->free_irq)
-                desc->free_irq(desc);
-              irq_remove_debugfs_entry();
-              unregister_irq_proc();
-              delete_irq_desc();
-              call_rcu();
-
-Can you spot the wreckage? It's not even subtle, it's more than obvious.
-
-    1) None of the operations in irq_kobj_release() is protected by
-       sparse_irq_lock anymore. There was a comment in free_desc() which
-       explained what is protected. You removed parts of that comment
-       and just left the sysfs portion of it above delete_irq_desc()
-       which is completely bogus because you removed the irq_sysfs_del()
-       call.
-
-    2) Nothing removes the freed interrupts from the allocation
-       bitmap. Run this often enough and you exhausted the interrupt
-       space.
-
-And no, you cannot just go and invoke irq_free_descs() instead of
-kobject_put(), simply because you'd create lock order inversion vs. the
-free_irq() callback.
-
-So no, it's not that simple and I'm not at all interested in another
-respin of this with some more duct tape applied.
-
-It can be done, but that needs way more thought, a proper design which
-preserves the existing semantics completely and wants to be a fine
-grained series where each patch does exactly ONE small thing which is
-reviewable and testable on _ALL_ users of this code, i.e. _ALL_
-architectures and irq chip implementations.  
-
-Thanks,
-
-        tglx
+> diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+> index cf30fc24413b..60a30fffeda0 100644
+> --- a/arch/powerpc/configs/powernv_defconfig
+> +++ b/arch/powerpc/configs/powernv_defconfig
+> @@ -208,7 +208,6 @@ CONFIG_FB_MATROX_G=y
+>  CONFIG_FB_RADEON=m
+>  CONFIG_FB_IBM_GXT4500=m
+>  CONFIG_LCD_PLATFORM=m
+> -CONFIG_BACKLIGHT_GENERIC=m
+>  # CONFIG_VGA_CONSOLE is not set
+>  CONFIG_LOGO=y
+>  CONFIG_HID_A4TECH=m
+> -- 
+> 2.17.1
