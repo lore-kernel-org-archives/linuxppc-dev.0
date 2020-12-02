@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75CA4C64E7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FE10C64E7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:16:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3A7C2158C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A7C2158C
+	by mail.kernel.org (Postfix) with ESMTPS id B069920BED
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:16:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B069920BED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1HJ6CvhzDrDJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:15:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1C96BRfzDr8m
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:11:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -28,59 +28,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=RJFCbh01; dkim-atps=neutral
+ header.s=pp1 header.b=HNyQAZa0; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0pK4l6fzDr2l
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 11:53:45 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0pJ5sxpzDr2l
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 11:53:44 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B20WtBr023736; Tue, 1 Dec 2020 19:53:42 -0500
+ 0B20Vijd182554; Tue, 1 Dec 2020 19:53:37 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=pOcuqNhi5BkHSZRtRucvXIqc0Uez/rM89WQrz8F2W70=;
- b=RJFCbh01jxnfPgHlJPW0Sou4IWqUmBKvDZx0yvpkERivToBOYcdDatMDe7iVPoBP654Z
- 0OozVkXwDBPqw2YmElO4ACE5HmkKsYWaAWXY7pZtniRtQ4hZIp5StUg02p/usUQ8Sh7p
- 29Fr9mGupyJTxpJEtOX4tg/eJzmOyjwK3ZI03/uFOpVlGI4UO2B6rafxvD9r7IAz9vKf
- EbvidbiycUOfMQkZYtvUizNI3nPKQRNt+RcWH7ZnsvFUgtAMtp6rBUNV7pU/nid+eZhV
- dCPKAmk80RT4hqarVY9uzFLbH3jAnIBSoVz6gXC+JNxRMVPrHr9bp1ner8jqJV9BPQWc GA== 
+ bh=8SKHXreeXnAxivNJZYlFp1JB2nIJzGebUGC5aDCotBk=;
+ b=HNyQAZa0RSCFZzbNOHD/AnvLH4dQGK8FYEmPE4EnEx3eddeI9IOnqA8QOr9rFdRL/Sbz
+ PQ0gwnfd1xhAVIGjQI0O344YVqNiJdjcgQyDLACQJh8RZLdndmkmwCYEiStlms6X105E
+ DDyxTRZdOBB8LjtKcHLR7sLife6Mcv+LkHEcAPpTRdmDGCUujPQWwGCNXTBxwnrbQkKQ
+ Yq4dGBJFWOQCKUwbTUUNW0LZzblAwv7IcuatFbOOPwobl5DwempNO9sMGBsSJ5mLUGAl
+ flb8mtRjalhp91vASkvqsLlBp1w+0+neKgSBBptVSjBVzE5E6RDHTRW/tsYxvW3c9qkE Vg== 
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 355jabgpvu-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 355he4en04-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Dec 2020 19:53:42 -0500
+ Tue, 01 Dec 2020 19:53:37 -0500
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20bT3o019039;
- Wed, 2 Dec 2020 00:53:41 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01dal.us.ibm.com with ESMTP id 355rf7c123-1
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20bSlY019036;
+ Wed, 2 Dec 2020 00:53:36 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma01dal.us.ibm.com with ESMTP id 355rf7c11q-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Dec 2020 00:53:40 +0000
+ Wed, 02 Dec 2020 00:53:36 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B20rTLW787000
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B20rZ4K51773932
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 2 Dec 2020 00:53:29 GMT
+ Wed, 2 Dec 2020 00:53:35 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5271C7805C;
- Wed,  2 Dec 2020 00:53:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id F37F77805E;
+ Wed,  2 Dec 2020 00:53:34 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E08F278064;
- Wed,  2 Dec 2020 00:53:38 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 841377805F;
+ Wed,  2 Dec 2020 00:53:34 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  2 Dec 2020 00:53:38 +0000 (GMT)
+ Wed,  2 Dec 2020 00:53:34 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 16/17] ibmvfc: enable MQ and set reasonable defaults
-Date: Tue,  1 Dec 2020 18:53:28 -0600
-Message-Id: <20201202005329.4538-17-tyreld@linux.ibm.com>
+Subject: [PATCH v2 07/17] ibmvfc: define Sub-CRQ interrupt handler routine
+Date: Tue,  1 Dec 2020 18:53:19 -0600
+Message-Id: <20201202005329.4538-8-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201202005329.4538-1-tyreld@linux.ibm.com>
 References: <20201202005329.4538-1-tyreld@linux.ibm.com>
@@ -91,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-12-01_12:2020-11-30,
  2020-12-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- mlxlogscore=828 clxscore=1015 adultscore=0 priorityscore=1501 spamscore=0
- lowpriorityscore=0 mlxscore=0 malwarescore=0 bulkscore=0 phishscore=0
- suspectscore=1 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012020000
+ phishscore=0 impostorscore=0
+ lowpriorityscore=0 spamscore=0 priorityscore=1501 clxscore=1015
+ malwarescore=0 suspectscore=1 bulkscore=0 mlxscore=0 mlxlogscore=984
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012010142
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,38 +108,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Turn on MQ by default and set sane values for the upper limit on hw
-queues for the scsi host, and number of hw scsi channels to request from
-the partner VIOS.
+Simple handler that calls Sub-CRQ drain routine directly.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index e0ffb0416223..c327b9c3090e 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -41,9 +41,9 @@
- #define IBMVFC_DEFAULT_LOG_LEVEL	2
- #define IBMVFC_MAX_CDB_LEN		16
- #define IBMVFC_CLS3_ERROR		0
--#define IBMVFC_MQ			0
--#define IBMVFC_SCSI_CHANNELS		0
--#define IBMVFC_SCSI_HW_QUEUES		1
-+#define IBMVFC_MQ			1
-+#define IBMVFC_SCSI_CHANNELS		8
-+#define IBMVFC_SCSI_HW_QUEUES		16
- #define IBMVFC_MIG_NO_SUB_TO_CRQ	0
- #define IBMVFC_MIG_NO_N_TO_M		0
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index e9da3f60c793..a3e2d627c1ac 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -3458,6 +3458,16 @@ static void ibmvfc_drain_sub_crq(struct ibmvfc_sub_queue *scrq)
+ 	}
+ }
  
++static irqreturn_t ibmvfc_interrupt_scsi(int irq, void *scrq_instance)
++{
++	struct ibmvfc_sub_queue *scrq = (struct ibmvfc_sub_queue *)scrq_instance;
++
++	ibmvfc_toggle_scrq_irq(scrq, 0);
++	ibmvfc_drain_sub_crq(scrq);
++
++	return IRQ_HANDLED;
++}
++
+ /**
+  * ibmvfc_init_tgt - Set the next init job step for the target
+  * @tgt:		ibmvfc target struct
 -- 
 2.27.0
 
