@@ -2,65 +2,53 @@ Return-Path: <SRS0=PqhP=FG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DFA4C64E7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 11:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BFE1C64E8A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:09:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50E5320757
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 11:30:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50E5320757
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id 41950206F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:09:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41950206F9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CmGwr29DGzDqZ3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 22:30:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
- helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CmHnQ2X1gzDqv9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 23:08:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=HrvlMCQD; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=hare@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmGqV5wqTzDqDQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 22:25:39 +1100 (AEDT)
-Received: from zn.tnic (p200300ec2f161b00e186258fb055049e.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f16:1b00:e186:258f:b055:49e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 5938E1EC04D6;
- Wed,  2 Dec 2020 12:25:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1606908319;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=auyM2v2JUyjcuzu7CPUf133Nl+wA9VC3RsABVwER50A=;
- b=HrvlMCQDSwyBJUvAUrSYUGvqLJKpRoJhr2fJO/O7GryF/KJ/kaNcQ+FZC0owkEvxlRx3ke
- PWcsKYyHABE1dZfvDA6gAKmgs66Y4gaTbr2LP93YxZSHb97QCsPFDwuwuu/4EBGmtIXH7d
- QS5VnEr+bP4cyAALPbsFlCfAJYQllXI=
-Date: Wed, 2 Dec 2020 12:25:15 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] EDAC, mv64x60: Fix error return code in
- mv64x60_pci_err_probe()
-Message-ID: <20201202112515.GC2951@zn.tnic>
-References: <20201124063009.1529-1-bobo.shaobowang@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CmHg62kwhzDqnv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 23:03:22 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id CF2A5AB63;
+ Wed,  2 Dec 2020 12:03:18 +0000 (UTC)
+Subject: Re: [PATCH 00/13] ibmvfc: initial MQ development
+To: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ james.bottomley@hansenpartnership.com
+References: <20201126014824.123831-1-tyreld@linux.ibm.com>
+From: Hannes Reinecke <hare@suse.de>
+Message-ID: <90e9a8ac-d2b9-bb64-7c7d-607adaea0f26@suse.de>
+Date: Wed, 2 Dec 2020 13:03:18 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20201124063009.1529-1-bobo.shaobowang@huawei.com>
+In-Reply-To: <20201126014824.123831-1-tyreld@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,52 +60,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cj.chengjian@huawei.com, linux-kernel@vger.kernel.org,
- Wang ShaoBo <bobo.shaobowang@huawei.com>, james.morse@arm.com,
- huawei.libin@huawei.com, mchehab@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-edac@vger.kernel.org
+Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 24, 2020 at 02:30:09PM +0800, Wang ShaoBo wrote:
-> Fix to return -ENODEV error code when edac_pci_add_device() failed instaed
-> of 0 in mv64x60_pci_err_probe(), as done elsewhere in this function.
+On 11/26/20 2:48 AM, Tyrel Datwyler wrote:
+> Recent updates in pHyp Firmware and VIOS releases provide new infrastructure
+> towards enabling Subordinate Command Response Queues (Sub-CRQs) such that each
+> Sub-CRQ is a channel backed by an actual hardware queue in the FC stack on the
+> partner VIOS. Sub-CRQs are registered with the firmware via hypercalls and then
+> negotiated with the VIOS via new Management Datagrams (MADs) for channel setup.
 > 
-> Fixes: 4f4aeeabc061 ("drivers-edac: add marvell mv64x60 driver")
-> Signed-off-by: Wang ShaoBo <bobo.shaobowang@huawei.com>
-> ---
->  drivers/edac/mv64x60_edac.c | 1 +
->  1 file changed, 1 insertion(+)
+> This initial implementation adds the necessary Sub-CRQ framework and implements
+> the new MADs for negotiating and assigning a set of Sub-CRQs to associated VIOS
+> HW backed channels. The event pool and locking still leverages the legacy single
+> queue implementation, and as such lock contention is problematic when increasing
+> the number of queues. However, this initial work demonstrates a 1.2x factor
+> increase in IOPs when configured with two HW queues despite lock contention.
 > 
-> diff --git a/drivers/edac/mv64x60_edac.c b/drivers/edac/mv64x60_edac.c
-> index 3c68bb525d5d..456b9ca1fe8d 100644
-> --- a/drivers/edac/mv64x60_edac.c
-> +++ b/drivers/edac/mv64x60_edac.c
-> @@ -168,6 +168,7 @@ static int mv64x60_pci_err_probe(struct platform_device *pdev)
->  
->  	if (edac_pci_add_device(pci, pdata->edac_idx) > 0) {
->  		edac_dbg(3, "failed edac_pci_add_device()\n");
-> +		res = -ENODEV;
->  		goto err;
->  	}
+Why do you still hold the hold lock during submission?
+An initial check on the submission code path didn't reveal anything 
+obvious, so it _should_ be possible to drop the host lock there.
+Or at least move it into the submission function itself to avoid lock 
+contention. Hmm?
 
-That driver depends on MV64X60 and I don't see anything in the tree
-enabling it and I can't select it AFAICT:
+Cheers,
 
-config MV64X60
-        bool
-        select PPC_INDIRECT_PCI
-        select CHECK_CACHE_COHERENCY
-
-PPC folks, what do we do here?
-
-If not used anymore, I'd love to have one less EDAC driver.
-
-Thx.
-
+Hannes
 -- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+Dr. Hannes Reinecke                Kernel Storage Architect
+hare@suse.de                              +49 911 74053 688
+SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
+HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
