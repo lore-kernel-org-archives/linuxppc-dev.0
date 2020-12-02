@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4296BC64E7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:09:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51896C64E8A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:13:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 612E42158C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:09:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 612E42158C
+	by mail.kernel.org (Postfix) with ESMTPS id 2FA97221E9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:13:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FA97221E9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm18N3VmGzDr7x
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:09:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1F93tbLzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:13:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -28,59 +28,60 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MNGdGsXR; dkim-atps=neutral
+ header.s=pp1 header.b=EIf38CPN; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0pJ4bRVzDr2h
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0pK1JlmzDr2s
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 11:53:44 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B202t1f040479; Tue, 1 Dec 2020 19:53:39 -0500
+ 0B20WsRo021990; Tue, 1 Dec 2020 19:53:38 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=YEMrdE+VXD5h/il1OoherijXy1Gq3nfbWuBFK/lUquI=;
- b=MNGdGsXRZEJ+eBNtdA72ZlHh7O3NYED5hbwne0BXODuV5InN3QWKI6naZj6Xp+snNUf6
- uYXX3091d8N/MnLo0dNwLD3vu2buLRt8Z0nkdYkOCfR/xnRT64h7EQNso9qD05hXPyaU
- QoW0GmTeyRRmlzb+u9YjvYbZIJ0Yt5l9+GGDbDWAT2U3g7b2k9X3bIGD4ZtY4mbYAvWj
- D65oYOf3GsSL8yQgVZTVklp+sGPmFUddzFDd/qaHcHitXV82WCXlV/F+r2Iq/f1kYCpO
- M5h8iiX1uFf+KYocD+aKkLR/9m1VpA5d0Y5XqEpZ62oaG/oNGJ2AHacWhsI719uo3BFI eQ== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 355h8d6xqw-1
+ bh=u2xYXWvqOEeTwsdRseMpEIlPH49x6TjgdRhxhTmGPI4=;
+ b=EIf38CPN/Bb1Aj3+hLKEvj+x2jasQ1SXByEfotXjr/edjb6gzFl6TUT7/8aZHps1djBk
+ 7gqM0Ec5bp1Tpwh3m+VIkf3GfG1cA64SqNLaHFFoRCtkqkfyqC6joWLMjq7euNlPT5WZ
+ G7EJo/el3vAPEM6cjXONz+BSxzPvsrT7/PW2T2SBTbuUfy3I/hvF0S/BNvtrlgY738jW
+ 9CnOCEw2GC4rVkWuiP9xRIcZ9Y7WIdF/Qkb6sl7q9AuVhPlWayUNYJI5RkyB71F8m/LX
+ FVuEBQG5CznQIY0O2kLWqvygBCWzfZJNQmvugnbbQLS3ZkzFyXZTHABkG+LQPAEvRaaT 8g== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 355jjp4c33-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Dec 2020 19:53:39 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20chel020119;
- Wed, 2 Dec 2020 00:53:38 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma04dal.us.ibm.com with ESMTP id 353e69bga3-1
+ Tue, 01 Dec 2020 19:53:38 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20bNRb013472;
+ Wed, 2 Dec 2020 00:53:37 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma02dal.us.ibm.com with ESMTP id 353e69ume8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Dec 2020 00:53:38 +0000
+ Wed, 02 Dec 2020 00:53:37 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B20rblY15597906
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B20rZmS51773940
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 2 Dec 2020 00:53:37 GMT
+ Wed, 2 Dec 2020 00:53:35 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E61DB78060;
- Wed,  2 Dec 2020 00:53:36 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 77AC17805C;
+ Wed,  2 Dec 2020 00:53:35 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 802F77805E;
- Wed,  2 Dec 2020 00:53:36 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 121017805F;
+ Wed,  2 Dec 2020 00:53:35 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  2 Dec 2020 00:53:36 +0000 (GMT)
+ Wed,  2 Dec 2020 00:53:34 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 11/17] ibmvfc: set and track hw queue in ibmvfc_event struct
-Date: Tue,  1 Dec 2020 18:53:23 -0600
-Message-Id: <20201202005329.4538-12-tyreld@linux.ibm.com>
+Subject: [PATCH v2 08/17] ibmvfc: map/request irq and register Sub-CRQ
+ interrupt handler
+Date: Tue,  1 Dec 2020 18:53:20 -0600
+Message-Id: <20201202005329.4538-9-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201202005329.4538-1-tyreld@linux.ibm.com>
 References: <20201202005329.4538-1-tyreld@linux.ibm.com>
@@ -91,11 +92,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-12-01_12:2020-11-30,
  2020-12-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015
- mlxscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
- mlxlogscore=999 spamscore=0 suspectscore=1 malwarescore=0 phishscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012010142
+ lowpriorityscore=0
+ suspectscore=3 spamscore=0 bulkscore=0 adultscore=0 mlxscore=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 mlxlogscore=999
+ clxscore=1015 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012020000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,59 +116,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Extract the hwq id from a SCSI command and store it in the ibmvfc_event
-structure to identify which Sub-CRQ to send the command down when
-channels are being utilized.
+Create an irq mapping for the hw_irq number provided from phyp firmware.
+Request an irq assigned our Sub-CRQ interrupt handler.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 5 +++++
- drivers/scsi/ibmvscsi/ibmvfc.h | 1 +
- 2 files changed, 6 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 0e6c9e55a221..4555775ea74b 100644
+index a3e2d627c1ac..0336833a6950 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1397,6 +1397,7 @@ static void ibmvfc_init_event(struct ibmvfc_event *evt,
- 	evt->crq.format = format;
- 	evt->done = done;
- 	evt->eh_comp = NULL;
-+	evt->hwq = 0;
- }
- 
- /**
-@@ -1748,6 +1749,8 @@ static int ibmvfc_queuecommand_lck(struct scsi_cmnd *cmnd,
- 	struct ibmvfc_cmd *vfc_cmd;
- 	struct ibmvfc_fcp_cmd_iu *iu;
- 	struct ibmvfc_event *evt;
-+	u32 tag_and_hwq = blk_mq_unique_tag(cmnd->request);
-+	u16 hwq = blk_mq_unique_tag_to_hwq(tag_and_hwq);
- 	int rc;
- 
- 	if (unlikely((rc = fc_remote_port_chkready(rport))) ||
-@@ -1775,6 +1778,8 @@ static int ibmvfc_queuecommand_lck(struct scsi_cmnd *cmnd,
+@@ -5130,12 +5130,34 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
+ 		goto reg_failed;
  	}
  
- 	vfc_cmd->correlation = cpu_to_be64(evt);
-+	if (vhost->using_channels)
-+		evt->hwq = hwq % vhost->scsi_scrqs.active_queues;
++	scrq->irq = irq_create_mapping(NULL, scrq->hw_irq);
++
++	if (!scrq->irq) {
++		rc = -EINVAL;
++		dev_err(dev, "Error mapping sub-crq[%d] irq\n", index);
++		goto irq_failed;
++	}
++
++	snprintf(scrq->name, sizeof(scrq->name), "ibmvfc-%x-scsi%d",
++		 vdev->unit_address, index);
++	rc = request_irq(scrq->irq, ibmvfc_interrupt_scsi, 0, scrq->name, scrq);
++
++	if (rc) {
++		dev_err(dev, "Couldn't register sub-crq[%d] irq\n", index);
++		irq_dispose_mapping(scrq->irq);
++		goto irq_failed;
++	}
++
+ 	scrq->hwq_id = index;
+ 	scrq->vhost = vhost;
  
- 	if (likely(!(rc = ibmvfc_map_sg_data(cmnd, evt, vfc_cmd, vhost->dev))))
- 		return ibmvfc_send_event(evt, vhost, 0);
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index dff26dbd912c..e0ffb0416223 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -781,6 +781,7 @@ struct ibmvfc_event {
- 	struct completion comp;
- 	struct completion *eh_comp;
- 	struct timer_list timer;
-+	u16 hwq;
- };
+ 	LEAVE;
+ 	return 0;
  
- /* a pool of event structs for use */
++irq_failed:
++	do {
++		plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
++	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+ reg_failed:
+ 	dma_unmap_single(dev, scrq->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
+ dma_map_failed:
 -- 
 2.27.0
 
