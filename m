@@ -2,58 +2,75 @@ Return-Path: <SRS0=PqhP=FG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 803BFC64E8A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96EE2C64E8A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:49:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9A05221FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:30:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9A05221FE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 58C96221FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:49:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58C96221FE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CmJGR1dCFzDqV8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 23:30:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CmJgy4s0CzDqVq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 23:49:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
- envelope-from=info@metux.net; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 429 seconds by postgrey-1.36 at bilbo;
- Wed, 02 Dec 2020 23:26:03 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=holGE3HH; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmJ972lKgzDr0w
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 23:25:59 +1100 (AEDT)
-Received: from orion.localdomain ([77.7.48.174]) by mrelayeu.kundenserver.de
- (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MJV9M-1kV75Q0XNo-00JsFP; Wed, 02 Dec 2020 13:15:56 +0100
-From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers: char: tpm: remove unneeded MODULE_VERSION() usage
-Date: Wed,  2 Dec 2020 13:15:53 +0100
-Message-Id: <20201202121553.9383-1-info@metux.net>
-X-Mailer: git-send-email 2.11.0
-X-Provags-ID: V03:K1:S6jGKntch7TnNIvjw5HeYSwa3cdu9ChH6KIdjiN8Aw6I10nMGVT
- TfxVfBy1k7mv46B8Dyrm80CAJCZqiQzdUJlFmeCNabr0Yole0YWL1/NssfqGPj25DwI+gDj
- axY/uaskxTMUnwAA/4I8jGIBD5qbYDx2YnkpBrrX7YVWCj1EqbEgOxsztP6dEwhqkIaNs9W
- dv4rRCeBj25UrBA2tthTA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:jHGHfK87aFI=:X/MYA4YK7cdsoZr0R47vJr
- qcline2vdYAAPNDo/SL1/omfPiYBh8D+jeDKKe48mzjyaNxLDUC+kWKSBw82e3ZyXBb4jU5en
- p21SgqBYyuM5xVw1+30mtb4UNrK3keVF7qPuBI/MeWEzk7NEgj3kkD4bYgs1QHr6CXAZZL+ky
- L91pLWthv3DqhXRr4L9OruFGVEvy0h8hKIHbZTkBbcA6k2JP/IWa0wEecwGoF5tSHU8Vkn7nQ
- UgAZIkjrk3ziV6w5o+bxibe5BIawRlw4NqSwBttKnXGOECadRNSmaKILFgG1YlW9mkwkup5Fw
- JD/WDEwXCKdKjrJD/aFEBrFUrVjzx0TwdRt9SrZk/ZT+LRd+t100ZYb4XHnDtihnGgSXWFsDQ
- eSbprJ7rtnfBV1PdtETxO4QbcTXTSwLx5X/K7apCjqKXAEUE3CNkYFmyCALwT
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CmJbf1C1TzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 23:45:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=h8OFn1f4rN5V534vygyf7uXjyFm0rtIR0TiLL9ElMpE=; b=holGE3HHKSUGIf0MMwr+/aM+qs
+ FTNKPPXCxqVAY1s9pQKziuNBFrbP70W8+ZvdIMJroEiNwmrXozoIpAUZR/GV1yh3VESZ2MpDeAJRI
+ RLkV3mo+oOqWE6hc7LgRr1jwJdcjnLfXpa9cty+bXSyzGJ3d9ruZPbDKSSPB2dFPb4sKj/dSDdB3d
+ mvQJh7CkL1vepEOPZt2GA0Ly300hbL9J8oFFMGEk5GGrV202e3qSNXweEzPECETXURfWxBcGNFMi9
+ UNg2132ny9LyyXy8sG4nBgpRx6mYDp4i31b+pPxpPKfj+Ux54teqDFT81lWSGBsDsM/IQpdYzVv52
+ o8k/PYAQ==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1kkRVa-000141-5Z; Wed, 02 Dec 2020 12:45:22 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A93A23035D4;
+ Wed,  2 Dec 2020 13:45:19 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 82E5B2143477D; Wed,  2 Dec 2020 13:45:19 +0100 (CET)
+Date: Wed, 2 Dec 2020 13:45:19 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 6/8] lazy tlb: shoot lazies, a non-refcounting lazy tlb
+ option
+Message-ID: <20201202124519.GP3092@hirez.programming.kicks-ass.net>
+References: <20201128160141.1003903-1-npiggin@gmail.com>
+ <20201128160141.1003903-7-npiggin@gmail.com>
+ <20201202111731.GA2414@hirez.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201202111731.GA2414@hirez.programming.kicks-ass.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,165 +82,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jgg@ziepe.ca, jarkko@kernel.org, paulus@samba.org,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- peterhuewe@gmx.de
+Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove MODULE_VERSION(), as it isn't needed at all: the only version
-making sense is the kernel version.
+On Wed, Dec 02, 2020 at 12:17:31PM +0100, Peter Zijlstra wrote:
 
-Link: https://lkml.org/lkml/2017/11/22/480
+> So the obvious 'improvement' here would be something like:
+> 
+> 	for_each_online_cpu(cpu) {
+> 		p = rcu_dereference(cpu_rq(cpu)->curr;
+> 		if (p->active_mm != mm)
+> 			continue;
+> 		__cpumask_set_cpu(cpu, tmpmask);
+> 	}
+> 	on_each_cpu_mask(tmpmask, ...);
+> 
+> The remote CPU will never switch _to_ @mm, on account of it being quite
+> dead, but it is quite prone to false negatives.
+> 
+> Consider that __schedule() sets rq->curr *before* context_switch(), this
+> means we'll see next->active_mm, even though prev->active_mm might still
+> be our @mm.
+> 
+> Now, because we'll be removing the atomic ops from context_switch()'s
+> active_mm swizzling, I think we can change this to something like the
+> below. The hope being that the cost of the new barrier can be offset by
+> the loss of the atomics.
+> 
+> Hmm ?
+> 
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 41404afb7f4c..2597c5c0ccb0 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -4509,7 +4509,6 @@ context_switch(struct rq *rq, struct task_struct *prev,
+>  	if (!next->mm) {                                // to kernel
+>  		enter_lazy_tlb(prev->active_mm, next);
+>  
+> -		next->active_mm = prev->active_mm;
+>  		if (prev->mm)                           // from user
+>  			mmgrab(prev->active_mm);
+>  		else
+> @@ -4524,6 +4523,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
+>  		 * case 'prev->active_mm == next->mm' through
+>  		 * finish_task_switch()'s mmdrop().
+>  		 */
+> +		next->active_mm = next->mm;
+>  		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-Signed-off-by: Enrico Weigelt <info@metux.net>
----
- drivers/char/tpm/st33zp24/i2c.c      | 1 -
- drivers/char/tpm/st33zp24/spi.c      | 1 -
- drivers/char/tpm/st33zp24/st33zp24.c | 1 -
- drivers/char/tpm/tpm-interface.c     | 1 -
- drivers/char/tpm/tpm_atmel.c         | 1 -
- drivers/char/tpm/tpm_crb.c           | 1 -
- drivers/char/tpm/tpm_i2c_infineon.c  | 1 -
- drivers/char/tpm/tpm_ibmvtpm.c       | 1 -
- drivers/char/tpm/tpm_infineon.c      | 1 -
- drivers/char/tpm/tpm_nsc.c           | 1 -
- drivers/char/tpm/tpm_tis.c           | 1 -
- drivers/char/tpm/tpm_tis_core.c      | 1 -
- drivers/char/tpm/tpm_vtpm_proxy.c    | 1 -
- 13 files changed, 13 deletions(-)
+I think that next->active_mm store should be after switch_mm(),
+otherwise we still race.
 
-diff --git a/drivers/char/tpm/st33zp24/i2c.c b/drivers/char/tpm/st33zp24/i2c.c
-index 7c617edff4ca..7ed9829cacc4 100644
---- a/drivers/char/tpm/st33zp24/i2c.c
-+++ b/drivers/char/tpm/st33zp24/i2c.c
-@@ -313,5 +313,4 @@ module_i2c_driver(st33zp24_i2c_driver);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("STM TPM 1.2 I2C ST33 Driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/st33zp24/spi.c b/drivers/char/tpm/st33zp24/spi.c
-index a75dafd39445..147efea4eb05 100644
---- a/drivers/char/tpm/st33zp24/spi.c
-+++ b/drivers/char/tpm/st33zp24/spi.c
-@@ -430,5 +430,4 @@ module_spi_driver(st33zp24_spi_driver);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("STM TPM 1.2 SPI ST33 Driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/st33zp24/st33zp24.c b/drivers/char/tpm/st33zp24/st33zp24.c
-index 4ec10ab5e576..e0f1a5828993 100644
---- a/drivers/char/tpm/st33zp24/st33zp24.c
-+++ b/drivers/char/tpm/st33zp24/st33zp24.c
-@@ -646,5 +646,4 @@ EXPORT_SYMBOL(st33zp24_pm_resume);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("ST33ZP24 TPM 1.2 driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
-index 1621ce818705..dfdc68b8bf88 100644
---- a/drivers/char/tpm/tpm-interface.c
-+++ b/drivers/char/tpm/tpm-interface.c
-@@ -514,5 +514,4 @@ module_exit(tpm_exit);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_atmel.c b/drivers/char/tpm/tpm_atmel.c
-index 54a6750a6757..35bf249cc95a 100644
---- a/drivers/char/tpm/tpm_atmel.c
-+++ b/drivers/char/tpm/tpm_atmel.c
-@@ -231,5 +231,4 @@ module_exit(cleanup_atmel);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_crb.c b/drivers/char/tpm/tpm_crb.c
-index a9dcf31eadd2..3e72b7b99cce 100644
---- a/drivers/char/tpm/tpm_crb.c
-+++ b/drivers/char/tpm/tpm_crb.c
-@@ -748,5 +748,4 @@ static struct acpi_driver crb_acpi_driver = {
- module_acpi_driver(crb_acpi_driver);
- MODULE_AUTHOR("Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>");
- MODULE_DESCRIPTION("TPM2 Driver");
--MODULE_VERSION("0.1");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_i2c_infineon.c b/drivers/char/tpm/tpm_i2c_infineon.c
-index a19d32cb4e94..8920b7c19fcb 100644
---- a/drivers/char/tpm/tpm_i2c_infineon.c
-+++ b/drivers/char/tpm/tpm_i2c_infineon.c
-@@ -731,5 +731,4 @@ static struct i2c_driver tpm_tis_i2c_driver = {
- module_i2c_driver(tpm_tis_i2c_driver);
- MODULE_AUTHOR("Peter Huewe <peter.huewe@infineon.com>");
- MODULE_DESCRIPTION("TPM TIS I2C Infineon Driver");
--MODULE_VERSION("2.2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 994385bf37c0..5b04d113f634 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -750,5 +750,4 @@ module_exit(ibmvtpm_module_exit);
- 
- MODULE_AUTHOR("adlai@us.ibm.com");
- MODULE_DESCRIPTION("IBM vTPM Driver");
--MODULE_VERSION("1.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_infineon.c b/drivers/char/tpm/tpm_infineon.c
-index 9c924a1440a9..8a58966c5c9b 100644
---- a/drivers/char/tpm/tpm_infineon.c
-+++ b/drivers/char/tpm/tpm_infineon.c
-@@ -621,5 +621,4 @@ module_pnp_driver(tpm_inf_pnp_driver);
- 
- MODULE_AUTHOR("Marcel Selhorst <tpmdd@sirrix.com>");
- MODULE_DESCRIPTION("Driver for Infineon TPM SLD 9630 TT 1.1 / SLB 9635 TT 1.2");
--MODULE_VERSION("1.9.2");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_nsc.c b/drivers/char/tpm/tpm_nsc.c
-index 038701d48351..6ab2fe7e8782 100644
---- a/drivers/char/tpm/tpm_nsc.c
-+++ b/drivers/char/tpm/tpm_nsc.c
-@@ -412,5 +412,4 @@ module_exit(cleanup_nsc);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index 4ed6e660273a..3074235b405d 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -429,5 +429,4 @@ module_init(init_tis);
- module_exit(cleanup_tis);
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_tis_core.c b/drivers/char/tpm/tpm_tis_core.c
-index 92c51c6cfd1b..20f4b2c7ea52 100644
---- a/drivers/char/tpm/tpm_tis_core.c
-+++ b/drivers/char/tpm/tpm_tis_core.c
-@@ -1164,5 +1164,4 @@ EXPORT_SYMBOL_GPL(tpm_tis_resume);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_vtpm_proxy.c b/drivers/char/tpm/tpm_vtpm_proxy.c
-index 91c772e38bb5..18f14162d1c1 100644
---- a/drivers/char/tpm/tpm_vtpm_proxy.c
-+++ b/drivers/char/tpm/tpm_vtpm_proxy.c
-@@ -729,5 +729,4 @@ module_exit(vtpm_module_exit);
- 
- MODULE_AUTHOR("Stefan Berger (stefanb@us.ibm.com)");
- MODULE_DESCRIPTION("vTPM Driver");
--MODULE_VERSION("0.1");
- MODULE_LICENSE("GPL");
--- 
-2.11.0
-
+>  
+>  		if (!prev->mm) {                        // from kernel
+> @@ -5713,11 +5713,9 @@ static void __sched notrace __schedule(bool preempt)
+>  
+>  	if (likely(prev != next)) {
+>  		rq->nr_switches++;
+> -		/*
+> -		 * RCU users of rcu_dereference(rq->curr) may not see
+> -		 * changes to task_struct made by pick_next_task().
+> -		 */
+> -		RCU_INIT_POINTER(rq->curr, next);
+> +
+> +		next->active_mm = prev->active_mm;
+> +		rcu_assign_pointer(rq->curr, next);
+>  		/*
+>  		 * The membarrier system call requires each architecture
+>  		 * to have a full memory barrier after updating
