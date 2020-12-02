@@ -2,100 +2,42 @@ Return-Path: <SRS0=PqhP=FG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0D3EC64E7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:38:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88843C64E7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:42:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D819B20C56
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:38:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D819B20C56
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 29CAE21D7E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:42:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29CAE21D7E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1nj2qJpzDqDr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:38:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1tm5Tj6zDqRM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:42:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WS5/H5YX; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm12d4FnXzDqxb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 12:04:25 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B212i04074437; Tue, 1 Dec 2020 20:04:22 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=quLqGqXAl/PPgl+TuyjYAEjbjck4OUuu3Qk2jmO0lrg=;
- b=WS5/H5YXiO+7XfvRKuF7envEBEJT4i4LSIHloAtjWZuS/T8R2maNSylmG/h+nTeb0WkI
- uMPEu1dZSlZWFNN0Ifj6KMqOPrEcdvzVJWxGP36iCcmXmoGXQwtgTEzZmFrw9YBYaTWQ
- 96zAPUO0VdxSZH9Ngbvdb9vtl6ciA10BpGHnnAOFtmKsvqtFSbQ45yGe39MFifQNEN3d
- MtPo1R3mKQmn/fPW0BwxH+83QbyUBayXf+W3KwUcnriYKah7bHXbYAGwNwb15LDcZZyq
- YjgD88y+ZN3gAcH3D9ql3jpp+U579tyNUxIeF8xfMCBit+pqm5zZU0RFxSin7k1ZENnB EA== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 355jjh8wq9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Dec 2020 20:04:21 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20f5DJ016199;
- Wed, 2 Dec 2020 00:53:34 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01wdc.us.ibm.com with ESMTP id 355vrfhrdb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Dec 2020 00:53:34 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B20rN334391456
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 2 Dec 2020 00:53:23 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 03D777805C;
- Wed,  2 Dec 2020 00:53:33 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 915E478060;
- Wed,  2 Dec 2020 00:53:32 +0000 (GMT)
-Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  2 Dec 2020 00:53:32 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 03/17] ibmvfc: add Subordinate CRQ definitions
-Date: Tue,  1 Dec 2020 18:53:15 -0600
-Message-Id: <20201202005329.4538-4-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201202005329.4538-1-tyreld@linux.ibm.com>
-References: <20201202005329.4538-1-tyreld@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-12-01_12:2020-11-30,
- 2020-12-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1
- lowpriorityscore=0 bulkscore=0 adultscore=0 mlxlogscore=999
- priorityscore=1501 spamscore=0 phishscore=0 clxscore=1015 impostorscore=0
- mlxscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012020002
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Cm19323b8zDqs1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 12:09:58 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 7D1E6AE8022A;
+ Tue,  1 Dec 2020 20:09:55 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel] powerpc/kuap: Restore AMR after replaying soft
+ interrupts
+Date: Wed,  2 Dec 2020 12:09:52 +1100
+Message-Id: <20201202010952.7157-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,67 +49,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Subordinate Command Response Queues (Sub CRQ) are used in conjunction
-with the primary CRQ when more than one queue is needed by the virtual
-IO adapter. Recent phyp firmware versions support Sub CRQ's with ibmvfc
-adapters. This feature is a prerequisite for supporting multiple
-hardware backed submission queues in the vfc adapter.
+When interrupted in raw_copy_from_user()/... after user memory access
+is enabled, a nested handler may also access user memory (perf is
+one example) and when it does so, it calls prevent_read_from_user()
+which prevents the upper handler from accessing user memory.
 
-The Sub CRQ command element differs from the standard CRQ in that it is
-32bytes long as opposed to 16bytes for the latter. Despite this extra
-16bytes the ibmvfc protocol will use the original CRQ command element
-mapped to the first 16bytes of the Sub CRQ element initially.
+This saves/restores AMR when replaying interrupts. get_kuap/set_kuap have
+stubs for disabled KUAP so no ifdefs.
 
-Add definitions for the Sub CRQ command element and queue.
+Found by syzkaller.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.h | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index e095daada70e..b3cd35cbf067 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -656,6 +656,29 @@ struct ibmvfc_crq_queue {
- 	dma_addr_t msg_token;
- };
+This is an example:
+
+------------[ cut here ]------------
+Bug: Read fault blocked by AMR!
+WARNING: CPU: 0 PID: 1603 at /home/aik/p/kernel/arch/powerpc/include/asm/book3s/64/kup-radix.h:145 __do_page_fau
+
+Modules linked in:
+CPU: 0 PID: 1603 Comm: amr Not tainted 5.10.0-rc6_v5.10-rc6_a+fstn1 #24
+NIP:  c00000000009ece8 LR: c00000000009ece4 CTR: 0000000000000000
+REGS: c00000000dc63560 TRAP: 0700   Not tainted  (5.10.0-rc6_v5.10-rc6_a+fstn1)
+MSR:  8000000000021033 <SF,ME,IR,DR,RI,LE>  CR: 28002888  XER: 20040000
+CFAR: c0000000001fa928 IRQMASK: 1
+GPR00: c00000000009ece4 c00000000dc637f0 c000000002397600 000000000000001f
+GPR04: c0000000020eb318 0000000000000000 c00000000dc63494 0000000000000027
+GPR08: c00000007fe4de68 c00000000dfe9180 0000000000000000 0000000000000001
+GPR12: 0000000000002000 c0000000030a0000 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 bfffffffffffffff
+GPR20: 0000000000000000 c0000000134a4020 c0000000019c2218 0000000000000fe0
+GPR24: 0000000000000000 0000000000000000 c00000000d106200 0000000040000000
+GPR28: 0000000000000000 0000000000000300 c00000000dc63910 c000000001946730
+NIP [c00000000009ece8] __do_page_fault+0xb38/0xde0
+LR [c00000000009ece4] __do_page_fault+0xb34/0xde0
+Call Trace:
+[c00000000dc637f0] [c00000000009ece4] __do_page_fault+0xb34/0xde0 (unreliable)
+[c00000000dc638a0] [c00000000000c968] handle_page_fault+0x10/0x2c
+--- interrupt: 300 at strncpy_from_user+0x290/0x440
+    LR = strncpy_from_user+0x284/0x440
+[c00000000dc63ba0] [c000000000c3dcb0] strncpy_from_user+0x2f0/0x440 (unreliable)
+[c00000000dc63c30] [c00000000068b888] getname_flags+0x88/0x2c0
+[c00000000dc63c90] [c000000000662a44] do_sys_openat2+0x2d4/0x5f0
+[c00000000dc63d30] [c00000000066560c] do_sys_open+0xcc/0x140
+[c00000000dc63dc0] [c000000000045e10] system_call_exception+0x160/0x240
+[c00000000dc63e20] [c00000000000da60] system_call_common+0xf0/0x27c
+Instruction dump:
+409c0048 3fe2ff5b 3bfff128 fac10060 fae10068 482f7a85 60000000 3c62ff5b
+7fe4fb78 3863f250 4815bbd9 60000000 <0fe00000> 3c62ff5b 3863f2b8 4815c8b5
+irq event stamp: 254
+hardirqs last  enabled at (253): [<c000000000019550>] arch_local_irq_restore+0xa0/0x150
+hardirqs last disabled at (254): [<c000000000008a10>] data_access_common_virt+0x1b0/0x1d0
+softirqs last  enabled at (0): [<c0000000001f6d5c>] copy_process+0x78c/0x2120
+softirqs last disabled at (0): [<0000000000000000>] 0x0
+---[ end trace ba98aec5151f3aeb ]---
+---
+ arch/powerpc/kernel/irq.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 7d0f7682d01d..915123d861d0 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -221,6 +221,7 @@ void replay_soft_interrupts(void)
+ 	 */
+ 	unsigned char happened = local_paca->irq_happened;
+ 	struct pt_regs regs;
++	unsigned long kuap_state = get_kuap();
  
-+struct ibmvfc_sub_crq {
-+	struct ibmvfc_crq crq;
-+	__be64 reserved[2];
-+} __packed __aligned(8);
-+
-+struct ibmvfc_sub_queue {
-+	struct ibmvfc_sub_crq *msgs;
-+	dma_addr_t msg_token;
-+	int size, cur;
-+	struct ibmvfc_host *vhost;
-+	unsigned long cookie;
-+	unsigned long vios_cookie;
-+	unsigned long hw_irq;
-+	unsigned long irq;
-+	unsigned long hwq_id;
-+	char name[32];
-+};
-+
-+struct ibmvfc_scsi_channels {
-+	struct ibmvfc_sub_queue *scrqs;
-+	unsigned int active_queues;
-+};
-+
- enum ibmvfc_ae_link_state {
- 	IBMVFC_AE_LS_LINK_UP		= 0x01,
- 	IBMVFC_AE_LS_LINK_BOUNCED	= 0x02,
+ 	ppc_save_regs(&regs);
+ 	regs.softe = IRQS_ENABLED;
+@@ -309,6 +310,7 @@ void replay_soft_interrupts(void)
+ 		trace_hardirqs_off();
+ 		goto again;
+ 	}
++	set_kuap(kuap_state);
+ }
+ 
+ notrace void arch_local_irq_restore(unsigned long mask)
 -- 
-2.27.0
+2.17.1
 
