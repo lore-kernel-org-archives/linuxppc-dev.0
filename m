@@ -2,100 +2,44 @@ Return-Path: <SRS0=PqhP=FG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC6C3C64E7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:33:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F4D8C64E8A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:36:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B31420C56
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:33:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B31420C56
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 518A620C56
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 01:36:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 518A620C56
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1hQ5kxFzDrCG
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:33:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cm1lf2MsGzDqQJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Dec 2020 12:36:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=HCD2TRdC; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0sR2rRQzDqym
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 11:56:27 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B20sbkE059431; Tue, 1 Dec 2020 19:56:23 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=0RddKDffcQF0Fc8EScxESXNuAanc6Xy8eMCmYO4oF7E=;
- b=HCD2TRdC67DslpfV9zPYuPpWCVtPQZssaZDdXsRKTja0bKN8ZFUuVej5s4UgaX0yK15S
- dcajXggua3L/ZkRV90JF9gOTtM9cqUh4QDLw2FKrYUJ6080dKqzW9wHPt9aNJL2UqvRA
- orCeQGVwFlwLdd7cPxFsYdILIGFh3Usng8FjRlzJ6B7GnurN7zfObbUprJNMPTamg2rO
- Up8AgqvpObS7lu7RsnbDsoIXZ1uaQfnvWYRWP5aqzKCmZXZ5NPiYBcBLBdyXeP91VXUs
- VxeCsnQGqZyL1otSz6tzvw7sgSLlCCHEXibHvEFrFtpFn5WVCl2ExRlcbg1ogxGcrWuY Jw== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 355gtc707q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Dec 2020 19:56:20 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B20cNlJ028139;
- Wed, 2 Dec 2020 00:53:35 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma03dal.us.ibm.com with ESMTP id 353e69beew-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Dec 2020 00:53:35 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B20rRiU12649096
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 2 Dec 2020 00:53:27 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0204578063;
- Wed,  2 Dec 2020 00:53:34 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8699F78060;
- Wed,  2 Dec 2020 00:53:33 +0000 (GMT)
-Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  2 Dec 2020 00:53:33 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v2 05/17] ibmvfc: add Sub-CRQ IRQ enable/disable routine
-Date: Tue,  1 Dec 2020 18:53:17 -0600
-Message-Id: <20201202005329.4538-6-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201202005329.4538-1-tyreld@linux.ibm.com>
-References: <20201202005329.4538-1-tyreld@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cm0y50w0bzDr3r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2020 12:00:28 +1100 (AEDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-12-01_12:2020-11-30,
- 2020-12-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1 bulkscore=0
- spamscore=0 priorityscore=1501 lowpriorityscore=0 mlxlogscore=766
- clxscore=1015 adultscore=0 mlxscore=0 impostorscore=0 malwarescore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012010142
+Subject: Re: [net-next PATCH] net: freescale: ucc_geth: remove unused
+ SKB_ALLOC_TIMEOUT
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <160687082349.9495.15068025024815430511.git-patchwork-notify@kernel.org>
+Date: Wed, 02 Dec 2020 01:00:23 +0000
+References: <20201130001010.28998-1-chris.packham@alliedtelesis.co.nz>
+In-Reply-To: <20201130001010.28998-1-chris.packham@alliedtelesis.co.nz>
+To: Chris Packham <chris.packham@alliedtelesis.co.nz>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,54 +51,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: trivial@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ leoyang.li@nxp.com, kuba@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Each Sub-CRQ has its own interrupt. A hypercall is required to toggle
-the IRQ state. Provide the necessary mechanism via a helper function.
+Hello:
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+This patch was applied to netdev/net-next.git (refs/heads/master):
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 4860487c6779..97f00fefa809 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3361,6 +3361,26 @@ static void ibmvfc_tasklet(void *data)
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- }
- 
-+static int ibmvfc_toggle_scrq_irq(struct ibmvfc_sub_queue *scrq, int enable)
-+{
-+	struct device *dev = scrq->vhost->dev;
-+	struct vio_dev *vdev = to_vio_dev(dev);
-+	unsigned long rc;
-+	int irq_action = H_ENABLE_VIO_INTERRUPT;
-+
-+	if (!enable)
-+		irq_action = H_DISABLE_VIO_INTERRUPT;
-+
-+	rc = plpar_hcall_norets(H_VIOCTL, vdev->unit_address, irq_action,
-+				scrq->hw_irq, 0, 0);
-+
-+	if (rc)
-+		dev_err(dev, "Couldn't %s sub-crq[%lu] irq. rc=%ld\n",
-+			enable ? "enable" : "disable", scrq->hwq_id, rc);
-+
-+	return rc;
-+}
-+
- /**
-  * ibmvfc_init_tgt - Set the next init job step for the target
-  * @tgt:		ibmvfc target struct
--- 
-2.27.0
+On Mon, 30 Nov 2020 13:10:10 +1300 you wrote:
+> This was added in commit ce973b141dfa ("[PATCH] Freescale QE UCC gigabit
+> ethernet driver") but doesn't appear to have been used. Remove it now.
+> 
+> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+> ---
+>  drivers/net/ethernet/freescale/ucc_geth.h | 1 -
+>  1 file changed, 1 deletion(-)
+
+Here is the summary with links:
+  - [net-next] net: freescale: ucc_geth: remove unused SKB_ALLOC_TIMEOUT
+    https://git.kernel.org/netdev/net-next/c/2bf7d3776b74
+
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
