@@ -2,45 +2,50 @@ Return-Path: <SRS0=jgKV=FH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E495C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1EE4C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:39:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFAB3223C8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:31:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFAB3223C8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1481422224
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:39:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1481422224
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cn9YK0vGczDrJf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 09:31:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cn9k95BFhzDrM2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 09:39:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
+ (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lwn.net
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cn9VX5DqQzDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 09:29:08 +1100 (AEDT)
-From: Arnd Bergmann <arnd@kernel.org>
-Authentication-Results: mail.kernel.org;
- dkim=permerror (bad message/signature format)
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: [PATCH] ASoC: fsl_aud2htx: mark PM functions as __maybe_unused
-Date: Thu,  3 Dec 2020 23:28:47 +0100
-Message-Id: <20201203222900.1042578-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.27.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cn9gX3Gr8zDqwp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 09:36:56 +1100 (AEDT)
+Received: from lwn.net (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ms.lwn.net (Postfix) with ESMTPSA id A638F2204;
+ Thu,  3 Dec 2020 22:36:43 +0000 (UTC)
+Date: Thu, 3 Dec 2020 15:36:42 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Subject: Re: [PATCH 0/6] Add documentation for Documentation/features at the
+ built docs
+Message-ID: <20201203153642.594afd85@lwn.net>
+In-Reply-To: <cover.1606748711.git.mchehab+huawei@kernel.org>
+References: <cover.1606748711.git.mchehab+huawei@kernel.org>
+Organization: LWN.net
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -53,53 +58,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>,
- Fabio Estevam <festevam@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@gmail.com>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>, x86@kernel.org,
+ linux-mips@vger.kernel.org, "James E.J.
+ Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Jonas Bonn <jonas@southpole.se>,
+ linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Helge Deller <deller@gmx.de>, linux-sh@vger.kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>,
+ Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Jonathan =?UTF-8?B?TmV1c2Now6RmZXI=?= <j.neuschaefer@gmx.net>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
+ "Daniel W. S. Almeida" <dwlsalmeida@gmail.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>, linux-kernel@vger.kernel.org,
+ openrisc@lists.librecores.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Mon, 30 Nov 2020 16:36:29 +0100
+Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
 
-When CONFIG_PM is disabled, we get a warning for unused functions:
+> This series got already submitted last year:
+> 
+>    https://lore.kernel.org/lkml/cover.1561222784.git.mchehab+samsung@kernel.org/
+> 
+> Yet, on that time, there were too many other patches related to ReST
+> conversion floating around. So, at the end, I guess this one got missed.
+> 
+> So, I did a rebase on the top of upstream, and added a few new changes.
 
-sound/soc/fsl/fsl_aud2htx.c:261:12: error: unused function 'fsl_aud2htx_runtime_suspend' [-Werror,-Wunused-function]
-static int fsl_aud2htx_runtime_suspend(struct device *dev)
-sound/soc/fsl/fsl_aud2htx.c:271:12: error: unused function 'fsl_aud2htx_runtime_resume' [-Werror,-Wunused-function]
-static int fsl_aud2htx_runtime_resume(struct device *dev)
+OK, I've gone ahead and applied these; it gains me a new trivial conflict
+with x86, but so be it...
 
-Mark these as __maybe_unused to avoid the warning without adding
-an #ifdef.
+That said, I think that the RST table formatting could be *way* improved.
+The current tables are all white space and hard to make sense of.  What if
+we condensed the information?  Just looking at the first entry in
+Documentation/admin-guide/features.html, perhaps it could look like:
 
-Fixes: 8a24c834c053 ("ASoC: fsl_aud2htx: Add aud2htx module driver")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- sound/soc/fsl/fsl_aud2htx.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+    FEATURE	KCONFIG/DESCRIPTION		STATUS
 
-diff --git a/sound/soc/fsl/fsl_aud2htx.c b/sound/soc/fsl/fsl_aud2htx.c
-index 4091ccc7c3e9..d70d5e75a30c 100644
---- a/sound/soc/fsl/fsl_aud2htx.c
-+++ b/sound/soc/fsl/fsl_aud2htx.c
-@@ -258,7 +258,7 @@ static int fsl_aud2htx_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int fsl_aud2htx_runtime_suspend(struct device *dev)
-+static int __maybe_unused fsl_aud2htx_runtime_suspend(struct device *dev)
- {
- 	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
- 
-@@ -268,7 +268,7 @@ static int fsl_aud2htx_runtime_suspend(struct device *dev)
- 	return 0;
- }
- 
--static int fsl_aud2htx_runtime_resume(struct device *dev)
-+static int __maybe_unused fsl_aud2htx_runtime_resume(struct device *dev)
- {
- 	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
- 	int ret;
--- 
-2.27.0
+    cBPF-JIT	HAVE_CBPF_JIT			TODO: alpha, arc, arm...
+    						ok: mips, powerpc, ...
+		arch supports cBPF JIT
+		optimizations
 
+The result would be far more compact and easy to read, IMO.  I may get
+around to giving this a try if (hint :) nobody else gets there first.
+
+Thanks,
+
+jon
