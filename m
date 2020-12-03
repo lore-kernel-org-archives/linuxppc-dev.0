@@ -2,49 +2,111 @@ Return-Path: <SRS0=jgKV=FH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8297DC18E57
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 15:01:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79A61C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 17:12:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFE7720709
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:24:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFE7720709
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 62751207AF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 17:12:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62751207AF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cmylk2JtvzDqcP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 01:24:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cn2Sj3w1vzDq61
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 04:12:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=rA8HFWgJ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmxY03NYhzDrMf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 00:30:28 +1100 (AEDT)
-From: Sasha Levin <sashal@kernel.org>
-Authentication-Results: mail.kernel.org;
- dkim=permerror (bad message/signature format)
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 10/14] soc: fsl: dpio: Get the cpumask through
- cpumask_of(cpu)
-Date: Thu,  3 Dec 2020 08:30:06 -0500
-Message-Id: <20201203133010.931600-10-sashal@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201203133010.931600-1-sashal@kernel.org>
-References: <20201203133010.931600-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cn2Pd3SCtzDrBs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 04:09:18 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0B3H3JMt112523; Thu, 3 Dec 2020 12:08:49 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=RpZiGUqqBd425B17pR2oKWRKVMv9NGPUj5cBEDRMzvo=;
+ b=rA8HFWgJjvhpqS7KBBkqCi21TjJA9A5+bf5f2tXlIJn3HvC0ajhtopEVcoxIviNagG1t
+ +b3xJyxksVkn85TgfYXHt7Z/m/G8aea5RUZu8thT0/ksyglfPptZNLOZCPX7atzXGz1O
+ TeIpUgfy7HqpyhukBDeKMfAjWXdypzzo3Llejc9jP6o0rqcIeNo/nuKTPFILsQV5FOj2
+ hmOvk0zCDp6bDjy7iS01U4hDSXzG/FxAb8/o6K+P67WanNCO5NRp3bK0bsqqQ5G2KOHg
+ ZF2mhhiBRQRNmRybHkxk9xf305GN0s0KHV0mFny8N0nk/e+YBiC6p6IGfHSMITayU8E7 TA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35722vwpsp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 03 Dec 2020 12:08:49 -0500
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B3H4ALq117573;
+ Thu, 3 Dec 2020 12:08:44 -0500
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35722vwpp9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 03 Dec 2020 12:08:44 -0500
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B3GqLrK005060;
+ Thu, 3 Dec 2020 17:03:41 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 354fpdc7fv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 03 Dec 2020 17:03:41 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B3H3coR23331098
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 3 Dec 2020 17:03:38 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3B2D111C058;
+ Thu,  3 Dec 2020 17:03:38 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4AA1C11C04C;
+ Thu,  3 Dec 2020 17:03:37 +0000 (GMT)
+Received: from oc3871087118.ibm.com (unknown [9.145.157.245])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  3 Dec 2020 17:03:37 +0000 (GMT)
+Date: Thu, 3 Dec 2020 18:03:35 +0100
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 6/8] lazy tlb: shoot lazies, a non-refcounting lazy tlb
+ option
+Message-ID: <20201203170332.GA27195@oc3871087118.ibm.com>
+References: <20201128160141.1003903-1-npiggin@gmail.com>
+ <20201128160141.1003903-7-npiggin@gmail.com>
+ <CALCETrVXUbe8LfNn-Qs+DzrOQaiw+sFUg1J047yByV31SaTOZw@mail.gmail.com>
+ <CALCETrWBtCfD+jZ3S+O8FK-HFPODuhbDEbbfWvS=-iPATNFAOA@mail.gmail.com>
+ <CALCETrXAR_9EGaOF8ymVkZycxgZkYk0dR+NjEpTfVzdcS3sOVw@mail.gmail.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CALCETrXAR_9EGaOF8ymVkZycxgZkYk0dR+NjEpTfVzdcS3sOVw@mail.gmail.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-12-03_09:2020-12-03,
+ 2020-12-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 bulkscore=0
+ mlxscore=0 impostorscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 mlxlogscore=999
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012030100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,116 +118,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yi Wang <wang.yi59@zte.com.cn>, Sasha Levin <sashal@kernel.org>,
- Hao Si <si.hao@zte.com.cn>, Li Yang <leoyang.li@nxp.com>,
- Lin Chen <chen.lin5@zte.com.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ X86 ML <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Linux-MM <linux-mm@kvack.org>,
+ Dave Hansen <dave.hansen@intel.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Hao Si <si.hao@zte.com.cn>
+On Mon, Nov 30, 2020 at 10:31:51AM -0800, Andy Lutomirski wrote:
+> other arch folk: there's some background here:
+> 
+> https://lkml.kernel.org/r/CALCETrVXUbe8LfNn-Qs+DzrOQaiw+sFUg1J047yByV31SaTOZw@mail.gmail.com
+> 
+> On Sun, Nov 29, 2020 at 12:16 PM Andy Lutomirski <luto@kernel.org> wrote:
+> >
+> > On Sat, Nov 28, 2020 at 7:54 PM Andy Lutomirski <luto@kernel.org> wrote:
+> > >
+> > > On Sat, Nov 28, 2020 at 8:02 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > >
+> > > > On big systems, the mm refcount can become highly contented when doing
+> > > > a lot of context switching with threaded applications (particularly
+> > > > switching between the idle thread and an application thread).
+> > > >
+> > > > Abandoning lazy tlb slows switching down quite a bit in the important
+> > > > user->idle->user cases, so so instead implement a non-refcounted scheme
+> > > > that causes __mmdrop() to IPI all CPUs in the mm_cpumask and shoot down
+> > > > any remaining lazy ones.
+> > > >
+> > > > Shootdown IPIs are some concern, but they have not been observed to be
+> > > > a big problem with this scheme (the powerpc implementation generated
+> > > > 314 additional interrupts on a 144 CPU system during a kernel compile).
+> > > > There are a number of strategies that could be employed to reduce IPIs
+> > > > if they turn out to be a problem for some workload.
+> > >
+> > > I'm still wondering whether we can do even better.
+> > >
+> >
+> > Hold on a sec.. __mmput() unmaps VMAs, frees pagetables, and flushes
+> > the TLB.  On x86, this will shoot down all lazies as long as even a
+> > single pagetable was freed.  (Or at least it will if we don't have a
+> > serious bug, but the code seems okay.  We'll hit pmd_free_tlb, which
+> > sets tlb->freed_tables, which will trigger the IPI.)  So, on
+> > architectures like x86, the shootdown approach should be free.  The
+> > only way it ought to have any excess IPIs is if we have CPUs in
+> > mm_cpumask() that don't need IPI to free pagetables, which could
+> > happen on paravirt.
+> 
+> Indeed, on x86, we do this:
+> 
+> [   11.558844]  flush_tlb_mm_range.cold+0x18/0x1d
+> [   11.559905]  tlb_finish_mmu+0x10e/0x1a0
+> [   11.561068]  exit_mmap+0xc8/0x1a0
+> [   11.561932]  mmput+0x29/0xd0
+> [   11.562688]  do_exit+0x316/0xa90
+> [   11.563588]  do_group_exit+0x34/0xb0
+> [   11.564476]  __x64_sys_exit_group+0xf/0x10
+> [   11.565512]  do_syscall_64+0x34/0x50
+> 
+> and we have info->freed_tables set.
+> 
+> What are the architectures that have large systems like?
+> 
+> x86: we already zap lazies, so it should cost basically nothing to do
+> a little loop at the end of __mmput() to make sure that no lazies are
+> left.  If we care about paravirt performance, we could implement one
+> of the optimizations I mentioned above to fix up the refcounts instead
+> of sending an IPI to any remaining lazies.
+> 
+> arm64: AFAICT arm64's flush uses magic arm64 hardware support for
+> remote flushes, so any lazy mm references will still exist after
+> exit_mmap().  (arm64 uses lazy TLB, right?)  So this is kind of like
+> the x86 paravirt case.  Are there large enough arm64 systems that any
+> of this matters?
+> 
+> s390x: The code has too many acronyms for me to understand it fully,
+> but I think it's more or less the same situation as arm64.  How big do
+> s390x systems come?
+> 
+> power: Ridiculously complicated, seems to vary by system and kernel config.
+> 
+> So, Nick, your unconditional IPI scheme is apparently a big
+> improvement for power, and it should be an improvement and have low
+> cost for x86.  On arm64 and s390x it will add more IPIs on process
+> exit but reduce contention on context switching depending on how lazy
 
-[ Upstream commit 2663b3388551230cbc4606a40fabf3331ceb59e4 ]
+s390 does not invalidate TLBs per-CPU explicitly - we have special
+instructions for that. Those in turn initiate signalling to other
+CPUs, completely transparent to OS.
 
-The local variable 'cpumask_t mask' is in the stack memory, and its address
-is assigned to 'desc->affinity' in 'irq_set_affinity_hint()'.
-But the memory area where this variable is located is at risk of being
-modified.
+Apart from mm_count, I am struggling to realize how the suggested
+scheme could change the the contention on s390 in connection with
+TLB. Could you clarify a bit here, please?
 
-During LTP testing, the following error was generated:
+> TLB works.  I suppose we could try it for all architectures without
+> any further optimizations.  Or we could try one of the perhaps
+> excessively clever improvements I linked above.  arm64, s390x people,
+> what do you think?
 
-Unable to handle kernel paging request at virtual address ffff000012e9b790
-Mem abort info:
-  ESR = 0x96000007
-  Exception class = DABT (current EL), IL = 32 bits
-  SET = 0, FnV = 0
-  EA = 0, S1PTW = 0
-Data abort info:
-  ISV = 0, ISS = 0x00000007
-  CM = 0, WnR = 0
-swapper pgtable: 4k pages, 48-bit VAs, pgdp = 0000000075ac5e07
-[ffff000012e9b790] pgd=00000027dbffe003, pud=00000027dbffd003,
-pmd=00000027b6d61003, pte=0000000000000000
-Internal error: Oops: 96000007 [#1] PREEMPT SMP
-Modules linked in: xt_conntrack
-Process read_all (pid: 20171, stack limit = 0x0000000044ea4095)
-CPU: 14 PID: 20171 Comm: read_all Tainted: G    B   W
-Hardware name: NXP Layerscape LX2160ARDB (DT)
-pstate: 80000085 (Nzcv daIf -PAN -UAO)
-pc : irq_affinity_hint_proc_show+0x54/0xb0
-lr : irq_affinity_hint_proc_show+0x4c/0xb0
-sp : ffff00001138bc10
-x29: ffff00001138bc10 x28: 0000ffffd131d1e0
-x27: 00000000007000c0 x26: ffff8025b9480dc0
-x25: ffff8025b9480da8 x24: 00000000000003ff
-x23: ffff8027334f8300 x22: ffff80272e97d000
-x21: ffff80272e97d0b0 x20: ffff8025b9480d80
-x19: ffff000009a49000 x18: 0000000000000000
-x17: 0000000000000000 x16: 0000000000000000
-x15: 0000000000000000 x14: 0000000000000000
-x13: 0000000000000000 x12: 0000000000000040
-x11: 0000000000000000 x10: ffff802735b79b88
-x9 : 0000000000000000 x8 : 0000000000000000
-x7 : ffff000009a49848 x6 : 0000000000000003
-x5 : 0000000000000000 x4 : ffff000008157d6c
-x3 : ffff00001138bc10 x2 : ffff000012e9b790
-x1 : 0000000000000000 x0 : 0000000000000000
-Call trace:
- irq_affinity_hint_proc_show+0x54/0xb0
- seq_read+0x1b0/0x440
- proc_reg_read+0x80/0xd8
- __vfs_read+0x60/0x178
- vfs_read+0x94/0x150
- ksys_read+0x74/0xf0
- __arm64_sys_read+0x24/0x30
- el0_svc_common.constprop.0+0xd8/0x1a0
- el0_svc_handler+0x34/0x88
- el0_svc+0x10/0x14
-Code: f9001bbf 943e0732 f94066c2 b4000062 (f9400041)
----[ end trace b495bdcb0b3b732b ]---
-Kernel panic - not syncing: Fatal exception
-SMP: stopping secondary CPUs
-SMP: failed to stop secondary CPUs 0,2-4,6,8,11,13-15
-Kernel Offset: disabled
-CPU features: 0x0,21006008
-Memory Limit: none
----[ end Kernel panic - not syncing: Fatal exception ]---
+I do not immediately see anything in the series that would harm
+performance on s390.
 
-Fix it by using 'cpumask_of(cpu)' to get the cpumask.
+We however use mm_cpumask to distinguish between local and global TLB
+flushes. With this series it looks like mm_cpumask is *required* to
+be consistent with lazy users. And that is something quite diffucult
+for us to adhere (at least in the foreseeable future).
 
-Signed-off-by: Hao Si <si.hao@zte.com.cn>
-Signed-off-by: Lin Chen <chen.lin5@zte.com.cn>
-Signed-off-by: Yi Wang <wang.yi59@zte.com.cn>
-Signed-off-by: Li Yang <leoyang.li@nxp.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/soc/fsl/dpio/dpio-driver.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+But actually keeping track of lazy users in a cpumask is something
+the generic code would rather do AFAICT.
 
-diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
-index b60b77bfaffae..ea6f8904c01b5 100644
---- a/drivers/soc/fsl/dpio/dpio-driver.c
-+++ b/drivers/soc/fsl/dpio/dpio-driver.c
-@@ -53,7 +53,6 @@ static int register_dpio_irq_handlers(struct fsl_mc_device *dpio_dev, int cpu)
- 	struct dpio_priv *priv;
- 	int error;
- 	struct fsl_mc_device_irq *irq;
--	cpumask_t mask;
- 
- 	priv = dev_get_drvdata(&dpio_dev->dev);
- 
-@@ -72,9 +71,7 @@ static int register_dpio_irq_handlers(struct fsl_mc_device *dpio_dev, int cpu)
- 	}
- 
- 	/* set the affinity hint */
--	cpumask_clear(&mask);
--	cpumask_set_cpu(cpu, &mask);
--	if (irq_set_affinity_hint(irq->msi_desc->irq, &mask))
-+	if (irq_set_affinity_hint(irq->msi_desc->irq, cpumask_of(cpu)))
- 		dev_err(&dpio_dev->dev,
- 			"irq_set_affinity failed irq %d cpu %d\n",
- 			irq->msi_desc->irq, cpu);
--- 
-2.27.0
-
+Thanks!
