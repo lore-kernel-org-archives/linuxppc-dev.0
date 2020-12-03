@@ -2,101 +2,49 @@ Return-Path: <SRS0=jgKV=FH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8C68C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:57:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8297DC18E57
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 15:01:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C659720784
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:57:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C659720784
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CFE7720709
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:24:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFE7720709
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CmzTQ264yzDrDX
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 01:57:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cmylk2JtvzDqcP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 01:24:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=JqgdPm8h; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmzQd1CtyzDrCX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 01:55:04 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B3Eexhl182531; Thu, 3 Dec 2020 09:54:49 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=aTanWXDu6GDQOgBiwV6VCa4+Gz8xmuiEnuHmxtcgxPE=;
- b=JqgdPm8hiRdcgHmP2Asq50K14PiR4++DD5Vd+nt7oiR5rd0dVWxNV+CyaTMf2v55XBpe
- s+gVM1OtIwF2Xnm6yZRH5aEnHoH29g2Yy8k/Ydrh+57AZhG9ihxP6O/ACCzsKz7KkpOm
- 9uS4eAhzbs0Rj2Rj4AMToilq6M0k4MDriKFj72s90FNSX+Q9/pCO+3fSr2ZGQr23vN8l
- GYsZ4WHeDjYTuCodVhHapE4fIyykKImPmGci1Z/T4XpayaYDLVLAdQj2574h9vrX3CRA
- fq8QCuZA7L9FqVJdEZDAIvcQsl+YOkjb9kuPNJCT0dbuGMlFlnmoHAfQVay2BAazStvv tQ== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3571nssyg2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Dec 2020 09:54:49 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B3EppGY020571;
- Thu, 3 Dec 2020 14:54:47 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04ams.nl.ibm.com with ESMTP id 35693xh8ty-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Dec 2020 14:54:47 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B3EsjwT26083698
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 3 Dec 2020 14:54:45 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DDC8C11C054;
- Thu,  3 Dec 2020 14:54:44 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0F8A611C058;
- Thu,  3 Dec 2020 14:54:44 +0000 (GMT)
-Received: from osiris (unknown [9.171.50.208])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  3 Dec 2020 14:54:43 +0000 (GMT)
-Date: Thu, 3 Dec 2020 15:54:42 +0100
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Sasha Levin <sashal@kernel.org>
-Subject: Re: [PATCH AUTOSEL 5.9 27/39] sched/idle: Fix arch_cpu_idle() vs
- tracing
-Message-ID: <20201203145442.GC9994@osiris>
-References: <20201203132834.930999-1-sashal@kernel.org>
- <20201203132834.930999-27-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CmxY03NYhzDrMf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 00:30:28 +1100 (AEDT)
+From: Sasha Levin <sashal@kernel.org>
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 10/14] soc: fsl: dpio: Get the cpumask through
+ cpumask_of(cpu)
+Date: Thu,  3 Dec 2020 08:30:06 -0500
+Message-Id: <20201203133010.931600-10-sashal@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201203133010.931600-1-sashal@kernel.org>
+References: <20201203133010.931600-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201203132834.930999-27-sashal@kernel.org>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-12-03_07:2020-12-03,
- 2020-12-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- mlxlogscore=999 bulkscore=0 clxscore=1031 priorityscore=1501 adultscore=0
- suspectscore=0 spamscore=0 phishscore=0 malwarescore=0 mlxscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012030085
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,42 +56,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-s390@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, linux-mips@vger.kernel.org,
- openrisc@lists.librecores.org, linux-csky@vger.kernel.org,
- Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Yi Wang <wang.yi59@zte.com.cn>, Sasha Levin <sashal@kernel.org>,
+ Hao Si <si.hao@zte.com.cn>, Li Yang <leoyang.li@nxp.com>,
+ Lin Chen <chen.lin5@zte.com.cn>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 03, 2020 at 08:28:21AM -0500, Sasha Levin wrote:
-> From: Peter Zijlstra <peterz@infradead.org>
-> 
-> [ Upstream commit 58c644ba512cfbc2e39b758dd979edd1d6d00e27 ]
-> 
-> We call arch_cpu_idle() with RCU disabled, but then use
-> local_irq_{en,dis}able(), which invokes tracing, which relies on RCU.
-> 
-> Switch all arch_cpu_idle() implementations to use
-> raw_local_irq_{en,dis}able() and carefully manage the
-> lockdep,rcu,tracing state like we do in entry.
-> 
-> (XXX: we really should change arch_cpu_idle() to not return with
-> interrupts enabled)
-> 
-> Reported-by: Sven Schnelle <svens@linux.ibm.com>
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> Reviewed-by: Mark Rutland <mark.rutland@arm.com>
-> Tested-by: Mark Rutland <mark.rutland@arm.com>
-> Link: https://lkml.kernel.org/r/20201120114925.594122626@infradead.org
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
+From: Hao Si <si.hao@zte.com.cn>
 
-This patch broke s390 irq state tracing. A patch to fix this is
-scheduled to be merged upstream today (hopefully).
-Therefore I think this patch should not yet go into 5.9 stable.
+[ Upstream commit 2663b3388551230cbc4606a40fabf3331ceb59e4 ]
+
+The local variable 'cpumask_t mask' is in the stack memory, and its address
+is assigned to 'desc->affinity' in 'irq_set_affinity_hint()'.
+But the memory area where this variable is located is at risk of being
+modified.
+
+During LTP testing, the following error was generated:
+
+Unable to handle kernel paging request at virtual address ffff000012e9b790
+Mem abort info:
+  ESR = 0x96000007
+  Exception class = DABT (current EL), IL = 32 bits
+  SET = 0, FnV = 0
+  EA = 0, S1PTW = 0
+Data abort info:
+  ISV = 0, ISS = 0x00000007
+  CM = 0, WnR = 0
+swapper pgtable: 4k pages, 48-bit VAs, pgdp = 0000000075ac5e07
+[ffff000012e9b790] pgd=00000027dbffe003, pud=00000027dbffd003,
+pmd=00000027b6d61003, pte=0000000000000000
+Internal error: Oops: 96000007 [#1] PREEMPT SMP
+Modules linked in: xt_conntrack
+Process read_all (pid: 20171, stack limit = 0x0000000044ea4095)
+CPU: 14 PID: 20171 Comm: read_all Tainted: G    B   W
+Hardware name: NXP Layerscape LX2160ARDB (DT)
+pstate: 80000085 (Nzcv daIf -PAN -UAO)
+pc : irq_affinity_hint_proc_show+0x54/0xb0
+lr : irq_affinity_hint_proc_show+0x4c/0xb0
+sp : ffff00001138bc10
+x29: ffff00001138bc10 x28: 0000ffffd131d1e0
+x27: 00000000007000c0 x26: ffff8025b9480dc0
+x25: ffff8025b9480da8 x24: 00000000000003ff
+x23: ffff8027334f8300 x22: ffff80272e97d000
+x21: ffff80272e97d0b0 x20: ffff8025b9480d80
+x19: ffff000009a49000 x18: 0000000000000000
+x17: 0000000000000000 x16: 0000000000000000
+x15: 0000000000000000 x14: 0000000000000000
+x13: 0000000000000000 x12: 0000000000000040
+x11: 0000000000000000 x10: ffff802735b79b88
+x9 : 0000000000000000 x8 : 0000000000000000
+x7 : ffff000009a49848 x6 : 0000000000000003
+x5 : 0000000000000000 x4 : ffff000008157d6c
+x3 : ffff00001138bc10 x2 : ffff000012e9b790
+x1 : 0000000000000000 x0 : 0000000000000000
+Call trace:
+ irq_affinity_hint_proc_show+0x54/0xb0
+ seq_read+0x1b0/0x440
+ proc_reg_read+0x80/0xd8
+ __vfs_read+0x60/0x178
+ vfs_read+0x94/0x150
+ ksys_read+0x74/0xf0
+ __arm64_sys_read+0x24/0x30
+ el0_svc_common.constprop.0+0xd8/0x1a0
+ el0_svc_handler+0x34/0x88
+ el0_svc+0x10/0x14
+Code: f9001bbf 943e0732 f94066c2 b4000062 (f9400041)
+---[ end trace b495bdcb0b3b732b ]---
+Kernel panic - not syncing: Fatal exception
+SMP: stopping secondary CPUs
+SMP: failed to stop secondary CPUs 0,2-4,6,8,11,13-15
+Kernel Offset: disabled
+CPU features: 0x0,21006008
+Memory Limit: none
+---[ end Kernel panic - not syncing: Fatal exception ]---
+
+Fix it by using 'cpumask_of(cpu)' to get the cpumask.
+
+Signed-off-by: Hao Si <si.hao@zte.com.cn>
+Signed-off-by: Lin Chen <chen.lin5@zte.com.cn>
+Signed-off-by: Yi Wang <wang.yi59@zte.com.cn>
+Signed-off-by: Li Yang <leoyang.li@nxp.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/soc/fsl/dpio/dpio-driver.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
+index b60b77bfaffae..ea6f8904c01b5 100644
+--- a/drivers/soc/fsl/dpio/dpio-driver.c
++++ b/drivers/soc/fsl/dpio/dpio-driver.c
+@@ -53,7 +53,6 @@ static int register_dpio_irq_handlers(struct fsl_mc_device *dpio_dev, int cpu)
+ 	struct dpio_priv *priv;
+ 	int error;
+ 	struct fsl_mc_device_irq *irq;
+-	cpumask_t mask;
+ 
+ 	priv = dev_get_drvdata(&dpio_dev->dev);
+ 
+@@ -72,9 +71,7 @@ static int register_dpio_irq_handlers(struct fsl_mc_device *dpio_dev, int cpu)
+ 	}
+ 
+ 	/* set the affinity hint */
+-	cpumask_clear(&mask);
+-	cpumask_set_cpu(cpu, &mask);
+-	if (irq_set_affinity_hint(irq->msi_desc->irq, &mask))
++	if (irq_set_affinity_hint(irq->msi_desc->irq, cpumask_of(cpu)))
+ 		dev_err(&dpio_dev->dev,
+ 			"irq_set_affinity failed irq %d cpu %d\n",
+ 			irq->msi_desc->irq, cpu);
+-- 
+2.27.0
+
