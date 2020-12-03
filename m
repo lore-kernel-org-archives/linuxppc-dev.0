@@ -7,81 +7,80 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 629B7C6369E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C6F0C71155
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:35:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5556522203
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:34:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5556522203
+	by mail.kernel.org (Postfix) with ESMTPS id 40EEF22203
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:35:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40EEF22203
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CmfzW2WjkzF13y
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 13:33:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cmg1Z14PBzF1Lg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 13:35:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WEBsB40B; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=fUuY/exm; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmfPz2cqFzDr9P
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2020 13:08:23 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B321ids044296; Wed, 2 Dec 2020 21:08:20 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CmfQ02BdGzDrBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2020 13:08:24 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0B322lbr095985; Wed, 2 Dec 2020 21:08:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=hJZ276vi5JSiqzv/GyFJ3+qhFdPyz+aRaWI7hvpz5zY=;
- b=WEBsB40BVZCu5rtrpbrl3jredLdbu/YEhckpvAZKRjGnM4qmINrhr24nOHnTkjZRKjnJ
- DJZjCXMrX+hQ9ZZ8fw/ohXf+tUSTjl5Xrp9CJxmcG7wI2ZG82FTsdKnhYNJSG7OQTaY8
- Z5rP0RShPRtPmO2CHRqR/b3akSnFYaSbMg7tOLDvb+knOak0LYgRso99P6u8o7/Lc3Vt
- l+rmXLXbLEg34/OVlXARtEVuya6nI9mRTkZqKJd2U3u4GUoN/5O3jeJ/iJ4YkeKCLrBh
- ksWdfHvnHvOlbWHPBlN2IySfYBTDmnDdkhgsHVJVlawUzwC4KWC/3pDOM6SzXj3454W7 rg== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 356jdx73pp-1
+ bh=oKqIBsDi6ATCu+2VKWLOJBnqTvd96VekI27xyK9Lick=;
+ b=fUuY/exmKzBjvFusj96QMozZRqgrDLswHUixlFlKkQ/Fi+ENYn/jpjRD7L24t719WySs
+ O9P2sn9Jvg75rf/TmTt9tJ9VUhLZtPRNED1xR4+k9m9FAVTfAA9eYwZzAhHatbzfEYi6
+ CKRippjkPc/im7V/b2ADgdcyRsRuNYRu5puNYSHNM3lopZZ9iGwRrEJJUjrzYlnFLNOY
+ rALvTBoWyhjECTmMng8KX9NbQ08D5rWGcc8esL27vblAhF1HRAUYhjpw9QEhg6xRa+/Y
+ vfQLNA0CZ8DeQsNxe724b5PQ1k3y/SBUfYeFlBQcEWKbQ35DnWvIS99V0JDDdjGuGPrh +Q== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 356jfcxxhs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Dec 2020 21:08:19 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B31uTs2006224;
- Thu, 3 Dec 2020 02:08:19 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03dal.us.ibm.com with ESMTP id 353e69pd99-1
+ Wed, 02 Dec 2020 21:08:22 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B31uL3W013325;
+ Thu, 3 Dec 2020 02:08:21 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma01wdc.us.ibm.com with ESMTP id 355vrfvc8k-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Dec 2020 02:08:19 +0000
+ Thu, 03 Dec 2020 02:08:21 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B328Hwp22610222
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B328JVt21102944
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 3 Dec 2020 02:08:17 GMT
+ Thu, 3 Dec 2020 02:08:19 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8DC817805C;
- Thu,  3 Dec 2020 02:08:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A2B117805F;
+ Thu,  3 Dec 2020 02:08:19 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 01F747806A;
- Thu,  3 Dec 2020 02:08:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1A4457805E;
+ Thu,  3 Dec 2020 02:08:19 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  3 Dec 2020 02:08:16 +0000 (GMT)
+ Thu,  3 Dec 2020 02:08:19 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v3 12/18] ibmvfc: send commands down HW Sub-CRQ when
- channelized
-Date: Wed,  2 Dec 2020 20:08:00 -0600
-Message-Id: <20201203020806.14747-13-tyreld@linux.ibm.com>
+Subject: [PATCH v3 15/18] ibmvfc: send Cancel MAD down each hw scsi channel
+Date: Wed,  2 Dec 2020 20:08:03 -0600
+Message-Id: <20201203020806.14747-16-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201203020806.14747-1-tyreld@linux.ibm.com>
 References: <20201203020806.14747-1-tyreld@linux.ibm.com>
@@ -92,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-12-02_14:2020-11-30,
  2020-12-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0
- clxscore=1015 phishscore=0 mlxscore=0 mlxlogscore=999 adultscore=0
- bulkscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=1
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012030006
+ lowpriorityscore=0
+ phishscore=0 priorityscore=1501 bulkscore=0 impostorscore=0 suspectscore=3
+ mlxlogscore=999 spamscore=0 malwarescore=0 mlxscore=0 clxscore=1015
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012030009
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,87 +108,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the client has negotiated the use of channels all vfcFrames are
-required to go down a Sub-CRQ channel or it is a protocoal violation. If
-the adapter state is channelized submit vfcFrames to the appropriate
-Sub-CRQ via the h_send_sub_crq() helper.
+In general the client needs to send Cancel MADs and task management
+commands down the same channel as the command(s) intended to cancel or
+abort. The client assigns cancel keys per LUN and thus must send a
+Cancel down each channel commands were submitted for that LUN. Further,
+the client then must wait for those cancel completions prior to
+submitting a LUN RESET or ABORT TASK SET.
+
+Add a cancel event pointer and cancel rsp iu storage to the
+ibmvfc_sub_queue struct such that the cancel routine can assign a cancel
+event to each applicable queue. When in legacy CRQ mode we fake treating
+it as a subqueue by using a subqueue struct allocated on the stack. Wait
+for completion of each submitted cancel.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 104 ++++++++++++++++++++++-----------
+ drivers/scsi/ibmvscsi/ibmvfc.h |  38 ++++++------
+ 2 files changed, 90 insertions(+), 52 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index b51ae17883b7..d94db73d4a15 100644
+index ec3db5a6baf3..e353b9e88104 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -701,6 +701,15 @@ static int ibmvfc_send_crq(struct ibmvfc_host *vhost, u64 word1, u64 word2)
- 	return plpar_hcall_norets(H_SEND_CRQ, vdev->unit_address, word1, word2);
+@@ -2339,67 +2339,103 @@ static int ibmvfc_cancel_all(struct scsi_device *sdev, int type)
+ {
+ 	struct ibmvfc_host *vhost = shost_priv(sdev->host);
+ 	struct ibmvfc_event *evt, *found_evt;
+-	union ibmvfc_iu rsp;
+-	int rsp_rc = -EBUSY;
++	struct ibmvfc_sub_queue *scrqs;
++	struct ibmvfc_sub_queue legacy_crq;
++	int rsp_rc = 0;
+ 	unsigned long flags;
+ 	u16 status;
++	int cancel_cnt = 0;
++	int num_hwq;
++	int ret = 0;
++	int i;
+ 
+ 	ENTER;
+ 	spin_lock_irqsave(vhost->host->host_lock, flags);
+-	found_evt = NULL;
+-	list_for_each_entry(evt, &vhost->sent, queue) {
+-		if (evt->cmnd && evt->cmnd->device == sdev) {
+-			found_evt = evt;
++	if (vhost->using_channels && vhost->scsi_scrqs.active_queues) {
++		num_hwq = vhost->scsi_scrqs.active_queues;
++		scrqs = vhost->scsi_scrqs.scrqs;
++	} else {
++		/* Use ibmvfc_sub_queue on the stack to fake legacy CRQ as a subqueue */
++		num_hwq = 1;
++		scrqs = &legacy_crq;
++	}
++
++	for (i = 0; i < num_hwq; i++) {
++		scrqs[i].cancel_event = NULL;
++		found_evt = NULL;
++		list_for_each_entry(evt, &vhost->sent, queue) {
++			if (evt->cmnd && evt->cmnd->device == sdev && evt->hwq == i) {
++				found_evt = evt;
++				cancel_cnt++;
++				break;
++			}
++		}
++
++		if (!found_evt)
++			continue;
++
++		if (vhost->logged_in) {
++			scrqs[i].cancel_event = ibmvfc_init_tmf(vhost, sdev, type);
++			scrqs[i].cancel_event->hwq = i;
++			scrqs[i].cancel_event->sync_iu = &scrqs[i].cancel_rsp;
++			rsp_rc = ibmvfc_send_event(scrqs[i].cancel_event, vhost, default_timeout);
++			if (rsp_rc)
++				break;
++		} else {
++			rsp_rc = -EBUSY;
+ 			break;
+ 		}
+ 	}
+ 
+-	if (!found_evt) {
++	spin_unlock_irqrestore(vhost->host->host_lock, flags);
++
++	if (!cancel_cnt) {
+ 		if (vhost->log_level > IBMVFC_DEFAULT_LOG_LEVEL)
+ 			sdev_printk(KERN_INFO, sdev, "No events found to cancel\n");
+-		spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 		return 0;
+ 	}
+ 
+-	if (vhost->logged_in) {
+-		evt = ibmvfc_init_tmf(vhost, sdev, type);
+-		evt->sync_iu = &rsp;
+-		rsp_rc = ibmvfc_send_event(evt, vhost, default_timeout);
+-	}
+-
+-	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+-
+ 	if (rsp_rc != 0) {
+ 		sdev_printk(KERN_ERR, sdev, "Failed to send cancel event. rc=%d\n", rsp_rc);
+ 		/* If failure is received, the host adapter is most likely going
+ 		 through reset, return success so the caller will wait for the command
+ 		 being cancelled to get returned */
+-		return 0;
++		goto free_events;
+ 	}
+ 
+ 	sdev_printk(KERN_INFO, sdev, "Cancelling outstanding commands.\n");
+ 
+-	wait_for_completion(&evt->comp);
+-	status = be16_to_cpu(rsp.mad_common.status);
+-	spin_lock_irqsave(vhost->host->host_lock, flags);
+-	ibmvfc_free_event(evt);
+-	spin_unlock_irqrestore(vhost->host->host_lock, flags);
++	for (i = 0; i < num_hwq; i++) {
++		if (!scrqs[i].cancel_event)
++			continue;
+ 
+-	if (status != IBMVFC_MAD_SUCCESS) {
+-		sdev_printk(KERN_WARNING, sdev, "Cancel failed with rc=%x\n", status);
+-		switch (status) {
+-		case IBMVFC_MAD_DRIVER_FAILED:
+-		case IBMVFC_MAD_CRQ_ERROR:
+-			/* Host adapter most likely going through reset, return success to
+-			 the caller will wait for the command being cancelled to get returned */
+-			return 0;
+-		default:
+-			return -EIO;
+-		};
++		wait_for_completion(&scrqs[i].cancel_event->comp);
++		status = be16_to_cpu(scrqs[i].cancel_rsp.mad_common.status);
++
++		if (status != IBMVFC_MAD_SUCCESS) {
++			sdev_printk(KERN_WARNING, sdev, "Cancel failed with rc=%x\n", status);
++			switch (status) {
++			case IBMVFC_MAD_DRIVER_FAILED:
++			case IBMVFC_MAD_CRQ_ERROR:
++				/* Host adapter most likely going through reset, return success to
++				 the caller will wait for the command being cancelled to get returned */
++				goto free_events;
++			default:
++				ret = -EIO;
++				goto free_events;
++			};
++		}
+ 	}
+ 
+ 	sdev_printk(KERN_INFO, sdev, "Successfully cancelled outstanding commands\n");
+-	return 0;
++free_events:
++	spin_lock_irqsave(vhost->host->host_lock, flags);
++	for (i = 0; i < num_hwq; i++)
++		if (scrqs[i].cancel_event)
++			ibmvfc_free_event(scrqs[i].cancel_event);
++	spin_unlock_irqrestore(vhost->host->host_lock, flags);
++
++	return ret;
  }
  
-+static int ibmvfc_send_sub_crq(struct ibmvfc_host *vhost, u64 cookie, u64 word1,
-+			       u64 word2, u64 word3, u64 word4)
-+{
-+	struct vio_dev *vdev = to_vio_dev(vhost->dev);
-+
-+	return plpar_hcall_norets(H_SEND_SUB_CRQ, vdev->unit_address, cookie,
-+				  word1, word2, word3, word4);
-+}
-+
  /**
-  * ibmvfc_send_crq_init - Send a CRQ init message
-  * @vhost:	ibmvfc host struct
-@@ -1513,15 +1522,19 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 			     struct ibmvfc_host *vhost, unsigned long timeout)
- {
- 	__be64 *crq_as_u64 = (__be64 *) &evt->crq;
-+	int channel_cmd = 0;
- 	int rc;
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+index e0ffb0416223..980eb9afe93a 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -584,6 +584,24 @@ struct ibmvfc_connection_info {
+ 	__be64 reserved[16];
+ } __packed __aligned(8);
  
- 	/* Copy the IU into the transfer area */
- 	*evt->xfer_iu = evt->iu;
--	if (evt->crq.format == IBMVFC_CMD_FORMAT)
-+	if (evt->crq.format == IBMVFC_CMD_FORMAT) {
- 		evt->xfer_iu->cmd.tag = cpu_to_be64((u64)evt);
--	else if (evt->crq.format == IBMVFC_MAD_FORMAT)
-+		channel_cmd = 1;
-+	} else if (evt->crq.format == IBMVFC_MAD_FORMAT) {
- 		evt->xfer_iu->mad_common.tag = cpu_to_be64((u64)evt);
--	else
-+		if (evt->xfer_iu->mad_common.opcode == IBMVFC_TMF_MAD)
-+			channel_cmd = 1;
-+	} else
- 		BUG();
- 
- 	list_add_tail(&evt->queue, &vhost->sent);
-@@ -1534,8 +1547,17 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 
- 	mb();
- 
--	if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
--				  be64_to_cpu(crq_as_u64[1])))) {
-+	if (vhost->using_channels && channel_cmd)
-+		rc = ibmvfc_send_sub_crq(vhost,
-+					 vhost->scsi_scrqs.scrqs[evt->hwq].vios_cookie,
-+					 be64_to_cpu(crq_as_u64[0]),
-+					 be64_to_cpu(crq_as_u64[1]),
-+					 0, 0);
-+	else
-+		rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
-+				     be64_to_cpu(crq_as_u64[1]));
++union ibmvfc_iu {
++	struct ibmvfc_mad_common mad_common;
++	struct ibmvfc_npiv_login_mad npiv_login;
++	struct ibmvfc_npiv_logout_mad npiv_logout;
++	struct ibmvfc_discover_targets discover_targets;
++	struct ibmvfc_port_login plogi;
++	struct ibmvfc_process_login prli;
++	struct ibmvfc_move_login move_login;
++	struct ibmvfc_query_tgt query_tgt;
++	struct ibmvfc_implicit_logout implicit_logout;
++	struct ibmvfc_tmf tmf;
++	struct ibmvfc_cmd cmd;
++	struct ibmvfc_passthru_mad passthru;
++	struct ibmvfc_channel_enquiry channel_enquiry;
++	struct ibmvfc_channel_setup_mad channel_setup;
++	struct ibmvfc_connection_info connection_info;
++} __packed __aligned(8);
 +
-+	if (rc) {
- 		list_del(&evt->queue);
- 		del_timer(&evt->timer);
+ struct ibmvfc_trace_start_entry {
+ 	u32 xfer_len;
+ } __packed;
+@@ -666,6 +684,8 @@ struct ibmvfc_sub_queue {
+ 	dma_addr_t msg_token;
+ 	int size, cur;
+ 	struct ibmvfc_host *vhost;
++	struct ibmvfc_event *cancel_event;
++	union ibmvfc_iu cancel_rsp;
+ 	unsigned long cookie;
+ 	unsigned long vios_cookie;
+ 	unsigned long hw_irq;
+@@ -712,24 +732,6 @@ struct ibmvfc_async_crq_queue {
+ 	dma_addr_t msg_token;
+ };
  
+-union ibmvfc_iu {
+-	struct ibmvfc_mad_common mad_common;
+-	struct ibmvfc_npiv_login_mad npiv_login;
+-	struct ibmvfc_npiv_logout_mad npiv_logout;
+-	struct ibmvfc_discover_targets discover_targets;
+-	struct ibmvfc_port_login plogi;
+-	struct ibmvfc_process_login prli;
+-	struct ibmvfc_move_login move_login;
+-	struct ibmvfc_query_tgt query_tgt;
+-	struct ibmvfc_implicit_logout implicit_logout;
+-	struct ibmvfc_tmf tmf;
+-	struct ibmvfc_cmd cmd;
+-	struct ibmvfc_passthru_mad passthru;
+-	struct ibmvfc_channel_enquiry channel_enquiry;
+-	struct ibmvfc_channel_setup_mad channel_setup;
+-	struct ibmvfc_connection_info connection_info;
+-} __packed __aligned(8);
+-
+ enum ibmvfc_target_action {
+ 	IBMVFC_TGT_ACTION_NONE = 0,
+ 	IBMVFC_TGT_ACTION_INIT,
 -- 
 2.27.0
 
