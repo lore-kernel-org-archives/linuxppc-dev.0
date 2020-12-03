@@ -2,84 +2,46 @@ Return-Path: <SRS0=jgKV=FH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79255C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E495C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:31:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C2B42220F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:16:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C2B42220F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id BFAB3223C8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 22:31:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFAB3223C8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cn9CZ0tN3zDrKq
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 09:16:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cn9YK0vGczDrJf
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 09:31:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e;
- helo=mail-pl1-x62e.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=UPHGqln5; dkim-atps=neutral
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cn98x4bdwzDqmY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 09:13:53 +1100 (AEDT)
-Received: by mail-pl1-x62e.google.com with SMTP id p6so1952201plr.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Dec 2020 14:13:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=eEmxf4uLm5+F9e4VAD5l7evhNTpueoEKmJf7NHBSgF8=;
- b=UPHGqln5b2MVwkQJ9DPW4W+c/WOYPO4pDdYgSkuUBuPAEool6k1o9tCh15tbT9uHrK
- Att6CPPLElr2Kizx6k8SBYlHiYybik+D2pHNYrEi6lvIa/OVMCqcofSbjZiFQCWNagWm
- gpfCcQKaP4yJ2ZfKAd6w0i3b/1ey0c1DO4esRuIh3lZT4EjH/cz8VKCKfqyuShuaeYhd
- x0YLD40CLwN02ITpU2TIn1dchmgPuXgxg9Hw3uQ8i6iktCUFcnDMyR1iVOdnAXdjnV9J
- dlREfCYAI47ZTNuw4m686ZqB4sYG5SbZx+ElCOdLB971GcExKVCtR58og1IlVpDkeiRG
- GVzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=eEmxf4uLm5+F9e4VAD5l7evhNTpueoEKmJf7NHBSgF8=;
- b=s87RO74ifr+e8vQyX17tv4n596vVYVq2pGSuNNzNww6nJdPj0rmiAJAmXy2GKwpGKZ
- IX3olixcxAN6O4qkRb0VNDlVe/mkNom3/CI1sZ+F6K8Tt63ULo35yrFna3RwkncxL1tP
- Uq7jjhyarpIi5olk6pox/i1p/bFEIH3yZBS887VXljZvnPRXVq6LyAhpx+7rqbvwHf7Z
- UIyCs6nzO+rkkEtx+lhccENWuPEl6EfYnWNN1W+4LE2W7/QGkbdZItX72XbDp2NQKFWY
- 2RQxfUgaXWdpJlip8vEEgZTcpPPMRLlFGjTL5+8Lb3ZNSEOdBZLbLomWDNXEKYvRD7cQ
- YNUQ==
-X-Gm-Message-State: AOAM533NgT/H8qRAFfpo4IXwJReQzL0Yp50Eeo46G8Hn65a0n5D+GJpd
- YHgC7EKSDfhP69Rep45e3yY=
-X-Google-Smtp-Source: ABdhPJz9kr0b40p8QhJurdR1DemR7fcJ+w7w3vdRbJJ4sHZwhGLmJpARUd3RcgIEF27oxEAuC/OzQg==
-X-Received: by 2002:a17:90a:d308:: with SMTP id
- p8mr1145716pju.110.1607033630047; 
- Thu, 03 Dec 2020 14:13:50 -0800 (PST)
-Received: from localhost ([2001:8004:1480:55d9:df22:9c5d:bdf7:7c2b])
- by smtp.gmail.com with ESMTPSA id kb12sm318120pjb.2.2020.12.03.14.13.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 03 Dec 2020 14:13:49 -0800 (PST)
-Date: Fri, 04 Dec 2020 08:13:40 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [MOCKUP] x86/mm: Lightweight lazy mm refcounting
-To: Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-References: <7c4bcc0a464ca60be1e0aeba805a192be0ee81e5.1606972194.git.luto@kernel.org>
- <20201203084448.GF2414@hirez.programming.kicks-ass.net>
-In-Reply-To: <20201203084448.GF2414@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cn9VX5DqQzDrHF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 09:29:08 +1100 (AEDT)
+From: Arnd Bergmann <arnd@kernel.org>
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: [PATCH] ASoC: fsl_aud2htx: mark PM functions as __maybe_unused
+Date: Thu,  3 Dec 2020 23:28:47 +0100
+Message-Id: <20201203222900.1042578-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-Message-Id: <1607033145.hcppy9ndl4.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,39 +53,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, X86 ML <x86@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Linux-MM <linux-mm@kvack.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Rik van Riel <riel@surriel.com>,
- LKML <linux-kernel@vger.kernel.org>, Dave Hansen <dave.hansen@intel.com>,
- Will Deacon <will@kernel.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: alsa-devel@alsa-project.org, Arnd Bergmann <arnd@arndb.de>,
+ Fabio Estevam <festevam@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Peter Zijlstra's message of December 3, 2020 6:44 pm:
-> On Wed, Dec 02, 2020 at 09:25:51PM -0800, Andy Lutomirski wrote:
->=20
->> power: same as ARM, except that the loop may be rather larger since
->> the systems are bigger.  But I imagine it's still faster than Nick's
->> approach -- a cmpxchg to a remote cacheline should still be faster than
->> an IPI shootdown.=20
->=20
-> While a single atomic might be cheaper than an IPI, the comparison
-> doesn't work out nicely. You do the xchg() on every unlazy, while the
-> IPI would be once per process exit.
->=20
-> So over the life of the process, it might do very many unlazies, adding
-> up to a total cost far in excess of what the single IPI would've been.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Yeah this is the concern, I looked at things that add cost to the
-idle switch code and it gets hard to justify the scalability improvement
-when you slow these fundmaental things down even a bit.
+When CONFIG_PM is disabled, we get a warning for unused functions:
 
-I still think working on the assumption that IPIs =3D scary expensive=20
-might not be correct. An IPI itself is, but you only issue them when=20
-you've left a lazy mm on another CPU which just isn't that often.
+sound/soc/fsl/fsl_aud2htx.c:261:12: error: unused function 'fsl_aud2htx_runtime_suspend' [-Werror,-Wunused-function]
+static int fsl_aud2htx_runtime_suspend(struct device *dev)
+sound/soc/fsl/fsl_aud2htx.c:271:12: error: unused function 'fsl_aud2htx_runtime_resume' [-Werror,-Wunused-function]
+static int fsl_aud2htx_runtime_resume(struct device *dev)
 
-Thanks,
-Nick
+Mark these as __maybe_unused to avoid the warning without adding
+an #ifdef.
+
+Fixes: 8a24c834c053 ("ASoC: fsl_aud2htx: Add aud2htx module driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ sound/soc/fsl/fsl_aud2htx.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_aud2htx.c b/sound/soc/fsl/fsl_aud2htx.c
+index 4091ccc7c3e9..d70d5e75a30c 100644
+--- a/sound/soc/fsl/fsl_aud2htx.c
++++ b/sound/soc/fsl/fsl_aud2htx.c
+@@ -258,7 +258,7 @@ static int fsl_aud2htx_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int fsl_aud2htx_runtime_suspend(struct device *dev)
++static int __maybe_unused fsl_aud2htx_runtime_suspend(struct device *dev)
+ {
+ 	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
+ 
+@@ -268,7 +268,7 @@ static int fsl_aud2htx_runtime_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int fsl_aud2htx_runtime_resume(struct device *dev)
++static int __maybe_unused fsl_aud2htx_runtime_resume(struct device *dev)
+ {
+ 	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
+ 	int ret;
+-- 
+2.27.0
+
