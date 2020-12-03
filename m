@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BA94C6369E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:42:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F1E2C64E7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:44:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C606722201
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:42:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C606722201
+	by mail.kernel.org (Postfix) with ESMTPS id 88E0922201
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 02:44:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88E0922201
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cmg9q6J05zF0g9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 13:42:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CmgCW4qCRzF20q
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 13:44:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
@@ -28,32 +28,32 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmflY3LnJzDqvZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2020 13:23:36 +1100 (AEDT)
-IronPort-SDR: dteF0YOOZpKfHaluowkEEoZ03Yke5UBbOyTv1ai8IF87pawPNb+N4UWyGx9fAsCfQc7+Vr2szx
- avHIDqARK0OA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9823"; a="257834955"
-X-IronPort-AV: E=Sophos;i="5.78,388,1599548400"; d="scan'208";a="257834955"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CmftT1v2HzDsNZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2020 13:29:36 +1100 (AEDT)
+IronPort-SDR: XQ58y9wl+oYaC/JcBCvp+mwGqLK3aMVW+t/MRFkej/UW9Dy2WgFFhy1/N1O8HoDk7/QhwRzADN
+ qO3FGIW/O0kg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9823"; a="257835722"
+X-IronPort-AV: E=Sophos;i="5.78,388,1599548400"; d="scan'208";a="257835722"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Dec 2020 18:23:33 -0800
-IronPort-SDR: 6HHEmnwjvGlDR3stNvRoXKjOBfxD0RchCtPNeCfjbwEX6n9aB38sZSFMnQ1ViORJ4tw1HGvDoC
- 9fB+0nqdZlYw==
+ 02 Dec 2020 18:29:33 -0800
+IronPort-SDR: NHO5Uk7teJMY8BxUZkOJ7nFFu7L3wRBHc/XUkUjHMP7Qlw3qnYIgMQTVaVwbN11yJ2n6Sp7qu/
+ 8nju2yR9FGBA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,388,1599548400"; d="scan'208";a="346074951"
+X-IronPort-AV: E=Sophos;i="5.78,388,1599548400"; d="scan'208";a="405722913"
 Received: from lkp-server01.sh.intel.com (HELO 54133fc185c3) ([10.239.97.150])
- by orsmga002.jf.intel.com with ESMTP; 02 Dec 2020 18:23:32 -0800
+ by orsmga001.jf.intel.com with ESMTP; 02 Dec 2020 18:29:32 -0800
 Received: from kbuild by 54133fc185c3 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1kkeHL-0000T6-DR; Thu, 03 Dec 2020 02:23:31 +0000
-Date: Thu, 03 Dec 2020 10:22:32 +0800
+ id 1kkeN9-0000T9-E3; Thu, 03 Dec 2020 02:29:31 +0000
+Date: Thu, 03 Dec 2020 10:28:37 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- a1ee28117077c3bf24e5ab6324c835eaab629c45
-Message-ID: <5fc84be8.Cj4vVBxUcP1kMQV9%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD REGRESSION
+ fb003959777a635dea8910cf71109b612c7f940c
+Message-ID: <5fc84d55.MXn17c30YYhBZs2F%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,16 +74,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: a1ee28117077c3bf24e5ab6324c835eaab629c45  powerpc/64s/powernv: Fix memory corruption when saving SLB entries on MCE
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: fb003959777a635dea8910cf71109b612c7f940c  powerpc/44x: Don't support 47x code and non 47x code at the same time
 
-elapsed time: 730m
+Error/Warning reports:
 
-configs tested: 148
+https://lore.kernel.org/linuxppc-dev/202012030320.soNPcJR8-lkp@intel.com
+https://lore.kernel.org/linuxppc-dev/202012030759.zuEULDQ3-lkp@intel.com
+
+Error/Warning in current branch:
+
+drivers/misc/lkdtm/powerpc.c:13:10: error: use of undeclared identifier 'SLB_VSID_KERNEL'
+drivers/misc/lkdtm/powerpc.c:13:54: error: no member named 'sllp' in 'struct mmu_psize_def'
+drivers/misc/lkdtm/powerpc.c:17:15: error: implicit declaration of function 'mk_vsid_data' [-Werror,-Wimplicit-function-declaration]
+drivers/misc/lkdtm/powerpc.c:18:15: error: implicit declaration of function 'mk_esid_data' [-Werror,-Wimplicit-function-declaration]
+drivers/misc/lkdtm/powerpc.c:18:38: error: use of undeclared identifier 'SLB_NUM_BOLTED'
+drivers/misc/lkdtm/powerpc.c:37:37: error: use of undeclared identifier 'MMU_SEGSIZE_1T'
+drivers/misc/lkdtm/powerpc.c:37:53: error: use of undeclared identifier 'mmu_vmalloc_psize'
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- powerpc-randconfig-c003-20201202
+    `-- arch-powerpc-kernel-firmware.c:WARNING:return-of-in-function-check_kvm_guest-with-return-type-bool
+
+clang_recent_errors
+`-- powerpc64-randconfig-r013-20201202
+    |-- drivers-misc-lkdtm-powerpc.c:error:implicit-declaration-of-function-mk_esid_data-Werror-Wimplicit-function-declaration
+    |-- drivers-misc-lkdtm-powerpc.c:error:implicit-declaration-of-function-mk_vsid_data-Werror-Wimplicit-function-declaration
+    |-- drivers-misc-lkdtm-powerpc.c:error:no-member-named-sllp-in-struct-mmu_psize_def
+    |-- drivers-misc-lkdtm-powerpc.c:error:use-of-undeclared-identifier-MMU_SEGSIZE_1T
+    |-- drivers-misc-lkdtm-powerpc.c:error:use-of-undeclared-identifier-SLB_NUM_BOLTED
+    |-- drivers-misc-lkdtm-powerpc.c:error:use-of-undeclared-identifier-SLB_VSID_KERNEL
+    `-- drivers-misc-lkdtm-powerpc.c:error:use-of-undeclared-identifier-mmu_vmalloc_psize
+
+elapsed time: 733m
+
+configs tested: 141
 configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -91,12 +119,6 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-sh                           se7206_defconfig
-sh                          sdk7786_defconfig
-sparc64                          alldefconfig
-arm                          exynos_defconfig
-mips                           ip32_defconfig
-mips                      loongson3_defconfig
 arm                        clps711x_defconfig
 arm                        shmobile_defconfig
 powerpc64                        alldefconfig
@@ -115,9 +137,6 @@ sh                          rsk7264_defconfig
 powerpc                        fsp2_defconfig
 sh                             shx3_defconfig
 sh                        sh7785lcr_defconfig
-sh                          urquell_defconfig
-arm                        realview_defconfig
-arm                           sunxi_defconfig
 sh                            titan_defconfig
 csky                             alldefconfig
 m68k                          sun3x_defconfig
@@ -141,6 +160,7 @@ xtensa                  nommu_kc705_defconfig
 nds32                             allnoconfig
 arm                       versatile_defconfig
 sh                            hp6xx_defconfig
+arm                           sunxi_defconfig
 powerpc                     mpc5200_defconfig
 powerpc                 mpc8272_ads_defconfig
 openrisc                            defconfig
@@ -158,6 +178,7 @@ mips                       rbtx49xx_defconfig
 arm                         s3c2410_defconfig
 arm                         nhk8815_defconfig
 mips                        maltaup_defconfig
+mips                           ip32_defconfig
 h8300                    h8300h-sim_defconfig
 arm                           corgi_defconfig
 powerpc                     ep8248e_defconfig
