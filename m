@@ -2,49 +2,48 @@ Return-Path: <SRS0=jgKV=FH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99E9FC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:21:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8073DC0007A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:46:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B70DF206E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:21:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B70DF206E3
+	by mail.kernel.org (Postfix) with ESMTPS id 9130A207CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Dec 2020 14:28:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9130A207CA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CmyhG0mh5zDr22
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 01:21:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CmyqT4RrgzDqJM
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 01:28:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CmxXs1Y8QzDrMT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 00:30:21 +1100 (AEDT)
-From: Sasha Levin <sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cmyct0n8FzDr1V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 01:18:54 +1100 (AEDT)
+From: Mark Brown <broonie@kernel.org>
 Authentication-Results: mail.kernel.org;
  dkim=permerror (bad message/signature format)
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 04/14] powerpc: Drop -me200 addition to build
- flags
-Date: Thu,  3 Dec 2020 08:30:00 -0500
-Message-Id: <20201203133010.931600-4-sashal@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201203133010.931600-1-sashal@kernel.org>
-References: <20201203133010.931600-1-sashal@kernel.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, perex@perex.cz,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ timur@kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com,
+ alsa-devel@alsa-project.org, lgirdwood@gmail.com, robh+dt@kernel.org,
+ tiwai@suse.com, festevam@gmail.com
+In-Reply-To: <1606708668-28786-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1606708668-28786-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl-asoc-card: Add support for si476x codec
+Message-Id: <160700512198.44361.18384133171951697931.b4-ty@kernel.org>
+Date: Thu, 03 Dec 2020 14:18:41 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-stable: review
-X-Patchwork-Hint: Ignore
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -57,54 +56,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, kernel test robot <lkp@intel.com>,
- =?UTF-8?q?N=C3=A9meth=20M=C3=A1rton?= <nm127@freemail.hu>,
- Nick Desaulniers <ndesaulniers@google.com>, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+On Mon, 30 Nov 2020 11:57:47 +0800, Shengjiu Wang wrote:
+> The si476x codec is used for FM radio function on i.MX6
+> auto board, it only supports recording function.
 
-[ Upstream commit e02152ba2810f7c88cb54e71cda096268dfa9241 ]
+Applied to
 
-Currently a build with CONFIG_E200=y will fail with:
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-  Error: invalid switch -me200
-  Error: unrecognized option -me200
+Thanks!
 
-Upstream binutils has never supported an -me200 option. Presumably it
-was supported at some point by either a fork or Freescale internal
-binutils.
+[1/2] ASoC: fsl-asoc-card: Add support for si476x codec
+      commit: 77f1ff751037fcd39c8fc37b3c3796fb139fb388
+[2/2] ASoC: bindings: fsl-asoc-card: add compatible string for si476x codec
+      commit: 0b3355b070434f9901f641aac9000df93e2c96ad
 
-We can't support code that we can't even build test, so drop the
-addition of -me200 to the build flags, so we can at least build with
-CONFIG_E200=y.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Reported-by: Németh Márton <nm127@freemail.hu>
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-Acked-by: Scott Wood <oss@buserror.net>
-Link: https://lore.kernel.org/r/20201116120913.165317-1-mpe@ellerman.id.au
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/Makefile | 1 -
- 1 file changed, 1 deletion(-)
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8954108df4570..f51e21ea53492 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -251,7 +251,6 @@ endif
- 
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
--cpu-as-$(CONFIG_E200)		+= -Wa,-me200
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
- 
- # When using '-many -mpower4' gas will first try and find a matching power4
--- 
-2.27.0
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
