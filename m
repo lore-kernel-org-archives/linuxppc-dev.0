@@ -2,41 +2,49 @@ Return-Path: <SRS0=tbgD=FI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EAC2C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 12:21:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A40C4361A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 12:25:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35C5922795
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 12:21:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35C5922795
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 943B5227BF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 12:25:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 943B5227BF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CnWyq187hzDr0X
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 23:21:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CnWTz2XSkzDrQc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 22:59:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CnX3Q6v45zDqRf
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 23:25:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
+ envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CnWTw27N8z9sWw; Fri,  4 Dec 2020 22:59:45 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-In-Reply-To: <20201127053738.10085-1-srikar@linux.vnet.ibm.com>
-References: <20201127053738.10085-1-srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/numa: Fix a regression on memoryless node 0
-Message-Id: <160708314536.99163.11915004839253152045.b4-ty@ellerman.id.au>
-Date: Fri,  4 Dec 2020 22:59:45 +1100 (AEDT)
+ header.from=alpha.franken.de
+Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CnWkM2nnbzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 23:10:34 +1100 (AEDT)
+Received: from uucp (helo=alpha)
+ by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
+ id 1kl9ud-0005Nb-00; Fri, 04 Dec 2020 13:10:11 +0100
+Received: by alpha.franken.de (Postfix, from userid 1000)
+ id 596D6C02CF; Fri,  4 Dec 2020 13:06:32 +0100 (CET)
+Date: Fri, 4 Dec 2020 13:06:32 +0100
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+Subject: Re: [PATCH v2 3/5] MIPS: configs: drop unused BACKLIGHT_GENERIC option
+Message-ID: <20201204120632.GA10011@alpha.franken.de>
+References: <20201201222922.3183-1-andrey.zhizhikin@leica-geosystems.com>
+ <20201201222922.3183-4-andrey.zhizhikin@leica-geosystems.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201201222922.3183-4-andrey.zhizhikin@leica-geosystems.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,27 +56,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>, Milan Mohanty <milmohan@in.ibm.com>,
- Haren Myneni <haren@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+List-Id: <soc.lore.kernel.org>
+Cc: alexandre.belloni@bootlin.com, tony@atomide.com,
+ linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ thierry.reding@gmail.com, paulus@samba.org, sam@ravnborg.org,
+ daniel.thompson@linaro.org, linux-omap@vger.kernel.org, deller@gmx.de,
+ linux@armlinux.org.uk, krzk@kernel.org, jonathanh@nvidia.com,
+ ludovic.desroches@microchip.com, catalin.marinas@arm.com,
+ linux-mips@vger.kernel.org, will@kernel.org, mripard@kernel.org,
+ soc@kernel.org, linux-tegra@vger.kernel.org, lee.jones@linaro.org,
+ wens@csie.org, linux-arm-kernel@lists.infradead.org, jernej.skrabec@siol.net,
+ linux-parisc@vger.kernel.org, emil.l.velikov@gmail.com,
+ nicolas.ferre@microchip.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 27 Nov 2020 11:07:38 +0530, Srikar Dronamraju wrote:
-> Commit e75130f20b1f ("powerpc/numa: Offline memoryless cpuless node 0")
-> offlines node 0 and expects nodes to be subsequently onlined when CPUs
-> or nodes are detected.
+On Tue, Dec 01, 2020 at 10:29:20PM +0000, Andrey Zhizhikin wrote:
+> Commit 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is
+> unused") removed geenric_bl driver from the tree, together with
+> corresponding config option.
 > 
-> Commit 6398eaa26816 ("powerpc/numa: Prefer node id queried from vphn")
-> skips onlining node 0 when CPUs are associated with node 0.
+> Remove BACKLIGHT_GENERIC config item from all MIPS configurations.
 > 
-> [...]
+> Fixes: 7ecdea4a0226 ("backlight: generic_bl: Remove this driver as it is unused")
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  arch/mips/configs/gcw0_defconfig      | 1 -
+>  arch/mips/configs/gpr_defconfig       | 1 -
+>  arch/mips/configs/lemote2f_defconfig  | 1 -
+>  arch/mips/configs/loongson3_defconfig | 1 -
+>  arch/mips/configs/mtx1_defconfig      | 1 -
+>  arch/mips/configs/rs90_defconfig      | 1 -
+>  6 files changed, 6 deletions(-)
 
-Applied to powerpc/fixes.
+applied to mips-next.
 
-[1/1] powerpc/numa: Fix a regression on memoryless node 0
-      https://git.kernel.org/powerpc/c/10f78fd0dabbc3856ddd67b09a46abdedb045913
+Thomas.
 
-cheers
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
