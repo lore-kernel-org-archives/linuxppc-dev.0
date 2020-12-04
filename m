@@ -2,23 +2,23 @@ Return-Path: <SRS0=tbgD=FI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC380C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 05:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3066CC4361A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 05:29:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF2E122573
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 05:28:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF2E122573
+	by mail.kernel.org (Postfix) with ESMTPS id 67BA92223E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 05:29:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67BA92223E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CnLp11hd6zDqvZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 16:28:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CnLql16tFzDrTD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 16:29:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=luto@kernel.org; receiver=<UNKNOWN>)
@@ -27,16 +27,19 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CnLm15qDlzDrBZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CnLm20K0FzDrBd
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 16:26:25 +1100 (AEDT)
 From: Andy Lutomirski <luto@kernel.org>
 Authentication-Results: mail.kernel.org;
  dkim=permerror (bad message/signature format)
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC v2 0/2] lazy mm refcounting
-Date: Thu,  3 Dec 2020 21:26:15 -0800
-Message-Id: <cover.1607059162.git.luto@kernel.org>
+Subject: [RFC v2 1/2] [NEEDS HELP] x86/mm: Handle unlazying membarrier core
+ sync in the arch code
+Date: Thu,  3 Dec 2020 21:26:16 -0800
+Message-Id: <203d39d11562575fd8bd6a094d97a3a332d8b265.1607059162.git.luto@kernel.org>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <cover.1607059162.git.luto@kernel.org>
+References: <cover.1607059162.git.luto@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -62,49 +65,110 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is part of a larger series here, but the beginning bit is irrelevant
-to the current discussion:
+The core scheduler isn't a great place for
+membarrier_mm_sync_core_before_usermode() -- the core scheduler doesn't
+actually know whether we are lazy.  With the old code, if a CPU is
+running a membarrier-registered task, goes idle, gets unlazied via a TLB
+shootdown IPI, and switches back to the membarrier-registered task, it
+will do an unnecessary core sync.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/luto/linux.git/commit/?h=x86/mm&id=203d39d11562575fd8bd6a094d97a3a332d8b265
+Conveniently, x86 is the only architecture that does anything in this
+hook, so we can just move the code.
 
-This is IMO a lot better than v1.  It's now almost entirely in generic
-code.  (It looks like it's 100% generic, but that's a lie -- the
-generic code currently that all possible lazy mm refs are in
-mm_cpumask(), and that's not true on all arches.  So, if we take my
-approach, we'll need to have a little arch hook to control this.)
+XXX: there are some comments in swich_mm_irqs_off() that seem to be
+trying to document what barriers are expected, and it's not clear to me
+that these barriers are actually present in all paths through the
+code.  So I think this change makes the code more comprehensible and
+has no effect on the code's correctness, but I'm not at all convinced
+that the code is correct.
 
-Here's how I think it fits with various arches:
+Signed-off-by: Andy Lutomirski <luto@kernel.org>
+---
+ arch/x86/mm/tlb.c   | 17 ++++++++++++++++-
+ kernel/sched/core.c | 14 +++++++-------
+ 2 files changed, 23 insertions(+), 8 deletions(-)
 
-x86: On bare metal (i.e. paravirt flush unavailable), the loop won't do
-much.  The existing TLB shootdown when user tables are freed will
-empty mm_cpumask of everything but the calling CPU.  So x86 ends up
-pretty close to as good as we can get short of reworking mm_cpumask() itself.
-
-arm64: It needs the fixup above for correctness, but I think performance
-should be pretty good.  Compared to current kernels, we lose an mmgrab()
-and mmdrop() on each lazy transition, and we add a reasonably fast loop
-over all cpus on process exit.  Someone (probably me) needs to make
-sure we don't need some extra barriers.
-
-power: Similar to x86.
-
-s390x: Should be essentially the same as arm64.
-
-Other arches: I don't know.  Further research is required.
-
-What do you all think?
-
-Andy Lutomirski (2):
-  [NEEDS HELP] x86/mm: Handle unlazying membarrier core sync in the arch
-    code
-  [MOCKUP] sched/mm: Lightweight lazy mm refcounting
-
- arch/x86/mm/tlb.c    |  17 +++++-
- kernel/fork.c        |   4 ++
- kernel/sched/core.c  | 134 +++++++++++++++++++++++++++++++++++++------
- kernel/sched/sched.h |  11 +++-
- 4 files changed, 145 insertions(+), 21 deletions(-)
-
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 3338a1feccf9..23df035b80e8 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <linux/cpu.h>
+ #include <linux/debugfs.h>
++#include <linux/sched/mm.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+@@ -496,6 +497,8 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 		 * from one thread in a process to another thread in the same
+ 		 * process. No TLB flush required.
+ 		 */
++
++		// XXX: why is this okay wrt membarrier?
+ 		if (!was_lazy)
+ 			return;
+ 
+@@ -508,12 +511,24 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 		smp_mb();
+ 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
+ 		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) ==
+-				next_tlb_gen)
++		    next_tlb_gen) {
++			/*
++			 * We're reactivating an mm, and membarrier might
++			 * need to serialize.  Tell membarrier.
++			 */
++
++			// XXX: I can't understand the logic in
++			// membarrier_mm_sync_core_before_usermode().  What's
++			// the mm check for?
++			membarrier_mm_sync_core_before_usermode(next);
+ 			return;
++		}
+ 
+ 		/*
+ 		 * TLB contents went out of date while we were in lazy
+ 		 * mode. Fall through to the TLB switching code below.
++		 * No need for an explicit membarrier invocation -- the CR3
++		 * write will serialize.
+ 		 */
+ 		new_asid = prev_asid;
+ 		need_flush = true;
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2d95dc3f4644..6c4b76147166 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3619,22 +3619,22 @@ static struct rq *finish_task_switch(struct task_struct *prev)
+ 	kcov_finish_switch(current);
+ 
+ 	fire_sched_in_preempt_notifiers(current);
++
+ 	/*
+ 	 * When switching through a kernel thread, the loop in
+ 	 * membarrier_{private,global}_expedited() may have observed that
+ 	 * kernel thread and not issued an IPI. It is therefore possible to
+ 	 * schedule between user->kernel->user threads without passing though
+ 	 * switch_mm(). Membarrier requires a barrier after storing to
+-	 * rq->curr, before returning to userspace, so provide them here:
++	 * rq->curr, before returning to userspace, and mmdrop() provides
++	 * this barrier.
+ 	 *
+-	 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitly
+-	 *   provided by mmdrop(),
+-	 * - a sync_core for SYNC_CORE.
++	 * XXX: I don't think mmdrop() actually does this.  There's no
++	 * smp_mb__before/after_atomic() in there.
+ 	 */
+-	if (mm) {
+-		membarrier_mm_sync_core_before_usermode(mm);
++	if (mm)
+ 		mmdrop(mm);
+-	}
++
+ 	if (unlikely(prev_state == TASK_DEAD)) {
+ 		if (prev->sched_class->task_dead)
+ 			prev->sched_class->task_dead(prev);
 -- 
 2.28.0
 
