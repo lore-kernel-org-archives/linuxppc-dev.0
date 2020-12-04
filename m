@@ -2,106 +2,67 @@ Return-Path: <SRS0=tbgD=FI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B6D4C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 14:54:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F07E9C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 16:03:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9829722571
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 14:53:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9829722571
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EDA3B22B40
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 16:03:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDA3B22B40
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CnbLr3Fc6zDrgG
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 01:53:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=BVY6HWM8; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CncvG1BN4zDqk9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:03:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.188; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=perches.com
+X-Greylist: delayed 326 seconds by postgrey-1.36 at bilbo;
+ Sat, 05 Dec 2020 03:00:55 AEDT
+Received: from smtprelay.hostedemail.com (smtprelay0188.hostedemail.com
+ [216.40.44.188])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CnbJL49R5zDqMv
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 01:51:46 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B4EpAtC131585; Fri, 4 Dec 2020 09:51:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Ai6L4sa0RgQ9M3WKqdb91X2AvRLvdJvZHP9oZzdHkKU=;
- b=BVY6HWM8bpj9i21VQwmOSnoyxFcyHkd6WPnTqvr3yDdJ3tZjPW+2b8lPNXqmOMDRJrv6
- EsbcZg53CIY79VE3Ve5xyYl9+IArsWhExi9Z32XLbxehkWEM3Ty0y3Vbj4ld5BC0TguI
- +QiLCh4VpuKmB0q2YJ38IYetEBkrBLVFlon4LGZKfnD4g9Bcsdiuyu8wVm0GUSGH/2pM
- j8nc5EAQ4Rm/8UYBq3BjOjr7keQDipRbJ114na0PzAc1Q9U8Xbmrl+VTJBt1b0iUTd7Q
- kanJR2c/v0Lzx2t7JJ/shbwwBMslFMTldey0+OvWT4F+JJvRao2TYmECB8VJrxfdND4Y /w== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 357pt9rwxp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 04 Dec 2020 09:51:43 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B4EojeM028563;
- Fri, 4 Dec 2020 14:51:41 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01wdc.us.ibm.com with ESMTP id 355vrgb7yq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 04 Dec 2020 14:51:41 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B4Epds019530226
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 4 Dec 2020 14:51:40 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CB55A78064;
- Fri,  4 Dec 2020 14:51:39 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5BAE37805C;
- Fri,  4 Dec 2020 14:51:39 +0000 (GMT)
-Received: from oc6034535106.ibm.com (unknown [9.163.73.174])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri,  4 Dec 2020 14:51:39 +0000 (GMT)
-Subject: Re: [PATCH v3 06/18] ibmvfc: add handlers to drain and complete
- Sub-CRQ responses
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
- james.bottomley@hansenpartnership.com
-References: <20201203020806.14747-1-tyreld@linux.ibm.com>
- <20201203020806.14747-7-tyreld@linux.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <3fe8683a-47f6-8713-762a-02c57c2e4ec2@linux.vnet.ibm.com>
-Date: Fri, 4 Dec 2020 08:51:38 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cncr76js9zDrSN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 03:00:53 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave06.hostedemail.com (Postfix) with ESMTP id 883908004339
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2020 15:55:29 +0000 (UTC)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay01.hostedemail.com (Postfix) with ESMTP id 96467100E7B46;
+ Fri,  4 Dec 2020 15:55:23 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: foot04_4212f4e273c5
+X-Filterd-Recvd-Size: 5091
+Received: from XPS-9350.home (unknown [47.151.137.21])
+ (Authenticated sender: joe@perches.com)
+ by omf07.hostedemail.com (Postfix) with ESMTPA;
+ Fri,  4 Dec 2020 15:55:22 +0000 (UTC)
+Message-ID: <189ad2584d80d915d3c9f76c044947f83ca5ebf8.camel@perches.com>
+Subject: Re: [PATCH] powerpc/xmon: Change printk() to pr_cont()
+From: Joe Perches <joe@perches.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,  Paul Mackerras <paulus@samba.org>
+Date: Fri, 04 Dec 2020 07:55:21 -0800
+In-Reply-To: <87h7p1vnym.fsf@mpe.ellerman.id.au>
+References: <c8a6ec704416ecd5ff2bd26213c9bc026bdd19de.1607077340.git.christophe.leroy@csgroup.eu>
+ <87h7p1vnym.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.38.1-1 
 MIME-Version: 1.0
-In-Reply-To: <20201203020806.14747-7-tyreld@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-12-04_04:2020-12-04,
- 2020-12-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=2 bulkscore=0
- malwarescore=0 phishscore=0 clxscore=1015 priorityscore=1501 mlxscore=0
- adultscore=0 spamscore=0 lowpriorityscore=0 mlxlogscore=999
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012040080
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,126 +74,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/2/20 8:07 PM, Tyrel Datwyler wrote:
-> The logic for iterating over the Sub-CRQ responses is similiar to that
-> of the primary CRQ. Add the necessary handlers for processing those
-> responses.
+On Fri, 2020-12-04 at 21:56 +1100, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> > Since some time now, printk() adds carriage return, leading to
+> > unusable xmon output:
+> > 
+> > [   54.288722] sysrq: Entering xmon
+> > [   54.292209] Vector: 0  at [cace3d2c]
+> > [   54.292274]     pc:
+> > [   54.292331] c0023650
 > 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-> ---
->  drivers/scsi/ibmvscsi/ibmvfc.c | 80 ++++++++++++++++++++++++++++++++++
->  1 file changed, 80 insertions(+)
+> ...
 > 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-> index e082935f56cf..b61ae1df21e5 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-> @@ -3381,6 +3381,86 @@ static int ibmvfc_toggle_scrq_irq(struct ibmvfc_sub_queue *scrq, int enable)
->  	return rc;
->  }
->  
-> +static void ibmvfc_handle_scrq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
-> +{
-> +	struct ibmvfc_event *evt = (struct ibmvfc_event *)be64_to_cpu(crq->ioba);
-> +	unsigned long flags;
-> +
-> +	switch (crq->valid) {
-> +	case IBMVFC_CRQ_CMD_RSP:
-> +		break;
-> +	case IBMVFC_CRQ_XPORT_EVENT:
-> +		return;
-> +	default:
-> +		dev_err(vhost->dev, "Got and invalid message type 0x%02x\n", crq->valid);
-> +		return;
-> +	}
-> +
-> +	/* The only kind of payload CRQs we should get are responses to
-> +	 * things we send. Make sure this response is to something we
-> +	 * actually sent
-> +	 */
-> +	if (unlikely(!ibmvfc_valid_event(&vhost->pool, evt))) {
-> +		dev_err(vhost->dev, "Returned correlation_token 0x%08llx is invalid!\n",
-> +			crq->ioba);
-> +		return;
-> +	}
-> +
-> +	if (unlikely(atomic_read(&evt->free))) {
-> +		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08llx!\n",
-> +			crq->ioba);
-> +		return;
-> +	}
-> +
-> +	del_timer(&evt->timer);
-> +	list_del(&evt->queue);
-> +	ibmvfc_trc_end(evt);> +	spin_unlock_irqrestore(vhost->host->host_lock, flags);
-
-You can't do this here... You are grabbing the host lock in ibmvfc_drain_sub_crq
-and saving the irqflags to a local in that function, then doing a spin_unlock_irqrestore
-and restoring irqflags using an uninitialized local in this function...
-
-I'm assuming this will get sorted out with the locking changes we've been discussing off-list...
-
-
-> +	evt->done(evt);
-> +	spin_lock_irqsave(vhost->host->host_lock, flags);
-> +}
-> +
-> +static struct ibmvfc_crq *ibmvfc_next_scrq(struct ibmvfc_sub_queue *scrq)
-> +{
-> +	struct ibmvfc_crq *crq;
-> +
-> +	crq = &scrq->msgs[scrq->cur].crq;
-> +	if (crq->valid & 0x80) {
-> +		if (++scrq->cur == scrq->size)
-> +			scrq->cur = 0;
-> +		rmb();
-> +	} else
-> +		crq = NULL;
-> +
-> +	return crq;
-> +}
-> +
-> +static void ibmvfc_drain_sub_crq(struct ibmvfc_sub_queue *scrq)
-> +{
-> +	struct ibmvfc_crq *crq;
-> +	unsigned long flags;
-> +	int done = 0;
-> +
-> +	spin_lock_irqsave(scrq->vhost->host->host_lock, flags);
-> +	while (!done) {
-> +		while ((crq = ibmvfc_next_scrq(scrq)) != NULL) {
-> +			ibmvfc_handle_scrq(crq, scrq->vhost);
-> +			crq->valid = 0;
-> +			wmb();
-> +		}
-> +
-> +		ibmvfc_toggle_scrq_irq(scrq, 1);
-> +		if ((crq = ibmvfc_next_scrq(scrq)) != NULL) {
-> +			ibmvfc_toggle_scrq_irq(scrq, 0);
-> +			ibmvfc_handle_scrq(crq, scrq->vhost);
-> +			crq->valid = 0;
-> +			wmb();
-> +		} else
-> +			done = 1;
-> +	}
-> +	spin_unlock_irqrestore(scrq->vhost->host->host_lock, flags);
-> +}
-> +
->  /**
->   * ibmvfc_init_tgt - Set the next init job step for the target
->   * @tgt:		ibmvfc target struct
+> > diff --git a/arch/powerpc/xmon/nonstdio.c b/arch/powerpc/xmon/nonstdio.c
+> > index 5c1a50912229..9b0d85bff021 100644
+> > --- a/arch/powerpc/xmon/nonstdio.c
+> > +++ b/arch/powerpc/xmon/nonstdio.c
+> > @@ -178,7 +178,7 @@ void xmon_printf(const char *format, ...)
+> >  
+> > 
+> >  	if (n && rc == 0) {
+> >  		/* No udbg hooks, fallback to printk() - dangerous */
+> > -		printk("%s", xmon_outbuf);
+> > +		pr_cont("%s", xmon_outbuf);
+> >  	}
 > 
+> Ah OK, in the case where there's no udbg backend. We basically always
+> have a udbg backend on 64-bit, via hvc console. Which explains why we
+> haven't noticed it.
+> 
+> Will pick up the patch.
+> 
+> cheers
 
+Perhaps all of these bare printks should be inspected for defects:
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+$ git grep -P -n '\bprintk\s*\(\s*(?!KERN_\w+)"[^\\n]*"' arch/powerpc
+arch/powerpc/kernel/process.c:1475:     printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
+arch/powerpc/kernel/process.c:1479:     printk("MSR:  "REG" ", regs->msr);
+arch/powerpc/kernel/process.c:1513:             printk("NIP ["REG"] %pS\n", regs->nip, (void *)regs->nip);
+arch/powerpc/kernel/process.c:1514:             printk("LR ["REG"] %pS\n", regs->link, (void *)regs->link);
+arch/powerpc/kernel/process.c:2157:                     printk("%s["REG"] ["REG"] %pS",
+arch/powerpc/kernel/traps.c:621:        printk("Caused by (from MCSR=%lx): ", reason);
+arch/powerpc/kernel/traps.c:726:        printk("Caused by (from MCSR=%lx): ", reason);
+arch/powerpc/kernel/traps.c:766:        printk("Caused by (from MCSR=%lx): ", reason);
+arch/powerpc/kernel/traps.c:791:        printk("Caused by (from SRR1=%lx): ", reason);
+arch/powerpc/kernel/udbg.c:95:          printk("%s", s);
+arch/powerpc/math-emu/fabs.c:13:        printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/fctiw.c:22:       printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/fctiwz.c:29:      printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/fmr.c:13: printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/fnabs.c:13:       printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/fneg.c:13:        printk("%s: D %p, B %p: ", __func__, frD, frB);
+arch/powerpc/math-emu/lfd.c:15: printk("%s: D %p, ea %p: ", __func__, frD, ea);
+arch/powerpc/math-emu/stfd.c:11:        printk("%s: S %p, ea %p: ", __func__, frS, ea);
+arch/powerpc/mm/nohash/44x.c:192:                                       printk("%d ", i);
+arch/powerpc/platforms/4xx/machine_check.c:19:          printk("Data");
+arch/powerpc/platforms/chrp/pci.c:256:                  printk(" at %llx", (unsigned long long)r.start);
+arch/powerpc/platforms/embedded6xx/ls_uart.c:47:                                        printk("%c", in_8(avr_addr + UART_RX));
+arch/powerpc/platforms/powermac/pfunc_core.c:83:        printk("%s", title);
+arch/powerpc/platforms/powermac/pfunc_core.c:85:                printk("%02x ", *((u8 *)blob));
+arch/powerpc/platforms/powernv/pci-ioda.c:81:   printk("%spci %s: [PE# %.2x] %pV",
+arch/powerpc/sysdev/tsi108_pci.c:63:    printk("PCI CFG write : ");
+arch/powerpc/sysdev/tsi108_pci.c:64:    printk("%d:0x%x:0x%x ", bus->number, devfunc, offset);
+arch/powerpc/sysdev/tsi108_pci.c:65:    printk("%d ADDR=0x%08x ", len, (uint) cfg_addr);
+arch/powerpc/sysdev/tsi108_pci.c:164:           printk("PCI CFG read : ");
+arch/powerpc/sysdev/tsi108_pci.c:165:           printk("%d:0x%x:0x%x ", bus->number, devfn, offset);
+arch/powerpc/sysdev/tsi108_pci.c:166:           printk("%d ADDR=0x%08x ", len, (uint) cfg_addr);
+arch/powerpc/sysdev/tsi108_pci.c:315:           printk("cfg_ctl=0x%08x ", temp);
+arch/powerpc/xmon/nonstdio.c:181:               printk("%s", xmon_outbuf);
+
 
