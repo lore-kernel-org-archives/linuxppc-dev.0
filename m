@@ -2,24 +2,24 @@ Return-Path: <SRS0=tbgD=FI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B9B7C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 20:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54349C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 20:42:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDFE522B40
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 20:27:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDFE522B40
+	by mail.kernel.org (Postfix) with ESMTPS id 6CFD822CAF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Dec 2020 20:42:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CFD822CAF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cnkls6YrjzDq7d
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 07:27:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cnl4g2pRyzDrRJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 07:42:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
  envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
@@ -27,55 +27,56 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=efficios.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
- header.s=default header.b=DQb+IXuM; dkim-atps=neutral
+ header.s=default header.b=pOntHhXa; dkim-atps=neutral
 Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cnkh142JQzDrGs
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 07:24:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cnl2C1d7bzDrMT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 07:40:02 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
- by mail.efficios.com (Postfix) with ESMTP id 6EBC22CE4B4;
- Fri,  4 Dec 2020 15:24:13 -0500 (EST)
+ by mail.efficios.com (Postfix) with ESMTP id 6DF372CE77F;
+ Fri,  4 Dec 2020 15:39:59 -0500 (EST)
 Received: from mail.efficios.com ([127.0.0.1])
  by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
- with ESMTP id XtVvbHAWYHXs; Fri,  4 Dec 2020 15:24:13 -0500 (EST)
+ with ESMTP id laVxlc6mfNuf; Fri,  4 Dec 2020 15:39:59 -0500 (EST)
 Received: from localhost (localhost [127.0.0.1])
- by mail.efficios.com (Postfix) with ESMTP id F13DC2CE14C;
- Fri,  4 Dec 2020 15:24:12 -0500 (EST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com F13DC2CE14C
+ by mail.efficios.com (Postfix) with ESMTP id 0A37F2CE55C;
+ Fri,  4 Dec 2020 15:39:59 -0500 (EST)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 0A37F2CE55C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=default; t=1607113453;
- bh=rq5dcyyJkV2nJGQEkk2dkiNiyZMC3h59InBJAZr7LGk=;
+ s=default; t=1607114399;
+ bh=dJI+/PpwD5jMrAfaBYwMPtjncMGVD0cTPqSq0jiEMqA=;
  h=Date:From:To:Message-ID:MIME-Version;
- b=DQb+IXuMLZiZkl6/FKac7EjCLRftFpRpG6vh2qYMFlB5MzringJwiSc9VN6d1JS3B
- VAX28zdbm1L0+8m30VetC1Nuc3+0Wr+h8ppP1ibmQOzBLu/dTpDC4rlf780XEZDhC9
- xse6ZXafoSIDFb4SkuUXoZ5GRqO4Pbc9lpa/lZREcejg/xvXYFNBaaUm/tWyLwPwy2
- JM9HwsM2HTDmLo8yVFkZaNkQK34XjGOik/GG0k6lQurtLXVkBSz3xzCt4jpn1WjmVT
- fXj3Wmj7Vf/0vnVj6JGQVNtocDJV18sw0OKYnNdCu+woXidVrdNr0II7meWx9FcVuL
- NI1Umzxpn3KbQ==
+ b=pOntHhXazoFXLq6hBllqIik4PkxFnty+9LIxg1VBWg4D7Ws3FLE0Mjm1rsUxsslhN
+ 96xSWYMV/RH//jyC1tHD7ZtkDY8WGMsa3hLeEKkhuMdRRFE/aGP+RnBPwCDj9Dx9ZF
+ Ts4Maj7e2zg1jzqzpnLkj14ITc2W+f9NWSChLPKp33te6K+Bwi1j4nMvoP7zND/y4x
+ VQK9uS1d6sar1+0Euk8kQMFJqjN40B3srLNnrN+EYvOIQbtm5cpo6ozi+Y+o7vX1UV
+ yvnctVkuIK4FUKINdk18u+H/nUAixpE0LWs5zukQN3P8e6aZVr8VZXBxsgae1xn7fF
+ 6t0qpDtjmppRg==
 X-Virus-Scanned: amavisd-new at efficios.com
 Received: from mail.efficios.com ([127.0.0.1])
  by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id JUD6KWMJdzGL; Fri,  4 Dec 2020 15:24:12 -0500 (EST)
+ with ESMTP id rT4kBItm-hx9; Fri,  4 Dec 2020 15:39:58 -0500 (EST)
 Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
- by mail.efficios.com (Postfix) with ESMTP id DF2D12CE2F7;
- Fri,  4 Dec 2020 15:24:12 -0500 (EST)
-Date: Fri, 4 Dec 2020 15:24:12 -0500 (EST)
+ by mail.efficios.com (Postfix) with ESMTP id EB57C2CE8D0;
+ Fri,  4 Dec 2020 15:39:58 -0500 (EST)
+Date: Fri, 4 Dec 2020 15:39:58 -0500 (EST)
 From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Message-ID: <720512461.6585.1607113452812.JavaMail.zimbra@efficios.com>
-In-Reply-To: <203d39d11562575fd8bd6a094d97a3a332d8b265.1607059162.git.luto@kernel.org>
+To: Nadav Amit <nadav.amit@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+Message-ID: <77346515.6733.1607114398867.JavaMail.zimbra@efficios.com>
+In-Reply-To: <A61977A7-F0B2-4492-AB6D-06E24417FA59@gmail.com>
 References: <cover.1607059162.git.luto@kernel.org>
  <203d39d11562575fd8bd6a094d97a3a332d8b265.1607059162.git.luto@kernel.org>
+ <A61977A7-F0B2-4492-AB6D-06E24417FA59@gmail.com>
 Subject: Re: [RFC v2 1/2] [NEEDS HELP] x86/mm: Handle unlazying membarrier
  core sync in the arch code
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 X-Originating-IP: [167.114.26.124]
 X-Mailer: Zimbra 8.8.15_GA_3980 (ZimbraWebClient - FF83 (Linux)/8.8.15_GA_3980)
 Thread-Topic: x86/mm: Handle unlazying membarrier core sync in the arch code
-Thread-Index: lxVQX1VMi8/RWcw0PClIFIaXCQc/vA==
+Thread-Index: xWV4rdMooMFTW/S/cTMIU6yzFuQjnA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,197 +88,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Nadav Amit <nadav.amit@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, riel <riel@surriel.com>,
- Will Deacon <will@kernel.org>, x86 <x86@kernel.org>,
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ riel <riel@surriel.com>, Will Deacon <will@kernel.org>, x86 <x86@kernel.org>,
  Dave Hansen <dave.hansen@intel.com>,
  linux-kernel <linux-kernel@vger.kernel.org>,
  Nicholas Piggin <npiggin@gmail.com>, linux-mm <linux-mm@kvack.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Jann Horn <jannh@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ Andy Lutomirski <luto@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ Jann Horn <jannh@google.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------ On Dec 4, 2020, at 12:26 AM, Andy Lutomirski luto@kernel.org wrote:
+----- On Dec 4, 2020, at 3:17 AM, Nadav Amit nadav.amit@gmail.com wrote:
 
-> The core scheduler isn't a great place for
-> membarrier_mm_sync_core_before_usermode() -- the core scheduler doesn't
-> actually know whether we are lazy.  With the old code, if a CPU is
-> running a membarrier-registered task, goes idle, gets unlazied via a TLB
-> shootdown IPI, and switches back to the membarrier-registered task, it
-> will do an unnecessary core sync.
-> 
-> Conveniently, x86 is the only architecture that does anything in this
-> hook, so we can just move the code.
-> 
-> XXX: there are some comments in swich_mm_irqs_off() that seem to be
-> trying to document what barriers are expected, and it's not clear to me
-> that these barriers are actually present in all paths through the
-> code.  So I think this change makes the code more comprehensible and
-> has no effect on the code's correctness, but I'm not at all convinced
-> that the code is correct.
-> 
-> Signed-off-by: Andy Lutomirski <luto@kernel.org>
-> ---
-> arch/x86/mm/tlb.c   | 17 ++++++++++++++++-
-> kernel/sched/core.c | 14 +++++++-------
-> 2 files changed, 23 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
-> index 3338a1feccf9..23df035b80e8 100644
-> --- a/arch/x86/mm/tlb.c
-> +++ b/arch/x86/mm/tlb.c
-> @@ -8,6 +8,7 @@
-> #include <linux/export.h>
-> #include <linux/cpu.h>
-> #include <linux/debugfs.h>
-> +#include <linux/sched/mm.h>
-> 
-> #include <asm/tlbflush.h>
-> #include <asm/mmu_context.h>
-> @@ -496,6 +497,8 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct
-> mm_struct *next,
-> 		 * from one thread in a process to another thread in the same
-> 		 * process. No TLB flush required.
-> 		 */
-> +
-> +		// XXX: why is this okay wrt membarrier?
-> 		if (!was_lazy)
-> 			return;
+> I am not very familiar with membarrier, but here are my 2 cents while try=
+ing
+> to answer your questions.
+>=20
+>> On Dec 3, 2020, at 9:26 PM, Andy Lutomirski <luto@kernel.org> wrote:
+>> @@ -496,6 +497,8 @@ void switch_mm_irqs_off(struct mm_struct *prev, stru=
+ct
+>> mm_struct *next,
+>> =09=09 * from one thread in a process to another thread in the same
+>> =09=09 * process. No TLB flush required.
+>> =09=09 */
+>> +
+>> +=09=09// XXX: why is this okay wrt membarrier?
+>> =09=09if (!was_lazy)
+>> =09=09=09return;
+>=20
+> I am confused.
+>=20
+> On one hand, it seems that membarrier_private_expedited() would issue an =
+IPI
+> to that core, as it would find that this core=E2=80=99s cpu_rq(cpu)->curr=
+->mm is the
+> same as the one that the membarrier applies to.
 
-As I recall, when the scheduler switches between threads which belong to
-the same mm, it does not have to provide explicit memory barriers for
-membarrier because it does not change the "rq->curr->mm" value which is
-used as condition in the membarrier loop to send the IPI.
+If the scheduler switches from one thread to another which both have the sa=
+me mm,
+it means cpu_rq(cpu)->curr->mm is invariant, even though ->curr changes. So=
+ there
+is no need to issue a memory barrier or sync core for membarrier in this ca=
+se,
+because there is no way the IPI can be missed.
 
-> 
-> @@ -508,12 +511,24 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct
-> mm_struct *next,
-> 		smp_mb();
-> 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
-> 		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) ==
-> -				next_tlb_gen)
-> +		    next_tlb_gen) {
-> +			/*
-> +			 * We're reactivating an mm, and membarrier might
-> +			 * need to serialize.  Tell membarrier.
-> +			 */
-> +
-> +			// XXX: I can't understand the logic in
-> +			// membarrier_mm_sync_core_before_usermode().  What's
-> +			// the mm check for?
-> +			membarrier_mm_sync_core_before_usermode(next);
+> But=E2=80=A6 (see below)
+>=20
+>=20
+>> @@ -508,12 +511,24 @@ void switch_mm_irqs_off(struct mm_struct *prev, st=
+ruct
+>> mm_struct *next,
+>> =09=09smp_mb();
+>> =09=09next_tlb_gen =3D atomic64_read(&next->context.tlb_gen);
+>> =09=09if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) =3D=3D
+>> -=09=09=09=09next_tlb_gen)
+>> +=09=09    next_tlb_gen) {
+>> +=09=09=09/*
+>> +=09=09=09 * We're reactivating an mm, and membarrier might
+>> +=09=09=09 * need to serialize.  Tell membarrier.
+>> +=09=09=09 */
+>> +
+>> +=09=09=09// XXX: I can't understand the logic in
+>> +=09=09=09// membarrier_mm_sync_core_before_usermode().  What's
+>> +=09=09=09// the mm check for?
+>> +=09=09=09membarrier_mm_sync_core_before_usermode(next);
+>=20
+> On the other hand the reason for this mm check that you mention contradic=
+ts
+> my previous understanding as the git log says:
+>=20
+> commit 2840cf02fae627860156737e83326df354ee4ec6
+> Author: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> Date:   Thu Sep 19 13:37:01 2019 -0400
+>=20
+>    sched/membarrier: Call sync_core only before usermode for same mm
+>   =20
+>    When the prev and next task's mm change, switch_mm() provides the core
+>    serializing guarantees before returning to usermode. The only case
+>    where an explicit core serialization is needed is when the scheduler
+>    keeps the same mm for prev and next.
 
-I think you mean the:
+Hrm, so your point here is that if the scheduler keeps the same mm for
+prev and next, it means membarrier will have observed the same rq->curr->mm=
+,
+and therefore the IPI won't be missed. I wonder if that
+membarrier_mm_sync_core_before_usermode is needed at all then or if we
+have just been too careful and did not consider that all the scenarios whic=
+h
+need to be core-sync'd are indeed taken care of ?
 
-        if (current->mm != mm)
-                return;
+I see here that my prior commit message indeed discusses prev and next task=
+'s
+mm, but in reality, we are comparing current->mm with rq->prev_mm. So from
+a lazy TLB perspective, this probably matters, and we may still need a core=
+ sync
+in some lazy TLB scenarios.
 
-check at the beginning.
+>=20
+>> =09/*
+>> =09 * When switching through a kernel thread, the loop in
+>> =09 * membarrier_{private,global}_expedited() may have observed that
+>> =09 * kernel thread and not issued an IPI. It is therefore possible to
+>> =09 * schedule between user->kernel->user threads without passing though
+>> =09 * switch_mm(). Membarrier requires a barrier after storing to
+>> -=09 * rq->curr, before returning to userspace, so provide them here:
+>> +=09 * rq->curr, before returning to userspace, and mmdrop() provides
+>> +=09 * this barrier.
+>> =09 *
+>> -=09 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitl=
+y
+>> -=09 *   provided by mmdrop(),
+>> -=09 * - a sync_core for SYNC_CORE.
+>> +=09 * XXX: I don't think mmdrop() actually does this.  There's no
+>> +=09 * smp_mb__before/after_atomic() in there.
+>=20
+> I presume that since x86 is the only one that needs
+> membarrier_mm_sync_core_before_usermode(), nobody noticed the missing
+> smp_mb__before/after_atomic(). These are anyhow a compiler barrier in x86=
+,
+> and such a barrier would take place before the return to userspace.
 
-We have to look at it from the scheduler context from which this function is called
-(yeah, I know, it's not so great to mix up scheduler and mm states like this).
-
-in finish_task_switch() we have:
-
-        struct mm_struct *mm = rq->prev_mm;
-[...]
-        if (mm) {
-                membarrier_mm_sync_core_before_usermode(mm);
-                mmdrop(mm);
-        }
-
-I recall that this current->mm vs rq->prev_mm check is just there to
-figure out whether we are in lazy tlb mode, and don't sync core in lazy
-tlb mode. Hopefully I'm not stating anything stupid here, maybe Peter
-could enlighten us. And you should definitely be careful when calling this
-helper from other contexts, as it was originally crafted only for that
-single use in the scheduler.
-
-
-> 			return;
-> +		}
-> 
-> 		/*
-> 		 * TLB contents went out of date while we were in lazy
-> 		 * mode. Fall through to the TLB switching code below.
-> +		 * No need for an explicit membarrier invocation -- the CR3
-> +		 * write will serialize.
-> 		 */
-> 		new_asid = prev_asid;
-> 		need_flush = true;
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 2d95dc3f4644..6c4b76147166 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -3619,22 +3619,22 @@ static struct rq *finish_task_switch(struct task_struct
-> *prev)
-> 	kcov_finish_switch(current);
-> 
-> 	fire_sched_in_preempt_notifiers(current);
-> +
-> 	/*
-> 	 * When switching through a kernel thread, the loop in
-> 	 * membarrier_{private,global}_expedited() may have observed that
-> 	 * kernel thread and not issued an IPI. It is therefore possible to
-> 	 * schedule between user->kernel->user threads without passing though
-> 	 * switch_mm(). Membarrier requires a barrier after storing to
-> -	 * rq->curr, before returning to userspace, so provide them here:
-> +	 * rq->curr, before returning to userspace, and mmdrop() provides
-> +	 * this barrier.
-> 	 *
-> -	 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitly
-> -	 *   provided by mmdrop(),
-> -	 * - a sync_core for SYNC_CORE.
-> +	 * XXX: I don't think mmdrop() actually does this.  There's no
-> +	 * smp_mb__before/after_atomic() in there.
-
-I recall mmdrop providing a memory barrier. It looks like I event went though the
-trouble of documenting it myself. ;-)
-
-static inline void mmdrop(struct mm_struct *mm)
-{
-        /*
-         * The implicit full barrier implied by atomic_dec_and_test() is
-         * required by the membarrier system call before returning to
-         * user-space, after storing to rq->curr.
-         */
-        if (unlikely(atomic_dec_and_test(&mm->mm_count)))
-                __mmdrop(mm);
-}
-
-
-> 	 */
-> -	if (mm) {
-> -		membarrier_mm_sync_core_before_usermode(mm);
-
-OK so here is the meat. The current code is using the (possibly incomplete)
-lazy TLB state known by the scheduler to sync core, and it appears it may be
-a bit more heavy that what is strictly needed.
-
-Your change instead rely on the internal knowledge of lazy TLB within x86
-switch_mm_irqs_off to achieve this, which overall seems like an improvement.
-
-I agree with Nick's comment that it should go on top of his exit_lazy_mm
-patches.
+mmdrop already provides the memory barriers for membarrer, as I documented =
+within the
+function.
 
 Thanks,
 
 Mathieu
 
-
-> +	if (mm)
-> 		mmdrop(mm);
-> -	}
-> +
-> 	if (unlikely(prev_state == TASK_DEAD)) {
-> 		if (prev->sched_class->task_dead)
-> 			prev->sched_class->task_dead(prev);
-> --
-> 2.28.0
-
--- 
+--=20
 Mathieu Desnoyers
 EfficiOS Inc.
 http://www.efficios.com
