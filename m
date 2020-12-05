@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76AE7C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:17:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE9D3C4361A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:20:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC5D223339
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:17:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC5D223339
+	by mail.kernel.org (Postfix) with ESMTPS id F0A73221F2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:20:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0A73221F2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CpF8q33xdzDqnF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 03:17:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CpFCk3dfKzDqPl
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 03:20:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
  helo=mail.baikalelectronics.ru;
@@ -28,17 +28,18 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
 Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
  [87.245.175.226])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CpD0t55yGzDqgk
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 02:25:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CpD0v3R6RzDqgl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 02:25:35 +1100 (AEDT)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Chunfeng Yun
- <chunfeng.yun@mediatek.com>, Andy Gross <agross@kernel.org>, Bjorn Andersson
- <bjorn.andersson@linaro.org>, Manu Gautam <mgautam@codeaurora.org>
-Subject: [PATCH v5 18/19] dt-bindings: usb: qcom,dwc3: Validate DWC3 sub-node
-Date: Sat, 5 Dec 2020 18:24:25 +0300
-Message-ID: <20201205152427.29537-19-Sergey.Semin@baikalelectronics.ru>
+ <chunfeng.yun@mediatek.com>, Ahmad Zainie
+ <wan.ahmad.zainie.wan.mohamad@intel.com>
+Subject: [PATCH v5 19/19] dt-bindings: usb: intel,
+ keembay-dwc3: Validate DWC3 sub-node
+Date: Sat, 5 Dec 2020 18:24:26 +0300
+Message-ID: <20201205152427.29537-20-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201205152427.29537-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201205152427.29537-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -64,64 +65,64 @@ Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
  Serge Semin <fancer.lancer@gmail.com>,
- Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
  Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
- linux-arm-msm@vger.kernel.org,
- Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Qualcomm msm8996/sc7180/sdm845 DWC3 compatible DT nodes are supposed to
-have a DWC USB3 compatible sub-node to describe a fully functioning USB
-interface. Let's use the available DWC USB3 DT schema to validate the
-Qualcomm DWC3 sub-nodes.
+Intel Keem Bay DWC3 compatible DT nodes are supposed to have a DWC USB3
+compatible sub-node to describe a fully functioning USB interface. Let's
+use the available DWC USB3 DT schema to validate the Qualcomm DWC3
+sub-nodes.
 
 Note since the generic DWC USB3 DT node is supposed to be named as generic
 USB HCD ("^usb(@.*)?") one we have to accordingly fix the sub-nodes name
 regexp and fix the DT node example.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
 
-Changelog v2:
-- Discard the "^dwc3@[0-9a-f]+$" nodes from being acceptable as sub-nodes.
+Changelog v5:
+- This is a new patch created for the new Intel Keem Bay bindings file,
+  which has been added just recently.
 ---
- Documentation/devicetree/bindings/usb/qcom,dwc3.yaml | 9 +++------
+ .../devicetree/bindings/usb/intel,keembay-dwc3.yaml      | 9 +++------
  1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
-index 2cf525d21e05..b336662e838c 100644
---- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
-+++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
-@@ -103,11 +103,8 @@ properties:
+diff --git a/Documentation/devicetree/bindings/usb/intel,keembay-dwc3.yaml b/Documentation/devicetree/bindings/usb/intel,keembay-dwc3.yaml
+index dd32c10ce6c7..43b91ab62004 100644
+--- a/Documentation/devicetree/bindings/usb/intel,keembay-dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/intel,keembay-dwc3.yaml
+@@ -34,11 +34,8 @@ properties:
  # Required child node:
  
  patternProperties:
 -  "^dwc3@[0-9a-f]+$":
 -    type: object
 -    description:
--      A child node must exist to represent the core DWC3 IP block
+-      A child node must exist to represent the core DWC3 IP block.
 -      The content of the node is defined in dwc3.txt.
 +  "^usb@[0-9a-f]+$":
 +    $ref: snps,dwc3.yaml#
  
  required:
    - compatible
-@@ -162,7 +159,7 @@ examples:
+@@ -68,7 +65,7 @@ examples:
+           #address-cells = <1>;
+           #size-cells = <1>;
  
-             resets = <&gcc GCC_USB30_PRIM_BCR>;
- 
--            dwc3@a600000 {
-+            usb@a600000 {
+-          dwc3@34000000 {
++          usb@34000000 {
                  compatible = "snps,dwc3";
-                 reg = <0 0x0a600000 0 0xcd00>;
-                 interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
+                 reg = <0x34000000 0x10000>;
+                 interrupts = <GIC_SPI 91 IRQ_TYPE_LEVEL_HIGH>;
 -- 
 2.29.2
 
