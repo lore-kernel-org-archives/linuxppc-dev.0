@@ -2,61 +2,47 @@ Return-Path: <SRS0=6dJf=FJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BD08C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 01:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58FDDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:11:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8773822DCC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 01:28:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8773822DCC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id D990322B4E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:11:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D990322B4E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CnsRR070czDrgY
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 12:28:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CnsLS6dCrzDrRl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 12:24:28 +1100 (AEDT)
-IronPort-SDR: vBE9Lt45ShS9aW349NZEJTTTKRR8y0PmSVfy2RvdQuiRz6UCHBSG1SbAePBeBCKxsV+lJLFsqu
- MJV89kQNZfNQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9825"; a="258187019"
-X-IronPort-AV: E=Sophos;i="5.78,394,1599548400"; d="scan'208";a="258187019"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Dec 2020 17:24:17 -0800
-IronPort-SDR: yT5R1jSZz/oAzxGewmcdkwQkmTi+GlqpLrSsU0NjNUGDB33nnmoV5R/1s1hI+G0JmTvLIZJlfF
- AJ4oyv3WmtHA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,394,1599548400"; d="scan'208";a="374542320"
-Received: from lkp-server02.sh.intel.com (HELO f74a175f0d75) ([10.239.97.151])
- by FMSMGA003.fm.intel.com with ESMTP; 04 Dec 2020 17:24:14 -0800
-Received: from kbuild by f74a175f0d75 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1klMJ3-0000id-CI; Sat, 05 Dec 2020 01:24:13 +0000
-Date: Sat, 05 Dec 2020 09:23:50 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 466556ab940c1dfc7aee8db02a8329f1f3efed3d
-Message-ID: <5fcae126.XZJVREm4vrRtvcVi%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cnvk33nm2zDqWM
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 14:11:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
+ helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=telegraphics.com.au
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Cnvgn2SzYzDqND
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 14:09:40 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id E040F2B616;
+ Fri,  4 Dec 2020 22:09:35 -0500 (EST)
+Date: Sat, 5 Dec 2020 14:09:40 +1100 (AEDT)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] macintosh/adb-iop: Always wait for reply message from IOP
+In-Reply-To: <CAMuHMdX5yUaCWYsM7WgatYSDLZMcSckugOQxBBnBZOB_eJm=1g@mail.gmail.com>
+Message-ID: <alpine.LNX.2.23.453.2012051342400.6@nippy.intranet>
+References: <0f0a25855391e7eaa53a50f651aea0124e8525dd.1605847196.git.fthain@telegraphics.com.au>
+ <CAMuHMdX5yUaCWYsM7WgatYSDLZMcSckugOQxBBnBZOB_eJm=1g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,141 +54,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 466556ab940c1dfc7aee8db02a8329f1f3efed3d  Automatic merge of 'next' into merge (2020-12-05 00:01)
+On Fri, 4 Dec 2020, Geert Uytterhoeven wrote:
 
-elapsed time: 727m
+> Hi Finn,
+> 
+> On Fri, Nov 20, 2020 at 5:54 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> > A recent patch incorrectly altered the adb-iop state machine behaviour
+> > and introduced a regression that can appear intermittently as a
+> > malfunctioning ADB input device. This seems to be caused when reply
+> > packets from different ADB commands become mixed up, especially during
+> > the adb bus scan. Fix this by unconditionally entering the awaiting_reply
+> > state after sending an explicit command, even when the ADB command won't
+> > generate a reply from the ADB device.
+> >
+> > Cc: Joshua Thompson <funaho@jurai.org>
+> > Fixes: e2954e5f727f ("macintosh/adb-iop: Implement sending -> idle state transition")
+> > Tested-by: Stan Johnson <userm57@yahoo.com>
+> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> 
+> Thanks for your patch!
+> 
+> > --- a/drivers/macintosh/adb-iop.c
+> > +++ b/drivers/macintosh/adb-iop.c
+> > @@ -84,10 +84,7 @@ static void adb_iop_complete(struct iop_msg *msg)
+> >
+> >         local_irq_save(flags);
+> >
+> > -       if (current_req->reply_expected)
+> > -               adb_iop_state = awaiting_reply;
+> > -       else
+> > -               adb_iop_done();
+> > +       adb_iop_state = awaiting_reply;
+> >
+> >         local_irq_restore(flags);
+> >  }
+> > @@ -95,8 +92,9 @@ static void adb_iop_complete(struct iop_msg *msg)
+> >  /*
+> >   * Listen for ADB messages from the IOP.
+> >   *
+> > - * This will be called when unsolicited messages (usually replies to TALK
+> > - * commands or autopoll packets) are received.
+> > + * This will be called when unsolicited IOP messages are received.
+> > + * These IOP messages can carry ADB autopoll responses and also occur
+> > + * after explicit ADB commands.
+> >   */
+> >
+> >  static void adb_iop_listen(struct iop_msg *msg)
+> > @@ -123,8 +121,10 @@ static void adb_iop_listen(struct iop_msg *msg)
+> >                 if (adb_iop_state == awaiting_reply) {
+> >                         struct adb_request *req = current_req;
+> >
+> > -                       req->reply_len = amsg->count + 1;
+> > -                       memcpy(req->reply, &amsg->cmd, req->reply_len);
+> > +                       if (req->reply_expected) {
+> > +                               req->reply_len = amsg->count + 1;
+> > +                               memcpy(req->reply, &amsg->cmd, req->reply_len);
+> > +                       }
+> 
+> So if we're not expecting a reply. It's ignored.
+> Just wondering: what kind of messages are being dropped?
 
-configs tested: 115
-configs skipped: 3
+I believe they were empty, with flags == ADB_IOP_EXPLICIT|ADB_IOP_TIMEOUT.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> If reply packets from different ADB commands become mixed up, they are 
+> still (expected?) replies to messages we sent before. Why shouldn't we 
+> depend on receiving the replies?
+> 
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-m68k                          amiga_defconfig
-sh                          r7785rp_defconfig
-sh                         microdev_defconfig
-m68k                       m5275evb_defconfig
-arm                        shmobile_defconfig
-um                           x86_64_defconfig
-ia64                          tiger_defconfig
-arm                         mv78xx0_defconfig
-ia64                            zx1_defconfig
-arm                         lpc18xx_defconfig
-sh                            titan_defconfig
-mips                         tb0226_defconfig
-nios2                            allyesconfig
-parisc                generic-64bit_defconfig
-powerpc                     sbc8548_defconfig
-powerpc                     skiroot_defconfig
-sh                          lboxre2_defconfig
-powerpc                   motionpro_defconfig
-mips                           jazz_defconfig
-powerpc                        cell_defconfig
-ia64                             alldefconfig
-powerpc                     tqm5200_defconfig
-arc                         haps_hs_defconfig
-arm                           spitz_defconfig
-arm                          exynos_defconfig
-arm                       aspeed_g4_defconfig
-arm                         hackkit_defconfig
-sparc                       sparc64_defconfig
-powerpc                         wii_defconfig
-arm                       versatile_defconfig
-arc                     nsimosci_hs_defconfig
-mips                  maltasmvp_eva_defconfig
-arm                        trizeps4_defconfig
-arm                        spear3xx_defconfig
-nds32                            alldefconfig
-powerpc                        fsp2_defconfig
-arm                          ep93xx_defconfig
-xtensa                  audio_kc705_defconfig
-sh                            hp6xx_defconfig
-powerpc                    amigaone_defconfig
-powerpc               mpc834x_itxgp_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20201204
-x86_64               randconfig-a006-20201204
-x86_64               randconfig-a002-20201204
-x86_64               randconfig-a001-20201204
-x86_64               randconfig-a005-20201204
-x86_64               randconfig-a003-20201204
-i386                 randconfig-a005-20201204
-i386                 randconfig-a004-20201204
-i386                 randconfig-a001-20201204
-i386                 randconfig-a002-20201204
-i386                 randconfig-a006-20201204
-i386                 randconfig-a003-20201204
-i386                 randconfig-a014-20201204
-i386                 randconfig-a013-20201204
-i386                 randconfig-a011-20201204
-i386                 randconfig-a015-20201204
-i386                 randconfig-a012-20201204
-i386                 randconfig-a016-20201204
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+It turns out that the IOP always generates reply messages, even when the 
+ADB command does not produce a reply packet (e.g. ADB Listen command). 
 
-clang tested configs:
-x86_64               randconfig-a016-20201204
-x86_64               randconfig-a012-20201204
-x86_64               randconfig-a014-20201204
-x86_64               randconfig-a013-20201204
-x86_64               randconfig-a015-20201204
-x86_64               randconfig-a011-20201204
+The commit being fixed got that wrong.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+So it's not really the ADB reply packets that are being mixed up, it's the 
+IOP messages that enclose them. The bug goes like this:
+
+1. CPU sends a message to the IOP, expecting no response because this 
+message contains an ADB Listen command. The ADB command is now considered 
+complete.
+
+2. CPU sends a second message to the IOP, this time expecting a response 
+because this message contains an ADB Talk command. This ADB command needs 
+a reply before it can be completed.
+
+3. adb-iop driver receives an IOP message and assumes that it relates to 
+the Talk command. It's actually for the previous command. The Talk command 
+is now considered complete but it gets the wrong reply data.
+
+4. adb-iop driver gets another IOP response message, which contains the 
+actual reply data for the Talk command, but this is dropped (the driver is 
+no longer in awaiting_reply state).
+
+Please go ahead and add this analysis to the commit log if you think it 
+would help.
+
+> >
+> >                         req_done = true;
+> >                 }
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> 
