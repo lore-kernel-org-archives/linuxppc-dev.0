@@ -2,74 +2,76 @@ Return-Path: <SRS0=6dJf=FJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1AD0C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37800C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:32:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3019B22DBF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:29:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3019B22DBF
+	by mail.kernel.org (Postfix) with ESMTPS id 72D9022DBF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:32:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72D9022DBF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=prevas.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CpKQh68PSzDql2
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 06:29:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CpKTs2f2gzDqRM
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 06:32:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=prevas.dk (client-ip=40.107.20.129;
- helo=eur05-db8-obe.outbound.protection.outlook.com;
+ smtp.mailfrom=prevas.dk (client-ip=40.107.22.132;
+ helo=eur05-am6-obe.outbound.protection.outlook.com;
  envelope-from=rasmus.villemoes@prevas.dk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=prevas.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=prevas.dk header.i=@prevas.dk header.a=rsa-sha256
- header.s=selector1 header.b=LmLuwhDw; 
+ header.s=selector1 header.b=HT8ffAt3; 
  dkim-atps=neutral
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com
- (mail-db8eur05on2129.outbound.protection.outlook.com [40.107.20.129])
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com
+ (mail-am6eur05on2132.outbound.protection.outlook.com [40.107.22.132])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CpK9d4TLMzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 06:18:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CpK9j0bYgzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 06:18:32 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=mYwgQNWhKPqIk43/yukeMmTjoN6VHOQIyv23qg89Fu+XTwlK2DzunUhOWPXI7j5KUVESk93ll3Sbju0UCRHea1nbp20DzRYM6ltu96aJ+NhfwQBij19oh6XP4y2QXYTii2y8xtT6fNNTpRqT5QrXy7URJoG+5uQNjPobmp9vrISL6w0TifY1VTwVFxwgBjgMfx5ZGr1YryaO97bye4RIp5qpGueebTzorT2x5CzSTTsZHnbHn76cF4ZSj4++NuPmU0es4DREO1cmrZU9Gf4l40jLzadFgb8/nS6v5klLd8SM/DqI7v5J2PmSyxaTMOdLJ8zoIBDk87mTTI5Z3tqu+g==
+ b=dVg/OPtMnqDfTgwEVDTlvHAgaV0ZAFDJNL/wDn4ttVBp1OzPwZzIC2JrR66KwqQEvjx88Sfjvzd6oSpmw78JAJwKHYJHDXSBBxi3kxlZr5TTA+AqPQjN2YP+MiQnPVHuRt3QjB8/Q8i2nMOo8itcyWmK2nx/U385Nljr6HZbValMq7nUclhRNop0CzOukYNjoKjz1CxD44Dxv6oZoMRZV23FSkXIxDlJqAQgBP7qwje8DW2S63cXtacflGfz5sQ324TuCLjheHI8IIVlt/u1pekj/DRjXwMxAhjLCHDaZsU/BN7agXRwe6jAulSa/6gSgHj+OOvXuBuuI9y426ml2A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=J1000bth0R4PjbivgQkuYbV5Wi49n13+XgebzPJUeUY=;
- b=OrSHzgqq6SA25jF8xVyrgBgmWl2aRmSAbVtdtYGjXSsYZRqo8sGs8IRfShMpLm2gaOEpcEj4Jn2QZqvA54LDdc5A5Iie46bPqmWHs5LYTvPNZE9qjhCPXqeH/K52XhbHAjYszyyUq4h+/D3q2LIkB1omh+mzZPdn5N3T2hjUd3pX7Yj/aHfe04Nmymi/lx/9NFlVCmJwyN/hhZbdZ2ZpelsahQ3/StqMdOXFxzcQNZNsIhefBSczJoZXeGCGoHzAw3K+GNQxr/gFUBl1vz7b/KS4aqsy4M26mwV3YzM3CoH0+h9t6S2FLfhvxDRgu4U43UmO6HCDTCL+4CjqitDr1w==
+ bh=hD3p33cq2Q/qHWFYl7dyPaDVPwth76FWgEjkXuOOk2k=;
+ b=E6kz3Zy19HuMOsUbCNhiJ94nLWtt8RdLdFSZrJCv0WteqWeKO1nelDaL1gFm8TItmPKeNVfWIz2jKJ32P62HG88ey/yfTpImvQe/Minp1+j4gMwa9rVfIPyH4/qU1999fgHyGMTynm4dgFZiuQqJbDYJZu39iLhv+oRowMsUtsF0LbarEeJmUFwDj+51esMHLgzKqvH7+rbT4Z5EUZ9xZiJI81R24bu+jTKrG/UMkvGt25Os6qPNZiJeepi91tqhC+koZQnYsiHDUNoL6Yy8KrLRzogfmIEKbcvfBE8p5SI3G8f00sCAuzJv7axNx8sTq4seMAZTyIXra0cdDGD5rg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=prevas.dk; dmarc=pass action=none header.from=prevas.dk;
  dkim=pass header.d=prevas.dk; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prevas.dk; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=J1000bth0R4PjbivgQkuYbV5Wi49n13+XgebzPJUeUY=;
- b=LmLuwhDwjj8yODbJ577iw+YgqlkPNIO2+Hs/mhkjASK0+D3xf/kcafYQPww2SkQDXuXd2r58ZBOGz6YXcrJnsabZVrnPuUYc6Fuy38D5gAKpAdvLUGhm8IgIuDC8CrPGXssCJvRIjcNGhcPLr9TaH2spWE4h8S7VwEOazLilIR0=
+ bh=hD3p33cq2Q/qHWFYl7dyPaDVPwth76FWgEjkXuOOk2k=;
+ b=HT8ffAt3Ay12LAz0u4GGleeMOyEmplnHZocGeL+7m6hRs5uF8mhFPpSnCN0yiPXQJN31VrVgEeWJ/xXcck9WJbZYG/nZf5/iFr+ec+UPHQgsHfP+cXHLo+FklsZVYU1jDhkkiJ5jgHpW5KBDxl4624sfhFN54ylWs3MjDY4G11g=
 Authentication-Results: nxp.com; dkim=none (message not signed)
  header.d=none;nxp.com; dmarc=none action=none header.from=prevas.dk;
 Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:208:3f::10)
- by AM0PR10MB3729.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:208:185::13)
+ by AM4PR1001MB1363.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:200:99::12)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.17; Sat, 5 Dec
- 2020 19:18:17 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.19; Sat, 5 Dec
+ 2020 19:18:21 +0000
 Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
  ([fe80::9068:c899:48f:a8e3]) by AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
  ([fe80::9068:c899:48f:a8e3%6]) with mapi id 15.20.3632.021; Sat, 5 Dec 2020
- 19:18:17 +0000
+ 19:18:21 +0000
 From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-To: Li Yang <leoyang.li@nxp.com>, "David S. Miller" <davem@davemloft.net>,
- Jakub Kicinski <kuba@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 00/20] ethernet: ucc_geth: assorted fixes and simplifications
-Date: Sat,  5 Dec 2020 20:17:23 +0100
-Message-Id: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH 05/20] soc: fsl: qe: store muram_vbase as a void pointer
+ instead of u8
+Date: Sat,  5 Dec 2020 20:17:28 +0100
+Message-Id: <20201205191744.7847-6-rasmus.villemoes@prevas.dk>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
+References: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [5.186.115.188]
@@ -82,48 +84,48 @@ Received: from prevas-ravi.prevas.se (5.186.115.188) by
  AM5PR0701CA0063.eurprd07.prod.outlook.com (2603:10a6:203:2::25) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3654.5 via Frontend
- Transport; Sat, 5 Dec 2020 19:18:16 +0000
+ Transport; Sat, 5 Dec 2020 19:18:20 +0000
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: cfe90b0e-7301-43e6-3887-08d8995284e3
-X-MS-TrafficTypeDiagnostic: AM0PR10MB3729:
+X-MS-Office365-Filtering-Correlation-Id: 1121de58-b2c9-4ddf-8a30-08d89952875e
+X-MS-TrafficTypeDiagnostic: AM4PR1001MB1363:
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <AM0PR10MB37295F16789C80F3073E985C93F00@AM0PR10MB3729.EURPRD10.PROD.OUTLOOK.COM>
-X-MS-Oob-TLC-OOBClassifiers: OLM:5797;
+X-Microsoft-Antispam-PRVS: <AM4PR1001MB1363816BE7591AB0F4519DCF93F00@AM4PR1001MB1363.EURPRD10.PROD.OUTLOOK.COM>
+X-MS-Oob-TLC-OOBClassifiers: OLM:4502;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: lvkQ4HWZCqSdlheXbguYDTbAMTY6hDJgWPnLXq+viTK8syOM21f1AOUXUPqecF6+IkdfH8qnc5g1pRNqwIvx0JRS7ExTjUA1Ej473oHhI8hGA0mOjRCtGyrfy7wBfbi/u4HMIqvP8cPWvLaSHe1Ev5ECql+Mhs0CMl1WwWlqPhM3qVNthkazosyH9mGGUqb6iRv6RulK9oOqQ5hNzr0l7gzUxdGrGv2gVJDDWWA42vHKzHPnnNtS/3G9OH71VwXhILbEj/Ut6nd9CrErXtUqBxmjgVhIMprbr8jnA4zujdB7UT8I8Q1Hi1gV95eZTQ1s
+X-Microsoft-Antispam-Message-Info: 7S+yvHFOXe8CLDzlH1DjO5GCwol/bLOxJqOPDeEV0FCZJdd2GsGFtH5EuAY8eqqqX2D5THRXVGGFycwTbrj+ZUpg7vM5FImB3b8HGL6VIakl9QTetDlSD48IjFTLAUTuI5XtEGaKZv82ACqQwGpzc6gWthvdoLRz6F+A4T5pGSoPvOYiDos3Wnz62YqnZWIDwbxXMa2mNsitBD4Y/IV1zPd8bH9UQ8+2SRuSDRLS74WeQApeDW8hCPg7COdSnJYcCVDdxGO2kBtomg+39262vYLQnNXzRjIKkda1aW7M6nrmmDFEYbFdj9WM/GUQvTkvzONdtgTRkvU2gHeqGCQKnw==
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(376002)(136003)(346002)(366004)(396003)(39840400004)(5660300002)(2616005)(66476007)(66556008)(6506007)(107886003)(8676002)(66946007)(4326008)(8936002)(2906002)(86362001)(956004)(16526019)(83380400001)(44832011)(6512007)(186003)(8976002)(26005)(36756003)(316002)(6486002)(1076003)(52116002)(6666004)(54906003)(478600001)(110136005);
+ SFS:(396003)(39840400004)(346002)(136003)(366004)(376002)(2616005)(2906002)(8676002)(8936002)(83380400001)(52116002)(36756003)(66476007)(66946007)(66556008)(4326008)(8976002)(5660300002)(1076003)(6486002)(44832011)(6512007)(186003)(26005)(110136005)(316002)(86362001)(478600001)(16526019)(54906003)(956004)(6506007);
  DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?B3OZpnefOXZUwzV9psVEDduen5c1DUQ2goydgoSq5F0uW1aeV8cSRPxIlU7v?=
- =?us-ascii?Q?YNCHZHxnqnR0NmRUQ2dnvKoBMyO7aQXU5V7N8CnwZUwBQ5VfxtgjSU44dWGp?=
- =?us-ascii?Q?EQIA6lv5CddHRw633O5Gd9XB2M7I2I0lJ0nlo+WKiwoxafvX4hgfb4zPy/y2?=
- =?us-ascii?Q?+RtLvg86cSTvLeVHNNxzRFO3rAWj5uhM6i3Ppg1Y36WgRjweeCE/SmTC3YhJ?=
- =?us-ascii?Q?KquqGPRIvd950cvoTjM7ut2FjZQ+UIj2qPMpoSzbKdFGRmUXhOiPkoHYgiPp?=
- =?us-ascii?Q?6eJiH/jxohLZEgyGeapxcwyk2hx6hxjzRtjgm6RkrDWfh7WVwfmiQ85CGST8?=
- =?us-ascii?Q?UD7iFRHERsejeOkMOpNEO+SwwWsl+j7JyoRRgDPN1FSengP2Bjo7IFmYqELN?=
- =?us-ascii?Q?DpwEjXrdL5qZwOO+cjjSvgUFTteOcAamLMyHGjqYZdBuRv1vSOX7scmeXvPp?=
- =?us-ascii?Q?wft+RFGFYEYZx5nH9LGH1QReKO0+F41Q9kMK7tf46VbNU3Ir+kzDoPToW9Qk?=
- =?us-ascii?Q?H+1r0a+Z5alBpfnmExIUZgAjaTAfASjN2H37WaOXsnoOqTKRXzcnKjOPr0Nv?=
- =?us-ascii?Q?VryU9yMVVY7HdstVOeyFqdcr0VjMDrO5iH6EgZryfsW+/ig5xtjdxwk3pRxB?=
- =?us-ascii?Q?dU81Z/p4Y/8zTiknneiNYfetOVqz6b0AJmy0lOUsRjBNjwbz8uUV06phATWS?=
- =?us-ascii?Q?Qpy0FSUB+cAXyMZISLZIZJkR7Bb4I3ViUbaklLDgKX3aP5zajrB39qMuudpq?=
- =?us-ascii?Q?fNMSo0Yw37oNPXNeu/GBwymLQxYnRVYKxsnIUPlILXDqtKtwg3tMH27TXkG4?=
- =?us-ascii?Q?vINd/CxUJof6p+zY8SOZg3sQTWJKOaXTGUDEu7fePINi0SZ9JoK/CndNkOEq?=
- =?us-ascii?Q?GlTsoDqGuNJlhXloxpcay7G/4Cre4CauWv/j1ZYsXZV+p7XEKQGrpND+degR?=
- =?us-ascii?Q?btQQUWpD19E2TRWttS8PlZxsQ/Hnibz7AtuTWMsgX7dSVnHu4PLIgd0610u0?=
- =?us-ascii?Q?HNHv?=
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?FQ4P38eHL60L3b62IsOr2JpT1fMjnyvNBjzKSa2CObinkIywVXPJaGI7+5ry?=
+ =?us-ascii?Q?gkNjkxPxyQlUFzRF/PZiKsiAoC5IMf8bC4DW2QaCrB6JuWnfcBzPnZ2T4pXY?=
+ =?us-ascii?Q?DWaDjFSE+n1KxmmkgAeCK4Xape4zZU2n5ahjWeTHLpcQJggxvGK+luQuFzVY?=
+ =?us-ascii?Q?0+IKz8u0HFF3GSpwQKYTgYmsGpRL/4Ww6B+Vzl6OO2n26mt/w4Xr694nGc4c?=
+ =?us-ascii?Q?BxKLGmkyIsa3NgO8529GpOG3SzgJkgCH/RpdeSJcnj4iX9wdS4FMoeLd/qNF?=
+ =?us-ascii?Q?sDocRId8gId1lVc46g5xlfVp2FGD8EWHtF2X6EJ4UBPVbJYyrDsmmoi5bN9a?=
+ =?us-ascii?Q?EMiOwjRavSCJzgzTD+F+V+5/7oKBmnKm2TUjz+EhuE3mgu1huIO1KI2jFA+e?=
+ =?us-ascii?Q?hRJzJ+D73JgIfRLVRORbiC2YgmB+4jzJ9iXu7q0olwSu9pcEIAGVgzgI/euD?=
+ =?us-ascii?Q?jfp1Pb/jicI/ATZGYUGmFiUgFcLnp7QgHfQDDC+6KmJrRQnQacknJws9sVsN?=
+ =?us-ascii?Q?mlV22NUoR/j1FKhEdF/k6lq4YeekMOqus/vAsN78HIcA36ywwRhwsUAsUEK5?=
+ =?us-ascii?Q?atHvC2j7JNz6Pvwx/1kNYVEReJPbobzBHUgjN/i5MaoYcrNxKepSqxhE4Yod?=
+ =?us-ascii?Q?zLyY6YL81AhkWuXXGWmHR8CU3nnP2URqdGsIjYnFmelA0cxvpbDBSPqoP0Ge?=
+ =?us-ascii?Q?vzU0+BO0NV6LRuTSViMR9WKq6dkuSd/89HGHS7RUDzrrCmkMFCfhNXDttu1N?=
+ =?us-ascii?Q?D/uIpwEqO4VktfM4VTdIyhBqIDLOuIEVgDzRogQL1J2CBxPThjxGiGtkA0+L?=
+ =?us-ascii?Q?Q6CMf8yDbbz9vFUCChnsV9gMwanHack9kndNUriHll1fU1hkCAIsieCNZyo2?=
+ =?us-ascii?Q?72JdkVzHAc1zUYxkr22HMItfgZQfnbYYuRUm9A4/H3uwFAuCU4FXl3q4PtO1?=
+ =?us-ascii?Q?u/kaxBTk3q2UuyVSvUiHdYKSGwp6AUH9X3yz9+sZXnXedx5WvbPPlkRdwdzF?=
+ =?us-ascii?Q?4i9K?=
 X-OriginatorOrg: prevas.dk
-X-MS-Exchange-CrossTenant-Network-Message-Id: cfe90b0e-7301-43e6-3887-08d8995284e3
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1121de58-b2c9-4ddf-8a30-08d89952875e
 X-MS-Exchange-CrossTenant-AuthSource: AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2020 19:18:17.0325 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2020 19:18:21.1882 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: d350cf71-778d-4780-88f5-071a4cb1ed61
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: XoTKCl+eHVCa86h9W78Fylq7ei7Gu6y6vbd5Qb9/bLSleoayCR2bFbX43DLAPFNKWiib1Aoh09mSuD56zBJHxDH0m2ME4VhE4CS5HoKsa6g=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR10MB3729
+X-MS-Exchange-CrossTenant-UserPrincipalName: Ka26JN6H28u3Vkn41HV63GNA0YjSP3uoijgPSUNjHFugy+4cOyVStpdWP0qLE+sqtqd/liTtGnAp4gyMq+gv89b8cIfVhBZmZZ4AJHvFKOg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM4PR1001MB1363
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,59 +137,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vladimir Oltean <vladimir.oltean@nxp.com>,
+Cc: Vladimir Oltean <vladimir.oltean@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Rasmus Villemoes <rasmus.villemoes@prevas.dk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While trying to figure out how to allow bumping the MTU with the
-ucc_geth driver, I fell into a rabbit hole and stumbled on a whole
-bunch of issues of varying importance - some are outright bug fixes,
-while most are a matter of simplifying the code to make it more
-accessible.
+The two functions cpm_muram_offset() and cpm_muram_dma() both need a
+cast currently, one casts muram_vbase to do the pointer arithmetic on
+void pointers, the other casts the the passed-in address u8*.
 
-At the end of digging around the code and data sheet to figure out how
-it all works, I think the MTU issue might be fixed by a one-liner, but
-I'm not sure it can be that simple. It does seem to work (ping -s X
-works for larger values of X, and wireshark confirms that the packets
-are not fragmented).
+It's simpler and more consistent to just always use void* and drop all
+the casting.
 
-Re patch 2, someone in NXP should check how the hardware actually
-works and make an updated reference manual available.
+Signed-off-by: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+---
+ drivers/soc/fsl/qe/qe_common.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Rasmus Villemoes (20):
-  ethernet: ucc_geth: set dev->max_mtu to 1518
-  ethernet: ucc_geth: fix definition and size of ucc_geth_tx_global_pram
-  ethernet: ucc_geth: remove unused read of temoder field
-  soc: fsl: qe: make cpm_muram_offset take a const void* argument
-  soc: fsl: qe: store muram_vbase as a void pointer instead of u8
-  soc: fsl: qe: add cpm_muram_free_addr() helper
-  ethernet: ucc_geth: use qe_muram_free_addr()
-  ethernet: ucc_geth: remove unnecessary memset_io() calls
-  ethernet: ucc_geth: replace kmalloc+memset by kzalloc
-  ethernet: ucc_geth: remove {rx,tx}_glbl_pram_offset from struct
-    ucc_geth_private
-  ethernet: ucc_geth: fix use-after-free in ucc_geth_remove()
-  ethernet: ucc_geth: factor out parsing of {rx,tx}-clock{,-name}
-    properties
-  ethernet: ucc_geth: constify ugeth_primary_info
-  ethernet: ucc_geth: don't statically allocate eight ucc_geth_info
-  ethernet: ucc_geth: use UCC_GETH_{RX,TX}_BD_RING_ALIGNMENT macros
-    directly
-  ethernet: ucc_geth: remove bd_mem_part and all associated code
-  ethernet: ucc_geth: replace kmalloc_array()+for loop by kcalloc()
-  ethernet: ucc_geth: add helper to replace repeated switch statements
-  ethernet: ucc_geth: inform the compiler that numQueues is always 1
-  ethernet: ucc_geth: simplify rx/tx allocations
-
- drivers/net/ethernet/freescale/ucc_geth.c | 553 ++++++++--------------
- drivers/net/ethernet/freescale/ucc_geth.h |  15 +-
- drivers/soc/fsl/qe/qe_common.c            |  20 +-
- include/soc/fsl/qe/qe.h                   |  15 +-
- include/soc/fsl/qe/ucc_fast.h             |   1 -
- 5 files changed, 219 insertions(+), 385 deletions(-)
-
+diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
+index 0fbdc965c4cb..303cc2f5eb4a 100644
+--- a/drivers/soc/fsl/qe/qe_common.c
++++ b/drivers/soc/fsl/qe/qe_common.c
+@@ -27,7 +27,7 @@
+ 
+ static struct gen_pool *muram_pool;
+ static spinlock_t cpm_muram_lock;
+-static u8 __iomem *muram_vbase;
++static void __iomem *muram_vbase;
+ static phys_addr_t muram_pbase;
+ 
+ struct muram_block {
+@@ -225,7 +225,7 @@ EXPORT_SYMBOL(cpm_muram_addr);
+ 
+ unsigned long cpm_muram_offset(const void __iomem *addr)
+ {
+-	return addr - (void __iomem *)muram_vbase;
++	return addr - muram_vbase;
+ }
+ EXPORT_SYMBOL(cpm_muram_offset);
+ 
+@@ -235,6 +235,6 @@ EXPORT_SYMBOL(cpm_muram_offset);
+  */
+ dma_addr_t cpm_muram_dma(void __iomem *addr)
+ {
+-	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
++	return muram_pbase + (addr - muram_vbase);
+ }
+ EXPORT_SYMBOL(cpm_muram_dma);
 -- 
 2.23.0
 
