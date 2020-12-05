@@ -2,87 +2,132 @@ Return-Path: <SRS0=6dJf=FJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D0B4C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:30:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5155C4361A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:23:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D50142333F
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 16:30:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D50142333F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=amacapital.net
+	by mail.kernel.org (Postfix) with ESMTPS id 1719323110
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 19:23:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1719323110
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=prevas.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CpFRg3nd2zDqft
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 03:30:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CpKGv0RV6zDqGT
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Dec 2020 06:23:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=amacapital.net (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=luto@amacapital.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=amacapital.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=amacapital-net.20150623.gappssmtp.com
- header.i=@amacapital-net.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=DhL2umox; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=prevas.dk (client-ip=40.107.22.132;
+ helo=eur05-am6-obe.outbound.protection.outlook.com;
+ envelope-from=rasmus.villemoes@prevas.dk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=prevas.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=prevas.dk header.i=@prevas.dk header.a=rsa-sha256
+ header.s=selector1 header.b=BFWn2pGW; 
+ dkim-atps=neutral
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com
+ (mail-am6eur05on2132.outbound.protection.outlook.com [40.107.22.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CpF2V1rZQzDqKL
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 03:12:01 +1100 (AEDT)
-Received: by mail-pj1-x1043.google.com with SMTP id h7so5156513pjk.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Dec 2020 08:12:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amacapital-net.20150623.gappssmtp.com; s=20150623;
- h=content-transfer-encoding:from:mime-version:subject:date:message-id
- :references:cc:in-reply-to:to;
- bh=Mz/7Yi61thJ88HE692aK3MZiSQS4EROkVabvy/8vXTw=;
- b=DhL2umoxMynanfmyKr00u4At2reQZYap7bLysS7iO2w5j378kBnpkqTo925b1AMXV9
- GfnmqNtET9W86zssaaOutcBbaatQqvIuT0cFpK/81Z7C+e8JNbfIu0fT5XUcH3GNcfdc
- TB+RF64MfXALrRuW3BwDZoBwlIBtNKpXrKm5Y0/qTBIU331wiDfW9P9m9Ss4s+Q3hmKj
- IbLQSoUJ7xJOh7w9Sws/9AcCKZ+1eQgOt1ThRR6L9HNeFOZO+EVk2vhjr0XajH5/mYrN
- BMTdOzYSYOvXdJvjmZaBKKSwrzDg8IwR22EhWuj7sLHF1rrlBKjTfwBTm4b8Mzs0E+Hn
- xxiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:content-transfer-encoding:from:mime-version
- :subject:date:message-id:references:cc:in-reply-to:to;
- bh=Mz/7Yi61thJ88HE692aK3MZiSQS4EROkVabvy/8vXTw=;
- b=RfWhBbntWGiHEPNZK/IdZxDZUDjLvvopnNqtKqbR4TZSF2wbj70MejE0QuLVzlm9uL
- zVJCbQEqKCfQWPFtKsTx3DXVXljauTnYO4zpatOjZlaGKkL6IuxXpQOnwECRtXxxSSBF
- tsxFgrzMp2PEktQMoGdCWF3gwPUgneWJvdNMPmdoN0cYrGAgQOuoM1GpC6sRS3PBIqcS
- JXe0QInlR/IPcM9iLrpcnmiw6UHtPGYhFFgf//GnLA9kDDI4Gw8N3xInF6XDKS0SbYLF
- aGAyMayaz3Jq80RyYupl0KiaO3iwU67MeyZJdIhyht4fHq5DELy6g7cb3xPdtmuJr/Wv
- Peuw==
-X-Gm-Message-State: AOAM533pvKsWjL4+V9N0SdEeFjDuYuec7TUvCag+sUwebPRCCVrbVAw/
- jIkXWsF9+C7A0QE7jXLapeBMzQ==
-X-Google-Smtp-Source: ABdhPJwZpG0woeNrtDGe9OhzFE0RR6dieb9MhtJVWcHQn4MXBKdlSYP/d9e6WoDZV96QQKI0PbKqlA==
-X-Received: by 2002:a17:902:bd4c:b029:d8:fd6a:6ca2 with SMTP id
- b12-20020a170902bd4cb02900d8fd6a6ca2mr8830175plx.53.1607184717112; 
- Sat, 05 Dec 2020 08:11:57 -0800 (PST)
-Received: from ?IPv6:2601:646:c200:1ef2:c541:6c6c:97fe:790?
- ([2601:646:c200:1ef2:c541:6c6c:97fe:790])
- by smtp.gmail.com with ESMTPSA id mr7sm5466394pjb.31.2020.12.05.08.11.55
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sat, 05 Dec 2020 08:11:56 -0800 (PST)
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-From: Andy Lutomirski <luto@amacapital.net>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 2/8] x86: use exit_lazy_tlb rather than
- membarrier_mm_sync_core_before_usermode
-Date: Sat, 5 Dec 2020 08:11:54 -0800
-Message-Id: <116A6B40-C77B-4B6A-897B-18342CD62CEC@amacapital.net>
-References: <1607152918.fkgmomgfw9.astroid@bobo.none>
-In-Reply-To: <1607152918.fkgmomgfw9.astroid@bobo.none>
-To: Nicholas Piggin <npiggin@gmail.com>
-X-Mailer: iPhone Mail (18B121)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CpK9d6BGmzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2020 06:18:24 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=MnE0bVK1Nv0U7j9TTmn7cEQAAwSSmYM2/MT3Z02rk3R1ePtjPTOVygEzh5lRuPDs1jEhfBoqTJolchzN3P9ipd0yO95qnNjxSCu5wIeWh9Bkoui/zqCElEdQ5Ta136BLRUw0wPVrf/X1rfvQplR9JweRmbgzxmT6qYHX8d+KiK9lJChQf8ZNrsvFR6sFLJDgJ6JFpAI6/lc79aiQmAeiu9chSNIf71634Q1V8wHkK62iSdax7zfbuzxGHesOG8EOmbt9Xna54TSGEbBoyezJuwo8jeLCrBR+OGYpDvHk+BNXE3NSFPGJ5/0CcP2ORJ/L08irslSjah56onZWgZfp8w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rKYTTJjfAYq2SHbpf0pgwGx+PpevNL4ulj/gk7Gdwr4=;
+ b=YybYd/QKcYXzpxsH6WAuoQJ1aP+HeAPF4swfpdpFSP6GBIhgToX29tWfIi2t6bujAAUCoQaK4ZnehrN0e6zBWGI361d9SnuqYFMbY3Fkfz/ZKuCE0rc9ypKhzt6wU99L1wuL39vW3Mi/6M/0cnSonajJU1yOvM4sTDWEpRLVJKIUkoDdIuPyFgm0sH7n7uvxXUCxCJ8NNALjDC9JLpEp/CFp0J5EDUnNh7exd5Bk0/UulAQAIywrjfjTZGYvKa+X7FWl0WSWbDiPIfog4pjjkL1zEjv0BWYMCypFWnAJNbm6sH4aen5naCABGxw0Uj1+7N3+4dJcxobBJhPBmwnxFw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=prevas.dk; dmarc=pass action=none header.from=prevas.dk;
+ dkim=pass header.d=prevas.dk; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prevas.dk; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rKYTTJjfAYq2SHbpf0pgwGx+PpevNL4ulj/gk7Gdwr4=;
+ b=BFWn2pGWVhht7Y+aMLeN2dV3aEIdqdPVPkBKppCYlLxvQUIqXhV1TB8ucKVKKnHoZ19NtXJn6JqDrCFyF9QSdbaGIr7cxmXPsVi4M57HNEZpnhoc+rpT/ra76vA4T8yT4RtXhEqAsfnu/jdwkoncdzJ9V/CbXgkMuv9fzmiBALA=
+Authentication-Results: nxp.com; dkim=none (message not signed)
+ header.d=none;nxp.com; dmarc=none action=none header.from=prevas.dk;
+Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:208:3f::10)
+ by AM4PR1001MB1363.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:200:99::12)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.19; Sat, 5 Dec
+ 2020 19:18:18 +0000
+Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::9068:c899:48f:a8e3]) by AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::9068:c899:48f:a8e3%6]) with mapi id 15.20.3632.021; Sat, 5 Dec 2020
+ 19:18:17 +0000
+From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+To: Li Yang <leoyang.li@nxp.com>, "David S. Miller" <davem@davemloft.net>,
+ Jakub Kicinski <kuba@kernel.org>,
+ Murali Krishna Policharla <murali.policharla@broadcom.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>
+Subject: [PATCH 01/20] ethernet: ucc_geth: set dev->max_mtu to 1518
+Date: Sat,  5 Dec 2020 20:17:24 +0100
+Message-Id: <20201205191744.7847-2-rasmus.villemoes@prevas.dk>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
+References: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [5.186.115.188]
+X-ClientProxiedBy: AM5PR0701CA0063.eurprd07.prod.outlook.com
+ (2603:10a6:203:2::25) To AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:208:3f::10)
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from prevas-ravi.prevas.se (5.186.115.188) by
+ AM5PR0701CA0063.eurprd07.prod.outlook.com (2603:10a6:203:2::25) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3654.5 via Frontend
+ Transport; Sat, 5 Dec 2020 19:18:17 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 55ed57e5-51ce-4b10-7060-08d899528567
+X-MS-TrafficTypeDiagnostic: AM4PR1001MB1363:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <AM4PR1001MB13638A572901BAFA70A9EA1193F00@AM4PR1001MB1363.EURPRD10.PROD.OUTLOOK.COM>
+X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: uX0ygCh4xAy1OsUAKag9n7X8+icikxLzMJh9bcCUTmCx1QrIIX/PcnRt68TUxa2hKm66K73QquHNDmvMqTlAtkvFVfIKplU01Dk8V4BCv4IVOoS9/GVD7q8cHbLB9I/CZYfVqLkiJW81UNI52bWg1VtzJ8m6k+k0cnQ4zDlPCfk7IBkP/350wzDTbq7ufCORNewwhfULCcY+5uifv8RBZu9G/RNbT7NmCUcgLtqkXlc0JETKitC/cnHk9e+WgOVnFv5Yb9ry+7F4bBvSMcBBVAL5eU2CB1f/uUVPDEV2+EyuFqCxWBfTjIYwhacfC9df43yD5dqcZHN/REcf+/snWw==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(396003)(39840400004)(346002)(136003)(366004)(376002)(2616005)(2906002)(8676002)(8936002)(83380400001)(52116002)(36756003)(66476007)(66946007)(66556008)(4326008)(8976002)(5660300002)(1076003)(6486002)(44832011)(6512007)(186003)(26005)(6666004)(7416002)(110136005)(316002)(86362001)(478600001)(16526019)(54906003)(956004)(6506007);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?+KnOMDX2SE8w3VxPbTCxSFRExjqaxMD5y4FpExYaT0Ym7+6YFloEi17/1nTX?=
+ =?us-ascii?Q?AwN/bnOEL4ObZuSESci7F1yJMn2+LDpNliha2l2pWrR+vkdrFyNveFCwGJ6I?=
+ =?us-ascii?Q?KV91dZ6aUwq0KvFhLbH1UbKTQpC6KNhckBwUGSicPfRfbdz6ZeaDM6Pdjyql?=
+ =?us-ascii?Q?7w1uzbQLbqnwEspQ/VyZnnbRY/dLkfboYRbpwvV3yF3bV1lbMRemupnyiFBj?=
+ =?us-ascii?Q?e5+71Pk/T0AclStWJO473ADOJsyFTJs+zwdPPiGoXm3bgiloPrd120AUiVak?=
+ =?us-ascii?Q?2JMxOXWpgWmS1Dyj1QWzvYT17ysSFL7bhtNCbyY26/5qo9zleY4nADPfzMZN?=
+ =?us-ascii?Q?kS9MCcj1jSGN0odC7OntmubgbHvlKBZhVz4TBxC8DKxFSZyVGRwRdR32udg6?=
+ =?us-ascii?Q?7UqxIeSS7maOwUOMiuo1lBmivUnuIEPb8CsXLHO/jO4N2RAn2UNNZBSzDUu/?=
+ =?us-ascii?Q?6oNPF9hPYW4YpSSg1cBiNrJ3qQi1E7arihiPFonS/Y1ajPOfeEWy2xXXekZH?=
+ =?us-ascii?Q?Rj11mki7V500aeyqcEJfMIWI/MnL6eRBW0SedZVZS6nbvwB6rstgQggll83G?=
+ =?us-ascii?Q?QRnTL7S8Py4kiScBXRN1aXjpQBdcoRsRjqUYmSsUWmZ4mMsZfVt29PVOC6UO?=
+ =?us-ascii?Q?fdvPZ9F9mltxHsxtzewH6Knauk7WYzFdt/I7VAM175yyxbZp+gwZApQIu3iD?=
+ =?us-ascii?Q?uX8gTz3k2/UtNAV0BvAZlGQWi2zW9YUiMop3iFqeSU8HqWn3VZuVHrQKTAKX?=
+ =?us-ascii?Q?v+lzXpxPNwff1kyuXY2tlnPHvXWY75e3MT0ORLLD/Ohh0niBKau7q1wB+fVi?=
+ =?us-ascii?Q?qRVcBRvddDSVcS/dV5iBsAZMcEU/MUWO5b0lzUtv5Ris9fSprLbJfX4i3I0E?=
+ =?us-ascii?Q?ma8lMS1JL+pVXQNrwb38LpHCgvK4iW/RozWsrghpJFHKRJ6KDnPskmwBYPnF?=
+ =?us-ascii?Q?WMad449kfh6i/U5DfixTLy2iyIEoR5aKVqqO18JVipVGm7zvLcucqqWQaPnt?=
+ =?us-ascii?Q?8xxp?=
+X-OriginatorOrg: prevas.dk
+X-MS-Exchange-CrossTenant-Network-Message-Id: 55ed57e5-51ce-4b10-7060-08d899528567
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2020 19:18:17.9070 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: d350cf71-778d-4780-88f5-071a4cb1ed61
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: tERVoIkKN6pLidz+awmXi7a14UAzx2Z0V2iAwbFGsfSb69x8pjAFfScf3kpdCCgGJK8aFxrtnQDiVrBB+O/rkA0E+1wOTAGEhbsqg+r7rFs=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM4PR1001MB1363
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,49 +139,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Andy Lutomirski <luto@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: netdev@vger.kernel.org, Rasmus Villemoes <rasmus.villemoes@prevas.dk>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Zhao Qiang <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+All the buffers and registers are already set up appropriately for an
+MTU slightly above 1500, so we just need to expose this to the
+networking stack. AFAICT, there's no need to implement .ndo_change_mtu
+when the receive buffers are always set up to support the max_mtu.
 
-> On Dec 5, 2020, at 12:00 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
->=20
->=20
-> I disagree. Until now nobody following it noticed that the mm gets
-> un-lazied in other cases, because that was not too clear from the
-> code (only indirectly using non-standard terminology in the arch
-> support document).
+This fixes several warnings during boot on our mpc8309-board with an
+embedded mv88e6250 switch:
 
-> In other words, membarrier needs a special sync to deal with the case=20
-> when a kthread takes the mm.
+mv88e6085 mdio@e0102120:10: nonfatal error -34 setting MTU 1500 on port 0
+...
+mv88e6085 mdio@e0102120:10: nonfatal error -34 setting MTU 1500 on port 4
+ucc_geth e0102000.ethernet eth1: error -22 setting MTU to 1504 to include DSA overhead
 
-I don=E2=80=99t think this is actually true. Somehow the x86 oddities about C=
-R3 writes leaked too much into the membarrier core code and comments. (I dou=
-bt this is x86 specific.  The actual x86 specific part seems to be that we c=
-an return to user mode without syncing the instruction stream.)
+The last line explains what the DSA stack tries to do: achieving an MTU
+of 1500 on-the-wire requires that the master netdevice connected to
+the CPU port supports an MTU of 1500+the tagging overhead.
 
-As far as I can tell, membarrier doesn=E2=80=99t care at all about laziness.=
- Membarrier cares about rq->curr->mm.  The fact that a cpu can switch its ac=
-tual loaded mm without scheduling at all (on x86 at least) is entirely besid=
-e the point except insofar as it has an effect on whether a subsequent switc=
-h_mm() call serializes.  If we notify membarrier about x86=E2=80=99s asynchr=
-onous CR3 writes, then membarrier needs to understand what to do with them, w=
-hich results in an unmaintainable mess in membarrier *and* in the x86 code.
+Fixes: bfcb813203e6 ("net: dsa: configure the MTU for switch ports")
+Cc: Vladimir Oltean <vladimir.oltean@nxp.com>
+Signed-off-by: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+---
+ drivers/net/ethernet/freescale/ucc_geth.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-I=E2=80=99m currently trying to document how membarrier actually works, and h=
-opefully this will result in untangling membarrier from mmdrop() and such.
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 714b501be7d0..380c1f09adaf 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -3889,6 +3889,7 @@ static int ucc_geth_probe(struct platform_device* ofdev)
+ 	INIT_WORK(&ugeth->timeout_work, ucc_geth_timeout_work);
+ 	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, 64);
+ 	dev->mtu = 1500;
++	dev->max_mtu = 1518;
+ 
+ 	ugeth->msg_enable = netif_msg_init(debug.msg_enable, UGETH_MSG_DEFAULT);
+ 	ugeth->phy_interface = phy_interface;
+-- 
+2.23.0
 
-A silly part of this is that x86 already has a high quality implementation o=
-f most of membarrier(): flush_tlb_mm().  If you flush an mm=E2=80=99s TLB, w=
-e carefully propagate the flush to all threads, with attention to memory ord=
-ering.  We can=E2=80=99t use this directly as an arch-specific implementatio=
-n of membarrier because it has the annoying side affect of flushing the TLB a=
-nd because upcoming hardware might be able to flush without guaranteeing a c=
-ore sync.  (Upcoming means Zen 3, but the Zen 3 implementation is sadly not u=
-sable by Linux.)
