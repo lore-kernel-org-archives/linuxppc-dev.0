@@ -2,24 +2,24 @@ Return-Path: <SRS0=6dJf=FJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54489C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:13:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E76AC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:51:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2857722B4E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:13:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2857722B4E
+	by mail.kernel.org (Postfix) with ESMTPS id 6060022D58
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 03:51:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6060022D58
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cnvm412c6zDqvZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 14:13:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CnwbX2WvBzDqgx
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Dec 2020 14:51:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -28,21 +28,15 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CnvhV4wjwzDqwy
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 14:10:18 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 7137B2B617;
- Fri,  4 Dec 2020 22:10:15 -0500 (EST)
-Date: Sat, 5 Dec 2020 14:10:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CnwYp1ZWmzDq9T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2020 14:49:34 +1100 (AEDT)
+Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
+ id 1A4412B617; Fri,  4 Dec 2020 22:49:32 -0500 (EST)
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Message-Id: <fbac2cd8632bb719f48cd1368910abd310548a0e.1607139987.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] macintosh/adb-iop: Send correct poll command
-In-Reply-To: <CAMuHMdVYf83+y1aUR6HqCgr-CLfWYvbuynpfogLrt3cXA-9_aA@mail.gmail.com>
-Message-ID: <alpine.LNX.2.23.453.2012051340490.6@nippy.intranet>
-References: <58bba4310da4c29b068345a4b36af8a531397ff7.1605847196.git.fthain@telegraphics.com.au>
- <CAMuHMdVYf83+y1aUR6HqCgr-CLfWYvbuynpfogLrt3cXA-9_aA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [PATCH] MAINTAINERS: Update 68k Mac entry
+Date: Sat, 05 Dec 2020 14:46:27 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,46 +48,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Joshua Thompson <funaho@jurai.org>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 4 Dec 2020, Geert Uytterhoeven wrote:
+Two files under drivers/macintosh are actually m68k-only. I think that
+patches for these files should be reviewed in the appropriate forum and
+merged via the appropriate tree, rather than falling to the powerpc
+maintainers to deal with. Update the "M68K ON APPLE MACINTOSH" section
+accordingly.
 
-> Hi Finn,
-> 
-> On Fri, Nov 20, 2020 at 5:54 AM Finn Thain <fthain@telegraphics.com.au> wrote:
-> > The behaviour of the IOP firmware is not well documented but we do know
-> > that IOP message reply data can be used to issue new ADB commands.
-> > Use the message reply to better control autopoll behaviour by sending
-> > a Talk Register 0 command after every ADB response, not unlike the
-> > algorithm in the via-macii driver. This poll command is addressed to
-> > that device which last received a Talk command (explicit or otherwise).
-> >
-> > Cc: Joshua Thompson <funaho@jurai.org>
-> > Fixes: fa3b5a9929fc ("macintosh/adb-iop: Implement idle -> sending state transition")
-> 
-> WARNING: Unknown commit id 'fa3b5a9929fc', maybe rebased or not pulled?
-> 
-> 32226e817043?
-> 
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Joshua Thompson <funaho@jurai.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-m68k@lists.linux-m68k.org
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+ MAINTAINERS | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Yes, that's the one. I accidentally gave a commit id from one of my 
-backport branches.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 867157311dc8..e8fa0c9645d6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10322,6 +10322,8 @@ L:	linux-m68k@lists.linux-m68k.org
+ S:	Maintained
+ W:	http://www.mac.linux-m68k.org/
+ F:	arch/m68k/mac/
++F:	drivers/macintosh/adb-iop.c
++F:	drivers/macintosh/via-macii.c
+ 
+ M68K ON HP9000/300
+ M:	Philip Blundell <philb@gnu.org>
+-- 
+2.26.2
 
-> > Tested-by: Stan Johnson <userm57@yahoo.com>
-> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> 
-> Thanks, will queue in the m68k for-v5.11 branch.
-> 
-
-Thanks.
-
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> 
