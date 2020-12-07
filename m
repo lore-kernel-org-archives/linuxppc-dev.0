@@ -2,89 +2,86 @@ Return-Path: <SRS0=AZ+D=FL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C720DC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 21:56:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88414C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 21:58:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 066CD23436
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 21:56:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 066CD23436
+	by mail.kernel.org (Postfix) with ESMTPS id 83E8F23436
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 21:58:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83E8F23436
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cqcb05gm8zDqWq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:56:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CqcdC6hR9zDqXQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:58:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MICbf3eA; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=jkGBUI0J; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CqcTz4DNFzDqVL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 08:52:07 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CqcTz3pqfzDqVK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 08:52:06 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B7LRsH2118785
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 16:52:05 -0500
+ 0B7LTKfC106485
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 16:52:03 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=hO283/Y9MLUpvSJqiirGHcvmU+xACNiFGgWUZ0Z8LPc=;
- b=MICbf3eAQ6U8r5gH/fHBMm0Aixp39QZsptC/NwLTKmK8eFF3FAPeBqvfQR8/vibjnsY1
- ZrpflA27adgP3uoFuy5r6q1bTMGcLNFAIOGc22eZak8Ga5GPut6t542EtaqP1ItdpBcU
- tpBONbI9110f1NQxcj6elihc0y1YpP3uZ9+nFs6nQzScsm6t0/Dy2Prbi0/34d7iaUfU
- 6o3Rh75YGHrSkWY7kgP/itT9Vj52kv8BAu0dpZ2Zoi4LBMcqHFJ14Kczoy9D5IhFaUSc
- 8Z5TglZibksXUERZ8O4VT/EWwqW30Q/aBcmwRpZCYWCdXe4IeDE1IpSzPR9f3i+lej+B xA== 
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 359s0h6byb-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=8SpgHLcVlEoptyi4OjxzgIgZ+/4j18QPzlXSHwxSfAM=;
+ b=jkGBUI0JasBZ1D6AEkzYfvunlMUZ+/UC2zkyEVW0Q+dlZKPcTBl0oAV4psX+fpHssR1n
+ YfNpTiIxShqdcBtDybPmy32YgN2lqhvrvzW58LXzYypdg8co5revPM1RpDb3If8d80fl
+ mXexv+kvm+arNdgiCYRrw88J3ymDsYdxferFo6/e48H4YmNG4krOTO3ETgLEFoVIcdgO
+ V6Lanh9oxPl8ObLRa1ystSpi3pgatcEyBrMOhkjTc5G4VDad2dA2AWOJ9TWx9ummVyOX
+ 9akzFoVGp3dpbBIJQSGSih5PdwR0pa9Tozu3ChDpt95HPuyXCReFVy62Wdzvrn16BDeS kg== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 359s0r6bx4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 16:52:05 -0500
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B7Llbmg010825
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 21:52:04 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma03wdc.us.ibm.com with ESMTP id 3581u8u0cc-1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 16:52:03 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B7LlkKe000963
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 21:52:02 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma04wdc.us.ibm.com with ESMTP id 3581u92xyk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 21:52:04 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B7Lq3c221299458
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 21:52:02 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B7Lq1lN11796802
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 7 Dec 2020 21:52:03 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8264AC05E;
- Mon,  7 Dec 2020 21:52:03 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6AB02AC05F;
- Mon,  7 Dec 2020 21:52:03 +0000 (GMT)
+ Mon, 7 Dec 2020 21:52:01 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5ABCE6E052;
+ Mon,  7 Dec 2020 21:52:01 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1843C6E04C;
+ Mon,  7 Dec 2020 21:52:00 +0000 (GMT)
 Received: from localhost (unknown [9.160.57.67])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  7 Dec 2020 21:52:03 +0000 (GMT)
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon,  7 Dec 2020 21:52:00 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 03/28] powerpc/rtas: rtas_ibm_suspend_me ->
- rtas_ibm_suspend_me_unsafe
-Date: Mon,  7 Dec 2020 15:51:35 -0600
-Message-Id: <20201207215200.1785968-4-nathanl@linux.ibm.com>
+Subject: [PATCH v2 00/28] partition suspend updates
+Date: Mon,  7 Dec 2020 15:51:32 -0600
+Message-Id: <20201207215200.1785968-1-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201207215200.1785968-1-nathanl@linux.ibm.com>
-References: <20201207215200.1785968-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -92,11 +89,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-07_16:2020-12-04,
  2020-12-07 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 mlxscore=0
- malwarescore=0 priorityscore=1501 impostorscore=0 spamscore=0 bulkscore=0
- lowpriorityscore=0 suspectscore=3 mlxlogscore=964 adultscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012070132
+ priorityscore=1501
+ adultscore=0 clxscore=1015 mlxlogscore=347 lowpriorityscore=0
+ suspectscore=1 spamscore=0 malwarescore=0 bulkscore=0 mlxscore=0
+ phishscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2012070132
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,88 +111,97 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pseries partition suspend sequence requires that all active CPUs
-call H_JOIN, which suspends all but one of them with interrupts
-disabled. The "chosen" CPU is then to call ibm,suspend-me to complete
-the suspend. Upon returning from ibm,suspend-me, the chosen CPU is to
-use H_PROD to wake the joined CPUs.
+This series aims to improve the pseries-specific partition migration
+and hibernation implementation, part of which has been living in
+kernel/rtas.c. Most of that code is eliminated or moved to
+platforms/pseries, and the following major functional changes are
+made:
 
-Using on_each_cpu() for this, as rtas_ibm_suspend_me() does to
-implement partition migration, is susceptible to deadlock with other
-users of on_each_cpu() and with users of stop_machine APIs. The
-callback passed to on_each_cpu() is not allowed to synchronize with
-other CPUs in the way it is used here.
+- Use stop_machine() instead of on_each_cpu() to avoid deadlock in the
+  join/suspend sequence.
 
-Complicating the fix is the fact that rtas_ibm_suspend_me() also
-occupies the function name that should be used to provide a more
-conventional wrapper for ibm,suspend-me. Rename rtas_ibm_suspend_me()
-to rtas_ibm_suspend_me_unsafe() to free up the name and indicate that
-it should not gain users.
+- Retry the join/suspend sequence on errors that are likely to be
+  transient. This is a mitigation for the fact that drivers currently
+  have no way to prepare for an impending partition suspension,
+  sometimes resulting in a virtual adapter being in a state which
+  causes the platform to fail the suspend call.
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/include/asm/rtas.h           | 2 +-
- arch/powerpc/kernel/rtas.c                | 6 +++---
- arch/powerpc/platforms/pseries/mobility.c | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+- Request cancellation of the migration via H_VASI_SIGNAL if Linux is
+  going to error out of the suspend attempt. This allows the
+  management console and other entities to promptly clean up their
+  operations instead of relying on long timeouts to fail the
+  migration.
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index f060181a0d32..8436ed01567b 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -257,7 +257,7 @@ extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
- extern void rtas_progress(char *s, unsigned short hex);
- extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
- extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
--extern int rtas_ibm_suspend_me(u64 handle);
-+int rtas_ibm_suspend_me_unsafe(u64 handle);
- 
- struct rtc_time;
- extern time64_t rtas_get_boot_time(void);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 4ed64aba37d6..0a8e5dc2c108 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -843,7 +843,7 @@ static void rtas_percpu_suspend_me(void *info)
- 	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
- }
- 
--int rtas_ibm_suspend_me(u64 handle)
-+int rtas_ibm_suspend_me_unsafe(u64 handle)
- {
- 	long state;
- 	long rc;
-@@ -949,7 +949,7 @@ int rtas_call_reentrant(int token, int nargs, int nret, int *outputs, ...)
- }
- 
- #else /* CONFIG_PPC_PSERIES */
--int rtas_ibm_suspend_me(u64 handle)
-+int rtas_ibm_suspend_me_unsafe(u64 handle)
- {
- 	return -ENOSYS;
- }
-@@ -1185,7 +1185,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- 		int rc = 0;
- 		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
- 		              | be32_to_cpu(args.args[1]);
--		rc = rtas_ibm_suspend_me(handle);
-+		rc = rtas_ibm_suspend_me_unsafe(handle);
- 		if (rc == -EAGAIN)
- 			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
- 		else if (rc == -EIO)
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 2f73cb5bf12d..6ff642e84c6a 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -370,7 +370,7 @@ static ssize_t migration_store(struct class *class,
- 		return rc;
- 
- 	do {
--		rc = rtas_ibm_suspend_me(streamid);
-+		rc = rtas_ibm_suspend_me_unsafe(streamid);
- 		if (rc == -EAGAIN)
- 			ssleep(1);
- 	} while (rc == -EAGAIN);
+- Little-endian users of ibm,suspend-me, ibm,update-nodes and
+  ibm,update-properties via sys_rtas are blocked when
+  CONFIG_PPC_RTAS_FILTERS is enabled.
+
+- Legacy user space code (drmgr) historically has driven the migration
+  process by using sys_rtas to separately call ibm,suspend-me,
+  ibm,activate-firmware, and ibm,update-nodes/properties, in that
+  order. With these changes, when sys_rtas() dispatches
+  ibm,suspend-me, the kernel performs the device tree update and
+  firmware activation before returning. This is more reliable, and
+  drmgr does not seem bothered by it.
+
+- If the H_VASI_STATE hcall is absent, the implementation proceeds
+  with the suspend instead of erroring out. This allows us to exercise
+  these code paths in QEMU.
+
+Changes since v1:
+- Drop "powerpc/rtas: move rtas_call_reentrant() out of pseries
+  guards". rtas_call_reentrant() actually is pseries-specific and this
+  broke builds without CONFIG_PPC_PSERIES set.
+- Simplify polling logic in wait_for_vasi_session_suspending().
+  ("powerpc/pseries/mobility: extract VASI session polling logic")
+- Use direct return instead of goto in pseries_migrate_partition().
+  ("powerpc/pseries/mobility: use stop_machine for join/suspend")
+- Change dispatch of ibm,suspend-me in rtas syscall path to use
+  conventional config symbol guards instead of a weak function.
+  ("powerpc/rtas: dispatch partition migration requests to pseries")
+- Fix refcount imbalance in add_dt_node() error path.
+  ("powerpc/pseries/mobility: refactor node lookup during DT update")
+
+Nathan Lynch (28):
+  powerpc/rtas: prevent suspend-related sys_rtas use on LE
+  powerpc/rtas: complete ibm,suspend-me status codes
+  powerpc/rtas: rtas_ibm_suspend_me -> rtas_ibm_suspend_me_unsafe
+  powerpc/rtas: add rtas_ibm_suspend_me()
+  powerpc/rtas: add rtas_activate_firmware()
+  powerpc/hvcall: add token and codes for H_VASI_SIGNAL
+  powerpc/pseries/mobility: don't error on absence of ibm,update-nodes
+  powerpc/pseries/mobility: add missing break to default case
+  powerpc/pseries/mobility: error message improvements
+  powerpc/pseries/mobility: use rtas_activate_firmware() on resume
+  powerpc/pseries/mobility: extract VASI session polling logic
+  powerpc/pseries/mobility: use stop_machine for join/suspend
+  powerpc/pseries/mobility: signal suspend cancellation to platform
+  powerpc/pseries/mobility: retry partition suspend after error
+  powerpc/rtas: dispatch partition migration requests to pseries
+  powerpc/rtas: remove rtas_ibm_suspend_me_unsafe()
+  powerpc/pseries/hibernation: drop pseries_suspend_begin() from suspend
+    ops
+  powerpc/pseries/hibernation: pass stream id via function arguments
+  powerpc/pseries/hibernation: remove pseries_suspend_cpu()
+  powerpc/machdep: remove suspend_disable_cpu()
+  powerpc/rtas: remove rtas_suspend_cpu()
+  powerpc/pseries/hibernation: switch to rtas_ibm_suspend_me()
+  powerpc/rtas: remove unused rtas_suspend_last_cpu()
+  powerpc/pseries/hibernation: remove redundant cacheinfo update
+  powerpc/pseries/hibernation: perform post-suspend fixups later
+  powerpc/pseries/hibernation: remove prepare_late() callback
+  powerpc/rtas: remove unused rtas_suspend_me_data
+  powerpc/pseries/mobility: refactor node lookup during DT update
+
+ arch/powerpc/include/asm/hvcall.h         |   9 +
+ arch/powerpc/include/asm/machdep.h        |   1 -
+ arch/powerpc/include/asm/rtas-types.h     |   8 -
+ arch/powerpc/include/asm/rtas.h           |  17 +-
+ arch/powerpc/kernel/rtas.c                | 243 ++++++---------
+ arch/powerpc/platforms/pseries/mobility.c | 358 ++++++++++++++++++----
+ arch/powerpc/platforms/pseries/suspend.c  |  79 +----
+ 7 files changed, 415 insertions(+), 300 deletions(-)
+
 -- 
 2.28.0
 
