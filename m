@@ -2,77 +2,63 @@ Return-Path: <SRS0=AZ+D=FL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6C49C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 11:25:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A373C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 11:32:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 512E223357
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 11:25:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 512E223357
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id 189E823340
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 11:32:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 189E823340
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CqLZy4YfhzDqWp
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:25:30 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CqLSJ4hhrzDqWM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2020 22:19:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=K6WHIa2S; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4CqLSF5L03z8tYl
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2020 22:19:41 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4CqLSF2PdHz9sWj; Mon,  7 Dec 2020 22:19:41 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
- helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=K6WHIa2S; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CqLkd2G5zzDqD4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:32:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4CqLSD65Whz9sW9
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Dec 2020 22:19:40 +1100 (AEDT)
-Received: from zn.tnic (p4fed31e1.dip0.t-ipconnect.de [79.237.49.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id B320C1EC0426;
- Mon,  7 Dec 2020 12:19:37 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1607339977;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=XYWwByMWitnTEsriHnMquiuoxbw9xmBiP+xQcZ42uX4=;
- b=K6WHIa2SoRS6q4VIUPe4HJd5VmZEJmehKXp5SsjskOBJvvF0eDYdwCSzDL0lo73Ak+6Exc
- 7l0UqIk+eoklpvjoARYuh4z69Gnm0ppa8OvDSixAtY3bSIj8IApn/BvgOs7aOfBvUkZn3p
- rrAH7XqXww1P6eeoDudEnGhesjgXU1c=
-Date: Mon, 7 Dec 2020 12:17:27 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] EDAC/mv64x60: Remove orphan mv64x60 driver
-Message-ID: <20201207111727.GC20489@zn.tnic>
-References: <20201207040253.628528-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CqLY21L8szDqD3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2020 22:23:49 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 209277] powerpc: obsolete driver: Marvell MV64X60 MPSC
+Date: Mon, 07 Dec 2020 11:23:44 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: enhancement
+X-Bugzilla-Who: bp@alien8.de
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-209277-206035-DqOHYnkzHP@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-209277-206035@https.bugzilla.kernel.org/>
+References: <bug-209277-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20201207040253.628528-1-mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,37 +70,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tony.luck@intel.com, rric@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, james.morse@arm.com, mchehab@kernel.org,
- linux-edac@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 07, 2020 at 03:02:53PM +1100, Michael Ellerman wrote:
-> The mv64x60 EDAC driver depends on CONFIG_MV64X60. But that symbol is
-> not user-selectable, and the last code that selected it was removed
-> with the C2K board support in 2018, see:
-> 
->   92c8c16f3457 ("powerpc/embedded6xx: Remove C2K board support")
-> 
-> That means the driver is now dead code, so remove it.
-> 
-> Suggested-by: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  drivers/edac/Kconfig        |   7 -
->  drivers/edac/Makefile       |   1 -
->  drivers/edac/mv64x60_edac.c | 883 ------------------------------------
->  drivers/edac/mv64x60_edac.h | 114 -----
->  4 files changed, 1005 deletions(-)
->  delete mode 100644 drivers/edac/mv64x60_edac.c
->  delete mode 100644 drivers/edac/mv64x60_edac.h
+https://bugzilla.kernel.org/show_bug.cgi?id=3D209277
 
-Gladly taken and applied, thanks!
+--- Comment #2 from Borislav Petkov (bp@alien8.de) ---
+https://git.kernel.org/pub/scm/linux/kernel/git/ras/ras.git/commit/?h=3Deda=
+c-drivers&id=3D0385979a30dc4abdef2dcebbccef818947c80cb7
 
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
