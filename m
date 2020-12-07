@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C7DEC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A7CC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:07:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5651223975
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:05:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5651223975
+	by mail.kernel.org (Postfix) with ESMTPS id 1264B2395A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Dec 2020 22:07:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1264B2395A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CqcnP3cTLzDqdr
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 09:05:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cqcr70DKxzDqXZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 09:07:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
@@ -28,59 +28,60 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Sa6Ojo+N; dkim-atps=neutral
+ header.s=pp1 header.b=IsW8erTT; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CqcV06ysHzDqVK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 08:52:08 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CqcV15X5HzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 08:52:09 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B7LeDlS130074
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 16:52:06 -0500
+ 0B7LXKIX101261
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 16:52:08 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=qFAz7SoyfUY89c9/uHKqIGveXr2vCOTAg8aFxOtKyQ0=;
- b=Sa6Ojo+NfUkRWAslUkMUqGsy/KuacKxaF2tnZU80r/pQpzUd9QGPpotjQVo0ME276PEQ
- tO+F0hb7sGQLH4lgeedi22qb3NVKGcB0WxXtRBCqogT5nXhBfuVidoZ+KCXYwhR13qdz
- a/lzIXOBD/elnLm9QxEC/x3Wy7pZ6xuLx07Kkn5D8QBnGdgqjiens3qRu/yzDquACCHY
- 4k1TpQPioBhneJQrOpPUwMWFSfNrqqSu41t+w10IWlS9zKa0KMupTjlZMZt3GQaWH6R9
- JqnE0MekaYNNfMUhnFLG5sBrQ9SaPjE28ZQg83dFUEda7bR442nJZ+4TXkuglSWSQHZ1 wA== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 359s0mxa0p-1
+ bh=e3lOu4+YNdroElBDJTGBjTqwvBcyP86gHmB+P53cv4c=;
+ b=IsW8erTTkx9+Wbr+ZrEsWMg0e6vKv4RdgoMyEd7HTIM3kNzY3bJv0cMWR+oXveRVwVBY
+ OsO0u8mmV+30mi7pSfcdpMLez970pmjCzxaY/k8hjnzJTefiD4PhtRZYhdw/nqBxjl/T
+ hoW7RoLf8J2LVkFD31Olt7gnuNq7Gm+i81i4bmf+uVFx6P+IkX2nV5sLHrUOwNzgSwLo
+ 1DMOizRtODHdNPRuPW6WqEat0rkfxhQrqVuR03SXHx6X+wdHVAoq0hulCMVs4L/cQE4g
+ ZvcFgwQxRLxVIUTYCUaJKSgFpU3jGVSH3xijbmFi4umjz9WlA18Qnqf8tOXN5KfEEYEo 7w== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 359s0me1n2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 16:52:06 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B7LmJnH024621
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 16:52:07 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B7LliV4000950
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2020 21:52:06 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 3581u8ymv6-1
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04wdc.us.ibm.com with ESMTP id 3581u92xyy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 21:52:05 +0000
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2020 21:52:06 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B7Lq5qE17629906
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B7Lq6Vq63242504
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 7 Dec 2020 21:52:05 GMT
+ Mon, 7 Dec 2020 21:52:06 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0126CAC05B;
- Mon,  7 Dec 2020 21:52:05 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 518C1AC059;
+ Mon,  7 Dec 2020 21:52:06 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C7B0DAC059;
- Mon,  7 Dec 2020 21:52:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1ECF7AC05B;
+ Mon,  7 Dec 2020 21:52:06 +0000 (GMT)
 Received: from localhost (unknown [9.160.57.67])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  7 Dec 2020 21:52:04 +0000 (GMT)
+ Mon,  7 Dec 2020 21:52:06 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 05/28] powerpc/rtas: add rtas_activate_firmware()
-Date: Mon,  7 Dec 2020 15:51:37 -0600
-Message-Id: <20201207215200.1785968-6-nathanl@linux.ibm.com>
+Subject: [PATCH v2 07/28] powerpc/pseries/mobility: don't error on absence of
+ ibm, update-nodes
+Date: Mon,  7 Dec 2020 15:51:39 -0600
+Message-Id: <20201207215200.1785968-8-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201207215200.1785968-1-nathanl@linux.ibm.com>
 References: <20201207215200.1785968-1-nathanl@linux.ibm.com>
@@ -91,11 +92,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-07_16:2020-12-04,
  2020-12-07 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015
- mlxscore=0 mlxlogscore=999 lowpriorityscore=0 impostorscore=0 spamscore=0
- suspectscore=1 adultscore=0 priorityscore=1501 phishscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012070140
+ spamscore=0 mlxscore=0
+ bulkscore=0 adultscore=0 phishscore=0 priorityscore=1501 mlxlogscore=999
+ clxscore=1015 malwarescore=0 impostorscore=0 suspectscore=1
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012070140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,73 +114,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide a documented wrapper function for the ibm,activate-firmware
-service, which must be called after a partition migration or
-hibernation.
-
-If the function is absent or the call fails, the OS will continue to
-run normally with the current firmware, so there is no need to perform
-any recovery. Just log it and continue.
+Treat the absence of the ibm,update-nodes function as benign instead
+of reporting an error. If the platform does not provide that facility,
+it's not a problem for Linux.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h |  1 +
- arch/powerpc/kernel/rtas.c      | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/powerpc/platforms/pseries/mobility.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index b43165fc6c2a..fdefe6a974eb 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -247,6 +247,7 @@ extern void __noreturn rtas_restart(char *cmd);
- extern void rtas_power_off(void);
- extern void __noreturn rtas_halt(void);
- extern void rtas_os_term(char *str);
-+void rtas_activate_firmware(void);
- extern int rtas_get_sensor(int sensor, int index, int *state);
- extern int rtas_get_sensor_fast(int sensor, int index, int *state);
- extern int rtas_get_power_level(int powerdomain, int *level);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 8a618a3c4beb..3a740ae933f8 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -798,6 +798,36 @@ void rtas_os_term(char *str)
- 		printk(KERN_EMERG "ibm,os-term call failed %d\n", status);
- }
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 6ff642e84c6a..e66359b00297 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -261,7 +261,7 @@ int pseries_devicetree_update(s32 scope)
  
-+/**
-+ * rtas_activate_firmware() - Activate a new version of firmware.
-+ *
-+ * Activate a new version of partition firmware. The OS must call this
-+ * after resuming from a partition hibernation or migration in order
-+ * to maintain the ability to perform live firmware updates. It's not
-+ * catastrophic for this method to be absent or to fail; just log the
-+ * condition in that case.
-+ *
-+ * Context: This function may sleep.
-+ */
-+void rtas_activate_firmware(void)
-+{
-+	int token;
-+	int fwrc;
-+
-+	token = rtas_token("ibm,activate-firmware");
-+	if (token == RTAS_UNKNOWN_SERVICE) {
-+		pr_notice("ibm,activate-firmware method unavailable\n");
-+		return;
-+	}
-+
-+	do {
-+		fwrc = rtas_call(token, 0, 1, NULL);
-+	} while (rtas_busy_delay(fwrc));
-+
-+	if (fwrc)
-+		pr_err("ibm,activate-firmware failed (%i)\n", fwrc);
-+}
-+
- static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
- #ifdef CONFIG_PPC_PSERIES
- static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
+ 	update_nodes_token = rtas_token("ibm,update-nodes");
+ 	if (update_nodes_token == RTAS_UNKNOWN_SERVICE)
+-		return -EINVAL;
++		return 0;
+ 
+ 	rtas_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
+ 	if (!rtas_buf)
 -- 
 2.28.0
 
