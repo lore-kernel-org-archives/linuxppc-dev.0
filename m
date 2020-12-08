@@ -2,50 +2,68 @@ Return-Path: <SRS0=iKYh=FM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 381F3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 17:12:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B93F9C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 17:26:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 83C3723B03
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 17:12:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83C3723B03
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 15160207D8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 17:26:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15160207D8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr6Dj6nKBzDqG1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:12:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr6Xx3kN4zDqjp
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:26:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=groug@kaod.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from smtpout1.mo529.mail-out.ovh.net
+ (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr6BC6nwfzDq5t
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 04:10:11 +1100 (AEDT)
-From: Mark Brown <broonie@kernel.org>
-Authentication-Results: mail.kernel.org;
- dkim=permerror (bad message/signature format)
-To: Shengjiu Wang <shengjiu.wang@nxp.com>, timur@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, perex@perex.cz,
- robh+dt@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- lgirdwood@gmail.com, tiwai@suse.com
-In-Reply-To: <1607251319-5821-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1607251319-5821-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 1/2] ASoC: dt-bindings: imx-hdmi: Add binding doc for
- hdmi machine driver
-Message-Id: <160744738921.29839.15317690694275693705.b4-ty@kernel.org>
-Date: Tue, 08 Dec 2020 17:09:49 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr6VC6R8zzDqRj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 04:24:02 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.16.164])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 63DF7726BCDA;
+ Tue,  8 Dec 2020 18:23:59 +0100 (CET)
+Received: from kaod.org (37.59.142.101) by DAG8EX1.mxp5.local (172.16.2.71)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Tue, 8 Dec 2020
+ 18:23:59 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-101G004f899de7c-9249-445b-afc5-acce07eb1b49,
+ 17D40A658B0D6C300559F39EE9B5E954A2DF46D1) smtp.auth=groug@kaod.org
+X-OVh-ClientIp: 82.253.208.248
+Date: Tue, 8 Dec 2020 18:23:57 +0100
+From: Greg Kurz <groug@kaod.org>
+To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 08/13] powerpc: Increase NR_IRQS range to support more
+ KVM guests
+Message-ID: <20201208182357.75d65fd8@bahia.lan>
+In-Reply-To: <20201208151124.1329942-9-clg@kaod.org>
+References: <20201208151124.1329942-1-clg@kaod.org>
+ <20201208151124.1329942-9-clg@kaod.org>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Originating-IP: [37.59.142.101]
+X-ClientProxiedBy: DAG3EX1.mxp5.local (172.16.2.21) To DAG8EX1.mxp5.local
+ (172.16.2.71)
+X-Ovh-Tracer-GUID: af975aad-f183-4086-955c-037def1f0b41
+X-Ovh-Tracer-Id: 13163740236680305050
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudejiedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepfffhvffukfgjfhfogggtgfhisehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeevlefhtddufffhieevhefhleegleelgfetffetkedugeehjeffgfehhfefueduffenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,41 +75,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 6 Dec 2020 18:41:58 +0800, Shengjiu Wang wrote:
-> Imx-hdmi is a new added machine driver for supporting hdmi devices
-> on i.MX platforms. There is HDMI IP or external HDMI modules connect
-> with SAI or AUD2HTX interface.
+On Tue, 8 Dec 2020 16:11:19 +0100
+C=C3=A9dric Le Goater <clg@kaod.org> wrote:
 
-Applied to
+> PowerNV systems can handle up to 4K guests and 1M interrupt numbers
+> per chip. Increase the range of allowed interrupts to support a larger
+> number of guests.
+>=20
+> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+> ---
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Reviewed-by: Greg Kurz <groug@kaod.org>
 
-Thanks!
+>  arch/powerpc/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 5181872f9452..c250fbd430d1 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -66,7 +66,7 @@ config NEED_PER_CPU_PAGE_FIRST_CHUNK
+> =20
+>  config NR_IRQS
+>  	int "Number of virtual interrupt numbers"
+> -	range 32 32768
+> +	range 32 1048576
+>  	default "512"
+>  	help
+>  	  This defines the number of virtual interrupt numbers the kernel
 
-[1/2] ASoC: dt-bindings: imx-hdmi: Add binding doc for hdmi machine driver
-      commit: e344cf5e4871f99495396f78d4401b8ac4c92465
-[2/2] ASoC: fsl: Add imx-hdmi machine driver
-      commit: 6a5f850aa83a1d844d27e3e53ca2f247e55d438b
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
