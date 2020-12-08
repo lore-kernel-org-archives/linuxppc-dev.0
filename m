@@ -2,71 +2,93 @@ Return-Path: <SRS0=iKYh=FM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71443C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C8E9C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:42:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0E5F23A33
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:40:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0E5F23A33
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 7FDFF23A33
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:42:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FDFF23A33
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr4C436l1zDqfs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 02:40:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr4FH3DPXzDqg9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 02:42:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr3bN6SkmzDqNW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 02:13:20 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Cr3bG4xZSz9v42n;
- Tue,  8 Dec 2020 16:13:14 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id DLQnTwSN6Bb0; Tue,  8 Dec 2020 16:13:14 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Cr3bG33tKz9v0Vw;
- Tue,  8 Dec 2020 16:13:14 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F2DE48B7CA;
- Tue,  8 Dec 2020 16:13:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id h6SE5JibrgJa; Tue,  8 Dec 2020 16:13:15 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 271938B7BE;
- Tue,  8 Dec 2020 16:13:15 +0100 (CET)
-Subject: Re: [PATCH 14/20] ethernet: ucc_geth: don't statically allocate eight
- ucc_geth_info
-To: Rasmus Villemoes <rasmus.villemoes@prevas.dk>,
- Li Yang <leoyang.li@nxp.com>, "David S. Miller" <davem@davemloft.net>,
- Jakub Kicinski <kuba@kernel.org>
-References: <20201205191744.7847-1-rasmus.villemoes@prevas.dk>
- <20201205191744.7847-15-rasmus.villemoes@prevas.dk>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <8259bec3-9343-82e3-a420-a8170cf922a4@csgroup.eu>
-Date: Tue, 8 Dec 2020 16:13:15 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr3cL5DjQzDqWW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 02:14:10 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0B8F1rYR098193; Tue, 8 Dec 2020 10:14:03 -0500
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 359qrgk0aj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 08 Dec 2020 10:14:03 -0500
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B8F9ZTN019657;
+ Tue, 8 Dec 2020 15:14:02 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03fra.de.ibm.com with ESMTP id 3581u8ne9m-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 08 Dec 2020 15:14:01 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B8FBTAN30998790
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 8 Dec 2020 15:11:29 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0D75411C089;
+ Tue,  8 Dec 2020 15:11:29 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E532511C077;
+ Tue,  8 Dec 2020 15:11:28 +0000 (GMT)
+Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Tue,  8 Dec 2020 15:11:28 +0000 (GMT)
+Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 6D748220190;
+ Tue,  8 Dec 2020 16:11:28 +0100 (CET)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 05/13] powerpc/xive: Fix allocation of pages donated to the
+ XIVE controller
+Date: Tue,  8 Dec 2020 16:11:16 +0100
+Message-Id: <20201208151124.1329942-6-clg@kaod.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201208151124.1329942-1-clg@kaod.org>
+References: <20201208151124.1329942-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <20201205191744.7847-15-rasmus.villemoes@prevas.dk>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-08_09:2020-12-08,
+ 2020-12-08 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 mlxlogscore=999
+ suspectscore=1 adultscore=0 mlxscore=0 impostorscore=0 spamscore=0
+ malwarescore=0 bulkscore=0 clxscore=1034 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012080086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,121 +100,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vladimir Oltean <vladimir.oltean@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The XIVE interrupt controller uses a set of internal tables to handle
+interrupt routing. The small tables (SBE, EAT) are direct tables and
+allocated by OPAL. The bigger ones (NVT, ENDT) are indirect, i.e., the
+first table entries point to a page which contains the XIVE structures
+used by HW. For these, OPAL only allocates the first page level and
+requests pages to be allocated by Linux when a new entry is inserted.
 
+Make sure that these pages can not be reclaimed. The problem can be
+seen while stressing a system with 4K KVM guests, 16 vCPUs each.
 
-Le 05/12/2020 à 20:17, Rasmus Villemoes a écrit :
-> struct ucc_geth_info is somewhat large, and on systems with only one
-> or two UCC instances, that just wastes a few KB of memory. So
-> allocate and populate a chunk of memory at probe time instead of
-> initializing them all during driver init.
-> 
-> Note that the existing "ug_info == NULL" check was dead code, as the
-> address of some static array element can obviously never be NULL.
-> 
-> Signed-off-by: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-> ---
->   drivers/net/ethernet/freescale/ucc_geth.c | 32 +++++++++--------------
->   1 file changed, 12 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-> index a06744d8b4af..273342233bba 100644
-> --- a/drivers/net/ethernet/freescale/ucc_geth.c
-> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-> @@ -157,8 +157,6 @@ static const struct ucc_geth_info ugeth_primary_info = {
->   	.riscRx = QE_RISC_ALLOCATION_RISC1_AND_RISC2,
->   };
->   
-> -static struct ucc_geth_info ugeth_info[8];
-> -
->   #ifdef DEBUG
->   static void mem_disp(u8 *addr, int size)
->   {
-> @@ -3714,25 +3712,23 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->   	if ((ucc_num < 0) || (ucc_num > 7))
->   		return -ENODEV;
->   
-> -	ug_info = &ugeth_info[ucc_num];
-> -	if (ug_info == NULL) {
-> -		if (netif_msg_probe(&debug))
-> -			pr_err("[%d] Missing additional data!\n", ucc_num);
-> -		return -ENODEV;
-> -	}
-> +	ug_info = kmalloc(sizeof(*ug_info), GFP_KERNEL);
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/sysdev/xive/xive-internal.h | 2 ++
+ arch/powerpc/sysdev/xive/common.c        | 2 +-
+ arch/powerpc/sysdev/xive/native.c        | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
-Could we use dev_kmalloc() instead, to avoid the freeing on the wait out and the err_free_info: path ?
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysd=
+ev/xive/xive-internal.h
+index d701af7fb48c..1eacc90f4dcf 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -73,6 +73,8 @@ static inline u32 xive_alloc_order(u32 queue_shift)
+ 	return (queue_shift > PAGE_SHIFT) ? (queue_shift - PAGE_SHIFT) : 0;
+ }
+=20
++#define XIVE_GFP (__GFP_NORETRY | __GFP_NOWARN | __GFP_NOMEMALLOC)
++
+ extern bool xive_cmdline_disabled;
+=20
+ #endif /*  __XIVE_INTERNAL_H */
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 605238ca65e4..80fd97d764ab 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1544,7 +1544,7 @@ __be32 *xive_queue_page_alloc(unsigned int cpu, u32=
+ queue_shift)
+ 	__be32 *qpage;
+=20
+ 	alloc_order =3D xive_alloc_order(queue_shift);
+-	pages =3D alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
++	pages =3D alloc_pages_node(cpu_to_node(cpu), XIVE_GFP, alloc_order);
+ 	if (!pages)
+ 		return ERR_PTR(-ENOMEM);
+ 	qpage =3D (__be32 *)page_address(pages);
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive=
+/native.c
+index cb58ec7ce77a..6afb44d0d816 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -643,7 +643,7 @@ static bool xive_native_provision_pages(void)
+ 		 * XXX TODO: Try to make the allocation local to the node where
+ 		 * the chip resides.
+ 		 */
+-		p =3D kmem_cache_alloc(xive_provision_cache, GFP_KERNEL);
++		p =3D kmem_cache_alloc(xive_provision_cache, XIVE_GFP);
+ 		if (!p) {
+ 			pr_err("Failed to allocate provisioning page\n");
+ 			return false;
+--=20
+2.26.2
 
-> +	if (ug_info == NULL)
-> +		return -ENOMEM;
-> +	memcpy(ug_info, &ugeth_primary_info, sizeof(*ug_info));
->   
->   	ug_info->uf_info.ucc_num = ucc_num;
->   
->   	err = ucc_geth_parse_clock(np, "rx", &ug_info->uf_info.rx_clock);
->   	if (err)
-> -		return err;
-> +		goto err_free_info;
->   	err = ucc_geth_parse_clock(np, "tx", &ug_info->uf_info.tx_clock);
->   	if (err)
-> -		return err;
-> +		goto err_free_info;
->   
->   	err = of_address_to_resource(np, 0, &res);
->   	if (err)
-> -		return -EINVAL;
-> +		goto err_free_info;
->   
->   	ug_info->uf_info.regs = res.start;
->   	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
-> @@ -3745,7 +3741,7 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->   		 */
->   		err = of_phy_register_fixed_link(np);
->   		if (err)
-> -			return err;
-> +			goto err_free_info;
->   		ug_info->phy_node = of_node_get(np);
->   	}
->   
-> @@ -3876,6 +3872,8 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->   		of_phy_deregister_fixed_link(np);
->   	of_node_put(ug_info->tbi_node);
->   	of_node_put(ug_info->phy_node);
-> +err_free_info:
-> +	kfree(ug_info);
->   
->   	return err;
->   }
-> @@ -3886,6 +3884,7 @@ static int ucc_geth_remove(struct platform_device* ofdev)
->   	struct ucc_geth_private *ugeth = netdev_priv(dev);
->   	struct device_node *np = ofdev->dev.of_node;
->   
-> +	kfree(ugeth->ug_info);
->   	ucc_geth_memclean(ugeth);
->   	if (of_phy_is_fixed_link(np))
->   		of_phy_deregister_fixed_link(np);
-> @@ -3920,17 +3919,10 @@ static struct platform_driver ucc_geth_driver = {
->   
->   static int __init ucc_geth_init(void)
->   {
-> -	int i, ret;
-> -
->   	if (netif_msg_drv(&debug))
->   		pr_info(DRV_DESC "\n");
-> -	for (i = 0; i < 8; i++)
-> -		memcpy(&(ugeth_info[i]), &ugeth_primary_info,
-> -		       sizeof(ugeth_primary_info));
-> -
-> -	ret = platform_driver_register(&ucc_geth_driver);
->   
-> -	return ret;
-> +	return platform_driver_register(&ucc_geth_driver);
->   }
->   
->   static void __exit ucc_geth_exit(void)
-> 
