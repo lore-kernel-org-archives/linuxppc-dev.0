@@ -7,71 +7,71 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25985C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:36:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E4AC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:38:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62FEB23A9B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:36:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62FEB23A9B
+	by mail.kernel.org (Postfix) with ESMTPS id BF19523A7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:38:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF19523A7B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr46J1bPPzDqVr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 02:36:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr48g5FXrzDqfG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 02:38:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr3Yf2JPhzDqVl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 02:11:50 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B8Ew10U117235; Tue, 8 Dec 2020 10:11:38 -0500
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35a4x1d7k4-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr3Zx0kW4zDqX8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 02:12:56 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0B8Ew0Mf136940; Tue, 8 Dec 2020 10:12:50 -0500
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35a5td3wjg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 08 Dec 2020 10:11:37 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B8FB6jW024878;
- Tue, 8 Dec 2020 15:11:36 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04ams.nl.ibm.com with ESMTP id 3583svkjvq-1
+ Tue, 08 Dec 2020 10:12:49 -0500
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B8F9sgu019691;
+ Tue, 8 Dec 2020 15:12:48 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03fra.de.ibm.com with ESMTP id 3581u8ne7v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 08 Dec 2020 15:11:36 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B8FBXPw6881866
+ Tue, 08 Dec 2020 15:12:47 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B8FBUcq32637350
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 8 Dec 2020 15:11:33 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9CD12A4087;
- Tue,  8 Dec 2020 15:11:32 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 79EF8A405E;
- Tue,  8 Dec 2020 15:11:32 +0000 (GMT)
+ Tue, 8 Dec 2020 15:11:30 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7623011C052;
+ Tue,  8 Dec 2020 15:11:29 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5918211C090;
+ Tue,  8 Dec 2020 15:11:29 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Tue,  8 Dec 2020 15:11:32 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Tue,  8 Dec 2020 15:11:29 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 076BA220190;
- Tue,  8 Dec 2020 16:11:31 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id D8C2E22017B;
+ Tue,  8 Dec 2020 16:11:28 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/13] powerpc/xive: Improve error reporting of OPAL calls
-Date: Tue,  8 Dec 2020 16:11:24 +0100
-Message-Id: <20201208151124.1329942-14-clg@kaod.org>
+Subject: [PATCH 06/13] powerpc/xive: Add a name to the IRQ domain
+Date: Tue,  8 Dec 2020 16:11:17 +0100
+Message-Id: <20201208151124.1329942-7-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201208151124.1329942-1-clg@kaod.org>
 References: <20201208151124.1329942-1-clg@kaod.org>
@@ -83,10 +83,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-08_09:2020-12-08,
  2020-12-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxscore=0
- phishscore=0 adultscore=0 suspectscore=1 clxscore=1034 impostorscore=0
- mlxlogscore=999 priorityscore=1501 spamscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ malwarescore=0 bulkscore=0
+ impostorscore=0 mlxlogscore=999 mlxscore=0 adultscore=0 clxscore=1034
+ lowpriorityscore=0 spamscore=0 priorityscore=1501 phishscore=0
+ suspectscore=1 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012080086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,134 +104,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce a vp_err() macro to standardize error reporting.
+We hope one day to handle multiple irq_domain in the XIVE driver.
+Start simple by setting the name using the DT node.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/native.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ arch/powerpc/sysdev/xive/xive-internal.h |  4 ++--
+ arch/powerpc/sysdev/xive/common.c        | 10 +++++-----
+ arch/powerpc/sysdev/xive/native.c        |  2 +-
+ arch/powerpc/sysdev/xive/spapr.c         |  2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysd=
+ev/xive/xive-internal.h
+index 1eacc90f4dcf..066d6fe3dc1d 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -63,8 +63,8 @@ struct xive_ops {
+ 	const char *name;
+ };
+=20
+-bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 =
+offset,
+-		    u8 max_prio);
++bool xive_core_init(struct device_node *np, const struct xive_ops *ops,
++		    void __iomem *area, u32 offset, u8 max_prio);
+ __be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift);
+ int xive_core_debug_init(void);
+=20
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 80fd97d764ab..721617f0f854 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1310,9 +1310,9 @@ static const struct irq_domain_ops xive_irq_domain_=
+ops =3D {
+ 	.xlate =3D xive_irq_domain_xlate,
+ };
+=20
+-static void __init xive_init_host(void)
++static void __init xive_init_host(struct device_node *np)
+ {
+-	xive_irq_domain =3D irq_domain_add_nomap(NULL, XIVE_MAX_IRQ,
++	xive_irq_domain =3D irq_domain_add_nomap(np, XIVE_MAX_IRQ,
+ 					       &xive_irq_domain_ops, NULL);
+ 	if (WARN_ON(xive_irq_domain =3D=3D NULL))
+ 		return;
+@@ -1508,8 +1508,8 @@ void xive_shutdown(void)
+ 	xive_ops->shutdown();
+ }
+=20
+-bool __init xive_core_init(const struct xive_ops *ops, void __iomem *are=
+a, u32 offset,
+-			   u8 max_prio)
++bool __init xive_core_init(struct device_node *np, const struct xive_ops=
+ *ops,
++			   void __iomem *area, u32 offset, u8 max_prio)
+ {
+ 	xive_tima =3D area;
+ 	xive_tima_offset =3D offset;
+@@ -1520,7 +1520,7 @@ bool __init xive_core_init(const struct xive_ops *o=
+ps, void __iomem *area, u32 o
+ 	__xive_enabled =3D true;
+=20
+ 	pr_devel("Initializing host..\n");
+-	xive_init_host();
++	xive_init_host(np);
+=20
+ 	pr_devel("Initializing boot CPU..\n");
+=20
 diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive=
 /native.c
-index 4902d05ebbd1..42297a131a6e 100644
+index 6afb44d0d816..5f1e5aed8ab4 100644
 --- a/arch/powerpc/sysdev/xive/native.c
 +++ b/arch/powerpc/sysdev/xive/native.c
-@@ -122,6 +122,8 @@ static int xive_native_get_irq_config(u32 hw_irq, u32=
- *target, u8 *prio,
- 	return rc =3D=3D 0 ? 0 : -ENXIO;
- }
+@@ -622,7 +622,7 @@ bool __init xive_native_init(void)
+ 	xive_native_setup_pools();
 =20
-+#define vp_err(vp, fmt, ...) pr_err("VP[0x%x]: " fmt, vp, ##__VA_ARGS__)
-+
- /* This can be called multiple time to change a queue configuration */
- int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
- 				__be32 *qpage, u32 order, bool can_escalate)
-@@ -149,7 +151,7 @@ int xive_native_configure_queue(u32 vp_id, struct xiv=
-e_q *q, u8 prio,
- 				      &esc_irq_be,
- 				      NULL);
- 	if (rc) {
--		pr_err("Error %lld getting queue info prio %d\n", rc, prio);
-+		vp_err(vp_id, "Failed to get queue %d info : %lld\n", prio, rc);
- 		rc =3D -EIO;
- 		goto fail;
- 	}
-@@ -172,7 +174,7 @@ int xive_native_configure_queue(u32 vp_id, struct xiv=
-e_q *q, u8 prio,
- 		msleep(OPAL_BUSY_DELAY_MS);
- 	}
- 	if (rc) {
--		pr_err("Error %lld setting queue for prio %d\n", rc, prio);
-+		vp_err(vp_id, "Failed to set queue %d info: %lld\n", prio, rc);
- 		rc =3D -EIO;
- 	} else {
- 		/*
-@@ -199,7 +201,7 @@ static void __xive_native_disable_queue(u32 vp_id, st=
-ruct xive_q *q, u8 prio)
- 		msleep(OPAL_BUSY_DELAY_MS);
- 	}
- 	if (rc)
--		pr_err("Error %lld disabling queue for prio %d\n", rc, prio);
-+		vp_err(vp_id, "Failed to disable queue %d : %lld\n", prio, rc);
- }
-=20
- void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio)
-@@ -698,6 +700,8 @@ int xive_native_enable_vp(u32 vp_id, bool single_esca=
-lation)
- 			break;
- 		msleep(OPAL_BUSY_DELAY_MS);
- 	}
-+	if (rc)
-+		vp_err(vp_id, "Failed to enable VP : %lld\n", rc);
- 	return rc ? -EIO : 0;
- }
- EXPORT_SYMBOL_GPL(xive_native_enable_vp);
-@@ -712,6 +716,8 @@ int xive_native_disable_vp(u32 vp_id)
- 			break;
- 		msleep(OPAL_BUSY_DELAY_MS);
- 	}
-+	if (rc)
-+		vp_err(vp_id, "Failed to disable VP : %lld\n", rc);
- 	return rc ? -EIO : 0;
- }
- EXPORT_SYMBOL_GPL(xive_native_disable_vp);
-@@ -723,8 +729,10 @@ int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_=
-id, u32 *out_chip_id)
- 	s64 rc;
-=20
- 	rc =3D opal_xive_get_vp_info(vp_id, NULL, &vp_cam_be, NULL, &vp_chip_id=
-_be);
--	if (rc)
-+	if (rc) {
-+		vp_err(vp_id, "Failed to get VP info : %lld\n", rc);
- 		return -EIO;
-+	}
- 	*out_cam_id =3D be64_to_cpu(vp_cam_be) & 0xffffffffu;
- 	*out_chip_id =3D be32_to_cpu(vp_chip_id_be);
-=20
-@@ -755,8 +763,7 @@ int xive_native_get_queue_info(u32 vp_id, u32 prio,
- 	rc =3D opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
- 				      &qeoi_page, &escalate_irq, &qflags);
- 	if (rc) {
--		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
--		       vp_id, prio, rc);
-+		vp_err(vp_id, "failed to get queue %d info : %lld\n", prio, rc);
- 		return -EIO;
+ 	/* Initialize XIVE core with our backend */
+-	if (!xive_core_init(&xive_native_ops, tima, TM_QW3_HV_PHYS,
++	if (!xive_core_init(np, &xive_native_ops, tima, TM_QW3_HV_PHYS,
+ 			    max_prio)) {
+ 		opal_xive_reset(OPAL_XIVE_MODE_EMU);
+ 		return false;
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/=
+spapr.c
+index 1e3674d7ea7b..6610e5149d5a 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -857,7 +857,7 @@ bool __init xive_spapr_init(void)
  	}
 =20
-@@ -784,8 +791,7 @@ int xive_native_get_queue_state(u32 vp_id, u32 prio, =
-u32 *qtoggle, u32 *qindex)
- 	rc =3D opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
- 				       &opal_qindex);
- 	if (rc) {
--		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
--		       vp_id, prio, rc);
-+		vp_err(vp_id, "failed to get queue %d state : %lld\n", prio, rc);
- 		return -EIO;
- 	}
+ 	/* Initialize XIVE core with our backend */
+-	if (!xive_core_init(&xive_spapr_ops, tima, TM_QW1_OS, max_prio))
++	if (!xive_core_init(np, &xive_spapr_ops, tima, TM_QW1_OS, max_prio))
+ 		return false;
 =20
-@@ -804,8 +810,7 @@ int xive_native_set_queue_state(u32 vp_id, u32 prio, =
-u32 qtoggle, u32 qindex)
-=20
- 	rc =3D opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
- 	if (rc) {
--		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
--		       vp_id, prio, rc);
-+		vp_err(vp_id, "failed to set queue %d state : %lld\n", prio, rc);
- 		return -EIO;
- 	}
-=20
-@@ -827,8 +832,7 @@ int xive_native_get_vp_state(u32 vp_id, u64 *out_stat=
-e)
-=20
- 	rc =3D opal_xive_get_vp_state(vp_id, &state);
- 	if (rc) {
--		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
--		       vp_id, rc);
-+		vp_err(vp_id, "failed to get vp state : %lld\n", rc);
- 		return -EIO;
- 	}
-=20
+ 	pr_info("Using %dkB queues\n", 1 << (xive_queue_shift - 10));
 --=20
 2.26.2
 
