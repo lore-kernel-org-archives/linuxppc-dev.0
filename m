@@ -2,59 +2,74 @@ Return-Path: <SRS0=iKYh=FM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4A12C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 14:56:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB898C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:09:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B726623A6C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 14:56:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B726623A6C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 2025823A6C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 15:09:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2025823A6C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr3Cj4x9gzDqgC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 01:56:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cr3Vw1bJYzDqdj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 02:09:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.17.13; helo=mout.kundenserver.de;
- envelope-from=info@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 392 seconds by postgrey-1.36 at bilbo;
- Wed, 09 Dec 2020 01:53:26 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr38Q1DgzzDqTn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 01:53:25 +1100 (AEDT)
-Received: from orion.localdomain ([95.117.39.192]) by mrelayeu.kundenserver.de
- (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MkYkC-1kIJPC0qBq-00lz4e; Tue, 08 Dec 2020 15:44:08 +0100
-From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers: usb: gadget: prefer pr_*() functions over raw
- printk()
-Date: Tue,  8 Dec 2020 15:44:03 +0100
-Message-Id: <20201208144403.22097-1-info@metux.net>
-X-Mailer: git-send-email 2.11.0
-X-Provags-ID: V03:K1:Hd0jRTZbyRdEtlPBUB2MGqA/988pOvZCOqb2ORa+FOFfi38Jkpt
- 1l1ZPOwy1dHvIRiqjtpPZar3zuDoVixaOykeDlTX66plCa/RkBwunYPI50lZl5ZJne1SWaR
- F22p+Vm7sVO/VSHBR08hvopYMkLyxUfoNMkrb+M1m0C7BQ4p944up8bEFMEknoj+RVB29Ji
- pC+u5I5ZdwEn9KxmdK/jA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:WFn1TeMzSz4=:zN1vyc5s1nodtBY/sEewat
- 7LEqralka5DDBkJUNMH36fxvZ9tIvqAYQ8PU3f9aIusVpSZDf+c/ZdS1A/NLpH+k6p9UG/WMK
- KfqKnIaX6WQf1+tCLelscvrObVtqd7gb4uobXdLAYSoB+zPMqkbB6g61sX7tZCDrL4kVCPER5
- sTOVCbx9F7WShUGc/vEvBmkneXGXUlXSWDO6dYox978qwJifrfdhtT6DVFR2/OucjNwTsopuH
- eVEKbMxc5Yl1sUZumdRvwicU2wQlCitY0WSh9VU2anhG2bfLbBvzMIVZksT2iwc3EEJaQr2qz
- PdLTk4hHijZpBZPSlFDEmw0Vp/uwjWR3ai16yUqOLZRtTwZ9BBvaeWRIpZv/QOcXBJocdmdpk
- 0qLB+EUNLsMsK8xNQ86Vn/XqbTRLOxHzQh0vhlNyTFIgy9qMst1s25hqdHo2e
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cr3St3CVdzDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 02:07:36 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Cr3Sg3cv5zB09b2;
+ Tue,  8 Dec 2020 16:07:31 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id UYOh8aFLsijv; Tue,  8 Dec 2020 16:07:31 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Cr3Sg2BXlzB09b1;
+ Tue,  8 Dec 2020 16:07:31 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B88228B7C8;
+ Tue,  8 Dec 2020 16:07:32 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id kjdz0ODqg8li; Tue,  8 Dec 2020 16:07:32 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 10FDB8B7BE;
+ Tue,  8 Dec 2020 16:07:32 +0100 (CET)
+Subject: Re: [PATCH v3 4/5] powerpc/fault: Avoid heavy
+ search_exception_tables() verification
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com
+References: <0d37490a067840f53fc5b118869917c0aec9ab87.1607416578.git.christophe.leroy@csgroup.eu>
+ <731bdee26a5a5c81cd815ed624a6fb3bdef8b4db.1607416578.git.christophe.leroy@csgroup.eu>
+ <87lfe8qrik.fsf@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <b532a9c6-97de-031d-f880-901a117cc95c@csgroup.eu>
+Date: Tue, 8 Dec 2020 16:07:32 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.1
+MIME-Version: 1.0
+In-Reply-To: <87lfe8qrik.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,374 +81,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: balbi@kernel.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- laurent.pinchart@ideasonboard.com, leoyang.li@nxp.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reduce a bit logging boilerplate by using the preferred pr_*()
-macros instead of raw printk().
 
-Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
----
- drivers/usb/gadget/function/uvc.h       |  2 +-
- drivers/usb/gadget/udc/atmel_usba_udc.c |  2 +-
- drivers/usb/gadget/udc/fsl_udc_core.c   |  4 +--
- drivers/usb/gadget/udc/fsl_usb2_udc.h   |  4 +--
- drivers/usb/gadget/udc/fusb300_udc.c    | 64 ++++++++++++++++-----------------
- drivers/usb/gadget/udc/goku_udc.c       |  2 +-
- drivers/usb/gadget/udc/r8a66597-udc.h   |  2 +-
- 7 files changed, 40 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/usb/gadget/function/uvc.h b/drivers/usb/gadget/function/uvc.h
-index 23ee25383c1f..d546eb7c348c 100644
---- a/drivers/usb/gadget/function/uvc.h
-+++ b/drivers/usb/gadget/function/uvc.h
-@@ -49,7 +49,7 @@ extern unsigned int uvc_gadget_trace_param;
- #define uvc_trace(flag, msg...) \
- 	do { \
- 		if (uvc_gadget_trace_param & flag) \
--			printk(KERN_DEBUG "uvcvideo: " msg); \
-+			pr_debug("uvcvideo: " msg); \
- 	} while (0)
- 
- #define uvcg_dbg(f, fmt, args...) \
-diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
-index 2b893bceea45..4834fafb3f70 100644
---- a/drivers/usb/gadget/udc/atmel_usba_udc.c
-+++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
-@@ -1573,7 +1573,7 @@ static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
- 		 * generate or receive a reply right away. */
- 		usba_ep_writel(ep, CLR_STA, USBA_RX_SETUP);
- 
--		/* printk(KERN_DEBUG "setup: %d: %02x.%02x\n",
-+		/* pr_debug("setup: %d: %02x.%02x\n",
- 			ep->state, crq.crq.bRequestType,
- 			crq.crq.bRequest); */
- 
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index ad6ff9c4188e..cab4def04f9f 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -1474,7 +1474,7 @@ __acquires(udc->lock)
- 			mdelay(10);
- 			tmp = fsl_readl(&dr_regs->portsc1) | (ptc << 16);
- 			fsl_writel(tmp, &dr_regs->portsc1);
--			printk(KERN_INFO "udc: switch to test mode %d.\n", ptc);
-+			pr_info("udc: switch to test mode %d.\n", ptc);
- 		}
- 
- 		return;
-@@ -1952,7 +1952,7 @@ static int fsl_udc_start(struct usb_gadget *g,
- 	if (!IS_ERR_OR_NULL(udc_controller->transceiver)) {
- 		/* Suspend the controller until OTG enable it */
- 		udc_controller->stopped = 1;
--		printk(KERN_INFO "Suspend udc for OTG auto detect\n");
-+		pr_info("Suspend udc for OTG auto detect\n");
- 
- 		/* connect to bus through transceiver */
- 		if (!IS_ERR_OR_NULL(udc_controller->transceiver)) {
-diff --git a/drivers/usb/gadget/udc/fsl_usb2_udc.h b/drivers/usb/gadget/udc/fsl_usb2_udc.h
-index 4ba651ae9048..b180bf14dd0c 100644
---- a/drivers/usb/gadget/udc/fsl_usb2_udc.h
-+++ b/drivers/usb/gadget/udc/fsl_usb2_udc.h
-@@ -509,7 +509,7 @@ struct fsl_udc {
- /*-------------------------------------------------------------------------*/
- 
- #ifdef DEBUG
--#define DBG(fmt, args...) 	printk(KERN_DEBUG "[%s]  " fmt "\n", \
-+#define DBG(fmt, args...) 	pr_debug("[%s]  " fmt "\n", \
- 				__func__, ## args)
- #else
- #define DBG(fmt, args...)	do{}while(0)
-@@ -535,7 +535,7 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
- 			p += 3;
- 		}
- 		*p = 0;
--		printk(KERN_DEBUG "%6x: %s\n", start, line);
-+		pr_debug("%6x: %s\n", start, line);
- 		buf += num;
- 		start += num;
- 		length -= num;
-diff --git a/drivers/usb/gadget/udc/fusb300_udc.c b/drivers/usb/gadget/udc/fusb300_udc.c
-index 9af8b415f303..c4e7e4b8e46f 100644
---- a/drivers/usb/gadget/udc/fusb300_udc.c
-+++ b/drivers/usb/gadget/udc/fusb300_udc.c
-@@ -352,24 +352,24 @@ static void fusb300_wrcxf(struct fusb300_ep *ep,
- 		for (i = length >> 2; i > 0; i--) {
- 			data = *tmp | *(tmp + 1) << 8 | *(tmp + 2) << 16 |
- 				*(tmp + 3) << 24;
--			printk(KERN_DEBUG "    0x%x\n", data);
-+			pr_debug("    0x%x\n", data);
- 			iowrite32(data, fusb300->reg + FUSB300_OFFSET_CXPORT);
- 			tmp = tmp + 4;
- 		}
- 		switch (length % 4) {
- 		case 1:
- 			data = *tmp;
--			printk(KERN_DEBUG "    0x%x\n", data);
-+			pr_debug("    0x%x\n", data);
- 			iowrite32(data, fusb300->reg + FUSB300_OFFSET_CXPORT);
- 			break;
- 		case 2:
- 			data = *tmp | *(tmp + 1) << 8;
--			printk(KERN_DEBUG "    0x%x\n", data);
-+			pr_debug("    0x%x\n", data);
- 			iowrite32(data, fusb300->reg + FUSB300_OFFSET_CXPORT);
- 			break;
- 		case 3:
- 			data = *tmp | *(tmp + 1) << 8 | *(tmp + 2) << 16;
--			printk(KERN_DEBUG "    0x%x\n", data);
-+			pr_debug("    0x%x\n", data);
- 			iowrite32(data, fusb300->reg + FUSB300_OFFSET_CXPORT);
- 			break;
- 		default:
-@@ -390,7 +390,7 @@ static void fusb300_clear_epnstall(struct fusb300 *fusb300, u8 ep)
- 	u32 reg = ioread32(fusb300->reg + FUSB300_OFFSET_EPSET0(ep));
- 
- 	if (reg & FUSB300_EPSET0_STL) {
--		printk(KERN_DEBUG "EP%d stall... Clear!!\n", ep);
-+		pr_debug("EP%d stall... Clear!!\n", ep);
- 		reg |= FUSB300_EPSET0_STL_CLR;
- 		iowrite32(reg, fusb300->reg + FUSB300_OFFSET_EPSET0(ep));
- 	}
-@@ -402,7 +402,7 @@ static void ep0_queue(struct fusb300_ep *ep, struct fusb300_request *req)
- 		if (req->req.length) {
- 			fusb300_wrcxf(ep, req);
- 		} else
--			printk(KERN_DEBUG "%s : req->req.length = 0x%x\n",
-+			pr_debug("%s : req->req.length = 0x%x\n",
- 				__func__, req->req.length);
- 		if ((req->req.length == req->req.actual) ||
- 		    (req->req.actual < ep->ep.maxpacket))
-@@ -565,7 +565,7 @@ static void fusb300_rdcxf(struct fusb300 *fusb300,
- 
- 	for (i = (length >> 2); i > 0; i--) {
- 		data = ioread32(fusb300->reg + FUSB300_OFFSET_CXPORT);
--		printk(KERN_DEBUG "    0x%x\n", data);
-+		pr_debug("    0x%x\n", data);
- 		*tmp = data & 0xFF;
- 		*(tmp + 1) = (data >> 8) & 0xFF;
- 		*(tmp + 2) = (data >> 16) & 0xFF;
-@@ -576,18 +576,18 @@ static void fusb300_rdcxf(struct fusb300 *fusb300,
- 	switch (length % 4) {
- 	case 1:
- 		data = ioread32(fusb300->reg + FUSB300_OFFSET_CXPORT);
--		printk(KERN_DEBUG "    0x%x\n", data);
-+		pr_debug("    0x%x\n", data);
- 		*tmp = data & 0xFF;
- 		break;
- 	case 2:
- 		data = ioread32(fusb300->reg + FUSB300_OFFSET_CXPORT);
--		printk(KERN_DEBUG "    0x%x\n", data);
-+		pr_debug("    0x%x\n", data);
- 		*tmp = data & 0xFF;
- 		*(tmp + 1) = (data >> 8) & 0xFF;
- 		break;
- 	case 3:
- 		data = ioread32(fusb300->reg + FUSB300_OFFSET_CXPORT);
--		printk(KERN_DEBUG "    0x%x\n", data);
-+		pr_debug("    0x%x\n", data);
- 		*tmp = data & 0xFF;
- 		*(tmp + 1) = (data >> 8) & 0xFF;
- 		*(tmp + 2) = (data >> 16) & 0xFF;
-@@ -610,7 +610,7 @@ static void fusb300_rdfifo(struct fusb300_ep *ep,
- 	req->req.actual += length;
- 
- 	if (req->req.actual > req->req.length)
--		printk(KERN_DEBUG "req->req.actual > req->req.length\n");
-+		pr_debug("req->req.actual > req->req.length\n");
- 
- 	for (i = (length >> 2); i > 0; i--) {
- 		data = ioread32(fusb300->reg +
-@@ -649,7 +649,7 @@ static void fusb300_rdfifo(struct fusb300_ep *ep,
- 		reg = ioread32(fusb300->reg + FUSB300_OFFSET_IGR1);
- 		reg &= FUSB300_IGR1_SYNF0_EMPTY_INT;
- 		if (i)
--			printk(KERN_INFO "sync fifo is not empty!\n");
-+			pr_info("sync fifo is not empty!\n");
- 		i++;
- 	} while (!reg);
- }
-@@ -677,7 +677,7 @@ static u8 fusb300_get_cxstall(struct fusb300 *fusb300)
- static void request_error(struct fusb300 *fusb300)
- {
- 	fusb300_set_cxstall(fusb300);
--	printk(KERN_DEBUG "request error!!\n");
-+	pr_debug("request error!!\n");
- }
- 
- static void get_status(struct fusb300 *fusb300, struct usb_ctrlrequest *ctrl)
-@@ -999,7 +999,7 @@ static void check_device_mode(struct fusb300 *fusb300)
- 		fusb300->gadget.speed = USB_SPEED_UNKNOWN;
- 		break;
- 	}
--	printk(KERN_INFO "dev_mode = %d\n", (reg & FUSB300_GCR_DEVEN_MSK));
-+	pr_info("dev_mode = %d\n", (reg & FUSB300_GCR_DEVEN_MSK));
- }
- 
- 
-@@ -1076,14 +1076,14 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 	if (int_grp1 & FUSB300_IGR1_WARM_RST_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_WARM_RST_INT);
--		printk(KERN_INFO"fusb300_warmreset\n");
-+		pr_info("fusb300_warmreset\n");
- 		fusb300_reset();
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_HOT_RST_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_HOT_RST_INT);
--		printk(KERN_INFO"fusb300_hotreset\n");
-+		pr_info("fusb300_hotreset\n");
- 		fusb300_reset();
- 	}
- 
-@@ -1097,13 +1097,13 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 	if (int_grp1 & FUSB300_IGR1_CX_COMABT_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_CX_COMABT_INT);
--		printk(KERN_INFO"fusb300_ep0abt\n");
-+		pr_info("fusb300_ep0abt\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_VBUS_CHG_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_VBUS_CHG_INT);
--		printk(KERN_INFO"fusb300_vbus_change\n");
-+		pr_info("fusb300_vbus_change\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_U3_EXIT_FAIL_INT) {
-@@ -1134,25 +1134,25 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 	if (int_grp1 & FUSB300_IGR1_U3_EXIT_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U3_EXIT_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U3_EXIT_INT\n");
-+		pr_info("FUSB300_IGR1_U3_EXIT_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_U2_EXIT_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U2_EXIT_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U2_EXIT_INT\n");
-+		pr_info("FUSB300_IGR1_U2_EXIT_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_U1_EXIT_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U1_EXIT_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U1_EXIT_INT\n");
-+		pr_info("FUSB300_IGR1_U1_EXIT_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_U3_ENTRY_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U3_ENTRY_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U3_ENTRY_INT\n");
-+		pr_info("FUSB300_IGR1_U3_ENTRY_INT\n");
- 		fusb300_enable_bit(fusb300, FUSB300_OFFSET_SSCR1,
- 				   FUSB300_SSCR1_GO_U3_DONE);
- 	}
-@@ -1160,31 +1160,31 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 	if (int_grp1 & FUSB300_IGR1_U2_ENTRY_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U2_ENTRY_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U2_ENTRY_INT\n");
-+		pr_info("FUSB300_IGR1_U2_ENTRY_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_U1_ENTRY_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_U1_ENTRY_INT);
--		printk(KERN_INFO "FUSB300_IGR1_U1_ENTRY_INT\n");
-+		pr_info("FUSB300_IGR1_U1_ENTRY_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_RESM_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_RESM_INT);
--		printk(KERN_INFO "fusb300_resume\n");
-+		pr_info("fusb300_resume\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_SUSP_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_SUSP_INT);
--		printk(KERN_INFO "fusb300_suspend\n");
-+		pr_info("fusb300_suspend\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_HS_LPM_INT) {
- 		fusb300_clear_int(fusb300, FUSB300_OFFSET_IGR1,
- 				  FUSB300_IGR1_HS_LPM_INT);
--		printk(KERN_INFO "fusb300_HS_LPM_INT\n");
-+		pr_info("fusb300_HS_LPM_INT\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_DEV_MODE_CHG_INT) {
-@@ -1195,11 +1195,11 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 
- 	if (int_grp1 & FUSB300_IGR1_CX_COMFAIL_INT) {
- 		fusb300_set_cxstall(fusb300);
--		printk(KERN_INFO "fusb300_ep0fail\n");
-+		pr_info("fusb300_ep0fail\n");
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_CX_SETUP_INT) {
--		printk(KERN_INFO "fusb300_ep0setup\n");
-+		pr_info("fusb300_ep0setup\n");
- 		if (setup_packet(fusb300, &ctrl)) {
- 			spin_unlock(&fusb300->lock);
- 			if (fusb300->driver->setup(&fusb300->gadget, &ctrl) < 0)
-@@ -1209,16 +1209,16 @@ static irqreturn_t fusb300_irq(int irq, void *_fusb300)
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_CX_CMDEND_INT)
--		printk(KERN_INFO "fusb300_cmdend\n");
-+		pr_info("fusb300_cmdend\n");
- 
- 
- 	if (int_grp1 & FUSB300_IGR1_CX_OUT_INT) {
--		printk(KERN_INFO "fusb300_cxout\n");
-+		pr_info("fusb300_cxout\n");
- 		fusb300_ep0out(fusb300);
- 	}
- 
- 	if (int_grp1 & FUSB300_IGR1_CX_IN_INT) {
--		printk(KERN_INFO "fusb300_cxin\n");
-+		pr_info("fusb300_cxin\n");
- 		fusb300_ep0in(fusb300);
- 	}
- 
-diff --git a/drivers/usb/gadget/udc/goku_udc.c b/drivers/usb/gadget/udc/goku_udc.c
-index 3e1267d38774..4f225552861a 100644
---- a/drivers/usb/gadget/udc/goku_udc.c
-+++ b/drivers/usb/gadget/udc/goku_udc.c
-@@ -1748,7 +1748,7 @@ static int goku_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	int			retval;
- 
- 	if (!pdev->irq) {
--		printk(KERN_ERR "Check PCI %s IRQ setup!\n", pci_name(pdev));
-+		pr_err("Check PCI %s IRQ setup!\n", pci_name(pdev));
- 		retval = -ENODEV;
- 		goto err;
- 	}
-diff --git a/drivers/usb/gadget/udc/r8a66597-udc.h b/drivers/usb/gadget/udc/r8a66597-udc.h
-index 9a115caba661..fa4d62c32ea1 100644
---- a/drivers/usb/gadget/udc/r8a66597-udc.h
-+++ b/drivers/usb/gadget/udc/r8a66597-udc.h
-@@ -247,7 +247,7 @@ static inline u16 get_xtal_from_pdata(struct r8a66597_platdata *pdata)
- 		clock = XTAL48;
- 		break;
- 	default:
--		printk(KERN_ERR "r8a66597: platdata clock is wrong.\n");
-+		pr_err("r8a66597: platdata clock is wrong.\n");
- 		break;
- 	}
- 
--- 
-2.11.0
+Le 08/12/2020 à 15:52, Aneesh Kumar K.V a écrit :
+> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> 
+>> search_exception_tables() is an heavy operation, we have to avoid it.
+>> When KUAP is selected, we'll know the fault has been blocked by KUAP.
+>> Otherwise, it behaves just as if the address was already in the TLBs
+>> and no fault was generated.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>> v3: rebased
+>> v2: Squashed with the preceeding patch which was re-ordering tests that get removed in this patch.
+>> ---
+>>   arch/powerpc/mm/fault.c | 23 +++++++----------------
+>>   1 file changed, 7 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index 3fcd34c28e10..1770b41e4730 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -210,28 +210,19 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
+>>   		return true;
+>>   	}
+>>   
+>> -	if (!is_exec && address < TASK_SIZE && (error_code & (DSISR_PROTFAULT | DSISR_KEYFAULT)) &&
+>> -	    !search_exception_tables(regs->nip)) {
+>> -		pr_crit_ratelimited("Kernel attempted to access user page (%lx) - exploit attempt? (uid: %d)\n",
+>> -				    address,
+>> -				    from_kuid(&init_user_ns, current_uid()));
+>> -	}
+>> -
+>>   	// Kernel fault on kernel address is bad
+>>   	if (address >= TASK_SIZE)
+>>   		return true;
+>>   
+>> -	// Fault on user outside of certain regions (eg. copy_tofrom_user()) is bad
+>> -	if (!search_exception_tables(regs->nip))
+>> -		return true;
+>> -
+>> -	// Read/write fault in a valid region (the exception table search passed
+>> -	// above), but blocked by KUAP is bad, it can never succeed.
+>> -	if (bad_kuap_fault(regs, address, is_write))
+>> +	// Read/write fault blocked by KUAP is bad, it can never succeed.
+>> +	if (bad_kuap_fault(regs, address, is_write)) {
+>> +		pr_crit_ratelimited("Kernel attempted to %s user page (%lx) - exploit attempt? (uid: %d)\n",
+>> +				    is_write ? "write" : "read", address,
+>> +				    from_kuid(&init_user_ns, current_uid()));
+>>   		return true;
+>> +	}
+> 
+> 
+> With this I am wondering whether the WARN() in bad_kuap_fault() is
+> needed. A direct access of userspace address will trigger this, whereas
+> previously we used bad_kuap_fault() only to identify incorrect restore
+> of AMR register (ie, to identify kernel bugs). Hence a WARN() there was
+> useful. We loose that differentiation now?
 
+Yes, I wanted to remove the WARN(), see 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/cc9129bdda1dbc2f0a09cf45fece7d0b0e690784.1605541983.git.christophe.leroy@csgroup.eu/
+but I understood from Michael that maybe it was not a good idea, so I left it aside for now when 
+rebasing to v3.
+
+Yes previously we were able to differentiate between a direct access of userspace and a valid access 
+triggering a KUAP fault, but at the cost of the heavy search_exception_tables().
+The issue was reported by Nick through https://github.com/linuxppc/issues/issues/317
+
+Should be perform the search_exception_tables() once we have hit the KUAP fault and WARN() only in 
+that case ?
+
+I was wondering also if we should keep the WARN() only when CONFIG_PPC_KUAP_DEBUG is set ?
+
+> 
+> 
+>>   
+>> -	// What's left? Kernel fault on user in well defined regions (extable
+>> -	// matched), and allowed by KUAP in the faulting context.
+>> +	// What's left? Kernel fault on user and allowed by KUAP in the faulting context.
+>>   	return false;
+>>   }
+>>   
+>> -- 
+>> 2.25.0
