@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 625FCC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:40:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC620C4167B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:42:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6CA1235F9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:40:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6CA1235F9
+	by mail.kernel.org (Postfix) with ESMTPS id 2394623A68
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 08:42:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2394623A68
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cqttc4bfDzDqZ2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 19:40:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cqtwc17FhzDqbc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Dec 2020 19:42:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,40 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CqtpD0L90zDqWN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 19:37:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CqtpD135xzDqWT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2020 19:37:06 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Cqtp31sVLz9txrk;
- Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Cqtp61G8Lz9txrm;
+ Tue,  8 Dec 2020 09:37:02 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 9MkI1QZlqotF; Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ with ESMTP id CbF01VgNo7DC; Tue,  8 Dec 2020 09:37:02 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Cqtp30Qhwz9txrj;
- Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Cqtp60S89z9txrj;
+ Tue,  8 Dec 2020 09:37:02 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CA5BE8B7B3;
- Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 068148B773;
+ Tue,  8 Dec 2020 09:37:03 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id tiQCFr6meB7E; Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ with ESMTP id TEMjkJ9FYafu; Tue,  8 Dec 2020 09:37:02 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 78EB88B7B1;
- Tue,  8 Dec 2020 09:36:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E38C8B7B6;
+ Tue,  8 Dec 2020 09:37:02 +0100 (CET)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4784D66928; Tue,  8 Dec 2020 08:36:59 +0000 (UTC)
-Message-Id: <fe199d5af3578d3bf80035d203a94d742a7a28af.1607416578.git.christophe.leroy@csgroup.eu>
+ id 5CB4966928; Tue,  8 Dec 2020 08:37:02 +0000 (UTC)
+Message-Id: <1997d67070847346bc1d55a7e51f23991e4b73ad.1607416578.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <0d37490a067840f53fc5b118869917c0aec9ab87.1607416578.git.christophe.leroy@csgroup.eu>
 References: <0d37490a067840f53fc5b118869917c0aec9ab87.1607416578.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 2/5] powerpc/mm: sanity_check_fault() should work for all, 
- not only BOOK3S
+Subject: [PATCH v3 5/5] powerpc/fault: Perform exception fixup in
+ do_page_fault()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, aneesh.kumar@linux.ibm.com
-Date: Tue,  8 Dec 2020 08:36:59 +0000 (UTC)
+Date: Tue,  8 Dec 2020 08:37:02 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,53 +78,142 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The verification and message introduced by commit 374f3f5979f9
-("powerpc/mm/hash: Handle user access of kernel address gracefully")
-applies to all platforms, it should not be limited to BOOK3S.
+Exception fixup doesn't require the heady full regs saving,
+do it from do_page_fault() directly.
 
-Make the BOOK3S version of sanity_check_fault() the one for all,
-and bail out earlier if not BOOK3S.
+For that, split bad_page_fault() in two parts.
 
-Fixes: 374f3f5979f9 ("powerpc/mm/hash: Handle user access of kernel address gracefully")
+As bad_page_fault() can also be called from other places than
+handle_page_fault(), it will still perform exception fixup and
+fallback on __bad_page_fault().
+
+handle_page_fault() directly calls __bad_page_fault() as the
+exception fixup will now be done by do_page_fault()
+
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/fault.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+v2: Add prototype of __bad_page_fault() in asm/bug.h
+---
+ arch/powerpc/include/asm/bug.h       |  1 +
+ arch/powerpc/kernel/entry_32.S       |  2 +-
+ arch/powerpc/kernel/exceptions-64e.S |  2 +-
+ arch/powerpc/kernel/exceptions-64s.S |  2 +-
+ arch/powerpc/mm/fault.c              | 33 ++++++++++++++++++++--------
+ 5 files changed, 28 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index b12595102525..f6ae56a0d7a3 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -303,7 +303,6 @@ static inline void cmo_account_page_fault(void)
- static inline void cmo_account_page_fault(void) { }
- #endif /* CONFIG_PPC_SMLPAR */
+diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+index ba0500872cce..464f8ca8a5c9 100644
+--- a/arch/powerpc/include/asm/bug.h
++++ b/arch/powerpc/include/asm/bug.h
+@@ -113,6 +113,7 @@
+ struct pt_regs;
+ extern int do_page_fault(struct pt_regs *, unsigned long, unsigned long);
+ extern void bad_page_fault(struct pt_regs *, unsigned long, int);
++void __bad_page_fault(struct pt_regs *regs, unsigned long address, int sig);
+ extern void _exception(int, struct pt_regs *, int, unsigned long);
+ extern void _exception_pkey(struct pt_regs *, unsigned long, int);
+ extern void die(const char *, struct pt_regs *, long);
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 58177c71dfd4..1c9b0ccc2172 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -684,7 +684,7 @@ handle_page_fault:
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	lwz	r4,_DAR(r1)
+-	bl	bad_page_fault
++	bl	__bad_page_fault
+ 	b	ret_from_except_full
  
--#ifdef CONFIG_PPC_BOOK3S
- static void sanity_check_fault(bool is_write, bool is_user,
- 			       unsigned long error_code, unsigned long address)
- {
-@@ -320,6 +319,9 @@ static void sanity_check_fault(bool is_write, bool is_user,
- 		return;
- 	}
- 
-+	if (!IS_ENABLED(CONFIG_PPC_BOOK3S))
-+		return;
-+
- 	/*
- 	 * For hash translation mode, we should never get a
- 	 * PROTFAULT. Any update to pte to reduce access will result in us
-@@ -354,10 +356,6 @@ static void sanity_check_fault(bool is_write, bool is_user,
- 
- 	WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
- }
--#else
--static void sanity_check_fault(bool is_write, bool is_user,
--			       unsigned long error_code, unsigned long address) { }
--#endif /* CONFIG_PPC_BOOK3S */
+ #ifdef CONFIG_PPC_BOOK3S_32
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index f579ce46eef2..74d07dc0bb48 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1023,7 +1023,7 @@ storage_fault_common:
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+-	bl	bad_page_fault
++	bl	__bad_page_fault
+ 	b	ret_from_except
  
  /*
-  * Define the correct "is_write" bit in error_code based
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 1c8f1b90e174..e02ad6fefa46 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -3259,7 +3259,7 @@ handle_page_fault:
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+-	bl	bad_page_fault
++	bl	__bad_page_fault
+ 	b	interrupt_return
+ 
+ /* We have a data breakpoint exception - handle it */
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 1770b41e4730..2e50bc1c3783 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -538,10 +538,20 @@ NOKPROBE_SYMBOL(__do_page_fault);
+ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		  unsigned long error_code)
+ {
++	const struct exception_table_entry *entry;
+ 	enum ctx_state prev_state = exception_enter();
+ 	int rc = __do_page_fault(regs, address, error_code);
+ 	exception_exit(prev_state);
+-	return rc;
++	if (likely(!rc))
++		return 0;
++
++	entry = search_exception_tables(regs->nip);
++	if (unlikely(!entry))
++		return rc;
++
++	instruction_pointer_set(regs, extable_fixup(entry));
++
++	return 0;
+ }
+ NOKPROBE_SYMBOL(do_page_fault);
+ 
+@@ -550,17 +560,10 @@ NOKPROBE_SYMBOL(do_page_fault);
+  * It is called from the DSI and ISI handlers in head.S and from some
+  * of the procedures in traps.c.
+  */
+-void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
++void __bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ {
+-	const struct exception_table_entry *entry;
+ 	int is_write = page_fault_is_write(regs->dsisr);
+ 
+-	/* Are we prepared to handle this fault?  */
+-	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+-		regs->nip = extable_fixup(entry);
+-		return;
+-	}
+-
+ 	/* kernel has accessed a bad area */
+ 
+ 	switch (TRAP(regs)) {
+@@ -594,3 +597,15 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 
+ 	die("Kernel access of bad area", regs, sig);
+ }
++
++void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
++{
++	const struct exception_table_entry *entry;
++
++	/* Are we prepared to handle this fault?  */
++	entry = search_exception_tables(instruction_pointer(regs));
++	if (entry)
++		instruction_pointer_set(regs, extable_fixup(entry));
++	else
++		__bad_page_fault(regs, address, sig);
++}
 -- 
 2.25.0
 
