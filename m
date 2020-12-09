@@ -2,68 +2,64 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2838C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 11:25:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15671C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 11:32:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8E6023A22
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 11:25:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8E6023A22
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id F268A235F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 11:32:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F268A235F7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrZVW4LM1zDqll
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 22:25:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=217.72.192.73; helo=mout.kundenserver.de;
- envelope-from=info@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 392 seconds by postgrey-1.36 at bilbo;
- Wed, 09 Dec 2020 22:20:59 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CrZdg1fntzDqgC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 22:32:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=ideasonboard.com (client-ip=213.167.242.64;
+ helo=perceval.ideasonboard.com;
+ envelope-from=laurent.pinchart@ideasonboard.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ideasonboard.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com
+ header.a=rsa-sha256 header.s=mail header.b=rcqx1vmQ; 
+ dkim-atps=neutral
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
+ [213.167.242.64])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CrZNq0Cp5zDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 22:20:57 +1100 (AEDT)
-Received: from [192.168.1.155] ([77.2.91.93]) by mrelayeu.kundenserver.de
- (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MLA6m-1kVyjB0KSg-00IGWK; Wed, 09 Dec 2020 12:11:39 +0100
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CrZY80Kf0zDqdc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 22:28:07 +1100 (AEDT)
+Received: from pendragon.ideasonboard.com (62-78-145-57.bb.dnainternet.fi
+ [62.78.145.57])
+ by perceval.ideasonboard.com (Postfix) with ESMTPSA id D186CDD;
+ Wed,  9 Dec 2020 12:28:00 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+ s=mail; t=1607513281;
+ bh=iMZ/MdwMrQyEtzHeeza99WrLdvvODJuHJmMrkn9wFBY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=rcqx1vmQkSxAxr1meC2h6m69JtY+gzxFVKAwzEcriT5hcq5ap+jOr0+6K48Qq3QKK
+ CoTDTWaUQAlgrEAgVKkdTPakKidrBD6WUzE6DJjzU+Aj9PY4AsLgC/lV3tegsHQowb
+ E4vFthJgZdBIHcivhQg/w3raZpO4NwN+tVbbooHI=
+Date: Wed, 9 Dec 2020 13:27:56 +0200
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>
 Subject: Re: [PATCH] drivers: usb: gadget: prefer pr_*() functions over raw
  printk()
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- "Enrico Weigelt, metux IT consult" <info@metux.net>
+Message-ID: <X9C0vOLZOnLZoPR8@pendragon.ideasonboard.com>
 References: <20201208144403.22097-1-info@metux.net>
  <X8+howyVRiTR9gv/@pendragon.ideasonboard.com>
-From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Message-ID: <9aaa06ad-0bd8-486d-b16b-66927d57cf96@metux.net>
-Date: Wed, 9 Dec 2020 12:11:36 +0100
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+ <9aaa06ad-0bd8-486d-b16b-66927d57cf96@metux.net>
 MIME-Version: 1.0
-In-Reply-To: <X8+howyVRiTR9gv/@pendragon.ideasonboard.com>
 Content-Type: text/plain; charset=utf-8
-Content-Language: tl
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:TS1+oAY6AdC0UtwhrAetL+tFGsmfL2VfyybwOSaT75VKnrTnQRP
- +IsskL1kzQM9VxvORn/3q+2HI+37v7ZwZzAgdFcCtYyGKF2H12RAOoHm/AnxwZEfQfdTnAG
- riDnR9h5WKx005G0EBL3tnCOrA3A2kDwZoFjNwOeV9e+JMvdFNOPusk61sFmC0Blv/Vh2PP
- j1H0hZddMV8nXVQWrrzyw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:+eoancWYGu8=:AzbjyFqIWEAC8WfENyjT3P
- 6T1b/LnX4TUjzwNc9I6+WOa3htGlNdYpbyBu3D0GDO4n9C8VlJzLA9GwVuwGT27iVZI2zdeHD
- 4ZBdJ4kaeLrSt0wsWkMVByMrSwMv/YuWyjyLzW9Hp4B2fP/nfsbiWOKd+Y1dCHeesVq2ejyrg
- C6TRTyhosgH53le3on6eZXkadI1iXSDCWTTQhT867WolrFDoFqAhTSrmYUFfS8YCwX5nTGt1O
- 7MivIO2n33zmEdYMGnknd4bU2nGCZ1AIwXYldxiS88EeAaDsQ3UPaG+c4MsN8OKTqUiRRT8NC
- e/+l3a8hdWQ0aAOhSB/WOfnpAkXiOAYexZnmAqKLgCN7KilDzt7JrSx72Pl2Rwrmmhr1+UYMU
- S3ueaEFmKFvz0/o+t/2+PA7Yp23YTNTcftjHqZvdbyQvSmujif7G33I+EZJ/Y
+Content-Disposition: inline
+In-Reply-To: <9aaa06ad-0bd8-486d-b16b-66927d57cf96@metux.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,47 +77,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08.12.20 16:54, Laurent Pinchart wrote:
+Hi Enrico,
 
-Hi,
-
->> diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
->> index 2b893bceea45..4834fafb3f70 100644
->> --- a/drivers/usb/gadget/udc/atmel_usba_udc.c
->> +++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
->> @@ -1573,7 +1573,7 @@ static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
->>  		 * generate or receive a reply right away. */
->>  		usba_ep_writel(ep, CLR_STA, USBA_RX_SETUP);
->>  
->> -		/* printk(KERN_DEBUG "setup: %d: %02x.%02x\n",
->> +		/* pr_debug("setup: %d: %02x.%02x\n",
->>  			ep->state, crq.crq.bRequestType,
->>  			crq.crq.bRequest); */
+On Wed, Dec 09, 2020 at 12:11:36PM +0100, Enrico Weigelt, metux IT consult wrote:
+> On 08.12.20 16:54, Laurent Pinchart wrote:
+> >> diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
+> >> index 2b893bceea45..4834fafb3f70 100644
+> >> --- a/drivers/usb/gadget/udc/atmel_usba_udc.c
+> >> +++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
+> >> @@ -1573,7 +1573,7 @@ static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
+> >>  		 * generate or receive a reply right away. */
+> >>  		usba_ep_writel(ep, CLR_STA, USBA_RX_SETUP);
+> >>  
+> >> -		/* printk(KERN_DEBUG "setup: %d: %02x.%02x\n",
+> >> +		/* pr_debug("setup: %d: %02x.%02x\n",
+> >>  			ep->state, crq.crq.bRequestType,
+> >>  			crq.crq.bRequest); */
+> > 
+> > I wonder if this shouldn't be dropped instead, commented-out code isn't
+> > very useful.
 > 
-> I wonder if this shouldn't be dropped instead, commented-out code isn't
-> very useful.
+> Indeed. Shall I send a separate patch for that ?
 
-Indeed. Shall I send a separate patch for that ?
+Yes, that would make sense.
 
-> When a pointer to a struct device is available, dev_err() would be much
-> better. That's however out of scope for this patch, but it would be nice
-> to address it. This would become
+> > When a pointer to a struct device is available, dev_err() would be much
+> > better. That's however out of scope for this patch, but it would be nice
+> > to address it. This would become
+> > 
+> > 		dev_err(&pdev->dev, "Check IRQ setup!\n");
+> > 
 > 
-> 		dev_err(&pdev->dev, "Check IRQ setup!\n");
-> 
+> You're right. I didn't check for that yet. I'll do it in a separate
+> patch.
 
-You're right. I didn't check for that yet. I'll do it in a separate
-patch.
-
-
---mtx
+As most of the files touched by this patch are device drivers, dev_*()
+functions should be used instead of pr_*() where possible. I'd recommend
+a first patch that converts to dev_*(), and then a second patch that
+converts the remaining printk()s, if any, to pr_*() in the contexts
+where no struct device is available or can easily be made available.
 
 -- 
----
-Hinweis: unverschlüsselte E-Mails können leicht abgehört und manipuliert
-werden ! Für eine vertrauliche Kommunikation senden Sie bitte ihren
-GPG/PGP-Schlüssel zu.
----
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+Regards,
+
+Laurent Pinchart
