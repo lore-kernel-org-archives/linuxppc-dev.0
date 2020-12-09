@@ -2,71 +2,113 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CC75C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 16:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD687C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 17:11:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC2262076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 16:29:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC2262076B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id C1EE923C30
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 17:11:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1EE923C30
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrjDp5kNszDqYd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 03:29:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.121.110; helo=1.mo51.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1798 seconds by postgrey-1.36 at bilbo;
- Thu, 10 Dec 2020 03:27:31 AEDT
-Received: from 1.mo51.mail-out.ovh.net (1.mo51.mail-out.ovh.net
- [178.32.121.110])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Crk8k5FTJzDqtR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 04:11:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=mBr23uiu; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CrjBW2ZyfzDqJS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 03:27:30 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.1.97])
- by mo51.mail-out.ovh.net (Postfix) with ESMTPS id EC44E241F14;
- Wed,  9 Dec 2020 16:50:02 +0100 (CET)
-Received: from kaod.org (37.59.142.106) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Wed, 9 Dec 2020
- 16:50:01 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-106R006e8116bbe-5bcb-4c68-a341-4abf38e9f395,
- F89B705946B58AFC48376D7414C518838B559611) smtp.auth=clg@kaod.org
-Subject: Re: [PATCH 04/13] powerpc/xive: Use cpu_to_node() instead of ibm,
- chip-id property
-To: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>
-References: <20201208151124.1329942-1-clg@kaod.org>
- <20201208151124.1329942-5-clg@kaod.org> <877dpregp5.fsf@linux.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <b463f4df-2d06-2458-48bd-d0d11536e31f@kaod.org>
-Date: Wed, 9 Dec 2020 16:50:00 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
-MIME-Version: 1.0
-In-Reply-To: <877dpregp5.fsf@linux.ibm.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.106]
-X-ClientProxiedBy: DAG1EX1.mxp5.local (172.16.2.1) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 834042aa-cd81-4a42-bca5-ab4652333be1
-X-Ovh-Tracer-Id: 17449759707509001114
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudejkedgkedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeetfeejteefhfeuveethfduffeftdelvdeghfelhfeljeehheeuieevudeggefhnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheprghnvggvshhhrdhkuhhmrghrsehlihhnuhigrdhisghmrdgtohhm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Crk671c4rzDqqK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 04:08:46 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0B9H2gZV112444; Wed, 9 Dec 2020 12:08:35 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=ZLlPvSxtGuA5l8o79JDmDy4sIpOj53za4k6QjZgLrLw=;
+ b=mBr23uiuA8M+QQs5fkW0H0/ZlI2j5uD2e27PuWN81xqkXuYWtYdQwzcvVStj/7Ahdu4y
+ YGUdIhyYbj2ZFlo87mGmdu9YQmf2ofPMqM2g6ozEWI3I/MtA2sg6y1awYSz/DDON6IN7
+ rv9WT+VXybKQzhhEWsoweZS8KSqQk4mk4obasssuap77r90pRKdoC92zUuO4NY7YPXUB
+ vkY49EzleY75kCR45EBMpwdnsl6q1HTgy+oXCH6u4wOspQtbkJbt2GO9Qx96S2uyE/cU
+ BRAbH7hwuea2S+YtiPt94ve3zyte4byPKsVvKrg2jzgTUXpdNgc5TzAOJkXTrA58a0Bu GQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35avmucjkr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 09 Dec 2020 12:08:34 -0500
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B9H5cht127321;
+ Wed, 9 Dec 2020 12:08:34 -0500
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35avmucjkb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 09 Dec 2020 12:08:34 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B9H2ZmV029988;
+ Wed, 9 Dec 2020 17:08:33 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma03dal.us.ibm.com with ESMTP id 3581u9ha5x-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 09 Dec 2020 17:08:33 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0B9H8Wjm27591048
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 9 Dec 2020 17:08:32 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1E47978066;
+ Wed,  9 Dec 2020 17:08:32 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B38AE78060;
+ Wed,  9 Dec 2020 17:08:31 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.58.223])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed,  9 Dec 2020 17:08:31 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 745842E35B8; Wed,  9 Dec 2020 22:38:28 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@ozlabs.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Valentin Schneider <valentin.schneider@arm.com>
+Subject: [PATCH v2 3/5] powerpc/smp: Rename init_thread_group_l1_cache_map()
+ to make it generic
+Date: Wed,  9 Dec 2020 22:38:18 +0530
+Message-Id: <1607533700-5546-4-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1607533700-5546-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1607533700-5546-1-git-send-email-ego@linux.vnet.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-09_14:2020-12-09,
+ 2020-12-09 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxlogscore=999
+ spamscore=0 lowpriorityscore=0 impostorscore=0 priorityscore=1501
+ mlxscore=0 malwarescore=0 suspectscore=0 adultscore=0 clxscore=1015
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012090116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,129 +120,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/9/20 5:39 AM, Aneesh Kumar K.V wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
-> 
->> The 'chip_id' field of the XIVE CPU structure is used to choose a
->> target for a source located on the same chip when possible. This field
->> is assigned on the PowerNV platform using the "ibm,chip-id" property
->> on pSeries under KVM when NUMA nodes are defined but it is undefined
->> under PowerVM. The XIVE source structure has a similar field
->> 'src_chip' which is only assigned on the PowerNV platform.
->>
->> cpu_to_node() returns a compatible value on all platforms, 0 being the
->> default node. It will also give us the opportunity to set the affinity
->> of a source on pSeries when we can localize them.
-> 
-> But we should avoid assuming that linux numa node number is equivalent
-> to chip id [1]. 
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Yes. the common layers should not make the (wrong) assumption on what a 
-'node_id' represents and we should provide converting routines between 
-both spaces, HW and logical. like we already have for CPUs, IRQ and other 
-entities. 
+init_thread_group_l1_cache_map() initializes the per-cpu cpumask
+thread_group_l1_cache_map with the core-siblings which share L1 cache
+with the CPU. Make this function generic to the cache-property (L1 or
+L2) and update a suitable mask. This is a preparatory patch for the
+next patch where we will introduce discovery of thread-groups that
+share L2-cache.
 
-'chip_id' needs a rename in some places under xive. This is the first 
-patch in that direction.
+No functional change.
 
-cpu_to_node() gives the correct value on all platforms that need it today. 
-Meaning : I don't know how to define nodes on PowerVM but it's not used 
-in the XIVE layer under pseries.
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-> What do we expect this value represents on virtualized platforms like 
-> PowerVM and KVM? 
-
-on KVM, it's relatively simple to define a machine with numa nodes and 
-devices (PHBs) attached to a specific node. The topology is correctly 
-detected by Linux. If, under the hood, the HW topology matches the logical 
-topology exposed to the VM, we should be able to tune affinity correctly
-directly from the VM and have good results. 
-
-But our drivers are not always doing the correct thing. IRQ and PCI MSIs 
-will require some massaging.
-
-I can not tell for PowerVM. I am still learning in that space.
-
-> Is this used for a hcall?
-
-Source configuration hcalls do not have any and this is one of the missing 
-bits for interrupt affinity on pSeries. We have no direct ways to link a 
-source with a node and to choose a suitable target. 
-
-For PHB MSIs, we could deduce the node from the PHB. For other interrupts, 
-we need hcall support, probably an extension of H_INT_GET_SOURCE_INFO
-with a new flag to return a node id.
-
-
-
-The XIVE interrupt controller adds extra complexity at the HW level because
-interrupt routing depends on a set of tables which are allocated by the 
-hypervisor. For best performance, these XIVE resources should be local to 
-the chip which means that allocation for virtual CPUs and and virtual 
-interrupts  should be defined carefully. that's the hypervisor business 
-to have a good allocation strategy when defining virtual topologies.
-
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index f3290d5..9078b5b5 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -866,15 +866,18 @@ static struct thread_groups *__init get_thread_groups(int cpu,
+ 	return tg;
+ }
  
-> [1] https://lore.kernel.org/linuxppc-dev/20200817103238.158133-1-aneesh.kumar@linux.ibm.com
-
-Isn't this trying to solve an issue when node 0 is missing ? 
-
-Because on a 4 nodes system (with a node 0), sparse numbering is not a 
-problem : 
-
-# numactl -H 
-available: 4 nodes (0,2,4,6)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107
-node 0 size: 32269 MB
-node 0 free: 29294 MB
-node 2 cpus: 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195
-node 2 size: 32447 MB
-node 2 free: 31982 MB
-node 4 cpus: 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 266 267
-node 4 size: 32489 MB
-node 4 free: 31949 MB
-node 6 cpus: 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351
-node 6 size: 32427 MB
-node 6 free: 32024 MB
-node distances:
-node   0   2   4   6 
-  0:  10  40  40  40 
-  2:  40  10  40  40 
-  4:  40  40  10  40 
-  6:  40  40  40  10 
-
-
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  arch/powerpc/sysdev/xive/common.c | 7 +------
->>  1 file changed, 1 insertion(+), 6 deletions(-)
->>
->> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
->> index ee375daf8114..605238ca65e4 100644
->> --- a/arch/powerpc/sysdev/xive/common.c
->> +++ b/arch/powerpc/sysdev/xive/common.c
->> @@ -1342,16 +1342,11 @@ static int xive_prepare_cpu(unsigned int cpu)
->>  
->>  	xc = per_cpu(xive_cpu, cpu);
->>  	if (!xc) {
->> -		struct device_node *np;
->> -
->>  		xc = kzalloc_node(sizeof(struct xive_cpu),
->>  				  GFP_KERNEL, cpu_to_node(cpu));
->>  		if (!xc)
->>  			return -ENOMEM;
->> -		np = of_get_cpu_node(cpu, NULL);
->> -		if (np)
->> -			xc->chip_id = of_get_ibm_chip_id(np);
->> -		of_node_put(np);
->> +		xc->chip_id = cpu_to_node(cpu);
->>  		xc->hw_ipi = XIVE_BAD_IRQ;
->>  
->>  		per_cpu(xive_cpu, cpu) = xc;
->> -- 
->> 2.26.2
+-static int init_thread_group_l1_cache_map(int cpu)
++static int __init init_thread_group_cache_map(int cpu, int cache_property)
+ 
+ {
+ 	int first_thread = cpu_first_thread_sibling(cpu);
+ 	int i, cpu_group_start = -1, err = 0;
+ 	struct thread_groups *tg = NULL;
++	cpumask_var_t *mask;
+ 
+-	tg = get_thread_groups(cpu, THREAD_GROUP_SHARE_L1,
+-			       &err);
++	if (cache_property != THREAD_GROUP_SHARE_L1)
++		return -EINVAL;
++
++	tg = get_thread_groups(cpu, cache_property, &err);
+ 	if (!tg)
+ 		return err;
+ 
+@@ -885,8 +888,8 @@ static int init_thread_group_l1_cache_map(int cpu)
+ 		return -ENODATA;
+ 	}
+ 
+-	zalloc_cpumask_var_node(&per_cpu(thread_group_l1_cache_map, cpu),
+-				GFP_KERNEL, cpu_to_node(cpu));
++	mask = &per_cpu(thread_group_l1_cache_map, cpu);
++	zalloc_cpumask_var_node(mask, GFP_KERNEL, cpu_to_node(cpu));
+ 
+ 	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+ 		int i_group_start = get_cpu_thread_group_start(i, tg);
+@@ -897,7 +900,7 @@ static int init_thread_group_l1_cache_map(int cpu)
+ 		}
+ 
+ 		if (i_group_start == cpu_group_start)
+-			cpumask_set_cpu(i, per_cpu(thread_group_l1_cache_map, cpu));
++			cpumask_set_cpu(i, *mask);
+ 	}
+ 
+ 	return 0;
+@@ -976,7 +979,7 @@ static int init_big_cores(void)
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		int err = init_thread_group_l1_cache_map(cpu);
++		int err = init_thread_group_cache_map(cpu, THREAD_GROUP_SHARE_L1);
+ 
+ 		if (err)
+ 			return err;
+-- 
+1.9.4
 
