@@ -2,103 +2,59 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC62C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA352C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:44:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26A24238E9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:41:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26A24238E9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2C0B223B4B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 04:44:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C0B223B4B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrPWm1cftzDqnp
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 15:41:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CrPZx1G37zDqnf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 15:44:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=rG9n9auN; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CrPTf3kYNzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 15:39:34 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B94XL93142934; Tue, 8 Dec 2020 23:39:24 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=/0AV9Qngqn3c9QYbpN8Uha2cR24sAYVMds9C7FY8VCQ=;
- b=rG9n9auNU/1IlbfjChNUE5StDJ8mYcFp6lD+jE4yPmoo1PQbbtpvzqQv/LExU5tjrTp+
- HnRwiF6ap56ukVVu/JgD+PZlMiXiRKzgasHxF3aUTvMUStfsQIiZFik+dTOiOuC0/FJI
- E2jvC1kG+JrwN4sX8GQGNkgs718NIs52ky4CLSls5BLfBIBwim6zfAczxPmLMdPPmTEe
- 18eVIshHLcV4v9Am1FieV7/CBcCRd2H+xNfErIZQzTd+3Z6RBjS9x/YY34yQ/LE808AC
- kk/owkhEKSjDzWHrZgZS14OOwPRpUj312KfrLGo+eLMzz0TNChagXdZLXxDXNqEAK8CD jA== 
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35aab97xad-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 08 Dec 2020 23:39:24 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B94W7nJ022777;
- Wed, 9 Dec 2020 04:39:23 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 3581u9v1h6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 09 Dec 2020 04:39:23 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B94dMtm1311332
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 9 Dec 2020 04:39:22 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CFF6BAC05B;
- Wed,  9 Dec 2020 04:39:22 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9F08BAC059;
- Wed,  9 Dec 2020 04:39:21 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.199.38.90])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  9 Dec 2020 04:39:21 +0000 (GMT)
-X-Mailer: emacs 27.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 04/13] powerpc/xive: Use cpu_to_node() instead of ibm,
- chip-id property
-In-Reply-To: <20201208151124.1329942-5-clg@kaod.org>
-References: <20201208151124.1329942-1-clg@kaod.org>
- <20201208151124.1329942-5-clg@kaod.org>
-Date: Wed, 09 Dec 2020 10:09:18 +0530
-Message-ID: <877dpregp5.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CrPYH3z7BzDqdb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 15:42:42 +1100 (AEDT)
+IronPort-SDR: awjKDNA42xYDqikNTYZ6uIw068jK2ZIEJnrYjTNT6fvapY/ZzRjT1olbBfa5rjzihqlYiVF99+
+ lzZIjVQEscAw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9829"; a="174136925"
+X-IronPort-AV: E=Sophos;i="5.78,404,1599548400"; d="scan'208";a="174136925"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Dec 2020 20:42:39 -0800
+IronPort-SDR: /bgDVzZ7rn/WPdAAp9eBjnt9ebnOMSWWcDuK3VO08U+Lfu3Qh30Wx67h5FElVXve/JpjIeHZkB
+ YdAPS3cZsZQw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.78,404,1599548400"; d="scan'208";a="348182571"
+Received: from lkp-server02.sh.intel.com (HELO 68de7028daff) ([10.239.97.151])
+ by orsmga002.jf.intel.com with ESMTP; 08 Dec 2020 20:42:38 -0800
+Received: from kbuild by 68de7028daff with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1kmrJF-00000L-OY; Wed, 09 Dec 2020 04:42:37 +0000
+Date: Wed, 09 Dec 2020 12:42:03 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 5eedf9fe8db23313df104576845cec5f481b9b60
+Message-ID: <5fd0559b.40hQJ0YgXFZXuz5k%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2020-12-09_03:2020-12-08,
- 2020-12-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- bulkscore=0 phishscore=0 spamscore=0 adultscore=0 suspectscore=0
- malwarescore=0 mlxlogscore=999 priorityscore=1501 lowpriorityscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012090031
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,60 +66,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-C=C3=A9dric Le Goater <clg@kaod.org> writes:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
+branch HEAD: 5eedf9fe8db23313df104576845cec5f481b9b60  powerpc/mm: Fix KUAP warning by providing copy_from_kernel_nofault_allowed()
 
-> The 'chip_id' field of the XIVE CPU structure is used to choose a
-> target for a source located on the same chip when possible. This field
-> is assigned on the PowerNV platform using the "ibm,chip-id" property
-> on pSeries under KVM when NUMA nodes are defined but it is undefined
-> under PowerVM. The XIVE source structure has a similar field
-> 'src_chip' which is only assigned on the PowerNV platform.
->
-> cpu_to_node() returns a compatible value on all platforms, 0 being the
-> default node. It will also give us the opportunity to set the affinity
-> of a source on pSeries when we can localize them.
+elapsed time: 884m
 
-But we should avoid assuming that linux numa node number is equivalent
-to chip id [1]. What do we expect this value represents on virtualized
-platforms like PowerVM and KVM? Is this used for a hcall?
+configs tested: 129
+configs skipped: 2
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-[1] https://lore.kernel.org/linuxppc-dev/20200817103238.158133-1-aneesh.kum=
-ar@linux.ibm.com
+gcc tested configs:
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+powerpc                          g5_defconfig
+powerpc                     skiroot_defconfig
+sh                   rts7751r2dplus_defconfig
+sh                     magicpanelr2_defconfig
+powerpc                       maple_defconfig
+arm                             rpc_defconfig
+parisc                generic-32bit_defconfig
+arm                   milbeaut_m10v_defconfig
+powerpc                        warp_defconfig
+sh                          lboxre2_defconfig
+powerpc64                           defconfig
+powerpc                     pseries_defconfig
+powerpc                 canyonlands_defconfig
+powerpc                 mpc834x_mds_defconfig
+sh                         apsh4a3a_defconfig
+x86_64                           alldefconfig
+powerpc                         wii_defconfig
+powerpc                     mpc83xx_defconfig
+sh                          rsk7264_defconfig
+arc                     haps_hs_smp_defconfig
+sh                           se7724_defconfig
+powerpc                     ep8248e_defconfig
+arm                         assabet_defconfig
+arm                           corgi_defconfig
+sh                               alldefconfig
+powerpc                 mpc8272_ads_defconfig
+sh                          sdk7780_defconfig
+sh                           se7619_defconfig
+mips                     cu1830-neo_defconfig
+sh                           se7751_defconfig
+arm                            lart_defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                           se7721_defconfig
+mips                        omega2p_defconfig
+arm                            dove_defconfig
+mips                          ath79_defconfig
+powerpc                     kmeter1_defconfig
+mips                      maltaaprp_defconfig
+powerpc                      mgcoge_defconfig
+arc                            hsdk_defconfig
+xtensa                              defconfig
+powerpc                      pmac32_defconfig
+xtensa                         virt_defconfig
+m68k                       m5475evb_defconfig
+mips                         mpc30x_defconfig
+h8300                               defconfig
+openrisc                 simple_smp_defconfig
+mips                         rt305x_defconfig
+powerpc                     tqm8541_defconfig
+c6x                        evmc6678_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                      acadia_defconfig
+arc                        nsimosci_defconfig
+arm                           omap1_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201208
+i386                 randconfig-a005-20201208
+i386                 randconfig-a001-20201208
+i386                 randconfig-a002-20201208
+i386                 randconfig-a006-20201208
+i386                 randconfig-a003-20201208
+x86_64               randconfig-a004-20201208
+x86_64               randconfig-a006-20201208
+x86_64               randconfig-a005-20201208
+x86_64               randconfig-a001-20201208
+x86_64               randconfig-a002-20201208
+x86_64               randconfig-a003-20201208
+i386                 randconfig-a013-20201208
+i386                 randconfig-a014-20201208
+i386                 randconfig-a011-20201208
+i386                 randconfig-a015-20201208
+i386                 randconfig-a012-20201208
+i386                 randconfig-a016-20201208
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
->
-> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
-> ---
->  arch/powerpc/sysdev/xive/common.c | 7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-> index ee375daf8114..605238ca65e4 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -1342,16 +1342,11 @@ static int xive_prepare_cpu(unsigned int cpu)
->=20=20
->  	xc =3D per_cpu(xive_cpu, cpu);
->  	if (!xc) {
-> -		struct device_node *np;
-> -
->  		xc =3D kzalloc_node(sizeof(struct xive_cpu),
->  				  GFP_KERNEL, cpu_to_node(cpu));
->  		if (!xc)
->  			return -ENOMEM;
-> -		np =3D of_get_cpu_node(cpu, NULL);
-> -		if (np)
-> -			xc->chip_id =3D of_get_ibm_chip_id(np);
-> -		of_node_put(np);
-> +		xc->chip_id =3D cpu_to_node(cpu);
->  		xc->hw_ipi =3D XIVE_BAD_IRQ;
->=20=20
->  		per_cpu(xive_cpu, cpu) =3D xc;
-> --=20
-> 2.26.2
+clang tested configs:
+x86_64               randconfig-a012-20201208
+x86_64               randconfig-a013-20201208
+x86_64               randconfig-a011-20201208
+x86_64               randconfig-a016-20201208
+x86_64               randconfig-a014-20201208
+x86_64               randconfig-a015-20201208
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
