@@ -2,64 +2,69 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D83C9C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 13:28:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FC21C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 13:34:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0EAAA2313E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 13:28:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EAAA2313E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 0CA9F23A6C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 13:34:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CA9F23A6C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=walle.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrdCc2lCczDqQT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 00:28:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CrdMC6zQjzDqW2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 00:34:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
+ helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=walle.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
+ header.s=mail2016061301 header.b=GjAaU9da; 
+ dkim-atps=neutral
+Received: from ssl.serverraum.org (ssl.serverraum.org
+ [IPv6:2a01:4f8:151:8464::1:2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Crcmf2tZdzDqnB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 00:08:13 +1100 (AEDT)
+Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Crchl0vXPzDqmh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 00:04:53 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Crchd0STjz9tx0L;
- Wed,  9 Dec 2020 14:04:49 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qLYKu9zIFoDq; Wed,  9 Dec 2020 14:04:48 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Crchc6NJjz9tx0J;
- Wed,  9 Dec 2020 14:04:48 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C5748B7F2;
- Wed,  9 Dec 2020 14:04:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Dyuyd4ThGwbD; Wed,  9 Dec 2020 14:04:49 +0100 (CET)
-Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AE4BF8B7EF;
- Wed,  9 Dec 2020 14:04:49 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 770B9606AF; Wed,  9 Dec 2020 13:04:49 +0000 (UTC)
-Message-Id: <4b2148bb494688650cbe181a167b92e0e81a2a0a.1607519069.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <8f378fb93b8b180501443056a4d791b8d8335339.1607519069.git.christophe.leroy@csgroup.eu>
-References: <8f378fb93b8b180501443056a4d791b8d8335339.1607519069.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 4/5] powerpc/4xx: Remove CONFIG_4xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  9 Dec 2020 13:04:49 +0000 (UTC)
+ by ssl.serverraum.org (Postfix) with ESMTPSA id BE76F22F9C;
+ Wed,  9 Dec 2020 14:08:00 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
+ s=mail2016061301; t=1607519283;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=8C9tDdYTNoyJympH+rs/jhco5iFhg1hGy9hBi61it4E=;
+ b=GjAaU9darDCAuq8kixcG2UQMveso5X5FejCBvdxp8xRdQDJ6sRe+weMgZak2IjsDb6nMUN
+ 21TOnWI8qOeVoZnz7GgKsSqR6rmSCcuKiG8gChLY05zPLi3dfRcmeE3bz7iO90HpJjAK8P
+ 1D7hrQFsyFZhiStqf5p3Hwo6eib8dEA=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
+Date: Wed, 09 Dec 2020 14:08:00 +0100
+From: Michael Walle <michael@walle.cc>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v6 0/5] PCI: Unify ECAM constants in native PCI Express
+ drivers
+In-Reply-To: <20201209123654.GA2403346@bjorn-Precision-5520>
+References: <20201209123654.GA2403346@bjorn-Precision-5520>
+User-Agent: Roundcube Webmail/1.4.9
+Message-ID: <595028ce6b04ea589f802ff61d8710f0@walle.cc>
+X-Sender: michael@walle.cc
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,281 +76,236 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kw@linux.com, heiko@sntech.de, shawn.lin@rock-chips.com,
+ Alexandru Marginean <alexm.osslist@gmail.com>, paulus@samba.org,
+ thomas.petazzoni@bootlin.com, jonnyc@amazon.com, toan@os.amperecomputing.com,
+ will@kernel.org, robh@kernel.org, lorenzo.pieralisi@arm.com,
+ michal.simek@xilinx.com, linux-rockchip@lists.infradead.org,
+ bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
+ linux-pci@vger.kernel.org, rjui@broadcom.com, f.fainelli@gmail.com,
+ linux-rpi-kernel@lists.infradead.org, Jonathan.Cameron@huawei.com,
+ bhelgaas@google.com, jonathan.derrick@intel.com, sbranden@broadcom.com,
+ wangzhou1@hisilicon.com, rrichter@marvell.com,
+ Vladimir Oltean <olteanv@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+[+ Vladimir and Alex]
 
-CONFIG_4xx was corresponding to CONFIG_40x | CONFIG_44x.
+Am 2020-12-09 13:36, schrieb Bjorn Helgaas:
+> On Tue, Dec 08, 2020 at 04:41:50PM +0100, Michael Walle wrote:
+>> >On Sun, 29 Nov 2020 23:07:38 +0000, Krzysztof Wilczyński wrote:
+>> >> Unify ECAM-related constants into a single set of standard constants
+>> >> defining memory address shift values for the byte-level address that can
+>> >> be used when accessing the PCI Express Configuration Space, and then
+>> >> move native PCI Express controller drivers to use newly introduced
+>> >> definitions retiring any driver-specific ones.
+>> >>
+>> >> The ECAM ("Enhanced Configuration Access Mechanism") is defined by the
+>> >> PCI Express specification (see PCI Express Base Specification, Revision
+>> >> 5.0, Version 1.0, Section 7.2.2, p. 676), thus most hardware should
+>> >> implement it the same way.
+>> >>
+>> >> [...]
+>> >
+>> >Applied to pci/ecam, thanks!
+>> >
+>> >[1/5] PCI: Unify ECAM constants in native PCI Express drivers
+>> >      https://git.kernel.org/lpieralisi/pci/c/f3c07cf692
+> 
+>> Patch 1/5 breaks LS1028A boards:
+>> 
+>> [..]
+>> [    1.144426] pci-host-generic 1f0000000.pcie: host bridge 
+>> /soc/pcie@1f0000000 ranges:
+>> [    1.152276] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f8000000..0x01f815ffff -> 0x0000000000
+>> [    1.161161] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f8160000..0x01f81cffff -> 0x0000000000
+>> [    1.170043] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f81d0000..0x01f81effff -> 0x0000000000
+>> [    1.178924] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f81f0000..0x01f820ffff -> 0x0000000000
+>> [    1.187805] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f8210000..0x01f822ffff -> 0x0000000000
+>> [    1.196686] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01f8230000..0x01f824ffff -> 0x0000000000
+>> [    1.205562] pci-host-generic 1f0000000.pcie:      MEM 
+>> 0x01fc000000..0x01fc3fffff -> 0x0000000000
+> 
+> Can you attach your DT?
+That would be the following:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm64/boot/dts/freescale/fsl-ls1028a-kontron-sl28-var3-ads2.dts
 
-As CONFIG_40x is gone, CONFIG_4xx and CONFIG_44x are now equivalent.
-And CONFIG_BOOKE is also set when CONFIG_44x is set.
+You'll find the PCI devices/bridge in:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
 
-Replace (CONFIG_4xx | CONFIG_BOOKE) by CONFIG_BOOKE
-Replace other CONFIG_4xx by CONFIG_44x
-Remove CONFIG_4xx.
+> The fact that all these windows map to PCI
+> bus address 0 looks broken.  Prior to patch 1/5, do the devices below
+> this bridge actually work?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/Kconfig                   |  2 +-
- arch/powerpc/Makefile                  |  1 -
- arch/powerpc/include/asm/ppc_asm.h     |  2 +-
- arch/powerpc/kernel/asm-offsets.c      |  2 +-
- arch/powerpc/kernel/entry_32.S         | 16 ++++++++--------
- arch/powerpc/kernel/process.c          |  2 +-
- arch/powerpc/mm/fault.c                |  2 +-
- arch/powerpc/mm/ptdump/Makefile        |  2 +-
- arch/powerpc/platforms/Kconfig.cputype |  7 +------
- arch/powerpc/platforms/Makefile        |  3 +--
- arch/powerpc/sysdev/Kconfig            |  6 +++---
- arch/powerpc/xmon/xmon.c               |  2 +-
- 12 files changed, 20 insertions(+), 27 deletions(-)
+Yes, these should be the onboard network controller and ethernet
+switch.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e97fa9020951..1c0c912d9efa 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -425,7 +425,7 @@ config HUGETLB_PAGE_SIZE_VARIABLE
- 
- config MATH_EMULATION
- 	bool "Math emulation"
--	depends on 4xx || PPC_8xx || PPC_MPC832x || BOOKE
-+	depends on PPC_8xx || PPC_MPC832x || BOOKE
- 	select PPC_FPU_REGS
- 	help
- 	  Some PowerPC chips designed for embedded applications do not have
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index c799a88b867c..99df16694d39 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -245,7 +245,6 @@ KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
- # often slow when they are implemented at all
- KBUILD_CFLAGS		+= $(call cc-option,-mno-string)
- 
--cpu-as-$(CONFIG_40x)		+= -Wa,-m405
- cpu-as-$(CONFIG_44x)		+= -Wa,-m440
- cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index cfa814824285..f661a9dc2dd2 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -425,7 +425,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
-  * and they must be used.
-  */
- 
--#if !defined(CONFIG_4xx) && !defined(CONFIG_PPC_8xx)
-+#if !defined(CONFIG_44x) && !defined(CONFIG_PPC_8xx)
- #define tlbia					\
- 	li	r4,1024;			\
- 	mtctr	r4;				\
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e5caefb72a69..4ae2acd54ea4 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -157,7 +157,7 @@ int main(void)
- 	OFFSET(THREAD_USED_SPE, thread_struct, used_spe);
- #endif /* CONFIG_SPE */
- #endif /* CONFIG_PPC64 */
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_BOOKE
- 	OFFSET(THREAD_DBCR0, thread_struct, debug.dbcr0);
- #endif
- #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index c203cc4a81c8..1de884143940 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -410,7 +410,7 @@ syscall_exit_cont:
- 	lwz	r3,GPR3(r1)
- 1:
- #endif /* CONFIG_TRACE_IRQFLAGS */
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_BOOKE
- 	/* If the process has its own DBCR0 value, load it up.  The internal
- 	   debug mode bit tells us that dbcr0 should be loaded. */
- 	lwz	r0,THREAD+THREAD_DBCR0(r2)
-@@ -561,7 +561,7 @@ syscall_exit_work:
- ret_from_kernel_syscall:
- 	mfspr	r9, SPRN_SRR0
- 	mfspr	r10, SPRN_SRR1
--#if !defined(CONFIG_4xx) && !defined(CONFIG_BOOKE)
-+#ifndef CONFIG_BOOKE
- 	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR|MSR_DR))
- 	mtmsr	r11
- #endif
-@@ -756,7 +756,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
- 
- 	.globl	fast_exception_return
- fast_exception_return:
--#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-+#ifndef CONFIG_BOOKE
- 	andi.	r10,r9,MSR_RI		/* check for recoverable interrupt */
- 	beq	1f			/* if not, we've got problems */
- #endif
-@@ -782,7 +782,7 @@ fast_exception_return:
- 	rfi
- _ASM_NOKPROBE_SYMBOL(fast_exception_return)
- 
--#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-+#ifndef CONFIG_BOOKE
- /* check if the exception happened in a restartable section */
- 1:	lis	r3,exc_exit_restart_end@ha
- 	addi	r3,r3,exc_exit_restart_end@l
-@@ -844,7 +844,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
- 	bne	do_work
- 
- restore_user:
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_BOOKE
- 	/* Check whether this process has its own DBCR0 value.  The internal
- 	   debug mode bit tells us that dbcr0 should be loaded. */
- 	lwz	r0,THREAD+THREAD_DBCR0(r2)
-@@ -968,7 +968,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	stwcx.	r0,0,r1			/* to clear the reservation */
- 
--#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-+#ifndef CONFIG_BOOKE
- 	andi.	r10,r9,MSR_RI		/* check if this exception occurred */
- 	beql	nonrecoverable		/* at a bad place (MSR:RI = 0) */
- 
-@@ -1004,7 +1004,7 @@ exc_exit_restart_end:
- _ASM_NOKPROBE_SYMBOL(exc_exit_restart)
- _ASM_NOKPROBE_SYMBOL(exc_exit_restart_end)
- 
--#else /* !(CONFIG_4xx || CONFIG_BOOKE) */
-+#else /* !CONFIG_BOOKE */
- 	/*
- 	 * This is a bit different on 4xx/Book-E because it doesn't have
- 	 * the RI bit in the MSR.
-@@ -1184,7 +1184,7 @@ load_dbcr0:
- global_dbcr0:
- 	.space	8*NR_CPUS
- 	.previous
--#endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
-+#endif /* !CONFIG_BOOKE */
- 
- do_work:			/* r10 contains MSR_KERNEL here */
- 	andi.	r0,r9,_TIF_NEED_RESCHED
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96bb10d00d9c..ff9ee4d72a4e 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1477,7 +1477,7 @@ static void __show_regs(struct pt_regs *regs)
- 	if (!trap_is_syscall(regs) && cpu_has_feature(CPU_FTR_CFAR))
- 		pr_cont("CFAR: "REG" ", regs->orig_gpr3);
- 	if (trap == 0x200 || trap == 0x300 || trap == 0x600) {
--		if (IS_ENABLED(CONFIG_4xx) || IS_ENABLED(CONFIG_BOOKE))
-+		if (IS_ENABLED(CONFIG_BOOKE))
- 			pr_cont("DEAR: "REG" ESR: "REG" ", regs->dar, regs->dsisr);
- 		else
- 			pr_cont("DAR: "REG" DSISR: %08lx ", regs->dar, regs->dsisr);
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index c91621df0c61..9ace4807c42f 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -363,7 +363,7 @@ static void sanity_check_fault(bool is_write, bool is_user,
-  * Define the correct "is_write" bit in error_code based
-  * on the processor family
-  */
--#if (defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-+#ifdef CONFIG_BOOKE
- #define page_fault_is_write(__err)	((__err) & ESR_DST)
- #define page_fault_is_bad(__err)	(0)
- #else
-diff --git a/arch/powerpc/mm/ptdump/Makefile b/arch/powerpc/mm/ptdump/Makefile
-index 712762be3cb1..3cf759e639a1 100644
---- a/arch/powerpc/mm/ptdump/Makefile
-+++ b/arch/powerpc/mm/ptdump/Makefile
-@@ -2,7 +2,7 @@
- 
- obj-y	+= ptdump.o
- 
--obj-$(CONFIG_4xx)		+= shared.o
-+obj-$(CONFIG_44x)		+= shared.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
- obj-$(CONFIG_PPC_BOOK3E_MMU)	+= shared.o
- obj-$(CONFIG_PPC_BOOK3S_32)	+= shared.o bats.o segment_regs.o
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 150d0c704f6e..c74bdfabb0ab 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -241,11 +241,6 @@ config FSL_EMB_PERF_EVENT_E500
- 	depends on FSL_EMB_PERF_EVENT && E500
- 	default y
- 
--config 4xx
--	bool
--	depends on 44x
--	default y
--
- config BOOKE
- 	bool
- 	depends on E500 || 44x || PPC_BOOK3E
-@@ -470,7 +465,7 @@ config NR_CPUS
- 
- config NOT_COHERENT_CACHE
- 	bool
--	depends on 4xx || PPC_8xx || PPC_MPC512x || \
-+	depends on 44x || PPC_8xx || PPC_MPC512x || \
- 		GAMECUBE_COMMON || AMIGAONE
- 	select ARCH_HAS_DMA_PREP_COHERENT
- 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index cae14326bc49..f67b7fabac4e 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -4,8 +4,7 @@ obj-$(CONFIG_FSL_ULI1575)	+= fsl_uli1575.o
- 
- obj-$(CONFIG_PPC_PMAC)		+= powermac/
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
--obj-$(CONFIG_4xx)		+= 4xx/
--obj-$(CONFIG_44x)		+= 44x/
-+obj-$(CONFIG_44x)		+= 4xx/ 44x/
- obj-$(CONFIG_PPC_MPC512x)	+= 512x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_8xx)		+= 8xx/
-diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-index 9ebcc1337560..7b3a0fc3eadf 100644
---- a/arch/powerpc/sysdev/Kconfig
-+++ b/arch/powerpc/sysdev/Kconfig
-@@ -5,17 +5,17 @@
- 
- config PPC4xx_PCI_EXPRESS
- 	bool
--	depends on PCI && 4xx
-+	depends on PCI && 44x
- 
- config PPC4xx_HSTA_MSI
- 	bool
- 	depends on PCI_MSI
--	depends on PCI && 4xx
-+	depends on PCI && 44x
- 
- config PPC4xx_MSI
- 	bool
- 	depends on PCI_MSI
--	depends on PCI && 4xx
-+	depends on PCI && 44x
- 
- config PPC_MSI_BITMAP
- 	bool
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index dcd817ca2edf..8445d6397824 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -473,7 +473,7 @@ static inline void release_output_lock(void) {}
- 
- static inline int unrecoverable_excp(struct pt_regs *regs)
- {
--#if defined(CONFIG_4xx) || defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_44x) || defined(CONFIG_PPC_BOOK3E)
- 	/* We have no MSR_RI bit on 4xx or Book3e, so we simply return false */
- 	return 0;
- #else
+> Looks like you're using the pci-host-generic driver; which of the
+> .compatible strings (pci-host-cam-generic, pci-host-ecam-generic,
+> marvell,armada8k-pcie-ecam, etc) are you using?  (I think that's in
+> the DT as well.)
+
+compatible = "pci-host-ecam-generic";
+
+>> [    1.214465] pci-host-generic 1f0000000.pcie: ECAM at [mem 
+>> 0x1f0000000-0x1f00fffff] for [bus 00]
+> 
+> 
+>> [    1.223318] pci-host-generic 1f0000000.pcie: PCI host bridge to bus 
+>> 0000:00
+>> [    1.230350] pci_bus 0000:00: root bus resource [bus 00]
+>> [    1.235625] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f8000000-0x1f815ffff] (bus address [0x00000000-0x0015ffff])
+>> [    1.246077] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f8160000-0x1f81cffff pref] (bus address [0x00000000-0x0006ffff])
+>> [    1.256969] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f81d0000-0x1f81effff] (bus address [0x00000000-0x0001ffff])
+>> [    1.267427] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f81f0000-0x1f820ffff pref] (bus address [0x00000000-0x0001ffff])
+>> [    1.278326] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f8210000-0x1f822ffff] (bus address [0x00000000-0x0001ffff])
+>> [    1.288779] pci_bus 0000:00: root bus resource [mem 
+>> 0x1f8230000-0x1f824ffff pref] (bus address [0x00000000-0x0001ffff])
+>> [    1.299669] pci_bus 0000:00: root bus resource [mem 
+>> 0x1fc000000-0x1fc3fffff] (bus address [0x00000000-0x003fffff])
+>> [    1.310138] pci 0000:00:00.0: [1957:e100] type 00 class 0x020001
+>> [    1.316234] pci 0000:00:00.0: BAR 0: [mem 0x1f8000000-0x1f803ffff 
+>> 64bit] (from Enhanced Allocation, properties 0x0)
+>> [    1.326776] pci 0000:00:00.0: BAR 2: [mem 0x1f8160000-0x1f816ffff 
+>> 64bit pref] (from Enhanced Allocation, properties 0x1)
+>> [    1.337759] pci 0000:00:00.0: VF BAR 0: [mem 
+>> 0x1f81d0000-0x1f81dffff 64bit] (from Enhanced Allocation, properties 
+>> 0x4)
+>> [    1.348563] pci 0000:00:00.0: VF BAR 2: [mem 
+>> 0x1f81f0000-0x1f81fffff 64bit pref] (from Enhanced Allocation, 
+>> properties 0x3)
+>> [    1.359821] pci 0000:00:00.0: PME# supported from D0 D3hot
+>> [    1.365368] pci 0000:00:00.0: VF(n) BAR0 space: [mem 
+>> 0x1f81d0000-0x1f81effff 64bit] (contains BAR0 for 2 VFs)
+>> [    1.375381] pci 0000:00:00.0: VF(n) BAR2 space: [mem 
+>> 0x1f81f0000-0x1f820ffff 64bit pref] (contains BAR2 for 2 VFs)
+>> [    1.385983] Unable to handle kernel paging request at virtual 
+>> address ffff800012132000
+> 
+> If ffff800012132000 were an actual ECAM address, we would expect the
+> low 20 bits to contain the device number, function number, and
+> config register offset, i.e.,
+> 
+>   dev   (0xffff800012132000 >> 15) & 0x01f = 0x6
+>   fn    (0xffff800012132000 >> 12) & 0x007 = 0x2
+>   reg   (0xffff800012132000)       & 0xfff = 0
+> 
+> but that's non-sensical since we probe for devices in order.  So maybe
+> this is a bad pointer somewhere else.  I looked at pci_ecam_map_bus()
+> but didn't see an obvious problem.  Maybe we could brute-force debug
+> this by adding some printks there.
+
+I'm not that deep into PCI, but if you could tell me what to add where,
+I'm happy to help ;)
+
+>> [    1.393972] Mem abort info:
+>> [    1.396783]   ESR = 0x96000007
+>> [    1.399859]   EC = 0x25: DABT (current EL), IL = 32 bits
+>> [    1.405215]   SET = 0, FnV = 0
+>> [    1.408290]   EA = 0, S1PTW = 0
+>> [    1.411453] Data abort info:
+>> [    1.414352]   ISV = 0, ISS = 0x00000007
+>> [    1.418216]   CM = 0, WnR = 0
+>> [    1.421205] swapper pgtable: 4k pages, 48-bit VAs, 
+>> pgdp=000000008369c000
+>> [    1.427966] [ffff800012132000] pgd=00000020fffff003, 
+>> p4d=00000020fffff003, pud=00000020ffffe003, pmd=00000020ffffa003, 
+>> pte=0000000000000000
+>> [    1.440618] Internal error: Oops: 96000007 [#1] PREEMPT SMP
+>> [    1.446239] Modules linked in:
+>> [    1.449320] CPU: 1 PID: 1 Comm: swapper/0 Not tainted 
+>> 5.10.0-rc3-00101-g2f378db5c89 #191
+>> [    1.457484] Hardware name: Kontron SMARC-sAL28 (Single PHY) on 
+>> SMARC Eval 2.0 carrier (DT)
+>> [    1.465827] pstate: 20000085 (nzCv daIf -PAN -UAO -TCO BTYPE=--)
+>> [    1.471892] pc : pci_generic_config_read+0x38/0xe0
+>> [    1.476723] lr : pci_generic_config_read+0x24/0xe0
+>> [    1.481553] sp : ffff80001211b920
+>> [    1.484891] x29: ffff80001211b920 x28: 0000000000000000
+>> [    1.490252] x27: ffff8000116a04bc x26: 0000000000000000
+>> [    1.495612] x25: 0000000000000001 x24: ffff80001211ba54
+>> [    1.500972] x23: ffff0020009c3800 x22: 0000000000000000
+>> [    1.506332] x21: 0000000000000087 x20: ffff80001211b994
+>> [    1.511692] x19: 0000000000000004 x18: 0000000000000000
+>> [    1.517052] x17: 0000000000000000 x16: 00000000d5edfbc1
+>> [    1.522412] x15: ffffffffffffffff x14: ffff800011cf9948
+>> [    1.527772] x13: ffff002000305a1c x12: 0000000000000030
+>> [    1.533132] x11: 0101010101010101 x10: 7f7f7f7f7f7f7f7f
+>> [    1.538491] x9 : 2c6b7173626d686f x8 : 000000000000ea60
+>> [    1.543851] x7 : ffff80001211ba54 x6 : 0000000000000000
+>> [    1.549211] x5 : 0000000000000000 x4 : ffff800012131000
+>> [    1.554570] x3 : 0000000000000000 x2 : 0000000000000000
+>> [    1.559930] x1 : 0000000000001000 x0 : ffff800012132000
+>> [    1.565290] Call trace:
+>> [    1.567752]  pci_generic_config_read+0x38/0xe0
+>> [    1.572233]  pci_bus_read_config_dword+0x84/0xd8
+>> [    1.576890]  pci_bus_generic_read_dev_vendor_id+0x34/0x1b0
+>> [    1.582423]  pci_bus_read_dev_vendor_id+0x4c/0x70
+>> [    1.587167]  pci_scan_single_device+0x84/0xe0
+>> [    1.591559]  pci_scan_slot+0x6c/0x120
+>> [    1.595250]  pci_scan_child_bus_extend+0x54/0x298
+>> [    1.599994]  pci_scan_root_bus_bridge+0xd4/0xf0
+>> [    1.604562]  pci_host_probe+0x18/0xb0
+>> [    1.608254]  pci_host_common_probe+0x13c/0x1a0
+>> [    1.612735]  platform_drv_probe+0x54/0xa8
+>> [    1.616777]  really_probe+0xe4/0x3b8
+>> [    1.620380]  driver_probe_device+0x58/0xb8
+>> [    1.624509]  device_driver_attach+0x74/0x80
+>> [    1.628725]  __driver_attach+0x58/0xe0
+>> [    1.632503]  bus_for_each_dev+0x74/0xc8
+>> [    1.636369]  driver_attach+0x24/0x30
+>> [    1.639972]  bus_add_driver+0x18c/0x1f0
+>> [    1.643838]  driver_register+0x64/0x120
+>> [    1.647704]  __platform_driver_register+0x48/0x58
+>> [    1.652449]  gen_pci_driver_init+0x1c/0x28
+>> [    1.656580]  do_one_initcall+0x4c/0x2c0
+>> [    1.660447]  kernel_init_freeable+0x1e4/0x250
+>> [    1.664840]  kernel_init+0x14/0x118
+>> [    1.668355]  ret_from_fork+0x10/0x34
+>> [    1.671961] Code: 7100067f 540001c0 71000a7f 54000300 (b9400001)
+>> [    1.678114] ---[ end trace 0aca1b048661e8b3 ]---
+>> [    1.682770] note: swapper/0[1] exited with preempt_count 1
+>> [    1.688305] Kernel panic - not syncing: Attempted to kill init! 
+>> exitcode=0x0000000b
+>> [    1.696031] SMP: stopping secondary CPUs
+>> [    1.699989] Kernel Offset: disabled
+>> [    1.703503] CPU features: 0x0240022,61006008
+>> [    1.707806] Memory Limit: none
+>> [    1.710884] ---[ end Kernel panic - not syncing: Attempted to kill 
+>> init! exitcode=0x0000000b ]---
+>> 
+>> There is a LS1028A eval board in kernelci here:
+>> https://lavalab.nxp.com/scheduler/job/170566
+>> 
+>> I actually have this board which also have a LS1028A SoC:
+>> https://lavalab.kontron.com/scheduler/job/1771
+>> 
+>> But in the latter you won't see much because earlycon isn't active. 
+>> [I'm
+>> about to fix that.]
+>> 
+>> By reverting patch 1/5, the board will work again.
+>> 
+>> -michael
+>> 
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
 -- 
-2.25.0
-
+-michael
