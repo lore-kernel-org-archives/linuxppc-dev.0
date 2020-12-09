@@ -2,113 +2,81 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F80AC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 17:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C254C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 18:58:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0141023A33
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 17:20:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0141023A33
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 78AEF22210
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 18:58:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78AEF22210
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrkMd1T1dzDr0V
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 04:20:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CrmY51ssWzDqw4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 05:58:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::62b;
+ helo=mail-pl1-x62b.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=euDfzr5V; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=nVp8+U0Q; dkim-atps=neutral
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Crk7V5yN0zDqts
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 04:09:58 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0B9H25eY057469; Wed, 9 Dec 2020 12:09:51 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references; s=pp1;
- bh=6uSbHcpSaoYBdEBNb/No1VYRzs2Ng4+6qOahQsHEX/A=;
- b=euDfzr5VdTb2jkoO4X57PrFUmwfThcDHMYHAcI0tmNzo39+CWfiTXi11fJ1RZ89ONj5t
- RyZ5AleX9rfkwZP9T+BgAfs2pw8pDAza9HepYd4MFucq8grVu7I5mbcsHdXfMERA5qtj
- p8sblKx+Ms2Ah29nQrFw3fPvcWI+kLroZkgJtPxNESlNrZsyD2ou+pfccw8yVUvcv167
- f5nBG3Epdg/Z+ljYItjK/JaksLEqkQuN2f3Wf6XAlWV5OnrP2m/oqwQS3x6CcYx0kOcg
- FibXgBNEHi7dMNrcSxsIG2wCfdLHhz9AtZUuqCTq1YnZFhVahGRbLzwb0bDEvPxkP2FK vg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35amchhd36-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 09 Dec 2020 12:09:50 -0500
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B9H7Dln084102;
- Wed, 9 Dec 2020 12:09:50 -0500
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35amchhd2v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 09 Dec 2020 12:09:50 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0B9H7TEc016252;
- Wed, 9 Dec 2020 17:09:49 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma01wdc.us.ibm.com with ESMTP id 3581u9f2yb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 09 Dec 2020 17:09:49 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0B9H8WxS24248796
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 9 Dec 2020 17:08:32 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 278356E054;
- Wed,  9 Dec 2020 17:08:32 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B97066E058;
- Wed,  9 Dec 2020 17:08:31 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.58.223])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  9 Dec 2020 17:08:31 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 67FBE2E35A8; Wed,  9 Dec 2020 22:38:28 +0530 (IST)
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Anton Blanchard <anton@ozlabs.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Valentin Schneider <valentin.schneider@arm.com>
-Subject: [PATCH v2 2/5] powerpc/smp: Rename cpu_l1_cache_map as
- thread_group_l1_cache_map
-Date: Wed,  9 Dec 2020 22:38:17 +0530
-Message-Id: <1607533700-5546-3-git-send-email-ego@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1607533700-5546-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1607533700-5546-1-git-send-email-ego@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2020-12-09_14:2020-12-09,
- 2020-12-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxlogscore=999
- priorityscore=1501 bulkscore=0 phishscore=0 spamscore=0 lowpriorityscore=0
- mlxscore=0 impostorscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012090116
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CrmVD1fkPzDqYd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 05:56:19 +1100 (AEDT)
+Received: by mail-pl1-x62b.google.com with SMTP id p6so1432788plr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Dec 2020 10:56:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=pDJdJ9jg4hC1Qi0/LCWeL6vCBADxdHWZeYcpiMBLSJc=;
+ b=nVp8+U0Qroi2FT7wnDNiFbiJGQRepo6/TYrAIEWpub49d3b1Rf71FHqsD/IV1eDXAA
+ vDl526q7G5TlunnyghLgc/5lsVrl47BiOypoqpedCRuFKslDZK9BLsAk2ITcKrcxhfUE
+ 2N6mg+W4189MzMrHgSOsirbNic+iWTEixACsU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=pDJdJ9jg4hC1Qi0/LCWeL6vCBADxdHWZeYcpiMBLSJc=;
+ b=q2IOjYbVla/xuQRILkgMV5473+t2+S5PaaFxotfvCaooYdoc0yQWLbM7qV/uxVul98
+ l8sjXG5GWrIgPvaheiB7KyCRVbvgiRdzXIcztjd7ojOKSdhjebMxqkxOwIrUGzRHMroC
+ pzIIdk00LS1oA0IlYw8/bPc4AXSjQIRZoC7ZBDjk5DyLlL7gQ3iOc3VggzncHSY0mARx
+ 0MTKsET0V19e3XP1gIFdevZrkFId3eMpdEdKrl8c6ZOFrhS+qGB9ckNQXg5n4lq90ezj
+ ozplTMiHN49bPsCZ/pcmGvo/bu6XDqGPge9m2A3Z3MiumFceoiNInnNTWeELYJz3dEoj
+ awDQ==
+X-Gm-Message-State: AOAM531kxjhW8WsOFOk2nfI2gw5zz7WcKkejQDf7/Apmo+hoNe+Yp0eq
+ M75LH5Zh74P5O980iNvmPBV/8Q==
+X-Google-Smtp-Source: ABdhPJwo9EOLqYY/MKKwWwHzNMGDiczNMJB9r3poznesxukytTaNX7puzjij+8ktvXmFygnKe8zSjg==
+X-Received: by 2002:a17:90b:1294:: with SMTP id
+ fw20mr3388768pjb.187.1607540176026; 
+ Wed, 09 Dec 2020 10:56:16 -0800 (PST)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id g85sm3347584pfb.4.2020.12.09.10.56.14
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 09 Dec 2020 10:56:15 -0800 (PST)
+Date: Wed, 9 Dec 2020 10:56:14 -0800
+From: Kees Cook <keescook@chromium.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build warning after merge of the akpm tree
+Message-ID: <202012091055.09D611EF31@keescook>
+References: <20201204210000.660293c6@canb.auug.org.au>
+ <20201208230157.42c42789@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201208230157.42c42789@canb.auug.org.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,91 +88,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Tue, Dec 08, 2020 at 11:01:57PM +1100, Stephen Rothwell wrote:
+> Hi Stephen,
+> 
+> On Fri, 4 Dec 2020 21:00:00 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Hi all,
+> > 
+> > After merging the akpm tree, today's linux-next build (powerpc
+> > allyesconfig) produced warnings like this:
+> > 
+> > ld: warning: orphan section `.data..Lubsan_data177' from `arch/powerpc/oprofile/op_model_pa6t.o' being placed in section `.data..Lubsan_data177'
+> > 
+> > (lots of these latter ones)
+> 
+> 781584 of them today!
+> 
+> > I don't know what produced these, but it is in the akpm-current or
+> > akpm trees.
+> 
+> Presumably the result of commit
+> 
+>   186c3e18dba3 ("ubsan: enable for all*config builds")
+> 
+> from the akpm-current tree.
+> 
+> arch/powerpc/kernel/vmlinux.lds.S has:
+> 
+> #ifdef CONFIG_PPC32
+>         .data : AT(ADDR(.data) - LOAD_OFFSET) {
+>                 DATA_DATA
+> #ifdef CONFIG_UBSAN
+>                 *(.data..Lubsan_data*)
+>                 *(.data..Lubsan_type*)
+> #endif
+>                 *(.data.rel*)
+>                 *(SDATA_MAIN)
+> 
+> added by commit
+> 
+>   beba24ac5913 ("powerpc/32: Add .data..Lubsan_data*/.data..Lubsan_type* sections explicitly")
+> 
+> in 2018, but no equivalent for 64 bit.
+> 
+> I will try the following patch tomorrow:
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 8 Dec 2020 22:58:24 +1100
+> Subject: [PATCH] powerpc: Add .data..Lubsan_data*/.data..Lubsan_type* sections explicitly
+> 
+> Similarly to commit
+> 
+>   beba24ac5913 ("powerpc/32: Add .data..Lubsan_data*/.data..Lubsan_type* sections explicitly")
+> 
+> since CONFIG_UBSAN bits can now be enabled for all*config.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/vmlinux.lds.S | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> index 3b4c26e94328..0318ba436f34 100644
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -296,6 +296,10 @@ SECTIONS
+>  #else
+>  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+>  		DATA_DATA
+> +#ifdef CONFIG_UBSAN
+> +		*(.data..Lubsan_data*)
+> +		*(.data..Lubsan_type*)
+> +#endif
+>  		*(.data.rel*)
+>  		*(.toc1)
+>  		*(.branch_lt)
+> -- 
+> 2.29.2
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell
 
-On platforms which have the "ibm,thread-groups" property, the per-cpu
-variable cpu_l1_cache_map keeps a track of which group of threads
-within the same core share the L1 cache, Instruction and Data flow.
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-This patch renames the variable to "thread_group_l1_cache_map" to make
-it consistent with a subsequent patch which will introduce
-thread_group_l2_cache_map.
+Thanks for figuring this one out. :) Andrew, can you add this to your
+ubsan patch stack, or do you want me to resend it to you directly?
 
-This patch introduces no functional change.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/smp.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 88d88ad..f3290d5 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -116,10 +116,10 @@ struct thread_groups_list {
- 
- static struct thread_groups_list tgl[NR_CPUS] __initdata;
- /*
-- * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
-+ * On big-cores system, thread_group_l1_cache_map for each CPU corresponds to
-  * the set its siblings that share the L1-cache.
-  */
--DEFINE_PER_CPU(cpumask_var_t, cpu_l1_cache_map);
-+DEFINE_PER_CPU(cpumask_var_t, thread_group_l1_cache_map);
- 
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
-@@ -866,7 +866,7 @@ static struct thread_groups *__init get_thread_groups(int cpu,
- 	return tg;
- }
- 
--static int init_cpu_l1_cache_map(int cpu)
-+static int init_thread_group_l1_cache_map(int cpu)
- 
- {
- 	int first_thread = cpu_first_thread_sibling(cpu);
-@@ -885,7 +885,7 @@ static int init_cpu_l1_cache_map(int cpu)
- 		return -ENODATA;
- 	}
- 
--	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
-+	zalloc_cpumask_var_node(&per_cpu(thread_group_l1_cache_map, cpu),
- 				GFP_KERNEL, cpu_to_node(cpu));
- 
- 	for (i = first_thread; i < first_thread + threads_per_core; i++) {
-@@ -897,7 +897,7 @@ static int init_cpu_l1_cache_map(int cpu)
- 		}
- 
- 		if (i_group_start == cpu_group_start)
--			cpumask_set_cpu(i, per_cpu(cpu_l1_cache_map, cpu));
-+			cpumask_set_cpu(i, per_cpu(thread_group_l1_cache_map, cpu));
- 	}
- 
- 	return 0;
-@@ -976,7 +976,7 @@ static int init_big_cores(void)
- 	int cpu;
- 
- 	for_each_possible_cpu(cpu) {
--		int err = init_cpu_l1_cache_map(cpu);
-+		int err = init_thread_group_l1_cache_map(cpu);
- 
- 		if (err)
- 			return err;
-@@ -1372,7 +1372,7 @@ static inline void add_cpu_to_smallcore_masks(int cpu)
- 
- 	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
- 
--	for_each_cpu(i, per_cpu(cpu_l1_cache_map, cpu)) {
-+	for_each_cpu(i, per_cpu(thread_group_l1_cache_map, cpu)) {
- 		if (cpu_online(i))
- 			set_cpus_related(i, cpu, cpu_smallcore_mask);
- 	}
 -- 
-1.9.4
-
+Kees Cook
