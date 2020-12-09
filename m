@@ -2,66 +2,66 @@ Return-Path: <SRS0=TBQx=FN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AE69C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 05:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0170C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 05:31:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2929A23A02
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 05:11:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2929A23A02
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id CFA8323B23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 05:31:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFA8323B23
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CrQB22nLxzDqsb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 16:11:06 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CrQds3kYJzDqmC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Dec 2020 16:31:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CrQ8F6qNdzDqQj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 16:09:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=EQOXvbxS; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4CrQ8F2rx6z9sWC;
- Wed,  9 Dec 2020 16:09:33 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1607490573;
- bh=sz/kscNF60uY4qDct280qFqJweL4dgY+7oB2oLObuSc=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=EQOXvbxSU6r8QaXmMwl8Q4sPNAB9GMPEEh9GeR4kmDi6XJ1TkpWzD51GTrdMsJXdO
- b65UapEg8YZwwgppY6CJTV/21w+U8fJzX7ZoYxPYSMYKzslCbZnmWuZWosQPVi3i1j
- gOqtmPFQjnBxdjLW8gr0C6w9EIj27nkZ59WRpeSXmkqqNdROrkobMsHKowZtIoI9db
- 9Jr2VTUUMAY+Ef29MNYNEPQ+8E0pB0nnaNw20scd42Nt7NV4Cnznf48zaiNckZVQYP
- GXS4iKWMIYUh6eyoZMaZsxTyvZ1Fney2d9HkagfO24+FfvTgIQoTODPD4FiPTmfd02
- ICnlbgP8Rqkng==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.ibm.com>,
- Ganesh <ganeshgr@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mce: Remove per cpu variables from MCE handlers
-In-Reply-To: <83ca2e1c-88f5-fc57-11e2-056f3ce835d7@linux.ibm.com>
-References: <20201204102310.76213-1-ganeshgr@linux.ibm.com>
- <871rg0twpw.fsf@mpe.ellerman.id.au>
- <a514db98-6090-467a-74ae-9c7b4337d0c1@linux.ibm.com>
- <83ca2e1c-88f5-fc57-11e2-056f3ce835d7@linux.ibm.com>
-Date: Wed, 09 Dec 2020 16:09:32 +1100
-Message-ID: <87pn3jsgz7.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CrQbG0BkfzDqhD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2020 16:29:27 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CrQb76zg2z9tyPb;
+ Wed,  9 Dec 2020 06:29:23 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id jDaPcZ2Rk1Li; Wed,  9 Dec 2020 06:29:23 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CrQb75zv0z9tyPY;
+ Wed,  9 Dec 2020 06:29:23 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F5858B77C;
+ Wed,  9 Dec 2020 06:29:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 2haLK1bzF0zy; Wed,  9 Dec 2020 06:29:24 +0100 (CET)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5C17D8B768;
+ Wed,  9 Dec 2020 06:29:24 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id 39D76668FD; Wed,  9 Dec 2020 05:29:24 +0000 (UTC)
+Message-Id: <9870f01e293a5a76c4f4e4ddd4a6b0f63038c591.1607491748.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <0d37490a067840f53fc5b118869917c0aec9ab87.1607491747.git.christophe.leroy@csgroup.eu>
+References: <0d37490a067840f53fc5b118869917c0aec9ab87.1607491747.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 5/6] powerpc/fault: Avoid heavy search_exception_tables()
+ verification
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, aneesh.kumar@linux.ibm.com
+Date: Wed,  9 Dec 2020 05:29:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,68 +73,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mahesh Jagannath Salgaonkar <mahesh@linux.ibm.com> writes:
-> On 12/8/20 4:16 PM, Ganesh wrote:
->>=20
->> On 12/8/20 4:01 PM, Michael Ellerman wrote:
->>> Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
->>>> diff --git a/arch/powerpc/include/asm/paca.h
->>>> b/arch/powerpc/include/asm/paca.h
->>>> index 9454d29ff4b4..4769954efa7d 100644
->>>> --- a/arch/powerpc/include/asm/paca.h
->>>> +++ b/arch/powerpc/include/asm/paca.h
->>>> @@ -273,6 +274,17 @@ struct paca_struct {
->>>> =C2=A0 #ifdef CONFIG_MMIOWB
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 struct mmiowb_state mmiowb_state;
->>>> =C2=A0 #endif
->>>> +#ifdef CONFIG_PPC_BOOK3S_64
->>>> +=C2=A0=C2=A0=C2=A0 int mce_nest_count;
->>>> +=C2=A0=C2=A0=C2=A0 struct machine_check_event mce_event[MAX_MC_EVT];
->>>> +=C2=A0=C2=A0=C2=A0 /* Queue for delayed MCE events. */
->>>> +=C2=A0=C2=A0=C2=A0 int mce_queue_count;
->>>> +=C2=A0=C2=A0=C2=A0 struct machine_check_event mce_event_queue[MAX_MC_=
-EVT];
->>>> +
->>>> +=C2=A0=C2=A0=C2=A0 /* Queue for delayed MCE UE events. */
->>>> +=C2=A0=C2=A0=C2=A0 int mce_ue_count;
->>>> +=C2=A0=C2=A0=C2=A0 struct machine_check_event=C2=A0 mce_ue_event_queu=
-e[MAX_MC_EVT];
->>>> +#endif /* CONFIG_PPC_BOOK3S_64 */
->>>> =C2=A0 } ____cacheline_aligned;
->>> How much does this expand the paca by?
->>=20
->> Size of paca is 4480 bytes, these add up another 2160 bytes, so expands
->> it by 48%.
->
-> Should we dynamically allocate the array sizes early as similar to that
-> of paca->mce_faulty_slbs so that we don't bump up paca size ?
+search_exception_tables() is an heavy operation, we have to avoid it.
+When KUAP is selected, we'll know the fault has been blocked by KUAP.
+When it is blocked by KUAP, check whether we are in an expected
+userspace access place. If so, emit a warning to spot something is
+going work. Otherwise, just remain silent, it will likely Oops soon.
 
-Yeah I think that would be preferable.
+When KUAP is not selected, it behaves just as if the address was
+already in the TLBs and no fault was generated.
 
-That way those allocations can be normal node-local allocations on bare
-metal, or when using radix. (Or even on KVM).
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+v4: keep the search once we hit kuap_bad_fault() in order to warn or not
+v3: rebased
+v2: Squashed with the preceeding patch which was re-ordering tests that get removed in this patch.
+---
+ arch/powerpc/mm/fault.c | 28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
 
-In fact what we probably want is a separate struct for all the MCE
-related data, eg something like:
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 04505f938bbc..389a2a875262 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -210,28 +210,26 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
+ 		return true;
+ 	}
+ 
+-	if (!is_exec && address < TASK_SIZE && (error_code & (DSISR_PROTFAULT | DSISR_KEYFAULT)) &&
+-	    !search_exception_tables(regs->nip)) {
+-		pr_crit_ratelimited("Kernel attempted to access user page (%lx) - exploit attempt? (uid: %d)\n",
+-				    address,
+-				    from_kuid(&init_user_ns, current_uid()));
+-	}
+-
+ 	// Kernel fault on kernel address is bad
+ 	if (address >= TASK_SIZE)
+ 		return true;
+ 
+-	// Fault on user outside of certain regions (eg. copy_tofrom_user()) is bad
+-	if (!search_exception_tables(regs->nip))
+-		return true;
++	// Read/write fault blocked by KUAP is bad, it can never succeed.
++	if (bad_kuap_fault(regs, address, is_write)) {
++		pr_crit_ratelimited("Kernel attempted to %s user page (%lx) - exploit attempt? (uid: %d)\n",
++				    is_write ? "write" : "read", address,
++				    from_kuid(&init_user_ns, current_uid()));
++
++		// Fault on user outside of certain regions (eg. copy_tofrom_user()) is bad
++		if (!search_exception_tables(regs->nip))
++			return true;
+ 
+-	// Read/write fault in a valid region (the exception table search passed
+-	// above), but blocked by KUAP is bad, it can never succeed.
+-	if (bad_kuap_fault(regs, address, is_write))
++		// Read/write fault in a valid region (the exception table search passed
++		// above), but blocked by KUAP is bad, it can never succeed.
+ 		return WARN(true, "Bug: %s fault blocked by KUAP!", is_write ? "Write" : "Read");
++	}
+ 
+-	// What's left? Kernel fault on user in well defined regions (extable
+-	// matched), and allowed by KUAP in the faulting context.
++	// What's left? Kernel fault on user and allowed by KUAP in the faulting context.
+ 	return false;
+ }
+ 
+-- 
+2.25.0
 
-struct mce_stuff {
-  int nest_count;
-  /* Queue for delayed MCE events. */
-  int queue_count;
-  /* Queue for delayed MCE UE events. */
-  int mce_ue_count;
-
-  struct machine_check_event events[MAX_MC_EVT];
-  struct machine_check_event event_queue[MAX_MC_EVT];
-  struct machine_check_event=C2=A0 ue_event_queue[MAX_MC_EVT];
-};
-
-And then you allocate one of those per CPU, inside the RMO for pseries
-with hash, and node-local otherwise.
-
-cheers
