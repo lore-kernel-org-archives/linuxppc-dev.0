@@ -2,25 +2,24 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-2.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D07F6C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 316D5C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 16:10:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F33123C81
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:47:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F33123C81
+	by mail.kernel.org (Postfix) with ESMTPS id 18F2E2310B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 16:10:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18F2E2310B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=web.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsJFH454vzDr0w
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 02:46:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsJmT5V1bzDr0t
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 03:10:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=web.de
  (client-ip=217.72.192.78; helo=mout.web.de;
@@ -29,59 +28,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=web.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
- header.s=dbaedf251592 header.b=Zq9dwLUg; 
+ header.s=dbaedf251592 header.b=JmS8UaJg; 
  dkim-atps=neutral
-X-Greylist: delayed 939 seconds by postgrey-1.36 at bilbo;
- Fri, 11 Dec 2020 01:53:24 AEDT
 Received: from mout.web.de (mout.web.de [217.72.192.78])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsH3S25qwzDqQH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 01:53:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsJgt64mRzDqxL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 03:06:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1607611993;
- bh=IipN9KELoH1llXbnl7PYP+Xgs4zMteApDSsWAHUq6nk=;
- h=X-UI-Sender-Class:To:Cc:From:Subject:Date;
- b=Zq9dwLUgU8iVqqlbn4GMSNj+x1l1qNJVefLvzJ44J8EjWaKmi3WL41Xwn2io89sZl
- 3k4ZdU+Sux6QMVjcayKl14w1CFl+KaDgVnmwMOfxoXPG2ZHUg5C/RDalJHp9f+53ql
- nKb0ZP09rp1lFZt+DXq479K34H+A2cPDQDccBnkM=
+ s=dbaedf251592; t=1607616251;
+ bh=ztP3o3sZxYRK4WVRjBBhx/FXiHkMoOmxJ5iurRyi7zg=;
+ h=X-UI-Sender-Class:To:Cc:References:From:Subject:Date:In-Reply-To;
+ b=JmS8UaJgY8rj0KH0Ety71br1F9CSspJutIDSkDcKwNV2gaQhtdvoMMn9HWGTRQNWl
+ XvcY3UagJ5BlForLg8LcI6HjBgiRdivmjOQ5FsfxywCiJVQGJpxm9qD2lx0NEawi4k
+ juLJXa6oTl9TjHyYjXxNnZN6fKnvF75HWh6rlXtM=
 X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([78.48.143.229]) by smtp.web.de (mrweb103
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0M6DyQ-1ju1JA33es-00yB8K; Thu, 10
- Dec 2020 15:35:46 +0100
-To: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Received: from [192.168.1.2] ([78.48.143.229]) by smtp.web.de (mrweb102
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 0LuLxD-1k6JkS0hkN-011gBF; Thu, 10
+ Dec 2020 17:04:11 +0100
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <5cee2b25-71e0-15aa-fba6-12211b8308aa@web.de>
+ <X9I1GLYCkw/q/xMu@kroah.com>
 From: Markus Elfring <Markus.Elfring@web.de>
-Subject: =?UTF-8?Q?=5bPATCH=5d_cxl=3a_Reduce_scope_for_the_variable_?=
+Subject: =?UTF-8?Q?Re=3a_=5bPATCH=5d_cxl=3a_Reduce_scope_for_the_variable_?=
  =?UTF-8?B?4oCcbW3igJ0gaW4gY3hsbGliX2dldF9QRV9hdHRyaWJ1dGVzKCk=?=
-Message-ID: <5cee2b25-71e0-15aa-fba6-12211b8308aa@web.de>
-Date: Thu, 10 Dec 2020 15:35:38 +0100
+Message-ID: <507d607a-0551-ec11-e1dc-5b9c96a361cb@web.de>
+Date: Thu, 10 Dec 2020 17:04:09 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.1
 MIME-Version: 1.0
+In-Reply-To: <X9I1GLYCkw/q/xMu@kroah.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-GB
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:I9GvSD7sY0LrvYXLrpAJyCDjsLLhfJaZH4xqXgtQEePlJLN9Qp0
- o30C3CVvdTgov79WZKNXk77+SfXqPuyFPVuvxdweTwv/cQbJMt4NCIJnmHZ7Yt6XfGQ9vkG
- NfpF983CJx2/3dBRm6jdYWur0aTOtOPTKpLXYjg6/Scf7Ir5pJERS4cJDLG8jtZslr+ONa3
- tKzSMOjD3isutCqkFV6SA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:70kl2OJuxB4=:RjjB3ZFpvgCtQOndk1f2aH
- QqUOO9vX/8Vzu+IKLhRAT9S+ezsektKwv4s90geuiceNHpD2HUrAxGTfsUEIN/Ptt/tncRY4q
- IYyrzFDILSKrVWv0qpErk3MoQWNmqMCIATeAUs2tborg1FOPAnrpBHSE4jnqCzXkQSfVP5K0Q
- 1TnC9TpZXc1A5HOl8VsD1bn3jGaAIvZs9sBiLFCs1L0GdA2tCPMnA1AQTIYzk+jH4akQBjSYA
- ljvz+uFtEzjYr9ufzCqzOiiOyzYQXTj1Fs/4k2iFFMY9O7kMBvcVAklJpnB97mSl221EJfqPT
- V9Brx5InOVZFqyvtBgo6MycUzlh3ED1ykRbfUDWEM2i/5aOY49TGd01SNvp6rq2QcbA3Yeux1
- bMfmvDvVhjRFwJ4oer1Yw+HOO/WRz4eoBKfiZfW9/bgDffKiPvfBjIG9jEM/IhT7GOzgIs8+h
- lubp6ynEm3Ew1k6evbICqfUct/QixcAuBECcOxtKnL9KSOvBFusTP+D6w3R5GS6B0wRPSHbbD
- TIkSZlM7wa2nsOMvVFWMy1fp4nTng2jsm+7Ar4jwLmGHlhk+Nb//ZhWef7J2kbAYm5lBVGZy1
- UsMf6o0F+iL04iOytvoL9i9CtXrqOuOAm94BXkETUpouWpEpnIdBjTZA9W2Nc2LweZTBlV5EV
- 5KAdg8s73CPStvvIao2EVMVvyL5NMrbl6ri2Tdkq4ZgVFbCfm8GIPVRPHOTQ/BEIU/ZCj3ZY9
- 05K/58jvmWoqrjNh2z7UAILv2DBi76UTnvO/ezi2TVxn/G/wjaopIgYXE1qRIuvDRUuomQ2hN
- UIhUt7jesk0w33v0J9kViXhWVxf/eUgGjKBvE4lYniEPWzzsXqG9LjXqDYrOEiXwF3yq9Tl1q
- B1XZBpw/w4hdETO/YIsw==
+X-Provags-ID: V03:K1:4JJr1h43tgpOGmxflHVuWbLH6M1grYZ3NkCJJhvajildAK8uzq8
+ upVTE/sg3syYGJoX9lf1qR7kMMhRNR9pRhTCAdNLrfrGm1UxpgWbRiwZS3nAv4MAGs06odi
+ V5SvSK4uGGphbOJHqLxkgwjrSsJexdz36lG7QD8qz99iZ9vANiPmfbI1ssYUYOlPIJYs/QQ
+ yzn8/M0lGMnMjzuGMYJ8A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:OVJ8+f+RmA4=:mC3BW64m0u7F+ifM+AWWkI
+ dYWKYgPbe10mnqj6Xcw+r4pvXm9lD1JRC+oZqp0gXOQwXZS4TFKNom/MhhthWBpLc+/EV7CT/
+ hgsvErTo0oaDHeWlsAW0ypmg43VJVJxC52/zZlCjozeysoe2NzRODJmgU0zx7Ere+AxaRYdHy
+ Og/Dq3pnufmCm72CWXiC/D9diEdvMZSo0LIRpBLM7EEtnsl73lCjOshNk3WJiHNkOcajlB0SS
+ t6xzeB7OjavzMygzSnr27r7F1cJIBpamPrjPlnapUFo+y8NbAyZV4r2sLOYJagbwLl5bi2zds
+ fRQ3jpYWO8Li8BVQCnbHrSfZ8K5StBP+4sG+ymWizHiVNmqhidYbSyWv5bZw8NHYPZDIeDv6N
+ nPxltIYATxzSOPjZ/Pnu8aAmgytf+ITI9Yav3XBDI/HkBZrFR86TaGf8U02PyRp70Rjb6cO3O
+ tZNM2CIhB0T9N1CZsl10PMVwOMkUGLpXQ1NAyybvQwpJ6Zri8U8m4lsyMDr79c5FjiaezDO2J
+ fxvWG1b6X/U/G4tZuQfCfk2Xuac/lSt1ccCSiQxMfOyGCjBn7l35saFjS8FXgPeMohKSz+FeI
+ jfGLWw5EUyi0GjnJnttw9OfDj7X9wLc/4k0uWEeJ7dmoqWaPEvBrtk3K4AvplpW4DnXyLfqyV
+ +9I7J5VIPoFw2B5GxK7ZBVh1GlnRmecp98UWqqEI7EimY3Qvyf8GHtYCPRN4rd1VPiXZJpln5
+ 8u7fDYtA0H6Hlkp2DmTCMLZvwSaq3hOm9mFcTr3VXA+eg0VlATPiT4gZQo5HeU2aq5ZapnN/g
+ 2lZTtUJB4KgihCYo7fQMiDZl5R2EutwcMHYlmWeQAC2Rh5qs4yvl38VrsvP/RGMh6IZzor1qK
+ uLiGi9/sSiHePLqKu1CQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,48 +92,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, kernel-janitors@vger.kernel.org,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 10 Dec 2020 14:14:07 +0100
+>> A local variable was used only within an if branch.
+>> Thus move the definition for the variable =E2=80=9Cmm=E2=80=9D into the=
+ corresponding
+>> code block.
+>
+> You did nothing here except add a checkpatch warning :(
 
-A local variable was used only within an if branch.
-Thus move the definition for the variable =E2=80=9Cmm=E2=80=9D into the co=
-rresponding
-code block.
+elfring@Sonne:~/Projekte/Linux/next-patched> scripts/checkpatch.pl /home/e=
+lfring/Projekte/Bau/Linux/scripts/Coccinelle/tuning1/next/20201204/Flicken=
+/0001-cxl-Reduce-scope-for-the-variable-mm-in-cxllib_get_P.patch
+total: 0 errors, 0 warnings, 16 lines checked
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/misc/cxl/cxllib.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index 2a1783f32254..53b919856426 100644
-=2D-- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -170,8 +170,6 @@ int cxllib_get_PE_attributes(struct task_struct *task,
- 			     unsigned long translation_mode,
- 			     struct cxllib_pe_attributes *attr)
- {
--	struct mm_struct *mm =3D NULL;
--
- 	if (translation_mode !=3D CXL_TRANSLATED_MODE &&
- 		translation_mode !=3D CXL_REAL_MODE)
- 		return -EINVAL;
-@@ -182,7 +180,7 @@ int cxllib_get_PE_attributes(struct task_struct *task,
- 				true);
- 	attr->lpid =3D mfspr(SPRN_LPID);
- 	if (task) {
--		mm =3D get_task_mm(task);
-+		struct mm_struct *mm =3D get_task_mm(task);
- 		if (mm =3D=3D NULL)
- 			return -EINVAL;
- 		/*
-=2D-
-2.29.2
-
+Regards,
+Markus
