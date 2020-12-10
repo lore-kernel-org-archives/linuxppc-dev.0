@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D24C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E50C9C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:46:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E66AE23D6A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:44:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E66AE23D6A
+	by mail.kernel.org (Postfix) with ESMTPS id 273C323D6A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:46:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 273C323D6A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs9X42TRvzDqtd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 21:44:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs9Zc1YZbzDqFF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 21:46:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
@@ -28,62 +28,61 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=pkgq1jvL; dkim-atps=neutral
+ header.s=pp1 header.b=Nr5ME0F8; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cs9QS5DMFzDqcn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 21:39:28 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cs9QT6vJRzDqcn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 21:39:29 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BAAVaD8107870; Thu, 10 Dec 2020 05:39:17 -0500
+ 0BAAVvb5078390; Thu, 10 Dec 2020 05:39:13 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references; s=pp1;
- bh=JTXWuie3f6C1Apfb3JADi4bFeHoSs+b31jplib9P5LE=;
- b=pkgq1jvLi02c4IPG68lNnC7aKw/QylckOkcG8cvVa3gK1Z2mdWOoniNTu6CZ7s4rDbag
- HMq8dfNVYMlfskDVTR+9etOhMFqXY3jpcW38DRKQaUEKnwAPp+QH8wbfFG1OT19x+38N
- TSz7T/6/W0nPpcTnGF6+bcz3MFJEvmyUdDuYdc/J13tlhVNUciE78UyXEc3vgwKluAUp
- W1FBc2OBTM2cQawra0KiyW7vbpjnum9p79UXgTyoYO1GFv+Szosvav9e+alFzt5lcnjR
- n3ag+LngM1ZqfltsZx4fzmn1bqMDRVFPV6AdVpa0xO1OCUFj55oELSakX4aRoZ8SCs41 TQ== 
+ bh=LxgLLpz+irVghYStEeD8uPOAarFBO2ltYEFa3rAIsRs=;
+ b=Nr5ME0F8JQ+RUnpglOUQKKZOxj1mZdo1g7SfdO3en9dzfu80Cj7I7862UWR/QsTkBEKG
+ RjCSdNk8ec6vzK4tMh09o0E66Pw8qRABlb6ihqWGrDO5RHwiuZ0S98JBBQOaFPNYthvt
+ jFlhVQNX6bbtR7VPsEN2k0Y/23vVE5rEoGGj4tMYkY1JyqfNsvpY1LC1SksrzCRyXkn9
+ sJ1AEEAZPPXWpbCsEMUbiGkpTxm39DEKZv8z9vu6pryciicgk8drONBX1TwoiQOQCL7L
+ D1CTpSIQG60QscXQOP71aUlpSDoTqaDBeiXgwaqNFpVX/UWjHApE5jfMchYQnvJMSUzA ZQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35bhc0seva-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bhw30dka-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 05:39:17 -0500
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0BAAYVjE120306;
- Thu, 10 Dec 2020 05:39:16 -0500
+ Thu, 10 Dec 2020 05:39:13 -0500
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0BAAWNSI081325;
+ Thu, 10 Dec 2020 05:39:12 -0500
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35bhc0seuv-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bhw30dju-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 05:39:16 -0500
+ Thu, 10 Dec 2020 05:39:12 -0500
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAAW05m025409;
- Thu, 10 Dec 2020 10:39:15 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01dal.us.ibm.com with ESMTP id 3581u9reby-1
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAAW7QA025573;
+ Thu, 10 Dec 2020 10:39:11 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 3581u9rebk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 10:39:15 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0BAAdDMi10354972
+ Thu, 10 Dec 2020 10:39:11 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BAAdA6u20709812
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Dec 2020 10:39:13 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B03DD136055;
- Thu, 10 Dec 2020 10:39:13 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F1922136051;
- Thu, 10 Dec 2020 10:39:12 +0000 (GMT)
+ Thu, 10 Dec 2020 10:39:10 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9D3EC112064;
+ Thu, 10 Dec 2020 10:39:10 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 021D6112062;
+ Thu, 10 Dec 2020 10:39:09 +0000 (GMT)
 Received: from sofia.ibm.com (unknown [9.199.53.52])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 10 Dec 2020 10:39:12 +0000 (GMT)
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Dec 2020 10:39:09 +0000 (GMT)
 Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 2CFEB2E35BB; Thu, 10 Dec 2020 16:09:06 +0530 (IST)
+ id 22E552E35BA; Thu, 10 Dec 2020 16:09:06 +0530 (IST)
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Anton Blanchard <anton@ozlabs.org>,
@@ -92,10 +91,10 @@ To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>,
  Peter Zijlstra <peterz@infradead.org>,
  Valentin Schneider <valentin.schneider@arm.com>
-Subject: [PATCH v3 5/5] powerpc/cacheinfo: Print correct cache-sibling
- map/list for L2 cache
-Date: Thu, 10 Dec 2020 16:08:59 +0530
-Message-Id: <1607596739-32439-6-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 4/5] powerpc/smp: Add support detecting thread-groups
+ sharing L2 cache
+Date: Thu, 10 Dec 2020 16:08:58 +0530
+Message-Id: <1607596739-32439-5-git-send-email-ego@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1607596739-32439-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1607596739-32439-1-git-send-email-ego@linux.vnet.ibm.com>
@@ -104,10 +103,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-10_03:2020-12-09,
  2020-12-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- mlxlogscore=999 clxscore=1015 lowpriorityscore=0 adultscore=0
- malwarescore=0 mlxscore=0 priorityscore=1501 impostorscore=0 spamscore=0
- phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ lowpriorityscore=0
+ suspectscore=0 mlxscore=0 clxscore=1015 malwarescore=0 priorityscore=1501
+ phishscore=0 impostorscore=0 spamscore=0 mlxlogscore=999 bulkscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012100067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -128,119 +127,212 @@ Sender: "Linuxppc-dev"
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On POWER platforms where only some groups of threads within a core
-share the L2-cache (indicated by the ibm,thread-groups device-tree
-property), we currently print the incorrect shared_cpu_map/list for
-L2-cache in the sysfs.
+On POWER systems, groups of threads within a core sharing the L2-cache
+can be indicated by the "ibm,thread-groups" property array with the
+identifier "2".
 
-This patch reports the correct shared_cpu_map/list on such platforms.
+This patch adds support for detecting this, and when present, populate
+the populating the cpu_l2_cache_mask of every CPU to the core-siblings
+which share L2 with the CPU as specified in the by the
+"ibm,thread-groups" property array.
 
-Example:
-On a platform with "ibm,thread-groups" set to
-                 00000001 00000002 00000004 00000000
-                 00000002 00000004 00000006 00000001
-                 00000003 00000005 00000007 00000002
-                 00000002 00000004 00000000 00000002
-                 00000004 00000006 00000001 00000003
-                 00000005 00000007
+On a platform with the following "ibm,thread-group" configuration
+		 00000001 00000002 00000004 00000000
+		 00000002 00000004 00000006 00000001
+		 00000003 00000005 00000007 00000002
+		 00000002 00000004 00000000 00000002
+		 00000004 00000006 00000001 00000003
+		 00000005 00000007
 
-This indicates that threads {0,2,4,6} in the core share the L2-cache
-and threads {1,3,5,7} in the core share the L2 cache.
+Without this patch, the sched-domain hierarchy for CPUs 0,1 would be
+	CPU0 attaching sched-domain(s):
+	domain-0: span=0,2,4,6 level=SMT
+	domain-1: span=0-7 level=CACHE
+	domain-2: span=0-15,24-39,48-55 level=MC
+	domain-3: span=0-55 level=DIE
 
-However, without the patch, the shared_cpu_map/list for L2 for CPUs 0,
-1 is reported in the sysfs as follows:
+	CPU1 attaching sched-domain(s):
+	domain-0: span=1,3,5,7 level=SMT
+	domain-1: span=0-7 level=CACHE
+	domain-2: span=0-15,24-39,48-55 level=MC
+	domain-3: span=0-55 level=DIE
 
-/sys/devices/system/cpu/cpu0/cache/index2/shared_cpu_list:0-7
-/sys/devices/system/cpu/cpu0/cache/index2/shared_cpu_map:000000,000000ff
+The CACHE domain at 0-7 is incorrect since the ibm,thread-groups
+sub-array
+[00000002 00000002 00000004
+ 00000000 00000002 00000004 00000006
+ 00000001 00000003 00000005 00000007]
+indicates that L2 (Property "2") is shared only between the threads of a single
+group. There are "2" groups of threads where each group contains "4"
+threads each. The groups being {0,2,4,6} and {1,3,5,7}.
 
-/sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_list:0-7
-/sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map:000000,000000ff
+With this patch, the sched-domain hierarchy for CPUs 0,1 would be
+     	CPU0 attaching sched-domain(s):
+	domain-0: span=0,2,4,6 level=SMT
+	domain-1: span=0-15,24-39,48-55 level=MC
+	domain-2: span=0-55 level=DIE
 
-With the patch, the shared_cpu_map/list for L2 cache for CPUs 0, 1 is
-correctly reported as follows:
+	CPU1 attaching sched-domain(s):
+	domain-0: span=1,3,5,7 level=SMT
+	domain-1: span=0-15,24-39,48-55 level=MC
+	domain-2: span=0-55 level=DIE
 
-/sys/devices/system/cpu/cpu0/cache/index2/shared_cpu_list:0,2,4,6
-/sys/devices/system/cpu/cpu0/cache/index2/shared_cpu_map:000000,00000055
+The CACHE domain with span=0,2,4,6 for CPU 0 (span=1,3,5,7 for CPU 1
+resp.) gets degenerated into the SMT domain. Furthermore, the
+last-level-cache domain gets correctly set to the SMT sched-domain.
 
-/sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_list:1,3,5,7
-/sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map:000000,000000aa
-
-This patch also defines cpu_l2_cache_mask() for !CONFIG_SMP case.
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/smp.h  |  4 ++++
- arch/powerpc/kernel/cacheinfo.c | 30 ++++++++++++++++++++----------
- 2 files changed, 24 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/smp.h |  2 ++
+ arch/powerpc/kernel/smp.c      | 58 ++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 55 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 035459c..c4e2d53 100644
+index b2035b2..035459c 100644
 --- a/arch/powerpc/include/asm/smp.h
 +++ b/arch/powerpc/include/asm/smp.h
-@@ -201,6 +201,10 @@ static inline const struct cpumask *cpu_smallcore_mask(int cpu)
- 	return cpumask_of(cpu);
- }
+@@ -134,6 +134,7 @@ static inline struct cpumask *cpu_smallcore_mask(int cpu)
+ extern int cpu_to_core_id(int cpu);
  
-+static inline const struct cpumask *cpu_l2_cache_mask(int cpu)
-+{
-+	return cpumask_of(cpu);
-+}
- #endif /* CONFIG_SMP */
+ extern bool has_big_cores;
++extern bool thread_group_shares_l2;
  
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index 65ab9fc..6f903e9a 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -655,11 +655,27 @@ static unsigned int index_dir_to_cpu(struct cache_index_dir *index)
-  * On big-core systems, each core has two groups of CPUs each of which
-  * has its own L1-cache. The thread-siblings which share l1-cache with
-  * @cpu can be obtained via cpu_smallcore_mask().
-+ *
-+ * On some big-core systems, the L2 cache is shared only between some
-+ * groups of siblings. This is already parsed and encoded in
-+ * cpu_l2_cache_mask().
-+ *
-+ * TODO: cache_lookup_or_instantiate() needs to be made aware of the
-+ *       "ibm,thread-groups" property so that cache->shared_cpu_map
-+ *       reflects the correct siblings on platforms that have this
-+ *       device-tree property. This helper function is only a stop-gap
-+ *       solution so that we report the correct siblings to the
-+ *       userspace via sysfs.
+ #define cpu_smt_mask cpu_smt_mask
+ #ifdef CONFIG_SCHED_SMT
+@@ -187,6 +188,7 @@ static inline const struct cpumask *cpu_smt_mask(int cpu)
+ /* for UP */
+ #define hard_smp_processor_id()		get_hard_smp_processor_id(0)
+ #define smp_setup_cpu_maps()
++#define thread_group_shares_l2  0
+ static inline void inhibit_secondary_onlining(void) {}
+ static inline void uninhibit_secondary_onlining(void) {}
+ static inline const struct cpumask *cpu_sibling_mask(int cpu)
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 9078b5b5..2b9b1bb 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -76,6 +76,7 @@
+ struct task_struct *secondary_current;
+ bool has_big_cores;
+ bool coregroup_enabled;
++bool thread_group_shares_l2;
+ 
+ DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+ DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+@@ -99,6 +100,7 @@ enum {
+ 
+ #define MAX_THREAD_LIST_SIZE	8
+ #define THREAD_GROUP_SHARE_L1   1
++#define THREAD_GROUP_SHARE_L2   2
+ struct thread_groups {
+ 	unsigned int property;
+ 	unsigned int nr_groups;
+@@ -107,7 +109,7 @@ struct thread_groups {
+ };
+ 
+ /* Maximum number of properties that groups of threads within a core can share */
+-#define MAX_THREAD_GROUP_PROPERTIES 1
++#define MAX_THREAD_GROUP_PROPERTIES 2
+ 
+ struct thread_groups_list {
+ 	unsigned int nr_properties;
+@@ -121,6 +123,13 @@ struct thread_groups_list {
   */
--static const struct cpumask *get_big_core_shared_cpu_map(int cpu, struct cache *cache)
-+static const struct cpumask *get_shared_cpu_map(struct cache_index_dir *index, struct cache *cache)
- {
--	if (cache->level == 1)
--		return cpu_smallcore_mask(cpu);
-+	if (has_big_cores) {
-+		int cpu = index_dir_to_cpu(index);
-+		if (cache->level == 1)
-+			return cpu_smallcore_mask(cpu);
-+		if (cache->level == 2 && thread_group_shares_l2)
-+			return cpu_l2_cache_mask(cpu);
+ DEFINE_PER_CPU(cpumask_var_t, thread_group_l1_cache_map);
+ 
++/*
++ * On some big-cores system, thread_group_l2_cache_map for each CPU
++ * corresponds to the set its siblings within the core that share the
++ * L2-cache.
++ */
++DEFINE_PER_CPU(cpumask_var_t, thread_group_l2_cache_map);
++
+ /* SMP operations for this machine */
+ struct smp_ops_t *smp_ops;
+ 
+@@ -718,7 +727,9 @@ static void or_cpumasks_related(int i, int j, struct cpumask *(*srcmask)(int),
+  *
+  * ibm,thread-groups[i + 0] tells us the property based on which the
+  * threads are being grouped together. If this value is 1, it implies
+- * that the threads in the same group share L1, translation cache.
++ * that the threads in the same group share L1, translation cache. If
++ * the value is 2, it implies that the threads in the same group share
++ * the same L2 cache.
+  *
+  * ibm,thread-groups[i+1] tells us how many such thread groups exist for the
+  * property ibm,thread-groups[i]
+@@ -872,9 +883,10 @@ static int __init init_thread_group_cache_map(int cpu, int cache_property)
+ 	int first_thread = cpu_first_thread_sibling(cpu);
+ 	int i, cpu_group_start = -1, err = 0;
+ 	struct thread_groups *tg = NULL;
+-	cpumask_var_t *mask;
++	cpumask_var_t *mask = NULL;
+ 
+-	if (cache_property != THREAD_GROUP_SHARE_L1)
++	if (cache_property != THREAD_GROUP_SHARE_L1 &&
++	    cache_property != THREAD_GROUP_SHARE_L2)
+ 		return -EINVAL;
+ 
+ 	tg = get_thread_groups(cpu, cache_property, &err);
+@@ -888,7 +900,11 @@ static int __init init_thread_group_cache_map(int cpu, int cache_property)
+ 		return -ENODATA;
+ 	}
+ 
+-	mask = &per_cpu(thread_group_l1_cache_map, cpu);
++	if (cache_property == THREAD_GROUP_SHARE_L1)
++		mask = &per_cpu(thread_group_l1_cache_map, cpu);
++	else if (cache_property == THREAD_GROUP_SHARE_L2)
++		mask = &per_cpu(thread_group_l2_cache_map, cpu);
++
+ 	zalloc_cpumask_var_node(mask, GFP_KERNEL, cpu_to_node(cpu));
+ 
+ 	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+@@ -990,6 +1006,16 @@ static int init_big_cores(void)
+ 	}
+ 
+ 	has_big_cores = true;
++
++	for_each_possible_cpu(cpu) {
++		int err = init_thread_group_cache_map(cpu, THREAD_GROUP_SHARE_L2);
++
++		if (err)
++			return err;
 +	}
- 
- 	return &cache->shared_cpu_map;
++
++	thread_group_shares_l2 = true;
++	pr_debug("L2 cache only shared by the threads in the small core\n");
+ 	return 0;
  }
-@@ -670,17 +686,11 @@ static const struct cpumask *get_big_core_shared_cpu_map(int cpu, struct cache *
- 	struct cache_index_dir *index;
- 	struct cache *cache;
- 	const struct cpumask *mask;
--	int cpu;
  
- 	index = kobj_to_cache_index_dir(k);
- 	cache = index->cache;
+@@ -1304,6 +1330,28 @@ static bool update_mask_by_l2(int cpu, cpumask_var_t *mask)
+ 	if (has_big_cores)
+ 		submask_fn = cpu_smallcore_mask;
  
--	if (has_big_cores) {
--		cpu = index_dir_to_cpu(index);
--		mask = get_big_core_shared_cpu_map(cpu, cache);
--	} else {
--		mask  = &cache->shared_cpu_map;
--	}
-+	mask = get_shared_cpu_map(index, cache);
- 
- 	return cpumap_print_to_pagebuf(list, buf, mask);
- }
++	/*
++	 * If the threads in a thread-group share L2 cache, then the
++	 * L2-mask can be obtained from thread_group_l2_cache_map.
++	 */
++	if (thread_group_shares_l2) {
++		cpumask_set_cpu(cpu, cpu_l2_cache_mask(cpu));
++
++		for_each_cpu(i, per_cpu(thread_group_l2_cache_map, cpu)) {
++			if (cpu_online(i))
++				set_cpus_related(i, cpu, cpu_l2_cache_mask);
++		}
++
++		/* Verify that L1-cache siblings are a subset of L2 cache-siblings */
++		if (!cpumask_equal(submask_fn(cpu), cpu_l2_cache_mask(cpu)) &&
++		    !cpumask_subset(submask_fn(cpu), cpu_l2_cache_mask(cpu))) {
++			pr_warn_once("CPU %d : Inconsistent L1 and L2 cache siblings\n",
++				     cpu);
++		}
++
++		return true;
++	}
++
+ 	l2_cache = cpu_to_l2cache(cpu);
+ 	if (!l2_cache || !*mask) {
+ 		/* Assume only core siblings share cache with this CPU */
 -- 
 1.9.4
 
