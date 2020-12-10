@@ -4,42 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B9BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 13:16:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 847B2C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 13:19:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B89523DE8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 13:16:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B89523DE8
+	by mail.kernel.org (Postfix) with ESMTPS id A484C23DE5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 13:19:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A484C23DE5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsDvh0KkHzDr09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 00:16:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsDz80HT5zDr0Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 00:19:32 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXn0TxBzDqk7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXp108vzDqcD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBXm1Ymdz9sXW; Thu, 10 Dec 2020 22:29:59 +1100 (AEDT)
+ id 4CsBXm6rsJz9sXN; Thu, 10 Dec 2020 22:30:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, mathieu.desnoyers@efficios.com,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>
-In-Reply-To: <25e6fca46fda3e2a4298448edbf654f64756eee7.1603358942.git.christophe.leroy@csgroup.eu>
-References: <25e6fca46fda3e2a4298448edbf654f64756eee7.1603358942.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3 1/3] powerpc/uaccess: Don't use "m<>" constraint with
- GCC 4.9
-Message-Id: <160756607298.1313423.51020418885826665.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:29:59 +1100 (AEDT)
+To: fbarrat@linux.vnet.ibm.com, ajd@linux.ibm.com,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20201125155013.39955-1-clombard@linux.vnet.ibm.com>
+References: <20201125155013.39955-1-clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4 0/5] ocxl: Mmio invalidation support
+Message-Id: <160756606831.1313423.5733540078262067619.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:30:00 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,56 +49,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 22 Oct 2020 09:29:19 +0000 (UTC), Christophe Leroy wrote:
-> GCC 4.9 sometimes fails to build with "m<>" constraint in
-> inline assembly.
+On Wed, 25 Nov 2020 16:50:08 +0100, Christophe Lombard wrote:
+> OpenCAPI 4.0/5.0 with TLBI/SLBI Snooping, is not used due to performance
+> problems caused by the PAU having to process all incoming TLBI/SLBI
+> commands which will cause them to back up on the PowerBus.
 > 
->   CC      lib/iov_iter.o
-> In file included from ./arch/powerpc/include/asm/cmpxchg.h:6:0,
->                  from ./arch/powerpc/include/asm/atomic.h:11,
->                  from ./include/linux/atomic.h:7,
->                  from ./include/linux/crypto.h:15,
->                  from ./include/crypto/hash.h:11,
->                  from lib/iov_iter.c:2:
-> lib/iov_iter.c: In function 'iovec_from_user.part.30':
-> ./arch/powerpc/include/asm/uaccess.h:287:2: error: 'asm' operand has impossible constraints
->   __asm__ __volatile__(    \
->   ^
-> ./include/linux/compiler.h:78:42: note: in definition of macro 'unlikely'
->  # define unlikely(x) __builtin_expect(!!(x), 0)
->                                           ^
-> ./arch/powerpc/include/asm/uaccess.h:583:34: note: in expansion of macro 'unsafe_op_wrap'
->  #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
->                                   ^
-> ./arch/powerpc/include/asm/uaccess.h:329:10: note: in expansion of macro '__get_user_asm'
->   case 4: __get_user_asm(x, (u32 __user *)ptr, retval, "lwz"); break; \
->           ^
-> ./arch/powerpc/include/asm/uaccess.h:363:3: note: in expansion of macro '__get_user_size_allowed'
->    __get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err); \
->    ^
-> ./arch/powerpc/include/asm/uaccess.h:100:2: note: in expansion of macro '__get_user_nocheck'
->   __get_user_nocheck((x), (ptr), sizeof(*(ptr)), false)
->   ^
-> ./arch/powerpc/include/asm/uaccess.h:583:49: note: in expansion of macro '__get_user_allowed'
->  #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
->                                                  ^
-> lib/iov_iter.c:1663:3: note: in expansion of macro 'unsafe_get_user'
->    unsafe_get_user(len, &uiov[i].iov_len, uaccess_end);
->    ^
-> make[1]: *** [scripts/Makefile.build:283: lib/iov_iter.o] Error 1
+> When the Address Translation Mode requires TLB operations to be initiated
+> using MMIO registers, a set of registers like the following is used:
+> • XTS MMIO ATSD0 LPARID register
+> • XTS MMIO ATSD0 AVA register
+> • XTS MMIO ATSD0 launch register, write access initiates a shoot down
+> • XTS MMIO ATSD0 status register
 > 
 > [...]
 
-Patches 2-3 applied to powerpc/next.
+Applied to powerpc/next.
 
-[2/3] powerpc: Fix incorrect stw{, ux, u, x} instructions in __set_pte_at
-      https://git.kernel.org/powerpc/c/d85be8a49e733dcd23674aa6202870d54bf5600d
-[3/3] powerpc: Fix update form addressing in inline assembly
-      https://git.kernel.org/powerpc/c/ff57698a9610fcf7d9c4469bf68c881eff22e2f8
+[1/5] ocxl: Assign a register set to a Logical Partition
+      https://git.kernel.org/powerpc/c/fc1347b5feb685073ce2108c68cd8147340be016
+[2/5] ocxl: Initiate a TLB invalidate command
+      https://git.kernel.org/powerpc/c/19b311ca51e108b6d8d679496af8635fdc1984a8
+[3/5] ocxl: Update the Process Element Entry
+      https://git.kernel.org/powerpc/c/d731feea00c7c1734c9697558f2a1962c12d2710
+[4/5] ocxl: Add mmu notifier
+      https://git.kernel.org/powerpc/c/5f686eea4b3cb1d311f02b81ce4264e66a21d979
+[5/5] ocxl: Add new kernel traces
+      https://git.kernel.org/powerpc/c/98f5559a439a68e0773f42352f7c0806cac9e76e
 
 cheers
