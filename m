@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8885C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:21:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23589C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:26:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C671523D22
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:21:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C671523D22
+	by mail.kernel.org (Postfix) with ESMTPS id F175C23D23
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:26:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F175C23D23
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsGLf603mzDqg6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:21:30 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsGSM0RZCzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:26:27 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBY76cH9zDqk7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBY76cRkzDqty
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 4CsBY56Y86z9shh; Thu, 10 Dec 2020 22:30:17 +1100 (AEDT)
+ id 4CsBY63vJRz9sfR; Thu, 10 Dec 2020 22:30:18 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBY51qyvz9sfN; Thu, 10 Dec 2020 22:30:16 +1100 (AEDT)
+ id 4CsBY56NJnz9sfG; Thu, 10 Dec 2020 22:30:17 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20201124120547.1940635-1-mpe@ellerman.id.au>
-References: <20201124120547.1940635-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc: Make NUMA depend on SMP
-Message-Id: <160756604761.1313423.18058608408740419327.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:30:16 +1100 (AEDT)
+In-Reply-To: <20201126131006.2431205-1-mpe@ellerman.id.au>
+References: <20201126131006.2431205-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH v14 1/9] powerpc/feature: Use CONFIG_PPC64 instead of
+ __powerpc64__ to define possible features
+Message-Id: <160756604927.1313423.17702939384161178382.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:30:17 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,30 +50,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rdunlap@infradead.org, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 24 Nov 2020 23:05:45 +1100, Michael Ellerman wrote:
-> Our Kconfig allows NUMA to be enabled without SMP, but none of
-> our defconfigs use that combination. This means it can easily be
-> broken inadvertently by code changes, which has happened recently.
+On Fri, 27 Nov 2020 00:09:58 +1100, Michael Ellerman wrote:
+> In order to build VDSO32 for PPC64, we need to have CPU_FTRS_POSSIBLE
+> and CPU_FTRS_ALWAYS independant of whether we are building the
+> 32 bits VDSO or the 64 bits VDSO.
 > 
-> Although it's theoretically possible to have a machine with a single
-> CPU and multiple memory nodes, I can't think of any real systems where
-> that's the case. Even so if such a system exists, it can just run an
-> SMP kernel anyway.
-> 
-> [...]
+> Use #ifdef CONFIG_PPC64 instead of #ifdef __powerpc64__
 
 Applied to powerpc/next.
 
-[1/3] powerpc: Make NUMA depend on SMP
-      https://git.kernel.org/powerpc/c/25395cd2f8cb24ce6a5ce073c898acfb091e06cf
-[2/3] powerpc: Make NUMA default y for powernv
-      https://git.kernel.org/powerpc/c/4c28b32b886f1489c5f510ed8e3f0c4e3dcb59f5
-[3/3] powerpc: Update NUMA Kconfig description & help text
-      https://git.kernel.org/powerpc/c/bae80c27fc2195b9e5723d7b05c592e0874f4ba9
+[1/9] powerpc/feature: Use CONFIG_PPC64 instead of __powerpc64__ to define possible features
+      https://git.kernel.org/powerpc/c/8d1eeabf253657ae3e76970514f30b7e53a6898f
+[2/9] powerpc/processor: Move cpu_relax() into asm/vdso/processor.h
+      https://git.kernel.org/powerpc/c/8f8cffd9df81612b5b06d2c57ebf74f8961b41be
+[3/9] powerpc/time: Move timebase functions into new asm/vdso/timebase.h
+      https://git.kernel.org/powerpc/c/d26b3817d9eefae6b777739c1ea5daba5e72624e
+[4/9] powerpc/time: Fix mftb()/get_tb() for use with the compat VDSO
+      https://git.kernel.org/powerpc/c/5c189c523e78d4a70e874477e4b0628fd74207e4
+[5/9] powerpc/barrier: Use CONFIG_PPC64 for barrier selection
+      https://git.kernel.org/powerpc/c/1f1676bb2dd52c1054db8476d6387e6dcf62a1ba
+[6/9] powerpc/vdso: Prepare for switching VDSO to generic C implementation.
+      https://git.kernel.org/powerpc/c/ce7d8056e38b770f070fc4499c577322b6ccb9c7
+[7/9] powerpc/vdso: Save and restore TOC pointer on PPC64
+      https://git.kernel.org/powerpc/c/7fec9f5d41979dbe273ec337327d5939449562e7
+[8/9] powerpc/vdso: Switch VDSO to generic C implementation.
+      https://git.kernel.org/powerpc/c/ab037dd87a2f946556850e204c06cbd7a2a19390
+[9/9] powerpc/vdso: Provide __kernel_clock_gettime64() on vdso32
+      https://git.kernel.org/powerpc/c/d0e3fc69d00d1f50d22d6b6acfc555ccda80ad1e
 
 cheers
