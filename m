@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C64BC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39774C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:29:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8704D22D70
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:24:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8704D22D70
+	by mail.kernel.org (Postfix) with ESMTPS id 5AF1223A02
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:29:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AF1223A02
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsClx0fMmzDqx4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:24:45 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsCrq1dxTzDqxH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:28:59 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXQ72mnzDqc4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXS36rdzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBXQ0fbsz9sWp; Thu, 10 Dec 2020 22:29:41 +1100 (AEDT)
+ id 4CsBXS1KWSz9sWt; Thu, 10 Dec 2020 22:29:43 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
-References: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc: Retire e200 core (mpc555x processor)
-Message-Id: <160756607466.1313423.7615581061447652822.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:29:41 +1100 (AEDT)
+In-Reply-To: <18b357d68c4cde149f75c7a1031c850925cd8128.1605981539.git.christophe.leroy@csgroup.eu>
+References: <18b357d68c4cde149f75c7a1031c850925cd8128.1605981539.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: inline iomap accessors
+Message-Id: <160756604708.1313423.2512500774127488232.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:29:43 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,20 +55,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 17 Nov 2020 05:07:58 +0000 (UTC), Christophe Leroy wrote:
-> There is no defconfig selecting CONFIG_E200, and no platform.
+On Sat, 21 Nov 2020 17:59:19 +0000 (UTC), Christophe Leroy wrote:
+> ioreadXX()/ioreadXXbe() accessors are equivalent to ppc
+> in_leXX()/in_be16() accessors but they are not inlined.
 > 
-> e200 is an earlier version of booke, a predecessor of e500,
-> with some particularities like an unified cache instead of both an
-> instruction cache and a data cache.
+> Since commit 0eb573682872 ("powerpc/kerenl: Enable EEH for IO
+> accessors"), the 'le' versions are equivalent to the ones
+> defined in asm-generic/io.h, allthough the ones there are inlined.
 > 
-> Remove it.
+> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: Retire e200 core (mpc555x processor)
-      https://git.kernel.org/powerpc/c/39c8bf2b3cc166a2a75111e4941cc5f7efbddc35
-[2/2] powerpc: Remove ucache_bsize
-      https://git.kernel.org/powerpc/c/8817aabb1bdd5811130f94ff6442bb19c9158a3a
+[1/1] powerpc: inline iomap accessors
+      https://git.kernel.org/powerpc/c/894fa235eb4ca0bfa692dbe4932c2f940cdc8c1e
 
 cheers
