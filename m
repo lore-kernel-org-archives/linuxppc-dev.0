@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B3B3C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:15:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8885C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:21:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90E9A23C81
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:14:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90E9A23C81
+	by mail.kernel.org (Postfix) with ESMTPS id C671523D22
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:21:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C671523D22
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsGC46nvXzDqSt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:14:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsGLf603mzDqg6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:21:30 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBY51r6qzDqv5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBY76cH9zDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 4CsBY56Y86z9shh; Thu, 10 Dec 2020 22:30:17 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBY34RwFz9sdm; Thu, 10 Dec 2020 22:30:15 +1100 (AEDT)
+ id 4CsBY51qyvz9sfN; Thu, 10 Dec 2020 22:30:16 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Bill Wendling <morbo@google.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20201118223910.2711337-1-morbo@google.com>
-References: <20201017000151.150788-1-morbo@google.com>
- <20201118223910.2711337-1-morbo@google.com>
-Subject: Re: [PATCH] powerpc/wrapper: add "-z rodynamic" when using LLD
-Message-Id: <160756604674.1313423.12181057246622757040.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:30:15 +1100 (AEDT)
+To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20201124120547.1940635-1-mpe@ellerman.id.au>
+References: <20201124120547.1940635-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc: Make NUMA depend on SMP
+Message-Id: <160756604761.1313423.18058608408740419327.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:30:16 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,21 +49,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- Fangrui Song <maskray@google.com>, Alan Modra <amodra@gmail.com>
+Cc: rdunlap@infradead.org, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 18 Nov 2020 14:39:10 -0800, Bill Wendling wrote:
-> Normally all read-only sections precede SHF_WRITE sections. .dynamic and
-> .got have the SHF_WRITE flag; .dynamic probably because of DT_DEBUG. LLD
-> emits an error when this happens, so use "-z rodynamic" to mark .dynamic
-> as read-only.
+On Tue, 24 Nov 2020 23:05:45 +1100, Michael Ellerman wrote:
+> Our Kconfig allows NUMA to be enabled without SMP, but none of
+> our defconfigs use that combination. This means it can easily be
+> broken inadvertently by code changes, which has happened recently.
+> 
+> Although it's theoretically possible to have a machine with a single
+> CPU and multiple memory nodes, I can't think of any real systems where
+> that's the case. Even so if such a system exists, it can just run an
+> SMP kernel anyway.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot/wrapper: Add "-z rodynamic" when using LLD
-      https://git.kernel.org/powerpc/c/26ba9f9651d802ba38583138f43fea5dc7eb0fd6
+[1/3] powerpc: Make NUMA depend on SMP
+      https://git.kernel.org/powerpc/c/25395cd2f8cb24ce6a5ce073c898acfb091e06cf
+[2/3] powerpc: Make NUMA default y for powernv
+      https://git.kernel.org/powerpc/c/4c28b32b886f1489c5f510ed8e3f0c4e3dcb59f5
+[3/3] powerpc: Update NUMA Kconfig description & help text
+      https://git.kernel.org/powerpc/c/bae80c27fc2195b9e5723d7b05c592e0874f4ba9
 
 cheers
