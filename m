@@ -2,85 +2,92 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 316D5C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 16:10:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AA19C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:17:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18F2E2310B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 16:10:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18F2E2310B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=web.de
+	by mail.kernel.org (Postfix) with ESMTPS id 7AC68230FA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:17:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AC68230FA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsJmT5V1bzDr0t
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 03:10:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLFn0c5xzDqP1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:17:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=web.de
- (client-ip=217.72.192.78; helo=mout.web.de;
- envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
- header.s=dbaedf251592 header.b=JmS8UaJg; 
- dkim-atps=neutral
-Received: from mout.web.de (mout.web.de [217.72.192.78])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsJgt64mRzDqxL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 03:06:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1607616251;
- bh=ztP3o3sZxYRK4WVRjBBhx/FXiHkMoOmxJ5iurRyi7zg=;
- h=X-UI-Sender-Class:To:Cc:References:From:Subject:Date:In-Reply-To;
- b=JmS8UaJgY8rj0KH0Ety71br1F9CSspJutIDSkDcKwNV2gaQhtdvoMMn9HWGTRQNWl
- XvcY3UagJ5BlForLg8LcI6HjBgiRdivmjOQ5FsfxywCiJVQGJpxm9qD2lx0NEawi4k
- juLJXa6oTl9TjHyYjXxNnZN6fKnvF75HWh6rlXtM=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([78.48.143.229]) by smtp.web.de (mrweb102
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0LuLxD-1k6JkS0hkN-011gBF; Thu, 10
- Dec 2020 17:04:11 +0100
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <5cee2b25-71e0-15aa-fba6-12211b8308aa@web.de>
- <X9I1GLYCkw/q/xMu@kroah.com>
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: =?UTF-8?Q?Re=3a_=5bPATCH=5d_cxl=3a_Reduce_scope_for_the_variable_?=
- =?UTF-8?B?4oCcbW3igJ0gaW4gY3hsbGliX2dldF9QRV9hdHRyaWJ1dGVzKCk=?=
-Message-ID: <507d607a-0551-ec11-e1dc-5b9c96a361cb@web.de>
-Date: Thu, 10 Dec 2020 17:04:09 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.1
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLC424kyzDqvl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:15:11 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BAHEnGh054894; Thu, 10 Dec 2020 12:15:02 -0500
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bqweg060-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Dec 2020 12:15:01 -0500
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHC7IN009770;
+ Thu, 10 Dec 2020 17:14:59 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 3583svnwmq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Dec 2020 17:14:59 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BAHEv9d9830734
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 10 Dec 2020 17:14:57 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 25C364C06E;
+ Thu, 10 Dec 2020 17:14:57 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EFE184C058;
+ Thu, 10 Dec 2020 17:14:56 +0000 (GMT)
+Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 10 Dec 2020 17:14:56 +0000 (GMT)
+Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 6BE762204B9;
+ Thu, 10 Dec 2020 18:14:56 +0100 (CET)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 05/13] powerpc/xive: Add a name to the IRQ domain
+Date: Thu, 10 Dec 2020 18:14:42 +0100
+Message-Id: <20201210171450.1933725-6-clg@kaod.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201210171450.1933725-1-clg@kaod.org>
+References: <20201210171450.1933725-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <X9I1GLYCkw/q/xMu@kroah.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:4JJr1h43tgpOGmxflHVuWbLH6M1grYZ3NkCJJhvajildAK8uzq8
- upVTE/sg3syYGJoX9lf1qR7kMMhRNR9pRhTCAdNLrfrGm1UxpgWbRiwZS3nAv4MAGs06odi
- V5SvSK4uGGphbOJHqLxkgwjrSsJexdz36lG7QD8qz99iZ9vANiPmfbI1ssYUYOlPIJYs/QQ
- yzn8/M0lGMnMjzuGMYJ8A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:OVJ8+f+RmA4=:mC3BW64m0u7F+ifM+AWWkI
- dYWKYgPbe10mnqj6Xcw+r4pvXm9lD1JRC+oZqp0gXOQwXZS4TFKNom/MhhthWBpLc+/EV7CT/
- hgsvErTo0oaDHeWlsAW0ypmg43VJVJxC52/zZlCjozeysoe2NzRODJmgU0zx7Ere+AxaRYdHy
- Og/Dq3pnufmCm72CWXiC/D9diEdvMZSo0LIRpBLM7EEtnsl73lCjOshNk3WJiHNkOcajlB0SS
- t6xzeB7OjavzMygzSnr27r7F1cJIBpamPrjPlnapUFo+y8NbAyZV4r2sLOYJagbwLl5bi2zds
- fRQ3jpYWO8Li8BVQCnbHrSfZ8K5StBP+4sG+ymWizHiVNmqhidYbSyWv5bZw8NHYPZDIeDv6N
- nPxltIYATxzSOPjZ/Pnu8aAmgytf+ITI9Yav3XBDI/HkBZrFR86TaGf8U02PyRp70Rjb6cO3O
- tZNM2CIhB0T9N1CZsl10PMVwOMkUGLpXQ1NAyybvQwpJ6Zri8U8m4lsyMDr79c5FjiaezDO2J
- fxvWG1b6X/U/G4tZuQfCfk2Xuac/lSt1ccCSiQxMfOyGCjBn7l35saFjS8FXgPeMohKSz+FeI
- jfGLWw5EUyi0GjnJnttw9OfDj7X9wLc/4k0uWEeJ7dmoqWaPEvBrtk3K4AvplpW4DnXyLfqyV
- +9I7J5VIPoFw2B5GxK7ZBVh1GlnRmecp98UWqqEI7EimY3Qvyf8GHtYCPRN4rd1VPiXZJpln5
- 8u7fDYtA0H6Hlkp2DmTCMLZvwSaq3hOm9mFcTr3VXA+eg0VlATPiT4gZQo5HeU2aq5ZapnN/g
- 2lZTtUJB4KgihCYo7fQMiDZl5R2EutwcMHYlmWeQAC2Rh5qs4yvl38VrsvP/RGMh6IZzor1qK
- uLiGi9/sSiHePLqKu1CQ==
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-10_06:2020-12-09,
+ 2020-12-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999 clxscore=1034
+ lowpriorityscore=0 spamscore=0 priorityscore=1501 mlxscore=0 phishscore=0
+ impostorscore=0 suspectscore=1 malwarescore=0 adultscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012100105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,24 +99,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, kernel-janitors@vger.kernel.org,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: Greg Kurz <groug@kaod.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->> A local variable was used only within an if branch.
->> Thus move the definition for the variable =E2=80=9Cmm=E2=80=9D into the=
- corresponding
->> code block.
->
-> You did nothing here except add a checkpatch warning :(
+We hope one day to handle multiple irq_domain in the XIVE driver.
+Start simple by setting the name using the DT node.
 
-elfring@Sonne:~/Projekte/Linux/next-patched> scripts/checkpatch.pl /home/e=
-lfring/Projekte/Bau/Linux/scripts/Coccinelle/tuning1/next/20201204/Flicken=
-/0001-cxl-Reduce-scope-for-the-variable-mm-in-cxllib_get_P.patch
-total: 0 errors, 0 warnings, 16 lines checked
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/sysdev/xive/xive-internal.h |  4 ++--
+ arch/powerpc/sysdev/xive/common.c        | 10 +++++-----
+ arch/powerpc/sysdev/xive/native.c        |  2 +-
+ arch/powerpc/sysdev/xive/spapr.c         |  2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-Regards,
-Markus
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysd=
+ev/xive/xive-internal.h
+index d701af7fb48c..c07fadb9d264 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -63,8 +63,8 @@ struct xive_ops {
+ 	const char *name;
+ };
+=20
+-bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 =
+offset,
+-		    u8 max_prio);
++bool xive_core_init(struct device_node *np, const struct xive_ops *ops,
++		    void __iomem *area, u32 offset, u8 max_prio);
+ __be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift);
+ int xive_core_debug_init(void);
+=20
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 605238ca65e4..7314b87d0b45 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1310,9 +1310,9 @@ static const struct irq_domain_ops xive_irq_domain_=
+ops =3D {
+ 	.xlate =3D xive_irq_domain_xlate,
+ };
+=20
+-static void __init xive_init_host(void)
++static void __init xive_init_host(struct device_node *np)
+ {
+-	xive_irq_domain =3D irq_domain_add_nomap(NULL, XIVE_MAX_IRQ,
++	xive_irq_domain =3D irq_domain_add_nomap(np, XIVE_MAX_IRQ,
+ 					       &xive_irq_domain_ops, NULL);
+ 	if (WARN_ON(xive_irq_domain =3D=3D NULL))
+ 		return;
+@@ -1508,8 +1508,8 @@ void xive_shutdown(void)
+ 	xive_ops->shutdown();
+ }
+=20
+-bool __init xive_core_init(const struct xive_ops *ops, void __iomem *are=
+a, u32 offset,
+-			   u8 max_prio)
++bool __init xive_core_init(struct device_node *np, const struct xive_ops=
+ *ops,
++			   void __iomem *area, u32 offset, u8 max_prio)
+ {
+ 	xive_tima =3D area;
+ 	xive_tima_offset =3D offset;
+@@ -1520,7 +1520,7 @@ bool __init xive_core_init(const struct xive_ops *o=
+ps, void __iomem *area, u32 o
+ 	__xive_enabled =3D true;
+=20
+ 	pr_devel("Initializing host..\n");
+-	xive_init_host();
++	xive_init_host(np);
+=20
+ 	pr_devel("Initializing boot CPU..\n");
+=20
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive=
+/native.c
+index cb58ec7ce77a..c3182ec9ed65 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -622,7 +622,7 @@ bool __init xive_native_init(void)
+ 	xive_native_setup_pools();
+=20
+ 	/* Initialize XIVE core with our backend */
+-	if (!xive_core_init(&xive_native_ops, tima, TM_QW3_HV_PHYS,
++	if (!xive_core_init(np, &xive_native_ops, tima, TM_QW3_HV_PHYS,
+ 			    max_prio)) {
+ 		opal_xive_reset(OPAL_XIVE_MODE_EMU);
+ 		return false;
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/=
+spapr.c
+index 1e3674d7ea7b..6610e5149d5a 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -857,7 +857,7 @@ bool __init xive_spapr_init(void)
+ 	}
+=20
+ 	/* Initialize XIVE core with our backend */
+-	if (!xive_core_init(&xive_spapr_ops, tima, TM_QW1_OS, max_prio))
++	if (!xive_core_init(np, &xive_spapr_ops, tima, TM_QW1_OS, max_prio))
+ 		return false;
+=20
+ 	pr_info("Using %dkB queues\n", 1 << (xive_queue_shift - 10));
+--=20
+2.26.2
+
