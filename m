@@ -4,38 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BA42C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:50:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C78C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:56:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80C672310D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:50:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80C672310D
+	by mail.kernel.org (Postfix) with ESMTPS id 8ED0623117
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 14:56:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ED0623117
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsH032nVxzDr27
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:50:27 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsH7G3tLqzDqQh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 01:56:42 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBYG1ZvdzDqlD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBYH39RXzDqgM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:30:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBYD2TGlz9shm; Thu, 10 Dec 2020 22:30:23 +1100 (AEDT)
+ id 4CsBYF1ksbz9shj; Thu, 10 Dec 2020 22:30:24 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-In-Reply-To: <20201130034406.288047-1-ravi.bangoria@linux.ibm.com>
-References: <20201130034406.288047-1-ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/xmon: Fix build failure for 8xx
-Message-Id: <160756605988.1313423.18384916308376299517.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:30:23 +1100 (AEDT)
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20201202050456.164005-1-srikar@linux.vnet.ibm.com>
+References: <20201202050456.164005-1-srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/4] Powerpc: Better preemption for shared processor
+Message-Id: <160756606176.1313423.10082301769067590963.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:30:24 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,22 +48,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Phil Auld <pauld@redhat.com>,
+ Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Waiman Long <longman@redhat.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Valentin Schneider <valentin.schneider@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 30 Nov 2020 09:14:06 +0530, Ravi Bangoria wrote:
-> With CONFIG_PPC_8xx and CONFIG_XMON set, kernel build fails with
+On Wed, 2 Dec 2020 10:34:52 +0530, Srikar Dronamraju wrote:
+> Currently, vcpu_is_preempted will return the yield_count for
+> shared_processor. On a PowerVM LPAR, Phyp schedules at SMT8 core boundary
+> i.e all CPUs belonging to a core are either group scheduled in or group
+> scheduled out. This can be used to better predict non-preempted CPUs on
+> PowerVM shared LPARs.
 > 
->   arch/powerpc/xmon/xmon.c:1379:12: error: 'find_free_data_bpt' defined
->   but not used [-Werror=unused-function]
+> perf stat -r 5 -a perf bench sched pipe -l 10000000 (lesser time is better)
 > 
-> Fix it by enclosing find_free_data_bpt() inside #ifndef CONFIG_PPC_8xx.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xmon: Fix build failure for 8xx
-      https://git.kernel.org/powerpc/c/f3e90408019b353fd1fcd338091fb8d3c4a1c1a5
+[1/4] powerpc: Refactor is_kvm_guest() declaration to new header
+      https://git.kernel.org/powerpc/c/92cc6bf01c7f4c5cfefd1963985c0064687ebeda
+[2/4] powerpc: Rename is_kvm_guest() to check_kvm_guest()
+      https://git.kernel.org/powerpc/c/16520a858a995742c2d2248e86a6026bd0316562
+[3/4] powerpc: Reintroduce is_kvm_guest() as a fast-path check
+      https://git.kernel.org/powerpc/c/a21d1becaa3f17a97b933ffa677b526afc514ec5
+[4/4] powerpc/paravirt: Use is_kvm_guest() in vcpu_is_preempted()
+      https://git.kernel.org/powerpc/c/ca3f969dcb111d35674b66bdcb72beb2c426b9b5
 
 cheers
