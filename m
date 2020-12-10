@@ -2,71 +2,113 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8007C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:19:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 002D7C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:42:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4D9423A7C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:19:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4D9423A7C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 005A823D6A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 10:42:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 005A823D6A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs8z80wGWzDqSK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 21:19:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
- envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 593 seconds by postgrey-1.36 at bilbo;
- Thu, 10 Dec 2020 21:16:21 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cs8vn28nYzDqRr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 21:16:20 +1100 (AEDT)
-Received: from [192.168.1.155] ([95.117.52.229]) by mrelayeu.kundenserver.de
- (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MWiYo-1kcBmu2YCO-00X5bV; Thu, 10 Dec 2020 10:57:00 +0100
-Subject: Re: [PATCH] drivers: usb: gadget: prefer pr_*() functions over raw
- printk()
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- "Enrico Weigelt, metux IT consult" <info@metux.net>
-References: <20201208144403.22097-1-info@metux.net>
- <X8+howyVRiTR9gv/@pendragon.ideasonboard.com>
- <9aaa06ad-0bd8-486d-b16b-66927d57cf96@metux.net>
- <X9C0vOLZOnLZoPR8@pendragon.ideasonboard.com>
-From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
-Message-ID: <a454b90c-2888-7779-222b-ba642526495a@metux.net>
-Date: Thu, 10 Dec 2020 10:56:57 +0100
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
-MIME-Version: 1.0
-In-Reply-To: <X9C0vOLZOnLZoPR8@pendragon.ideasonboard.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: tl
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:1tUVJHur9zX95g721i8+x6mG6wmouby4GJKEfF1tz4XFWPNrZ/7
- F/0YH1fgIF4zjb7qtk769Vi6cM6ZT1UpgNGxpgfJFc3Y8jNwzPj2TmcoXUq0af5R6PG7Cze
- 3ww1YZu6Pn1HrVV0QNEF+0u5U+s59/S9tsVcs7TOCV4xAotexcMORVBjoQdls4A6O5RRf72
- sHzHjeee9qCCdyHhmKrzA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:+/dzs/5/GJ8=:skUnKwEcJl+PbraOWO9w9H
- 2vjCepwTIasWyxzk35NlqFAu3kvC+fHnZeKqF6HIYRSOaEIsaPZ1AUf6kRbmWDYG+/BBzzwUl
- qzTcmVLWl9oBv5ZhmDBxkBw4sh8C7ovVKl7eDDOJ73BPX82HDFstq8Sq+x1lqGVX+2t1tB9Zk
- J96LqFPLl2wxBkLYDHjQMMFtoWp0D5CieaWpARbNQZ0E9iSRXKfBl7GGjIO5DO2nY7rALbqXc
- 42A67Kz5ihKdiPRm/RDFAmWFjp0YNimcTrbqEbFIMy6zcv8lzZnhn+nPZaUc1pArJlv/aXWV3
- 9eLyT0IKmMm/krVh6CjgIRb5H1SAM4hu3/l2eEelisk9tvotsrlCQh6qIjOnL832sFYGIDMCn
- Immf3mB00ek7hczjI4XEI9CaTA3XRYSJGojXmKXSeUVUT+zcHS2jLI5XFKFtQXcB+5kpKk9bx
- cxEflSGjxmK21auvPHWaz+USwS6Z/nNcujN3T7LWrTZrXiLmuAwV0IQRA1eYhawi81f7Y+AMm
- rExkYPp6hMXSqc8woziX8o=
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs9Tf64PYzDqfN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 21:42:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Ra3IkEfW; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cs9QS5jW0zDqcv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 21:39:28 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BAAYdH7029101; Thu, 10 Dec 2020 05:39:14 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=Ai25PXfA29Fc9Lxf3mN8DyUGvm5nXSo+jRXoW3pPBNk=;
+ b=Ra3IkEfWjyePEIpqQld6xadCiI+xxT9yeLJ9KH8Jw+jq3vYEL/LLajrnoB2Hr2Slw+C8
+ /zy5WspdZqgXnvH5Oo2WuBdJbgXQEOpIQF+bjjDjYusWkRAKWwIRDZ6c0K+Z0qoMJxU8
+ 4lSoWt5Q+eo3vodcehDWcQ3wQ5SQAHuIBB8JariRl0rZzdOlVEuHffoiSLuCuop+Pe8U
+ /cgKW58yuB2Q+YBOsj1vOyUtU8RDeKL2EvlRTk4UNw/tjkwcLUvrTKsa96gxG3b9Jwbt
+ e+xxrbTyFMFcI4jPLrkZYtZRfC8v4qyeEdCz0Ut4W6Dtg90+5yKVHeTGBbB9xHrC7GQk vw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bj0dr56c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Dec 2020 05:39:14 -0500
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0BAAZGGF035399;
+ Thu, 10 Dec 2020 05:39:13 -0500
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bj0dr55j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Dec 2020 05:39:13 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAAVrpS007971;
+ Thu, 10 Dec 2020 10:39:11 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04wdc.us.ibm.com with ESMTP id 3581u9pt5m-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Dec 2020 10:39:11 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BAAdAZn24641980
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 10 Dec 2020 10:39:10 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3D1236A04F;
+ Thu, 10 Dec 2020 10:39:10 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8A04C6A04D;
+ Thu, 10 Dec 2020 10:39:09 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.53.52])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Dec 2020 10:39:09 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 006B02E3257; Thu, 10 Dec 2020 16:09:05 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@ozlabs.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Nathan Lynch <nathanl@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Valentin Schneider <valentin.schneider@arm.com>
+Subject: [PATCH v3 1/5] powerpc/smp: Parse ibm,
+ thread-groups with multiple properties
+Date: Thu, 10 Dec 2020 16:08:55 +0530
+Message-Id: <1607596739-32439-2-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1607596739-32439-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1607596739-32439-1-git-send-email-ego@linux.vnet.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-10_03:2020-12-09,
+ 2020-12-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ suspectscore=2 bulkscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1015
+ phishscore=0 adultscore=0 mlxlogscore=999 spamscore=0 priorityscore=1501
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012100070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,50 +120,318 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: balbi@kernel.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 09.12.20 12:27, Laurent Pinchart wrote:
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi,
+The "ibm,thread-groups" device-tree property is an array that is used
+to indicate if groups of threads within a core share certain
+properties. It provides details of which property is being shared by
+which groups of threads. This array can encode information about
+multiple properties being shared by different thread-groups within the
+core.
 
->>> I wonder if this shouldn't be dropped instead, commented-out code isn't
->>> very useful.
->>
->> Indeed. Shall I send a separate patch for that ?
-> 
-> Yes, that would make sense.
+Example: Suppose,
+"ibm,thread-groups" = [1,2,4,8,10,12,14,9,11,13,15,2,2,4,8,10,12,14,9,11,13,15]
 
-Okay, I'm currently doing a more in-depth rework. I'll send another
-patch queue later.
+This can be decomposed up into two consecutive arrays:
 
-Since I don't own the corresponding devices, I can't do much testing
-(just build tests and careful review), so I need some help w/ that.
+a) [1,2,4,8,10,12,14,9,11,13,15]
+b) [2,2,4,8,10,12,14,9,11,13,15]
 
-> As most of the files touched by this patch are device drivers, dev_*()
-> functions should be used instead of pr_*() where possible. I'd recommend
-> a first patch that converts to dev_*(), and then a second patch that
-> converts the remaining printk()s, if any, to pr_*() in the contexts
-> where no struct device is available or can easily be made available.
+where in,
 
-I'm now splitting it into per-driver patches. They're getting a bit
-bigger, since I'm also replacing some debug macros, etc. In some cases
-I'm introducing new helpers for not having to write long expressions
-to get the actual dev ptr, adding some prefixes (eg. per usb endpoint
-logging, ...).
+a) provides information of Property "1" being shared by "2" groups,
+   each with "4" threads each. The "ibm,ppc-interrupt-server#s" of the
+   first group is {8,10,12,14} and the "ibm,ppc-interrupt-server#s" of
+   the second group is {9,11,13,15}. Property "1" is indicative of
+   the thread in the group sharing L1 cache, translation cache and
+   Instruction Data flow.
 
+b) provides information of Property "2" being shared by "2" groups,
+   each group with "4" threads. The "ibm,ppc-interrupt-server#s" of
+   the first group is {8,10,12,14} and the
+   "ibm,ppc-interrupt-server#s" of the second group is
+   {9,11,13,15}. Property "2" indicates that the threads in each group
+   share the L2-cache.
 
---mtx
+The existing code assumes that the "ibm,thread-groups" encodes
+information about only one property. Hence even on platforms which
+encode information about multiple properties being shared by the
+corresponding groups of threads, the current code will only pick the
+first one. (In the above example, it will only consider
+[1,2,4,8,10,12,14,9,11,13,15] but not [2,2,4,8,10,12,14,9,11,13,15]).
 
+This patch extends the parsing support on platforms which encode
+information about multiple properties being shared by the
+corresponding groups of threads.
+
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 174 ++++++++++++++++++++++++++++++----------------
+ 1 file changed, 113 insertions(+), 61 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 8c2857c..88d88ad 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -106,6 +106,15 @@ struct thread_groups {
+ 	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
+ };
+ 
++/* Maximum number of properties that groups of threads within a core can share */
++#define MAX_THREAD_GROUP_PROPERTIES 1
++
++struct thread_groups_list {
++	unsigned int nr_properties;
++	struct thread_groups property_tgs[MAX_THREAD_GROUP_PROPERTIES];
++};
++
++static struct thread_groups_list tgl[NR_CPUS] __initdata;
+ /*
+  * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
+  * the set its siblings that share the L1-cache.
+@@ -695,81 +704,98 @@ static void or_cpumasks_related(int i, int j, struct cpumask *(*srcmask)(int),
+ /*
+  * parse_thread_groups: Parses the "ibm,thread-groups" device tree
+  *                      property for the CPU device node @dn and stores
+- *                      the parsed output in the thread_groups
+- *                      structure @tg if the ibm,thread-groups[0]
+- *                      matches @property.
++ *                      the parsed output in the thread_groups_list
++ *                      structure @tglp.
+  *
+  * @dn: The device node of the CPU device.
+- * @tg: Pointer to a thread group structure into which the parsed
++ * @tglp: Pointer to a thread group list structure into which the parsed
+  *      output of "ibm,thread-groups" is stored.
+- * @property: The property of the thread-group that the caller is
+- *            interested in.
+  *
+  * ibm,thread-groups[0..N-1] array defines which group of threads in
+  * the CPU-device node can be grouped together based on the property.
+  *
+- * ibm,thread-groups[0] tells us the property based on which the
++ * This array can represent thread groupings for multiple properties.
++ *
++ * ibm,thread-groups[i + 0] tells us the property based on which the
+  * threads are being grouped together. If this value is 1, it implies
+  * that the threads in the same group share L1, translation cache.
+  *
+- * ibm,thread-groups[1] tells us how many such thread groups exist.
++ * ibm,thread-groups[i+1] tells us how many such thread groups exist for the
++ * property ibm,thread-groups[i]
+  *
+- * ibm,thread-groups[2] tells us the number of threads in each such
++ * ibm,thread-groups[i+2] tells us the number of threads in each such
+  * group.
++ * Suppose k = (ibm,thread-groups[i+1] * ibm,thread-groups[i+2]), then,
+  *
+- * ibm,thread-groups[3..N-1] is the list of threads identified by
++ * ibm,thread-groups[i+3..i+k+2] (is the list of threads identified by
+  * "ibm,ppc-interrupt-server#s" arranged as per their membership in
+  * the grouping.
+  *
+- * Example: If ibm,thread-groups = [1,2,4,5,6,7,8,9,10,11,12] it
+- * implies that there are 2 groups of 4 threads each, where each group
+- * of threads share L1, translation cache.
++ * Example:
++ * If "ibm,thread-groups" = [1,2,4,8,10,12,14,9,11,13,15,2,2,4,8,10,12,14,9,11,13,15]
++ * This can be decomposed up into two consecutive arrays:
++ * a) [1,2,4,8,10,12,14,9,11,13,15]
++ * b) [2,2,4,8,10,12,14,9,11,13,15]
++ *
++ * where in,
++ *
++ * a) provides information of Property "1" being shared by "2" groups,
++ *  each with "4" threads each. The "ibm,ppc-interrupt-server#s" of
++ *  the first group is {8,10,12,14} and the
++ *  "ibm,ppc-interrupt-server#s" of the second group is
++ *  {9,11,13,15}. Property "1" is indicative of the thread in the
++ *  group sharing L1 cache, translation cache and Instruction Data
++ *  flow.
+  *
+- * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
+- * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
+- * 11, 12} structure
++ * b) provides information of Property "2" being shared by "2" groups,
++ *  each group with "4" threads. The "ibm,ppc-interrupt-server#s" of
++ *  the first group is {8,10,12,14} and the
++ *  "ibm,ppc-interrupt-server#s" of the second group is
++ *  {9,11,13,15}. Property "2" indicates that the threads in each
++ *  group share the L2-cache.
+  *
+  * Returns 0 on success, -EINVAL if the property does not exist,
+  * -ENODATA if property does not have a value, and -EOVERFLOW if the
+  * property data isn't large enough.
+  */
+ static int parse_thread_groups(struct device_node *dn,
+-			       struct thread_groups *tg,
+-			       unsigned int property)
++			       struct thread_groups_list *tglp)
+ {
+-	int i;
+-	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
+-	u32 *thread_list;
++	unsigned int property_idx = 0;
++	u32 *thread_group_array;
+ 	size_t total_threads;
+-	int ret;
++	int ret = 0, count;
++	u32 *thread_list;
++	int i = 0;
+ 
++	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
++	thread_group_array = kcalloc(count, sizeof(u32), GFP_KERNEL);
+ 	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
+-					 thread_group_array, 3);
++					 thread_group_array, count);
+ 	if (ret)
+-		return ret;
+-
+-	tg->property = thread_group_array[0];
+-	tg->nr_groups = thread_group_array[1];
+-	tg->threads_per_group = thread_group_array[2];
+-	if (tg->property != property ||
+-	    tg->nr_groups < 1 ||
+-	    tg->threads_per_group < 1)
+-		return -ENODATA;
++		goto out_free;
+ 
+-	total_threads = tg->nr_groups * tg->threads_per_group;
++	while (i < count && property_idx < MAX_THREAD_GROUP_PROPERTIES) {
++		int j;
++		struct thread_groups *tg = &tglp->property_tgs[property_idx++];
+ 
+-	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
+-					 thread_group_array,
+-					 3 + total_threads);
+-	if (ret)
+-		return ret;
++		tg->property = thread_group_array[i];
++		tg->nr_groups = thread_group_array[i + 1];
++		tg->threads_per_group = thread_group_array[i + 2];
++		total_threads = tg->nr_groups * tg->threads_per_group;
+ 
+-	thread_list = &thread_group_array[3];
++		thread_list = &thread_group_array[i + 3];
+ 
+-	for (i = 0 ; i < total_threads; i++)
+-		tg->thread_list[i] = thread_list[i];
++		for (j = 0; j < total_threads; j++)
++			tg->thread_list[j] = thread_list[j];
++		i = i + 3 + total_threads;
++	}
+ 
+-	return 0;
++	tglp->nr_properties = property_idx;
++
++out_free:
++	kfree(thread_group_array);
++	return ret;
+ }
+ 
+ /*
+@@ -805,50 +831,76 @@ static int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
+ 	return -1;
+ }
+ 
++static struct thread_groups *__init get_thread_groups(int cpu,
++						      int group_property,
++						      int *err)
++{
++	struct device_node *dn = of_get_cpu_node(cpu, NULL);
++	struct thread_groups_list *cpu_tgl = &tgl[cpu];
++	struct thread_groups *tg = NULL;
++	int i;
++	*err = 0;
++
++	if (!dn) {
++		*err = -ENODATA;
++		return NULL;
++	}
++
++	if (!cpu_tgl->nr_properties) {
++		*err = parse_thread_groups(dn, cpu_tgl);
++		if (*err)
++			goto out;
++	}
++
++	for (i = 0; i < cpu_tgl->nr_properties; i++) {
++		if (cpu_tgl->property_tgs[i].property == group_property) {
++			tg = &cpu_tgl->property_tgs[i];
++			break;
++		}
++	}
++
++	if (!tg)
++		*err = -EINVAL;
++out:
++	of_node_put(dn);
++	return tg;
++}
++
+ static int init_cpu_l1_cache_map(int cpu)
+ 
+ {
+-	struct device_node *dn = of_get_cpu_node(cpu, NULL);
+-	struct thread_groups tg = {.property = 0,
+-				   .nr_groups = 0,
+-				   .threads_per_group = 0};
+ 	int first_thread = cpu_first_thread_sibling(cpu);
+ 	int i, cpu_group_start = -1, err = 0;
++	struct thread_groups *tg = NULL;
+ 
+-	if (!dn)
+-		return -ENODATA;
+-
+-	err = parse_thread_groups(dn, &tg, THREAD_GROUP_SHARE_L1);
+-	if (err)
+-		goto out;
++	tg = get_thread_groups(cpu, THREAD_GROUP_SHARE_L1,
++			       &err);
++	if (!tg)
++		return err;
+ 
+-	cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
++	cpu_group_start = get_cpu_thread_group_start(cpu, tg);
+ 
+ 	if (unlikely(cpu_group_start == -1)) {
+ 		WARN_ON_ONCE(1);
+-		err = -ENODATA;
+-		goto out;
++		return -ENODATA;
+ 	}
+ 
+ 	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
+ 				GFP_KERNEL, cpu_to_node(cpu));
+ 
+ 	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+-		int i_group_start = get_cpu_thread_group_start(i, &tg);
++		int i_group_start = get_cpu_thread_group_start(i, tg);
+ 
+ 		if (unlikely(i_group_start == -1)) {
+ 			WARN_ON_ONCE(1);
+-			err = -ENODATA;
+-			goto out;
++			return -ENODATA;
+ 		}
+ 
+ 		if (i_group_start == cpu_group_start)
+ 			cpumask_set_cpu(i, per_cpu(cpu_l1_cache_map, cpu));
+ 	}
+ 
+-out:
+-	of_node_put(dn);
+-	return err;
++	return 0;
+ }
+ 
+ static bool shared_caches;
 -- 
----
-Hinweis: unverschlüsselte E-Mails können leicht abgehört und manipuliert
-werden ! Für eine vertrauliche Kommunikation senden Sie bitte ihren
-GPG/PGP-Schlüssel zu.
----
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+1.9.4
+
