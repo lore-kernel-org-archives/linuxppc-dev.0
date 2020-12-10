@@ -6,39 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D741C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:32:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D22BEC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:37:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7735C23B26
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:32:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7735C23B26
+	by mail.kernel.org (Postfix) with ESMTPS id A280523B87
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:37:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A280523B87
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsCwd3pg7zDqDM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:32:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsD292nHwzDqKP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:37:05 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXT2B8NzDqc4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXW67QLzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBXT0LmQz9sWx; Thu, 10 Dec 2020 22:29:44 +1100 (AEDT)
+ id 4CsBXV5p1rz9sWy; Thu, 10 Dec 2020 22:29:45 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>,
+To: Alastair D'Silva <alastair@d-silva.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <829ae1aed1d2fc6b5fc5818362e573dee5d6ecde.1602489852.git.christophe.leroy@csgroup.eu>
-References: <829ae1aed1d2fc6b5fc5818362e573dee5d6ecde.1602489852.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/mm: Desintegrate MMU_FTR_PPCAS_ARCH_V2
-Message-Id: <160756607081.1313423.15871737991465948250.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:29:44 +1100 (AEDT)
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>
+In-Reply-To: <ceede82fadf37f3b8275e61fcf8cf29a3e2ec7fe.1602351011.git.christophe.leroy@csgroup.eu>
+References: <ceede82fadf37f3b8275e61fcf8cf29a3e2ec7fe.1602351011.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/mm: Fix verification of MMU_FTR_TYPE_44x
+Message-Id: <160756607012.1313423.11395822390772039188.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:29:45 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,19 +56,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 12 Oct 2020 08:04:24 +0000 (UTC), Christophe Leroy wrote:
-> MMU_FTR_PPCAS_ARCH_V2 is defined in cpu_table.h
-> as MMU_FTR_TLBIEL | MMU_FTR_16M_PAGE.
+On Sat, 10 Oct 2020 17:30:59 +0000 (UTC), Christophe Leroy wrote:
+> MMU_FTR_TYPE_44x cannot be checked by cpu_has_feature()
 > 
-> MMU_FTR_TLBIEL and MMU_FTR_16M_PAGE are defined in mmu.h
-> 
-> MMU_FTR_PPCAS_ARCH_V2 is used only in mmu.h and it is used only once.
-> 
-> [...]
+> Use mmu_has_feature() instead
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm: Desintegrate MMU_FTR_PPCAS_ARCH_V2
-      https://git.kernel.org/powerpc/c/0e8ff4f8d2faa2e3381e774c9e2fb975e8b4598f
+[1/1] powerpc/mm: Fix verification of MMU_FTR_TYPE_44x
+      https://git.kernel.org/powerpc/c/17179aeb9d34cc81e1a4ae3f85e5b12b13a1f8d0
 
 cheers
