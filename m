@@ -2,24 +2,24 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-21.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1128CC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:39:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2119DC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:41:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 406AC23A33
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:39:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 406AC23A33
+	by mail.kernel.org (Postfix) with ESMTPS id 769F923A33
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:41:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 769F923A33
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLl02TMQzDqDr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:39:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLnP3jqRzDqfG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:41:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
@@ -31,48 +31,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLCD2B5szDqxg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:15:20 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLCL4NRYzDqvx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:15:26 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BAH4QvI181363; Thu, 10 Dec 2020 12:15:07 -0500
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35bqq10fdw-1
+ 0BAH9tDp078163; Thu, 10 Dec 2020 12:15:03 -0500
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35bqj68h27-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 12:15:07 -0500
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHCR4w018481;
- Thu, 10 Dec 2020 17:15:05 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04fra.de.ibm.com with ESMTP id 35bnts820w-1
+ Thu, 10 Dec 2020 12:15:02 -0500
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHDMsI002820;
+ Thu, 10 Dec 2020 17:15:01 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 3581fhp19w-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 17:15:05 +0000
+ Thu, 10 Dec 2020 17:15:00 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0BAHF2T712583192
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BAHEw4r25559546
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Dec 2020 17:15:02 GMT
+ Thu, 10 Dec 2020 17:14:58 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 451494C062;
- Thu, 10 Dec 2020 17:15:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BC2CB4C040;
+ Thu, 10 Dec 2020 17:14:58 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B76F4C059;
- Thu, 10 Dec 2020 17:15:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8CC874C059;
+ Thu, 10 Dec 2020 17:14:58 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu, 10 Dec 2020 17:15:01 +0000 (GMT)
+ Thu, 10 Dec 2020 17:14:58 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 8BCAD2204B9;
- Thu, 10 Dec 2020 18:15:00 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 02D1322012A;
+ Thu, 10 Dec 2020 18:14:57 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 13/13] KVM: PPC: Book3S HV: XIVE: Add a comment regarding
- VP numbering
-Date: Thu, 10 Dec 2020 18:14:50 +0100
-Message-Id: <20201210171450.1933725-14-clg@kaod.org>
+Subject: [PATCH v2 08/13] powerpc/xive: Remove P9 DD1 flag
+ XIVE_IRQ_FLAG_SHIFT_BUG
+Date: Thu, 10 Dec 2020 18:14:45 +0100
+Message-Id: <20201210171450.1933725-9-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201210171450.1933725-1-clg@kaod.org>
 References: <20201210171450.1933725-1-clg@kaod.org>
@@ -84,11 +84,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-10_06:2020-12-09,
  2020-12-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0
- malwarescore=0 impostorscore=0 lowpriorityscore=0 adultscore=0
- suspectscore=1 mlxlogscore=813 clxscore=1034 mlxscore=0 priorityscore=1501
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012100105
+ mlxscore=0 mlxlogscore=766
+ impostorscore=0 clxscore=1034 adultscore=0 malwarescore=0 suspectscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 phishscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012100105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,45 +106,137 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the XIVE resources are allocated at the HW level, the VP
-structures describing the vCPUs of a guest are distributed among
-the chips to optimize the PowerBUS usage. For best performance, the
-guest vCPUs can be pinned to match the VP structure distribution.
+This flag was used to support the PHB4 LSIs on P9 DD1 and we have
+stopped supporting this CPU when DD2 came out. See skiboot commit:
 
-Currently, the VP identifiers are deduced from the vCPU id using
-the kvmppc_pack_vcpu_id() routine which is not incorrect but not
-optimal either. It VSMT is used, the result is not continuous and
-the constraints on HW resources described above can not be met.
+  https://github.com/open-power/skiboot/commit/0b0d15e3c170
 
+Reviewed-by: Greg Kurz <groug@kaod.org>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s_xive.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/include/asm/opal-api.h     | 2 +-
+ arch/powerpc/include/asm/xive.h         | 2 +-
+ arch/powerpc/kvm/book3s_xive_native.c   | 3 ---
+ arch/powerpc/kvm/book3s_xive_template.c | 3 ---
+ arch/powerpc/sysdev/xive/common.c       | 9 ---------
+ arch/powerpc/sysdev/xive/native.c       | 2 --
+ 6 files changed, 2 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xiv=
-e.h
-index d5d4fee7ac94..86c24a4ad809 100644
---- a/arch/powerpc/kvm/book3s_xive.h
-+++ b/arch/powerpc/kvm/book3s_xive.h
-@@ -218,6 +218,17 @@ static inline struct kvmppc_xive_src_block *kvmppc_x=
-ive_find_source(struct kvmpp
- 	return xive->src_blocks[bid];
- }
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/a=
+sm/opal-api.h
+index 1dffa3cb16ba..48ee604ca39a 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -1091,7 +1091,7 @@ enum {
+ 	OPAL_XIVE_IRQ_TRIGGER_PAGE	=3D 0x00000001,
+ 	OPAL_XIVE_IRQ_STORE_EOI		=3D 0x00000002,
+ 	OPAL_XIVE_IRQ_LSI		=3D 0x00000004,
+-	OPAL_XIVE_IRQ_SHIFT_BUG		=3D 0x00000008,
++	OPAL_XIVE_IRQ_SHIFT_BUG		=3D 0x00000008, /* P9 DD1.0 workaround */
+ 	OPAL_XIVE_IRQ_MASK_VIA_FW	=3D 0x00000010,
+ 	OPAL_XIVE_IRQ_EOI_VIA_FW	=3D 0x00000020,
+ };
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+index d332dd9a18de..b3c039d0bb6e 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -60,7 +60,7 @@ struct xive_irq_data {
+ };
+ #define XIVE_IRQ_FLAG_STORE_EOI	0x01
+ #define XIVE_IRQ_FLAG_LSI	0x02
+-#define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
++/* #define XIVE_IRQ_FLAG_SHIFT_BUG	0x04 */ /* P9 DD1.0 workaround */
+ #define XIVE_IRQ_FLAG_MASK_FW	0x08
+ #define XIVE_IRQ_FLAG_EOI_FW	0x10
+ #define XIVE_IRQ_FLAG_H_INT_ESB	0x20
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/boo=
+k3s_xive_native.c
+index 9b395381179d..170d1d04e1d1 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -37,9 +37,6 @@ static u8 xive_vm_esb_load(struct xive_irq_data *xd, u3=
+2 offset)
+ 	 * ordering.
+ 	 */
 =20
-+/*
-+ * When the XIVE resources are allocated at the HW level, the VP
-+ * structures describing the vCPUs of a guest are distributed among
-+ * the chips to optimize the PowerBUS usage. For best performance, the
-+ * guest vCPUs can be pinned to match the VP structure distribution.
-+ *
-+ * Currently, the VP identifiers are deduced from the vCPU id using
-+ * the kvmppc_pack_vcpu_id() routine which is not incorrect but not
-+ * optimal either. It VSMT is used, the result is not continuous and
-+ * the constraints on HW resources described above can not be met.
-+ */
- static inline u32 kvmppc_xive_vp(struct kvmppc_xive *xive, u32 server)
+-	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+-		offset |=3D offset << 4;
+-
+ 	val =3D in_be64(xd->eoi_mmio + offset);
+ 	return (u8)val;
+ }
+diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/b=
+ook3s_xive_template.c
+index 4ad3c0279458..ece36e024a8f 100644
+--- a/arch/powerpc/kvm/book3s_xive_template.c
++++ b/arch/powerpc/kvm/book3s_xive_template.c
+@@ -61,9 +61,6 @@ static u8 GLUE(X_PFX,esb_load)(struct xive_irq_data *xd=
+, u32 offset)
+ 	if (offset =3D=3D XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE=
+_EOI)
+ 		offset |=3D XIVE_ESB_LD_ST_MO;
+=20
+-	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+-		offset |=3D offset << 4;
+-
+ 	val =3D__x_readq(__x_eoi_page(xd) + offset);
+ #ifdef __LITTLE_ENDIAN__
+ 	val >>=3D 64-8;
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 348445ffa0af..7b6e3149f1ea 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -200,10 +200,6 @@ static notrace u8 xive_esb_read(struct xive_irq_data=
+ *xd, u32 offset)
+ 	if (offset =3D=3D XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE=
+_EOI)
+ 		offset |=3D XIVE_ESB_LD_ST_MO;
+=20
+-	/* Handle HW errata */
+-	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+-		offset |=3D offset << 4;
+-
+ 	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
+ 		val =3D xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
+ 	else
+@@ -214,10 +210,6 @@ static notrace u8 xive_esb_read(struct xive_irq_data=
+ *xd, u32 offset)
+=20
+ static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 dat=
+a)
  {
- 	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
+-	/* Handle HW errata */
+-	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+-		offset |=3D offset << 4;
+-
+ 	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
+ 		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
+ 	else
+@@ -1312,7 +1304,6 @@ static const struct {
+ } xive_irq_flags[] =3D {
+ 	{ XIVE_IRQ_FLAG_STORE_EOI, "STORE_EOI" },
+ 	{ XIVE_IRQ_FLAG_LSI,       "LSI"       },
+-	{ XIVE_IRQ_FLAG_SHIFT_BUG, "SHIFT_BUG" },
+ 	{ XIVE_IRQ_FLAG_MASK_FW,   "MASK_FW"   },
+ 	{ XIVE_IRQ_FLAG_EOI_FW,    "EOI_FW"    },
+ 	{ XIVE_IRQ_FLAG_H_INT_ESB, "H_INT_ESB" },
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive=
+/native.c
+index c3182ec9ed65..f501b1640068 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -64,8 +64,6 @@ int xive_native_populate_irq_data(u32 hw_irq, struct xi=
+ve_irq_data *data)
+ 		data->flags |=3D XIVE_IRQ_FLAG_STORE_EOI;
+ 	if (opal_flags & OPAL_XIVE_IRQ_LSI)
+ 		data->flags |=3D XIVE_IRQ_FLAG_LSI;
+-	if (opal_flags & OPAL_XIVE_IRQ_SHIFT_BUG)
+-		data->flags |=3D XIVE_IRQ_FLAG_SHIFT_BUG;
+ 	if (opal_flags & OPAL_XIVE_IRQ_MASK_VIA_FW)
+ 		data->flags |=3D XIVE_IRQ_FLAG_MASK_FW;
+ 	if (opal_flags & OPAL_XIVE_IRQ_EOI_VIA_FW)
 --=20
 2.26.2
 
