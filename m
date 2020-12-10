@@ -2,24 +2,24 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65FB8C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:44:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96602C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:46:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C7772310E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:44:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C7772310E
+	by mail.kernel.org (Postfix) with ESMTPS id A692A23DE3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:46:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A692A23DE3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLrP2vgCzDqvn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:44:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLv30cqhzDqxV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:46:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -31,48 +31,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLDZ4NbHzDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:16:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLFz48R0zDr0t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:17:43 +1100 (AEDT)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BAH2KOL163997; Thu, 10 Dec 2020 12:16:17 -0500
+ 0BAH2LXJ164130; Thu, 10 Dec 2020 12:17:31 -0500
 Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
  [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35bqqp0hh5-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bqqp0jse-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 12:16:17 -0500
+ Thu, 10 Dec 2020 12:17:31 -0500
 Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHCaSD005487;
- Thu, 10 Dec 2020 17:16:15 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03fra.de.ibm.com with ESMTP id 3581u8rvhe-1
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHCdTk005875;
+ Thu, 10 Dec 2020 17:17:28 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma03fra.de.ibm.com with ESMTP id 3581u8rvjt-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 17:16:15 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0BAHEwVt13304316
+ Thu, 10 Dec 2020 17:17:28 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 0BAHEtA549218026
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Dec 2020 17:14:58 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3E5B34C063;
- Thu, 10 Dec 2020 17:14:58 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0F5704C040;
- Thu, 10 Dec 2020 17:14:58 +0000 (GMT)
+ Thu, 10 Dec 2020 17:14:55 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 98ADE11C05B;
+ Thu, 10 Dec 2020 17:14:55 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6EE4111C052;
+ Thu, 10 Dec 2020 17:14:55 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu, 10 Dec 2020 17:14:57 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 10 Dec 2020 17:14:55 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 6FD1B2204B9;
- Thu, 10 Dec 2020 18:14:57 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id DD2C922012A;
+ Thu, 10 Dec 2020 18:14:54 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 07/13] powerpc: Increase NR_IRQS range to support more KVM
- guests
-Date: Thu, 10 Dec 2020 18:14:44 +0100
-Message-Id: <20201210171450.1933725-8-clg@kaod.org>
+Subject: [PATCH v2 02/13] powerpc/xive: Rename XIVE_IRQ_NO_EOI to show its a
+ flag
+Date: Thu, 10 Dec 2020 18:14:39 +0100
+Message-Id: <20201210171450.1933725-3-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201210171450.1933725-1-clg@kaod.org>
 References: <20201210171450.1933725-1-clg@kaod.org>
@@ -86,7 +86,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  phishscore=0 bulkscore=0
  priorityscore=1501 adultscore=0 suspectscore=1 clxscore=1034
- malwarescore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=548 mlxscore=0
+ malwarescore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=625 mlxscore=0
  impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012100105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -106,29 +106,72 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerNV systems can handle up to 4K guests and 1M interrupt numbers
-per chip. Increase the range of allowed interrupts to support a larger
-number of guests.
+This is a simple cleanup to identify easily all flags of the XIVE
+interrupt structure. The interrupts flagged with XIVE_IRQ_FLAG_NO_EOI
+are the escalations used to wake up vCPUs in KVM. They are handled
+very differently from the rest.
 
 Reviewed-by: Greg Kurz <groug@kaod.org>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/xive.h   | 2 +-
+ arch/powerpc/kvm/book3s_xive.c    | 4 ++--
+ arch/powerpc/sysdev/xive/common.c | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5181872f9452..c250fbd430d1 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -66,7 +66,7 @@ config NEED_PER_CPU_PAGE_FIRST_CHUNK
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+index 309b4d65b74f..d332dd9a18de 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -66,7 +66,7 @@ struct xive_irq_data {
+ #define XIVE_IRQ_FLAG_H_INT_ESB	0x20
 =20
- config NR_IRQS
- 	int "Number of virtual interrupt numbers"
--	range 32 32768
-+	range 32 1048576
- 	default "512"
- 	help
- 	  This defines the number of virtual interrupt numbers the kernel
+ /* Special flag set by KVM for excalation interrupts */
+-#define XIVE_IRQ_NO_EOI		0x80
++#define XIVE_IRQ_FLAG_NO_EOI	0x80
+=20
+ #define XIVE_INVALID_CHIP_ID	-1
+=20
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xiv=
+e.c
+index 18a6b75a3bfd..fae1c2e8da29 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -219,7 +219,7 @@ int kvmppc_xive_attach_escalation(struct kvm_vcpu *vc=
+pu, u8 prio,
+ 	/* In single escalation mode, we grab the ESB MMIO of the
+ 	 * interrupt and mask it. Also populate the VCPU v/raddr
+ 	 * of the ESB page for use by asm entry/exit code. Finally
+-	 * set the XIVE_IRQ_NO_EOI flag which will prevent the
++	 * set the XIVE_IRQ_FLAG_NO_EOI flag which will prevent the
+ 	 * core code from performing an EOI on the escalation
+ 	 * interrupt, thus leaving it effectively masked after
+ 	 * it fires once.
+@@ -231,7 +231,7 @@ int kvmppc_xive_attach_escalation(struct kvm_vcpu *vc=
+pu, u8 prio,
+ 		xive_vm_esb_load(xd, XIVE_ESB_SET_PQ_01);
+ 		vcpu->arch.xive_esc_raddr =3D xd->eoi_page;
+ 		vcpu->arch.xive_esc_vaddr =3D (__force u64)xd->eoi_mmio;
+-		xd->flags |=3D XIVE_IRQ_NO_EOI;
++		xd->flags |=3D XIVE_IRQ_FLAG_NO_EOI;
+ 	}
+=20
+ 	return 0;
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index a80440af491a..65af34ac1fa2 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -416,7 +416,7 @@ static void xive_irq_eoi(struct irq_data *d)
+ 	 * been passed-through to a KVM guest
+ 	 */
+ 	if (!irqd_irq_disabled(d) && !irqd_is_forwarded_to_vcpu(d) &&
+-	    !(xd->flags & XIVE_IRQ_NO_EOI))
++	    !(xd->flags & XIVE_IRQ_FLAG_NO_EOI))
+ 		xive_do_source_eoi(irqd_to_hwirq(d), xd);
+ 	else
+ 		xd->stale_p =3D true;
 --=20
 2.26.2
 
