@@ -2,69 +2,57 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA087C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:37:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBD41C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:43:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3FD723C81
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:37:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3FD723C81
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3DAC323770
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 15:43:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DAC323770
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsJ1k5Ph8zDr3S
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 02:36:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsJ8h6CgZzDr0w
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 02:43:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from smtpout1.mo529.mail-out.ovh.net
- (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=jzuzGeJw; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsDyJ3Mp8zDqwM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 00:18:46 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.240])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 0FC0572F9FAB;
- Thu, 10 Dec 2020 14:18:39 +0100 (CET)
-Received: from kaod.org (37.59.142.101) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Thu, 10 Dec
- 2020 14:18:39 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-101G004e78d135d-1f16-425f-ace0-9971b92d29de,
- 35DF0118C1BD2D4E469FA4C27706E890450E7B32) smtp.auth=clg@kaod.org
-Subject: Re: [PATCH 09/13] powerpc/xive: Remove P9 DD1 flag
- XIVE_IRQ_FLAG_SHIFT_BUG
-To: Greg Kurz <groug@kaod.org>
-References: <20201208151124.1329942-1-clg@kaod.org>
- <20201208151124.1329942-10-clg@kaod.org> <20201208183906.1740c594@bahia.lan>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <c2251500-b03f-ac1c-8298-3a2d2c50953e@kaod.org>
-Date: Thu, 10 Dec 2020 14:18:38 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsGvk5q1nzDqFY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 01:46:42 +1100 (AEDT)
+Date: Thu, 10 Dec 2020 15:47:52 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+ s=korg; t=1607611598;
+ bh=8roGAcaqdWV7Cx09/qYtV5EtfHdEnYqtywgHdVmgwQk=;
+ h=From:To:Cc:Subject:References:In-Reply-To:From;
+ b=jzuzGeJwxxrfyurgYKXmQEv0RmrKj0q3aVAr8MampgupErIRCWrDwttbbsyj8Irne
+ 3NM4NP5OQ3eYqUzIj21UyFrikfMa9m70g19KwKQQ1rMk4RXUZlXScLznpcDZNiMOdA
+ PnzoAkjWVN0o1SUe5Zxd/6FVF56Hs6xskQfgt6lU=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Markus Elfring <Markus.Elfring@web.de>
+Subject: Re: [PATCH] cxl: Reduce scope =?utf-8?Q?fo?=
+ =?utf-8?B?ciB0aGUgdmFyaWFibGUg4oCcbW3igJ0=?= in cxllib_get_PE_attributes()
+Message-ID: <X9I1GLYCkw/q/xMu@kroah.com>
+References: <5cee2b25-71e0-15aa-fba6-12211b8308aa@web.de>
 MIME-Version: 1.0
-In-Reply-To: <20201208183906.1740c594@bahia.lan>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.101]
-X-ClientProxiedBy: DAG7EX2.mxp5.local (172.16.2.62) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 15312e56-b65a-4e56-9985-6a562132133c
-X-Ovh-Tracer-Id: 2319072336630156186
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudektddgheduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehuedtheeghfdvhedtueelteegvdefueektdefiefhffffieduuddtudfhgfevtdenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
+In-Reply-To: <5cee2b25-71e0-15aa-fba6-12211b8308aa@web.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,146 +64,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/8/20 6:39 PM, Greg Kurz wrote:
-> On Tue, 8 Dec 2020 16:11:20 +0100
-> Cédric Le Goater <clg@kaod.org> wrote:
+On Thu, Dec 10, 2020 at 03:35:38PM +0100, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 10 Dec 2020 14:14:07 +0100
 > 
->> This flag was used to support the PHB4 LSIs on P9 DD1 and we have
->> stopped supporting this CPU when DD2 came out. See skiboot commit:
->>
->>   https://github.com/open-power/skiboot/commit/0b0d15e3c170
->>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
-> 
-> Reviewed-by: Greg Kurz <groug@kaod.org>
-> 
-> Just a minor suggestion in case you need to post a v2. See below.
-> 
->>  arch/powerpc/include/asm/opal-api.h     | 2 +-
->>  arch/powerpc/include/asm/xive.h         | 2 +-
->>  arch/powerpc/kvm/book3s_xive_native.c   | 3 ---
->>  arch/powerpc/kvm/book3s_xive_template.c | 3 ---
->>  arch/powerpc/sysdev/xive/common.c       | 8 --------
->>  arch/powerpc/sysdev/xive/native.c       | 2 --
->>  6 files changed, 2 insertions(+), 18 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
->> index 1dffa3cb16ba..48ee604ca39a 100644
->> --- a/arch/powerpc/include/asm/opal-api.h
->> +++ b/arch/powerpc/include/asm/opal-api.h
->> @@ -1091,7 +1091,7 @@ enum {
->>  	OPAL_XIVE_IRQ_TRIGGER_PAGE	= 0x00000001,
->>  	OPAL_XIVE_IRQ_STORE_EOI		= 0x00000002,
->>  	OPAL_XIVE_IRQ_LSI		= 0x00000004,
->> -	OPAL_XIVE_IRQ_SHIFT_BUG		= 0x00000008,
->> +	OPAL_XIVE_IRQ_SHIFT_BUG		= 0x00000008, /* P9 DD1.0 workaround */
-> 
-> Maybe you can even comment the entire line so that any future
-> tentative to use that flag breaks build ?
+> A local variable was used only within an if branch.
+> Thus move the definition for the variable “mm” into the corresponding
+> code block.
 
-This file is "copied" from OPAL. I think it is best to keep them
-in sync.
+You did nothing here except add a checkpatch warning :(
 
-> 
->>  	OPAL_XIVE_IRQ_MASK_VIA_FW	= 0x00000010,
->>  	OPAL_XIVE_IRQ_EOI_VIA_FW	= 0x00000020,
->>  };
->> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
->> index d332dd9a18de..ff805885a028 100644
->> --- a/arch/powerpc/include/asm/xive.h
->> +++ b/arch/powerpc/include/asm/xive.h
->> @@ -60,7 +60,7 @@ struct xive_irq_data {
->>  };
->>  #define XIVE_IRQ_FLAG_STORE_EOI	0x01
->>  #define XIVE_IRQ_FLAG_LSI	0x02
->> -#define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
->> +#define XIVE_IRQ_FLAG_SHIFT_BUG	0x04 /* P9 DD1.0 workaround */
-> 
-> Same here, with an extra cleanup to stop using it when initializing 
-> xive_irq_flags[] in common.c.
+dropped.
 
-Yes. Since this is an internal flag, we can simply remove it.
-
-Thanks,
-
-C. 
-
-> 
->>  #define XIVE_IRQ_FLAG_MASK_FW	0x08
->>  #define XIVE_IRQ_FLAG_EOI_FW	0x10
->>  #define XIVE_IRQ_FLAG_H_INT_ESB	0x20
->> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
->> index 9b395381179d..170d1d04e1d1 100644
->> --- a/arch/powerpc/kvm/book3s_xive_native.c
->> +++ b/arch/powerpc/kvm/book3s_xive_native.c
->> @@ -37,9 +37,6 @@ static u8 xive_vm_esb_load(struct xive_irq_data *xd, u32 offset)
->>  	 * ordering.
->>  	 */
->>  
->> -	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->> -		offset |= offset << 4;
->> -
->>  	val = in_be64(xd->eoi_mmio + offset);
->>  	return (u8)val;
->>  }
->> diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
->> index 4ad3c0279458..ece36e024a8f 100644
->> --- a/arch/powerpc/kvm/book3s_xive_template.c
->> +++ b/arch/powerpc/kvm/book3s_xive_template.c
->> @@ -61,9 +61,6 @@ static u8 GLUE(X_PFX,esb_load)(struct xive_irq_data *xd, u32 offset)
->>  	if (offset == XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
->>  		offset |= XIVE_ESB_LD_ST_MO;
->>  
->> -	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->> -		offset |= offset << 4;
->> -
->>  	val =__x_readq(__x_eoi_page(xd) + offset);
->>  #ifdef __LITTLE_ENDIAN__
->>  	val >>= 64-8;
->> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
->> index 411cba12d73b..a9259470bf9f 100644
->> --- a/arch/powerpc/sysdev/xive/common.c
->> +++ b/arch/powerpc/sysdev/xive/common.c
->> @@ -200,10 +200,6 @@ static notrace u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
->>  	if (offset == XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
->>  		offset |= XIVE_ESB_LD_ST_MO;
->>  
->> -	/* Handle HW errata */
->> -	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->> -		offset |= offset << 4;
->> -
->>  	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
->>  		val = xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
->>  	else
->> @@ -214,10 +210,6 @@ static notrace u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
->>  
->>  static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
->>  {
->> -	/* Handle HW errata */
->> -	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->> -		offset |= offset << 4;
->> -
->>  	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
->>  		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
->>  	else
->> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
->> index 5f1e5aed8ab4..0310783241b5 100644
->> --- a/arch/powerpc/sysdev/xive/native.c
->> +++ b/arch/powerpc/sysdev/xive/native.c
->> @@ -64,8 +64,6 @@ int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
->>  		data->flags |= XIVE_IRQ_FLAG_STORE_EOI;
->>  	if (opal_flags & OPAL_XIVE_IRQ_LSI)
->>  		data->flags |= XIVE_IRQ_FLAG_LSI;
->> -	if (opal_flags & OPAL_XIVE_IRQ_SHIFT_BUG)
->> -		data->flags |= XIVE_IRQ_FLAG_SHIFT_BUG;
->>  	if (opal_flags & OPAL_XIVE_IRQ_MASK_VIA_FW)
->>  		data->flags |= XIVE_IRQ_FLAG_MASK_FW;
->>  	if (opal_flags & OPAL_XIVE_IRQ_EOI_VIA_FW)
-> 
-
+greg k-h
