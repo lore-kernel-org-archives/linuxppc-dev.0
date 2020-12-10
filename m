@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4467AC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:15:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E512DC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:17:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AF6C2343B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:15:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AF6C2343B
+	by mail.kernel.org (Postfix) with ESMTPS id 42A3923D9B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:17:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42A3923D9B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7YL0kJ7zDqpf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:15:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7c06sClzDqLT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:17:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
  helo=mail.baikalelectronics.ru;
@@ -28,16 +28,17 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
 Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
  [87.245.175.226])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7Rx1dhSzDqhH
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7Rx2BBZzDqj1
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 20:10:35 +1100 (AEDT)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Chunfeng Yun
  <chunfeng.yun@mediatek.com>
-Subject: [PATCH v6 04/19] dt-bindings: usb: Add "ulpi/serial/hsic" PHY types
-Date: Thu, 10 Dec 2020 12:09:28 +0300
-Message-ID: <20201210090944.16283-5-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v6 03/19] dt-bindings: usb: usb-drd: Add "otg-rev" property
+ constraints
+Date: Thu, 10 Dec 2020 12:09:27 +0300
+Message-ID: <20201210090944.16283-4-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -75,47 +76,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aside from the UTMI+ there are also ULPI, Serial and HSIC PHY types
-that can be specified in the phy_type HCD property. Add them to the
-enumeration of the acceptable values.
+There are only four OTG revisions are currently supported by the kernel:
+0x0100, 0x0120, 0x0130, 0x0200. Any another value is considered as
+invalid.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
 
-Changelog v2:
-- Grammar fix: "s/PHY types can be/PHY types that can be"
-- Drop quotes from around the string constants.
-
 Changelog v4:
-- Move the new PHY types definitions into the usb.yaml schema where the
-  phy_type property is now defined.
+- Move the constraints to the usb-drd.yaml schema where the otg-rev
+  property is now defined.
 ---
- Documentation/devicetree/bindings/usb/usb.yaml | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ Documentation/devicetree/bindings/usb/usb-drd.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/usb/usb.yaml b/Documentation/devicetree/bindings/usb/usb.yaml
-index aab74c671ccc..53144c4600c0 100644
---- a/Documentation/devicetree/bindings/usb/usb.yaml
-+++ b/Documentation/devicetree/bindings/usb/usb.yaml
-@@ -27,11 +27,13 @@ properties:
-   phy_type:
-     description:
-       Tells USB controllers that we want to configure the core to support a
--      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected. In case
--      this isn't passed via DT, USB controllers should default to HW
--      capability.
-+      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected, UTMI+ low
-+      pin interface if ULPI is specified, Serial core/PHY interconnect if
-+      serial is specified and High-Speed Inter-Chip feature if HSIC is
-+      selected. In case this isn't passed via DT, USB controllers should
-+      default to HW capability.
-     $ref: /schemas/types.yaml#/definitions/string
--    enum: [utmi, utmi_wide]
-+    enum: [utmi, utmi_wide, ulpi, serial, hsic]
+diff --git a/Documentation/devicetree/bindings/usb/usb-drd.yaml b/Documentation/devicetree/bindings/usb/usb-drd.yaml
+index f3a64c46dcd0..f229fc8068d9 100644
+--- a/Documentation/devicetree/bindings/usb/usb-drd.yaml
++++ b/Documentation/devicetree/bindings/usb/usb-drd.yaml
+@@ -18,6 +18,7 @@ properties:
+       features (HNP/SRP/ADP) is enabled. If ADP is required, otg-rev should be
+       0x0200 or above.
+     $ref: /schemas/types.yaml#/definitions/uint32
++    enum: [0x0100, 0x0120, 0x0130, 0x0200]
  
-   maximum-speed:
+   dr_mode:
      description:
 -- 
 2.29.2
