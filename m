@@ -6,37 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 422E3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 11:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2104FC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 11:54:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 328B523AC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 11:47:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 328B523AC4
+	by mail.kernel.org (Postfix) with ESMTPS id 0AEE923D5A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 11:54:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0AEE923D5A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsBwR4VsGzDqYd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 22:47:03 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsC510gJ0zDqwM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 22:54:29 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXG6YD9zDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXM1ndrzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBXG2rwmz9sW1; Thu, 10 Dec 2020 22:29:34 +1100 (AEDT)
+ id 4CsBXL1JPsz9sWj; Thu, 10 Dec 2020 22:29:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20201208031539.84878-1-aneesh.kumar@linux.ibm.com>
-References: <20201208031539.84878-1-aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/book3s64/kuap: Improve error reporting with KUAP
-Message-Id: <160756607519.1313423.7828205073526616704.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:29:34 +1100 (AEDT)
+In-Reply-To: <20201127044424.40686-1-aneesh.kumar@linux.ibm.com>
+References: <20201127044424.40686-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v7 00/22] Kernel userspace access/execution prevention
+ with hash translation
+Message-Id: <160756606619.1313423.421579647886975926.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:29:35 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,21 +53,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 8 Dec 2020 08:45:39 +0530, Aneesh Kumar K.V wrote:
-> This partially reverts commit eb232b162446 ("powerpc/book3s64/kuap: Improve
-> error reporting with KUAP") and update the fault handler to print
-> 
-> [   55.022514] Kernel attempted to access user page (7e6725b70000) - exploit attempt? (uid: 0)
-> [   55.022528] BUG: Unable to handle kernel data access on read at 0x7e6725b70000
-> [   55.022533] Faulting instruction address: 0xc000000000e8b9bc
-> [   55.022540] Oops: Kernel access of bad area, sig: 11 [#1]
-> ....
+On Fri, 27 Nov 2020 10:14:02 +0530, Aneesh Kumar K.V wrote:
+> This patch series implements KUAP and KUEP with hash translation mode using
+> memory keys. The kernel now uses memory protection key 3 to control access
+> to the kernel. Kernel page table entries are now configured with key 3.
+> Access to locations configured with any other key value is denied when in
+> kernel mode (MSR_PR=0). This includes userspace which is by default configured
+> with key 0.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patches 1-20, 22 applied to powerpc/next.
 
-[1/1] powerpc/book3s64/kuap: Improve error reporting with KUAP
-      https://git.kernel.org/powerpc/c/eb232b1624462752dc916d9015b31ecdac0a01f1
+[01/22] powerpc: Add new macro to handle NESTED_IFCLR
+        https://git.kernel.org/powerpc/c/c3d35ddd1ec874690a4e8da5a18497256f1ffa9a
+[02/22] KVM: PPC: BOOK3S: PR: Ignore UAMOR SPR
+        https://git.kernel.org/powerpc/c/9f378b9f007cc94beadea40df83cc62a76975c6f
+[03/22] powerpc/book3s64/kuap/kuep: Add PPC_PKEY config on book3s64
+        https://git.kernel.org/powerpc/c/227ae625522c65c4535cabe407f47abc058585ed
+[04/22] powerpc/book3s64/kuap/kuep: Move uamor setup to pkey init
+        https://git.kernel.org/powerpc/c/39df17bc20059c84ddc6f91831fce2e2cc79a6f3
+[05/22] powerpc/book3s64/kuap: Move KUAP related function outside radix
+        https://git.kernel.org/powerpc/c/3b47b7549ead0719e94022c6742199333c7c8d9f
+[06/22] powerpc/book3s64/kuep: Move KUEP related function outside radix
+        https://git.kernel.org/powerpc/c/57b7505aa8ba13eb18ffabeb689ac64343c53aaa
+[07/22] powerpc/book3s64/kuap: Rename MMU_FTR_RADIX_KUAP and MMU_FTR_KUEP
+        https://git.kernel.org/powerpc/c/d5b810b5c938e73fd21b2b05ef6a79837eeaa305
+[08/22] powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation
+        https://git.kernel.org/powerpc/c/d94b827e89dc3f92cd871d10f4992a6bd3c861e5
+[09/22] powerpc/exec: Set thread.regs early during exec
+        https://git.kernel.org/powerpc/c/d7df77e89039623ededf0ece7b4358f7c9ecbaae
+[10/22] powerpc/book3s64/pkeys: Store/restore userspace AMR/IAMR correctly on entry and exit from kernel
+        https://git.kernel.org/powerpc/c/8e560921b58cbc18e192f0ac273d307a37a144f9
+[11/22] powerpc/book3s64/pkeys: Inherit correctly on fork.
+        https://git.kernel.org/powerpc/c/f643fcab74c005ddfdda68c69909f03bde766ff1
+[12/22] powerpc/book3s64/pkeys: Reset userspace AMR correctly on exec
+        https://git.kernel.org/powerpc/c/d5fa30e6993ffcdd1859d8dab1a07a6f6c6e7c3f
+[13/22] powerpc/ptrace-view: Use pt_regs values instead of thread_struct based one.
+        https://git.kernel.org/powerpc/c/edc541ecaae73d498a49b9ca82bc66255d9e0720
+[14/22] powerpc/book3s64/pkeys: Don't update SPRN_AMR when in kernel mode.
+        https://git.kernel.org/powerpc/c/48a8ab4eeb8271f2a0e2ca3cf80844a59acca153
+[15/22] powerpc/book3s64/kuap: Restrict access to userspace based on userspace AMR
+        https://git.kernel.org/powerpc/c/4d6c551e9f548f7675a01eff229d09ab41162a25
+[16/22] powerpc/book3s64/kuap: Improve error reporting with KUAP
+        https://git.kernel.org/powerpc/c/eb232b1624462752dc916d9015b31ecdac0a01f1
+[17/22] powerpc/book3s64/kuap: Use Key 3 to implement KUAP with hash translation.
+        https://git.kernel.org/powerpc/c/fa46c2fa6ffbedab3a3cbcbde1292468979e830b
+[18/22] powerpc/book3s64/kuep: Use Key 3 to implement KUEP with hash translation.
+        https://git.kernel.org/powerpc/c/292f86c4c683a1064aff7210348da088c1573ee0
+[19/22] powerpc/book3s64/hash/kuap: Enable kuap on hash
+        https://git.kernel.org/powerpc/c/b2ff33a10c8b3e9d260c57df38b5cd3765a0b785
+[20/22] powerpc/book3s64/hash/kuep: Enable KUEP on hash
+        https://git.kernel.org/powerpc/c/c91435d95c49f4053b05ba03b41dd7ed0fbd6c71
+[22/22] powerpc/book3s64/pkeys: Optimize KUAP and KUEP feature disabled case
+        https://git.kernel.org/powerpc/c/ec0f9b98f7d01b15c804e77e12a515ffc56d7309
 
 cheers
