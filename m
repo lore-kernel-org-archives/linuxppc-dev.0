@@ -2,79 +2,76 @@ Return-Path: <SRS0=IADO=FO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A8DC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:28:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D212C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:30:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 321AD22D02
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:28:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 321AD22D02
+	by mail.kernel.org (Postfix) with ESMTPS id B7B7C2076C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 17:30:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7B7C2076C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLVL1WdMzDr0f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:28:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsLXY0wF5zDr0v
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 04:30:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLC601RQzDqvl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:15:13 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsLC96P71zDqvx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 04:15:17 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BAH3jKu190479; Thu, 10 Dec 2020 12:15:00 -0500
+ 0BAH9Kb0021010; Thu, 10 Dec 2020 12:15:01 -0500
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35bjjx44x4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35bqm00dyb-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 10 Dec 2020 12:15:00 -0500
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHCAX0009794;
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BAHCHKQ009812;
  Thu, 10 Dec 2020 17:14:58 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 3583svnwmp-1
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04ams.nl.ibm.com with ESMTP id 3583svnwmn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Dec 2020 17:14:58 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0BAHEuiq41419236
+ Thu, 10 Dec 2020 17:14:57 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BAHEtCf16712184
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Dec 2020 17:14:56 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2CC0DA4069;
- Thu, 10 Dec 2020 17:14:56 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F1980A405E;
- Thu, 10 Dec 2020 17:14:55 +0000 (GMT)
+ Thu, 10 Dec 2020 17:14:55 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AF78CA406E;
+ Thu, 10 Dec 2020 17:14:54 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7EE42A4075;
+ Thu, 10 Dec 2020 17:14:54 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu, 10 Dec 2020 17:14:55 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 10 Dec 2020 17:14:54 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-158-23.de.ibm.com [9.145.158.23])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 668A12204B9;
- Thu, 10 Dec 2020 18:14:55 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id D68AA22012A;
+ Thu, 10 Dec 2020 18:14:53 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 03/13] powerpc/xive: Introduce XIVE_IPI_HW_IRQ
-Date: Thu, 10 Dec 2020 18:14:40 +0100
-Message-Id: <20201210171450.1933725-4-clg@kaod.org>
+Subject: [PATCH v2 00/13] powerpc/xive: misc cleanups
+Date: Thu, 10 Dec 2020 18:14:37 +0100
+Message-Id: <20201210171450.1933725-1-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20201210171450.1933725-1-clg@kaod.org>
-References: <20201210171450.1933725-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -83,11 +80,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-10_06:2020-12-09,
  2020-12-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 priorityscore=1501 suspectscore=3 adultscore=0 bulkscore=0
- mlxlogscore=944 clxscore=1034 phishscore=0 mlxscore=0 impostorscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012100105
+ malwarescore=0 bulkscore=0
+ mlxscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=1
+ adultscore=0 clxscore=1034 phishscore=0 mlxlogscore=380 spamscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012100106
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,95 +102,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The XIVE driver deals with CPU IPIs in a peculiar way. Each CPU has
-its own XIVE IPI interrupt allocated at the HW level, for PowerNV, or
-at the hypervisor level for pSeries. In practice, these interrupts are
-not always used. pSeries/PowerVM prefers local doorbells for local
-threads since they are faster. On PowerNV, global doorbells are also
-preferred for the same reason.
+Hello,
 
-The mapping in the Linux is reduced to a single interrupt using HW
-interrupt number 0 and a custom irq_chip to handle EOI. This can cause
-performance issues in some benchmark (ipistorm) on multichip systems.
+The most important change is the removal of support of OPAL flags
+required for P9 DD1. It provides a good cleanup of some complex
+routines.
 
-Clarify the use of the 0 value, it will help in improving multichip
-support.
+Thanks,
 
-Reviewed-by: Greg Kurz <groug@kaod.org>
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/xive-internal.h |  2 ++
- arch/powerpc/sysdev/xive/common.c        | 10 +++++-----
- 2 files changed, 7 insertions(+), 5 deletions(-)
+C.
 
-diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysd=
-ev/xive/xive-internal.h
-index b7b901da2168..d701af7fb48c 100644
---- a/arch/powerpc/sysdev/xive/xive-internal.h
-+++ b/arch/powerpc/sysdev/xive/xive-internal.h
-@@ -5,6 +5,8 @@
- #ifndef __XIVE_INTERNAL_H
- #define __XIVE_INTERNAL_H
-=20
-+#define XIVE_IPI_HW_IRQ		0 /* interrupt source # for IPIs */
-+
- /*
-  * A "disabled" interrupt should never fire, to catch problems
-  * we set its logical number to this
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index 65af34ac1fa2..ee375daf8114 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1142,7 +1142,7 @@ static void __init xive_request_ipi(void)
- 		return;
-=20
- 	/* Initialize it */
--	virq =3D irq_create_mapping(xive_irq_domain, 0);
-+	virq =3D irq_create_mapping(xive_irq_domain, XIVE_IPI_HW_IRQ);
- 	xive_ipi_irq =3D virq;
-=20
- 	WARN_ON(request_irq(virq, xive_muxed_ipi_action,
-@@ -1242,7 +1242,7 @@ static int xive_irq_domain_map(struct irq_domain *h=
-, unsigned int virq,
-=20
- #ifdef CONFIG_SMP
- 	/* IPIs are special and come up with HW number 0 */
--	if (hw =3D=3D 0) {
-+	if (hw =3D=3D XIVE_IPI_HW_IRQ) {
- 		/*
- 		 * IPIs are marked per-cpu. We use separate HW interrupts under
- 		 * the hood but associated with the same "linux" interrupt
-@@ -1271,7 +1271,7 @@ static void xive_irq_domain_unmap(struct irq_domain=
- *d, unsigned int virq)
- 	if (!data)
- 		return;
- 	hw_irq =3D (unsigned int)irqd_to_hwirq(data);
--	if (hw_irq)
-+	if (hw_irq !=3D XIVE_IPI_HW_IRQ)
- 		xive_irq_free_data(virq);
- }
-=20
-@@ -1421,7 +1421,7 @@ static void xive_flush_cpu_queue(unsigned int cpu, =
-struct xive_cpu *xc)
- 		 * Ignore anything that isn't a XIVE irq and ignore
- 		 * IPIs, so can just be dropped.
- 		 */
--		if (d->domain !=3D xive_irq_domain || hw_irq =3D=3D 0)
-+		if (d->domain !=3D xive_irq_domain || hw_irq =3D=3D XIVE_IPI_HW_IRQ)
- 			continue;
-=20
- 		/*
-@@ -1655,7 +1655,7 @@ static int xive_core_debug_show(struct seq_file *m,=
- void *private)
- 		hw_irq =3D (unsigned int)irqd_to_hwirq(d);
-=20
- 		/* IPIs are special (HW number 0) */
--		if (hw_irq)
-+		if (hw_irq !=3D XIVE_IPI_HW_IRQ)
- 			xive_debug_show_irq(m, hw_irq, d);
- 	}
- 	return 0;
+Changes since v1:
+
+ - dropped the change on the allocation of the pages donated to the
+   XIVE IC. Needs a retest on a specific system.
+ - Took into account Greg's comments on flag removal.
+
+C=C3=A9dric Le Goater (13):
+  KVM: PPC: Book3S HV: XIVE: Show detailed configuration in debug output
+  powerpc/xive: Rename XIVE_IRQ_NO_EOI to show its a flag
+  powerpc/xive: Introduce XIVE_IPI_HW_IRQ
+  powerpc/xive: Use cpu_to_node() instead of ibm,chip-id property
+  powerpc/xive: Add a name to the IRQ domain
+  powerpc/xive: Add a debug_show handler to the XIVE irq_domain
+  powerpc: Increase NR_IRQS range to support more KVM guests
+  powerpc/xive: Remove P9 DD1 flag XIVE_IRQ_FLAG_SHIFT_BUG
+  powerpc/xive: Remove P9 DD1 flag XIVE_IRQ_FLAG_MASK_FW
+  powerpc/xive: Remove P9 DD1 flag XIVE_IRQ_FLAG_EOI_FW
+  powerpc/xive: Simplify xive_do_source_eoi()
+  powerpc/xive: Improve error reporting of OPAL calls
+  KVM: PPC: Book3S HV: XIVE: Add a comment regarding VP numbering
+
+ arch/powerpc/include/asm/opal-api.h      |   6 +-
+ arch/powerpc/include/asm/xive.h          |   8 +-
+ arch/powerpc/kvm/book3s_xive.h           |  13 ++
+ arch/powerpc/sysdev/xive/xive-internal.h |   7 +-
+ arch/powerpc/kvm/book3s_xive.c           | 134 +++++++-------
+ arch/powerpc/kvm/book3s_xive_native.c    |  24 ++-
+ arch/powerpc/kvm/book3s_xive_template.c  |   5 -
+ arch/powerpc/sysdev/xive/common.c        | 214 +++++++++++------------
+ arch/powerpc/sysdev/xive/native.c        |  46 ++---
+ arch/powerpc/sysdev/xive/spapr.c         |   8 +-
+ arch/powerpc/Kconfig                     |   2 +-
+ 11 files changed, 234 insertions(+), 233 deletions(-)
+
 --=20
 2.26.2
 
