@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 593F5C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C64BC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:24:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 992FB23B70
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 992FB23B70
+	by mail.kernel.org (Postfix) with ESMTPS id 8704D22D70
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 12:24:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8704D22D70
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CsCd543vHzDqwj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:18:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsClx0fMmzDqx4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 23:24:45 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXR1LfkzDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CsBXQ72mnzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 22:29:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CsBXQ5CDxz9sWf; Thu, 10 Dec 2020 22:29:42 +1100 (AEDT)
+ id 4CsBXQ0fbsz9sWp; Thu, 10 Dec 2020 22:29:41 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <39a530ee41d83f49747ab3af8e39c056450b9b4d.1602489653.git.christophe.leroy@csgroup.eu>
-References: <39a530ee41d83f49747ab3af8e39c056450b9b4d.1602489653.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/feature: Add CPU_FTR_NOEXECUTE to G2_LE
-Message-Id: <160756607029.1313423.4029286967614030940.b4-ty@ellerman.id.au>
-Date: Thu, 10 Dec 2020 22:29:42 +1100 (AEDT)
+In-Reply-To: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
+References: <34ebc3ba2c768d97f363bd5f2deea2356e9ae127.1605589460.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc: Retire e200 core (mpc555x processor)
+Message-Id: <160756607466.1313423.7615581061447652822.b4-ty@ellerman.id.au>
+Date: Thu, 10 Dec 2020 22:29:41 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,12 +55,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 12 Oct 2020 08:02:13 +0000 (UTC), Christophe Leroy wrote:
-> G2_LE has a 603 core, add CPU_FTR_NOEXECUTE.
+On Tue, 17 Nov 2020 05:07:58 +0000 (UTC), Christophe Leroy wrote:
+> There is no defconfig selecting CONFIG_E200, and no platform.
+> 
+> e200 is an earlier version of booke, a predecessor of e500,
+> with some particularities like an unified cache instead of both an
+> instruction cache and a data cache.
+> 
+> Remove it.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/feature: Add CPU_FTR_NOEXECUTE to G2_LE
-      https://git.kernel.org/powerpc/c/197493af414ee22427be3343637ac290a791925a
+[1/2] powerpc: Retire e200 core (mpc555x processor)
+      https://git.kernel.org/powerpc/c/39c8bf2b3cc166a2a75111e4941cc5f7efbddc35
+[2/2] powerpc: Remove ucache_bsize
+      https://git.kernel.org/powerpc/c/8817aabb1bdd5811130f94ff6442bb19c9158a3a
 
 cheers
