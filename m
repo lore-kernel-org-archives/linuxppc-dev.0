@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98C65C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20EDFC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:38:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0AB323D6B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:36:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0AB323D6B
+	by mail.kernel.org (Postfix) with ESMTPS id 79B3623B70
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:38:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79B3623B70
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs81Y0D4ZzDqfC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:36:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs83W24jnzDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:37:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
  helo=mail.baikalelectronics.ru;
@@ -28,17 +28,17 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
 Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
  [87.245.175.226])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7S15CLJzDqhN
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7S21sRLzDqjR
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 20:10:41 +1100 (AEDT)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Chunfeng Yun
  <chunfeng.yun@mediatek.com>
-Subject: [PATCH v6 11/19] dt-bindings: usb: dwc3: Add interrupt-names property
- support
-Date: Thu, 10 Dec 2020 12:09:35 +0300
-Message-ID: <20201210090944.16283-12-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v6 13/19] dt-bindings: usb: dwc3: Add Tx De-emphasis
+ constraints
+Date: Thu, 10 Dec 2020 12:09:37 +0300
+Message-ID: <20201210090944.16283-14-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -76,9 +76,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The controller driver supports two types of DWC USB3 devices: with a
-common interrupt lane and with individual interrupts for each mode. Add
-support for both these cases to the DWC USB3 DT schema.
+In accordance with the driver comments the PIPE3 de-emphasis can be tuned
+to be either -6dB, -2.5dB or disabled. Let's add the de-emphasis
+property constraints so the DT schema would make sure the controller DT
+node is equipped with correct value.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
@@ -86,40 +87,27 @@ Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 
 Changelog v2:
-- Grammar fix: "s/both of these cases support/support for both these cases"
-- Drop quotes from around the string constants.
-
-Changelog v4:
-- Discard the block scalar style modifier "|" from the interrupts property
-  description.
+- Grammar fix: "s/tunned/tuned"
+- Grammar fix: remove redundant "or" conjunction.
 ---
- Documentation/devicetree/bindings/usb/snps,dwc3.yaml | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ Documentation/devicetree/bindings/usb/snps,dwc3.yaml | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-index 57caca8339ae..87a92e313d24 100644
+index 6253bc5fb18e..e01a9a93d74a 100644
 --- a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
 +++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-@@ -34,8 +34,19 @@ properties:
-       const: snps,dwc3
+@@ -156,6 +156,10 @@ properties:
+       The value driven to the PHY is controlled by the LTSSM during USB3
+       Compliance mode.
+     $ref: /schemas/types.yaml#/definitions/uint8
++    enum:
++      - 0 # -6dB de-emphasis
++      - 1 # -3.5dB de-emphasis
++      - 2 # No de-emphasis
  
-   interrupts:
-+    description:
-+      It's either a single common DWC3 interrupt (dwc_usb3) or individual
-+      interrupts for the host, gadget and DRD modes.
-+    minItems: 1
-+    maxItems: 3
-+
-+  interrupt-names:
-     minItems: 1
-     maxItems: 3
-+    oneOf:
-+      - const: dwc_usb3
-+      - items:
-+          enum: [host, peripheral, otg]
- 
-   clocks:
-     description:
+   snps,dis_u3_susphy_quirk:
+     description: When set core will disable USB3 suspend phy
 -- 
 2.29.2
 
