@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3208C4167B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4467AC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:15:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A52AD23B99
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:13:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A52AD23B99
+	by mail.kernel.org (Postfix) with ESMTPS id 6AF6C2343B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 09:15:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AF6C2343B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7Vf73z8zDqnT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:12:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7YL0kJ7zDqpf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Dec 2020 20:15:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
  helo=mail.baikalelectronics.ru;
@@ -28,17 +28,16 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
 Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
  [87.245.175.226])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7Rx23CgzDqhN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 20:10:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Cs7Rx1dhSzDqhH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2020 20:10:35 +1100 (AEDT)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
  <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Chunfeng Yun
  <chunfeng.yun@mediatek.com>
-Subject: [PATCH v6 01/19] dt-bindings: usb: usb-hcd: Detach generic USB
- controller properties
-Date: Thu, 10 Dec 2020 12:09:25 +0300
-Message-ID: <20201210090944.16283-2-Sergey.Semin@baikalelectronics.ru>
+Subject: [PATCH v6 04/19] dt-bindings: usb: Add "ulpi/serial/hsic" PHY types
+Date: Thu, 10 Dec 2020 12:09:28 +0300
+Message-ID: <20201210090944.16283-5-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201210090944.16283-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -76,97 +75,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There can be three distinctive types of the USB controllers: USB hosts,
-USB peripherals/gadgets and USB OTG, which can switch from one role to
-another. In order to have that hierarchy handled in the DT binding files,
-we need to collect common properties in a common DT schema and specific
-properties in dedicated schemas. Seeing the usb-hcd.yaml DT schema is
-dedicated for the USB host controllers only, let's move some common
-properties from there into the usb.yaml schema. So the later would be
-available to evaluate all currently supported types of the USB
-controllers.
-
-While at it add an explicit "additionalProperties: true" into the
-usb-hcd.yaml as setting the additionalProperties/unevaluateProperties
-properties is going to be get mandatory soon.
+Aside from the UTMI+ there are also ULPI, Serial and HSIC PHY types
+that can be specified in the phy_type HCD property. Add them to the
+enumeration of the acceptable values.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
 
+Changelog v2:
+- Grammar fix: "s/PHY types can be/PHY types that can be"
+- Drop quotes from around the string constants.
+
 Changelog v4:
-- This is a new patch created as a result of the comment left
-  by Chunfeng Yun in v3
-
-Changelog v5:
-- Discard duplicated additionalProperties property definition.
+- Move the new PHY types definitions into the usb.yaml schema where the
+  phy_type property is now defined.
 ---
- .../devicetree/bindings/usb/usb-hcd.yaml      | 14 ++-------
- .../devicetree/bindings/usb/usb.yaml          | 29 +++++++++++++++++++
- 2 files changed, 31 insertions(+), 12 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/usb/usb.yaml
+ Documentation/devicetree/bindings/usb/usb.yaml | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/usb-hcd.yaml b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-index b545b087b342..81f3ad1419d8 100644
---- a/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-+++ b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-@@ -9,18 +9,8 @@ title: Generic USB Host Controller Device Tree Bindings
- maintainers:
-   - Greg Kroah-Hartman <gregkh@linuxfoundation.org>
- 
--properties:
--  $nodename:
--    pattern: "^usb(@.*)?"
--
--  phys:
--    $ref: /schemas/types.yaml#/definitions/phandle-array
--    description:
--      List of all the USB PHYs on this HCD
--
--  phy-names:
--    description:
--      Name specifier for the USB PHY
-+allOf:
-+  - $ref: usb.yaml#
- 
- additionalProperties: true
- 
 diff --git a/Documentation/devicetree/bindings/usb/usb.yaml b/Documentation/devicetree/bindings/usb/usb.yaml
-new file mode 100644
-index 000000000000..941ad59fbac5
---- /dev/null
+index aab74c671ccc..53144c4600c0 100644
+--- a/Documentation/devicetree/bindings/usb/usb.yaml
 +++ b/Documentation/devicetree/bindings/usb/usb.yaml
-@@ -0,0 +1,29 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/usb/usb.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Generic USB Controller Device Tree Bindings
-+
-+maintainers:
-+  - Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-+
-+select: false
-+
-+properties:
-+  $nodename:
-+    pattern: "^usb(@.*)?"
-+
-+  phys:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description:
-+      List of all the USB PHYs on this HCD
-+
-+  phy-names:
-+    description:
-+      Name specifier for the USB PHY
-+
-+additionalProperties: true
-+
-+...
+@@ -27,11 +27,13 @@ properties:
+   phy_type:
+     description:
+       Tells USB controllers that we want to configure the core to support a
+-      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected. In case
+-      this isn't passed via DT, USB controllers should default to HW
+-      capability.
++      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected, UTMI+ low
++      pin interface if ULPI is specified, Serial core/PHY interconnect if
++      serial is specified and High-Speed Inter-Chip feature if HSIC is
++      selected. In case this isn't passed via DT, USB controllers should
++      default to HW capability.
+     $ref: /schemas/types.yaml#/definitions/string
+-    enum: [utmi, utmi_wide]
++    enum: [utmi, utmi_wide, ulpi, serial, hsic]
+ 
+   maximum-speed:
+     description:
 -- 
 2.29.2
 
