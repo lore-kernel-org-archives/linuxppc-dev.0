@@ -2,61 +2,98 @@ Return-Path: <SRS0=d9E3=FP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57930C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 08:53:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4117BC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 10:19:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52A2D23BAB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 08:53:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52A2D23BAB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 1DC7423DE3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 10:19:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DC7423DE3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Csl295vbQzDqhn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 19:53:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.helo=cstnet.cn
- (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CsmxJ12gJzDqjN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Dec 2020 21:19:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=sachinp@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Csl0K4THdzDqtd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 19:52:17 +1100 (AEDT)
-Received: from localhost.localdomain (unknown [124.16.141.241])
- by APP-05 (Coremail) with SMTP id zQCowAD39Hg+M9NfCkMDAA--.10772S2;
- Fri, 11 Dec 2020 16:52:15 +0800 (CST)
-From: Xu Wang <vulab@iscas.ac.cn>
-To: pantelis.antoniou@gmail.com, davem@davemloft.net, kuba@kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] net: ethernet: fs-enet: remove casting dma_alloc_coherent
-Date: Fri, 11 Dec 2020 08:52:12 +0000
-Message-Id: <20201211085212.85457-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: zQCowAD39Hg+M9NfCkMDAA--.10772S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7Xw15CFWrWFyUJry5KrWfZrb_yoWfZwc_ur
- srZFn7Ww4UJryFyw48KrW3Zr929FZ0va1rZF1vgayaqr9Fvrn5W34UZr1fXF13ur48uFZ8
- Zwnxtry3A345KjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUIcSsGvfJTRUUUb2xYjsxI4VWkCwAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I
- 6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM2
- 8CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW7JVWDJwA2z4x0Y4vE2Ix0
- cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I
- 8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
- 64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1q6rW5McIj6I8E87Iv67AKxVW8Jr0_Cr
- 1UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY02Avz4vE14v_GFyl42xK
- 82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGw
- C20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48J
- MIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMI
- IF0xvE42xK8VAvwI8IcIk0rVW3JVWrJr1lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2
- z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjxUxb4SUUUUU
-X-Originating-IP: [124.16.141.241]
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBgkHA10Te1Xx+wAAsh
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=m7FzLYZn; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Csmtn18V8zDqjR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2020 21:17:36 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BBAGwwF074214; Fri, 11 Dec 2020 05:17:27 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : content-type :
+ content-transfer-encoding : mime-version : subject : message-id : date :
+ cc : to; s=pp1; bh=cJo3FD1gxYOwY0LIyw6A5+s78o3OR4yDCSUXOBP1EbQ=;
+ b=m7FzLYZnL6BCmhUTXnJCiqJCK6ppQ3w7JpVc3EPf3UEeAQen1M5rxEVFVFLgIJP8yQUt
+ 5Pcd4v7C9lU7WEg5hSXIidEazeReR5xSkhcW/5XWqJtRpSzSXPgtIbPSmSp2SVqEtCb5
+ p7iBCNNOVQC2Y+NjNmougUvsgi8Yu2VKHiAkD7Gt9QlcAd76nrGoFKKJ4Btgp+IFEaeZ
+ +aCOjAxG2B3sTSVMiYI74WxtQ1TNK2QovpZ9AHp92Qlx405VknxeY1HrgwOIMT3A71Vh
+ DWr0MVxQmCestPHp28I6uIWod+ONb8GyKVuaXPdKFZL3Le/VV5ai3d5fejeed3bN4Ium vA== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35c6vp00eg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 11 Dec 2020 05:17:27 -0500
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BBA8OGA012130;
+ Fri, 11 Dec 2020 10:17:26 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma05fra.de.ibm.com with ESMTP id 35958q2nak-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 11 Dec 2020 10:17:25 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BBAHNM227591092
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 11 Dec 2020 10:17:23 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9A355A404D;
+ Fri, 11 Dec 2020 10:17:23 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26AF0A4051;
+ Fri, 11 Dec 2020 10:17:23 +0000 (GMT)
+Received: from [9.199.49.30] (unknown [9.199.49.30])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 11 Dec 2020 10:17:22 +0000 (GMT)
+From: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.17\))
+Subject: [powerpc/merge] System crash during cpu offline/online operation 
+Message-Id: <F4809152-C7F5-4ED8-B071-85A9115BD29D@linux.vnet.ibm.com>
+Date: Fri, 11 Dec 2020 15:47:21 +0530
+To: linuxppc-dev@lists.ozlabs.org
+X-Mailer: Apple Mail (2.3445.104.17)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-11_01:2020-12-09,
+ 2020-12-11 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 mlxlogscore=894
+ impostorscore=0 mlxscore=0 suspectscore=1 adultscore=0 priorityscore=1501
+ spamscore=0 bulkscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012110061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,31 +105,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove casting the values returned by dma_alloc_coherent.
+I am observing system crash during a cpu offline/online operation
+with latest merge branch code running in a PowerVM LPAR (P8 onwards)
 
-Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+# uname -r
+5.10.0-rc7-01792-g244569c777ca
+# ppc64_cpu --smt=3D1
+[  244.205194] cpu 1 (hwid 1) Ready to die=E2=80=A6
+=E2=80=A6=E2=80=A6=E2=80=A6
+=E2=80=A6=E2=80=A6...
+[  247.015113] cpu 30 (hwid 30) Ready to die...
+[  247.104973] cpu 31 (hwid 31) Ready to die=E2=80=A6
+# ppc64_cpu --smt=3D8
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index 99fe2c210d0f..3ae345676e50 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -131,7 +131,7 @@ static int allocate_bd(struct net_device *dev)
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	const struct fs_platform_info *fpi = fep->fpi;
- 
--	fep->ring_base = (void __force __iomem *)dma_alloc_coherent(fep->dev,
-+	fep->ring_base = dma_alloc_coherent(fep->dev,
- 					    (fpi->tx_ring + fpi->rx_ring) *
- 					    sizeof(cbd_t), &fep->ring_mem_addr,
- 					    GFP_KERNEL);
--- 
-2.17.1
+At this point the LPAR reboots instantly without any trace message.
 
+IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM =
+IBM IBM=20
+=E2=80=A6=E2=80=A6=E2=80=A6..
+=E2=80=A6=E2=80=A6=E2=80=A6..
+IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM IBM =
+IBM IBM=20
+
+          1 =3D SMS Menu                          5 =3D Default Boot =
+List
+          8 =3D Open Firmware Prompt              6 =3D Stored Boot List
+          9 =3D Restricted Open Firmware Prompt
+
+=E2=80=A6=E2=80=A6.
+=E2=80=A6=E2=80=A6.
+
+merge commit 9acd775e45 (based on rc6) was good. Mainline 5.10.0-rc7 =
+also does
+not exhibit this problem.=20
+
+Thanks
+-Sachin
+=20=
