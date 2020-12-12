@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D662C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Dec 2020 16:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 002CBC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Dec 2020 16:09:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49A2622AAF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Dec 2020 16:07:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49A2622AAF
+	by mail.kernel.org (Postfix) with ESMTPS id 22EA7230FF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Dec 2020 16:09:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22EA7230FF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=wanadoo.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CtXbv16wszDqmC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 03:07:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CtXdj5YgjzDqRr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 03:08:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=wanadoo.fr
  (client-ip=80.12.242.128; helo=smtp.smtpout.orange.fr;
@@ -30,21 +30,21 @@ Received: from smtp.smtpout.orange.fr (smtp06.smtpout.orange.fr
  [80.12.242.128])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CtXYw2zHyzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2020 03:05:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CtXZl1mvvzDqYq
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2020 03:06:22 +1100 (AEDT)
 Received: from localhost.localdomain ([93.22.36.60]) by mwinf5d29 with ME
- id 3U5G2400D1HrHD103U5HaS; Sat, 12 Dec 2020 17:05:22 +0100
+ id 3U6E240181HrHD103U6Efl; Sat, 12 Dec 2020 17:06:16 +0100
 X-ME-Helo: localhost.localdomain
 X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 12 Dec 2020 17:05:22 +0100
+X-ME-Date: Sat, 12 Dec 2020 17:06:16 +0100
 X-ME-IP: 93.22.36.60
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 To: leoyang.li@nxp.com, zw@zh-kernel.org, vkoul@kernel.org,
- dan.j.williams@intel.com, timur@freescale.com
-Subject: [PATCH 1/2] dmaengine: fsldma: Fix a resource leak in the remove
- function
-Date: Sat, 12 Dec 2020 17:05:16 +0100
-Message-Id: <20201212160516.92515-1-christophe.jaillet@wanadoo.fr>
+ dan.j.williams@intel.com, iws@ovro.caltech.edu
+Subject: [PATCH 2/2] dmaengine: fsldma: Fix a resource leak in an error
+ handling path of the probe function
+Date: Sat, 12 Dec 2020 17:06:14 +0100
+Message-Id: <20201212160614.92576-1-christophe.jaillet@wanadoo.fr>
 X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -66,36 +66,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A 'irq_dispose_mapping()' call is missing in the remove function.
-Add it.
+In case of error, the previous 'fsl_dma_chan_probe()' calls must be undone
+by some 'fsl_dma_chan_remove()', as already done in the remove function.
 
-This is needed to undo the 'irq_of_parse_and_map() call from the probe
-function and already part of the error handling path of the probe function.
+It was added in the remove function in commit 77cd62e8082b ("fsldma: allow
+Freescale Elo DMA driver to be compiled as a module")
 
-It was added in the probe function only in commit d3f620b2c4fe ("fsldma:
-simplify IRQ probing and handling")
-
-Fixes: 77cd62e8082b ("fsldma: allow Freescale Elo DMA driver to be compiled as a module")
+Fixes: d3f620b2c4fe ("fsldma: simplify IRQ probing and handling")
 Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
 Patch provided as-is.
 I don't have the configuration to compile test this patch
 ---
- drivers/dma/fsldma.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/dma/fsldma.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 0feb323bae1e..554f70a0c18c 100644
+index 554f70a0c18c..f8459cc5315d 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -1314,6 +1314,7 @@ static int fsldma_of_remove(struct platform_device *op)
- 		if (fdev->chan[i])
- 			fsl_dma_chan_remove(fdev->chan[i]);
- 	}
-+	irq_dispose_mapping(fdev->irq);
+@@ -1214,6 +1214,7 @@ static int fsldma_of_probe(struct platform_device *op)
+ {
+ 	struct fsldma_device *fdev;
+ 	struct device_node *child;
++	unsigned int i;
+ 	int err;
  
+ 	fdev = kzalloc(sizeof(*fdev), GFP_KERNEL);
+@@ -1292,6 +1293,10 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	return 0;
+ 
+ out_free_fdev:
++	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
++		if (fdev->chan[i])
++			fsl_dma_chan_remove(fdev->chan[i]);
++	}
+ 	irq_dispose_mapping(fdev->irq);
  	iounmap(fdev->regs);
- 	kfree(fdev);
+ out_free:
 -- 
 2.27.0
 
