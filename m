@@ -2,63 +2,64 @@ Return-Path: <SRS0=3zte=FR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E446C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 19:41:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE4D7C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 19:43:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5FCE20754
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 19:41:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5FCE20754
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id CE77A20754
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 19:43:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE77A20754
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CvFJ36TtmzDqSd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 06:41:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=90.155.50.34; helo=casper.infradead.org;
- envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CvFLJ5MKHzDqS5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 06:43:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CvFFt1BBtzDqRN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2020 06:39:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
- :Reply-To:Content-ID:Content-Description;
- bh=gtkC2cwUyIZHi2THFuqJZjqPt1krJsPvyreKUidD7mw=; b=Ch83eRaVuMImRjym8HnQzBa5XQ
- dVYR4G4EuxcCPragNt7sSP0FkCy7XSei5yKmrQE90qh1M5Pi1XjPnaNKEchmnAQSmJwEpLWjcPcvB
- rdzVOHEihCHC95LRzGBF990z4UEUUoEDT8lgtYMEDsJlDJZEHvijvg/8k5I+Y3/Li6+F0301OPNuw
- /ABD5ONp0bVNbr+H+cMEaNCL09swp3D03xKk4HK04ES08EkdskHaf+C1jHXdEgUrDF0dz4rlxBp5q
- Mhv3zCy6EbT2AQyLC6sQLOIq9c6EAFOVHv0Yk6SEVVQyq2D6h+QFB5dFCo72UNduxHsvwg6l9ZJut
- z9lGfXJA==;
-Received: from [2602:306:c5a2:a380:9e7b:efff:fe40:2b26]
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1koXCT-0005tq-MO; Sun, 13 Dec 2020 19:38:33 +0000
-Subject: Re: [PATCH] powerpc/ps3: use dma_mapping_error()
-To: =?UTF-8?Q?Vincent_Stehl=c3=a9?= <vincent.stehle@laposte.net>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20201213182622.23047-1-vincent.stehle@laposte.net>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <a1aa680e-5eca-6c09-0e57-da7f09d99f9f@infradead.org>
-Date: Sun, 13 Dec 2020 11:38:31 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CvFG42ws7zDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2020 06:39:21 +1100 (AEDT)
+Received: by mail-ot1-f65.google.com with SMTP id a109so13672200otc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2020 11:39:21 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=9CtsVDwoNbPTm3v5e+HpA6cbwiDsDEPWbKL4B1oehZc=;
+ b=EueKIyLJzlW/Dep0Xkoirj0DLctrPbVZ1ZUnUfAY9NyS/HVAM9ouT4lloaLObt71yp
+ OwIbbIIbyZc9/tx3A5cy8Or3NAljTw3W9fE8NRw8dP+a8apA2XVJ93vi+pIl6YRsGOYE
+ j2UyOkNy/oEjJtPREp5Me3OIu6VMxKydlnYhEmk59/ZK9l19lv/NWefOC8GVJxgJyGnL
+ LDjtgrUHwmil6Uwt1YDr4oALu/rAfmJTMZ49qzNWG52BmjOcXu34EWarOcXStV1J2lCQ
+ dmfCpIMskCNkhMUYGQR5iDEuOMp6ubizyGwYa9U8TA+LkynNhJMr3eCuU+fjIL1zNKK6
+ 88IA==
+X-Gm-Message-State: AOAM531ISR3PDuJObI/cgYTGOaAVrt87OVumi2Wme4XHqSuqhpfGe6zh
+ +JV95BDINdRk1ZPatF1uhSzWFysSPKZKxGqr/cU=
+X-Google-Smtp-Source: ABdhPJwC4wvQQzNa66xLyDbpxyVUlVclWiUrLQIUV9Yw9yMKCbEGzT4yJtkd0MM8nhOTjUfp24qRgmJ/l4peJF8rnLo=
+X-Received: by 2002:a05:6830:210a:: with SMTP id
+ i10mr17149997otc.145.1607888359063; 
+ Sun, 13 Dec 2020 11:39:19 -0800 (PST)
 MIME-Version: 1.0
+References: <20201213182622.23047-1-vincent.stehle@laposte.net>
 In-Reply-To: <20201213182622.23047-1-vincent.stehle@laposte.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 13 Dec 2020 20:39:07 +0100
+Message-ID: <CAMuHMdXphVnZneudRR48+asCSGzXDVvBxaAQCtrZ3P-cEGHz4w@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/ps3: use dma_mapping_error()
+To: =?UTF-8?Q?Vincent_Stehl=C3=A9?= <vincent.stehle@laposte.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,23 +71,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Geoff Levand <geoff@infradead.org>,
+ Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/13/20 10:26 AM, Vincent Stehlé wrote:
+On Sun, Dec 13, 2020 at 8:06 PM Vincent Stehl=C3=A9
+<vincent.stehle@laposte.net> wrote:
 > The DMA address returned by dma_map_single() should be checked with
 > dma_mapping_error(). Fix the ps3stor_setup() function accordingly.
-> 
+>
 > Fixes: 80071802cb9c ("[POWERPC] PS3: Storage Driver Core")
-> Signed-off-by: Vincent Stehlé <vincent.stehle@laposte.net>
-> Cc: Geoff Levand <geoff@infradead.org>
-> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  drivers/ps3/ps3stor_lib.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Signed-off-by: Vincent Stehl=C3=A9 <vincent.stehle@laposte.net>
 
-Looks good.  Thanks for submitting.
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Acked by: Geoff Levand <geoff@infradead.org>
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
