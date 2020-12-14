@@ -1,81 +1,88 @@
-Return-Path: <SRS0=3zte=FR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=7zcf=FS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AAE4C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 20:47:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C70DC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 02:05:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BCB8922262
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Dec 2020 20:47:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCB8922262
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=laposte.net
+	by mail.kernel.org (Postfix) with ESMTPS id 5C66321D94
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 02:05:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C66321D94
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CvGmR2XPczDqSd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 07:47:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CvPr40mkzzDqSB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Dec 2020 13:05:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=laposte.net (client-ip=160.92.124.102;
- helo=smtp-outgoing.laposte.net; envelope-from=vincent.stehle@laposte.net;
+ smtp.mailfrom=joelfernandes.org (client-ip=2607:f8b0:4864:20::843;
+ helo=mail-qt1-x843.google.com; envelope-from=joel@joelfernandes.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=laposte.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=laposte.net header.i=@laposte.net header.a=rsa-sha256
- header.s=lpn-wlmd header.b=eqPlee6n; dkim-atps=neutral
-X-Greylist: delayed 7239 seconds by postgrey-1.36 at bilbo;
- Mon, 14 Dec 2020 07:28:31 AEDT
-Received: from smtp-outgoing.laposte.net (smtp-outgoing.laposte.net
- [160.92.124.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.a=rsa-sha256 header.s=google header.b=jIFuMyW0; 
+ dkim-atps=neutral
+Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
+ [IPv6:2607:f8b0:4864:20::843])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CvGLl5Kf0zDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2020 07:28:21 +1100 (AEDT)
-X-mail-filterd: {"version":"1.2.0", "queueID":"4CvCg925zrz10MQY",
- "contextId":"65b9d905-9a9e-4f5c-9967-0d45e91ce3a2"}
-Received: from outgoing-mail.laposte.net (localhost.localdomain [127.0.0.1])
- by mlpnf0103.laposte.net (SMTP Server) with ESMTP id 4CvCg925zrz10MQY;
- Sun, 13 Dec 2020 19:27:33 +0100 (CET)
-X-mail-filterd: {"version":"1.2.0", "queueID":"4CvCf7035Dz10MQV",
- "contextId":"b7eefe2d-5cd9-468a-9753-f7e7ca878663"}
-X-lpn-mailing: LEGIT
-X-lpn-spamrating: 36
-X-lpn-spamlevel: not-spam
-X-lpn-spamcause: OK,
- (-100)(0000)gggruggvucftvghtrhhoucdtuddrgedujedrudekiedguddufecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfntefrqffuvffgpdfqfgfvpdggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofggtgfgsehtkeertdertdejnecuhfhrohhmpeggihhntggvnhhtucfuthgvhhhlrocuoehvihhntggvnhhtrdhsthgvhhhlvgeslhgrphhoshhtvgdrnhgvtheqnecuggftrfgrthhtvghrnhepteeivdehieejtdfgledvgffhvedtveejhefftdeukeeuieduudetjeektdeuffetnecukfhppeekkedruddvuddrudegledrgeelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehhvghloheprhhomhhurghlugdrsggvrhhgvghrihgvpdhinhgvthepkeekrdduvddurddugeelrdegledpmhgrihhlfhhrohhmpehvihhntggvnhhtrdhsthgvhhhlvgeslhgrphhoshhtvgdrnhgvthdprhgtphhtthhopehgvghofhhfsehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepvhhinhgtvghnthdrshhtvghhlhgvsehlrghpohhsthgvrdhnvghtpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-Received: from romuald.bergerie (unknown [88.121.149.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mlpnf0103.laposte.net (SMTP Server) with ESMTPSA id 4CvCf7035Dz10MQV;
- Sun, 13 Dec 2020 19:26:36 +0100 (CET)
-Received: from radicelle.bergerie (radicelle.bergerie [192.168.124.12])
- by romuald.bergerie (Postfix) with ESMTPS id 1BD413DF32AF;
- Sun, 13 Dec 2020 19:26:36 +0100 (CET)
-Received: from vincent by radicelle.bergerie with local (Exim 4.94)
- (envelope-from <vincent@radicelle.bergerie>)
- id 1koW4p-00060T-P4; Sun, 13 Dec 2020 19:26:35 +0100
-From: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@laposte.net>
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/ps3: use dma_mapping_error()
-Date: Sun, 13 Dec 2020 19:26:22 +0100
-Message-Id: <20201213182622.23047-1-vincent.stehle@laposte.net>
-X-Mailer: git-send-email 2.29.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CvPny0PCmzDqQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2020 13:04:02 +1100 (AEDT)
+Received: by mail-qt1-x843.google.com with SMTP id 7so10949441qtp.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2020 18:04:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=3joCMQEgMYTRWtwvNU8XfkRxQvl1XcPWoJqmHhlAjNg=;
+ b=jIFuMyW0CXPwPbzjytq1fyl28f5h7j18cK1dq9/kuoMitNcBn2VPPr+iiAdwiyshf8
+ Sass69snymAmlv2w9RPxsB1q6+LKmXCPfpDzo0XV15UccAlREbVBq+V+jHCI6ci5QwI2
+ xW3KXMx8jhphyq6rezDemv6LqKppWr9EI6OjM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=3joCMQEgMYTRWtwvNU8XfkRxQvl1XcPWoJqmHhlAjNg=;
+ b=Si5xss+9e3i0J+PGZJrZ0dh8e7FaaNsNb+SW3Bt6YlN2zzNxMGjnBkTMKHdWZioCkL
+ JtFKrH5JoIu4O4OabD+HJYBXbFyNM9liXdsyygwMVfRnVe9Sib5Vi2g5Kx+570N6tN18
+ lhVvIcqP5feGabhIxSfQvZc4waqQtwBBnYS5M6qF/Jik+3Td+j2aX+yMbMGsC2LFL+y1
+ grDzjnU0cvPGbFu1CcMzTGFa1pYR3Nsbkm6f+4vKgfuDsB1hZ3orW0y8jofi84U2hMBS
+ y2g56qeHmhQnETlSwU87bE7muKDaqFPUGuukH/wooClUFrQ/13qTT1uqIjPQQ6YxPjzo
+ I1jg==
+X-Gm-Message-State: AOAM533baiRjBKv7BD9O1QYafnKTnPTcNFwtqHBsOt34G3LIn4QIQ1Qd
+ Q03A3XoYvVAzbc++alWKNG4NbQ==
+X-Google-Smtp-Source: ABdhPJyNrnChYZI79mij49ui4I23lfJGjf54I4Witq/Vsja69LURczot4O1GWdNPlqyHDHsWm5RREQ==
+X-Received: by 2002:ac8:6758:: with SMTP id n24mr29731870qtp.258.1607911438765; 
+ Sun, 13 Dec 2020 18:03:58 -0800 (PST)
+Received: from localhost ([2620:15c:6:411:cad3:ffff:feb3:bd59])
+ by smtp.gmail.com with ESMTPSA id g63sm13912475qkf.80.2020.12.13.18.03.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 13 Dec 2020 18:03:57 -0800 (PST)
+Date: Sun, 13 Dec 2020 21:03:56 -0500
+From: Joel Fernandes <joel@joelfernandes.org>
+To: Chinwen Chang <chinwen.chang@mediatek.com>
+Subject: Re: [PATCH v12 00/31] Speculative page faults
+Message-ID: <X9bIDHZbe4MB+BAg@google.com>
+References: <20190416134522.17540-1-ldufour@linux.ibm.com>
+ <20190606065129.d5s3534p23twksgp@haiyan.sh.intel.com>
+ <3d3cefa2-0ebb-e86d-b060-7ba67c48a59f@linux.ibm.com>
+ <1c412ebe-c213-ee67-d261-c70ddcd34b79@linux.ibm.com>
+ <20190620081945.hwj6ruqddefnxg6z@haiyan.sh.intel.com>
+ <1594027500.30360.32.camel@mtkswgap22>
+ <490c0811-50cd-0802-2cbc-9c031ef309f6@linux.ibm.com>
+ <1594099897.30360.58.camel@mtkswgap22>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=laposte.net; s=lpn-wlmd;
- t=1607891296; bh=YIAg0xdLhTfsQSKbEzRITi543Hxi26DWrI5pNv7EPQE=;
- h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding;
- b=eqPlee6n1jjiOK8BI6U4pdPfCdtwMul3SDeBCp2YLo4qOdB4uw4nvN2jOwAHcB3EoOFbB1+/XGq01mEvTjH4WmECLwLJeMzwiarvY9Zwb4pYCRzvTiZdagJgkDSSZ79SLNqj+eiyhq03n+Nm3eFow3DShNmF2WFYXSbFiizoPv4QyqaSHu4Syn2T3kdL6gOKx6cgp1/OAHNx5aYLfo8ZjMXc5XVANh0Bg8Vu86pNmIrKWVe1inlpWdV+jDP8TUuJJWh4W3wO4CA2+bL68roW7iE1GGlzL25tNz6Yab8sv+nRLJYr3p3RdeFK5k/H1pXOSuyREGTJBTZr1xpbYogwGA==;
-X-Mailman-Approved-At: Mon, 14 Dec 2020 07:43:52 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1594099897.30360.58.camel@mtkswgap22>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,38 +94,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>,
- Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
- =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@laposte.net>
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
+ Michel Lespinasse <walken@google.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ zhong jiang <zhongjiang@huawei.com>, David Rientjes <rientjes@google.com>,
+ paulmck@linux.vnet.ibm.com, npiggin@gmail.com, sj38.park@gmail.com,
+ Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net, kemi.wang@intel.com,
+ kirill@shutemov.name, Thomas Gleixner <tglx@linutronix.de>,
+ Laurent Dufour <ldufour@linux.ibm.com>, Haiyan Song <haiyanx.song@intel.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, miles.chen@mediatek.com,
+ vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The DMA address returned by dma_map_single() should be checked with
-dma_mapping_error(). Fix the ps3stor_setup() function accordingly.
+On Tue, Jul 07, 2020 at 01:31:37PM +0800, Chinwen Chang wrote:
+[..]
+> > > Hi Laurent,
+> > > 
+> > > We merged SPF v11 and some patches from v12 into our platforms. After
+> > > several experiments, we observed SPF has obvious improvements on the
+> > > launch time of applications, especially for those high-TLP ones,
+> > > 
+> > > # launch time of applications(s):
+> > > 
+> > > package           version      w/ SPF      w/o SPF      improve(%)
+> > > ------------------------------------------------------------------
+> > > Baidu maps        10.13.3      0.887       0.98         9.49
+> > > Taobao            8.4.0.35     1.227       1.293        5.10
+> > > Meituan           9.12.401     1.107       1.543        28.26
+> > > WeChat            7.0.3        2.353       2.68         12.20
+> > > Honor of Kings    1.43.1.6     6.63        6.713        1.24
+> > 
+> > That's great news, thanks for reporting this!
+> > 
+> > > 
+> > > By the way, we have verified our platforms with those patches and
+> > > achieved the goal of mass production.
+> > 
+> > Another good news!
+> > For my information, what is your targeted hardware?
+> > 
+> > Cheers,
+> > Laurent.
+> 
+> Hi Laurent,
+> 
+> Our targeted hardware belongs to ARM64 multi-core series.
 
-Fixes: 80071802cb9c ("[POWERPC] PS3: Storage Driver Core")
-Signed-off-by: Vincent Stehl=C3=A9 <vincent.stehle@laposte.net>
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/ps3/ps3stor_lib.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hello!
 
-diff --git a/drivers/ps3/ps3stor_lib.c b/drivers/ps3/ps3stor_lib.c
-index 333ba83006e48..a12a1ad9b5fe3 100644
---- a/drivers/ps3/ps3stor_lib.c
-+++ b/drivers/ps3/ps3stor_lib.c
-@@ -189,7 +189,7 @@ int ps3stor_setup(struct ps3_storage_device *dev, irq=
-_handler_t handler)
- 	dev->bounce_lpar =3D ps3_mm_phys_to_lpar(__pa(dev->bounce_buf));
- 	dev->bounce_dma =3D dma_map_single(&dev->sbd.core, dev->bounce_buf,
- 					 dev->bounce_size, DMA_BIDIRECTIONAL);
--	if (!dev->bounce_dma) {
-+	if (dma_mapping_error(&dev->sbd.core, dev->bounce_dma)) {
- 		dev_err(&dev->sbd.core, "%s:%u: map DMA region failed\n",
- 			__func__, __LINE__);
- 		error =3D -ENODEV;
---=20
-2.29.2
+I was trying to develop an intuition about why does SPF give improvement for
+you on small CPU systems. This is just a high-level theory but:
+
+1. Assume the improvement is because of elimination of "blocking" on
+mmap_sem.
+Could it be that the mmap_sem is acquired in write-mode unnecessarily in some
+places, thus causing blocking on mmap_sem in other paths? If so, is it
+feasible to convert such usages to acquiring them in read-mode?
+
+2. Assume the improvement is because of lesser read-side contention on
+mmap_sem.
+On small CPU systems, I would not expect reducing cache-line bouncing to give
+such a dramatic improvement in performance as you are seeing.
+
+Thanks for any insight on this!
+
+- Joel
 
