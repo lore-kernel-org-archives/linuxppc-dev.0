@@ -2,65 +2,56 @@ Return-Path: <SRS0=AMrL=FT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75A7CC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 01:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 139BFC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 02:17:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36696207F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 01:44:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36696207F7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 22FC8206CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 02:17:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22FC8206CB
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cw1JJ2QDYzDqNm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 12:44:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cw2366NDbzDqB7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 13:17:38 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cw1GN3qHyzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 12:42:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cw20y19MKzDqN5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 13:15:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=BeFxFdEj; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4Cw1GN2D1lz9sTL; Tue, 15 Dec 2020 12:42:20 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Cw1GM0NWLz9sSn;
- Tue, 15 Dec 2020 12:42:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1607996539;
- bh=6oWLYlvy/p6VPH/WXrnrnV+hhO4Hc6Ka5vCkE2RI3rE=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=BeFxFdEjO26HErXnFjj6wEjcI7xTN1UwS6cwKtRTzgNVcFYFcl3ett/q+ISRTG7h+
- xT77ig8gLBIGmu/uW3DryVaYbjpndcfNCiuiGBZJkQFLsXSK+z5jLdTPf8Po7sRk6g
- YeuA1+PBPyi0kAt46n3bCXnWuhz5dhcSQ4uP7H38jf0Sk8lqM7iNWYDN4PCOiPziqm
- wrIBD2dPXuljzP4SPyMDzYYO/9z2+APg2OyLf9hP8JFN0PymkVeP/FI76+0rxvr22K
- 8CYibfFvE3NvZUIXDJpIlnD9t5DxGPCZNjDN4WXqLrc0BUrAfpArXziZRzK9gZOjKI
- MD2+CCZUOFBMA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Inline setup_kup()
-In-Reply-To: <09e673ec-6d4e-2e8d-b843-018ce94142a4@csgroup.eu>
-References: <20201214123011.311024-1-mpe@ellerman.id.au>
- <09e673ec-6d4e-2e8d-b843-018ce94142a4@csgroup.eu>
-Date: Tue, 15 Dec 2020 12:42:15 +1100
-Message-ID: <87czzbzvyg.fsf@mpe.ellerman.id.au>
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=a1eIbgUR; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 4Cw20x5ZWFz9sRR; Tue, 15 Dec 2020 13:15:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1607998545; bh=HIoL3hYia/VL0H8kxL6qHX8RQtpD9XmN0+Gy2vsT9c0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=a1eIbgUR8izZ8apPi6OAsVBqalg61msyq1wD1KLkArhkC7vAdmdAS17cb/B+XGiWp
+ jnZ6skMXJvFPwVxQq2KWtYBYNCjp+ZdBVksqX/q+xu/6IcPTL+DGNa0lQK9QX9KpMd
+ eHLkop+Fe+3aemWoK7rxsXDWTBAMk70i53x0QzNnkfPsj7+iE+QRjKRDLMk/zVLlWR
+ dPrVU8f7K6tz7iljIYbmoKtqSGc8DVZPqx+kryU/lV8eI1m1OL9oAyasRL9N6ibJF3
+ NjtCVm4ByCnE/nASHWNADKGa3k/ogFFdYirxOzRfsPCop290p0shx2iF0WTPCqkfn8
+ FJNGj5C+s9XOw==
+Date: Tue, 15 Dec 2020 13:15:23 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Leonardo Bras <leobras.c@gmail.com>
+Subject: Re: [PATCH v2 1/1] powerpc/kvm: Fix mask size for emulated msgsndp
+Message-ID: <20201215021523.GC2441086@thinks.paulus.ozlabs.org>
+References: <20201208215707.31149-1-leobras.c@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201208215707.31149-1-leobras.c@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,58 +63,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 14/12/2020 =C3=A0 13:30, Michael Ellerman a =C3=A9crit=C2=A0:
->> setup_kup() is used by both 64-bit and 32-bit code. However on 64-bit
->> it must not be __init, because it's used for CPU hotplug, whereas on
->> 32-bit it should be __init because it calls setup_kuap/kuep() which
->> are __init.
->>=20
->> We worked around that problem in the past by marking it __ref, see
->> commit 67d53f30e23e ("powerpc/mm: fix section mismatch for
->> setup_kup()").
->>=20
->> Marking it __ref basically just omits it from section mismatch
->> checking, which can lead to bugs, and in fact it did, see commit
->> 44b4c4450f8d ("powerpc/64s: Mark the kuap/kuep functions non __init")
->>=20
->> We can avoid all these problems by just making it static inline.
->> Because all it does is call other functions, making it inline actually
->> shrinks the 32-bit vmlinux by ~76 bytes.
->>=20
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->>   arch/powerpc/include/asm/kup.h | 8 ++++++--
->>   arch/powerpc/mm/init-common.c  | 6 ------
->>   2 files changed, 6 insertions(+), 8 deletions(-)
->>=20
->> diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/k=
-up.h
->> index 5a9820c54da9..46b12c6dc728 100644
->> --- a/arch/powerpc/include/asm/kup.h
->> +++ b/arch/powerpc/include/asm/kup.h
->> @@ -49,8 +49,6 @@ extern bool disable_kuap;
->>=20=20=20
->>   #include <linux/pgtable.h>
->>=20=20=20
->> -void setup_kup(void);
->> -
->>   #ifdef CONFIG_PPC_KUEP
->>   void setup_kuep(bool disabled);
->>   #else
->> @@ -85,6 +83,12 @@ static inline void restore_user_access(unsigned long =
-flags) { }
->>   #endif /* CONFIG_PPC_BOOK3S_64 */
->>   #endif /* CONFIG_PPC_KUAP */
->>=20=20=20
->> +static inline void setup_kup(void)
->
-> Should it be __always_inline ?
+On Tue, Dec 08, 2020 at 06:57:08PM -0300, Leonardo Bras wrote:
+> According to ISAv3.1 and ISAv3.0b, the msgsndp is described to split RB in:
+> msgtype <- (RB) 32:36
+> payload <- (RB) 37:63
+> t       <- (RB) 57:63
+> 
+> The current way of getting 'msgtype', and 't' is missing their MSB:
+> msgtype: ((arg >> 27) & 0xf) : Gets (RB) 33:36, missing bit 32
+> t:       (arg &= 0x3f)       : Gets (RB) 58:63, missing bit 57
+> 
+> Fixes this by applying the correct mask.
+> 
+> Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
 
-Yes I guess so, will fix. Thanks for reviewing.
-
-cheers
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
