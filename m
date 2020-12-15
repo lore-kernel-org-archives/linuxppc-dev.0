@@ -6,35 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F11BC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EE29C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:38:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F238A206E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:33:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F238A206E5
+	by mail.kernel.org (Postfix) with ESMTPS id 85797206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:38:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85797206D5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGNp1GQMzDqRc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:33:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGVD4CSZzDqKH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:38:28 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPG0Y9hzDqMf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPG3FTbzDqMf
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:49:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CwFPF3LJvz9sVv; Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
+ id 4CwFPG1Syhz9s1l; Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20201106045340.1935841-1-npiggin@gmail.com>
-References: <20201106045340.1935841-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: Remove MSR[ISF] bit
-Message-Id: <160802921091.504444.6682684837989830539.b4-ty@ellerman.id.au>
+In-Reply-To: <20201107014336.2337337-1-npiggin@gmail.com>
+References: <20201107014336.2337337-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/64: irq replay remove decrementer overflow
+ check
+Message-Id: <160802921117.504444.4144257266927957221.b4-ty@ellerman.id.au>
 Date: Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -51,14 +52,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 6 Nov 2020 14:53:40 +1000, Nicholas Piggin wrote:
-> No supported processor implements this mode. Setting the bit in
-> MSR values can be a bit confusing (and would prevent the bit from
-> ever being reused). Remove it.
+On Sat, 7 Nov 2020 11:43:36 +1000, Nicholas Piggin wrote:
+> This is way to catch some cases of decrementer overflow, when the
+> decrementer has underflowed an odd number of times, while MSR[EE] was
+> disabled.
+> 
+> With a typical small decrementer, a timer that fires when MSR[EE] is
+> disabled will be "lost" if MSR[EE] remains disabled for between 4.3 and
+> 8.6 seconds after the timer expires. In any case, the decrementer
+> interrupt would be taken at 8.6 seconds and the timer would be found at
+> that point.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: Remove MSR[ISF] bit
-      https://git.kernel.org/powerpc/c/e89a8ca94bf583f2577fe722483f0304b3390aa2
+[1/1] powerpc/64: irq replay remove decrementer overflow check
+      https://git.kernel.org/powerpc/c/59d512e4374b2d8a6ad341475dc94c4a4bdec7d3
 
 cheers
