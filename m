@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FC68C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:01:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C00BC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:03:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C11C22222A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:01:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C11C22222A
+	by mail.kernel.org (Postfix) with ESMTPS id B85462222A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:03:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B85462222A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwFgg5fGGzDqWL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:01:35 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwFjt2Qz4zDqBs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:03:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFP626fBzDqD9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFP664XFzDqD9
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:48:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CwFP56srbz9sTc; Tue, 15 Dec 2020 21:48:57 +1100 (AEDT)
+ id 4CwFP65SKkz9sTg; Tue, 15 Dec 2020 21:48:58 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <6470ab99e58c84a5445af43ce4d1d772b0dc3e93.1606247495.git.christophe.leroy@csgroup.eu>
-References: <6470ab99e58c84a5445af43ce4d1d772b0dc3e93.1606247495.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 1/3] powerpc/32s: Remove unused counters incremented by
- create_hpte()
-Message-Id: <160802921064.504444.15188323739151416876.b4-ty@ellerman.id.au>
-Date: Tue, 15 Dec 2020 21:48:57 +1100 (AEDT)
+In-Reply-To: <e796c5fcb5898de827c803cf1ab8ba1d7a5d4b76.1606231483.git.christophe.leroy@csgroup.eu>
+References: <e796c5fcb5898de827c803cf1ab8ba1d7a5d4b76.1606231483.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 1/6] powerpc/8xx: DEBUG_PAGEALLOC doesn't require an
+ ITLB miss exception handler
+Message-Id: <160802920955.504444.6903217720200398229.b4-ty@ellerman.id.au>
+Date: Tue, 15 Dec 2020 21:48:58 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,18 +55,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 24 Nov 2020 19:51:55 +0000 (UTC), Christophe Leroy wrote:
-> primary_pteg_full and htab_hash_searches are not used.
+On Tue, 24 Nov 2020 15:24:54 +0000 (UTC), Christophe Leroy wrote:
+> Since commit e611939fc8ec ("powerpc/mm: Ensure change_page_attr()
+> doesn't invalidate pinned TLBs"), pinned TLBs are not anymore
+> invalidated by __kernel_map_pages() when CONFIG_DEBUG_PAGEALLOC is
+> selected.
 > 
-> Remove them.
+> Remove the dependency on CONFIG_DEBUG_PAGEALLOC.
 
 Applied to powerpc/next.
 
-[1/3] powerpc/32s: Remove unused counters incremented by create_hpte()
-      https://git.kernel.org/powerpc/c/c5ccb4e78968fbe64f938a5a012fc8ec25cafabf
-[2/3] powerpc/32s: In add_hash_page(), calculate VSID later
-      https://git.kernel.org/powerpc/c/fec6166b44ded68e68144144a02e498580118f1a
-[3/3] powerpc/32s: Cleanup around PTE_FLAGS_OFFSET in hash_low.S
-      https://git.kernel.org/powerpc/c/da481c4fe0e485cdab5cf4d2761be8b8fb38d3d1
+[1/6] powerpc/8xx: DEBUG_PAGEALLOC doesn't require an ITLB miss exception handler
+      https://git.kernel.org/powerpc/c/613df979da6c032cbe6fa273fb8ca21af022157e
+[2/6] powerpc/8xx: Always pin kernel text TLB
+      https://git.kernel.org/powerpc/c/bccc58986a2f98e3af349c85c5f49aac7fb19ef2
+[3/6] powerpc/8xx: Simplify INVALIDATE_ADJACENT_PAGES_CPU15
+      https://git.kernel.org/powerpc/c/576e02bbf1062b9118d5bbb96a40ed3b6b359f22
+[4/6] powerpc/8xx: Use SPRN_SPRG_SCRATCH2 in ITLB miss exception
+      https://git.kernel.org/powerpc/c/a314ea5abf6dbaf35f14c9bd1d93105260fb9336
+[5/6] powerpc/8xx: Use SPRN_SPRG_SCRATCH2 in DTLB miss exception
+      https://git.kernel.org/powerpc/c/89eecd938cab80f0da18abbd2ed997a521f83f01
+[6/6] powerpc/ppc-opcode: Add PPC_RAW_MFSPR()
+      https://git.kernel.org/powerpc/c/70b588a068668dd7a92ed19cf0373ba92847957c
 
 cheers
