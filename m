@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EE29C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:38:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCC81C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:43:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85797206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:38:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85797206D5
+	by mail.kernel.org (Postfix) with ESMTPS id B27772226A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:43:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B27772226A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGVD4CSZzDqKH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:38:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGbP71cczDq63
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:42:57 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPG3FTbzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:49:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPH0j84zDqNW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:49:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CwFPG1Syhz9s1l; Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
+ id 4CwFPG6R35z9sVM; Tue, 15 Dec 2020 21:49:06 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20201107014336.2337337-1-npiggin@gmail.com>
-References: <20201107014336.2337337-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2] powerpc/64: irq replay remove decrementer overflow
- check
-Message-Id: <160802921117.504444.4144257266927957221.b4-ty@ellerman.id.au>
-Date: Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
+To: mpe@ellerman.id.au, Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+In-Reply-To: <20201106045650.278987-1-ravi.bangoria@linux.ibm.com>
+References: <20201106045650.278987-1-ravi.bangoria@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/watchpoint: Workaround P10 DD1 issue with
+ VSX-32 byte instructions
+Message-Id: <160802921197.504444.6283070144643537807.b4-ty@ellerman.id.au>
+Date: Tue, 15 Dec 2020 21:49:06 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,26 +48,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: christophe.leroy@c-s.fr, mikey@linux.ibm.com, jniethe5@gmail.com,
+ npiggin@gmail.com, maddy@linux.ibm.com, paulus@samba.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 7 Nov 2020 11:43:36 +1000, Nicholas Piggin wrote:
-> This is way to catch some cases of decrementer overflow, when the
-> decrementer has underflowed an odd number of times, while MSR[EE] was
-> disabled.
+On Fri, 6 Nov 2020 10:26:50 +0530, Ravi Bangoria wrote:
+> POWER10 DD1 has an issue where it generates watchpoint exceptions when
+> it shouldn't. The conditions where this occur are:
 > 
-> With a typical small decrementer, a timer that fires when MSR[EE] is
-> disabled will be "lost" if MSR[EE] remains disabled for between 4.3 and
-> 8.6 seconds after the timer expires. In any case, the decrementer
-> interrupt would be taken at 8.6 seconds and the timer would be found at
-> that point.
+>  - octword op
+>  - ending address of DAWR range is less than starting address of op
+>  - those addresses need to be in the same or in two consecutive 512B
+>    blocks
+>  - 'op address + 64B' generates an address that has a carry into bit
+>    52 (crosses 2K boundary)
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: irq replay remove decrementer overflow check
-      https://git.kernel.org/powerpc/c/59d512e4374b2d8a6ad341475dc94c4a4bdec7d3
+[1/1] powerpc/watchpoint: Workaround P10 DD1 issue with VSX-32 byte instructions
+      https://git.kernel.org/powerpc/c/3d2ffcdd2a982e8bbe65fa0f94fb21bf304c281e
 
 cheers
