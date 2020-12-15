@@ -4,38 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7033EC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:53:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE08AC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:54:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7ED5F2220F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:53:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ED5F2220F
+	by mail.kernel.org (Postfix) with ESMTPS id E36852222A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:54:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E36852222A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwFTn4f1TzDqRc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 21:53:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwFWf61bfzDqD0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 21:54:38 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFP235cqzDqD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:48:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFP31bwHzDqD9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:48:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CwFP22ZPnz9sS8; Tue, 15 Dec 2020 21:48:54 +1100 (AEDT)
+ id 4CwFP306HYz9sSn; Tue, 15 Dec 2020 21:48:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <1606289215-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1606289215-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] powerpc/perf: Exclude kernel samples while counting
- events in user space.
-Message-Id: <160802921142.504444.13858621470495661057.b4-ty@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <8a4ffe4798e9ea32aaaccdf85e411bb1beed3500.1605542955.git.christophe.leroy@csgroup.eu>
+References: <8a4ffe4798e9ea32aaaccdf85e411bb1beed3500.1605542955.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32s: Handle PROTFAULT in hash_page() also for
+ CONFIG_PPC_KUAP
+Message-Id: <160802920749.504444.12908339583780328287.b4-ty@ellerman.id.au>
 Date: Tue, 15 Dec 2020 21:48:54 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -48,24 +50,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 25 Nov 2020 02:26:55 -0500, Athira Rajeev wrote:
-> Perf event attritube supports exclude_kernel flag
-> to avoid sampling/profiling in supervisor state (kernel).
-> Based on this event attr flag, Monitor Mode Control Register
-> bit is set to freeze on supervisor state. But sometime (due
-> to hardware limitation), Sampled Instruction Address
-> Register (SIAR) locks on to kernel address even when
-> freeze on supervisor is set. Patch here adds a check to
-> drop those samples.
+On Mon, 16 Nov 2020 16:09:31 +0000 (UTC), Christophe Leroy wrote:
+> On hash 32 bits, handling minor protection faults like unsetting
+> dirty flag is heavy if done from the normal page_fault processing,
+> because it implies hash table software lookup for flushing the entry
+> and then a DSI is taken anyway to add the entry back.
+> 
+> When KUAP was implemented, as explained in commit a68c31fc01ef
+> ("powerpc/32s: Implement Kernel Userspace Access Protection"),
+> protection faults has been diverted from hash_page() because
+> hash_page() was not able to identify a KUAP fault.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/perf: Exclude kernel samples while counting events in user space.
-      https://git.kernel.org/powerpc/c/aa8e21c053d72b6639ea5a7f1d3a1d0209534c94
+[1/1] powerpc/32s: Handle PROTFAULT in hash_page() also for CONFIG_PPC_KUAP
+      https://git.kernel.org/powerpc/c/1b03e71ff6f2bd10b45a0128ce76e0e42014a44c
 
 cheers
