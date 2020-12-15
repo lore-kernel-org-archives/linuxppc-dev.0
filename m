@@ -2,67 +2,66 @@ Return-Path: <SRS0=AMrL=FT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61541C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC418C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:35:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D39020888
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:23:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D39020888
+	by mail.kernel.org (Postfix) with ESMTPS id 146C4206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 10:35:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 146C4206D5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwDqH4WVczDqNJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 21:23:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwF506NwWzDqRL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 21:35:00 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwDmm15j4zDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:20:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwF311v3gzDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:33:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=XuUNGud1; 
+ header.a=rsa-sha256 header.s=201909 header.b=XW66GSBf; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4CwDml2lwBz9sSC; Tue, 15 Dec 2020 21:20:55 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4CwDml1JC0z9s1l;
- Tue, 15 Dec 2020 21:20:54 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4CwF2z5VRBz9s1l;
+ Tue, 15 Dec 2020 21:33:15 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1608027655;
- bh=aDY6UDQd3VX3/H30f3vYtd6WG7C5F1CGvqI1Ldh8h+Q=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=XuUNGud1+bJamSuAVRFD/7Y/EoDYEI6y56Qd/PNu/ikoRk806doxT0KJs+Y+eYNEs
- DWHqarUD1f1UMD4sswhO0GMItI0nWuLoV8y7qaLIbvBPnWoImvUsvcbIg7uRWptWdM
- 19DFX05c1H4b5vkyo+s96Ezt+Fux29uBfviRkTVTXDaauCqDdyssUo6c3mcDesmjoC
- s3tBfRtKgHByB9ZP5LQLlbSzsnCHeQgNWpruwW6T7D8y7GmgeYkSO56GbRFxA6YHux
- yeNnQu+yAhRJresm3lYpoAp+wAk2wxBq7GOWYPwm8qJCpfr1m//1xfdopyRvHcaR/I
- gtKxHkq0L0yAA==
+ s=201909; t=1608028397;
+ bh=zMpdbTxIQR/bmtXKG54pVnC9KS5pqvpRuMJ/yyVLuug=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=XW66GSBfMlawbQ3SV26jfdKDUXUwCeos7whJAq2/MRxPH7+MmPNmUFRzM5p6ArrcQ
+ Z5fHqVdChMVYv26v6B3lK/7yNHPHUyDuVPzq/h4c9+Nhm2wz8YK0lsZL+YiO2suWVi
+ HwrJcroUFSCVTeceZdwbZv9hisLXqFdRIE9M8BV3MQ2+d1G7nVonFriOLtVnmhn289
+ mvQvSjlM+73XOM9Je3AOmylZnBkgiuUmLfkP0nS8w7rLiUtZBEaigIWBw++jRyHh84
+ PRveX7gUqiXOoNiVHJUAp/rKSQn1bbgN7QntdgHcqOy30OFqxmvsL8Bc9ICxGXxs3g
+ /LHydTNn3GWKQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Inline setup_kup()
-In-Reply-To: <1ff11fdc-3274-5be3-6968-14084874e212@csgroup.eu>
-References: <20201214123011.311024-1-mpe@ellerman.id.au>
- <09e673ec-6d4e-2e8d-b843-018ce94142a4@csgroup.eu>
- <87czzbzvyg.fsf@mpe.ellerman.id.au>
- <1ff11fdc-3274-5be3-6968-14084874e212@csgroup.eu>
-Date: Tue, 15 Dec 2020 21:20:53 +1100
-Message-ID: <878s9zz7y2.fsf@mpe.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] powerpc/64s: Trim offlined CPUs from mm_cpumasks
+In-Reply-To: <1607943765.29hccd2b8p.astroid@bobo.none>
+References: <20201120025757.325930-1-npiggin@gmail.com>
+ <20201120025757.325930-3-npiggin@gmail.com>
+ <CAMuHMdUdorW03=mipgm92SXNPBZO5owW1Wp6_SacRDZ7fOe9gw@mail.gmail.com>
+ <1607919238.kj439g85v5.astroid@bobo.none> <87h7oozn06.fsf@mpe.ellerman.id.au>
+ <1607943765.29hccd2b8p.astroid@bobo.none>
+Date: Tue, 15 Dec 2020 21:33:15 +1100
+Message-ID: <875z53z7dg.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,69 +73,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anton Vorontsov <anton.vorontsov@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 15/12/2020 =C3=A0 02:42, Michael Ellerman a =C3=A9crit=C2=A0:
->> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->>> Le 14/12/2020 =C3=A0 13:30, Michael Ellerman a =C3=A9crit=C2=A0:
->>>> setup_kup() is used by both 64-bit and 32-bit code. However on 64-bit
->>>> it must not be __init, because it's used for CPU hotplug, whereas on
->>>> 32-bit it should be __init because it calls setup_kuap/kuep() which
->>>> are __init.
->>>>
->>>> We worked around that problem in the past by marking it __ref, see
->>>> commit 67d53f30e23e ("powerpc/mm: fix section mismatch for
->>>> setup_kup()").
->>>>
->>>> Marking it __ref basically just omits it from section mismatch
->>>> checking, which can lead to bugs, and in fact it did, see commit
->>>> 44b4c4450f8d ("powerpc/64s: Mark the kuap/kuep functions non __init")
->>>>
->>>> We can avoid all these problems by just making it static inline.
->>>> Because all it does is call other functions, making it inline actually
->>>> shrinks the 32-bit vmlinux by ~76 bytes.
->>>>
->>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>>> ---
->>>>    arch/powerpc/include/asm/kup.h | 8 ++++++--
->>>>    arch/powerpc/mm/init-common.c  | 6 ------
->>>>    2 files changed, 6 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm=
-/kup.h
->>>> index 5a9820c54da9..46b12c6dc728 100644
->>>> --- a/arch/powerpc/include/asm/kup.h
->>>> +++ b/arch/powerpc/include/asm/kup.h
->>>> @@ -49,8 +49,6 @@ extern bool disable_kuap;
->>>>=20=20=20=20
->>>>    #include <linux/pgtable.h>
->>>>=20=20=20=20
->>>> -void setup_kup(void);
->>>> -
->>>>    #ifdef CONFIG_PPC_KUEP
->>>>    void setup_kuep(bool disabled);
->>>>    #else
->>>> @@ -85,6 +83,12 @@ static inline void restore_user_access(unsigned lon=
-g flags) { }
->>>>    #endif /* CONFIG_PPC_BOOK3S_64 */
->>>>    #endif /* CONFIG_PPC_KUAP */
->>>>=20=20=20=20
->>>> +static inline void setup_kup(void)
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Excerpts from Michael Ellerman's message of December 14, 2020 8:43 pm:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>>> Excerpts from Geert Uytterhoeven's message of December 10, 2020 7:06 pm:
+>>>> Hi Nicholas,
+>>>> 
+>>>> On Fri, Nov 20, 2020 at 4:01 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+>>>>>
+>>>>> When offlining a CPU, powerpc/64s does not flush TLBs, rather it just
+>>>>> leaves the CPU set in mm_cpumasks, so it continues to receive TLBIEs
+>>>>> to manage its TLBs.
+>>>>>
+>>>>> However the exit_flush_lazy_tlbs() function expects that after
+>>>>> returning, all CPUs (except self) have flushed TLBs for that mm, in
+>>>>> which case TLBIEL can be used for this flush. This breaks for offline
+>>>>> CPUs because they don't get the IPI to flush their TLB. This can lead
+>>>>> to stale translations.
+>>>>>
+>>>>> Fix this by clearing the CPU from mm_cpumasks, then flushing all TLBs
+>>>>> before going offline.
+>>>>>
+>>>>> These offlined CPU bits stuck in the cpumask also prevents the cpumask
+>>>>> from being trimmed back to local mode, which means continual broadcast
+>>>>> IPIs or TLBIEs are needed for TLB flushing. This patch prevents that
+>>>>> situation too.
+>>>>>
+>>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> 
+>>>> Thanks for your patch!
+>>>> 
+>>>>> --- a/arch/powerpc/platforms/powermac/smp.c
+>>>>> +++ b/arch/powerpc/platforms/powermac/smp.c
+>>>>> @@ -911,6 +911,8 @@ static int smp_core99_cpu_disable(void)
+>>>>>
+>>>>>         mpic_cpu_set_priority(0xf);
+>>>>>
+>>>>> +       cleanup_cpu_mmu_context();
+>>>>> +
+>>>> 
+>>>> I guess this change broke pmac32_defconfig+SMP in v5.10-rc7?
+>>>> 
+>>>> arch/powerpc/platforms/powermac/smp.c: error: implicit
+>>>> declaration of function 'cleanup_cpu_mmu_context'
+>>>> [-Werror=implicit-function-declaration]:  => 914:2
+>>>> 
+>>>> http://kisskb.ellerman.id.au/kisskb/buildresult/14423174/
 >>>
->>> Should it be __always_inline ?
->>=20
->> Yes I guess so, will fix. Thanks for reviewing.
->>=20
+>>> Hey, yeah it does thanks for catching it. This patch fixes it for me
+>>>
+>>> ---
+>>> From a9b5ec92ffac975e81c6d7db6ff2b1486b2723f7 Mon Sep 17 00:00:00 2001
+>>> From: Nicholas Piggin <npiggin@gmail.com>
+>>> Date: Mon, 14 Dec 2020 13:52:39 +1000
+>>> Subject: [PATCH] powerpc/32s: Fix cleanup_cpu_mmu_context() compile bug
+>>>
+>>> 32s has no tlbiel_all() defined, so just disable the cleanup with a
+>>> comment.
+>> 
+>> Or what about just:
 >
-> While we are talking about __always_inline, do you plan to take the follo=
-wing patch this cycle ?
->
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/a1d31f84ddb092681=
-3b17fcd5cc7f3fa7b4deac2.1602759123.git.christophe.leroy@csgroup.eu/
+> That works, I kind of wanted it in there explicit that we don't
+> clean up on 32s. I don't mind if you prefer this though.
 
-I intended to, will grab it now.
+OK. I'll merge my version because I can do that without needing to merge
+master in order to get the broken commit into my tree.
 
 cheers
