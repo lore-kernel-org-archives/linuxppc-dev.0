@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A24C3C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:29:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F11BC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:33:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD41C22258
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:29:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD41C22258
+	by mail.kernel.org (Postfix) with ESMTPS id F238A206E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 11:33:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F238A206E5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGHl0XRBzDqH5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:29:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwGNp1GQMzDqRc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Dec 2020 22:33:46 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPF2DVmzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwFPG0Y9hzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2020 21:49:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CwFPD5vB8z9sVt; Tue, 15 Dec 2020 21:49:04 +1100 (AEDT)
+ id 4CwFPF3LJvz9sVv; Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20190711022404.18132-1-npiggin@gmail.com>
-References: <20190711022404.18132-1-npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/64s: remplement power4_idle code in C
-Message-Id: <160802921170.504444.1308264557037135946.b4-ty@ellerman.id.au>
-Date: Tue, 15 Dec 2020 21:49:04 +1100 (AEDT)
+In-Reply-To: <20201106045340.1935841-1-npiggin@gmail.com>
+References: <20201106045340.1935841-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Remove MSR[ISF] bit
+Message-Id: <160802921091.504444.6682684837989830539.b4-ty@ellerman.id.au>
+Date: Tue, 15 Dec 2020 21:49:05 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,20 +51,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 11 Jul 2019 12:24:03 +1000, Nicholas Piggin wrote:
-> This implements the tricky tracing and soft irq handling bits in C,
-> leaving the low level bit to asm.
-> 
-> A functional difference is that this redirects the interrupt exit to
-> a return stub to execute blr, rather than the lr address itself. This
-> is probably barely measurable on real hardware, but it keeps the link
-> stack balanced.
-> 
-> [...]
+On Fri, 6 Nov 2020 14:53:40 +1000, Nicholas Piggin wrote:
+> No supported processor implements this mode. Setting the bit in
+> MSR values can be a bit confusing (and would prevent the bit from
+> ever being reused). Remove it.
 
-Patch 2 applied to powerpc/next.
+Applied to powerpc/next.
 
-[2/2] powerpc/64s: Remove idle workaround code from restore_cpu_cpufeatures
-      https://git.kernel.org/powerpc/c/02b02ee1b05ef225525835b2d45faf31b3420bdd
+[1/1] powerpc/64s: Remove MSR[ISF] bit
+      https://git.kernel.org/powerpc/c/e89a8ca94bf583f2577fe722483f0304b3390aa2
 
 cheers
