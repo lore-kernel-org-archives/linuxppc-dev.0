@@ -2,55 +2,108 @@ Return-Path: <SRS0=odmM=FU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15224C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DACA3C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 11:02:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61AD523359
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:54:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61AD523359
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id DF56623371
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 11:02:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF56623371
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwsSx3vDgzDqSf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 21:54:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Cwsf52k2LzDqGl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 22:02:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=KdPLmPhU; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwsRF4w0tzDqKg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 21:52:56 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 828091A00A5;
- Wed, 16 Dec 2020 11:52:51 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 705491A0A5F;
- Wed, 16 Dec 2020 11:52:47 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0E577402F3;
- Wed, 16 Dec 2020 11:52:40 +0100 (CET)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: imx-hdmi: Fix warning of the uninitialized variable ret
-Date: Wed, 16 Dec 2020 18:44:24 +0800
-Message-Id: <1608115464-18710-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Cwsbt1fBrzDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 22:00:26 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BGAgrtC079946; Wed, 16 Dec 2020 05:44:35 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=YhDFzmQUoC8UQuz1UgKN1pr7/sypnPEqm7ZijMJFeYY=;
+ b=KdPLmPhUS8+MCjjJt4vEI7D+2gdz800Dxzcttti7myx0jaFCHZxoW4bpOgZF5+nYbBEN
+ t1Sm5NXSt0bzKht11HySAynpOOKlkC7RYvF73mu7V9X6reshAP5lAmsdbZGZa566E0Pm
+ +6TRjoG+pm7wpD6RHiP7Qk4sZk0NteGwirV7ZqvuR+bFM3YDe/FYVkp9Hal1Jg3kx8v+
+ jBZ0leeShSa5aRJ+slI+lABKQgtG0sodtcqto+zed6CeNXNK8SUpKtBHLvoPkXZA8HQE
+ sMU0OF/SGHedUhzbVw8Gf64bBS4rbrVUKO9mlZuwBATgcs02BWeiMcGq/06wQEJVNdwx tQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35fgqr812w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Dec 2020 05:44:35 -0500
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0BGAiYCh083723;
+ Wed, 16 Dec 2020 05:44:35 -0500
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35fgqr8123-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Dec 2020 05:44:34 -0500
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BGAhECE012676;
+ Wed, 16 Dec 2020 10:44:32 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03fra.de.ibm.com with ESMTP id 35cng8e78n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Dec 2020 10:44:32 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BGAhFlJ30015750
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 16 Dec 2020 10:43:15 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 42A2011C05C;
+ Wed, 16 Dec 2020 10:43:15 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F1A2511C04C;
+ Wed, 16 Dec 2020 10:43:11 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.199.41.249])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 16 Dec 2020 10:43:11 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, paulus@samba.org
+Subject: [PATCH v3 1/4] KVM: PPC: Allow nested guest creation when L0
+ hv_guest_state > L1
+Date: Wed, 16 Dec 2020 16:12:16 +0530
+Message-Id: <20201216104219.458713-2-ravi.bangoria@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201216104219.458713-1-ravi.bangoria@linux.ibm.com>
+References: <20201216104219.458713-1-ravi.bangoria@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-16_04:2020-12-15,
+ 2020-12-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 suspectscore=0
+ clxscore=1015 spamscore=0 priorityscore=1501 impostorscore=0 bulkscore=0
+ adultscore=0 phishscore=0 malwarescore=0 mlxlogscore=999
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012160063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,35 +115,164 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: christophe.leroy@c-s.fr, ravi.bangoria@linux.ibm.com, mikey@neuling.org,
+ kvm@vger.kernel.org, leobras.c@gmail.com, jniethe5@gmail.com,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, kvm-ppc@vger.kernel.org,
+ pbonzini@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: shengjiu wang <shengjiu.wang@nxp.com>
+On powerpc, L1 hypervisor takes help of L0 using H_ENTER_NESTED
+hcall to load L2 guest state in cpu. L1 hypervisor prepares the
+L2 state in struct hv_guest_state and passes a pointer to it via
+hcall. Using that pointer, L0 reads/writes that state directly
+from/to L1 memory. Thus L0 must be aware of hv_guest_state layout
+of L1. Currently it uses version field to achieve this. i.e. If
+L0 hv_guest_state.version != L1 hv_guest_state.version, L0 won't
+allow nested kvm guest.
 
-When condition ((hdmi_out && hdmi_in) || (!hdmi_out && !hdmi_in))
-is true, then goto fail, the uninitialized variable ret will be
-returned.
+This restriction can be loosen up a bit. L0 can be taught to
+understand older layout of hv_guest_state, if we restrict the
+new member to be added only at the end. i.e. we can allow
+nested guest even when L0 hv_guest_state.version > L1
+hv_guest_state.version. Though, the other way around is not
+possible.
 
-Signed-off-by: shengjiu wang <shengjiu.wang@nxp.com>
-Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
 ---
- sound/soc/fsl/imx-hdmi.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/hvcall.h   | 17 +++++++--
+ arch/powerpc/kvm/book3s_hv_nested.c | 55 +++++++++++++++++++++++------
+ 2 files changed, 60 insertions(+), 12 deletions(-)
 
-diff --git a/sound/soc/fsl/imx-hdmi.c b/sound/soc/fsl/imx-hdmi.c
-index 2c2a76a71940..ede4a9ad1054 100644
---- a/sound/soc/fsl/imx-hdmi.c
-+++ b/sound/soc/fsl/imx-hdmi.c
-@@ -164,6 +164,7 @@ static int imx_hdmi_probe(struct platform_device *pdev)
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index c1fbccb04390..ca6840239f90 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -526,9 +526,12 @@ struct h_cpu_char_result {
+ 	u64 behaviour;
+ };
  
- 	if ((hdmi_out && hdmi_in) || (!hdmi_out && !hdmi_in)) {
- 		dev_err(&pdev->dev, "Invalid HDMI DAI link\n");
-+		ret = -EINVAL;
- 		goto fail;
+-/* Register state for entering a nested guest with H_ENTER_NESTED */
++/*
++ * Register state for entering a nested guest with H_ENTER_NESTED.
++ * New member must be added at the end.
++ */
+ struct hv_guest_state {
+-	u64 version;		/* version of this structure layout */
++	u64 version;		/* version of this structure layout, must be first */
+ 	u32 lpid;
+ 	u32 vcpu_token;
+ 	/* These registers are hypervisor privileged (at least for writing) */
+@@ -562,6 +565,16 @@ struct hv_guest_state {
+ /* Latest version of hv_guest_state structure */
+ #define HV_GUEST_STATE_VERSION	1
+ 
++static inline int hv_guest_state_size(unsigned int version)
++{
++	switch (version) {
++	case 1:
++		return offsetofend(struct hv_guest_state, ppr);
++	default:
++		return -1;
++	}
++}
++
+ /*
+  * From the document "H_GetPerformanceCounterInfo Interface" v1.07
+  *
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 33b58549a9aa..937dd5114300 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -215,12 +215,51 @@ static void kvmhv_nested_mmio_needed(struct kvm_vcpu *vcpu, u64 regs_ptr)
  	}
+ }
  
++static int kvmhv_read_guest_state_and_regs(struct kvm_vcpu *vcpu,
++					   struct hv_guest_state *l2_hv,
++					   struct pt_regs *l2_regs,
++					   u64 hv_ptr, u64 regs_ptr)
++{
++	int size;
++
++	if (kvm_vcpu_read_guest(vcpu, hv_ptr, &l2_hv->version,
++				sizeof(l2_hv->version)))
++		return -1;
++
++	if (kvmppc_need_byteswap(vcpu))
++		l2_hv->version = swab64(l2_hv->version);
++
++	size = hv_guest_state_size(l2_hv->version);
++	if (size < 0)
++		return -1;
++
++	return kvm_vcpu_read_guest(vcpu, hv_ptr, l2_hv, size) ||
++		kvm_vcpu_read_guest(vcpu, regs_ptr, l2_regs,
++				    sizeof(struct pt_regs));
++}
++
++static int kvmhv_write_guest_state_and_regs(struct kvm_vcpu *vcpu,
++					    struct hv_guest_state *l2_hv,
++					    struct pt_regs *l2_regs,
++					    u64 hv_ptr, u64 regs_ptr)
++{
++	int size;
++
++	size = hv_guest_state_size(l2_hv->version);
++	if (size < 0)
++		return -1;
++
++	return kvm_vcpu_write_guest(vcpu, hv_ptr, l2_hv, size) ||
++		kvm_vcpu_write_guest(vcpu, regs_ptr, l2_regs,
++				     sizeof(struct pt_regs));
++}
++
+ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ {
+ 	long int err, r;
+ 	struct kvm_nested_guest *l2;
+ 	struct pt_regs l2_regs, saved_l1_regs;
+-	struct hv_guest_state l2_hv, saved_l1_hv;
++	struct hv_guest_state l2_hv = {0}, saved_l1_hv;
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 	u64 hv_ptr, regs_ptr;
+ 	u64 hdec_exp;
+@@ -235,17 +274,15 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 	hv_ptr = kvmppc_get_gpr(vcpu, 4);
+ 	regs_ptr = kvmppc_get_gpr(vcpu, 5);
+ 	vcpu->srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
+-	err = kvm_vcpu_read_guest(vcpu, hv_ptr, &l2_hv,
+-				  sizeof(struct hv_guest_state)) ||
+-		kvm_vcpu_read_guest(vcpu, regs_ptr, &l2_regs,
+-				    sizeof(struct pt_regs));
++	err = kvmhv_read_guest_state_and_regs(vcpu, &l2_hv, &l2_regs,
++					      hv_ptr, regs_ptr);
+ 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
+ 	if (err)
+ 		return H_PARAMETER;
+ 
+ 	if (kvmppc_need_byteswap(vcpu))
+ 		byteswap_hv_regs(&l2_hv);
+-	if (l2_hv.version != HV_GUEST_STATE_VERSION)
++	if (l2_hv.version > HV_GUEST_STATE_VERSION)
+ 		return H_P2;
+ 
+ 	if (kvmppc_need_byteswap(vcpu))
+@@ -325,10 +362,8 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 		byteswap_pt_regs(&l2_regs);
+ 	}
+ 	vcpu->srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
+-	err = kvm_vcpu_write_guest(vcpu, hv_ptr, &l2_hv,
+-				   sizeof(struct hv_guest_state)) ||
+-		kvm_vcpu_write_guest(vcpu, regs_ptr, &l2_regs,
+-				   sizeof(struct pt_regs));
++	err = kvmhv_write_guest_state_and_regs(vcpu, &l2_hv, &l2_regs,
++					       hv_ptr, regs_ptr);
+ 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
+ 	if (err)
+ 		return H_AUTHORITY;
 -- 
-2.17.1
+2.26.2
 
