@@ -2,59 +2,64 @@ Return-Path: <SRS0=odmM=FU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C721C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 01:18:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05CA2C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 02:42:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8D1D22DCC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 01:18:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D1D22DCC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id E378422E03
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 02:42:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E378422E03
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cwchw0NR3zDqLP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 12:18:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwfYm1PvmzDqP1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 13:42:52 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwcbB4lbgzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 12:13:54 +1100 (AEDT)
-IronPort-SDR: qiDRJ6UtGDqwxMns4T8yDZqB/zgpzk+zNZ+fU1fQFTUpLMawpm5McCa6tZcJ40w+frfTydL9pb
- visFqFRzCzKg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9836"; a="162034687"
-X-IronPort-AV: E=Sophos;i="5.78,423,1599548400"; d="scan'208";a="162034687"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Dec 2020 17:13:51 -0800
-IronPort-SDR: X/GQAWs2wHbj7rJaEVH1W7BbyV3jr0K9jvk/CMWdnx7g01vz9/i+izy3dvFhd0KeCkpv8A22WY
- 2Lpd3hcI54/g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,423,1599548400"; d="scan'208";a="391085126"
-Received: from lkp-server02.sh.intel.com (HELO a947d92d0467) ([10.239.97.151])
- by FMSMGA003.fm.intel.com with ESMTP; 15 Dec 2020 17:13:50 -0800
-Received: from kbuild by a947d92d0467 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kpLO2-000150-5C; Wed, 16 Dec 2020 01:13:50 +0000
-Date: Wed, 16 Dec 2020 09:13:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS a1d4aa500bfb93c4ea6eb9a3c5c9cb6720ed8f46
-Message-ID: <5fd95f3b.gixXVbwu+KXoYPUU%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwfXG1DmyzDqFC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 13:41:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=KNE3sRs6; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4CwfXF6hFvz9sRf; Wed, 16 Dec 2020 13:41:33 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4CwfXF4hpWz9sRR;
+ Wed, 16 Dec 2020 13:41:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1608086493;
+ bh=jxRt70R2dqxRSiO5KrASIJCh6a0EmXtEBpIJgqXzLk8=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=KNE3sRs6YAih7qL2KmHBliRs+lwK+MTsQbPEVg9vVjz7RU4hdr/w4qexdKyicRSGI
+ dKBQp0m0IOKJHXndCBGBiOnXVw7U/EIUahDM13kAnlEvdVLsG2hvhAq/SqdcpgsVX1
+ 7IG6SgkoVt+2lBzEpMFfuAFial5Od0geRGHSj/N4dZ3t4JNOugdA21rf/m5etJul19
+ mx3d9MIuYW3N1UUOsOiF1Hz+PeKaibgElJv41iFF3ZAPJJ0uQWtyFFamFGWNdFCET+
+ KCaaISM5gP8RI3wvIa2ODUfA7xOM355QPp3VQOCNxhosjY8UEI8J8hUcCfrpSa1wa0
+ KgRDxSdDtOwPg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masahiro Yamada <masahiroy@kernel.org>
+Subject: Re: [PATCH] powerpc/boot: Fix build of dts/fsl
+In-Reply-To: <CAK7LNASJcp=U9sKo9FVdkGNWXu7TGDL2zE-hFQymtfvUhY5+wA@mail.gmail.com>
+References: <20201215032906.473460-1-mpe@ellerman.id.au>
+ <CAK7LNASJcp=U9sKo9FVdkGNWXu7TGDL2zE-hFQymtfvUhY5+wA@mail.gmail.com>
+Date: Wed, 16 Dec 2020 13:41:30 +1100
+Message-ID: <87zh2exyjp.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,160 +71,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: a1d4aa500bfb93c4ea6eb9a3c5c9cb6720ed8f46  Automatic merge of 'next' into merge (2020-12-15 23:50)
+Masahiro Yamada <masahiroy@kernel.org> writes:
+> On Tue, Dec 15, 2020 at 12:29 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> The lkp robot reported that some configs fail to build, for example
+>> mpc85xx_smp_defconfig, with:
+>>
+>>   cc1: fatal error: opening output file arch/powerpc/boot/dts/fsl/.mpc8540ads.dtb.dts.tmp: No such file or directory
+>>
+>> This bisects to:
+>>   cc8a51ca6f05 ("kbuild: always create directories of targets")
+>>
+>> Although that commit claims to be about in-tree builds, it somehow
+>> breaks out-of-tree builds. But presumably it's just exposing a latent
+>> bug in our Makefiles.
+>>
+>> We can fix it by adding to targets for dts/fsl in the same way that we
+>> do for dts.
+>>
+>> Fixes: cc8a51ca6f05 ("kbuild: always create directories of targets")
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/boot/Makefile | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+>> index 68a7534454cd..c3e084cceaed 100644
+>> --- a/arch/powerpc/boot/Makefile
+>> +++ b/arch/powerpc/boot/Makefile
+>> @@ -372,6 +372,8 @@ initrd-y := $(filter-out $(image-y), $(initrd-y))
+>>  targets        += $(image-y) $(initrd-y)
+>>  targets += $(foreach x, dtbImage uImage cuImage simpleImage treeImage, \
+>>                 $(patsubst $(x).%, dts/%.dtb, $(filter $(x).%, $(image-y))))
+>> +targets += $(foreach x, dtbImage uImage cuImage simpleImage treeImage, \
+>> +               $(patsubst $(x).%, dts/fsl/%.dtb, $(filter $(x).%, $(image-y))))
+>>
+>>  $(addprefix $(obj)/, $(initrd-y)): $(obj)/ramdisk.image.gz
+>>
+>
+>
+> Some freescale dts files are right under arch/powerpc/boot/dts/,
+> but some are in the fsl/ subdirectory.
+> I do not understand the policy.
 
-elapsed time: 727m
+There isn't a policy. Best I can tell Kumar felt like it would be
+cleaner to have a separate directory for (some of) the Freescale DTS
+files, when he initially submitted them ~9 years ago.
 
-configs tested: 134
-configs skipped: 2
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> If "fsl/" is a very special case,
+> I just thought we could add a new syntax, fslimage-y,
+> but I do not mind either way.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arc                 nsimosci_hs_smp_defconfig
-riscv                            allyesconfig
-mips                      bmips_stb_defconfig
-arm                        realview_defconfig
-mips                     decstation_defconfig
-arm64                            alldefconfig
-powerpc                       holly_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                        shmobile_defconfig
-sh                ecovec24-romimage_defconfig
-arm                      pxa255-idp_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                     powernv_defconfig
-arm                         assabet_defconfig
-ia64                      gensparse_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                 mpc836x_mds_defconfig
-arm                    vt8500_v6_v7_defconfig
-riscv                    nommu_k210_defconfig
-mips                            ar7_defconfig
-powerpc                       ppc64_defconfig
-arm                          ep93xx_defconfig
-powerpc                        warp_defconfig
-nios2                         10m50_defconfig
-mips                       bmips_be_defconfig
-xtensa                    xip_kc705_defconfig
-sh                           se7724_defconfig
-arm                            lart_defconfig
-um                             i386_defconfig
-ia64                         bigsur_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                        clps711x_defconfig
-powerpc                     ep8248e_defconfig
-arm                       netwinder_defconfig
-arm                           h5000_defconfig
-powerpc                     kmeter1_defconfig
-arm                      integrator_defconfig
-powerpc                     pq2fads_defconfig
-powerpc                     tqm5200_defconfig
-sh                        sh7763rdp_defconfig
-arm                          collie_defconfig
-arm                      jornada720_defconfig
-arm                     davinci_all_defconfig
-powerpc                 linkstation_defconfig
-m68k                            mac_defconfig
-powerpc64                        alldefconfig
-arm                           sunxi_defconfig
-arm                            zeus_defconfig
-mips                         tb0287_defconfig
-powerpc                     sequoia_defconfig
-mips                  decstation_64_defconfig
-arm                       omap2plus_defconfig
-powerpc                 mpc834x_itx_defconfig
-xtensa                          iss_defconfig
-sh                           sh2007_defconfig
-sh                        dreamcast_defconfig
-arm                           corgi_defconfig
-parisc                           alldefconfig
-mips                      pic32mzda_defconfig
-mips                           xway_defconfig
-arm                         mv78xx0_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20201215
-x86_64               randconfig-a006-20201215
-x86_64               randconfig-a002-20201215
-x86_64               randconfig-a005-20201215
-x86_64               randconfig-a004-20201215
-x86_64               randconfig-a001-20201215
-i386                 randconfig-a001-20201215
-i386                 randconfig-a004-20201215
-i386                 randconfig-a003-20201215
-i386                 randconfig-a002-20201215
-i386                 randconfig-a006-20201215
-i386                 randconfig-a005-20201215
-i386                 randconfig-a014-20201215
-i386                 randconfig-a013-20201215
-i386                 randconfig-a012-20201215
-i386                 randconfig-a011-20201215
-i386                 randconfig-a015-20201215
-i386                 randconfig-a016-20201215
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+OK. If you don't mind I'll merge my patch as a quick fix for now.
 
-clang tested configs:
-x86_64               randconfig-a016-20201215
-x86_64               randconfig-a012-20201215
-x86_64               randconfig-a013-20201215
-x86_64               randconfig-a015-20201215
-x86_64               randconfig-a014-20201215
-x86_64               randconfig-a011-20201215
+Then we can probably move all the fsl/ files up one level and avoid the
+problem entirely in future.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> fslimage-$(CONFIG_MPC8540_ADS) += cuImage.mpc8540ads
+>
+> targets += $(foreach x, dtbImage uImage cuImage simpleImage treeImage, \
+>                $(patsubst $(x).%, dts/fsl/%.dtb, $(filter $(x).%,
+> $(fslimage-y))))
+>
+>
+> This Makefile is wrong over-all anyway.
+
+Excellent.
+
+cheers
