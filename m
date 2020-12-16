@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE5A8C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 328ADC4361B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:13:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D1A02313C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:11:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D1A02313C
+	by mail.kernel.org (Postfix) with ESMTPS id 8768D2313B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 10:13:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8768D2313B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CwrVt2hx9zDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 21:11:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CwrYb3kBzzDqPS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Dec 2020 21:13:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,42 +28,42 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CwrR36YFhzDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 21:07:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CwrR74k71zDqMB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2020 21:07:47 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CwrQq62kSz9tysr;
- Wed, 16 Dec 2020 11:07:31 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CwrQw0HBrz9v1ZK;
+ Wed, 16 Dec 2020 11:07:36 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Lh8OzqoqlONR; Wed, 16 Dec 2020 11:07:31 +0100 (CET)
+ with ESMTP id XPW6X7D8op22; Wed, 16 Dec 2020 11:07:35 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CwrQq4dVqz9tysx;
- Wed, 16 Dec 2020 11:07:31 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CwrQv4mbfz9v1Z7;
+ Wed, 16 Dec 2020 11:07:35 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A95FA8B7C7;
- Wed, 16 Dec 2020 11:07:32 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D2C9E8B7BA;
+ Wed, 16 Dec 2020 11:07:36 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id amilpHceGHHr; Wed, 16 Dec 2020 11:07:32 +0100 (CET)
+ with ESMTP id T_HNwAQsAz7k; Wed, 16 Dec 2020 11:07:36 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A6338B7BA;
- Wed, 16 Dec 2020 11:07:32 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B0AD8B7C7;
+ Wed, 16 Dec 2020 11:07:36 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 199C46681D; Wed, 16 Dec 2020 10:07:32 +0000 (UTC)
-Message-Id: <41a29ad898128ae62f965f288c64797ee709ce8a.1608112797.git.christophe.leroy@csgroup.eu>
+ id 407B56681D; Wed, 16 Dec 2020 10:07:36 +0000 (UTC)
+Message-Id: <d522008f814cf4fad54335e291a51fa7275c8719.1608112797.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1608112796.git.christophe.leroy@csgroup.eu>
 References: <cover.1608112796.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 2/7] powerpc/bpf: Change register numbering for
- bpf_set/is_seen_register()
+Subject: [RFC PATCH v1 6/7] powerpc/asm: Add some opcodes in asm/ppc-opcode.h
+ for PPC32 eBPF
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org, kafai@fb.com,
  songliubraving@fb.com, yhs@fb.com, john.fastabend@gmail.com,
  kpsingh@chromium.org, naveen.n.rao@linux.ibm.com, sandipan@linux.ibm.com
-Date: Wed, 16 Dec 2020 10:07:32 +0000 (UTC)
+Date: Wed, 16 Dec 2020 10:07:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,78 +81,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of using BPF register number as input in functions
-bpf_set_seen_register() and bpf_is_seen_register(), use
-CPU register number directly.
+The following opcodes will be needed for the implementation
+of eBPF for PPC32. Add them in asm/ppc-opcode.h
+
+PPC_RAW_ADDE
+PPC_RAW_ADDZE
+PPC_RAW_ADDME
+PPC_RAW_MFLR
+PPC_RAW_ADDIC
+PPC_RAW_ADDIC_DOT
+PPC_RAW_SUBFC
+PPC_RAW_SUBFE
+PPC_RAW_SUBFIC
+PPC_RAW_SUBFZE
+PPC_RAW_ANDIS
+PPC_RAW_NOR
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/net/bpf_jit_comp64.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 022103c6a201..26a836a904f5 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -31,12 +31,12 @@ static inline void bpf_flush_icache(void *start, void *end)
- 
- static inline bool bpf_is_seen_register(struct codegen_context *ctx, int i)
- {
--	return (ctx->seen & (1 << (31 - b2p[i])));
-+	return ctx->seen & (1 << (31 - i));
- }
- 
- static inline void bpf_set_seen_register(struct codegen_context *ctx, int i)
- {
--	ctx->seen |= (1 << (31 - b2p[i]));
-+	ctx->seen |= 1 << (31 - i);
- }
- 
- static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
-@@ -47,7 +47,7 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
- 	 * - the bpf program uses its stack area
- 	 * The latter condition is deduced from the usage of BPF_REG_FP
- 	 */
--	return ctx->seen & SEEN_FUNC || bpf_is_seen_register(ctx, BPF_REG_FP);
-+	return ctx->seen & SEEN_FUNC || bpf_is_seen_register(ctx, b2p[BPF_REG_FP]);
- }
- 
- /*
-@@ -124,11 +124,11 @@ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- 	 * in the protected zone below the previous stack frame
- 	 */
- 	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
--		if (bpf_is_seen_register(ctx, i))
-+		if (bpf_is_seen_register(ctx, b2p[i]))
- 			PPC_BPF_STL(b2p[i], 1, bpf_jit_stack_offsetof(ctx, b2p[i]));
- 
- 	/* Setup frame pointer to point to the bpf stack area */
--	if (bpf_is_seen_register(ctx, BPF_REG_FP))
-+	if (bpf_is_seen_register(ctx, b2p[BPF_REG_FP]))
- 		EMIT(PPC_RAW_ADDI(b2p[BPF_REG_FP], 1,
- 				STACK_FRAME_MIN_SIZE + ctx->stack_size));
- }
-@@ -139,7 +139,7 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
- 
- 	/* Restore NVRs */
- 	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
--		if (bpf_is_seen_register(ctx, i))
-+		if (bpf_is_seen_register(ctx, b2p[i]))
- 			PPC_BPF_LL(b2p[i], 1, bpf_jit_stack_offsetof(ctx, b2p[i]));
- 
- 	/* Tear down our stack frame */
-@@ -330,9 +330,9 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 		 * any issues.
- 		 */
- 		if (dst_reg >= BPF_PPC_NVR_MIN && dst_reg < 32)
--			bpf_set_seen_register(ctx, insn[i].dst_reg);
-+			bpf_set_seen_register(ctx, dst_reg);
- 		if (src_reg >= BPF_PPC_NVR_MIN && src_reg < 32)
--			bpf_set_seen_register(ctx, insn[i].src_reg);
-+			bpf_set_seen_register(ctx, src_reg);
- 
- 		switch (code) {
- 		/*
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index ed161ef2b3ca..5b60020dc1f4 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -437,6 +437,9 @@
+ #define PPC_RAW_STFDX(s, a, b)		(0x7c0005ae | ___PPC_RS(s) | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_LVX(t, a, b)		(0x7c0000ce | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_STVX(s, a, b)		(0x7c0001ce | ___PPC_RS(s) | ___PPC_RA(a) | ___PPC_RB(b))
++#define PPC_RAW_ADDE(t, a, b)		(0x7c000114 | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b))
++#define PPC_RAW_ADDZE(t, a)		(0x7c000194 | ___PPC_RT(t) | ___PPC_RA(a))
++#define PPC_RAW_ADDME(t, a)		(0x7c0001d4 | ___PPC_RT(t) | ___PPC_RA(a))
+ #define PPC_RAW_ADD(t, a, b)		(PPC_INST_ADD | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_ADD_DOT(t, a, b)	(PPC_INST_ADD | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b) | 0x1)
+ #define PPC_RAW_ADDC(t, a, b)		(0x7c000014 | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b))
+@@ -445,11 +448,14 @@
+ #define PPC_RAW_BLR()			(PPC_INST_BLR)
+ #define PPC_RAW_BLRL()			(0x4e800021)
+ #define PPC_RAW_MTLR(r)			(0x7c0803a6 | ___PPC_RT(r))
++#define PPC_RAW_MFLR(t)			(PPC_INST_MFLR | ___PPC_RT(t))
+ #define PPC_RAW_BCTR()			(PPC_INST_BCTR)
+ #define PPC_RAW_MTCTR(r)		(PPC_INST_MTCTR | ___PPC_RT(r))
+ #define PPC_RAW_ADDI(d, a, i)		(PPC_INST_ADDI | ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_RAW_LI(r, i)		PPC_RAW_ADDI(r, 0, i)
+ #define PPC_RAW_ADDIS(d, a, i)		(PPC_INST_ADDIS | ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
++#define PPC_RAW_ADDIC(d, a, i)		(0x30000000 | ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
++#define PPC_RAW_ADDIC_DOT(d, a, i)	(0x34000000 | ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_RAW_LIS(r, i)		PPC_RAW_ADDIS(r, 0, i)
+ #define PPC_RAW_STDX(r, base, b)	(0x7c00012a | ___PPC_RS(r) | ___PPC_RA(base) | ___PPC_RB(b))
+ #define PPC_RAW_STDU(r, base, i)	(0xf8000001 | ___PPC_RS(r) | ___PPC_RA(base) | ((i) & 0xfffc))
+@@ -472,6 +478,10 @@
+ #define PPC_RAW_CMPLW(a, b)		(0x7c000040 | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_CMPLD(a, b)		(0x7c200040 | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_SUB(d, a, b)		(0x7c000050 | ___PPC_RT(d) | ___PPC_RB(a) | ___PPC_RA(b))
++#define PPC_RAW_SUBFC(d, a, b)		(0x7c000010 | ___PPC_RT(d) | ___PPC_RA(a) | ___PPC_RB(b))
++#define PPC_RAW_SUBFE(d, a, b)		(0x7c000110 | ___PPC_RT(d) | ___PPC_RA(a) | ___PPC_RB(b))
++#define PPC_RAW_SUBFIC(d, a, i)		(0x20000000 | ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
++#define PPC_RAW_SUBFZE(d, a)		(0x7c000190 | ___PPC_RT(d) | ___PPC_RA(a))
+ #define PPC_RAW_MULD(d, a, b)		(0x7c0001d2 | ___PPC_RT(d) | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_MULW(d, a, b)		(0x7c0001d6 | ___PPC_RT(d) | ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_RAW_MULHWU(d, a, b)		(0x7c000016 | ___PPC_RT(d) | ___PPC_RA(a) | ___PPC_RB(b))
+@@ -484,11 +494,13 @@
+ #define PPC_RAW_DIVDEU_DOT(t, a, b)	(0x7c000312 | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b) | 0x1)
+ #define PPC_RAW_AND(d, a, b)		(0x7c000038 | ___PPC_RA(d) | ___PPC_RS(a) | ___PPC_RB(b))
+ #define PPC_RAW_ANDI(d, a, i)		(0x70000000 | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
++#define PPC_RAW_ANDIS(d, a, i)		(0x74000000 | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
+ #define PPC_RAW_AND_DOT(d, a, b)	(0x7c000039 | ___PPC_RA(d) | ___PPC_RS(a) | ___PPC_RB(b))
+ #define PPC_RAW_OR(d, a, b)		(0x7c000378 | ___PPC_RA(d) | ___PPC_RS(a) | ___PPC_RB(b))
+ #define PPC_RAW_MR(d, a)		PPC_RAW_OR(d, a, a)
+ #define PPC_RAW_ORI(d, a, i)		(PPC_INST_ORI | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
+ #define PPC_RAW_ORIS(d, a, i)		(PPC_INST_ORIS | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
++#define PPC_RAW_NOR(d, a, b)		(0x7c0000f8 | ___PPC_RA(d) | ___PPC_RS(a) | ___PPC_RB(b))
+ #define PPC_RAW_XOR(d, a, b)		(0x7c000278 | ___PPC_RA(d) | ___PPC_RS(a) | ___PPC_RB(b))
+ #define PPC_RAW_XORI(d, a, i)		(0x68000000 | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
+ #define PPC_RAW_XORIS(d, a, i)		(0x6c000000 | ___PPC_RA(d) | ___PPC_RS(a) | IMM_L(i))
 -- 
 2.25.0
 
