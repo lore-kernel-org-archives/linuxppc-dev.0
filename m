@@ -2,73 +2,64 @@ Return-Path: <SRS0=l6JL=FV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB41C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 12:09:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81538C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 12:17:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78F65238E8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 12:09:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78F65238E8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id AB7BD238E8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 12:16:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB7BD238E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CxW5X5kFTzDqQZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 23:09:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CxWFh5lPpzDqSG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Dec 2020 23:16:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=185.176.79.56;
- helo=frasgout.his.huawei.com; envelope-from=john.garry@huawei.com;
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
- [185.176.79.56])
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CxW2p3pgCzDqTK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2020 23:07:26 +1100 (AEDT)
-Received: from fraeml705-chm.china.huawei.com (unknown [172.18.147.206])
- by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4CxVbb5TPyz67NMq;
- Thu, 17 Dec 2020 19:47:23 +0800 (CST)
-Received: from lhreml724-chm.china.huawei.com (10.201.108.75) by
- fraeml705-chm.china.huawei.com (10.206.15.54) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2106.2; Thu, 17 Dec 2020 12:50:17 +0100
-Received: from [10.210.165.142] (10.210.165.142) by
- lhreml724-chm.china.huawei.com (10.201.108.75) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2106.2; Thu, 17 Dec 2020 11:50:16 +0000
-Subject: Re: [PATCH v2 01/17] ibmvfc: add vhost fields and defaults for MQ
- enablement
-To: Tyrel Datwyler <tyreld@linux.ibm.com>, Hannes Reinecke <hare@suse.de>,
- Brian King <brking@linux.vnet.ibm.com>,
- <james.bottomley@hansenpartnership.com>
-References: <20201202005329.4538-1-tyreld@linux.ibm.com>
- <20201202005329.4538-2-tyreld@linux.ibm.com>
- <a11c0e6a-cfa6-0dc4-5d34-6fd35ae1f29b@linux.vnet.ibm.com>
- <38903a4f-9253-0b4b-6f67-af78ec86175f@linux.ibm.com>
- <efbfe9e9-c692-80a1-f5b4-55473d8193e4@linux.vnet.ibm.com>
- <6ce79011-d288-7a49-3d51-262da58d8486@suse.de>
- <f226e3f9-60e9-b96a-ecc3-2e4008e08bac@linux.ibm.com>
-From: John Garry <john.garry@huawei.com>
-Message-ID: <a2b06604-4e85-a748-f079-104882e16fe1@huawei.com>
-Date: Thu, 17 Dec 2020 11:49:35 +0000
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CxW9436yszDqTl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2020 23:12:56 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 210749] New: sysfs: cannot create duplicate filename
+ '/bus/nvmem/devices/module-vpd'
+Date: Thu, 17 Dec 2020 12:12:53 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cf_regression attachments.created
+Message-ID: <bug-210749-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-In-Reply-To: <f226e3f9-60e9-b96a-ecc3-2e4008e08bac@linux.ibm.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.210.165.142]
-X-ClientProxiedBy: lhreml701-chm.china.huawei.com (10.201.108.50) To
- lhreml724-chm.china.huawei.com (10.201.108.75)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,88 +71,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08/12/2020 22:37, Tyrel Datwyler wrote:
-> On 12/7/20 3:56 AM, Hannes Reinecke wrote:
->> On 12/4/20 3:26 PM, Brian King wrote:
->>> On 12/2/20 11:27 AM, Tyrel Datwyler wrote:
->>>> On 12/2/20 7:14 AM, Brian King wrote:
->>>>> On 12/1/20 6:53 PM, Tyrel Datwyler wrote:
->>>>>> Introduce several new vhost fields for managing MQ state of the adapter
->>>>>> as well as initial defaults for MQ enablement.
->>>>>>
->>>>>> Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
->>>>>> ---
->>>>>>    drivers/scsi/ibmvscsi/ibmvfc.c |  9 ++++++++-
->>>>>>    drivers/scsi/ibmvscsi/ibmvfc.h | 13 +++++++++++--
->>>>>>    2 files changed, 19 insertions(+), 3 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
->>>>>> index 42e4d35e0d35..f1d677a7423d 100644
->>>>>> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
->>>>>> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
->>>>>> @@ -5161,12 +5161,13 @@ static int ibmvfc_probe(struct vio_dev *vdev, const
->>>>>> struct vio_device_id *id)
->>>>>>        }
->>>>>>          shost->transportt = ibmvfc_transport_template;
->>>>>> -    shost->can_queue = max_requests;
->>>>>> +    shost->can_queue = (max_requests / IBMVFC_SCSI_HW_QUEUES);
->>>>>
->>>>> This doesn't look right. can_queue is the SCSI host queue depth, not the MQ
->>>>> queue depth.
->>>>
->>>> Our max_requests is the total number commands allowed across all queues. From
->>>> what I understand is can_queue is the total number of commands in flight allowed
->>>> for each hw queue.
->>>>
->>>>           /*
->>>>            * In scsi-mq mode, the number of hardware queues supported by the LLD.
->>>>            *
->>>>            * Note: it is assumed that each hardware queue has a queue depth of
->>>>            * can_queue. In other words, the total queue depth per host
->>>>            * is nr_hw_queues * can_queue. However, for when host_tagset is set,
->>>>            * the total queue depth is can_queue.
->>>>            */
->>>>
->>>> We currently don't use the host wide shared tagset.
->>>
->>> Ok. I missed that bit... In that case, since we allocate by default only 100
->>> event structs. If we slice that across IBMVFC_SCSI_HW_QUEUES (16) queues, then
->>> we end up with only about 6 commands that can be outstanding per queue,
->>> which is going to really hurt performance... I'd suggest bumping up
->>> IBMVFC_MAX_REQUESTS_DEFAULT from 100 to 1000 as a starting point.
->>>
->> Before doing that I'd rather use the host-wide shared tagset.
->> Increasing the number of requests will increase the memory footprint of the
->> driver (as each request will be statically allocated).
+https://bugzilla.kernel.org/show_bug.cgi?id=3D210749
 
-Exposing HW queues increases memory footprint as we allocate the static 
-requests per HW queue ctx, regardless of shared hostwide tagset enabled 
-or not. This could prob be improved.
+            Bug ID: 210749
+           Summary: sysfs: cannot create duplicate filename
+                    '/bus/nvmem/devices/module-vpd'
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 5.10.1
+          Hardware: PPC-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-64
+          Assignee: platform_ppc-64@kernel-bugs.osdl.org
+          Reporter: erhard_f@mailbox.org
+        Regression: No
 
->>
-> 
-> In the case where we use host-wide how do I determine the queue depth per
-> hardware queue? Is is hypothetically can_queue or is it (can_queue /
-> nr_hw_queues)? We want to allocate an event pool per-queue which made sense
-> without host-wide tags since the queue depth per hw queue is exactly can_queue.
-> 
+Created attachment 294193
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D294193&action=3Dedit
+dmesg (kernel 5.10.1, Talos II)
 
-Generally hw queue depth should be same as can_queue. And this applies 
-when hostwide shared tags is enabled as well.
+[...]
+sysfs: cannot create duplicate filename '/bus/nvmem/devices/module-vpd'
+CPU: 4 PID: 349 Comm: systemd-udevd Not tainted 5.10.1-gentoo-TalosII #1
+Call Trace:
+[c00000001b93eb70] [c0000000007ea2c8] .dump_stack+0xe4/0x13c (unreliable)
+[c00000001b93ec10] [c0000000004d63a8] .sysfs_warn_dup+0x78/0xb0
+[c00000001b93eca0] [c0000000004d69ec]
+.sysfs_do_create_link_sd.isra.0+0x13c/0x150
+[c00000001b93ed40] [c0000000008be3a0] .bus_add_device+0x80/0x190
+[c00000001b93edd0] [c0000000008b8f2c] .device_add+0x41c/0x990
+[c00000001b93eea0] [c000000000952f28] .nvmem_register+0x1f8/0xae0
+[c00000001b93ef90] [c00000000095385c] .devm_nvmem_register+0x4c/0xb0
+[c00000001b93f020] [c008000006de8c7c] .at24_probe+0x67c/0x8a0 [at24]
+[c00000001b93f2a0] [c00000000091cfa8] .i2c_device_probe+0x158/0x3c0
+[c00000001b93f330] [c0000000008bfd04] .really_probe+0x134/0x500
+[c00000001b93f3e0] [c0000000008c02f8] .driver_probe_device+0x78/0x110
+[c00000001b93f460] [c0000000008c06bc] .device_driver_attach+0xbc/0xf0
+[c00000001b93f4f0] [c0000000008c0768] .__driver_attach+0x78/0x140
+[c00000001b93f580] [c0000000008bcbac] .bus_for_each_dev+0x9c/0x120
+[c00000001b93f630] [c0000000008bf404] .driver_attach+0x24/0x40
+[c00000001b93f6a0] [c0000000008be958] .bus_add_driver+0x1c8/0x2a0
+[c00000001b93f740] [c0000000008c1158] .driver_register+0x88/0x190
+[c00000001b93f7c0] [c00000000091e068] .i2c_register_driver+0x58/0xc0
+[c00000001b93f840] [c008000006de8ff4] .at24_init+0x5c/0x70 [at24]
+[c00000001b93f8b0] [c00000000001135c] .do_one_initcall+0x7c/0x490
+[c00000001b93f9a0] [c0000000001d1fac] .do_init_module+0x6c/0x2e0
+[c00000001b93fa30] [c0000000001d50e0] .load_module+0x2c80/0x3450
+[c00000001b93fc40] [c0000000001d5b28] .__do_sys_finit_module+0xc8/0x120
+[c00000001b93fd70] [c000000000037ab0] .system_call_exception+0x160/0x2b0
+[c00000001b93fe20] [c00000000000cbe0] system_call_common+0xf0/0x27c
+at24: probe of 1-0050 failed with error -17
+at24 2-0050: probe
+sysfs: cannot create duplicate filename '/bus/nvmem/devices/module-vpd'
+CPU: 4 PID: 349 Comm: systemd-udevd Not tainted 5.10.1-gentoo-TalosII #1
+Call Trace:
+[c00000001b93eb70] [c0000000007ea2c8] .dump_stack+0xe4/0x13c (unreliable)
+[c00000001b93ec10] [c0000000004d63a8] .sysfs_warn_dup+0x78/0xb0
+[c00000001b93eca0] [c0000000004d69ec]
+.sysfs_do_create_link_sd.isra.0+0x13c/0x150
+[c00000001b93ed40] [c0000000008be3a0] .bus_add_device+0x80/0x190
+[c00000001b93edd0] [c0000000008b8f2c] .device_add+0x41c/0x990
+[c00000001b93eea0] [c000000000952f28] .nvmem_register+0x1f8/0xae0
+[c00000001b93ef90] [c00000000095385c] .devm_nvmem_register+0x4c/0xb0
+[c00000001b93f020] [c008000006de8c7c] .at24_probe+0x67c/0x8a0 [at24]
+[c00000001b93f2a0] [c00000000091cfa8] .i2c_device_probe+0x158/0x3c0
+[c00000001b93f330] [c0000000008bfd04] .really_probe+0x134/0x500
+[c00000001b93f3e0] [c0000000008c02f8] .driver_probe_device+0x78/0x110
+[c00000001b93f460] [c0000000008c06bc] .device_driver_attach+0xbc/0xf0
+[c00000001b93f4f0] [c0000000008c0768] .__driver_attach+0x78/0x140
+[c00000001b93f580] [c0000000008bcbac] .bus_for_each_dev+0x9c/0x120
+[c00000001b93f630] [c0000000008bf404] .driver_attach+0x24/0x40
+[c00000001b93f6a0] [c0000000008be958] .bus_add_driver+0x1c8/0x2a0
+[c00000001b93f740] [c0000000008c1158] .driver_register+0x88/0x190
+[c00000001b93f7c0] [c00000000091e068] .i2c_register_driver+0x58/0xc0
+[c00000001b93f840] [c008000006de8ff4] .at24_init+0x5c/0x70 [at24]
+[c00000001b93f8b0] [c00000000001135c] .do_one_initcall+0x7c/0x490
+[c00000001b93f9a0] [c0000000001d1fac] .do_init_module+0x6c/0x2e0
+[c00000001b93fa30] [c0000000001d50e0] .load_module+0x2c80/0x3450
+[c00000001b93fc40] [c0000000001d5b28] .__do_sys_finit_module+0xc8/0x120
+[c00000001b93fd70] [c000000000037ab0] .system_call_exception+0x160/0x2b0
+[c00000001b93fe20] [c00000000000cbe0] system_call_common+0xf0/0x27c
+at24: probe of 2-0050 failed with error -17
+at24 3-0050: probe
+[...]
 
-We do this for hisi_sas: the host can queue max 4096 commands over all 
-queues, so we set .can_queue = 4096*, set HW queue depth = 4096, and set 
-.host_tagset = 1.
+ # inxi -b --no-host
+System:    Kernel: 5.10.1-gentoo-TalosII ppc64 bits: 64 Console: tty 1=20
+           Distro: Gentoo Base System release 2.7=20
+Machine:   Type: PowerPC Device System: T2P9D01 REV 1.01 details: PowerNV
+T2P9D01 REV 1.01=20
+           rev: 2.2 (pvr 004e 1202)=20
+CPU:       Info: 32-Core POWER9 altivec supported [MCP] speed: 2170 MHz
+min/max: 2154/3800 MHz=20
+Graphics:  Device-1: AMD Turks XT [Radeon HD 6670/7670] driver: radeon v:
+kernel=20
+           Device-2: ASPEED Graphics Family driver: N/A=20
+           Display: server: X.org 1.20.10 driver: ati,radeon unloaded:
+fbdev,modesetting tty: 104x53=20
+           Message: Advanced graphics data unavailable in console for root.=
+=20
+Network:   Device-1: Broadcom and subsidiaries NetXtreme BCM5719 Gigabit
+Ethernet PCIe driver: tg3=20
+           Device-2: Broadcom and subsidiaries NetXtreme BCM5719 Gigabit
+Ethernet PCIe driver: tg3=20
+Drives:    Local Storage: total: 447.13 GiB used: 16.64 GiB (3.7%)=20
+Info:      Processes: 445 Uptime: 11m Memory: 62.75 GiB used: 1.89 GiB (3.0=
+%)
+Init: systemd=20
+           runlevel: 5 Shell: Bash inxi: 3.1.06
 
-* we need to reserve some commands for internal IO, so this is reduced a 
-little
-
-Thanks,
-John
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
