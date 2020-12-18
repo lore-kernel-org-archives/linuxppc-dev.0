@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F572C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 23:22:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A331C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 23:24:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B442523BA7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 23:22:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B442523BA7
+	by mail.kernel.org (Postfix) with ESMTPS id 387AA23BA7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 23:24:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 387AA23BA7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyPzV41sWzDqXw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 10:22:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyQ0z4hjwzDqWw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 10:24:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -28,59 +28,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=pBffWbQf; dkim-atps=neutral
+ header.s=pp1 header.b=ITP1zEAZ; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyPvl5DZxzDqWs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyPvl534PzDqWh
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 10:19:31 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BIN39Rv187961; Fri, 18 Dec 2020 18:19:28 -0500
+ 0BIN31VT070422; Fri, 18 Dec 2020 18:19:26 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=cj6IE0ErS4Q/shDuCwCjKhD6UD8J6yps+V4H4B4GawM=;
- b=pBffWbQfKJ270uiP+rimHWnHIgq+Ca0+9jt6qN+f6yTBNQNSd5oPC+JlNliBg95H6m15
- 4qGtBHSJsrFQ0UqRZFhODqZhHLLlV5NBC561Bpetvxam9Ny3RRxXxkXqVJYGZouAS2Pi
- 856e2sABg8jjH+ZOMWBiGCLHxzqMqjO/yV3MX3vgEPs09PnBMgEYWbmNE8zHXOE5nD/G
- 6ZheuzLwD3guhDw0hfnK6aY7/enEFdB1Nt4ovJElN+hVwuwTE/z3Ts/jlKll8VJXQM7N
- i2oIoH+ogn2JOtc1A368vi40MhtN8d6P1UslNJjEgI8MBjM/ANoN3LJBpaU9JA8gSdwb +g== 
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35h49227ph-1
+ bh=zk4fwQ1mpTtaAgsE4A7FWK1EOTJDm11omUPkZUiLBb4=;
+ b=ITP1zEAZbZ83P6yIbHeqKllAKxTol90Zazm6/gclomRvUYT5hRJi13vJbiLp5RywiRnd
+ BosAx4bdNPPu9iJt7UGbDwHtx2fnCHbx2d0aEDKaVG7wgit2rKS3OQiFNbQRTUrmubM3
+ XDX3bcDlM9mPsafgBVyodYWAbEWD2VezTVzdHmCWxkh5qTTIW6/bBnLVkrWL5WZlp8iH
+ fYcMpO7EQvcLckY6Fk3dmswvCVCBew/h21jYBZ+ZFVYZsa4z3BBgitvzGP3dzT5JTjOX
+ d8Pdfq5vlvkHXjUZQIZszbvvjC3C1OtG5BRNRtOEnavQt558CE/SXTGpLI0+vGJfuyuX Gw== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35h4a9j7f2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Dec 2020 18:19:28 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BINBV9i025846;
- Fri, 18 Dec 2020 23:19:27 GMT
+ Fri, 18 Dec 2020 18:19:26 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BINH1sA007149;
+ Fri, 18 Dec 2020 23:19:25 GMT
 Received: from b03cxnp07029.gho.boulder.ibm.com
  (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma02wdc.us.ibm.com with ESMTP id 35cng9trur-1
+ by ppma03dal.us.ibm.com with ESMTP id 35cngafehk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Dec 2020 23:19:26 +0000
+ Fri, 18 Dec 2020 23:19:25 +0000
 Received: from b03ledav002.gho.boulder.ibm.com
  (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
  by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0BINJOcj26673484
+ 0BINJOHm27656534
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Fri, 18 Dec 2020 23:19:24 GMT
 Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C260113604F;
- Fri, 18 Dec 2020 23:19:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E908D136051;
+ Fri, 18 Dec 2020 23:19:23 +0000 (GMT)
 Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6EA3D136051;
- Fri, 18 Dec 2020 23:19:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 94A5613604F;
+ Fri, 18 Dec 2020 23:19:23 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 18 Dec 2020 23:19:24 +0000 (GMT)
+ Fri, 18 Dec 2020 23:19:23 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH 3/5] ibmvfc: define per-queue state/list locks
-Date: Fri, 18 Dec 2020 17:19:14 -0600
-Message-Id: <20201218231916.279833-4-tyreld@linux.ibm.com>
+Subject: [PATCH 1/5] ibmvfc: define generic queue structure for CRQs
+Date: Fri, 18 Dec 2020 17:19:12 -0600
+Message-Id: <20201218231916.279833-2-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201218231916.279833-1-tyreld@linux.ibm.com>
 References: <20201218231916.279833-1-tyreld@linux.ibm.com>
@@ -91,10 +91,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-18_14:2020-12-18,
  2020-12-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 mlxscore=0
- spamscore=0 clxscore=1015 mlxlogscore=999 phishscore=0 malwarescore=0
- adultscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxlogscore=999
+ impostorscore=0 malwarescore=0 spamscore=0 clxscore=1015 bulkscore=0
+ priorityscore=1501 adultscore=0 mlxscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012180153
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,409 +115,367 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Define per-queue locks for protecting queue state and event pool
-sent/free lists. The evt list lock is initially redundant but it allows
-the driver to be modified in the follow-up patches to relax the queue
-locking around submissions and completions.
+The primary and async CRQs are nearly identical outside of the format
+and length of each message entry in the dma mapped page that represents
+the queue data. These queues can be represented with a generic queue
+structure that uses a union to differentiate between message format of
+the mapped page.
+
+This structure will further be leveraged in a followup patcheset that
+introduce Sub-CRQs.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 93 +++++++++++++++++++++++++++-------
- drivers/scsi/ibmvscsi/ibmvfc.h |  7 ++-
- 2 files changed, 80 insertions(+), 20 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 135 +++++++++++++++++++++------------
+ drivers/scsi/ibmvscsi/ibmvfc.h |  34 +++++----
+ 2 files changed, 107 insertions(+), 62 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 8de2a25b05ee..69a6401ca504 100644
+index 42e4d35e0d35..c8e7c4701ac4 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -176,8 +176,9 @@ static void ibmvfc_trc_start(struct ibmvfc_event *evt)
- 	struct ibmvfc_mad_common *mad = &evt->iu.mad_common;
- 	struct ibmvfc_fcp_cmd_iu *iu = ibmvfc_get_fcp_iu(vhost, vfc_cmd);
- 	struct ibmvfc_trace_entry *entry;
-+	int index = atomic_inc_return(&vhost->trace_index) & IBMVFC_TRACE_INDEX_MASK;
- 
--	entry = &vhost->trace[vhost->trace_index++];
-+	entry = &vhost->trace[index];
- 	entry->evt = evt;
- 	entry->time = jiffies;
- 	entry->fmt = evt->crq.format;
-@@ -211,8 +212,10 @@ static void ibmvfc_trc_end(struct ibmvfc_event *evt)
- 	struct ibmvfc_mad_common *mad = &evt->xfer_iu->mad_common;
- 	struct ibmvfc_fcp_cmd_iu *iu = ibmvfc_get_fcp_iu(vhost, vfc_cmd);
- 	struct ibmvfc_fcp_rsp *rsp = ibmvfc_get_fcp_rsp(vhost, vfc_cmd);
--	struct ibmvfc_trace_entry *entry = &vhost->trace[vhost->trace_index++];
-+	struct ibmvfc_trace_entry *entry;
-+	int index = atomic_inc_return(&vhost->trace_index) & IBMVFC_TRACE_INDEX_MASK;
- 
-+	entry = &vhost->trace[index];
- 	entry->evt = evt;
- 	entry->time = jiffies;
- 	entry->fmt = evt->crq.format;
-@@ -805,6 +808,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
- 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
- 
- 	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	spin_lock(vhost->crq.q_lock);
- 	vhost->state = IBMVFC_NO_CRQ;
- 	vhost->logged_in = 0;
- 
-@@ -821,6 +825,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
- 		dev_warn(vhost->dev, "Partner adapter not ready\n");
- 	else if (rc != 0)
- 		dev_warn(vhost->dev, "Couldn't register crq (rc=%d)\n", rc);
-+	spin_unlock(vhost->crq.q_lock);
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 
- 	return rc;
-@@ -853,10 +858,16 @@ static int ibmvfc_valid_event(struct ibmvfc_event_pool *pool,
- static void ibmvfc_free_event(struct ibmvfc_event *evt)
- {
- 	struct ibmvfc_event_pool *pool = &evt->queue->evt_pool;
-+	unsigned long flags;
- 
- 	BUG_ON(!ibmvfc_valid_event(pool, evt));
- 	BUG_ON(atomic_inc_return(&evt->free) != 1);
-+
-+	spin_lock_irqsave(&evt->queue->l_lock, flags);
- 	list_add_tail(&evt->queue_list, &evt->queue->free);
-+	if (evt->eh_comp)
-+		complete(evt->eh_comp);
-+	spin_unlock_irqrestore(&evt->queue->l_lock, flags);
- }
- 
- /**
-@@ -875,12 +886,27 @@ static void ibmvfc_scsi_eh_done(struct ibmvfc_event *evt)
- 		cmnd->scsi_done(cmnd);
+@@ -660,7 +660,7 @@ static void ibmvfc_init_host(struct ibmvfc_host *vhost)
  	}
  
--	if (evt->eh_comp)
--		complete(evt->eh_comp);
--
- 	ibmvfc_free_event(evt);
+ 	if (!ibmvfc_set_host_state(vhost, IBMVFC_INITIALIZING)) {
+-		memset(vhost->async_crq.msgs, 0, PAGE_SIZE);
++		memset(vhost->async_crq.msgs.async, 0, PAGE_SIZE);
+ 		vhost->async_crq.cur = 0;
+ 
+ 		list_for_each_entry(tgt, &vhost->targets, queue)
+@@ -713,6 +713,23 @@ static int ibmvfc_send_crq_init_complete(struct ibmvfc_host *vhost)
+ 	return ibmvfc_send_crq(vhost, 0xC002000000000000LL, 0);
  }
  
 +/**
-+ * ibmvfc_complete_purge - Complete failed command list
-+ * @purge_list:		list head of failed commands
++ * ibmvfc_free_queue - Deallocate queue
++ * @vhost:	ibmvfc host struct
++ * @queue:	ibmvfc queue struct
 + *
-+ * This function runs completions on commands to fail as a result of a
-+ * host reset or platform migration. Caller must hold host_lock.
++ * Unmaps dma and deallocates page for messages
 + **/
-+static void ibmvfc_complete_purge(struct list_head *purge_list)
++static void ibmvfc_free_queue(struct ibmvfc_host *vhost,
++			      struct ibmvfc_queue *queue)
 +{
-+	struct ibmvfc_event *evt, *pos;
++	struct device *dev = vhost->dev;
 +
-+	list_for_each_entry_safe(evt, pos, purge_list, queue_list) {
-+		list_del(&evt->queue_list);
-+		ibmvfc_trc_end(evt);
-+		evt->done(evt);
-+	}
++	dma_unmap_single(dev, queue->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
++	free_page((unsigned long)queue->msgs.handle);
++	queue->msgs.handle = NULL;
 +}
 +
  /**
-  * ibmvfc_fail_request - Fail request with specified error code
-  * @evt:		ibmvfc event struct
-@@ -897,10 +923,7 @@ static void ibmvfc_fail_request(struct ibmvfc_event *evt, int error_code)
- 	} else
- 		evt->xfer_iu->mad_common.status = cpu_to_be16(IBMVFC_MAD_DRIVER_FAILED);
- 
--	list_del(&evt->queue_list);
- 	del_timer(&evt->timer);
--	ibmvfc_trc_end(evt);
--	evt->done(evt);
- }
- 
- /**
-@@ -914,10 +937,14 @@ static void ibmvfc_fail_request(struct ibmvfc_event *evt, int error_code)
- static void ibmvfc_purge_requests(struct ibmvfc_host *vhost, int error_code)
+  * ibmvfc_release_crq_queue - Deallocates data and unregisters CRQ
+  * @vhost:	ibmvfc host struct
+@@ -724,7 +741,7 @@ static void ibmvfc_release_crq_queue(struct ibmvfc_host *vhost)
  {
- 	struct ibmvfc_event *evt, *pos;
-+	unsigned long flags;
+ 	long rc = 0;
+ 	struct vio_dev *vdev = to_vio_dev(vhost->dev);
+-	struct ibmvfc_crq_queue *crq = &vhost->crq;
++	struct ibmvfc_queue *crq = &vhost->crq;
  
- 	ibmvfc_dbg(vhost, "Purging all requests\n");
-+	spin_lock_irqsave(&vhost->crq.l_lock, flags);
- 	list_for_each_entry_safe(evt, pos, &vhost->crq.sent, queue_list)
- 		ibmvfc_fail_request(evt, error_code);
-+	list_splice_init(&vhost->crq.sent, &vhost->purge);
-+	spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
- }
+ 	ibmvfc_dbg(vhost, "Releasing CRQ\n");
+ 	free_irq(vdev->irq, vhost);
+@@ -737,8 +754,8 @@ static void ibmvfc_release_crq_queue(struct ibmvfc_host *vhost)
  
- /**
-@@ -1314,6 +1341,7 @@ static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
- 
- 	INIT_LIST_HEAD(&queue->sent);
- 	INIT_LIST_HEAD(&queue->free);
-+	spin_lock_init(&queue->l_lock);
- 
- 	for (i = 0; i < pool->size; ++i) {
- 		struct ibmvfc_event *evt = &pool->events[i];
-@@ -1368,11 +1396,14 @@ static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
- static struct ibmvfc_event *ibmvfc_get_event(struct ibmvfc_queue *queue)
- {
- 	struct ibmvfc_event *evt;
-+	unsigned long flags;
- 
-+	spin_lock_irqsave(&queue->l_lock, flags);
- 	BUG_ON(list_empty(&queue->free));
- 	evt = list_entry(queue->free.next, struct ibmvfc_event, queue_list);
- 	atomic_set(&evt->free, 0);
- 	list_del(&evt->queue_list);
-+	spin_unlock_irqrestore(&queue->l_lock, flags);
- 	return evt;
- }
- 
-@@ -1506,6 +1537,7 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 			     struct ibmvfc_host *vhost, unsigned long timeout)
- {
- 	__be64 *crq_as_u64 = (__be64 *) &evt->crq;
-+	unsigned long flags;
- 	int rc;
- 
- 	/* Copy the IU into the transfer area */
-@@ -1517,7 +1549,6 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 	else
- 		BUG();
- 
--	list_add_tail(&evt->queue_list, &evt->queue->sent);
- 	timer_setup(&evt->timer, ibmvfc_timeout, 0);
- 
- 	if (timeout) {
-@@ -1525,11 +1556,15 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 		add_timer(&evt->timer);
- 	}
- 
-+	spin_lock_irqsave(&evt->queue->l_lock, flags);
-+	list_add_tail(&evt->queue_list, &evt->queue->sent);
+ 	vhost->state = IBMVFC_NO_CRQ;
+ 	vhost->logged_in = 0;
+-	dma_unmap_single(vhost->dev, crq->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
+-	free_page((unsigned long)crq->msgs);
 +
- 	mb();
++	ibmvfc_free_queue(vhost, crq);
+ }
  
- 	if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
- 				  be64_to_cpu(crq_as_u64[1])))) {
- 		list_del(&evt->queue_list);
-+		spin_unlock_irqrestore(&evt->queue->l_lock, flags);
- 		del_timer(&evt->timer);
+ /**
+@@ -778,7 +795,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
+ 	int rc = 0;
+ 	unsigned long flags;
+ 	struct vio_dev *vdev = to_vio_dev(vhost->dev);
+-	struct ibmvfc_crq_queue *crq = &vhost->crq;
++	struct ibmvfc_queue *crq = &vhost->crq;
  
- 		/* If send_crq returns H_CLOSED, return SCSI_MLQUEUE_HOST_BUSY.
-@@ -1554,8 +1589,10 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 			evt->xfer_iu->mad_common.status = cpu_to_be16(IBMVFC_MAD_CRQ_ERROR);
+ 	/* Close the CRQ */
+ 	do {
+@@ -792,7 +809,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
+ 	vhost->logged_in = 0;
  
- 		evt->done(evt);
--	} else
-+	} else {
-+		spin_unlock_irqrestore(&evt->queue->l_lock, flags);
- 		ibmvfc_trc_start(evt);
-+	}
+ 	/* Clean out the queue */
+-	memset(crq->msgs, 0, PAGE_SIZE);
++	memset(crq->msgs.crq, 0, PAGE_SIZE);
+ 	crq->cur = 0;
  
+ 	/* And re-open it again */
+@@ -1238,6 +1255,7 @@ static void ibmvfc_gather_partition_info(struct ibmvfc_host *vhost)
+ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+ {
+ 	struct ibmvfc_npiv_login *login_info = &vhost->login_info;
++	struct ibmvfc_queue *async_crq = &vhost->async_crq;
+ 	struct device_node *of_node = vhost->dev->of_node;
+ 	const char *location;
+ 
+@@ -1257,7 +1275,8 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+ 	login_info->max_cmds = cpu_to_be32(max_requests + IBMVFC_NUM_INTERNAL_REQ);
+ 	login_info->capabilities = cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN);
+ 	login_info->async.va = cpu_to_be64(vhost->async_crq.msg_token);
+-	login_info->async.len = cpu_to_be32(vhost->async_crq.size * sizeof(*vhost->async_crq.msgs));
++	login_info->async.len = cpu_to_be32(async_crq->size *
++					    sizeof(*async_crq->msgs.async));
+ 	strncpy(login_info->partition_name, vhost->partition_name, IBMVFC_MAX_NAME);
+ 	strncpy(login_info->device_name,
+ 		dev_name(&vhost->host->shost_gendev), IBMVFC_MAX_NAME);
+@@ -3230,10 +3249,10 @@ static struct scsi_host_template driver_template = {
+  **/
+ static struct ibmvfc_async_crq *ibmvfc_next_async_crq(struct ibmvfc_host *vhost)
+ {
+-	struct ibmvfc_async_crq_queue *async_crq = &vhost->async_crq;
++	struct ibmvfc_queue *async_crq = &vhost->async_crq;
+ 	struct ibmvfc_async_crq *crq;
+ 
+-	crq = &async_crq->msgs[async_crq->cur];
++	crq = &async_crq->msgs.async[async_crq->cur];
+ 	if (crq->valid & 0x80) {
+ 		if (++async_crq->cur == async_crq->size)
+ 			async_crq->cur = 0;
+@@ -3253,10 +3272,10 @@ static struct ibmvfc_async_crq *ibmvfc_next_async_crq(struct ibmvfc_host *vhost)
+  **/
+ static struct ibmvfc_crq *ibmvfc_next_crq(struct ibmvfc_host *vhost)
+ {
+-	struct ibmvfc_crq_queue *queue = &vhost->crq;
++	struct ibmvfc_queue *queue = &vhost->crq;
+ 	struct ibmvfc_crq *crq;
+ 
+-	crq = &queue->msgs[queue->cur];
++	crq = &queue->msgs.crq[queue->cur];
+ 	if (crq->valid & 0x80) {
+ 		if (++queue->cur == queue->size)
+ 			queue->cur = 0;
+@@ -4895,6 +4914,54 @@ static int ibmvfc_work(void *data)
  	return 0;
  }
-@@ -1663,9 +1700,6 @@ static void ibmvfc_scsi_done(struct ibmvfc_event *evt)
- 		cmnd->scsi_done(cmnd);
- 	}
  
--	if (evt->eh_comp)
--		complete(evt->eh_comp);
--
- 	ibmvfc_free_event(evt);
- }
- 
-@@ -2219,28 +2253,28 @@ static int ibmvfc_wait_for_ops(struct ibmvfc_host *vhost, void *device,
- 	ENTER;
- 	do {
- 		wait = 0;
--		spin_lock_irqsave(vhost->host->host_lock, flags);
-+		spin_lock_irqsave(&vhost->crq.l_lock, flags);
- 		list_for_each_entry(evt, &vhost->crq.sent, queue_list) {
- 			if (match(evt, device)) {
- 				evt->eh_comp = &comp;
- 				wait++;
- 			}
- 		}
--		spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+		spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
- 
- 		if (wait) {
- 			timeout = wait_for_completion_timeout(&comp, timeout);
- 
- 			if (!timeout) {
- 				wait = 0;
--				spin_lock_irqsave(vhost->host->host_lock, flags);
-+				spin_lock_irqsave(&vhost->crq.l_lock, flags);
- 				list_for_each_entry(evt, &vhost->crq.sent, queue_list) {
- 					if (match(evt, device)) {
- 						evt->eh_comp = NULL;
- 						wait++;
- 					}
- 				}
--				spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+				spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
- 				if (wait)
- 					dev_err(vhost->dev, "Timed out waiting for aborted commands\n");
- 				LEAVE;
-@@ -2277,14 +2311,16 @@ static int ibmvfc_cancel_all(struct scsi_device *sdev, int type)
- 	u16 status;
- 
- 	ENTER;
--	spin_lock_irqsave(vhost->host->host_lock, flags);
- 	found_evt = NULL;
-+	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	spin_lock(&vhost->crq.l_lock);
- 	list_for_each_entry(evt, &vhost->crq.sent, queue_list) {
- 		if (evt->cmnd && evt->cmnd->device == sdev) {
- 			found_evt = evt;
- 			break;
- 		}
- 	}
-+	spin_unlock(&vhost->crq.l_lock);
- 
- 	if (!found_evt) {
- 		if (vhost->log_level > IBMVFC_DEFAULT_LOG_LEVEL)
-@@ -2414,14 +2450,16 @@ static int ibmvfc_abort_task_set(struct scsi_device *sdev)
- 	unsigned long flags, timeout = IBMVFC_ABORT_TIMEOUT;
- 	int rsp_code = 0;
- 
--	spin_lock_irqsave(vhost->host->host_lock, flags);
- 	found_evt = NULL;
-+	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	spin_lock(&vhost->crq.l_lock);
- 	list_for_each_entry(evt, &vhost->crq.sent, queue_list) {
- 		if (evt->cmnd && evt->cmnd->device == sdev) {
- 			found_evt = evt;
- 			break;
- 		}
- 	}
-+	spin_unlock(&vhost->crq.l_lock);
- 
- 	if (!found_evt) {
- 		if (vhost->log_level > IBMVFC_DEFAULT_LOG_LEVEL)
-@@ -2935,7 +2973,9 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
- 	}
- 
- 	del_timer(&evt->timer);
-+	spin_lock(&evt->queue->l_lock);
- 	list_del(&evt->queue_list);
-+	spin_unlock(&evt->queue->l_lock);
- 	ibmvfc_trc_end(evt);
- 	evt->done(evt);
- }
-@@ -3328,6 +3368,7 @@ static void ibmvfc_tasklet(void *data)
- 	int done = 0;
- 
- 	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	spin_lock(vhost->crq.q_lock);
- 	while (!done) {
- 		/* Pull all the valid messages off the async CRQ */
- 		while ((async = ibmvfc_next_async_crq(vhost)) != NULL) {
-@@ -3358,6 +3399,7 @@ static void ibmvfc_tasklet(void *data)
- 			done = 1;
- 	}
- 
-+	spin_unlock(vhost->crq.q_lock);
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- }
- 
-@@ -4734,6 +4776,7 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
- 	struct ibmvfc_target *tgt;
- 	unsigned long flags;
- 	struct fc_rport *rport;
-+	LIST_HEAD(purge);
- 	int rc;
- 
- 	ibmvfc_log_ae(vhost, vhost->events_to_log);
-@@ -4746,6 +4789,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
- 		break;
- 	case IBMVFC_HOST_ACTION_RESET:
- 		vhost->action = IBMVFC_HOST_ACTION_TGT_DEL;
-+		list_splice_init(&vhost->purge, &purge);
-+		ibmvfc_complete_purge(&purge);
- 		spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 		rc = ibmvfc_reset_crq(vhost);
- 		spin_lock_irqsave(vhost->host->host_lock, flags);
-@@ -4759,6 +4804,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
- 		break;
- 	case IBMVFC_HOST_ACTION_REENABLE:
- 		vhost->action = IBMVFC_HOST_ACTION_TGT_DEL;
-+		list_splice_init(&vhost->purge, &purge);
-+		ibmvfc_complete_purge(&purge);
- 		spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 		rc = ibmvfc_reenable_crq_queue(vhost);
- 		spin_lock_irqsave(vhost->host->host_lock, flags);
-@@ -4936,6 +4983,9 @@ static int ibmvfc_alloc_queue(struct ibmvfc_host *vhost,
- 	size_t fmt_size;
- 
- 	ENTER;
-+	spin_lock_init(&queue->_lock);
-+	queue->q_lock = &queue->_lock;
++/**
++ * ibmvfc_alloc_queue - Allocate queue
++ * @vhost:	ibmvfc host struct
++ * @queue:	ibmvfc queue to allocate
++ * @fmt:	queue format to allocate
++ *
++ * Returns:
++ *	0 on success / non-zero on failure
++ **/
++static int ibmvfc_alloc_queue(struct ibmvfc_host *vhost,
++			      struct ibmvfc_queue *queue,
++			      enum ibmvfc_msg_fmt fmt)
++{
++	struct device *dev = vhost->dev;
++	size_t fmt_size;
 +
- 	switch (fmt) {
- 	case IBMVFC_CRQ_FMT:
- 		fmt_size = sizeof(*queue->msgs.crq);
-@@ -5098,6 +5148,7 @@ static int ibmvfc_alloc_mem(struct ibmvfc_host *vhost)
- 
- 	vhost->trace = kcalloc(IBMVFC_NUM_TRACE_ENTRIES,
- 			       sizeof(struct ibmvfc_trace_entry), GFP_KERNEL);
-+	atomic_set(&vhost->trace_index, -1);
- 
- 	if (!vhost->trace)
- 		goto free_disc_buffer;
-@@ -5214,6 +5265,7 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 
- 	vhost = shost_priv(shost);
- 	INIT_LIST_HEAD(&vhost->targets);
-+	INIT_LIST_HEAD(&vhost->purge);
- 	sprintf(vhost->name, IBMVFC_NAME);
- 	vhost->host = shost;
- 	vhost->dev = dev;
-@@ -5298,6 +5350,7 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- static int ibmvfc_remove(struct vio_dev *vdev)
- {
- 	struct ibmvfc_host *vhost = dev_get_drvdata(&vdev->dev);
-+	LIST_HEAD(purge);
- 	unsigned long flags;
++	ENTER;
++	switch (fmt) {
++	case IBMVFC_CRQ_FMT:
++		fmt_size = sizeof(*queue->msgs.crq);
++		break;
++	case IBMVFC_ASYNC_FMT:
++		fmt_size = sizeof(*queue->msgs.async);
++		break;
++	default:
++		dev_warn(dev, "Unknown command/response queue message format: %d\n", fmt);
++		return -EINVAL;
++	}
++
++	queue->msgs.handle = (void *)get_zeroed_page(GFP_KERNEL);
++	if (!queue->msgs.handle)
++		return -ENOMEM;
++
++	queue->msg_token = dma_map_single(dev, queue->msgs.handle, PAGE_SIZE,
++					  DMA_BIDIRECTIONAL);
++
++	if (dma_mapping_error(dev, queue->msg_token)) {
++		free_page((unsigned long)queue->msgs.handle);
++		queue->msgs.handle = NULL;
++		return -ENOMEM;
++	}
++
++	queue->cur = 0;
++	queue->fmt = fmt;
++	queue->size = PAGE_SIZE / fmt_size;
++	return 0;
++}
++
+ /**
+  * ibmvfc_init_crq - Initializes and registers CRQ with hypervisor
+  * @vhost:	ibmvfc host struct
+@@ -4910,21 +4977,12 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
+ 	int rc, retrc = -ENOMEM;
+ 	struct device *dev = vhost->dev;
+ 	struct vio_dev *vdev = to_vio_dev(dev);
+-	struct ibmvfc_crq_queue *crq = &vhost->crq;
++	struct ibmvfc_queue *crq = &vhost->crq;
  
  	ENTER;
-@@ -5315,6 +5368,8 @@ static int ibmvfc_remove(struct vio_dev *vdev)
+-	crq->msgs = (struct ibmvfc_crq *)get_zeroed_page(GFP_KERNEL);
+-
+-	if (!crq->msgs)
++	if (ibmvfc_alloc_queue(vhost, crq, IBMVFC_CRQ_FMT))
+ 		return -ENOMEM;
  
- 	spin_lock_irqsave(vhost->host->host_lock, flags);
- 	ibmvfc_purge_requests(vhost, DID_ERROR);
-+	list_splice_init(&vhost->purge, &purge);
-+	ibmvfc_complete_purge(&purge);
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 	ibmvfc_free_event_pool(vhost, &vhost->crq);
+-	crq->size = PAGE_SIZE / sizeof(*crq->msgs);
+-	crq->msg_token = dma_map_single(dev, crq->msgs,
+-					PAGE_SIZE, DMA_BIDIRECTIONAL);
+-
+-	if (dma_mapping_error(dev, crq->msg_token))
+-		goto map_failed;
+-
+ 	retrc = rc = plpar_hcall_norets(H_REG_CRQ, vdev->unit_address,
+ 					crq->msg_token, PAGE_SIZE);
  
+@@ -4953,7 +5011,6 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
+ 		goto req_irq_failed;
+ 	}
+ 
+-	crq->cur = 0;
+ 	LEAVE;
+ 	return retrc;
+ 
+@@ -4963,9 +5020,7 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
+ 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+ reg_crq_failed:
+-	dma_unmap_single(dev, crq->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
+-map_failed:
+-	free_page((unsigned long)crq->msgs);
++	ibmvfc_free_queue(vhost, crq);
+ 	return retrc;
+ }
+ 
+@@ -4978,7 +5033,7 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
+  **/
+ static void ibmvfc_free_mem(struct ibmvfc_host *vhost)
+ {
+-	struct ibmvfc_async_crq_queue *async_q = &vhost->async_crq;
++	struct ibmvfc_queue *async_q = &vhost->async_crq;
+ 
+ 	ENTER;
+ 	mempool_destroy(vhost->tgt_pool);
+@@ -4988,9 +5043,7 @@ static void ibmvfc_free_mem(struct ibmvfc_host *vhost)
+ 	dma_free_coherent(vhost->dev, sizeof(*vhost->login_buf),
+ 			  vhost->login_buf, vhost->login_buf_dma);
+ 	dma_pool_destroy(vhost->sg_pool);
+-	dma_unmap_single(vhost->dev, async_q->msg_token,
+-			 async_q->size * sizeof(*async_q->msgs), DMA_BIDIRECTIONAL);
+-	free_page((unsigned long)async_q->msgs);
++	ibmvfc_free_queue(vhost, async_q);
+ 	LEAVE;
+ }
+ 
+@@ -5003,26 +5056,15 @@ static void ibmvfc_free_mem(struct ibmvfc_host *vhost)
+  **/
+ static int ibmvfc_alloc_mem(struct ibmvfc_host *vhost)
+ {
+-	struct ibmvfc_async_crq_queue *async_q = &vhost->async_crq;
++	struct ibmvfc_queue *async_q = &vhost->async_crq;
+ 	struct device *dev = vhost->dev;
+ 
+ 	ENTER;
+-	async_q->msgs = (struct ibmvfc_async_crq *)get_zeroed_page(GFP_KERNEL);
+-	if (!async_q->msgs) {
+-		dev_err(dev, "Couldn't allocate async queue.\n");
++	if (ibmvfc_alloc_queue(vhost, async_q, IBMVFC_ASYNC_FMT)) {
++		dev_err(dev, "Couldn't allocate/map async queue.\n");
+ 		goto nomem;
+ 	}
+ 
+-	async_q->size = PAGE_SIZE / sizeof(struct ibmvfc_async_crq);
+-	async_q->msg_token = dma_map_single(dev, async_q->msgs,
+-					    async_q->size * sizeof(*async_q->msgs),
+-					    DMA_BIDIRECTIONAL);
+-
+-	if (dma_mapping_error(dev, async_q->msg_token)) {
+-		dev_err(dev, "Failed to map async queue\n");
+-		goto free_async_crq;
+-	}
+-
+ 	vhost->sg_pool = dma_pool_create(IBMVFC_NAME, dev,
+ 					 SG_ALL * sizeof(struct srp_direct_buf),
+ 					 sizeof(struct srp_direct_buf), 0);
+@@ -5077,10 +5119,7 @@ static int ibmvfc_alloc_mem(struct ibmvfc_host *vhost)
+ free_sg_pool:
+ 	dma_pool_destroy(vhost->sg_pool);
+ unmap_async_crq:
+-	dma_unmap_single(dev, async_q->msg_token,
+-			 async_q->size * sizeof(*async_q->msgs), DMA_BIDIRECTIONAL);
+-free_async_crq:
+-	free_page((unsigned long)async_q->msgs);
++	ibmvfc_free_queue(vhost, async_q);
+ nomem:
+ 	LEAVE;
+ 	return -ENOMEM;
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index 61c73b6f7a77..faf5b50d65b9 100644
+index 9d58cfd774d3..5bf1621223d6 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.h
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -768,10 +768,13 @@ struct ibmvfc_queue {
- 	dma_addr_t msg_token;
- 	enum ibmvfc_msg_fmt fmt;
- 	int size, cur;
-+	spinlock_t _lock;
-+	spinlock_t *q_lock;
+@@ -645,12 +645,6 @@ struct ibmvfc_crq {
+ 	volatile __be64 ioba;
+ } __packed __aligned(8);
  
- 	struct ibmvfc_event_pool evt_pool;
- 	struct list_head sent;
- 	struct list_head free;
-+	spinlock_t l_lock;
+-struct ibmvfc_crq_queue {
+-	struct ibmvfc_crq *msgs;
+-	int size, cur;
+-	dma_addr_t msg_token;
+-};
+-
+ enum ibmvfc_ae_link_state {
+ 	IBMVFC_AE_LS_LINK_UP		= 0x01,
+ 	IBMVFC_AE_LS_LINK_BOUNCED	= 0x02,
+@@ -678,12 +672,6 @@ struct ibmvfc_async_crq {
+ 	__be64 reserved;
+ } __packed __aligned(8);
+ 
+-struct ibmvfc_async_crq_queue {
+-	struct ibmvfc_async_crq *msgs;
+-	int size, cur;
+-	dma_addr_t msg_token;
+-};
+-
+ union ibmvfc_iu {
+ 	struct ibmvfc_mad_common mad_common;
+ 	struct ibmvfc_npiv_login_mad npiv_login;
+@@ -763,6 +751,24 @@ struct ibmvfc_event_pool {
+ 	dma_addr_t iu_token;
  };
  
++enum ibmvfc_msg_fmt {
++	IBMVFC_CRQ_FMT = 0,
++	IBMVFC_ASYNC_FMT,
++};
++
++union ibmvfc_msgs {
++	void *handle;
++	struct ibmvfc_crq *crq;
++	struct ibmvfc_async_crq *async;
++};
++
++struct ibmvfc_queue {
++	union ibmvfc_msgs msgs;
++	dma_addr_t msg_token;
++	enum ibmvfc_msg_fmt fmt;
++	int size, cur;
++};
++
  enum ibmvfc_host_action {
-@@ -808,11 +811,13 @@ struct ibmvfc_host {
- 	enum ibmvfc_host_action action;
- #define IBMVFC_NUM_TRACE_INDEX_BITS		8
- #define IBMVFC_NUM_TRACE_ENTRIES		(1 << IBMVFC_NUM_TRACE_INDEX_BITS)
-+#define IBMVFC_TRACE_INDEX_MASK			(IBMVFC_NUM_TRACE_ENTRIES - 1)
- #define IBMVFC_TRACE_SIZE	(sizeof(struct ibmvfc_trace_entry) * IBMVFC_NUM_TRACE_ENTRIES)
- 	struct ibmvfc_trace_entry *trace;
--	u32 trace_index:IBMVFC_NUM_TRACE_INDEX_BITS;
-+	atomic_t trace_index;
- 	int num_targets;
- 	struct list_head targets;
-+	struct list_head purge;
- 	struct device *dev;
+ 	IBMVFC_HOST_ACTION_NONE = 0,
+ 	IBMVFC_HOST_ACTION_RESET,
+@@ -808,8 +814,8 @@ struct ibmvfc_host {
+ 	struct ibmvfc_event_pool pool;
  	struct dma_pool *sg_pool;
  	mempool_t *tgt_pool;
+-	struct ibmvfc_crq_queue crq;
+-	struct ibmvfc_async_crq_queue async_crq;
++	struct ibmvfc_queue crq;
++	struct ibmvfc_queue async_crq;
+ 	struct ibmvfc_npiv_login login_info;
+ 	union ibmvfc_npiv_login_data *login_buf;
+ 	dma_addr_t login_buf_dma;
 -- 
 2.27.0
 
