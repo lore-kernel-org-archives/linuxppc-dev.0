@@ -2,60 +2,59 @@ Return-Path: <SRS0=fKfC=FW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37376C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BD12C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:32:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D76F23B55
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:30:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D76F23B55
+	by mail.kernel.org (Postfix) with ESMTPS id AF81723B55
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:32:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF81723B55
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCVl5jPyzDqgk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:30:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCXj6mgqzDrMW
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:32:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.187; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBsN2Y15zDqml
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBsN2Y2KzDqsW
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:43 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MIdNt-1ktuFe2Uib-00EeMY; Fri, 18 Dec 2020 15:58:15 +0100
+ 1Mw9Dg-1jyB5Z3fc4-00s5jD; Fri, 18 Dec 2020 15:58:26 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/23] arch: powerpc: drop misleading warning on spurious IRQ
-Date: Fri, 18 Dec 2020 15:57:31 +0100
-Message-Id: <20201218145746.24205-9-info@metux.net>
+Subject: [PATCH 14/23] kernel: generic counter for interrupt errors
+Date: Fri, 18 Dec 2020 15:57:37 +0100
+Message-Id: <20201218145746.24205-15-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218145746.24205-1-info@metux.net>
 References: <20201218145746.24205-1-info@metux.net>
-X-Provags-ID: V03:K1:ieOuUKl8ThT454nzt+aV4PfH51j5uenC5RGUqeSvczG2Sqio5dm
- rnj7G5yCvs2qtVCBI9dUALWjHZ3LqLvCeeFb/LHnSWV7wc13TMFFnZOqLjjSE6RKIfRoU03
- 9prPmxJYuT4mFYzS0QqQgXSWuHn59YpFcfX8YTLYlZXVKlTffExE6ECEPv527ddz92ShPOi
- DKplTRPkmcwVhVh6rr4BA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:BlqCMXzsJL4=:lproxcv+QWWhQxS5wyXHNB
- W7GBf2KYPt+Ey8J9XFT2h7Fa5GCekIAGPikERbyy1o/Y9pAPNwdJiYaq1/e3ZM/DV4fk+S0+I
- zwZHE0M9/XAA8GGvNj7FHuRbNgVlsWmV5ForiWw6uZS91CaqrRXCvBQYv1k/DmRiDwXk3fqG1
- HEXBoPwJ5obvmE1qpF3hOehyWDr9FHv/hAOcSxSDxWuQBoaWoaJgF3kdqCfc8k4M6sWuM0pwp
- Ab57LJaI+Z20J2nCLEwJvdT3XIvw3C1+GySvHbZMi/kNN8/xeCxF46GzFi2PK7WTM5Y7nfXLK
- dDvuPEIi+FX/qlOLy1y5w1QB10S2nTRn13lgx2j3+g/JJ/L6LBO2qZ3egKqPxKwU9upV6Vc1q
- AV/7gfZJy531v3sV1PN/9fo9Kk9B0etcg2yX5Vrrl0WZq570Yg/rY1JpFXJwh1vbCiixcY4g+
- qz3peG6Y3QqKC5tguLBVU52O00pTr3pp5BPE3CM0LQ+ixkfoj/KooSSX4jbBww9t1u0m/h3v8
- ixBmeLvZdnEsTwn3MpZTU0=
+X-Provags-ID: V03:K1:gZ1AXPEm/UpRwsPFrMGAGszpsHbZZaJP10eli6lGCRG6/DR2s0K
+ laIvbu34GqIRj0w9mIrrQ0kU/6V6QXjxGNERZBTiVPdMGr/2NWcs17qv5AD97lpj56Eo6+Z
+ B2x1Hjvljzx6AIB31mJZYrl317A/2mZYO2rL2D5bshE3EhzGKi7YQcgjplB+ECxJwJTEf8/
+ HDqOWpc4M+HK0zIufqs6A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:9BtoKY0pAkM=:XiRIkNOEXyQAOICMGyj6/h
+ rdwcJIj3F+18aXK5p8iKo2bYehs363JE6H5HtRGpbLFyPaiSQZatY4t1v/7J79JDMblGl+DIX
+ NgKOS+OJz8BXckrdcPo/RMAH/Gqlcfy31TtTpFocQFmQhQ4AVvLUwEzjRR4+PASWYlVc3hcIo
+ RTf1eO5e+S209py/650FkCiCJoB7UPQDtHwpz8NTOqjD3e/rb7OAvVkpc6jLMZpQoAS6uKTfb
+ fQsZQ9TFlyRB/CGpmjgW6HQ/Z8ypsK1epPaL2P00KR8vx9swbhXbMYk3RkjehDEtUVODv6RXF
+ kLSbQGPB0clrK5UTJRw1TA9kD0kgVQ14hVGz6boG6ReMcJWfoZbR9qOmzrMKxHg67kHHLyodU
+ o5G4A5iZWArA2MKM6Ls6uBcncvcEIfvFKW75zMwh0tEAu7nZtR3XjpdDHl3+n
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,37 +84,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The warning in ack_bad_irq() is misleading in several ways:
-* the term "vector" isn't quite correct
-* the printing format isn't consistent across the archs: some print decimal,
-  some hex, some hex w/o 0x prefix.
-* the printed linux irq isn't meaningful in all cases - we actually would
-  want it to print the hw irq.
+We currently have counters for spurious interrupt spread over all the
+individual architectures. Mostly done in the arch's ack_bad_irq(),
+sometimes also in arch specific drivers.
 
-Since all call sites already print out more detailed and correct information,
-we just don't need to duplicate this in each single arch. So just drop it.
+It's time to consolidate this code duplication:
+
+  * introduce a global counter and inlined accessors
+  * increase the counter in all call sites of ack_bad_irq()
+  * subsequent patches will transform the individual archs one by one
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- arch/powerpc/include/asm/hardirq.h | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ include/asm-generic/irq-err.h | 17 +++++++++++++++++
+ kernel/irq/dummychip.c        |  2 ++
+ kernel/irq/handle.c           |  4 ++++
+ kernel/irq/irqdesc.c          |  2 ++
+ 4 files changed, 25 insertions(+)
+ create mode 100644 include/asm-generic/irq-err.h
 
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index f133b5930ae1..4138193c2367 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -27,10 +27,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- #define __ARCH_IRQ_STAT
- #define __ARCH_IRQ_EXIT_IRQS_DISABLED
+diff --git a/include/asm-generic/irq-err.h b/include/asm-generic/irq-err.h
+new file mode 100644
+index 000000000000..33c75eb50c10
+--- /dev/null
++++ b/include/asm-generic/irq-err.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __ASM_GENERIC_IRQ_ERR_H
++#define __ASM_GENERIC_IRQ_ERR_H
++
++extern atomic_t irq_err_counter;
++
++static inline void irq_err_inc(void)
++{
++	atomic_inc(&irq_err_counter);
++}
++
++static inline int irq_err_get(void)
++{
++	return atomic_read(&irq_err_counter);
++}
++
++#endif /* __ASM_GENERIC_IRQ_ERR_H */
+diff --git a/kernel/irq/dummychip.c b/kernel/irq/dummychip.c
+index 0b0cdf206dc4..93585dab9bd0 100644
+--- a/kernel/irq/dummychip.c
++++ b/kernel/irq/dummychip.c
+@@ -8,6 +8,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/export.h>
++#include <asm-generic/irq-err.h>
  
--static inline void ack_bad_irq(unsigned int irq)
--{
--	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
--}
-+#define ack_bad_irq(irq)
+ #include "internals.h"
  
- extern u64 arch_irq_stat_cpu(unsigned int cpu);
- #define arch_irq_stat_cpu	arch_irq_stat_cpu
+@@ -20,6 +21,7 @@ static void ack_bad(struct irq_data *data)
+ 	struct irq_desc *desc = irq_data_to_desc(data);
+ 
+ 	print_irq_desc(data->irq, desc);
++	irq_err_inc();
+ 	ack_bad_irq(data->irq);
+ }
+ 
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 762a928e18f9..ad90f5a56c3a 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -13,11 +13,14 @@
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel_stat.h>
++#include <asm-generic/irq-err.h>
+ 
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+ 
++atomic_t irq_err_counter;
++
+ #ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
+ void (*handle_arch_irq)(struct pt_regs *) __ro_after_init;
+ #endif
+@@ -34,6 +37,7 @@ void handle_bad_irq(struct irq_desc *desc)
+ 
+ 	print_irq_desc(irq, desc);
+ 	kstat_incr_irqs_this_cpu(desc);
++	irq_err_inc();
+ 	ack_bad_irq(irq);
+ }
+ EXPORT_SYMBOL_GPL(handle_bad_irq);
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 62a381351775..6192672be4d2 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -16,6 +16,7 @@
+ #include <linux/bitmap.h>
+ #include <linux/irqdomain.h>
+ #include <linux/sysfs.h>
++#include <asm-generic/irq-err.h>
+ 
+ #include "internals.h"
+ 
+@@ -684,6 +685,7 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
+ 		if (printk_ratelimit())
+ 			pr_warn("spurious IRQ: irq=%d hwirq=%d nr_irqs=%d\n",
+ 				irq, hwirq, nr_irqs);
++		irq_err_inc();
+ 		ack_bad_irq(irq);
+ 		ret = -EINVAL;
+ 	} else {
 -- 
 2.11.0
 
