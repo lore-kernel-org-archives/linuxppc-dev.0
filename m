@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52D64C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:59:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B16C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:01:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4CC723AFD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:59:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4CC723AFD
+	by mail.kernel.org (Postfix) with ESMTPS id 0EFF223AFD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:00:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EFF223AFD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBpT291CzDr0Q
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 01:59:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBrV1JTKzDqly
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:00:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
  (client-ip=212.227.126.131; helo=mout.kundenserver.de;
@@ -30,30 +30,30 @@ Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBH54f2TzDqYV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBH811QzzDqWh
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:29 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MplPh-1kIFED0xaP-00qCoo; Fri, 18 Dec 2020 15:32:00 +0100
+ 1MKsaz-1kVhVj3qdZ-00LDZe; Fri, 18 Dec 2020 15:32:15 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 10/23] arch: sh: drop misleading warning on spurious IRQ
-Date: Fri, 18 Dec 2020 15:31:09 +0100
-Message-Id: <20201218143122.19459-11-info@metux.net>
+Subject: [PATCH 18/23] arch: arm64: use generic irq error counter
+Date: Fri, 18 Dec 2020 15:31:17 +0100
+Message-Id: <20201218143122.19459-19-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218143122.19459-1-info@metux.net>
 References: <20201218143122.19459-1-info@metux.net>
-X-Provags-ID: V03:K1:6TL4KPw+Ks7RU+AOsNXR+Ltfqz8XJW1b6vQsJcdupkFn/HGWZEu
- Pxb0W8VDuSp/eowGr2QZ2YYTQOeQIZ9sqLBhLlV4U0gn+9wxn0ZUCYDi1tihD8RSGfUeK0C
- FGo4l2UrGrTty9YtCH6eYRewFkVOo2b5I9IK1HudQLPzVrlY+lg/sg4fjnmPhPdkFl0hPAj
- +B/DBmIm2JthV5pOD9Lkg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:UEl1mf8Ej6U=:vVuWyafI8JwPT8IqekTwUf
- kJjVjnagJeZHcYrcEXI6WwIlGSzMR+6bJyDiDgrQgM7iWZQNxupfE9+KZ4CH8xwAl9bz0An2S
- g9SX/sJHYF9btvrHzN98Mv01lN2WXq/JdCqiiTmep8ayCtPYeqZm1MWA+VpMPBqXCiySp4nKx
- YrriRyCaFlryZz82ICVCzrhapzFYKL90MwPaC/6LLngk9MDuAZXPEeA0CD9w5aVk5j4WXyXy5
- moMvzvbBtoDNV/k1qA+tVeoczyKN9TMEwdpIVorDrHaUiPErxH0/+N3nGQGgxmN6gMk3qWGdm
- EQ926JDJncMRW18rLb97838aejHl2X+vn6odNyiZ81k15fjExFGn5Wsknjg4EIF4+ChUIckPq
- +B2MnXPkaLoMWdjQowJZMdiHVoEkc5t1KkUtVQLM/6nWRTJu4GUgNhKYVSNhR
+X-Provags-ID: V03:K1:ztAWgZI6xXIfs5hYABBMduPYxgBBPoOn3rTgKXCVjuQRy90ITLt
+ Kg8k1YgqROrNsUA/RyLZJBzZVI3ZD2zezon+kPruX0g7F21+kdHyFQBv2S1Ck+zsXTj1H0m
+ /BRMIKeXSwSpOj7tOcC2/xNNtF4ZZHCgr4LHlae/yPoEZlwrECyZ3alMstYrejssMsxs1Ny
+ 6EQOPvdu2hC5uMp1enYzA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:Qd7gra9QKvU=:O3jAGv/c5nlZ9E1xiuVgIk
+ I/ROuH1PlRfC/WrQnnVjkPgr48uJhGUs7PhqJrDCP4BZ7svz+H8cFCnoO2qKASLLVdZHp/JdD
+ VdC0OmwMj2BnLqdOCiobtrS3RVOdzl940UD3oVWN487csDRsWTQ2UO39aAcVPD7XmQxJ1DVUi
+ A6tB+zOj2ZCmwIFtkDpXNdVTUqi1lvAZA0DctLKqrlxVTNOVGSwOuLuLziGW4/Yil5+BivZFe
+ ce/U2cXBCqEnBZxzfOHXp9ubtzOiBXFGtiVHr4CG9A/lFXvcerxsZEuApO8vUj6+Rg7f+FowC
+ Ic7l7LAYUWOJ3Hm+9/0UsiOnt0iOPdXzrfQ0sEc8YmI5bbS+r9TYGLdfpzOw24Pm8evwda6DG
+ ciSq2XP5sWHyCQt/mDsjjemlN2Uu6RiGXg1++FaAB32SN3jJZ93zYxKEySUBl
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,33 +83,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The warning in ack_bad_irq() is misleading in several ways:
-* the term "vector" isn't quite correct
-* the printing format isn't consistent across the archs: some print decimal,
-  some hex, some hex w/o 0x prefix.
-* the printed linux irq isn't meaningful in all cases - we actually would
-  want it to print the hw irq.
-
-Since all call sites already print out more detailed and correct information,
-we just don't need to duplicate this in each single arch. So just drop it.
+Use the newly introduced irq error counter, that's already maintained
+by all callers of ack_bad_irq(), in order to remove duplicate code.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- arch/sh/kernel/irq.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/arm64/include/asm/hardirq.h | 9 ++-------
+ arch/arm64/kernel/smp.c          | 6 ++----
+ 2 files changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
-index ab5f790b0cd2..c14a142efe60 100644
---- a/arch/sh/kernel/irq.c
-+++ b/arch/sh/kernel/irq.c
-@@ -31,7 +31,6 @@ atomic_t irq_err_count;
- void ack_bad_irq(unsigned int irq)
+diff --git a/arch/arm64/include/asm/hardirq.h b/arch/arm64/include/asm/hardirq.h
+index cbfa7b6f2e09..760922571084 100644
+--- a/arch/arm64/include/asm/hardirq.h
++++ b/arch/arm64/include/asm/hardirq.h
+@@ -13,7 +13,8 @@
+ #include <asm/kvm_arm.h>
+ #include <asm/sysreg.h>
+ 
+-#define ack_bad_irq ack_bad_irq
++#define ack_bad_irq(irq)
++
+ #include <asm-generic/hardirq.h>
+ 
+ #define __ARCH_IRQ_EXIT_IRQS_DISABLED	1
+@@ -85,10 +86,4 @@ do {									\
+ 		write_sysreg(___hcr, hcr_el2);				\
+ } while (0)
+ 
+-static inline void ack_bad_irq(unsigned int irq)
+-{
+-	extern unsigned long irq_err_count;
+-	irq_err_count++;
+-}
+-
+ #endif /* __ASM_HARDIRQ_H */
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index 2499b895efea..0edc565ea735 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -33,7 +33,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/kexec.h>
+ #include <linux/kvm_host.h>
+-
++#include <asm-generic/irq-err.h>
+ #include <asm/alternative.h>
+ #include <asm/atomic.h>
+ #include <asm/cacheflush.h>
+@@ -798,8 +798,6 @@ static const char *ipi_types[NR_IPI] __tracepoint_string = {
+ 
+ static void smp_cross_call(const struct cpumask *target, unsigned int ipinr);
+ 
+-unsigned long irq_err_count;
+-
+ int arch_show_interrupts(struct seq_file *p, int prec)
  {
- 	atomic_inc(&irq_err_count);
--	printk("unexpected IRQ trap at vector %02x\n", irq);
+ 	unsigned int cpu, i;
+@@ -813,7 +811,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
+ 		seq_printf(p, "      %s\n", ipi_types[i]);
+ 	}
+ 
+-	seq_printf(p, "%*s: %10lu\n", prec, "Err", irq_err_count);
++	seq_printf(p, "%*s: %10lu\n", prec, "Err", irq_err_get());
+ 	return 0;
  }
  
- #if defined(CONFIG_PROC_FS)
 -- 
 2.11.0
 
