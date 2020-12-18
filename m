@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B16C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:01:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F184C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:04:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0EFF223AFD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:00:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EFF223AFD
+	by mail.kernel.org (Postfix) with ESMTPS id A935223AFD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:04:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A935223AFD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBrV1JTKzDqly
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:00:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBwp4Zd8zDqbc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:04:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.131; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBH811QzzDqWh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBHB3cPyzDqYn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:33 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MKsaz-1kVhVj3qdZ-00LDZe; Fri, 18 Dec 2020 15:32:15 +0100
+ 1MlwBf-1kQWgo0nzP-00j24e; Fri, 18 Dec 2020 15:32:13 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 18/23] arch: arm64: use generic irq error counter
-Date: Fri, 18 Dec 2020 15:31:17 +0100
-Message-Id: <20201218143122.19459-19-info@metux.net>
+Subject: [PATCH 17/23] arch: arm: use generic irq error counter
+Date: Fri, 18 Dec 2020 15:31:16 +0100
+Message-Id: <20201218143122.19459-18-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218143122.19459-1-info@metux.net>
 References: <20201218143122.19459-1-info@metux.net>
-X-Provags-ID: V03:K1:ztAWgZI6xXIfs5hYABBMduPYxgBBPoOn3rTgKXCVjuQRy90ITLt
- Kg8k1YgqROrNsUA/RyLZJBzZVI3ZD2zezon+kPruX0g7F21+kdHyFQBv2S1Ck+zsXTj1H0m
- /BRMIKeXSwSpOj7tOcC2/xNNtF4ZZHCgr4LHlae/yPoEZlwrECyZ3alMstYrejssMsxs1Ny
- 6EQOPvdu2hC5uMp1enYzA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Qd7gra9QKvU=:O3jAGv/c5nlZ9E1xiuVgIk
- I/ROuH1PlRfC/WrQnnVjkPgr48uJhGUs7PhqJrDCP4BZ7svz+H8cFCnoO2qKASLLVdZHp/JdD
- VdC0OmwMj2BnLqdOCiobtrS3RVOdzl940UD3oVWN487csDRsWTQ2UO39aAcVPD7XmQxJ1DVUi
- A6tB+zOj2ZCmwIFtkDpXNdVTUqi1lvAZA0DctLKqrlxVTNOVGSwOuLuLziGW4/Yil5+BivZFe
- ce/U2cXBCqEnBZxzfOHXp9ubtzOiBXFGtiVHr4CG9A/lFXvcerxsZEuApO8vUj6+Rg7f+FowC
- Ic7l7LAYUWOJ3Hm+9/0UsiOnt0iOPdXzrfQ0sEc8YmI5bbS+r9TYGLdfpzOw24Pm8evwda6DG
- ciSq2XP5sWHyCQt/mDsjjemlN2Uu6RiGXg1++FaAB32SN3jJZ93zYxKEySUBl
+X-Provags-ID: V03:K1:3SwIe0eO46CaJ5EoqMiX//gtX9bqQxyAhXLbP4/gz2GYyvjZ2Cb
+ e7VCsHyTIhYbQmhKAxhT3mj64mNwoJPgzTdg41XdH3zeVx6oSMrNX8BMXGcIsxlzOPpwTdJ
+ QPs7bYAr35zZd3PpIZiH7JApQsvFbkvqbv15imk3fseX8MAR9Bof6Yvzgi0vL2qnFJqjFSO
+ +1Fl682AJzqT0h8vOWnFw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FpYA9py1SLs=:7EMuIumlJwF6EAWdI1huM/
+ U2YTteDL2sd8MAXN30P7bcmsnzZ/B1612n3oZanzaRD9+Ue1XwbicYWhuC1Vwhx/7O21Vg3g7
+ RnRjxSv13kdOrBXFPyihNI2IcXTRS4nkLluii+JXoA1fqmEOreplj7Ih6+v9ZEIMo1yKTtYww
+ DiAweeloTQJY5J60vfvpAICNi75XFV+Lb3EWUmma3GLSgeGTUvp/3IZu9dq4USm2v589eY5yV
+ uihxlEA4WE09xu9wlzx7m88q9n9jBB4H71GwVepD+6UI7FSItEznfktktYfSAPbDwgdUBRv6d
+ wZoDUZtfev/ySaoqBjOZOp+TK/4DsDFteHi7lvEjETiCatdmSDGWyK+SnWIQTyWB9UszPC5TU
+ wn2E0e5nmisTNbFxPXhSX6bWOQ3lLHMPUCyvUFirWm5+0eO94Q5WyF0xF5aMR
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,66 +88,103 @@ by all callers of ack_bad_irq(), in order to remove duplicate code.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- arch/arm64/include/asm/hardirq.h | 9 ++-------
- arch/arm64/kernel/smp.c          | 6 ++----
- 2 files changed, 4 insertions(+), 11 deletions(-)
+ arch/arm/include/asm/hardirq.h  | 2 +-
+ arch/arm/include/asm/hw_irq.h   | 6 ------
+ arch/arm/kernel/irq.c           | 6 ++----
+ drivers/irqchip/irq-omap-intc.c | 5 ++---
+ 4 files changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm64/include/asm/hardirq.h b/arch/arm64/include/asm/hardirq.h
-index cbfa7b6f2e09..760922571084 100644
---- a/arch/arm64/include/asm/hardirq.h
-+++ b/arch/arm64/include/asm/hardirq.h
-@@ -13,7 +13,8 @@
- #include <asm/kvm_arm.h>
- #include <asm/sysreg.h>
- 
--#define ack_bad_irq ack_bad_irq
-+#define ack_bad_irq(irq)
-+
- #include <asm-generic/hardirq.h>
+diff --git a/arch/arm/include/asm/hardirq.h b/arch/arm/include/asm/hardirq.h
+index 706efafbf972..d9ae8998240d 100644
+--- a/arch/arm/include/asm/hardirq.h
++++ b/arch/arm/include/asm/hardirq.h
+@@ -5,7 +5,7 @@
+ #include <asm/irq.h>
  
  #define __ARCH_IRQ_EXIT_IRQS_DISABLED	1
-@@ -85,10 +86,4 @@ do {									\
- 		write_sysreg(___hcr, hcr_el2);				\
- } while (0)
+-#define ack_bad_irq ack_bad_irq
++#define ack_bad_irq(irq)
  
--static inline void ack_bad_irq(unsigned int irq)
+ #include <asm-generic/hardirq.h>
+ 
+diff --git a/arch/arm/include/asm/hw_irq.h b/arch/arm/include/asm/hw_irq.h
+index 5305c7e33aee..adbbeb11b930 100644
+--- a/arch/arm/include/asm/hw_irq.h
++++ b/arch/arm/include/asm/hw_irq.h
+@@ -5,12 +5,6 @@
+ #ifndef _ARCH_ARM_HW_IRQ_H
+ #define _ARCH_ARM_HW_IRQ_H
+ 
+-static inline void ack_bad_irq(int irq)
 -{
 -	extern unsigned long irq_err_count;
 -	irq_err_count++;
 -}
 -
- #endif /* __ASM_HARDIRQ_H */
-diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
-index 2499b895efea..0edc565ea735 100644
---- a/arch/arm64/kernel/smp.c
-+++ b/arch/arm64/kernel/smp.c
-@@ -33,7 +33,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/kexec.h>
- #include <linux/kvm_host.h>
+ #define ARCH_IRQ_INIT_FLAGS	(IRQ_NOREQUEST | IRQ_NOPROBE)
+ 
+ #endif
+diff --git a/arch/arm/kernel/irq.c b/arch/arm/kernel/irq.c
+index 698b6f636156..72c3b8ce74db 100644
+--- a/arch/arm/kernel/irq.c
++++ b/arch/arm/kernel/irq.c
+@@ -32,7 +32,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/proc_fs.h>
+ #include <linux/export.h>
 -
 +#include <asm-generic/irq-err.h>
- #include <asm/alternative.h>
- #include <asm/atomic.h>
- #include <asm/cacheflush.h>
-@@ -798,8 +798,6 @@ static const char *ipi_types[NR_IPI] __tracepoint_string = {
- 
- static void smp_cross_call(const struct cpumask *target, unsigned int ipinr);
+ #include <asm/hardware/cache-l2x0.h>
+ #include <asm/hardware/cache-uniphier.h>
+ #include <asm/outercache.h>
+@@ -41,8 +41,6 @@
+ #include <asm/mach/irq.h>
+ #include <asm/mach/time.h>
  
 -unsigned long irq_err_count;
 -
  int arch_show_interrupts(struct seq_file *p, int prec)
  {
- 	unsigned int cpu, i;
-@@ -813,7 +811,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
- 		seq_printf(p, "      %s\n", ipi_types[i]);
- 	}
- 
+ #ifdef CONFIG_FIQ
+@@ -51,7 +49,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
+ #ifdef CONFIG_SMP
+ 	show_ipi_list(p, prec);
+ #endif
 -	seq_printf(p, "%*s: %10lu\n", prec, "Err", irq_err_count);
 +	seq_printf(p, "%*s: %10lu\n", prec, "Err", irq_err_get());
  	return 0;
  }
  
+diff --git a/drivers/irqchip/irq-omap-intc.c b/drivers/irqchip/irq-omap-intc.c
+index d360a6eddd6d..2682c6e814c2 100644
+--- a/drivers/irqchip/irq-omap-intc.c
++++ b/drivers/irqchip/irq-omap-intc.c
+@@ -15,7 +15,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+-
++#include <asm-generic/irq-err.h>
+ #include <asm/exception.h>
+ #include <linux/irqchip.h>
+ #include <linux/irqdomain.h>
+@@ -328,7 +328,6 @@ static int __init omap_init_irq(u32 base, struct device_node *node)
+ static asmlinkage void __exception_irq_entry
+ omap_intc_handle_irq(struct pt_regs *regs)
+ {
+-	extern unsigned long irq_err_count;
+ 	u32 irqnr;
+ 
+ 	irqnr = intc_readl(INTC_SIR);
+@@ -351,7 +350,7 @@ omap_intc_handle_irq(struct pt_regs *regs)
+ 	 */
+ 	if (unlikely((irqnr & SPURIOUSIRQ_MASK) == SPURIOUSIRQ_MASK)) {
+ 		pr_err_once("%s: spurious irq!\n", __func__);
+-		irq_err_count++;
++		irq_err_inc();
+ 		omap_ack_irq(NULL);
+ 		return;
+ 	}
 -- 
 2.11.0
 
