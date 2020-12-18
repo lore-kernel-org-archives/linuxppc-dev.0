@@ -4,56 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D13C8C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:22:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF003C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:23:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B7A32395C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:22:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B7A32395C
+	by mail.kernel.org (Postfix) with ESMTPS id 1D8B923B46
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:23:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D8B923B46
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCKB2SsPzDrL7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:22:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCM06vp6zDrNX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:23:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBsB4vlKzDqq8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBsF4w6FzDqhF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:37 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MxV4T-1jsyRe3BBR-00xr1G; Fri, 18 Dec 2020 15:58:03 +0100
+ 1N1g3U-1k5urV3sfw-011xdL; Fri, 18 Dec 2020 15:58:14 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/23] kernel: irq: irqdescs: warn on spurious IRQ
-Date: Fri, 18 Dec 2020 15:57:24 +0100
-Message-Id: <20201218145746.24205-2-info@metux.net>
+Subject: [PATCH 07/23] arch: parisc: drop misleading warning on spurious IRQ
+Date: Fri, 18 Dec 2020 15:57:30 +0100
+Message-Id: <20201218145746.24205-8-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218145746.24205-1-info@metux.net>
 References: <20201218145746.24205-1-info@metux.net>
-X-Provags-ID: V03:K1:sNvhDkhkHXSckZsIcYNRvhSxb4brkTcSkjpsXzG++3eNb3snJ0g
- J9Qv02uTs0nLp3/Ko4ksdZTvqxTqsz/VJHyYyKuCFEMndBxaiM7R6Nof8j/9Bc9v3uf5xpe
- 63QhWeMZuMwyVcEvebQIrDokrsdpA8FvkxHUgTyntRUgah4L5gvEw4KA3yYR+yPnDkLUVC3
- 8MNk6k5JHeB3igb+vXtww==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:9PanUVZdncQ=:ruo0TGsTgyRzC2TD10Yg7n
- tmilzgQTchCUSCtJB+uJD3tGAJPZ9rwFCJr6cZE5MH5SbA2m0AOTtj8oqqDNWs8cLtj8MBzny
- OhaA/tPgAr4XHJ3zLyN+a0GPhlRq80gQgL+Ir6o8L7/nzU8QaaUASC4VwN+2lsvHJnbu/dD2E
- 9D88ErzP/g7tyF5JbwFxJzVax960xo3H+WX5YZFCZY+Xcj+4xol4bg6k52Ta6nTcF3SzEjyHC
- ikW+qSf4SJlMh7T8archj1wmz3XI/Y3jh3j8E9P9Uzw5ETe/syz3q2DMAcV1VplhWFe+b6f6E
- xxspiEAqDYUOfrIIQhqv6q9qB51Wdw+U8KHXfmVbQvQSu23IvSIptkF+o6GiMZ74cbRjOBudF
- mpN2jme8ZtPkVAXOogvV4r9jproDuTrmcbv3Eh6uWCxvZnez2YLonKGvYn2my
+X-Provags-ID: V03:K1:oGmlfGkhJekOloE3MpuxkxNd1aPEER14Z6qxAgGlYdvB4SGRB7p
+ 7y9tiukZZ7CHa+D5i7nGvfnSW+R5wAvqp5z+61y5/MFB4lzPUEK1Ipf0OaxnnWdvUVtvQiY
+ 6FWp0hyc8Mmb2OoGtPFhz/88H0erdT/ig9y1yLOh95gO4aMsdyEeDo370OU+WSBUslEzplB
+ udeX1JvpZlfy6olW+YCDw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:jeNZqaIrx4k=:iIZtJxLlwz4tSNkf59yuDp
+ C8mkbAUeD1J1RRXMEWXpGvtrBGXW7cplJTteLoSP47lg8IeVCFNFUd5dezkStbdp6VOt7Ycmb
+ PmcoCYYtQBYkW83gWQopEg/C8lk8UI5bRRZvUqC7j8lb+aFO66Yli/sD0xYmBX+8nLxUqqWjN
+ cVUGYYsmTILE0qAFSs3WOVYQhDuhMoajYHDo+OlEzHs93WrIGfNP5gPjV6gmMZy+/39fBqSrT
+ /sUF82JtABYtvr6gsH7UoWpKjArQ242DJ7cZh04+eCHZRZNzmmxjlBn1Uo35gNOqszE+X6z56
+ pSWB5RIVFsfoNiwVqswKL/Vlmcg3E2v6dfz1hj9Kv5rkN7YajR4aq6HMJsgx9Bret+rFctGAL
+ LrKCJT3mWC3+wmJ8F7iyW/tTCA2YpawqJVe2ZnBsFT9ZKZO3P/06X6iDsxsqjcyZSoEw56D8U
+ 31OCFgTkKNaH+O6ldSIrFXyqvW/Q6mvUOcVpRPGYyKG/POMQmcybdeakmavlTYncgc+71qZjm
+ OB4buYEqw8y1sho5C/FCo0=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,33 +85,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a warning on spurious IRQs to __handle_domain_irq(), also telling the
-linux IRQ number (if any), the hw IRQ number and the max nr of IRQs.
+The warning in ack_bad_irq() is misleading in several ways:
+* the term "vector" isn't quite correct
+* the printing format isn't consistent across the archs: some print decimal,
+  some hex, some hex w/o 0x prefix.
+* the printed linux irq isn't meaningful in all cases - we actually would
+  want it to print the hw irq.
 
-That's far more informative than the warnings in (some of) the individual
-arch's ack_bad_irq()'s. These aren't really helpful since either the
-other callers already had printed more detailed information or (when called
-by __handle_domain_irq()) the printout just doesn't tell anything useful.
+Since all call sites already print out more detailed and correct information,
+we just don't need to duplicate this in each single arch. So just drop it.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- kernel/irq/irqdesc.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/parisc/include/asm/hardirq.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
-index e810eb9906ea..62a381351775 100644
---- a/kernel/irq/irqdesc.c
-+++ b/kernel/irq/irqdesc.c
-@@ -681,6 +681,9 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
- 	 * than crashing, do something sensible.
- 	 */
- 	if (unlikely(!irq || irq >= nr_irqs)) {
-+		if (printk_ratelimit())
-+			pr_warn("spurious IRQ: irq=%d hwirq=%d nr_irqs=%d\n",
-+				irq, hwirq, nr_irqs);
- 		ack_bad_irq(irq);
- 		ret = -EINVAL;
- 	} else {
+diff --git a/arch/parisc/include/asm/hardirq.h b/arch/parisc/include/asm/hardirq.h
+index fad29aa6f45f..78b581f00bb3 100644
+--- a/arch/parisc/include/asm/hardirq.h
++++ b/arch/parisc/include/asm/hardirq.h
+@@ -34,6 +34,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+ #define __ARCH_IRQ_STAT
+ #define inc_irq_stat(member)	this_cpu_inc(irq_stat.member)
+ #define __inc_irq_stat(member)	__this_cpu_inc(irq_stat.member)
+-#define ack_bad_irq(irq) WARN(1, "unexpected IRQ trap at vector %02x\n", irq)
++#define ack_bad_irq(irq)
+ 
+ #endif /* _PARISC_HARDIRQ_H */
 -- 
 2.11.0
 
