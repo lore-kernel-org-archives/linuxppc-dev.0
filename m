@@ -4,58 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01ABAC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EA93C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:37:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 717D923B53
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:35:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 717D923B53
+	by mail.kernel.org (Postfix) with ESMTPS id B814F23A84
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:37:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B814F23A84
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCcS3FY2zDqdd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:35:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCg35XTpzDrRF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:37:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBsT0KbBzDqkS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBx53NTmzDqgp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:53 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1Mfpf7-1kAdnV0ZXF-00gK8Q; Fri, 18 Dec 2020 15:58:24 +0100
+ 1MWzwP-1kb8we1aC9-00XHi6; Fri, 18 Dec 2020 15:58:29 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/23] arch: generic: drop misleading warning on spurious IRQ
-Date: Fri, 18 Dec 2020 15:57:36 +0100
-Message-Id: <20201218145746.24205-14-info@metux.net>
+Subject: [PATCH 16/23] arch: alpha: use generic irq error counter
+Date: Fri, 18 Dec 2020 15:57:39 +0100
+Message-Id: <20201218145746.24205-17-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218145746.24205-1-info@metux.net>
 References: <20201218145746.24205-1-info@metux.net>
-X-Provags-ID: V03:K1:cqi4G+m4FTr606+5GhtTSDyQJgpbRwMl5WhK+q+f4UEydU6IG9T
- 6NbWVpudp/5L1dgq1A9ySLCK4Bn4NGB80INvM32MyUB8+gksTy2aleHOf+UmkFG+F2JN1YA
- 3PBL2Y2xDGRvKYWDUajTgYMB1dLGrFsD/bXEv1o9JhWZj6+VAEclEvh63f/Zbgu8mf5Zp1T
- aNN7Xqbq8LGVi2d6zXKQg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:oKlAQJCLliE=:UpLOMLJDpnIRmq0iclG2Q0
- 4Hl9vZrCyPoZALgcAT+7fZsOLxJyN4hmmQzjFAcznIc5ciZeBa5ounj8E35j1YtIoIJNAedAo
- XMR4qkbUiO8ET6cGWdOLeWeiXfmmw4lyrgqLURBmBPxWuxuct2in+BfFsiPpl60pztNirYCS+
- /mAzL1urLT9NN28tZTrqZJGz2X5CwBM38OSVHZbbhPGrHlLG/SNlZl37LIsbJJ0aVUTcvHwDm
- QkOn+UDsmriJkUbWLfbxwAfTT1HAjcsXcIDv/eS+LZg2PTvxTuJxY/R8npn/zWnhqn7fifmbX
- QnjgTIIRAKEoI48LR9yBZbX/oltTOc6XrZOhRxQTbxfXTngXpFL9UZwe3DVpDqESa6X6BcmiG
- GT3nE6rtyLwYQ8QSCxqFV+BhoviVTy5lIOcVyK0LmRFv6JM9KPAw7wm/+bTmVKYtthxJ1DUc7
- r+a9EGv7HsyHGaEQLydmGUuEXJSCGPb5RmOA13mTm2KR4E4rpG8Sl4jr87dFg0z9R/rPcFDXC
- ovtuIoQgVGk6vLCizR/2T0=
+X-Provags-ID: V03:K1:BuNrPAZ8tbuJ9DpLqCoSNcPTN/hg43SyGKZ7eDkFT4x21CSANOt
+ 4hcjC06gI4HWH5v5ZsEzDCT15f5Rj/vp6FEoZFpl/DH+6C2ikAEkDtUYMrSznSxMWkulDKM
+ Iwmz6I+i3+cwf/bGfKY05IeD9m/hg50aFp2nT05L6bkARAhhVSPj1VrgoNOkZm8KIfYI6qQ
+ 9Si7xQ4qT7aXFEzDE4dcQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:68PyTn5wFp0=:umFv8Fu/HJdYPCRN4Cb4Gt
+ 2jgHCCIsuIddZvW12vAxH96qUL9Eyt7Igp7Ffu3szeWGb7KjjMNaH6tZreF3ed2qIc6c3uGEr
+ wrJQgA0vIddh2bEVwXG9rRmq7ZETJjI/pk5ldZV79p8rXhNWUzZhvKmx1no2TNwHAhgJjQkPy
+ wDX97zxd+aRuL+Dg+9InwvtMHyK9FZVZXCAV/O5Zw4nI4/8L9jJgunpJ0pljKFGoqnkEsMzL8
+ J0F6kmrBBr1A55GTACOqaVotuj51oFLP4rH4a1wACDEA4OBo469eHaRuCzSkAjSow70UoYAuK
+ kHNAFPOBBk+nYlWcm9iX1UD+NH79zOD2kkHeHg+FvnYpdc2MMWNZfA2G2ZkMcK8PfXnR3CLKE
+ aS3QDNLOvOR3qD4GoCGVkNCe7byyZohlTPhQlYvKJMVtvBSY8CzhgI818DjSN
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,33 +83,148 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The warning in ack_bad_irq() is misleading in several ways:
-* the term "vector" isn't quite correct
-* the printing format isn't consistent across the archs: some print decimal,
-  some hex, some hex w/o 0x prefix.
-* the printed linux irq isn't meaningful in all cases - we actually would
-  want it to print the hw irq.
-
-Since all call sites already print out more detailed and correct information,
-we just don't need to duplicate this in each single arch. So just drop it.
+Use the newly introduced irq error counter, that's already maintained
+by all callers of ack_bad_irq(), in order to remove duplicate code.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- include/asm-generic/hardirq.h | 1 -
- 1 file changed, 1 deletion(-)
+ arch/alpha/include/asm/hardirq.h |  3 ---
+ arch/alpha/include/asm/hw_irq.h  |  2 --
+ arch/alpha/kernel/irq.c          | 12 +++---------
+ arch/alpha/kernel/irq_alpha.c    |  5 +++--
+ arch/alpha/kernel/perf_event.c   |  6 +++---
+ 5 files changed, 9 insertions(+), 19 deletions(-)
 
-diff --git a/include/asm-generic/hardirq.h b/include/asm-generic/hardirq.h
-index 7317e8258b48..f5a0240cbf52 100644
---- a/include/asm-generic/hardirq.h
-+++ b/include/asm-generic/hardirq.h
-@@ -19,7 +19,6 @@ DECLARE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
- #ifndef ack_bad_irq
- static inline void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
- }
- #endif
+diff --git a/arch/alpha/include/asm/hardirq.h b/arch/alpha/include/asm/hardirq.h
+index 5ce5b34e8a1a..0bbc9947e364 100644
+--- a/arch/alpha/include/asm/hardirq.h
++++ b/arch/alpha/include/asm/hardirq.h
+@@ -2,9 +2,6 @@
+ #ifndef _ALPHA_HARDIRQ_H
+ #define _ALPHA_HARDIRQ_H
  
+-void ack_bad_irq(unsigned int irq);
+-#define ack_bad_irq ack_bad_irq
+-
+ #include <asm-generic/hardirq.h>
+ 
+ #endif /* _ALPHA_HARDIRQ_H */
+diff --git a/arch/alpha/include/asm/hw_irq.h b/arch/alpha/include/asm/hw_irq.h
+index e2d81ac0d934..0be79f3a6cae 100644
+--- a/arch/alpha/include/asm/hw_irq.h
++++ b/arch/alpha/include/asm/hw_irq.h
+@@ -2,8 +2,6 @@
+ #ifndef _ALPHA_HW_IRQ_H
+ #define _ALPHA_HW_IRQ_H
+ 
+-
+-extern volatile unsigned long irq_err_count;
+ DECLARE_PER_CPU(unsigned long, irq_pmi_count);
+ 
+ #ifdef CONFIG_ALPHA_GENERIC
+diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
+index c1980eea75a6..2b7dad83e0dc 100644
+--- a/arch/alpha/kernel/irq.c
++++ b/arch/alpha/kernel/irq.c
+@@ -25,18 +25,12 @@
+ #include <linux/seq_file.h>
+ #include <linux/profile.h>
+ #include <linux/bitops.h>
+-
++#include <asm-generic/irq-err.h>
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+ 
+-volatile unsigned long irq_err_count;
+ DEFINE_PER_CPU(unsigned long, irq_pmi_count);
+ 
+-void ack_bad_irq(unsigned int irq)
+-{
+-	irq_err_count++;
+-}
+-
+ #ifdef CONFIG_SMP 
+ static char irq_user_affinity[NR_IRQS];
+ 
+@@ -79,7 +73,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10lu ", per_cpu(irq_pmi_count, j));
+ 	seq_puts(p, "          Performance Monitoring\n");
+-	seq_printf(p, "ERR: %10lu\n", irq_err_count);
++	seq_printf(p, "ERR: %10lu\n", irq_err_get());
+ 	return 0;
+ }
+ 
+@@ -109,7 +103,7 @@ handle_irq(int irq)
+ 	
+ 	if (!desc || ((unsigned) irq > ACTUAL_NR_IRQS &&
+ 	    illegal_count < MAX_ILLEGAL_IRQS)) {
+-		irq_err_count++;
++		irq_err_inc();
+ 		illegal_count++;
+ 		printk(KERN_CRIT "device_interrupt: invalid interrupt %d\n",
+ 		       irq);
+diff --git a/arch/alpha/kernel/irq_alpha.c b/arch/alpha/kernel/irq_alpha.c
+index d17e44c99df9..3b6373cf73d9 100644
+--- a/arch/alpha/kernel/irq_alpha.c
++++ b/arch/alpha/kernel/irq_alpha.c
+@@ -13,6 +13,7 @@
+ #include <asm/dma.h>
+ #include <asm/perf_event.h>
+ #include <asm/mce.h>
++#include <asm-generic/irq-err.h>
+ 
+ #include "proto.h"
+ #include "irq_impl.h"
+@@ -30,7 +31,7 @@ EXPORT_SYMBOL(__min_ipl);
+ static void
+ dummy_perf(unsigned long vector, struct pt_regs *regs)
+ {
+-	irq_err_count++;
++	irq_err_inc();
+ 	printk(KERN_CRIT "Performance counter interrupt!\n");
+ }
+ 
+@@ -60,7 +61,7 @@ do_entInt(unsigned long type, unsigned long vector,
+ 		handle_ipi(regs);
+ 		return;
+ #else
+-		irq_err_count++;
++		irq_err_inc();
+ 		printk(KERN_CRIT "Interprocessor interrupt? "
+ 		       "You must be kidding!\n");
+ #endif
+diff --git a/arch/alpha/kernel/perf_event.c b/arch/alpha/kernel/perf_event.c
+index e7a59d927d78..d855cece7bb1 100644
+--- a/arch/alpha/kernel/perf_event.c
++++ b/arch/alpha/kernel/perf_event.c
+@@ -16,7 +16,7 @@
+ #include <linux/kdebug.h>
+ #include <linux/mutex.h>
+ #include <linux/init.h>
+-
++#include <asm-generic/irq-err.h>
+ #include <asm/hwrpb.h>
+ #include <linux/atomic.h>
+ #include <asm/irq.h>
+@@ -823,7 +823,7 @@ static void alpha_perf_event_irq_handler(unsigned long la_ptr,
+ 	/* la_ptr is the counter that overflowed. */
+ 	if (unlikely(la_ptr >= alpha_pmu->num_pmcs)) {
+ 		/* This should never occur! */
+-		irq_err_count++;
++		irq_err_inc();
+ 		pr_warn("PMI: silly index %ld\n", la_ptr);
+ 		wrperfmon(PERFMON_CMD_ENABLE, cpuc->idx_mask);
+ 		return;
+@@ -846,7 +846,7 @@ static void alpha_perf_event_irq_handler(unsigned long la_ptr,
+ 
+ 	if (unlikely(!event)) {
+ 		/* This should never occur! */
+-		irq_err_count++;
++		irq_err_inc();
+ 		pr_warn("PMI: No event at index %d!\n", idx);
+ 		wrperfmon(PERFMON_CMD_ENABLE, cpuc->idx_mask);
+ 		return;
 -- 
 2.11.0
 
