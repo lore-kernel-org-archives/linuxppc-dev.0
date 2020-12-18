@@ -2,61 +2,58 @@ Return-Path: <SRS0=fKfC=FW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F7FBC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:10:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC475C4361B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:38:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E2A5223B16
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:10:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2A5223B16
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id AE08323AAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:38:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE08323AAA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Cy9kJ0PR5zDqYW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 01:10:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBLq3wwYzDqYX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 01:38:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Cy9gd63ylzDqWN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:08:05 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Cy9gL3Ck1z9txvg;
- Fri, 18 Dec 2020 15:07:58 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 5Ndh04yO9aS3; Fri, 18 Dec 2020 15:07:58 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Cy9gL1tj2z9txvB;
- Fri, 18 Dec 2020 15:07:58 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B41FD8B783;
- Fri, 18 Dec 2020 15:07:59 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ynTuRuN7N3DG; Fri, 18 Dec 2020 15:07:59 +0100 (CET)
-Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.204.43])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5C2E88B75F;
- Fri, 18 Dec 2020 15:07:59 +0100 (CET)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F030266868; Fri, 18 Dec 2020 14:07:58 +0000 (UTC)
-Message-Id: <320d7a9ed7b379a6e0edf16d539bc22447272e65.1608299993.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] mm: Remove arch_remap() and mm-arch-hooks.h
-To: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 18 Dec 2020 14:07:58 +0000 (UTC)
+ spf=none (no SPF record) smtp.mailfrom=metux.net
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ envelope-from=info@metux.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=metux.net
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBGx0yxPzDqWh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:18 +1100 (AEDT)
+Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
+ (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
+ 1MPXpS-1kUsIP1N8E-00MbYH; Fri, 18 Dec 2020 15:31:43 +0100
+From: "Enrico Weigelt, metux IT consult" <info@metux.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 02/23] arch: alpha: drop misleading warning on spurious IRQ
+Date: Fri, 18 Dec 2020 15:31:01 +0100
+Message-Id: <20201218143122.19459-3-info@metux.net>
+X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20201218143122.19459-1-info@metux.net>
+References: <20201218143122.19459-1-info@metux.net>
+X-Provags-ID: V03:K1:pUJzS/tNjFJ37SufUPmB6VHWpKthVZUGxvQ+xKtdprNr8l6YI/1
+ KtXA5HiAMRvqC4e/n10rheKKOjnn6zs1jeHwcJ76JSfq/uaXTL12yjWHrsp+aEn4sFIwxGT
+ lJtCDGmWiqtjf5DzjgjVtAXh0OE9P2QTM6JEU0+jDRqoh4w+LQlvJQkqtSE/m7lPjEpULQY
+ EPZQOPAseqzUM9KoALtEw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ImHgQfa9yos=:RMkUA47rpXzNJoIXDG7cLd
+ bTIMK4FppxwMKyK22fDhDPRoT6ptco+6GEFPygCKPM3rqApxb1zc8N2Q9IlzRZztk4Mqspi6D
+ EuSQLV7z2fEh8QrWp3rs7OPAeetvZb6aDKXn9A7Ga1rUJ1jEzmR/49pLCF7uhaFPSEWVS1iCL
+ suvxGUV2sYC9MxuGtuiAG+MWMMbD9qXO8zYXwkujMFVcxMcyH8TmHBCIhoqZ3IdyhU1uYZEd8
+ 2WqgQk85s0gjS0zLWzGGRKzEC1JigGxQf0B8WdHUmSJh1LFYUVom4P2AHZw+H6DArC2p5KOxz
+ x+JqeuLY6uvPHlbVff8Ida8an42pyFx/Dwg6qSQ6w/WH6zt9hco0jJg3PoOelM+wOibrEGeUY
+ weYR0zzUBTrMjLce4GumPryxUSHszmfx7+lOptoiMHwpwf+pVLRG6INWMbNJW
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,128 +65,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Richard Weinberger <richard@nod.at>,
- Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>
+Cc: mark.rutland@arm.com, dalias@libc.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ linus.walleij@linaro.org, James.Bottomley@HansenPartnership.com,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, will@kernel.org,
+ gerg@linux-m68k.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, ysato@users.sourceforge.jp, jolsa@redhat.com,
+ deller@gmx.de, x86@kernel.org, bgolaszewski@baylibre.com, tony@atomide.com,
+ geert@linux-m68k.org, catalin.marinas@arm.com, linux-alpha@vger.kernel.org,
+ arnd@arndb.de, msalter@redhat.com, jacquiot.aurelien@gmail.com,
+ linux-gpio@vger.kernel.org, linux-m68k@lists.linux-m68k.org, bp@alien8.de,
+ namhyung@kernel.org, tglx@linutronix.de, linux-omap@vger.kernel.org,
+ tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
+ linux-mips@vger.kernel.org, maz@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc was the last provider of arch_remap() and the last
-user of mm-arch-hooks.h.
+The warning in ack_bad_irq() is misleading in several ways:
+* the term "vector" isn't quite correct
+* the printing format isn't consistent across the archs: some print decimal,
+  some hex, some hex w/o 0x prefix.
+* the printed linux irq isn't meaningful in all cases - we actually would
+  want it to print the hw irq.
 
-Since commit 526a9c4a7234 ("powerpc/vdso: Provide vdso_remap()"),
-arch_remap() hence mm-arch-hooks.h are not used anymore.
+Since all call sites already print out more detailed and correct information,
+we just don't need to duplicate this in each single arch. So just drop it.
 
-Remove them.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- arch/um/include/asm/Kbuild          |  1 -
- include/asm-generic/Kbuild          |  1 -
- include/asm-generic/mm-arch-hooks.h | 16 ----------------
- include/linux/mm-arch-hooks.h       | 22 ----------------------
- mm/mremap.c                         |  3 ---
- 5 files changed, 43 deletions(-)
- delete mode 100644 include/asm-generic/mm-arch-hooks.h
- delete mode 100644 include/linux/mm-arch-hooks.h
+ arch/alpha/kernel/irq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/um/include/asm/Kbuild b/arch/um/include/asm/Kbuild
-index 1c63b260ecc4..314979467db1 100644
---- a/arch/um/include/asm/Kbuild
-+++ b/arch/um/include/asm/Kbuild
-@@ -14,7 +14,6 @@ generic-y += irq_regs.h
- generic-y += irq_work.h
- generic-y += kdebug.h
- generic-y += mcs_spinlock.h
--generic-y += mm-arch-hooks.h
- generic-y += mmiowb.h
- generic-y += module.lds.h
- generic-y += param.h
-diff --git a/include/asm-generic/Kbuild b/include/asm-generic/Kbuild
-index 4365b9aa3e3f..e867eb3058d5 100644
---- a/include/asm-generic/Kbuild
-+++ b/include/asm-generic/Kbuild
-@@ -34,7 +34,6 @@ mandatory-y += kmap_size.h
- mandatory-y += kprobes.h
- mandatory-y += linkage.h
- mandatory-y += local.h
--mandatory-y += mm-arch-hooks.h
- mandatory-y += mmiowb.h
- mandatory-y += mmu.h
- mandatory-y += mmu_context.h
-diff --git a/include/asm-generic/mm-arch-hooks.h b/include/asm-generic/mm-arch-hooks.h
-deleted file mode 100644
-index 5ff0e5193f85..000000000000
---- a/include/asm-generic/mm-arch-hooks.h
-+++ /dev/null
-@@ -1,16 +0,0 @@
--/*
-- * Architecture specific mm hooks
-- */
--
--#ifndef _ASM_GENERIC_MM_ARCH_HOOKS_H
--#define _ASM_GENERIC_MM_ARCH_HOOKS_H
--
--/*
-- * This file should be included through arch/../include/asm/Kbuild for
-- * the architecture which doesn't need specific mm hooks.
-- *
-- * In that case, the generic hooks defined in include/linux/mm-arch-hooks.h
-- * are used.
-- */
--
--#endif /* _ASM_GENERIC_MM_ARCH_HOOKS_H */
-diff --git a/include/linux/mm-arch-hooks.h b/include/linux/mm-arch-hooks.h
-deleted file mode 100644
-index 9c4bedc95504..000000000000
---- a/include/linux/mm-arch-hooks.h
-+++ /dev/null
-@@ -1,22 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Generic mm no-op hooks.
-- *
-- * Copyright (C) 2015, IBM Corporation
-- * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-- */
--#ifndef _LINUX_MM_ARCH_HOOKS_H
--#define _LINUX_MM_ARCH_HOOKS_H
--
--#include <asm/mm-arch-hooks.h>
--
--#ifndef arch_remap
--static inline void arch_remap(struct mm_struct *mm,
--			      unsigned long old_start, unsigned long old_end,
--			      unsigned long new_start, unsigned long new_end)
--{
--}
--#define arch_remap arch_remap
--#endif
--
--#endif /* _LINUX_MM_ARCH_HOOKS_H */
-diff --git a/mm/mremap.c b/mm/mremap.c
-index c5590afe7165..e43696a91260 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -22,7 +22,6 @@
- #include <linux/syscalls.h>
- #include <linux/mmu_notifier.h>
- #include <linux/uaccess.h>
--#include <linux/mm-arch-hooks.h>
- #include <linux/userfaultfd_k.h>
+diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
+index f6d2946edbd2..c1980eea75a6 100644
+--- a/arch/alpha/kernel/irq.c
++++ b/arch/alpha/kernel/irq.c
+@@ -35,7 +35,6 @@ DEFINE_PER_CPU(unsigned long, irq_pmi_count);
+ void ack_bad_irq(unsigned int irq)
+ {
+ 	irq_err_count++;
+-	printk(KERN_CRIT "Unexpected IRQ trap at vector %u\n", irq);
+ }
  
- #include <asm/cacheflush.h>
-@@ -560,8 +559,6 @@ static unsigned long move_vma(struct vm_area_struct *vma,
- 		new_addr = err;
- 	} else {
- 		mremap_userfaultfd_prep(new_vma, uf);
--		arch_remap(mm, old_addr, old_addr + old_len,
--			   new_addr, new_addr + new_len);
- 	}
- 
- 	/* Conceal VM_ACCOUNT so old reservation is not undone */
+ #ifdef CONFIG_SMP 
 -- 
-2.25.0
+2.11.0
 
