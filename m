@@ -2,24 +2,23 @@ Return-Path: <SRS0=fKfC=FW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA761C4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5A0EC2BBD4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:17:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 286ED23B09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:16:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 286ED23B09
+	by mail.kernel.org (Postfix) with ESMTPS id 09CA723AFD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 15:17:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09CA723AFD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyC9z3rjZzDr74
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:16:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyCCg3LMMzDrHy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 02:17:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
  (client-ip=212.227.126.135; helo=mout.kundenserver.de;
@@ -30,32 +29,28 @@ Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBs50lyyzDr0D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBs56t2XzDr0l
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 02:01:28 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1Mo77T-1kK1VW1xBj-00pdXc; Fri, 18 Dec 2020 15:58:05 +0100
+ 1N5FtF-1k7Hmp0Rxl-0118Hm; Fri, 18 Dec 2020 15:58:02 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/23] arch: alpha: drop misleading warning on spurious IRQ
-Date: Fri, 18 Dec 2020 15:57:25 +0100
-Message-Id: <20201218145746.24205-3-info@metux.net>
+Subject: (repost) cleaning up handling of bad IRQs
+Date: Fri, 18 Dec 2020 15:57:23 +0100
+Message-Id: <20201218145746.24205-1-info@metux.net>
 X-Mailer: git-send-email 2.11.0
-In-Reply-To: <20201218145746.24205-1-info@metux.net>
-References: <20201218145746.24205-1-info@metux.net>
-X-Provags-ID: V03:K1:PqfaMTt25KQVxSXJTsfozmpBAeruFGG1jC3nsUehROhD0z4rSWE
- IaehytI/o5f6AoCsRTbYyuxgmId5X0qoSvyCMuRnkNj7LNq5/UmiaBRQ00TZS8ksxE8tlTK
- Z9+ACa+Zo53iDchZquHqWbo9V4ZzVTjuuoRD+GatwY7YnsMFfYTqB2Hjg0NnSpL67XfIodJ
- 9BxvEx894cQB3s69Eu2JQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:cohc8wk3vdI=:mzsvjvsWiiIwFiETSEotKA
- VmihfaVOaUQkByRjx7upE0UZT9zku+CzaTER2s+0cjRSYZ+F8ERiobaxCWYZbhD/zpbJAQ6BO
- Jxo98tjMSAykS3PAHuIs+mxtSplM92YWW8TseGJyHkOYQ3QZdyBpza4/hxXYN4Ebc95vJxs7w
- Wa3Fc2C+/6ZRKWZVYMWHF0FBNgUrG8cXl7VxhNWwC2H88W112L8bfPGLfl8vkZEZqPvuxHxHg
- qcIRWC53JqO9xuu8oj92R32XrMwvVUAg9/uYE9F/vUOV2HsU/JKe11720K5SEjUesaIUGHRzN
- 2mba0rBnOH42YIy00q/nB8X2aw6OJqinSdqwaFlRTPK2+24XwcR4uomPWxEmPCYlwQQi10QC0
- rs5ksIwNEmKimqOI4pxpTTh9yzKt9scYRBbflDEdABGUepE9fNlb8iHrjRZDgIi2VbdVmqvA3
- 2uNlI59NRmXmKPW0jDnIUVD59WP8M72uBTTY8d1uA/l8d0Ld50snZ/ksflXjV6BMsN+t38hj/
- ogRH9PXkj6nrxUFRuWUZWM=
+X-Provags-ID: V03:K1:kDy23KicY6yANCRUU/uS27W+PiA6W2GQEJc1w+ZgwWxEjEL6wp+
+ O8q9sjFQjB+V0eXbRSVHReMrDSfLKWhKYaglZe/mGoKnGo+tKe78BIINCtGjVGRkQlVCPRT
+ E0zs050IDCFNASTif7ntcdtcNCuqqIz4boa/lWXOWWv6+2VsptoinSFPTn2gbyoldCF3WLk
+ LPxaYtQibJh05k9ukhkIw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:WqNj1TBcidE=:gp0GmOgW/MpqQGs+zxKh6i
+ I0088aGoSzOIfC95i/SEDZNYBUDmgwLa8n4SXmJkOmu/GGWNmsBGg/Xf8yNQt9k/hZG1GWXPN
+ xEBtNhEWsGOydmRhKc+SGqkOJt1MGEphhCucm67oCLQxZfaAVCyV1LE8fm4EHrJROazGyYjEq
+ lH16F/3XvcljV+pCYiqIoRjM6+oypx0etdtwnLgAZmNyA9S6WTF37Yqa3INS1S7FwBDy3Kbkw
+ IcBnm6E0VHQ4OPHXxABvAk2oIndJOeCt+tf9gc9//r1GcOSb4BYRCbTjQKkvol7Zx++hrz8D9
+ ayJibSTe5nhuLcL+SN4HlKtWfuz6RmVjv6c/fDlR3j/qL/eB03XvQh9FCZg3jiwKfX5w6bpnL
+ fTy0MG7FyqXlq0+laGULoIs9JiSUAXz4NDEYbZiUPQeKZN9i2edp69JRiVoBK
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,33 +80,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The warning in ack_bad_irq() is misleading in several ways:
-* the term "vector" isn't quite correct
-* the printing format isn't consistent across the archs: some print decimal,
-  some hex, some hex w/o 0x prefix.
-* the printed linux irq isn't meaningful in all cases - we actually would
-  want it to print the hw irq.
+Hello friends,
 
-Since all call sites already print out more detailed and correct information,
-we just don't need to duplicate this in each single arch. So just drop it.
+ << reposting, since first queue didn't go through completely, due to mailer problem >>
 
-Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
----
- arch/alpha/kernel/irq.c | 1 -
- 1 file changed, 1 deletion(-)
+here's a patch queue for cleaning up the IRQ handling. Inspired by a
+discussion we had on a previous patch of mine:
 
-diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
-index f6d2946edbd2..c1980eea75a6 100644
---- a/arch/alpha/kernel/irq.c
-+++ b/arch/alpha/kernel/irq.c
-@@ -35,7 +35,6 @@ DEFINE_PER_CPU(unsigned long, irq_pmi_count);
- void ack_bad_irq(unsigned int irq)
- {
- 	irq_err_count++;
--	printk(KERN_CRIT "Unexpected IRQ trap at vector %u\n", irq);
- }
- 
- #ifdef CONFIG_SMP 
--- 
-2.11.0
+    "arch: fix 'unexpected IRQ trap at vector' warnings"
+    https://www.spinics.net/lists/kernel/msg3763137.html
+
+Turned out that the whole message, as it is right now, doesn't make much
+sense at at all - not just incorrect wording, but also not quite useful
+information. And the whole ack_bad_irq() thing deserves a cleanup anyways.
+
+So, I've had a closer look and came to these conclusions:
+
+1. The warning message doesn't need to be duplicated in the per architecture
+   ack_bad_irq() functions. All, but one callers already do their own warning.
+   Thus just adding a pr_warn() call there, printing out more useful data
+   like the hardware IRQ number, and dropping all warnings from all the
+   ack_bad_irq() functions.
+
+2. Many of the ack_bad_irq()'s count up the spurious interrupts - lots of
+   duplications over the various archs. Some of them using atomic_t, some
+   just plain ints. Consolidating this by introducing a global counter
+   with inline'd accessors and doing the upcounting in the (currently 3)
+   call sites of ack_bad_irq(). After that, step by step changing all
+   archs to use the new counter.
+
+3. For all but one arch (x86), ack_bad_irq() became a no-op.
+
+   On x86, it's just a call to ack_APIC_irq(), in order to prevent lockups
+   when IRQs missed to be ack'ed on the APIC. Could we perhaps do this in
+   some better place ? In that case, ack_bad_irq() could easily be removed
+   entirely.
+
+have fun,
+
+--mtx
+
+
 
