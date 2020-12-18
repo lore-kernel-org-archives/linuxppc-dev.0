@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A69FBC4361B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:45:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA7B9C2BBCF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:47:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D843723B02
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:45:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D843723B02
+	by mail.kernel.org (Postfix) with ESMTPS id 77F5023B26
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Dec 2020 14:47:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77F5023B26
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBVW0R7hzDqkC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 01:45:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CyBXq4nJYzDqfX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Dec 2020 01:47:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.187; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBGw6PpKzDqWP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CyBH00QFNzDqSp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2020 01:35:23 +1100 (AEDT)
 Received: from orion.localdomain ([95.115.54.243]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1MKbc4-1kVQWl3lds-00Kwal; Fri, 18 Dec 2020 15:31:48 +0100
+ 1MORN0-1kRYuy1Knu-00PuPN; Fri, 18 Dec 2020 15:32:02 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/23] arch: c6x: drop misleading warning on spurious IRQ
-Date: Fri, 18 Dec 2020 15:31:03 +0100
-Message-Id: <20201218143122.19459-5-info@metux.net>
+Subject: [PATCH 11/23] arch: sparc: drop misleading warning on spurious IRQ
+Date: Fri, 18 Dec 2020 15:31:10 +0100
+Message-Id: <20201218143122.19459-12-info@metux.net>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20201218143122.19459-1-info@metux.net>
 References: <20201218143122.19459-1-info@metux.net>
-X-Provags-ID: V03:K1:LpND6+qlyx9AmGzooMou6Vf89HHTFuGLvWMR4fa2jE7KkvluiyQ
- HqgepSPJvSoquixtsLOVm+5iPC4lBlEuZqhzLMv6Gb39cQKFrL17Oy010oVncqAG1hs8ZLb
- pGhAnGzWftumzuN8fhte+J6A0Ofdx/haEbbuFjfqYrl0ZwJ97Mj0nh0dHoPAmWSljvPyBYo
- oj+4mi1bx8jhOre4f7beA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:84I6lyo19tM=:zj+0LdIy55dgj0XHWliHlu
- Z6IKSuWDQ1jjOF8yZCwA+1YWvrGO3DoiBv3ZgcLSKjOz0No0LNOfcA5IENpYgnEjP5Hyg7eF9
- Acr1srgzIAfrzoxVvReEJn6hodNaMiluUJJ4wAyoPFsORwPYP7zv0H1L3PH7AaenUVtOOotQy
- iMBJJV5YM9QbZ4ZeWrCswa1OAXsKNWV0YqhNAlkUQDN9z57gglGl3Vi5GCEsqr/3vT4gxQSop
- RKGgd9gIwDzD/9l5YndWHU0kT9xylbz3DwQuGVqCw4pVhW5yEq+gDn9wr9xXEUP5tWH3yfoIY
- m9ktZtYpbKzqkXtVXJVU1h7nUO6F6hLqjtv8Lyrgbg20wUqy49AHWpak7jjdXFQNyev+foz8D
- mskfV6gct5deZth1Yvg3FfFtrQF72YBxjuRJEDSfr2CzGLxOES+7x30oU5n3V
+X-Provags-ID: V03:K1:vpXcdJ5flfT9UMPnHgs6T5l9jtGqBDr3f0tC6p5Rjwsvidh10dx
+ d0ToT43G0U3IwpJaBGtCswd9oef4Qd4eA0CAixsHtd5euXXJNxA9w1nGeD2/Gx6uxbiGLS0
+ tGewaqJssGqjA707NEZ8gDxxCE6ENgCktLf2r4JFNKn28o5k4rGK9s6JDW+QdfaOEf7J3lv
+ xxUqavLjRvPdJSifMz8RA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FAaCbJXPe/U=:euCZpYb16hzPdr0rOmUHvc
+ Mbl+JbbJacqEK9NS1X93hWQ41jQUrJHb+lZ1iEOJt9HdnBQK73zA80gWDm5dUlkD4XzE25f4y
+ iZAdXdl5Ah1QrxTSxe1Y9y9A+egjNscrkz9H9OjKHRyGuUxTp8qXnHzfp2syekussaP0P6Z2a
+ gK3PCoS98+1XjVpv1rbiX7wTafMlpOeqHCPCX7GADLBTi797dxPRr9WMG/Fbu+uKKqXyJkHah
+ jk51z873TwfbS+nMdLwkCU7zed0CiUFDHQ4QQUj0LFQxO1Hff0WZ447MWp3VaDYP+tDznjwrf
+ Cf8Msp2xoXen16t6PctzlKTRT0MuKxO0wNlYwE+AwG2kgMTqJuSnpzJKj8Amk6YSEoRB0LaJO
+ M2X2I0yt2w7VdDkA4pX0Tq421hrWkI6UhRpBP480D9vrnUkMmL2ONPeAnwhyx
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,21 +95,38 @@ we just don't need to duplicate this in each single arch. So just drop it.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- arch/c6x/kernel/irq.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/sparc/include/asm/hardirq_64.h | 2 +-
+ arch/sparc/kernel/irq_64.c          | 5 -----
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/arch/c6x/kernel/irq.c b/arch/c6x/kernel/irq.c
-index e4c53d185b62..b9f7cfa2ed21 100644
---- a/arch/c6x/kernel/irq.c
-+++ b/arch/c6x/kernel/irq.c
-@@ -116,7 +116,6 @@ void __init init_IRQ(void)
+diff --git a/arch/sparc/include/asm/hardirq_64.h b/arch/sparc/include/asm/hardirq_64.h
+index 75b92bfe04b5..874151f520de 100644
+--- a/arch/sparc/include/asm/hardirq_64.h
++++ b/arch/sparc/include/asm/hardirq_64.h
+@@ -14,6 +14,6 @@
+ #define local_softirq_pending_ref \
+ 	__cpu_data.__softirq_pending
  
- void ack_bad_irq(int irq)
- {
--	printk(KERN_ERR "IRQ: spurious interrupt %d\n", irq);
- 	irq_err_count++;
+-void ack_bad_irq(unsigned int irq);
++#define ack_bad_irq(irq)
+ 
+ #endif /* !(__SPARC64_HARDIRQ_H) */
+diff --git a/arch/sparc/kernel/irq_64.c b/arch/sparc/kernel/irq_64.c
+index 3ec9f1402aad..ea2a52f7fe53 100644
+--- a/arch/sparc/kernel/irq_64.c
++++ b/arch/sparc/kernel/irq_64.c
+@@ -284,11 +284,6 @@ static unsigned int sysino_exists(u32 devhandle, unsigned int devino)
+ 	return irq;
  }
  
+-void ack_bad_irq(unsigned int irq)
+-{
+-	pr_crit("BAD IRQ ack %d\n", irq);
+-}
+-
+ void irq_install_pre_handler(int irq,
+ 			     void (*func)(unsigned int, void *, void *),
+ 			     void *arg1, void *arg2)
 -- 
 2.11.0
 
