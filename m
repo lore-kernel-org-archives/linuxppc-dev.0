@@ -7,68 +7,71 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 769BAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:04:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B78D5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:05:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 975D122AEC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:04:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 975D122AEC
+	by mail.kernel.org (Postfix) with ESMTPS id 0D79F22C9C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:05:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D79F22C9C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsSF5dhMzDqQG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:04:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsV30YPszDqXZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:05:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzY1GcmzDqMW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 18:42:48 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BL7WXSi126859; Mon, 21 Dec 2020 02:42:32 -0500
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35jq8n0d07-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzY2SC6zDqLn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 18:42:49 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BL73b4W095942; Mon, 21 Dec 2020 02:42:42 -0500
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35jpgrhjpw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 02:42:32 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7cfSu001573;
- Mon, 21 Dec 2020 07:42:31 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 35h8sh1sw1-1
+ Mon, 21 Dec 2020 02:42:42 -0500
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7cPeV002325;
+ Mon, 21 Dec 2020 07:42:41 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04ams.nl.ibm.com with ESMTP id 35h9589spy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 07:42:30 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0BL7gRLx26804682
+ Mon, 21 Dec 2020 07:42:40 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BL7gcCi46858616
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 21 Dec 2020 07:42:27 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DF4515209A;
- Mon, 21 Dec 2020 07:42:27 +0000 (GMT)
+ Mon, 21 Dec 2020 07:42:38 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BB331A4040;
+ Mon, 21 Dec 2020 07:42:38 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 88D98A4051;
+ Mon, 21 Dec 2020 07:42:38 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id A17225206D;
- Mon, 21 Dec 2020 07:42:27 +0000 (GMT)
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 21 Dec 2020 07:42:38 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-39-10.uk.ibm.com [9.145.39.10])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id DE3DA220198;
- Mon, 21 Dec 2020 08:42:26 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id E0C20220198;
+ Mon, 21 Dec 2020 08:42:37 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 04/23] powerpc/pseries/ras: Make init_ras_hotplug_IRQ() static
-Date: Mon, 21 Dec 2020 08:42:03 +0100
-Message-Id: <20201221074222.403894-5-clg@kaod.org>
+Subject: [PATCH 22/23] powerpc/pcidn: Make IOV setup routines static
+Date: Mon, 21 Dec 2020 08:42:21 +0100
+Message-Id: <20201221074222.403894-23-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201221074222.403894-1-clg@kaod.org>
 References: <20201221074222.403894-1-clg@kaod.org>
@@ -80,11 +83,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-21_02:2020-12-19,
  2020-12-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 mlxlogscore=812 impostorscore=0 mlxscore=0 suspectscore=0
- spamscore=0 bulkscore=0 lowpriorityscore=0 adultscore=0 clxscore=1034
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012210049
+ lowpriorityscore=0 mlxscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 phishscore=0 mlxlogscore=608
+ priorityscore=1501 adultscore=0 spamscore=0 clxscore=1034 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012210049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,44 +99,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It fixes this W=3D1 compile error:
+It fixes these W=3D1 compile errors :
 
-../arch/powerpc/platforms/pseries/ras.c:125:12: error: no previous protot=
-ype for =E2=80=98init_ras_hotplug_IRQ=E2=80=99 [-Werror=3Dmissing-prototy=
+../arch/powerpc/platforms/pseries/pci.c:58:5: error: no previous prototyp=
+e for =E2=80=98pseries_send_map_pe=E2=80=99 [-Werror=3Dmissing-prototypes=
+]
+   58 | int pseries_send_map_pe(struct pci_dev *pdev,
+      |     ^~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/pci.c:91:6: error: no previous prototyp=
+e for =E2=80=98pseries_set_pe_num=E2=80=99 [-Werror=3Dmissing-prototypes]
+   91 | void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_index, __be1=
+6 pe_num)
+      |      ^~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/pci.c:105:5: error: no previous prototy=
+pe for =E2=80=98pseries_associate_pes=E2=80=99 [-Werror=3Dmissing-prototy=
 pes]
-  125 | int __init init_ras_hotplug_IRQ(void)
-      |            ^~~~~~~~~~~~~~~~~~~~
+  105 | int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
+      |     ^~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/pci.c:149:5: error: no previous prototy=
+pe for =E2=80=98pseries_pci_sriov_enable=E2=80=99 [-Werror=3Dmissing-prot=
+otypes]
+  149 | int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/pci.c:192:5: error: no previous prototy=
+pe for =E2=80=98pseries_pcibios_sriov_enable=E2=80=99 [-Werror=3Dmissing-=
+prototypes]
+  192 | int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vf=
+s)
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/pci.c:199:5: error: no previous prototy=
+pe for =E2=80=98pseries_pcibios_sriov_disable=E2=80=99 [-Werror=3Dmissing=
+-prototypes]
+  199 | int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Fixes: c9dccf1d074a ("powerpc/pseries: Enable RAS hotplug events later")
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/pseries/ras.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/pci.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platform=
-s/pseries/ras.c
-index e27310fc1481..de0a1747cbd1 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -122,7 +122,7 @@ static inline u8 rtas_mc_error_sub_type(const struct =
-pseries_mc_errorlog *mlog)
-  * devices or systems (e.g. hugepages) that have not been initialized at=
- the
-  * subsys stage.
-  */
--int __init init_ras_hotplug_IRQ(void)
-+static int __init init_ras_hotplug_IRQ(void)
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platform=
+s/pseries/pci.c
+index 72a4d4167849..7201642f0690 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -55,9 +55,9 @@ struct pe_map_bar_entry {
+ 	__be32     reserved;  /* Reserved Space */
+ };
+=20
+-int pseries_send_map_pe(struct pci_dev *pdev,
+-			u16 num_vfs,
+-			struct pe_map_bar_entry *vf_pe_array)
++static int pseries_send_map_pe(struct pci_dev *pdev,
++			       u16 num_vfs,
++			       struct pe_map_bar_entry *vf_pe_array)
  {
- 	struct device_node *np;
+ 	struct pci_dn *pdn;
+ 	int rc;
+@@ -88,7 +88,7 @@ int pseries_send_map_pe(struct pci_dev *pdev,
+ 	return rc;
+ }
+=20
+-void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_index, __be16 pe_nu=
+m)
++static void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_index, __be1=
+6 pe_num)
+ {
+ 	struct pci_dn *pdn;
+=20
+@@ -102,7 +102,7 @@ void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_=
+index, __be16 pe_num)
+ 		pdn->pe_num_map[vf_index]);
+ }
+=20
+-int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
++static int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
+ {
+ 	struct pci_dn *pdn;
+ 	int i, rc, vf_index;
+@@ -146,7 +146,7 @@ int pseries_associate_pes(struct pci_dev *pdev, u16 n=
+um_vfs)
+ 	return rc;
+ }
+=20
+-int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
++static int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+ {
+ 	struct pci_dn         *pdn;
+ 	int                    rc;
+@@ -189,14 +189,14 @@ int pseries_pci_sriov_enable(struct pci_dev *pdev, =
+u16 num_vfs)
+ 	return rc;
+ }
+=20
+-int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
++static int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vf=
+s)
+ {
+ 	/* Allocate PCI data */
+ 	add_sriov_vf_pdns(pdev);
+ 	return pseries_pci_sriov_enable(pdev, num_vfs);
+ }
+=20
+-int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
++static int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
+ {
+ 	struct pci_dn         *pdn;
 =20
 --=20
 2.26.2
