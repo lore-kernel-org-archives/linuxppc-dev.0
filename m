@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33FC0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:49:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E28AEC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:51:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31A2D22CAE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:49:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31A2D22CAE
+	by mail.kernel.org (Postfix) with ESMTPS id 42F2B22C7E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:51:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42F2B22C7E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CztSx43HvzDqLj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:49:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CztVs57YbzDqKj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:51:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,41 +28,41 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CztR66JDGzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 19:48:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CztSC4qmqzDqJf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 19:49:14 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CztQn75lMz9vBmr;
- Mon, 21 Dec 2020 09:48:01 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4CztS25qLtz9vBmt;
+ Mon, 21 Dec 2020 09:49:06 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id V9IuGKXR29te; Mon, 21 Dec 2020 09:48:01 +0100 (CET)
+ with ESMTP id CHi09gG5R5rU; Mon, 21 Dec 2020 09:49:06 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CztQn60JLz9vBmv;
- Mon, 21 Dec 2020 09:48:01 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CztS24BTmz9vBmr;
+ Mon, 21 Dec 2020 09:49:06 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C33B58B7CD;
- Mon, 21 Dec 2020 09:48:06 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 84B1A8B7CD;
+ Mon, 21 Dec 2020 09:49:11 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id KCX5xPO20s2W; Mon, 21 Dec 2020 09:48:06 +0100 (CET)
+ with ESMTP id xiO1JuKSAh3q; Mon, 21 Dec 2020 09:49:11 +0100 (CET)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CF258B7BE;
- Mon, 21 Dec 2020 09:48:06 +0100 (CET)
-Subject: Re: [PATCH 17/23] powerpc/watchdog: Declare soft_nmi_interrupt()
- prototype
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3FAB78B7BE;
+ Mon, 21 Dec 2020 09:49:11 +0100 (CET)
+Subject: Re: [PATCH 23/23] powerpc/pseries/eeh: Make
+ pseries_send_allow_unfreeze() static
 To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
  linuxppc-dev@lists.ozlabs.org
 References: <20201221074222.403894-1-clg@kaod.org>
- <20201221074222.403894-18-clg@kaod.org>
+ <20201221074222.403894-24-clg@kaod.org>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <8174a721-0407-1788-c2d1-dd4b274b314e@csgroup.eu>
-Date: Mon, 21 Dec 2020 09:48:00 +0100
+Message-ID: <0f827303-97d3-9b4d-8e0b-a0f50494697e@csgroup.eu>
+Date: Mon, 21 Dec 2020 09:49:06 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.1
 MIME-Version: 1.0
-In-Reply-To: <20201221074222.403894-18-clg@kaod.org>
+In-Reply-To: <20201221074222.403894-24-clg@kaod.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -77,7 +77,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -85,50 +85,34 @@ Sender: "Linuxppc-dev"
 
 
 Le 21/12/2020 à 08:42, Cédric Le Goater a écrit :
-> It fixes this W=1 compile error :
+> It fixes these W=1 compile error :
 > 
-> ../arch/powerpc/kernel/watchdog.c:250:6: error: no previous prototype for ‘soft_nmi_interrupt’ [-Werror=missing-prototypes]
->    250 | void soft_nmi_interrupt(struct pt_regs *regs)
->        |      ^~~~~~~~~~~~~~~~~~
+> ../arch/powerpc/platforms/pseries/eeh_pseries.c:697:5: error: no previous prototype for ‘pseries_send_allow_unfreeze’ [-Werror=missing-prototypes]
+>    697 | int pseries_send_allow_unfreeze(struct pci_dn *pdn,
+>        |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 > 
-> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Frederic Barrat <fbarrat@linux.ibm.com>
 > Signed-off-by: Cédric Le Goater <clg@kaod.org>
 > ---
->   arch/powerpc/include/asm/asm-prototypes.h | 1 +
-
-This is a misuse of asm/asm-prototypes.h
-
-This file is for prototypes of ASM functions.
-
-See discussion at 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/1463534212-4879-2-git-send-email-dja@axtens.net/
-
-
->   arch/powerpc/kernel/watchdog.c            | 1 +
->   2 files changed, 2 insertions(+)
+>   arch/powerpc/platforms/pseries/eeh_pseries.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-> index d0b832cbbec8..0f39eefbd5a5 100644
-> --- a/arch/powerpc/include/asm/asm-prototypes.h
-> +++ b/arch/powerpc/include/asm/asm-prototypes.h
-> @@ -84,6 +84,7 @@ void machine_check_exception(struct pt_regs *regs);
->   void emulation_assist_interrupt(struct pt_regs *regs);
->   long do_slb_fault(struct pt_regs *regs, unsigned long ea);
->   void do_bad_slb_fault(struct pt_regs *regs, unsigned long ea, long err);
-> +void soft_nmi_interrupt(struct pt_regs *regs);
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index de45ceb634f9..cb615dbd35e7 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -694,8 +694,8 @@ static int pseries_eeh_write_config(struct eeh_dev *edev, int where, int size, u
+>   }
 >   
->   /* signals, syscalls and interrupts */
->   long sys_swapcontext(struct ucontext __user *old_ctx,
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index af3c15a1d41e..855716f563ac 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -27,6 +27,7 @@
->   #include <linux/smp.h>
->   
->   #include <asm/paca.h>
-> +#include <asm/asm-prototypes.h>
->   
->   /*
->    * The powerpc watchdog ensures that each CPU is able to service timers.
+>   #ifdef CONFIG_PCI_IOV
+> -int pseries_send_allow_unfreeze(struct pci_dn *pdn,
+> -				u16 *vf_pe_array, int cur_vfs)
+> +static int pseries_send_allow_unfreeze(struct pci_dn *pdn,
+> +				       u16 *vf_pe_array, int cur_vfs)
+
+Doesn't this fit on one line ?
+
+>   {
+>   	int rc;
+>   	int ibm_allow_unfreeze = rtas_token("ibm,open-sriov-allow-unfreeze");
 > 
