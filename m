@@ -2,24 +2,24 @@ Return-Path: <SRS0=4INi=FZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C65FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 07:59:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 794BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:00:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50FB122248
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 07:59:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50FB122248
+	by mail.kernel.org (Postfix) with ESMTPS id C2F2B22C97
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:00:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2F2B22C97
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsLB2KJ9zDqQQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 18:58:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsNB0wYBzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:00:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -31,45 +31,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzX4LbkzDqMM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzX3b1fzDqML
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 18:42:48 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BL7WsGd052076; Mon, 21 Dec 2020 02:42:41 -0500
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35jq5xrhew-1
+ 0BL7W5WA012714; Mon, 21 Dec 2020 02:42:33 -0500
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35jpp41a09-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 02:42:41 -0500
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7b5p9010493;
- Mon, 21 Dec 2020 07:42:38 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04fra.de.ibm.com with ESMTP id 35h9588wtr-1
+ Mon, 21 Dec 2020 02:42:33 -0500
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7bTLD004081;
+ Mon, 21 Dec 2020 07:42:30 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma01fra.de.ibm.com with ESMTP id 35h9588wk6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 07:42:38 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0BL7gZkD24248704
+ Mon, 21 Dec 2020 07:42:30 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BL7gStG41026008
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 21 Dec 2020 07:42:35 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 544C352091;
- Mon, 21 Dec 2020 07:42:36 +0000 (GMT)
+ Mon, 21 Dec 2020 07:42:28 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 655AAAE045;
+ Mon, 21 Dec 2020 07:42:28 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3DB78AE05A;
+ Mon, 21 Dec 2020 07:42:28 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 226345206D;
- Mon, 21 Dec 2020 07:42:36 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 21 Dec 2020 07:42:28 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-39-10.uk.ibm.com [9.145.39.10])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 86E5E220198;
- Mon, 21 Dec 2020 08:42:35 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 9988522024D;
+ Mon, 21 Dec 2020 08:42:27 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 18/23] KVM: PPC: Make the VMX instruction emulation routines
- static
-Date: Mon, 21 Dec 2020 08:42:17 +0100
-Message-Id: <20201221074222.403894-19-clg@kaod.org>
+Subject: [PATCH 05/23] powerpc/pmem: Include pmem prototypes
+Date: Mon, 21 Dec 2020 08:42:04 +0100
+Message-Id: <20201221074222.403894-6-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201221074222.403894-1-clg@kaod.org>
 References: <20201221074222.403894-1-clg@kaod.org>
@@ -81,11 +83,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-21_02:2020-12-19,
  2020-12-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0
- clxscore=1034 mlxscore=0 lowpriorityscore=0 suspectscore=0 phishscore=0
- mlxlogscore=833 impostorscore=0 bulkscore=0 priorityscore=1501
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012210053
+ bulkscore=0 mlxscore=0
+ clxscore=1034 phishscore=0 priorityscore=1501 impostorscore=0
+ suspectscore=0 lowpriorityscore=0 malwarescore=0 mlxlogscore=904
+ spamscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012210049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,82 +104,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It fixes these W=3D1 compile errors :
+It fixes this W=3D1 compile error :
 
-../arch/powerpc/kvm/powerpc.c:1521:5: error: no previous prototype for =E2=
-=80=98kvmppc_get_vmx_dword=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1521 | int kvmppc_get_vmx_dword(struct kvm_vcpu *vcpu, int index, u64 *v=
-al)
-      |     ^~~~~~~~~~~~~~~~~~~~
-../arch/powerpc/kvm/powerpc.c:1539:5: error: no previous prototype for =E2=
-=80=98kvmppc_get_vmx_word=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1539 | int kvmppc_get_vmx_word(struct kvm_vcpu *vcpu, int index, u64 *va=
-l)
-      |     ^~~~~~~~~~~~~~~~~~~
-../arch/powerpc/kvm/powerpc.c:1557:5: error: no previous prototype for =E2=
-=80=98kvmppc_get_vmx_hword=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1557 | int kvmppc_get_vmx_hword(struct kvm_vcpu *vcpu, int index, u64 *v=
-al)
-      |     ^~~~~~~~~~~~~~~~~~~~
-../arch/powerpc/kvm/powerpc.c:1575:5: error: no previous prototype for =E2=
-=80=98kvmppc_get_vmx_byte=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1575 | int kvmppc_get_vmx_byte(struct kvm_vcpu *vcpu, int index, u64 *va=
-l)
-      |     ^~~~~~~~~~~~~~~~~~~
+../arch/powerpc/lib/pmem.c:51:6: error: no previous prototype for =E2=80=98=
+arch_wb_cache_pmem=E2=80=99 [-Werror=3Dmissing-prototypes]
+   51 | void arch_wb_cache_pmem(void *addr, size_t size)
+      |      ^~~~~~~~~~~~~~~~~~
+../arch/powerpc/lib/pmem.c:58:6: error: no previous prototype for =E2=80=98=
+arch_invalidate_pmem=E2=80=99 [-Werror=3Dmissing-prototypes]
+   58 | void arch_invalidate_pmem(void *addr, size_t size)
+      |      ^~~~~~~~~~~~~~~~~~~~
 
-Cc: Paul Mackerras <paulus@ozlabs.org>
+Fixes: 32ce3862af3c ("powerpc/lib: Implement PMEM API")
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/powerpc.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/lib/pmem.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index cf52d26f49cd..25966ae3271e 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1518,7 +1518,7 @@ int kvmppc_handle_vmx_load(struct kvm_vcpu *vcpu,
- 	return emulated;
- }
+diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
+index 1550e0d2513a..eb2919ddf9b9 100644
+--- a/arch/powerpc/lib/pmem.c
++++ b/arch/powerpc/lib/pmem.c
+@@ -6,6 +6,7 @@
+ #include <linux/string.h>
+ #include <linux/export.h>
+ #include <linux/uaccess.h>
++#include <linux/libnvdimm.h>
 =20
--int kvmppc_get_vmx_dword(struct kvm_vcpu *vcpu, int index, u64 *val)
-+static int kvmppc_get_vmx_dword(struct kvm_vcpu *vcpu, int index, u64 *v=
-al)
- {
- 	union kvmppc_one_reg reg;
- 	int vmx_offset =3D 0;
-@@ -1536,7 +1536,7 @@ int kvmppc_get_vmx_dword(struct kvm_vcpu *vcpu, int=
- index, u64 *val)
- 	return result;
- }
+ #include <asm/cacheflush.h>
 =20
--int kvmppc_get_vmx_word(struct kvm_vcpu *vcpu, int index, u64 *val)
-+static int kvmppc_get_vmx_word(struct kvm_vcpu *vcpu, int index, u64 *va=
-l)
- {
- 	union kvmppc_one_reg reg;
- 	int vmx_offset =3D 0;
-@@ -1554,7 +1554,7 @@ int kvmppc_get_vmx_word(struct kvm_vcpu *vcpu, int =
-index, u64 *val)
- 	return result;
- }
-=20
--int kvmppc_get_vmx_hword(struct kvm_vcpu *vcpu, int index, u64 *val)
-+static int kvmppc_get_vmx_hword(struct kvm_vcpu *vcpu, int index, u64 *v=
-al)
- {
- 	union kvmppc_one_reg reg;
- 	int vmx_offset =3D 0;
-@@ -1572,7 +1572,7 @@ int kvmppc_get_vmx_hword(struct kvm_vcpu *vcpu, int=
- index, u64 *val)
- 	return result;
- }
-=20
--int kvmppc_get_vmx_byte(struct kvm_vcpu *vcpu, int index, u64 *val)
-+static int kvmppc_get_vmx_byte(struct kvm_vcpu *vcpu, int index, u64 *va=
-l)
- {
- 	union kvmppc_one_reg reg;
- 	int vmx_offset =3D 0;
 --=20
 2.26.2
 
