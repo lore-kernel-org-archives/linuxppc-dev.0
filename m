@@ -6,36 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62274C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:21:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17E40C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:25:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58A2A227BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:21:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58A2A227BF
+	by mail.kernel.org (Postfix) with ESMTPS id DD7C7227BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:25:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD7C7227BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Czxqx6kcrzDqJH
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 22:21:33 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CzxwV6JDkzDqCk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 22:25:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CzxR63zSczDqLD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 22:03:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CzxR70xStzDqNg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 22:03:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CzxR61Qksz9sW0; Mon, 21 Dec 2020 22:03:29 +1100 (AEDT)
+ id 4CzxR66P7qz9sW9; Mon, 21 Dec 2020 22:03:30 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20201211145954.90143-1-ldufour@linux.ibm.com>
-References: <20201211145954.90143-1-ldufour@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/memhotplug: quieting some DLPAR operations
-Message-Id: <160854857884.1696279.4074633690507075582.b4-ty@ellerman.id.au>
-Date: Mon, 21 Dec 2020 22:03:29 +1100 (AEDT)
+To: Paul Mackerras <paulus@ozlabs.org>, Leonardo Bras <leobras.c@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20201208215707.31149-1-leobras.c@gmail.com>
+References: <20201208215707.31149-1-leobras.c@gmail.com>
+Subject: Re: [PATCH v2 1/1] powerpc/kvm: Fix mask size for emulated msgsndp
+Message-Id: <160854857761.1696279.18011483882082447442.b4-ty@ellerman.id.au>
+Date: Mon, 21 Dec 2020 22:03:30 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,25 +49,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, cheloha@linux.ibm.com, paulus@samba.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Dec 2020 15:59:54 +0100, Laurent Dufour wrote:
-> When attempting to remove by index a set of LMB a lot of messages are
-> displayed on the console, even when everything goes fine:
+On Tue, 8 Dec 2020 18:57:08 -0300, Leonardo Bras wrote:
+> According to ISAv3.1 and ISAv3.0b, the msgsndp is described to split RB in:
+> msgtype <- (RB) 32:36
+> payload <- (RB) 37:63
+> t       <- (RB) 57:63
 > 
->  pseries-hotplug-mem: Attempting to hot-remove LMB, drc index 8000002d
->  Offlined Pages 4096
->  pseries-hotplug-mem: Memory at 2d0000000 was hot-removed
+> The current way of getting 'msgtype', and 't' is missing their MSB:
+> msgtype: ((arg >> 27) & 0xf) : Gets (RB) 33:36, missing bit 32
+> t:       (arg &= 0x3f)       : Gets (RB) 58:63, missing bit 57
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/memhotplug: Quieten some DLPAR operations
-      https://git.kernel.org/powerpc/c/20e9de85edae3a5866f29b6cce87c9ec66d62a1b
+[1/1] KVM: PPC: Book3S HV: Fix mask size for emulated msgsndp
+      https://git.kernel.org/powerpc/c/87fb4978ef8f7e3d6f51ea8e259638c4e96f2fc0
 
 cheers
