@@ -4,38 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1C57C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:08:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA555C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:13:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE6AD22BEF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:08:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE6AD22BEF
+	by mail.kernel.org (Postfix) with ESMTPS id CC419227BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 11:13:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC419227BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CzxXJ1WJNzDqFH
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 22:08:00 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Czxg208qKzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 22:13:50 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CzxR35v7pzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 22:03:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CzxR51KsRzDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 22:03:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CzxR34Kwbz9sVn; Mon, 21 Dec 2020 22:03:27 +1100 (AEDT)
+ id 4CzxR45BPPz9sVt; Mon, 21 Dec 2020 22:03:28 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20201211021140.28402-1-ajd@linux.ibm.com>
-References: <20201211021140.28402-1-ajd@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Rate limit opal-elog read failure message
-Message-Id: <160854857908.1696279.3604424735058468008.b4-ty@ellerman.id.au>
-Date: Mon, 21 Dec 2020 22:03:27 +1100 (AEDT)
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <a1d31f84ddb0926813b17fcd5cc7f3fa7b4deac2.1602759123.git.christophe.leroy@csgroup.eu>
+References: <a1d31f84ddb0926813b17fcd5cc7f3fa7b4deac2.1602759123.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: force inlining of csum_partial() to avoid
+ multiple csum_partial() with GCC10
+Message-Id: <160854857836.1696279.559566714940514857.b4-ty@ellerman.id.au>
+Date: Mon, 21 Dec 2020 22:03:28 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,21 +51,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, mahesh@linux.ibm.com, hegdevasant@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Dec 2020 13:11:41 +1100, Andrew Donnellan wrote:
-> Sometimes we can't read an error log from OPAL, and we print an error
-> message accordingly. But the OPAL userspace tools seem to like retrying a
-> lot, in which case we flood the kernel log with a lot of messages.
+On Thu, 15 Oct 2020 10:52:20 +0000 (UTC), Christophe Leroy wrote:
+> 	ppc-linux-objdump -d vmlinux | grep -e "<csum_partial>" -e "<__csum_partial>"
 > 
-> Change pr_err() to pr_err_ratelimited() to help with this.
+> With gcc9 I get:
+> 
+> 	c0017ef8 <__csum_partial>:
+> 	c00182fc:	4b ff fb fd 	bl      c0017ef8 <__csum_partial>
+> 	c0018478:	4b ff fa 80 	b       c0017ef8 <__csum_partial>
+> 	c03e8458:	4b c2 fa a0 	b       c0017ef8 <__csum_partial>
+> 	c03e8518:	4b c2 f9 e1 	bl      c0017ef8 <__csum_partial>
+> 	c03ef410:	4b c2 8a e9 	bl      c0017ef8 <__csum_partial>
+> 	c03f0b24:	4b c2 73 d5 	bl      c0017ef8 <__csum_partial>
+> 	c04279a4:	4b bf 05 55 	bl      c0017ef8 <__csum_partial>
+> 	c0429820:	4b be e6 d9 	bl      c0017ef8 <__csum_partial>
+> 	c0429944:	4b be e5 b5 	bl      c0017ef8 <__csum_partial>
+> 	c042b478:	4b be ca 81 	bl      c0017ef8 <__csum_partial>
+> 	c042b554:	4b be c9 a5 	bl      c0017ef8 <__csum_partial>
+> 	c045f15c:	4b bb 8d 9d 	bl      c0017ef8 <__csum_partial>
+> 	c0492190:	4b b8 5d 69 	bl      c0017ef8 <__csum_partial>
+> 	c0492310:	4b b8 5b e9 	bl      c0017ef8 <__csum_partial>
+> 	c0495594:	4b b8 29 65 	bl      c0017ef8 <__csum_partial>
+> 	c049c420:	4b b7 ba d9 	bl      c0017ef8 <__csum_partial>
+> 	c049c870:	4b b7 b6 89 	bl      c0017ef8 <__csum_partial>
+> 	c049c930:	4b b7 b5 c9 	bl      c0017ef8 <__csum_partial>
+> 	c04a9ca0:	4b b6 e2 59 	bl      c0017ef8 <__csum_partial>
+> 	c04bdde4:	4b b5 a1 15 	bl      c0017ef8 <__csum_partial>
+> 	c04be480:	4b b5 9a 79 	bl      c0017ef8 <__csum_partial>
+> 	c04be710:	4b b5 97 e9 	bl      c0017ef8 <__csum_partial>
+> 	c04c969c:	4b b4 e8 5d 	bl      c0017ef8 <__csum_partial>
+> 	c04ca2fc:	4b b4 db fd 	bl      c0017ef8 <__csum_partial>
+> 	c04cf5bc:	4b b4 89 3d 	bl      c0017ef8 <__csum_partial>
+> 	c04d0440:	4b b4 7a b9 	bl      c0017ef8 <__csum_partial>
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv: Rate limit opal-elog read failure message
-      https://git.kernel.org/powerpc/c/c88017cf2af614409da69934c1738ed5ff2f7022
+[1/1] powerpc: force inlining of csum_partial() to avoid multiple csum_partial() with GCC10
+      https://git.kernel.org/powerpc/c/328e7e487a464aad024fbde6663b7859df082b7b
 
 cheers
