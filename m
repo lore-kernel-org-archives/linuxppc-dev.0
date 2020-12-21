@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CAC4C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DAC1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:09:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 806ED22C9C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:07:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 806ED22C9C
+	by mail.kernel.org (Postfix) with ESMTPS id F3A0E229EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 08:09:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3A0E229EF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsX52nKkzDqZN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:07:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CzsZ11FFXzDqZW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Dec 2020 19:09:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
@@ -31,47 +31,54 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzY2gYTzDqML
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 18:42:48 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CzrzY3dTnzDqMX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2020 18:42:49 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0BL7WZN0185597; Mon, 21 Dec 2020 02:42:34 -0500
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35jp79t1w4-1
+ 0BL7VxTR167943; Mon, 21 Dec 2020 02:42:37 -0500
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35jmpbm2vu-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 02:42:34 -0500
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7akGF030860;
- Mon, 21 Dec 2020 07:42:32 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03ams.nl.ibm.com with ESMTP id 35h9589scy-1
+ Mon, 21 Dec 2020 02:42:36 -0500
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0BL7Xb6G172726;
+ Mon, 21 Dec 2020 02:42:36 -0500
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35jmpbm2v8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 21 Dec 2020 07:42:32 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0BL7gTBK22479346
+ Mon, 21 Dec 2020 02:42:36 -0500
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BL7cVt0029720;
+ Mon, 21 Dec 2020 07:42:34 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma02fra.de.ibm.com with ESMTP id 35hdguru13-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 21 Dec 2020 07:42:34 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BL7gWiP35651886
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 21 Dec 2020 07:42:29 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B15654C062;
- Mon, 21 Dec 2020 07:42:29 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 745D34C072;
- Mon, 21 Dec 2020 07:42:29 +0000 (GMT)
+ Mon, 21 Dec 2020 07:42:32 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 15CC211C0A9;
+ Mon, 21 Dec 2020 07:42:32 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DFC5711C09C;
+ Mon, 21 Dec 2020 07:42:31 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon, 21 Dec 2020 07:42:29 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 21 Dec 2020 07:42:31 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-39-10.uk.ibm.com [9.145.39.10])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id B155D22024D;
- Mon, 21 Dec 2020 08:42:28 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 39EB022024D;
+ Mon, 21 Dec 2020 08:42:31 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/23] powerpc/mce: Include prototypes
-Date: Mon, 21 Dec 2020 08:42:06 +0100
-Message-Id: <20201221074222.403894-8-clg@kaod.org>
+Subject: [PATCH 11/23] powerpc/optprobes: Make patch_imm64_load_insns() static
+Date: Mon, 21 Dec 2020 08:42:10 +0100
+Message-Id: <20201221074222.403894-12-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201221074222.403894-1-clg@kaod.org>
 References: <20201221074222.403894-1-clg@kaod.org>
@@ -83,11 +90,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2020-12-21_02:2020-12-19,
  2020-12-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- priorityscore=1501 mlxscore=0 bulkscore=0 lowpriorityscore=0
- impostorscore=0 mlxlogscore=881 adultscore=0 clxscore=1034 phishscore=0
- spamscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012210049
+ impostorscore=0 mlxscore=0
+ bulkscore=0 phishscore=0 suspectscore=0 mlxlogscore=770 priorityscore=1501
+ adultscore=0 spamscore=0 lowpriorityscore=0 clxscore=1034 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012210049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,44 +106,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Jordan Niethe <jniethe5@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It fixes these W=3D1 compile errors :
+It fixes W=3D1 this compile error :
 
-../arch/powerpc/kernel/mce.c:591:14: error: no previous prototype for =E2=
-=80=98machine_check_early=E2=80=99 [-Werror=3Dmissing-prototypes]
-  591 | long notrace machine_check_early(struct pt_regs *regs)
-      |              ^~~~~~~~~~~~~~~~~~~
-../arch/powerpc/kernel/mce.c:725:6: error: no previous prototype for =E2=80=
-=98hmi_exception_realmode=E2=80=99 [-Werror=3Dmissing-prototypes]
-  725 | long hmi_exception_realmode(struct pt_regs *regs)
-      |      ^~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/kernel/optprobes.c:149:6: error: no previous prototype fo=
+r =E2=80=98patch_imm64_load_insns=E2=80=99 [-Werror=3Dmissing-prototypes]
+  149 | void patch_imm64_load_insns(unsigned int val, kprobe_opcode_t *ad=
+dr)
 
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: Jordan Niethe <jniethe5@gmail.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kernel/mce.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/optprobes.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 9f3e133b57b7..c381dc2f9858 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -21,6 +21,7 @@
- #include <asm/machdep.h>
- #include <asm/mce.h>
- #include <asm/nmi.h>
-+#include <asm/asm-prototypes.h>
-=20
- static DEFINE_PER_CPU(int, mce_nest_count);
- static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event)=
-;
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optpro=
+bes.c
+index da6b88b80ba4..7f7cdbeacd1a 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -145,7 +145,7 @@ void arch_remove_optimized_kprobe(struct optimized_kp=
+robe *op)
+  * Generate instructions to load provided immediate 64-bit value
+  * to register 'reg' and patch these instructions at 'addr'.
+  */
+-void patch_imm64_load_insns(unsigned long val, int reg, kprobe_opcode_t =
+*addr)
++static void patch_imm64_load_insns(unsigned long val, int reg, kprobe_op=
+code_t *addr)
+ {
+ 	/* lis reg,(op)@highest */
+ 	patch_instruction((struct ppc_inst *)addr,
 --=20
 2.26.2
 
