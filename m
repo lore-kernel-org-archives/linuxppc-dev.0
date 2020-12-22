@@ -2,24 +2,23 @@ Return-Path: <SRS0=Rflt=F2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28779C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:35:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4102C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:38:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6350C229C6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:35:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6350C229C6
+	by mail.kernel.org (Postfix) with ESMTPS id DBDA923103
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:38:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBDA923103
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D0clv23JmzDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 00:35:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D0cqN58kszDqSc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 00:38:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,39 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D0cbz36TCzDqPc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 00:28:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D0cbz39ggzDqQg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 00:28:28 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4D0cbq65RVz9v1w2;
- Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4D0cbn5l4Jz9v1vm;
+ Tue, 22 Dec 2020 14:28:21 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id iWZWmWve4ih7; Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+ with ESMTP id IaxKO6DRfFR5; Tue, 22 Dec 2020 14:28:21 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4D0cbq4bQVz9v1vl;
- Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4D0cbn4rFrz9v1vl;
+ Tue, 22 Dec 2020 14:28:21 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0258B8B81B;
- Tue, 22 Dec 2020 14:28:25 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 061FF8B81B;
+ Tue, 22 Dec 2020 14:28:23 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id S9d6jV_vQB6a; Tue, 22 Dec 2020 14:28:24 +0100 (CET)
+ with ESMTP id 0E_a5BmWXZY0; Tue, 22 Dec 2020 14:28:22 +0100 (CET)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B00008B812;
- Tue, 22 Dec 2020 14:28:24 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B14928B812;
+ Tue, 22 Dec 2020 14:28:22 +0100 (CET)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8F17966969; Tue, 22 Dec 2020 13:28:24 +0000 (UTC)
-Message-Id: <e8354dd69e7a108c2576853adb9d37c3bff1d761.1608641533.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1608641532.git.christophe.leroy@csgroup.eu>
-References: <cover.1608641532.git.christophe.leroy@csgroup.eu>
+ id 7B05A66969; Tue, 22 Dec 2020 13:28:22 +0000 (UTC)
+Message-Id: <cover.1608641532.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 02/15] powerpc/32s: Fix RTAS machine check with VMAP stack
+Subject: [PATCH v1 00/15] powerpc/32: Reduce head complexity and re-activate
+ MMU earlier
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Tue, 22 Dec 2020 13:28:24 +0000 (UTC)
+Date: Tue, 22 Dec 2020 13:28:22 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,37 +75,94 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When we have VMAP stack, exception prolog 1 sets r1, not r11.
+This series aims at reducing exception/syscall prologs complexity.
+It also brings earlier MMU re-activation.
 
-Fixes: da7bb43ab9da ("powerpc/32: Fix vmap stack - Properly set r1 before activating MMU")
-Fixes: d2e006036082 ("powerpc/32: Use SPRN_SPRG_SCRATCH2 in exception prologs")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/head_book3s_32.S | 7 +++++++
- 1 file changed, 7 insertions(+)
+At the time being, we have two pathes in the prologs: one for
+when we have CONFIG_VMAP stack and one when we don't.
 
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index 349bf3f0c3af..fbc48a500846 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -260,9 +260,16 @@ __secondary_hold_acknowledge:
- MachineCheck:
- 	EXCEPTION_PROLOG_0
- #ifdef CONFIG_PPC_CHRP
-+#ifdef CONFIG_VMAP_STACK
-+	mtspr	SPRN_SPRG_SCRATCH2,r1
-+	mfspr	r1, SPRN_SPRG_THREAD
-+	lwz	r1, RTAS_SP(r1)
-+	cmpwi	cr1, r1, 0
-+#else
- 	mfspr	r11, SPRN_SPRG_THREAD
- 	lwz	r11, RTAS_SP(r11)
- 	cmpwi	cr1, r11, 0
-+#endif
- 	bne	cr1, 7f
- #endif /* CONFIG_PPC_CHRP */
- 	EXCEPTION_PROLOG_1 for_rtas=1
+Among 40x, 6xx and 8xx, only 40x doesn't support VMAP stack.
+
+When VMAP stack is supported, there is special prolog code to
+allow accessing stack with MMU on.
+
+That code that access VM stack with MMU on is also able to access
+linear memory, so it can also access non VM stack with MMU on.
+
+CONFIG_VMAP_STACK as been on by default on 6xx and 8xx for some
+kernel releases now, so it is known to work.
+
+On the 8xx, null_syscall runs in 292 cycles with VMAP_STACK and in
+296 cycles without VMAP stack.
+On the 832x, null_syscall runs in 224 cycles with VMAP_STACK and in
+213 cycles without VMAP stack.
+
+By removing the old non VMAP stack code, and using the same prolog
+regardless of the activation of VMAP stacks, we make the code a lot
+simplier and open perspective to even more.
+
+Once this is done, we can easily go one step further and re-activate
+Instruction translation at the same time as data translation.
+
+At the end, null_syscall runs in 286 cycles on the 8xx and in 216
+cycles on the 832x
+
+To do this, I splitted head_32.h in two files, one for 40x which
+doesn't have VMAP stack and one for 6xx and 8xx that have VMAP stack.
+
+Now that we have MMU back on earlier on the 6xx and 8xx, once the 40x is
+gone it will be possible have more commonalities with book3e/32 which
+has MMU always on.
+
+Christophe Leroy (15):
+  powerpc/32: Fix vmap stack - Properly set r1 before activating MMU on
+    syscall too
+  powerpc/32s: Fix RTAS machine check with VMAP stack
+  powerpc/32s: Only build hash code when CONFIG_PPC_BOOK3S_604 is
+    selected
+  powerpc/32s: Do DABR match out of handle_page_fault()
+  powerpc: Remove address argument from bad_page_fault()
+  powerpc: Remove address and errorcode arguments from do_break()
+  powerpc: Remove address and errorcode arguments from do_page_fault()
+  powerpc/32: Split head_32.h into head_40x.h and head_6xx_8xx.h
+  powerpc/32: Preserve cr1 in exception prolog stack check
+  powerpc/32: Make VMAP stack code depend on HAVE_ARCH_VMAP_STACK
+  powerpc/32: Use r1 directly instead of r11 in syscall prolog
+  powerpc/32: Remove msr argument in EXC_XFER_TEMPLATE() on 6xx/8xx
+  powerpc/32: Enable instruction translation at the same time as data
+    translation
+  powerpc/32: Use r1 directly instead of r11 in exception prologs on
+    6xx/8xx
+  powerpc/32: Use r11 to store DSISR in prolog
+
+ arch/powerpc/include/asm/bug.h                |   6 +-
+ arch/powerpc/include/asm/debug.h              |   3 +-
+ arch/powerpc/include/asm/processor.h          |   2 +-
+ arch/powerpc/kernel/asm-offsets.c             |   2 +-
+ arch/powerpc/kernel/entry_32.S                |  56 ++---
+ arch/powerpc/kernel/exceptions-64e.S          |   5 +-
+ arch/powerpc/kernel/exceptions-64s.S          |  10 +-
+ arch/powerpc/kernel/fpu.S                     |   2 +-
+ arch/powerpc/kernel/head_40x.S                |   8 +-
+ arch/powerpc/kernel/{head_32.h => head_40x.h} | 186 +--------------
+ .../kernel/{head_32.h => head_6xx_8xx.h}      | 222 +++++-------------
+ arch/powerpc/kernel/head_8xx.S                |  33 +--
+ arch/powerpc/kernel/head_book3s_32.S          |  64 ++---
+ arch/powerpc/kernel/head_booke.h              |   4 +-
+ arch/powerpc/kernel/idle_6xx.S                |  12 +-
+ arch/powerpc/kernel/process.c                 |   8 +-
+ arch/powerpc/kernel/traps.c                   |   2 +-
+ arch/powerpc/kernel/vector.S                  |   2 +-
+ arch/powerpc/mm/book3s32/Makefile             |   4 +-
+ arch/powerpc/mm/book3s32/hash_low.S           |  14 --
+ arch/powerpc/mm/book3s64/hash_utils.c         |   2 +-
+ arch/powerpc/mm/book3s64/slb.c                |   2 +-
+ arch/powerpc/mm/fault.c                       |  16 +-
+ arch/powerpc/platforms/8xx/machine_check.c    |   2 +-
+ 24 files changed, 154 insertions(+), 513 deletions(-)
+ copy arch/powerpc/kernel/{head_32.h => head_40x.h} (53%)
+ rename arch/powerpc/kernel/{head_32.h => head_6xx_8xx.h} (50%)
+
 -- 
 2.25.0
 
