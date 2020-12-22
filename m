@@ -2,64 +2,67 @@ Return-Path: <SRS0=Rflt=F2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E231C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 18:57:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61D7CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 20:27:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FC0422B2B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 18:57:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FC0422B2B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id B4E99229C5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 20:27:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4E99229C5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D0ltx1HLZzDqRj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 05:56:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.167.175;
- helo=mail-oi1-f175.google.com; envelope-from=geert.uytterhoeven@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-oi1-f175.google.com (mail-oi1-f175.google.com
- [209.85.167.175])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D0nvK43hvzDqSC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 07:27:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=metux.net
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
+ envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=metux.net
+X-Greylist: delayed 449 seconds by postgrey-1.36 at bilbo;
+ Wed, 23 Dec 2020 07:25:42 AEDT
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D0lrn1P4nzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 05:55:02 +1100 (AEDT)
-Received: by mail-oi1-f175.google.com with SMTP id p126so15764952oif.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2020 10:55:02 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=la43jOzGT8cpDZH0lHbZ8yczIDIlNNAQ1oOndJF72r4=;
- b=W5Z7UOHugQKItBf+6lD8LyHF9GzUZV15rwhETifMMvcttjxxlbN53dIxief89II/sa
- iToMnOR9nEkOoRoKNqU3TvkMM2xji2scSTeFBQQo2l4mr99yndkaA1HzHylVHYdsw2Z2
- wbqdyY1yjpi5M6k/PfS5if3spfcCRn3OY+BvSl6SsP0W646vKN2jZDgsENb/6EdeH1bp
- OrKURdOJRSqEx7YnyvRjcty2XvG5tOVuVan8FkuTOJaE4tPiKwJhUokI6P/lbCUKV8yu
- 4hsN0Q/6pF9p4jKabmLX9G8h5WNZcje0vDJ3JEnOPzKY37VgZpyMbVfaso+wsibvGRbb
- ggsA==
-X-Gm-Message-State: AOAM532yy2bT01hgw+/QidIL4cnz0SLyO0x1xrVIKNgo4swt9LY/+wTs
- bM8HHM1Ur4VHGdZFjZL94xK4hoVd1X8KKpm383Q=
-X-Google-Smtp-Source: ABdhPJy5EVY7T6HE7RxxJ9AoKr5usE9gCbUG5HZ1gWiHgPXdK9RZjFwARYSd7qSwoUdfSw0ANGyqV1mRCh80XLruDv8=
-X-Received: by 2002:aca:3cc5:: with SMTP id j188mr14009921oia.54.1608663299046; 
- Tue, 22 Dec 2020 10:54:59 -0800 (PST)
-MIME-Version: 1.0
-References: <20201222184510.19415-1-info@metux.net>
-In-Reply-To: <20201222184510.19415-1-info@metux.net>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 22 Dec 2020 19:54:48 +0100
-Message-ID: <CAMuHMdVze3oaWmzvzn8ROjpP6h6Tsv2SFLiV7T1Cnej36X445g@mail.gmail.com>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D0nsL7357zDqJW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 07:25:42 +1100 (AEDT)
+Received: from [192.168.1.155] ([95.118.68.26]) by mrelayeu.kundenserver.de
+ (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
+ 1N5FtF-1jtguL3EaD-0118EC; Tue, 22 Dec 2020 21:14:24 +0100
 Subject: Re: [PATCH] arch: consolidate pm_power_off callback
-To: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Content-Type: text/plain; charset="UTF-8"
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ "Enrico Weigelt, metux IT consult" <info@metux.net>
+References: <20201222184510.19415-1-info@metux.net>
+ <CAMuHMdVze3oaWmzvzn8ROjpP6h6Tsv2SFLiV7T1Cnej36X445g@mail.gmail.com>
+From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
+Message-ID: <2f1d53e9-0dbb-78ef-22d5-ab230438ddf0@metux.net>
+Date: Tue, 22 Dec 2020 21:14:19 +0100
+User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
+MIME-Version: 1.0
+In-Reply-To: <CAMuHMdVze3oaWmzvzn8ROjpP6h6Tsv2SFLiV7T1Cnej36X445g@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: tl
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:UpSPX5SjSxB2JTjoTNk4sWDtA2g9Ks1Ix8dKZhB/ESwn1jWfyhx
+ EoQG8feaYKyQLnGwygV2naaePTeCvGl6q4M5FCoVvWDzd5IDw7I4++spAXF1Cn7hlWYDZ9i
+ kl7Eptzr5sffhmk6uqoQvQuMaJH6WbEHZSp8VbRZESTCM8tqF2liTqVeSG60D5ct0JeRFXM
+ C/vRJPf10ZNRyihx6OQ7A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:kIBeTqqFv4s=:Xmnl+8s8Fq+y4p+IXUfWPP
+ WsDsSyJUaBMEDcZ+USglwCSRmhvBLz/D/sbkdLf6MrIztnOhsHeu5Tiu2sZb+M3K4Y5c0C5hQ
+ LjLUGXUi8y02KKlHW/NXxCxObXT4slskvicBM3uSwdj7VI4zDJqUBQPUCRkPRlyKsPzWK04pf
+ rFmCVmfVZUHFyUjshrhoOXzi34jaFd4Yk5Hl/DM9jJIsJXAQ9pqjrxyivzixjl9N/b3y53biB
+ ipDPVldK86MY4XXKwyv6xMlfX5qpTThtAxz5LQs2cU6sN2Qy6aBUCg8E0/CLD8Sgonwo9dvnO
+ FmRPg6B4bdA9REC9pdpdIA787eTbIPmXgSfE2B0whqsYL/AHih10BXzmKvSwtXg9e68oWTpm/
+ aWDNFxpwPGhIwdBahp0YlDaAZKE85LZ3kF05fDFAlABVlmKD9LXD5ku34A0o/
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,40 +108,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Enrico,
+On 22.12.20 19:54, Geert Uytterhoeven wrote:
 
-On Tue, Dec 22, 2020 at 7:46 PM Enrico Weigelt, metux IT consult
-<info@metux.net> wrote:
-> Move the pm_power_off callback into one global place and also add an
-> function for conditionally calling it (when not NULL), in order to remove
-> code duplication in all individual archs.
->
-> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+Hi,
 
-Thanks for your patch!
+> On Tue, Dec 22, 2020 at 7:46 PM Enrico Weigelt, metux IT consult
+> <info@metux.net> wrote:
+>> Move the pm_power_off callback into one global place and also add an
+>> function for conditionally calling it (when not NULL), in order to remove
+>> code duplication in all individual archs.
+>>
+>> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+> 
+> Thanks for your patch!
+> 
+>> --- a/arch/alpha/kernel/process.c
+>> +++ b/arch/alpha/kernel/process.c
+>> @@ -43,12 +43,6 @@
+>>  #include "proto.h"
+>>  #include "pci_impl.h"
+>>
+>> -/*
+>> - * Power off function, if any
+>> - */
+>> -void (*pm_power_off)(void) = machine_power_off;
+> 
+> Assignments like these are lost in the conversion.
 
-> --- a/arch/alpha/kernel/process.c
-> +++ b/arch/alpha/kernel/process.c
-> @@ -43,12 +43,6 @@
->  #include "proto.h"
->  #include "pci_impl.h"
->
-> -/*
-> - * Power off function, if any
-> - */
-> -void (*pm_power_off)(void) = machine_power_off;
+Yes, but this doesn't seem to be ever called anyways. (in arch/alpha)
+And, BTW, letting it point to machine_power_off() doesn't make much
+sense, since it's the arch's machine_power_off() function, who're
+calling pm_power_off().
 
-Assignments like these are lost in the conversion.
+Actually, we could remove pm_power_off completely from here, assuming
+nobody would *build* any drivers that register themselves into
+pm_power_off.
 
-> -EXPORT_SYMBOL(pm_power_off);
+If you feel better with it, I could post a patch that just removes
+pm_power_off from arch/alpha.
 
-Gr{oetje,eeting}s,
 
-                        Geert
+--mtx
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+---
+Hinweis: unverschlüsselte E-Mails können leicht abgehört und manipuliert
+werden ! Für eine vertrauliche Kommunikation senden Sie bitte ihren
+GPG/PGP-Schlüssel zu.
+---
+Enrico Weigelt, metux IT consult
+Free software and Linux embedded engineering
+info@metux.net -- +49-151-27565287
