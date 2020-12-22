@@ -2,68 +2,65 @@ Return-Path: <SRS0=Rflt=F2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D00EDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:31:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28779C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:35:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F9922313C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:31:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F9922313C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6350C229C6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Dec 2020 13:35:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6350C229C6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D0cgN64SpzDqJV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 00:31:28 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D0clv23JmzDqGG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 00:35:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D0cHh0vzSzDqQQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 00:14:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=LT3Esv19; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4D0cHf3dGJz9sTg;
- Wed, 23 Dec 2020 00:14:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1608642862;
- bh=0sBoTvAiTmdiIm5MUkK6srFJXpCmJYMR0XbrbVjDNtg=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=LT3Esv193n+QhCyyXiTNOHitvKX4zqavfAzaJ3PRolXjaae6q3TmhtwkyTq9PkSMz
- 1iNkQ6vuyHZECj876ws9SdrYCQOKOhAfo1bJ0O87PUFJ/HJfvxzp/mKKSd6oIpgWs2
- K2b3ZQzBZso6ZlPQiP3XtnoDsIdVLixsioEkVqrSclGlhZOBbg70SXuPorH2S0p886
- Dz8109DhN09UT0hQ/c/wFgPpxmCMea/Lyzt7sgnQdxDZ/PeJyE2Uc3duf3eU+Ej4GW
- Sbw+JKrcy78X12IKZc7qMkXLfipebz4sZZ5TO9biCq8i5n6WR6XfgTryIgb4BrXUoJ
- aiLShoAi4eWzg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Subject: Re: GIT kernel with the PowerPC updates 5.11-1 doesn't boot on a FSL
- P5040 board and in a virtual e5500 QEMU machine
-In-Reply-To: <8d25f58b-a7bf-4413-b8cc-ed3bd0107263@xenosoft.de>
-References: <a546bc22-1e18-8e71-e973-65cf7095594a@xenosoft.de>
- <CAOJe8K3+j3kGHYhSfjyywXcSQFca0Y370LiAa2uVsW5znUPsAA@mail.gmail.com>
- <ad682b81-60f6-4e13-46f4-39539de2be72@xenosoft.de>
- <7543ec1a-005d-f868-5607-448baaccb88a@csgroup.eu>
- <8d25f58b-a7bf-4413-b8cc-ed3bd0107263@xenosoft.de>
-Date: Wed, 23 Dec 2020 00:14:20 +1100
-Message-ID: <87lfdq6l03.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D0cbz36TCzDqPc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2020 00:28:29 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4D0cbq65RVz9v1w2;
+ Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id iWZWmWve4ih7; Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4D0cbq4bQVz9v1vl;
+ Tue, 22 Dec 2020 14:28:23 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0258B8B81B;
+ Tue, 22 Dec 2020 14:28:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id S9d6jV_vQB6a; Tue, 22 Dec 2020 14:28:24 +0100 (CET)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B00008B812;
+ Tue, 22 Dec 2020 14:28:24 +0100 (CET)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 8F17966969; Tue, 22 Dec 2020 13:28:24 +0000 (UTC)
+Message-Id: <e8354dd69e7a108c2576853adb9d37c3bff1d761.1608641533.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1608641532.git.christophe.leroy@csgroup.eu>
+References: <cover.1608641532.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 02/15] powerpc/32s: Fix RTAS machine check with VMAP stack
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com
+Date: Tue, 22 Dec 2020 13:28:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,33 +72,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
->
-...
-> Download: http://www.xenosoft.de/MintPPC32-X5000.tar.gz (md5sum: 
-> b31c1c1ca1fcf5d4cdf110c4bce11654) The password for both 'root' and 
-> 'mintppc' is 'mintppc'.
-...
->
-> QEMU command without KVM on macOS Intel: qemu-system-ppc64 -M ppce500 
-> -cpu e5500 -m 1024 -kernel uImage -drive 
-> format=raw,file=MintPPC32-X5000.img,index=0,if=virtio -netdev 
-> user,id=mynet0 -device virtio-net-pci,netdev=mynet0 -append "rw 
-> root=/dev/vda" -device virtio-vga -usb -device usb-ehci,id=ehci -device 
-> usb-tablet -device virtio-keyboard-pci -smp 4 -vnc :1
+When we have VMAP stack, exception prolog 1 sets r1, not r11.
 
-I was able to boot the above (on powerpc, but not using KVM), using my
-fixes branch.
+Fixes: da7bb43ab9da ("powerpc/32: Fix vmap stack - Properly set r1 before activating MMU")
+Fixes: d2e006036082 ("powerpc/32: Use SPRN_SPRG_SCRATCH2 in exception prologs")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/head_book3s_32.S | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Please give that branch a test:
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=fixes
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 349bf3f0c3af..fbc48a500846 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -260,9 +260,16 @@ __secondary_hold_acknowledge:
+ MachineCheck:
+ 	EXCEPTION_PROLOG_0
+ #ifdef CONFIG_PPC_CHRP
++#ifdef CONFIG_VMAP_STACK
++	mtspr	SPRN_SPRG_SCRATCH2,r1
++	mfspr	r1, SPRN_SPRG_THREAD
++	lwz	r1, RTAS_SP(r1)
++	cmpwi	cr1, r1, 0
++#else
+ 	mfspr	r11, SPRN_SPRG_THREAD
+ 	lwz	r11, RTAS_SP(r11)
+ 	cmpwi	cr1, r11, 0
++#endif
+ 	bne	cr1, 7f
+ #endif /* CONFIG_PPC_CHRP */
+ 	EXCEPTION_PROLOG_1 for_rtas=1
+-- 
+2.25.0
 
-
-cheers
