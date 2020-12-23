@@ -2,53 +2,69 @@ Return-Path: <SRS0=FKsl=F3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 024D0C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 14:17:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD73CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 17:14:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02CE423159
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 14:17:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02CE423159
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 067DF22210
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Dec 2020 17:14:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 067DF22210
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D1FdY0tr0zDqVB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 01:17:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
- envelope-from=zhengyongjun3@huawei.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D1KZT60CqzDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 04:14:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D1FZt0gDCzDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2020 01:14:44 +1100 (AEDT)
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.59])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4D1FYZ2WmWzkvSY;
- Wed, 23 Dec 2020 22:13:38 +0800 (CST)
-Received: from ubuntu.network (10.175.138.68) by
- DGGEMS401-HUB.china.huawei.com (10.3.19.201) with Microsoft SMTP Server id
- 14.3.498.0; Wed, 23 Dec 2020 22:14:23 +0800
-From: Zheng Yongjun <zhengyongjun3@huawei.com>
-To: <qiang.zhao@nxp.com>, <leoyang.li@nxp.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] soc: fsl: qe: Use DEFINE_SPINLOCK() for spinlock
-Date: Wed, 23 Dec 2020 22:14:59 +0800
-Message-ID: <20201223141459.1058-1-zhengyongjun3@huawei.com>
-X-Mailer: git-send-email 2.22.0
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.77;
+ helo=conuserg-10.nifty.com; envelope-from=masahiroy@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=l1im/Q9w; 
+ dkim-atps=neutral
+Received: from conuserg-10.nifty.com (conuserg-10.nifty.com [210.131.2.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D1KXc4KrwzDqNG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2020 04:13:03 +1100 (AEDT)
+Received: from grover.flets-west.jp (softbank126090214151.bbtec.net
+ [126.90.214.151]) (authenticated)
+ by conuserg-10.nifty.com with ESMTP id 0BNHBjDJ029748;
+ Thu, 24 Dec 2020 02:11:47 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-10.nifty.com 0BNHBjDJ029748
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1608743508;
+ bh=F4eygMIL/heychEdy4AUgBnfOqgJupp0qUMNlr5k7z0=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=l1im/Q9wt7wMKJkT2ai+kxcbSSB4ooSml+4uTOMZF0HAKq/G3hIqQyCzqgR/67xJd
+ etw4HCJd21di4Cp+ii9FicPoqn73/f2JrPrBaFR3BXLspbpnSjwO3eZO9HzZ4nzGlZ
+ 3riWteY7tUS5XgjvRMf9E2lZfxqDhzOV6VpcQmCQ/jSuqWe2e8vWZQ/94jBFLtEfqj
+ 5+WYqeE30NLgVQqLQ87TK7NwnBDALpKK2x24JM5v8aZgXvSBFmFXAlhTqQyta7RK11
+ u5iwIqcoMhYoTLtIhsKB9VZvDWQAQqRlj9wOTM89Ij7LtoTt0P7Hr/lwZTdfYcHm1h
+ Lg3/e8PRqL4ZA==
+X-Nifty-SrcIP: [126.90.214.151]
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/vdso64: remove meaningless vgettimeofday.o build
+ rule
+Date: Thu, 24 Dec 2020 02:11:42 +0900
+Message-Id: <20201223171142.707053-2-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201223171142.707053-1-masahiroy@kernel.org>
+References: <20201223171142.707053-1-masahiroy@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.138.68]
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,40 +76,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zheng Yongjun <zhengyongjun3@huawei.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Greentime Hu <green.hu@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-spinlock can be initialized automatically with DEFINE_SPINLOCK()
-rather than explicitly calling spin_lock_init().
+VDSO64 is only built for the 64-bit kernel, hence vgettimeofday.o is
+built by the generic rule in scripts/Makefile.build.
 
-Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+This line does not provide anything useful.
+
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
- drivers/soc/fsl/qe/qe_common.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
-index 75075591f630..111a36be6983 100644
---- a/drivers/soc/fsl/qe/qe_common.c
-+++ b/drivers/soc/fsl/qe/qe_common.c
-@@ -26,7 +26,7 @@
- #include <soc/fsl/qe/qe.h>
+ arch/powerpc/kernel/vdso64/Makefile | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+index b50b39fedf74..422addf394c7 100644
+--- a/arch/powerpc/kernel/vdso64/Makefile
++++ b/arch/powerpc/kernel/vdso64/Makefile
+@@ -32,8 +32,6 @@ asflags-y := -D__VDSO64__ -s
+ targets += vdso64.lds
+ CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
  
- static struct gen_pool *muram_pool;
--static spinlock_t cpm_muram_lock;
-+static DEFINE_SPINLOCK(cpm_muram_lock);
- static u8 __iomem *muram_vbase;
- static phys_addr_t muram_pbase;
- 
-@@ -54,7 +54,6 @@ int cpm_muram_init(void)
- 	if (muram_pbase)
- 		return 0;
- 
--	spin_lock_init(&cpm_muram_lock);
- 	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
- 	if (!np) {
- 		/* try legacy bindings */
+-$(obj)/vgettimeofday.o: %.o: %.c FORCE
+-
+ # link rule for the .so file, .lds has to be first
+ $(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday.o FORCE
+ 	$(call if_changed,vdso64ld_and_check)
 -- 
-2.22.0
+2.27.0
 
