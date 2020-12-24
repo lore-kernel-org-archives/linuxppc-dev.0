@@ -2,80 +2,58 @@ Return-Path: <SRS0=AUN+=F4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A3DCC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 15:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB57C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 18:18:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42DFE22288
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 15:03:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42DFE22288
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 434B4224B8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Dec 2020 18:18:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 434B4224B8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D1tcb5xf6zDqVW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 02:03:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D1yxc5glMzDqMv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 05:18:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.167;
- helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=OVwnuXlW; 
- dkim-atps=neutral
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
- [81.169.146.167])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D1tb043fmzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Dec 2020 02:02:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1608822119;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:From:
- Subject:Sender;
- bh=EWoGBeWf8hTShx/Ld/bF3iqBBIWydj6zDtfstXIbmI0=;
- b=OVwnuXlWJUeOKJVxbkVg33SUEuq36W/r1T5jUPLBr0h3ILQMOfAX4QHwIl+8NWkwx5
- sDgx96e+e5m+6bzwUaAXkZoqXQJ+jZs79Zm+1D0jkmwkApGA7ZkkKaBrDoaqx8MvaBVJ
- btrDg4QVpAx8P7Vck4dE/KPkVa9qTqitP4G5WuAQ4J9DO4al+tjPokwncinbdAyfw1ul
- 2u4sOOc1ab/irOEmB7Fc2b0FIKdqi80hxIjmBeroyt/mpGdXzejdTH73DwgTYrZOLNY/
- xBsNWjG1XSTuuKi11ZZlDFINEtR14rCxcBr+CtG4XswuGko8ey/1rOLvIAdzxbO++LbC
- UfFA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgCIkxmEVIuDnVOhBk8w5Nouy6DZQ=="
-X-RZG-CLASS-ID: mo00
-Received: from Christians-iMac.fritz.box by smtp.strato.de (RZmta 47.10.7 AUTH)
- with ESMTPSA id j010fdwBOF1X25D
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Thu, 24 Dec 2020 16:01:33 +0100 (CET)
-Subject: Re: GIT kernel with the PowerPC updates 5.11-1 doesn't boot on a FSL
- P5040 board and in a virtual e5500 QEMU machine
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Denis Kirjanov <kda@linux-powerpc.org>
-References: <a546bc22-1e18-8e71-e973-65cf7095594a@xenosoft.de>
- <CAOJe8K3+j3kGHYhSfjyywXcSQFca0Y370LiAa2uVsW5znUPsAA@mail.gmail.com>
- <ad682b81-60f6-4e13-46f4-39539de2be72@xenosoft.de>
- <7543ec1a-005d-f868-5607-448baaccb88a@csgroup.eu>
- <8d25f58b-a7bf-4413-b8cc-ed3bd0107263@xenosoft.de>
- <87lfdq6l03.fsf@mpe.ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <01a9a678-a541-d338-ccf1-17f9596ca0f9@xenosoft.de>
-Date: Thu, 24 Dec 2020 16:01:31 +0100
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D1yw268yvzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Dec 2020 05:17:05 +1100 (AEDT)
+IronPort-SDR: sG8DfU1grBo3EIb/MkoHwmmxOIJIoOsJZsbukvzHt1NbgGsbhb4LGWiVV7JYVomtXmSwLmUgZK
+ 3NGzXgUxNzqw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9845"; a="260907825"
+X-IronPort-AV: E=Sophos;i="5.78,444,1599548400"; d="scan'208";a="260907825"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Dec 2020 10:17:02 -0800
+IronPort-SDR: lf1P/LybSRoPL52zPsI22DJiZ02OGaadtvOmF+6+EPste+neIp4p17/fKYTGHb6Wg0LEXn4esZ
+ pEGCDtOTjTgA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.78,444,1599548400"; d="scan'208";a="398808124"
+Received: from lkp-server02.sh.intel.com (HELO 4242b19f17ef) ([10.239.97.151])
+ by FMSMGA003.fm.intel.com with ESMTP; 24 Dec 2020 10:17:01 -0800
+Received: from kbuild by 4242b19f17ef with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1ksVAa-00016g-F0; Thu, 24 Dec 2020 18:17:00 +0000
+Date: Fri, 25 Dec 2020 02:16:05 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 51774547e7f80f9111d85a65c8e14eb2d9ffcdf3
+Message-ID: <5fe4dae5.WyjATCvfNPIjMYkh%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-In-Reply-To: <87lfdq6l03.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,40 +65,158 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 22 December 2020 at 02:14pm, Michael Ellerman wrote:
-> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
-> ...
->> Download: http://www.xenosoft.de/MintPPC32-X5000.tar.gz (md5sum:
->> b31c1c1ca1fcf5d4cdf110c4bce11654) The password for both 'root' and
->> 'mintppc' is 'mintppc'.
-> ...
->> QEMU command without KVM on macOS Intel: qemu-system-ppc64 -M ppce500
->> -cpu e5500 -m 1024 -kernel uImage -drive
->> format=raw,file=MintPPC32-X5000.img,index=0,if=virtio -netdev
->> user,id=mynet0 -device virtio-net-pci,netdev=mynet0 -append "rw
->> root=/dev/vda" -device virtio-vga -usb -device usb-ehci,id=ehci -device
->> usb-tablet -device virtio-keyboard-pci -smp 4 -vnc :1
-> I was able to boot the above (on powerpc, but not using KVM), using my
-> fixes branch.
->
-> Please give that branch a test:
->    https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=fixes
->
->
-> cheers
-Hello Michael,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 51774547e7f80f9111d85a65c8e14eb2d9ffcdf3  Automatic merge of 'master' into merge (2020-12-24 12:17)
 
-I tested your fixes branch today and the kernel boots without any problems.
+elapsed time: 957m
 
-Thanks a lot for fixing the issue.
+configs tested: 132
+configs skipped: 2
 
-Merry Christmas,
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Christian
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+nds32                             allnoconfig
+m68k                        m5407c3_defconfig
+openrisc                            defconfig
+sh                           se7343_defconfig
+mips                      maltasmvp_defconfig
+arm                  colibri_pxa300_defconfig
+arm                         hackkit_defconfig
+sh                               alldefconfig
+arm                        keystone_defconfig
+arc                     nsimosci_hs_defconfig
+arm                      jornada720_defconfig
+c6x                        evmc6457_defconfig
+mips                  maltasmvp_eva_defconfig
+arm                         s3c6400_defconfig
+arm                        cerfcube_defconfig
+powerpc                    ge_imp3a_defconfig
+arm                           corgi_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                      ppc40x_defconfig
+c6x                        evmc6474_defconfig
+arc                        vdk_hs38_defconfig
+arm                          pcm027_defconfig
+arm                         mv78xx0_defconfig
+riscv                               defconfig
+arm                        trizeps4_defconfig
+arm                        clps711x_defconfig
+sh                         ap325rxa_defconfig
+xtensa                       common_defconfig
+arm                       multi_v4t_defconfig
+xtensa                           alldefconfig
+mips                        nlm_xlp_defconfig
+arm                              zx_defconfig
+powerpc                     taishan_defconfig
+powerpc                     mpc83xx_defconfig
+h8300                            alldefconfig
+powerpc                 mpc834x_mds_defconfig
+sh                           se7705_defconfig
+arm                          pxa3xx_defconfig
+m68k                        mvme16x_defconfig
+sh                        sh7763rdp_defconfig
+sh                             espt_defconfig
+arm                             pxa_defconfig
+mips                     loongson1b_defconfig
+sparc64                             defconfig
+arm                           tegra_defconfig
+mips                  decstation_64_defconfig
+alpha                               defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a001-20201223
+x86_64               randconfig-a006-20201223
+x86_64               randconfig-a002-20201223
+x86_64               randconfig-a004-20201223
+x86_64               randconfig-a003-20201223
+x86_64               randconfig-a005-20201223
+i386                 randconfig-a005-20201224
+i386                 randconfig-a002-20201224
+i386                 randconfig-a006-20201224
+i386                 randconfig-a004-20201224
+i386                 randconfig-a003-20201224
+i386                 randconfig-a001-20201224
+i386                 randconfig-a002-20201223
+i386                 randconfig-a005-20201223
+i386                 randconfig-a006-20201223
+i386                 randconfig-a004-20201223
+i386                 randconfig-a003-20201223
+i386                 randconfig-a001-20201223
+i386                 randconfig-a011-20201223
+i386                 randconfig-a016-20201223
+i386                 randconfig-a014-20201223
+i386                 randconfig-a012-20201223
+i386                 randconfig-a015-20201223
+i386                 randconfig-a013-20201223
+i386                 randconfig-a016-20201224
+i386                 randconfig-a011-20201224
+i386                 randconfig-a012-20201224
+i386                 randconfig-a014-20201224
+i386                 randconfig-a015-20201224
+i386                 randconfig-a013-20201224
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a015-20201223
+x86_64               randconfig-a014-20201223
+x86_64               randconfig-a016-20201223
+x86_64               randconfig-a012-20201223
+x86_64               randconfig-a013-20201223
+x86_64               randconfig-a011-20201223
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
