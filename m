@@ -2,57 +2,58 @@ Return-Path: <SRS0=Vvhr=F5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6215FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 08:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E492EC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 11:34:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C04AB2312F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 08:19:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C04AB2312F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 03E5423129
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 11:34:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03E5423129
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D2KcM6PnMzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 19:19:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
- envelope-from=dingtianhong@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D2KZb2K1gzDqM6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Dec 2020 19:18:10 +1100 (AEDT)
-Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.60])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4D2K6y53PWz15hnb;
- Fri, 25 Dec 2020 15:57:46 +0800 (CST)
-Received: from [10.174.177.80] (10.174.177.80) by
- DGGEMS409-HUB.china.huawei.com (10.3.19.209) with Microsoft SMTP Server id
- 14.3.498.0; Fri, 25 Dec 2020 15:58:22 +0800
-Subject: Re: [PATCH v9 11/12] mm/vmalloc: Hugepage vmalloc mappings
-To: Nicholas Piggin <npiggin@gmail.com>, <linux-mm@kvack.org>, Andrew Morton
- <akpm@linux-foundation.org>
-References: <20201205065725.1286370-1-npiggin@gmail.com>
- <20201205065725.1286370-12-npiggin@gmail.com>
-From: Ding Tianhong <dingtianhong@huawei.com>
-Message-ID: <7db7564c-0600-33d9-68d9-61fa6fc1bc0d@huawei.com>
-Date: Fri, 25 Dec 2020 15:58:23 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.2
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D2Pwd30hdzDqN6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Dec 2020 22:34:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D2PsL2xZWzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Dec 2020 22:31:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=maQ/VtfF; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4D2PsK1gpBz9sW4; Fri, 25 Dec 2020 22:31:17 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4D2PsJ5Vxbz9sWF; Fri, 25 Dec 2020 22:31:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1608895876;
+ bh=Bza2QCTskwBGmQFwhL52iy63R4zodFdgPTlcDZdgiJQ=;
+ h=From:To:Cc:Subject:Date:From;
+ b=maQ/VtfF96emL2+LWZwjq4Hgu7XjY4RBJn3gTQiLqye1O9J7kuQyeJ9sndqM8zDvy
+ rA+i1+FqPXypb1BWXK4YGXcS0St98Ps9oukoCWtpsN22A3daakx+GR9pwEaZKNe232
+ Nks8XveZc6DVon2wOkyJHegD5ZP7X004ShPfrDh3/s+wMiiWwJl+06a3VUUJ18XK/4
+ QhTtkYaLCqCkZN+ytRN/D3AxhFGhZ4zb70VIvAJ3fN2uXXhq3YjzAmTU/VJRNchMni
+ MA99P+qXcGZhvT7ZUpJarnDuvtFvp44ghd+Aumju9If/Jpg+bHpXxkTIuBASM+l8fW
+ h8qG8EzNQOgjg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: torvalds@linux-foundation.org
+Subject: [PATCH] genirq: Fix export of irq_to_desc() for powerpc KVM
+Date: Fri, 25 Dec 2020 22:30:58 +1100
+Message-Id: <20201225113058.2430951-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20201205065725.1286370-12-npiggin@gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.177.80]
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,73 +65,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Zefan Li <lizefan@huawei.com>, Jonathan
- Cameron <Jonathan.Cameron@Huawei.com>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Commit 64a1b95bb9fe ("genirq: Restrict export of irq_to_desc()")
+removed the export of irq_to_desc() unless powerpc KVM is being built,
+because there is still a use of irq_to_desc() in modular code there.
 
-> +again:
-> +	size = PAGE_ALIGN(size);
-> +	area = __get_vm_area_node(size, align, VM_ALLOC | VM_UNINITIALIZED |
->  				vm_flags, start, end, node, gfp_mask, caller);
->  	if (!area)
->  		goto fail;
->  
-> -	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
-> +	addr = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
->  	if (!addr)
-> -		return NULL;
-> +		goto fail;
->  
->  	/*
->  	 * In this function, newly allocated vm_struct has VM_UNINITIALIZED
-> @@ -2788,8 +2878,19 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
->  	return addr;
->  
->  fail:
-> -	warn_alloc(gfp_mask, NULL,
-> +	if (shift > PAGE_SHIFT) {
-> +		free_vm_area(area);
-> +		shift = PAGE_SHIFT;
-> +		align = real_align;
-> +		size = real_size;
-> +		goto again;
-> +	}
-> +
-Hi, Nicholas:
+However it used:
 
-I met a problem like this:
+  #ifdef CONFIG_KVM_BOOK3S_64_HV
 
-[   67.103584] ------------[ cut here ]------------
-[   67.103884] kernel BUG at vmalloc.c:2892!
-[   67.104387] Internal error: Oops - BUG: 0 [#1] SMP
-[   67.104942] Process insmod (pid: 1161, stack limit = 0x(____ptrval____))
-[   67.105356] CPU: 2 PID: 1161 Comm: insmod Tainted: G           O      4.19.95+ #9
-[   67.105702] Hardware name: linux,dummy-virt (DT)
-[   67.106006] pstate: a0000005 (NzCv daif -PAN -UAO)
-[   67.106285] pc : free_vm_area+0x78/0x80
-[   67.106549] lr : free_vm_area+0x58/0x80
+Which doesn't work when that symbol is =m, leading to a build failure:
 
-it looks like when __vmalloc_area_node failed, the area is already released, and the free_vm_area
-will release the vm area again, so trigger the problem.
+  ERROR: modpost: "irq_to_desc" [arch/powerpc/kvm/kvm-hv.ko] undefined!
 
-3405         ret = remove_vm_area(area->addr);
-3406         BUG_ON(ret != area);
-3407         kfree(area);
+Fix it by checking for the definedness of the correct symbol which is
+CONFIG_KVM_BOOK3S_64_HV_MODULE.
 
+Fixes: 64a1b95bb9fe ("genirq: Restrict export of irq_to_desc()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ kernel/irq/irqdesc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ding
-> +	if (!area) {
-> +		/* Warn for area allocation, page allocations already warn */
-> +		warn_alloc(gfp_mask, NULL,
->  			  "vmalloc: allocation failure: %lu bytes", real_size);
-> +	}
->  	return NULL;
->  }
->  
-> 
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 3d0bc38a0bcf..cc1a09406c6e 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -352,7 +352,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ {
+ 	return radix_tree_lookup(&irq_desc_tree, irq);
+ }
+-#ifdef CONFIG_KVM_BOOK3S_64_HV
++#ifdef CONFIG_KVM_BOOK3S_64_HV_MODULE
+ EXPORT_SYMBOL_GPL(irq_to_desc);
+ #endif
+ 
+-- 
+2.25.1
 
