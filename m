@@ -2,76 +2,98 @@ Return-Path: <SRS0=zyM8=GA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0A09C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 04:36:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B0BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 08:53:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18D74225A9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 04:36:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18D74225A9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8CC0A229C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 08:53:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CC0A229C4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D44Wl6fTVzDqDD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 15:36:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D4BDF03nYzDqDm
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Dec 2020 19:53:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=canonical.com
- (client-ip=91.189.89.112; helo=youngberry.canonical.com;
- envelope-from=po-hsu.lin@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=canonical.com
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=ETcFxcoX; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D44Tv5n1ZzDq8W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2020 15:35:14 +1100 (AEDT)
-Received: from mail-pf1-f200.google.com ([209.85.210.200])
- by youngberry.canonical.com with esmtps
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
- (envelope-from <po-hsu.lin@canonical.com>) id 1ktkFR-0005R6-Rz
- for linuxppc-dev@lists.ozlabs.org; Mon, 28 Dec 2020 04:35:10 +0000
-Received: by mail-pf1-f200.google.com with SMTP id r15so2895611pfg.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Dec 2020 20:35:09 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=xDaj2aGFc8Ryio1B37xmDRbgZ25x8BPX+LqRqApW28A=;
- b=ZKSGzoQv62H5s+b6hH2Li3u9P2GJ0eDQPr+7O6f3fIlIqkPOHR8vjmK7zV7QKdARqI
- Wij5BQcECmuo7ohxMWVqCziLc1jpM3DjzdbaWL4b8e9+bnPE7ujuPDzncuEeIn3OSYS1
- xQCHE5WGaiRwMvYfCAOWvOOYeZwAmB+3tTpgjmNWuETaADpFKPO1E9hKJzwQqFvje638
- HxgPWKIKPnaMF7p0Aa+nx5/wa+TeUn0+OajdC/lSEpikWmBMlLhg7GYEXfSm9t7NAGNS
- Z7EAN46r39lJfnDaixhwPiJ47zCmbmhmmElYkMEyPXW99FCKd+OoO17zdadbHk1MM3VQ
- huTg==
-X-Gm-Message-State: AOAM53071wtgiQOZ25fjOpkLBGGwsH2ev930u8CrZoddmKLofZOpS9a2
- E6rRGHVwjgJUTNdpBCyEwe5L+9yyPIu6YRUrW7yyep1IbSbVReS8938BYGcq1MLb2OXTlNyxASj
- rIJHlnBbKf01buZVwjq5z+A+o5GNh3NosSh9QNcrfpA==
-X-Received: by 2002:a05:6a00:8c7:b029:19d:afa5:34e5 with SMTP id
- s7-20020a056a0008c7b029019dafa534e5mr39739019pfu.30.1609130108308; 
- Sun, 27 Dec 2020 20:35:08 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxAvOE6o0cTX5MNAozIzz9VZuWmqcjEVnhGxLPmH3qElG3qiwVdIXI/yBMtB9j5uKel2nyJxA==
-X-Received: by 2002:a05:6a00:8c7:b029:19d:afa5:34e5 with SMTP id
- s7-20020a056a0008c7b029019dafa534e5mr39739005pfu.30.1609130107999; 
- Sun, 27 Dec 2020 20:35:07 -0800 (PST)
-Received: from Leggiero.taipei.internal (61-220-137-38.HINET-IP.hinet.net.
- [61.220.137.38])
- by smtp.gmail.com with ESMTPSA id a1sm34567962pfo.56.2020.12.27.20.35.05
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 27 Dec 2020 20:35:07 -0800 (PST)
-From: Po-Hsu Lin <po-hsu.lin@canonical.com>
-To: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: make the test check in eeh-basic.sh posix
- compliant
-Date: Mon, 28 Dec 2020 12:34:59 +0800
-Message-Id: <20201228043459.14281-1-po-hsu.lin@canonical.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D4BBc0nmRzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2020 19:52:23 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0BS8nvvb069862; Mon, 28 Dec 2020 03:52:17 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=lm/14L4B31f/728y9VwO7J3Q9JvfcFXzNDDqbk+7ydc=;
+ b=ETcFxcoXSN7/bcZsGEMQMtpcPVI9FXS8A4QjXS2rc07b9wxhRNE2Lo1cELMO2VPJsYRe
+ Tr8KbPD3J+pcYu0+aEW2F6DBlQqHBFmQO7yrdRw/iyKZesOVhtNQQAHPHrP/Es/IlIh/
+ VMropwGlXCmKcW/QYY/yQbiMIed4ut5PQZeYH9s+PQHBfu2iXyenQttqckVUMpgnUcUE
+ 89GAdEVhi/X3HS1yVNQ6KMaMkpPmJoa3Fcoq1EA21IZcYQaY7LNuiT4f82cOD2ujGSaD
+ ZSCjQcVOakbCuNapuSJDRkUyuHLLMa+Xa9zpQO7MaQ/Y5PuEjmXxFw2ySyb5Po40O73u nw== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35qc6rr0rs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 28 Dec 2020 03:52:17 -0500
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0BS8lnLj024100;
+ Mon, 28 Dec 2020 08:52:15 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma02fra.de.ibm.com with ESMTP id 35nvt80xds-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 28 Dec 2020 08:52:14 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0BS8qCYm44499234
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 28 Dec 2020 08:52:12 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B70E211C04A;
+ Mon, 28 Dec 2020 08:52:12 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 02CD611C04C;
+ Mon, 28 Dec 2020 08:52:11 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.199.39.1])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 28 Dec 2020 08:52:10 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc/perf/hv-24x7: Dont create sysfs event files for
+ dummy events
+Date: Mon, 28 Dec 2020 14:22:04 +0530
+Message-Id: <20201228085204.18026-1-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2020-12-28_07:2020-12-24,
+ 2020-12-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ spamscore=0 bulkscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
+ impostorscore=0 mlxlogscore=999 malwarescore=0 suspectscore=0 mlxscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012280047
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,35 +105,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oohall@gmail.com, po-hsu.lin@canonical.com, shuah@kernel.org,
- paulus@samba.org
+Cc: kjain@linux.ibm.com, suka@us.ibm.com, maddy@linux.vnet.ibm.com,
+ atrajeev@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The == operand is a bash extension, thus this will fail on Ubuntu with
+hv_24x7 performance monitoring unit creates list of supported events
+from the event catalog obtained via HCALL. hv_24x7 catalog could also
+contain invalid or dummy events with names like RESERVED*.
+These events does not have any hardware counters backing them.
+So patch adds a check to string compare the event names
+to filter out them.
 
-As the /bin/sh on Ubuntu is pointed to DASH.
+Result in power9 machine:
 
-Use -eq to fix this posix compatibility issue.
+Before this patch:
+.....
+  hv_24x7/PM_XLINK2_OUT_ODD_CYC,chip=?/              [Kernel PMU event]
+  hv_24x7/PM_XLINK2_OUT_ODD_DATA_COUNT,chip=?/       [Kernel PMU event]
+  hv_24x7/PM_XLINK2_OUT_ODD_TOTAL_UTIL,chip=?/       [Kernel PMU event]
+  hv_24x7/PM_XTS_ATR_DEMAND_CHECKOUT,chip=?/         [Kernel PMU event]
+  hv_24x7/PM_XTS_ATR_DEMAND_CHECKOUT_MISS,chip=?/    [Kernel PMU event]
+  hv_24x7/PM_XTS_ATSD_SENT,chip=?/                   [Kernel PMU event]
+  hv_24x7/PM_XTS_ATSD_TLBI_RCV,chip=?/               [Kernel PMU event]
+  hv_24x7/RESERVED_NEST1,chip=?/                     [Kernel PMU event]
+  hv_24x7/RESERVED_NEST10,chip=?/                    [Kernel PMU event]
+  hv_24x7/RESERVED_NEST11,chip=?/                    [Kernel PMU event]
+  hv_24x7/RESERVED_NEST12,chip=?/                    [Kernel PMU event]
+  hv_24x7/RESERVED_NEST13,chip=?/                    [Kernel PMU event]
+......
 
-Fixes: 996f9e0f93f162 ("selftests/powerpc: Fix eeh-basic.sh exit codes")
-Signed-off-by: Po-Hsu Lin <po-hsu.lin@canonical.com>
+Dmesg:
+[    0.000362] printk: console [hvc0] enabled
+[    0.815452] hv-24x7: read 1530 catalog entries, created 537 event attrs
+(0 failures), 275 descs
+
+After this patch:
+......
+  hv_24x7/PM_XLINK2_OUT_ODD_AVLBL_CYC,chip=?/        [Kernel PMU event]
+  hv_24x7/PM_XLINK2_OUT_ODD_CYC,chip=?/              [Kernel PMU event]
+  hv_24x7/PM_XLINK2_OUT_ODD_DATA_COUNT,chip=?/       [Kernel PMU event]
+  hv_24x7/PM_XLINK2_OUT_ODD_TOTAL_UTIL,chip=?/       [Kernel PMU event]
+  hv_24x7/PM_XTS_ATR_DEMAND_CHECKOUT,chip=?/         [Kernel PMU event]
+  hv_24x7/PM_XTS_ATR_DEMAND_CHECKOUT_MISS,chip=?/    [Kernel PMU event]
+  hv_24x7/PM_XTS_ATSD_SENT,chip=?/                   [Kernel PMU event]
+  hv_24x7/PM_XTS_ATSD_TLBI_RCV,chip=?/               [Kernel PMU event]
+  hv_24x7/TOD,chip=?/                                [Kernel PMU event]
+......
+
+Demsg:
+[    0.000357] printk: console [hvc0] enabled
+[    0.808592] hv-24x7: read 1530 catalog entries, created 509 event attrs
+(0 failures), 275 descs
+
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
 ---
- tools/testing/selftests/powerpc/eeh/eeh-basic.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/perf/hv-24x7.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-basic.sh b/tools/testing/selftests/powerpc/eeh/eeh-basic.sh
-index 0d783e1..64779f0 100755
---- a/tools/testing/selftests/powerpc/eeh/eeh-basic.sh
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-basic.sh
-@@ -86,5 +86,5 @@ echo "$failed devices failed to recover ($dev_count tested)"
- lspci | diff -u $pre_lspci -
- rm -f $pre_lspci
+---
+Changelog
+v2 -> v3
+- Removed "FREE_" check from "ignore_event".
+
+v1 -> v2
+- Include "RESERVED*" as part of the invalid event check as
+  suggested by Madhavan Srinivasan
+- Add new helper function "ignore_event" to check invalid/dummy
+  events as suggested by Michael Ellerman
+- Remove pr_info to print each invalid event as suggested by
+  Michael Ellerman
+---
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 6e7e820508df..2f32b532b359 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -764,6 +764,14 @@ static ssize_t catalog_event_len_validate(struct hv_24x7_event_data *event,
+ 	return ev_len;
+ }
  
--test "$failed" == 0
-+test "$failed" -eq 0
- exit $?
++/*
++ * Return true incase of invalid or dummy events with names like RESERVED*
++ */
++static bool ignore_event(const char *name)
++{
++	return (!strncmp(name, "RESERVED", 8)) ? true : false;
++}
++
+ #define MAX_4K (SIZE_MAX / 4096)
+ 
+ static int create_events_from_catalog(struct attribute ***events_,
+@@ -894,6 +902,10 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 
+ 		name = event_name(event, &nl);
+ 
++		if (ignore_event(name)) {
++			junk_events++;
++			continue;
++		}
+ 		if (event->event_group_record_len == 0) {
+ 			pr_devel("invalid event %zu (%.*s): group_record_len == 0, skipping\n",
+ 					event_idx, nl, name);
+@@ -955,6 +967,9 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 			continue;
+ 
+ 		name  = event_name(event, &nl);
++		if (ignore_event(name))
++			continue;
++
+ 		nonce = event_uniq_add(&ev_uniq, name, nl, event->domain);
+ 		ct    = event_data_to_attrs(event_idx, events + event_attr_ct,
+ 					    event, nonce);
 -- 
-2.7.4
+2.27.0
 
