@@ -2,50 +2,59 @@ Return-Path: <SRS0=wqjX=GC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A138C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Dec 2020 13:49:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE6BDC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Dec 2020 15:47:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D446820791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Dec 2020 13:49:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D446820791
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id D372B20725
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Dec 2020 15:47:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D372B20725
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D5Xhw68ZMzDqBH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Dec 2020 00:49:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D5bJH1qMwzDqLq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Dec 2020 02:47:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=HCKeDJ0K; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D5Xg23CxwzDqKL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2020 00:48:13 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 0DC0DABA1;
- Wed, 30 Dec 2020 13:48:08 +0000 (UTC)
-Date: Wed, 30 Dec 2020 14:48:06 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: YANG LI <abaci-bugfix@linux.alibaba.com>
-Subject: Re: [PATCH] ibmvnic: fix: NULL pointer dereference.
-Message-ID: <20201230134806.GN6564@kitsune.suse.cz>
-References: <1609312994-121032-1-git-send-email-abaci-bugfix@linux.alibaba.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D5bFc543YzDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2020 02:44:52 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 413BD20725;
+ Wed, 30 Dec 2020 15:44:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1609343088;
+ bh=B6KEEyF4RQKJhn/Tlgm2gPhwOX1a1c48tzMAbskoqNY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=HCKeDJ0KSZ7nc1CoEISb/ZRNzccPTaWWh06Nn2VIZBsId6eP9cn0oGFUJlOABZZZO
+ iI0X3/jv9pxyQ5bU7W/XqVpiwAVKTetRviaE1CBU80GpLg/jmLlz66OeoO4ZhibBqQ
+ PjjjdalMW1Zz2BoWMBZ8kelnigjz4DMVLkz9RLZvfhx2BBPns1SB0TRK+cYujQxlOH
+ 8MnDwDJqOqRtqV2yMQCPacw1DfF9pBrJ/RhsJA8R+VJ3BdV7xvpCIPfiT77gwd3boZ
+ PiTBMWGGCaRfDf7RBRjRMAgbFOqHd28vArCHhJoja2QAirqWZnxT1vUTZKPDO8Anij
+ h3IyOvDVmuzrg==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>
+Subject: [PATCH] ASoC: fsl: fix -Wmaybe-uninitialized warning
+Date: Wed, 30 Dec 2020 16:44:15 +0100
+Message-Id: <20201230154443.656997-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1609312994-121032-1-git-send-email-abaci-bugfix@linux.alibaba.com>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,49 +66,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ljp@linux.ibm.com,
- drt@linux.ibm.com, kuba@kernel.org, sukadev@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, paulus@samba.org
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ clang-built-linux@googlegroups.com, NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Nathan Chancellor <natechancellor@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 30, 2020 at 03:23:14PM +0800, YANG LI wrote:
-> The error is due to dereference a null pointer in function
-> reset_one_sub_crq_queue():
-> 
-> if (!scrq) {
->     netdev_dbg(adapter->netdev,
->                "Invalid scrq reset. irq (%d) or msgs(%p).\n",
-> 		scrq->irq, scrq->msgs);
-> 		return -EINVAL;
-> }
-> 
-> If the expression is true, scrq must be a null pointer and cannot
-> dereference.
-> 
-> Signed-off-by: YANG LI <abaci-bugfix@linux.alibaba.com>
-> Reported-by: Abaci <abaci@linux.alibaba.com>
-Fixes: 9281cf2d5840 ("ibmvnic: avoid memset null scrq msgs")
-> ---
->  drivers/net/ethernet/ibm/ibmvnic.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index f302504..d7472be 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -2981,9 +2981,7 @@ static int reset_one_sub_crq_queue(struct ibmvnic_adapter *adapter,
->  	int rc;
->  
->  	if (!scrq) {
-> -		netdev_dbg(adapter->netdev,
-> -			   "Invalid scrq reset. irq (%d) or msgs (%p).\n",
-> -			   scrq->irq, scrq->msgs);
-> +		netdev_dbg(adapter->netdev, "Invalid scrq reset.\n");
->  		return -EINVAL;
->  	}
->  
-> -- 
-> 1.8.3.1
-> 
+From: Arnd Bergmann <arnd@arndb.de>
+
+Clang points out a code path that returns an undefined value
+in an error case:
+
+sound/soc/fsl/imx-hdmi.c:165:6: error: variable 'ret' is used uninitialized whenever 'if' condition is true [-Werror,-Wsom
+etimes-uninitialized]
+        if ((hdmi_out && hdmi_in) || (!hdmi_out && !hdmi_in)) {
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sound/soc/fsl/imx-hdmi.c:212:9: note: uninitialized use occurs here
+        return ret;
+
+The driver returns -EINVAL for other broken DT properties, so do
+it the same way here.
+
+Fixes: 6a5f850aa83a ("ASoC: fsl: Add imx-hdmi machine driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ sound/soc/fsl/imx-hdmi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sound/soc/fsl/imx-hdmi.c b/sound/soc/fsl/imx-hdmi.c
+index 2c2a76a71940..ede4a9ad1054 100644
+--- a/sound/soc/fsl/imx-hdmi.c
++++ b/sound/soc/fsl/imx-hdmi.c
+@@ -164,6 +164,7 @@ static int imx_hdmi_probe(struct platform_device *pdev)
+ 
+ 	if ((hdmi_out && hdmi_in) || (!hdmi_out && !hdmi_in)) {
+ 		dev_err(&pdev->dev, "Invalid HDMI DAI link\n");
++		ret = -EINVAL;
+ 		goto fail;
+ 	}
+ 
+-- 
+2.29.2
+
