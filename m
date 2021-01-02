@@ -2,78 +2,83 @@ Return-Path: <SRS0=PlyA=GF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6837C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 12:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31AEAC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 12:34:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D174A221F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 12:30:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D174A221F5
+	by mail.kernel.org (Postfix) with ESMTPS id 7182322241
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 12:33:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7182322241
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D7LpJ3fVYzDqqD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 23:30:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D7Lsx2zDqzDqqY
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jan 2021 23:33:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436;
- helo=mail-pf1-x436.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031;
+ helo=mail-pj1-x1031.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=hPOdZ8nF; dkim-atps=neutral
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
- [IPv6:2607:f8b0:4864:20::436])
+ header.s=20161025 header.b=YP1MFeaI; dkim-atps=neutral
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
+ [IPv6:2607:f8b0:4864:20::1031])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D7Lh51QvkzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jan 2021 23:25:21 +1100 (AEDT)
-Received: by mail-pf1-x436.google.com with SMTP id t22so13575758pfl.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Jan 2021 04:25:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D7Lh66n3RzDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jan 2021 23:25:26 +1100 (AEDT)
+Received: by mail-pj1-x1031.google.com with SMTP id b5so7646175pjl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Jan 2021 04:25:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZoIrlTYAJOgul9TsNEajLeFA2+6w67TlQMAXuDciaaE=;
- b=hPOdZ8nFwNp8F1iIqR5aWrhrbRa/6d8xMp5wxGD9akEHGVXUf3WqMht+dmaCv4VX8l
- sbUNK4DLj6Bdd64hujDOzvZka3eIKVFDuYApLafConl3EgA0LksgqJk1skLlVhvPG3sJ
- d3HeGqS4LR9M69WsNde53RqDWlJsnmv2Xx1VrYGsm+mVOAXpgQC/HDQZTONJO2v/tDYc
- g9dAfhWru/kHBmH+pWDMH0LdzuuoteWVQM60kyolY2EmASm0SlnjG8hjTHhl69pqX7sG
- pQYlCrN5aD67eoqf/1xq5AbnAoiaT+2QV5K7V7pe29/HuPidhbeuvxfvFAfne+FWr27p
- XKjw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=1ed0gPZHEXG5Hd/BAdQFawrleKWy+dO3DG79sh+OwAM=;
+ b=YP1MFeaID9rM8+CoOhgz1/5dB1EzIEM94AWC/7FFDInh626R8hQioJvl3hu4ui0zPJ
+ W0yZPvMGyMkcyVIPzwUl+PJKs3rBd0Rq2Q62c23nn6KWTs3v72D5fn5UWrEc1HQWgumN
+ F6ZkyFU6+yUVlLKZ+gtF9eJYl0911QzOdkXbQF+8xcwhLO/L5q7UYwdrBGmnC2Qb3oIT
+ 8yjaDfqhXvaBiWxwvGJTK/n3Ix8Nl2io6TkqV6f5RjKb1PY5h6qH16mxxbYyCFjeJhi9
+ di/UZiT4eqFCgnDFAYMSi2wSlN+YmufxrwZi2dR5GfkYbMPXSWQ9RUZn4HuI5duFh2Q1
+ JU3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZoIrlTYAJOgul9TsNEajLeFA2+6w67TlQMAXuDciaaE=;
- b=ZzFK8gwMoIa+2XiZjMRRwtrMJCahvNrTND/q26GQvOSYYhJ+dukAWklv8acG7prsV6
- yHqja/pK6N6oxmOCBTi0OzgwuAtqs8fPdfVJxcnG8TRCadUGiXvchMwMtNeMJAJD6NQy
- GoowqB6Uf/e2szFLwoLkdIs3ofgsNbi87enmh7ev8la6LztQgD/Ra/T//avX5Z3P9QND
- 3VHiqkaoZ+hWmh6JAgbWmAyeCzRUsUxwIY4eQbyZfF1c3v92/PGdzQeDZeD8A2Jgf4op
- PYKkPQ5D3Eaxl2ee7QEwRvQOgk5mz+9gp2sloCwDP87tXkENa2t2afkhOBIU81iz+whC
- i1PA==
-X-Gm-Message-State: AOAM532lhHzf7S6Da0N3UGgRrUdtTzQIUmXCgs72yvJVeJNyAjBryLPm
- DiQIGrACf2Msi9KFC0Fr/K0MHpR9TdM=
-X-Google-Smtp-Source: ABdhPJyC5mmek5bGnRwfb1ssK/YW+JcDXQ0Nw8ELg06TjUvyx+1T5XbXISfP/niiUyJDPyJajdnatA==
-X-Received: by 2002:a63:1047:: with SMTP id 7mr56609991pgq.292.1609590316145; 
- Sat, 02 Jan 2021 04:25:16 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=1ed0gPZHEXG5Hd/BAdQFawrleKWy+dO3DG79sh+OwAM=;
+ b=DRQ6cPG5NI/35NUHkd1ldWR5H49OpS/TKnEJGDKGW51Prinv9nV/axWK4RxLFV1wCk
+ mpb5W8fXIWFOx3I0gUFmpWdLcdq+684ergOQMOziv5E5d6ZBsQcBkv+ME/MxW8LRP6Oq
+ YgyOahIn4dmV4MKQJelBTAqq3Sc5H9UEEwCWnCLxN5nCt/cG7dj02auXbTZYtkak5sP6
+ h1dVKxmlSY6nYUuT88+EhM7NyzPH3kFM39pGHLNX2OO6ZCDYbMRyn5LQOHFomIZKXvWH
+ fFMH0yw8SfgLrd3AJ/EjsWfRv1NQgL7zX4HFDaK52d5mNuQ5cVQrWBdUgoC0cagUK9dY
+ tOgw==
+X-Gm-Message-State: AOAM530qL0QCZnqxO72SI3y4hO2ZhId9eOBLtgADWEGIH+uKYyuMvba2
+ VMoIb1IcjJiFcU1PlwZHy8KmSI7s3FI=
+X-Google-Smtp-Source: ABdhPJyF8HquzXSoImvENy8ndbcIcIZjLjiKCgnRWnewe0IYt+C05oNKbduvhzfvk0ntifArARyWMA==
+X-Received: by 2002:a17:90b:3505:: with SMTP id
+ ls5mr21645134pjb.55.1609590323065; 
+ Sat, 02 Jan 2021 04:25:23 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (193-116-97-30.tpgi.com.au. [193.116.97.30])
- by smtp.gmail.com with ESMTPSA id h4sm58501413pgp.8.2021.01.02.04.25.13
+ by smtp.gmail.com with ESMTPSA id h4sm58501413pgp.8.2021.01.02.04.25.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 02 Jan 2021 04:25:15 -0800 (PST)
+ Sat, 02 Jan 2021 04:25:22 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 00/21] powerpc: interrupt wrappers
-Date: Sat,  2 Jan 2021 22:24:47 +1000
-Message-Id: <20210102122508.1950592-1-npiggin@gmail.com>
+Subject: [PATCH v4 02/21] powerpc/64s: move the last of the page fault
+ handling logic to C
+Date: Sat,  2 Jan 2021 22:24:49 +1000
+Message-Id: <20210102122508.1950592-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210102122508.1950592-1-npiggin@gmail.com>
+References: <20210102122508.1950592-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -92,100 +97,410 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds interrupt handler wrapper functions, similar to the
-generic / x86 code, and moves several common operations into them
-from either asm or open coded in the individual handlers.
+The page fault handling still has some complex logic particularly around
+hash table handling, in asm. Implement this in C instead.
 
-Since v1:
-- Fixed a couple of compile issues
-- Fixed perf weirdness (sometimes NMI, sometimes not)
-- Also move irq_enter/exit into wrappers
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
+ arch/powerpc/kernel/exceptions-64s.S          | 131 +++---------------
+ arch/powerpc/mm/book3s64/hash_utils.c         |  77 ++++++----
+ arch/powerpc/mm/fault.c                       |  59 ++++++--
+ 4 files changed, 119 insertions(+), 149 deletions(-)
 
-Since v2:
-- Rebased upstream
-- Took code in patch 3 from Christophe
-- Fixed some compile errors from 0day
-
-Since v3:
-- Rebased
-- Split Christophe's 32s DABR patch into its own patch
-- Fixed missing asm from 32s on patch 3 noticed by Christophe.
-- Moved changes around, split out one more patch (patch 9) to make
-  changes more logical and atomic.
-- Add comments explaining _RAW handlers (SLB, HPTE) interrupts better
-
-
-Thanks,
-Nick
-
-Christophe Leroy (1):
-  powerpc/32s: Do DABR match out of handle_page_fault()
-
-Nicholas Piggin (20):
-  powerpc/64s: move the last of the page fault handling logic to C
-  powerpc: remove arguments from fault handler functions
-  powerpc: bad_page_fault, do_break get registers from regs
-  powerpc/perf: move perf irq/nmi handling details into traps.c
-  powerpc: interrupt handler wrapper functions
-  powerpc: add interrupt wrapper entry / exit stub functions
-  powerpc: add interrupt_cond_local_irq_enable helper
-  powerpc/64: context tracking remove _TIF_NOHZ
-  powerpc/64s/hash: improve context tracking of hash faults
-  powerpc/64: context tracking move to interrupt wrappers
-  powerpc/64: add context tracking to asynchronous interrupts
-  powerpc: handle irq_enter/irq_exit in interrupt handler wrappers
-  powerpc/64s: move context tracking exit to interrupt exit path
-  powerpc/64s: reconcile interrupts in C
-  powerpc/64: move account_stolen_time into its own function
-  powerpc/64: entry cpu time accounting in C
-  powerpc: move NMI entry/exit code into wrapper
-  powerpc/64s: move NMI soft-mask handling to C
-  powerpc/64s: runlatch interrupt handling in C
-  powerpc/64s: power4 nap fixup in C
-
- arch/powerpc/Kconfig                       |   1 -
- arch/powerpc/include/asm/asm-prototypes.h  |  29 --
- arch/powerpc/include/asm/bug.h             |   7 +-
- arch/powerpc/include/asm/cputime.h         |  15 +
- arch/powerpc/include/asm/debug.h           |   3 +-
- arch/powerpc/include/asm/hw_irq.h          |   9 -
- arch/powerpc/include/asm/interrupt.h       | 418 +++++++++++++++++++++
- arch/powerpc/include/asm/ppc_asm.h         |  24 --
- arch/powerpc/include/asm/processor.h       |   1 +
- arch/powerpc/include/asm/thread_info.h     |  10 +-
- arch/powerpc/include/asm/time.h            |   2 +
- arch/powerpc/kernel/dbell.c                |  15 +-
- arch/powerpc/kernel/entry_32.S             |  24 +-
- arch/powerpc/kernel/exceptions-64e.S       |   6 +-
- arch/powerpc/kernel/exceptions-64s.S       | 307 ++-------------
- arch/powerpc/kernel/head_40x.S             |  10 +-
- arch/powerpc/kernel/head_8xx.S             |  11 +-
- arch/powerpc/kernel/head_book3s_32.S       |  14 +-
- arch/powerpc/kernel/head_booke.h           |   4 +-
- arch/powerpc/kernel/idle_book3s.S          |   4 +
- arch/powerpc/kernel/irq.c                  |   7 +-
- arch/powerpc/kernel/mce.c                  |  16 +-
- arch/powerpc/kernel/process.c              |   7 +-
- arch/powerpc/kernel/ptrace/ptrace.c        |   4 -
- arch/powerpc/kernel/signal.c               |   4 -
- arch/powerpc/kernel/syscall_64.c           |  30 +-
- arch/powerpc/kernel/tau_6xx.c              |   5 +-
- arch/powerpc/kernel/time.c                 |   7 +-
- arch/powerpc/kernel/traps.c                | 231 ++++++------
- arch/powerpc/kernel/watchdog.c             |  15 +-
- arch/powerpc/kvm/book3s_hv.c               |   1 +
- arch/powerpc/kvm/book3s_hv_builtin.c       |   1 +
- arch/powerpc/kvm/booke.c                   |   1 +
- arch/powerpc/mm/book3s64/hash_utils.c      |  92 +++--
- arch/powerpc/mm/book3s64/slb.c             |  36 +-
- arch/powerpc/mm/fault.c                    |  92 +++--
- arch/powerpc/perf/core-book3s.c            |  35 +-
- arch/powerpc/perf/core-fsl-emb.c           |  25 --
- arch/powerpc/platforms/8xx/machine_check.c |   2 +-
- arch/powerpc/platforms/powernv/idle.c      |   1 +
- 40 files changed, 813 insertions(+), 713 deletions(-)
- create mode 100644 arch/powerpc/include/asm/interrupt.h
-
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 066b1d34c7bc..60a669379aa0 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -454,6 +454,7 @@ static inline unsigned long hpt_hash(unsigned long vpn,
+ #define HPTE_NOHPTE_UPDATE	0x2
+ #define HPTE_USE_KERNEL_KEY	0x4
+ 
++int do_hash_fault(struct pt_regs *regs, unsigned long ea, unsigned long dsisr);
+ extern int __hash_page_4K(unsigned long ea, unsigned long access,
+ 			  unsigned long vsid, pte_t *ptep, unsigned long trap,
+ 			  unsigned long flags, int ssize, int subpage_prot);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e02ad6fefa46..bda91c79b261 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1401,14 +1401,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+  *
+  * Handling:
+  * - Hash MMU
+- *   Go to do_hash_page first to see if the HPT can be filled from an entry in
+- *   the Linux page table. Hash faults can hit in kernel mode in a fairly
++ *   Go to do_hash_fault, which attempts to fill the HPT from an entry in the
++ *   Linux page table. Hash faults can hit in kernel mode in a fairly
+  *   arbitrary state (e.g., interrupts disabled, locks held) when accessing
+  *   "non-bolted" regions, e.g., vmalloc space. However these should always be
+- *   backed by Linux page tables.
++ *   backed by Linux page table entries.
+  *
+- *   If none is found, do a Linux page fault. Linux page faults can happen in
+- *   kernel mode due to user copy operations of course.
++ *   If no entry is found the Linux page fault handler is invoked (by
++ *   do_hash_fault). Linux page faults can happen in kernel mode due to user
++ *   copy operations of course.
+  *
+  *   KVM: The KVM HDSI handler may perform a load with MSR[DR]=1 in guest
+  *   MMU context, which may cause a DSI in the host, which must go to the
+@@ -1439,13 +1440,17 @@ EXC_COMMON_BEGIN(data_access_common)
+ 	GEN_COMMON data_access
+ 	ld	r4,_DAR(r1)
+ 	ld	r5,_DSISR(r1)
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ BEGIN_MMU_FTR_SECTION
+-	ld	r6,_MSR(r1)
+-	li	r3,0x300
+-	b	do_hash_page		/* Try to handle as hpte fault */
++	bl	do_hash_fault
+ MMU_FTR_SECTION_ELSE
+-	b	handle_page_fault
++	bl	do_page_fault
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
++        cmpdi	r3,0
++	beq+	interrupt_return
++	/* We need to restore NVGPRS */
++	REST_NVGPRS(r1)
++	b       interrupt_return
+ 
+ 	GEN_KVM data_access
+ 
+@@ -1540,13 +1545,17 @@ EXC_COMMON_BEGIN(instruction_access_common)
+ 	GEN_COMMON instruction_access
+ 	ld	r4,_DAR(r1)
+ 	ld	r5,_DSISR(r1)
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ BEGIN_MMU_FTR_SECTION
+-	ld      r6,_MSR(r1)
+-	li	r3,0x400
+-	b	do_hash_page		/* Try to handle as hpte fault */
++	bl	do_hash_fault
+ MMU_FTR_SECTION_ELSE
+-	b	handle_page_fault
++	bl	do_page_fault
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
++        cmpdi	r3,0
++	beq+	interrupt_return
++	/* We need to restore NVGPRS */
++	REST_NVGPRS(r1)
++	b       interrupt_return
+ 
+ 	GEN_KVM instruction_access
+ 
+@@ -3202,99 +3211,3 @@ disable_machine_check:
+ 	RFI_TO_KERNEL
+ 1:	mtlr	r0
+ 	blr
+-
+-/*
+- * Hash table stuff
+- */
+-	.balign	IFETCH_ALIGN_BYTES
+-do_hash_page:
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	lis	r0,(DSISR_BAD_FAULT_64S | DSISR_DABRMATCH | DSISR_KEYFAULT)@h
+-	ori	r0,r0,DSISR_BAD_FAULT_64S@l
+-	and.	r0,r5,r0		/* weird error? */
+-	bne-	handle_page_fault	/* if not, try to insert a HPTE */
+-
+-	/*
+-	 * If we are in an "NMI" (e.g., an interrupt when soft-disabled), then
+-	 * don't call hash_page, just fail the fault. This is required to
+-	 * prevent re-entrancy problems in the hash code, namely perf
+-	 * interrupts hitting while something holds H_PAGE_BUSY, and taking a
+-	 * hash fault. See the comment in hash_preload().
+-	 */
+-	ld	r11, PACA_THREAD_INFO(r13)
+-	lwz	r0,TI_PREEMPT(r11)
+-	andis.	r0,r0,NMI_MASK@h
+-	bne	77f
+-
+-	/*
+-	 * r3 contains the trap number
+-	 * r4 contains the faulting address
+-	 * r5 contains dsisr
+-	 * r6 msr
+-	 *
+-	 * at return r3 = 0 for success, 1 for page fault, negative for error
+-	 */
+-	bl	__hash_page		/* build HPTE if possible */
+-        cmpdi	r3,0			/* see if __hash_page succeeded */
+-
+-	/* Success */
+-	beq	interrupt_return	/* Return from exception on success */
+-
+-	/* Error */
+-	blt-	13f
+-
+-	/* Reload DAR/DSISR into r4/r5 for the DABR check below */
+-	ld	r4,_DAR(r1)
+-	ld      r5,_DSISR(r1)
+-#endif /* CONFIG_PPC_BOOK3S_64 */
+-
+-/* Here we have a page fault that hash_page can't handle. */
+-handle_page_fault:
+-11:	andis.  r0,r5,DSISR_DABRMATCH@h
+-	bne-    handle_dabr_fault
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	do_page_fault
+-	cmpdi	r3,0
+-	beq+	interrupt_return
+-	mr	r5,r3
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ld	r4,_DAR(r1)
+-	bl	__bad_page_fault
+-	b	interrupt_return
+-
+-/* We have a data breakpoint exception - handle it */
+-handle_dabr_fault:
+-	ld      r4,_DAR(r1)
+-	ld      r5,_DSISR(r1)
+-	addi    r3,r1,STACK_FRAME_OVERHEAD
+-	bl      do_break
+-	/*
+-	 * do_break() may have changed the NV GPRS while handling a breakpoint.
+-	 * If so, we need to restore them with their updated values.
+-	 */
+-	REST_NVGPRS(r1)
+-	b       interrupt_return
+-
+-
+-#ifdef CONFIG_PPC_BOOK3S_64
+-/* We have a page fault that hash_page could handle but HV refused
+- * the PTE insertion
+- */
+-13:	mr	r5,r3
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ld	r4,_DAR(r1)
+-	bl	low_hash_fault
+-	b	interrupt_return
+-#endif
+-
+-/*
+- * We come here as a result of a DSI at a point where we don't want
+- * to call hash_page, such as when we are accessing memory (possibly
+- * user memory) inside a PMU interrupt that occurred while interrupts
+- * were soft-disabled.  We want to invoke the exception handler for
+- * the access, or panic if there isn't a handler.
+- */
+-77:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	li	r5,SIGSEGV
+-	bl	bad_page_fault
+-	b	interrupt_return
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 73b06adb6eeb..5a61182ddf75 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -1512,16 +1512,40 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+ }
+ EXPORT_SYMBOL_GPL(hash_page);
+ 
+-int __hash_page(unsigned long trap, unsigned long ea, unsigned long dsisr,
+-		unsigned long msr)
++int do_hash_fault(struct pt_regs *regs, unsigned long ea, unsigned long dsisr)
+ {
+ 	unsigned long access = _PAGE_PRESENT | _PAGE_READ;
+ 	unsigned long flags = 0;
+-	struct mm_struct *mm = current->mm;
+-	unsigned int region_id = get_region_id(ea);
++	struct mm_struct *mm;
++	unsigned int region_id;
++	int err;
++
++	if (unlikely(dsisr & (DSISR_BAD_FAULT_64S | DSISR_DABRMATCH | DSISR_KEYFAULT)))
++		goto page_fault;
++
++	/*
++	 * If we are in an "NMI" (e.g., an interrupt when soft-disabled), then
++	 * don't call hash_page, just fail the fault. This is required to
++	 * prevent re-entrancy problems in the hash code, namely perf
++	 * interrupts hitting while something holds H_PAGE_BUSY, and taking a
++	 * hash fault. See the comment in hash_preload().
++	 *
++	 * We come here as a result of a DSI at a point where we don't want
++	 * to call hash_page, such as when we are accessing memory (possibly
++	 * user memory) inside a PMU interrupt that occurred while interrupts
++	 * were soft-disabled.  We want to invoke the exception handler for
++	 * the access, or panic if there isn't a handler.
++	 */
++	if (unlikely(in_nmi())) {
++		bad_page_fault(regs, ea, SIGSEGV);
++		return 0;
++	}
+ 
++	region_id = get_region_id(ea);
+ 	if ((region_id == VMALLOC_REGION_ID) || (region_id == IO_REGION_ID))
+ 		mm = &init_mm;
++	else
++		mm = current->mm;
+ 
+ 	if (dsisr & DSISR_NOHPTE)
+ 		flags |= HPTE_NOHPTE_UPDATE;
+@@ -1537,13 +1561,31 @@ int __hash_page(unsigned long trap, unsigned long ea, unsigned long dsisr,
+ 	 * 2) user space access kernel space.
+ 	 */
+ 	access |= _PAGE_PRIVILEGED;
+-	if ((msr & MSR_PR) || (region_id == USER_REGION_ID))
++	if (user_mode(regs) || (region_id == USER_REGION_ID))
+ 		access &= ~_PAGE_PRIVILEGED;
+ 
+-	if (trap == 0x400)
++	if (regs->trap == 0x400)
+ 		access |= _PAGE_EXEC;
+ 
+-	return hash_page_mm(mm, ea, access, trap, flags);
++	err = hash_page_mm(mm, ea, access, regs->trap, flags);
++	if (unlikely(err < 0)) {
++		// failed to instert a hash PTE due to an hypervisor error
++		if (user_mode(regs)) {
++			if (IS_ENABLED(CONFIG_PPC_SUBPAGE_PROT) && err == -2)
++				_exception(SIGSEGV, regs, SEGV_ACCERR, ea);
++			else
++				_exception(SIGBUS, regs, BUS_ADRERR, ea);
++		} else {
++			bad_page_fault(regs, ea, SIGBUS);
++		}
++		err = 0;
++
++	} else if (err) {
++page_fault:
++		err = do_page_fault(regs, ea, dsisr);
++	}
++
++	return err;
+ }
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+@@ -1843,27 +1885,6 @@ void flush_hash_range(unsigned long number, int local)
+ 	}
+ }
+ 
+-/*
+- * low_hash_fault is called when we the low level hash code failed
+- * to instert a PTE due to an hypervisor error
+- */
+-void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
+-{
+-	enum ctx_state prev_state = exception_enter();
+-
+-	if (user_mode(regs)) {
+-#ifdef CONFIG_PPC_SUBPAGE_PROT
+-		if (rc == -2)
+-			_exception(SIGSEGV, regs, SEGV_ACCERR, address);
+-		else
+-#endif
+-			_exception(SIGBUS, regs, BUS_ADRERR, address);
+-	} else
+-		bad_page_fault(regs, address, SIGBUS);
+-
+-	exception_exit(prev_state);
+-}
+-
+ long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
+ 			   unsigned long pa, unsigned long rflags,
+ 			   unsigned long vflags, int psize, int ssize)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 8961b44f350c..6af4516d1c50 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -369,7 +369,9 @@ static void sanity_check_fault(bool is_write, bool is_user,
+ #define page_fault_is_bad(__err)	(0)
+ #elif defined(CONFIG_PPC_8xx)
+ #define page_fault_is_bad(__err)	((__err) & DSISR_NOEXEC_OR_G)
+-#elif defined(CONFIG_PPC64)
++#elif defined(CONFIG_PPC_BOOK3S_64)
++#define page_fault_is_bad(__err)	((__err) & (DSISR_BAD_FAULT_64S | DSISR_DABRMATCH))
++#elif defined(CONFIG_PPC_BOOK3E_64)
+ #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_64S)
+ #else
+ #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_32S)
+@@ -388,7 +390,7 @@ static void sanity_check_fault(bool is_write, bool is_user,
+  * The return value is 0 if the fault was handled, or the signal
+  * number if this is a kernel fault that can't be handled here.
+  */
+-static int __do_page_fault(struct pt_regs *regs, unsigned long address,
++static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 			   unsigned long error_code)
+ {
+ 	struct vm_area_struct * vma;
+@@ -404,6 +406,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		return 0;
+ 
+ 	if (unlikely(page_fault_is_bad(error_code))) {
++		if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && (error_code & DSISR_DABRMATCH))
++			return -1;
++
+ 		if (is_user) {
+ 			_exception(SIGBUS, regs, BUS_OBJERR, address);
+ 			return 0;
+@@ -540,25 +545,55 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	return 0;
+ }
++NOKPROBE_SYMBOL(___do_page_fault);
++
++static int __do_page_fault(struct pt_regs *regs, unsigned long address,
++		  unsigned long error_code)
++{
++	int err;
++
++	err = ___do_page_fault(regs, address, error_code);
++	if (unlikely(err)) {
++		const struct exception_table_entry *entry;
++
++		entry = search_exception_tables(regs->nip);
++		if (likely(entry)) {
++			instruction_pointer_set(regs, extable_fixup(entry));
++			err = 0;
++		}
++	}
++
++#ifdef CONFIG_PPC_BOOK3S_64
++	/* 32 and 64e handle these errors in asm */
++	if (unlikely(err)) {
++		if (err > 0) {
++			__bad_page_fault(regs, address, err);
++			err = 0;
++		} else {
++			/*
++			 * do_break() may change NV GPRS while handling the
++			 * breakpoint. Return -ve to caller to do that.
++			 */
++			do_break(regs, address, error_code);
++		}
++	}
++#endif
++
++	return err;
++}
+ NOKPROBE_SYMBOL(__do_page_fault);
+ 
+ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		  unsigned long error_code)
+ {
+-	const struct exception_table_entry *entry;
+ 	enum ctx_state prev_state = exception_enter();
+-	int rc = __do_page_fault(regs, address, error_code);
+-	exception_exit(prev_state);
+-	if (likely(!rc))
+-		return 0;
++	int err;
+ 
+-	entry = search_exception_tables(regs->nip);
+-	if (unlikely(!entry))
+-		return rc;
++	err = __do_page_fault(regs, address, error_code);
+ 
+-	instruction_pointer_set(regs, extable_fixup(entry));
++	exception_exit(prev_state);
+ 
+-	return 0;
++	return err;
+ }
+ NOKPROBE_SYMBOL(do_page_fault);
+ 
 -- 
 2.23.0
 
