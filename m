@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59647C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01FDBC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:58:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC5A6221E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:56:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC5A6221E5
+	by mail.kernel.org (Postfix) with ESMTPS id 7F53E22211
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:58:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F53E22211
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8dxB030gzDqRH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:56:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8dzY1ZBPzDqPQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:58:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -31,48 +31,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dPx1stwzDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:36 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dPy3yKhzDqLx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:38 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 104EDUEp156413; Mon, 4 Jan 2021 09:32:29 -0500
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35v4kb8gvv-1
+ 104DrEdq109694; Mon, 4 Jan 2021 09:32:24 -0500
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35v4a114vu-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 09:32:29 -0500
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWMIX010555;
- Mon, 4 Jan 2021 14:32:26 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 35tgf890e8-1
+ Mon, 04 Jan 2021 09:32:24 -0500
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWKSL005590;
+ Mon, 4 Jan 2021 14:32:20 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 35tg3h9y9t-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 14:32:26 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 104EWODg46989640
+ Mon, 04 Jan 2021 14:32:20 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 104EWFWt30474674
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Jan 2021 14:32:24 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 70A30AE053;
- Mon,  4 Jan 2021 14:32:24 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 356AFAE045;
- Mon,  4 Jan 2021 14:32:24 +0000 (GMT)
+ Mon, 4 Jan 2021 14:32:15 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9B57FA4053;
+ Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 60E29A4051;
+ Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  4 Jan 2021 14:32:24 +0000 (GMT)
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 7980522016B;
- Mon,  4 Jan 2021 15:32:23 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id A324D220073;
+ Mon,  4 Jan 2021 15:32:17 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 23/23] powerpc/pseries/eeh: Make
- pseries_send_allow_unfreeze() static
-Date: Mon,  4 Jan 2021 15:32:06 +0100
-Message-Id: <20210104143206.695198-24-clg@kaod.org>
+Subject: [PATCH v2 14/23] powerpc/mm: Declare preload_new_slb_context()
+ prototype
+Date: Mon,  4 Jan 2021 15:31:57 +0100
+Message-Id: <20210104143206.695198-15-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
 References: <20210104143206.695198-1-clg@kaod.org>
@@ -84,11 +84,12 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-04_08:2021-01-04,
  2021-01-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=703
- impostorscore=0 suspectscore=0 clxscore=1034 mlxscore=0 lowpriorityscore=0
- adultscore=0 phishscore=0 priorityscore=1501 malwarescore=0 spamscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101040091
+ bulkscore=0
+ lowpriorityscore=0 spamscore=0 mlxscore=0 mlxlogscore=897
+ priorityscore=1501 adultscore=0 suspectscore=0 phishscore=0
+ impostorscore=0 clxscore=1034 malwarescore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101040087
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,42 +103,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Only used locally. It fixes this W=3D1 compile error :
+It fixes this W=3D1 compile error :
 
-../arch/powerpc/platforms/pseries/eeh_pseries.c:697:5: error: no previous=
- prototype for =E2=80=98pseries_send_allow_unfreeze=E2=80=99 [-Werror=3Dm=
-issing-prototypes]
-  697 | int pseries_send_allow_unfreeze(struct pci_dn *pdn,
-      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/mm/book3s64/slb.c:380:6: error: no previous prototype for=
+ =E2=80=98preload_new_slb_context=E2=80=99 [-Werror=3Dmissing-prototypes]
+  380 | void preload_new_slb_context(unsigned long start, unsigned long s=
+p)
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
 
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/pseries/eeh_pseries.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/=
-platforms/pseries/eeh_pseries.c
-index de45ceb634f9..bc15200852b7 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -694,8 +694,7 @@ static int pseries_eeh_write_config(struct eeh_dev *e=
-dev, int where, int size, u
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc=
+/include/asm/book3s/64/mmu-hash.h
+index 2bffc7a0fdb8..f911bdb68d8b 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -525,6 +525,7 @@ void slb_dump_contents(struct slb_entry *slb_ptr);
 =20
- #ifdef CONFIG_PCI_IOV
--int pseries_send_allow_unfreeze(struct pci_dn *pdn,
--				u16 *vf_pe_array, int cur_vfs)
-+static int pseries_send_allow_unfreeze(struct pci_dn *pdn, u16 *vf_pe_ar=
-ray, int cur_vfs)
- {
- 	int rc;
- 	int ibm_allow_unfreeze =3D rtas_token("ibm,open-sriov-allow-unfreeze");
+ extern void slb_vmalloc_update(void);
+ extern void slb_set_size(u16 size);
++void preload_new_slb_context(unsigned long start, unsigned long sp);
+ #endif /* __ASSEMBLY__ */
+=20
+ /*
 --=20
 2.26.2
 
