@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B81C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 13:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 530FFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 13:12:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F18C221BE5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 13:08:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F18C221BE5
+	by mail.kernel.org (Postfix) with ESMTPS id B220B221E5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 13:12:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B220B221E5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8bYL27P8zDqMC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 00:08:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8bd70FG9zDqF7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 00:12:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -28,31 +28,30 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=mt6cP9W0; 
+ header.a=rsa-sha256 header.s=korg header.b=EvXlF4uc; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8bDj2KD5zDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jan 2021 23:54:29 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id EE32D221E5;
- Mon,  4 Jan 2021 12:54:26 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8bDl2J9dzDqHp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jan 2021 23:54:31 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 2D760221F9;
+ Mon,  4 Jan 2021 12:54:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1609764867;
- bh=q55uD+9x7aVwgQDzsIdJydIoMr8S9CYvSYzcE1Zga5w=;
+ s=korg; t=1609764869;
+ bh=230IlK/1QNnXLp58e8GYygsmdFzdKF99yc9Z8yHO9KY=;
  h=Subject:To:Cc:From:Date:In-Reply-To:From;
- b=mt6cP9W0hlwI5loCxdxoC08ExvdNIqVRiU3AWHvs2/7v37cTWqypLQa+EH7Q46rtd
- GMNEJIVFJI5nR8nQz23wtQsV7yaOjxwHw6YGMc/iH7odpJI3h9eOSlza8QEwyMFApA
- +UaGRu6/rcpCy6fm3VWEZI10omwZVij0KEW61uu8=
-Subject: Patch "asm-generic/tlb: Track freeing of page-table directories in
- struct mmu_gather" has been added to the 4.19-stable tree
+ b=EvXlF4ucrfvzXxYE/7UCz2IymicMJJGEsTee8lh46Xg9vq0Whzw/9zqVoEnDynRWG
+ KAd0cAzoou2Gd64F2SCxpSZDC074Do5AOA6Ij3gAOGzAPGUIEJYVRfIj31omks8EyN
+ nIjMess7bivJaVD3kKBRK+V1b2xu1JXzRzMDKGWQ=
+Subject: Patch "asm-generic/tlb: Track which levels of the page tables have
+ been cleared" has been added to the 4.19-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au, peterz@infradead.org, santosh@fossix.org,
- sashal@kernel.org, will.deacon@arm.com
+ mpe@ellerman.id.au, santosh@fossix.org, sashal@kernel.org, will.deacon@arm.com
 From: <gregkh@linuxfoundation.org>
 Date: Mon, 04 Jan 2021 13:55:43 +0100
-In-Reply-To: <20200312132740.225241-2-santosh@fossix.org>
-Message-ID: <160976494312342@kroah.com>
+In-Reply-To: <20200312132740.225241-3-santosh@fossix.org>
+Message-ID: <160976494390214@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -77,13 +76,13 @@ Sender: "Linuxppc-dev"
 
 This is a note to let you know that I've just added the patch titled
 
-    asm-generic/tlb: Track freeing of page-table directories in struct mmu_gather
+    asm-generic/tlb: Track which levels of the page tables have been cleared
 
 to the 4.19-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     asm-generic-tlb-track-freeing-of-page-table-directories-in-struct-mmu_gather.patch
+     asm-generic-tlb-track-which-levels-of-the-page-tables-have-been-cleared.patch
 and it can be found in the queue-4.19 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -92,110 +91,188 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Mon Jan  4 01:45:29 PM CET 2021
 From: Santosh Sivaraj <santosh@fossix.org>
-Date: Thu, 12 Mar 2020 18:57:35 +0530
-Subject: asm-generic/tlb: Track freeing of page-table directories in struct mmu_gather
+Date: Thu, 12 Mar 2020 18:57:36 +0530
+Subject: asm-generic/tlb: Track which levels of the page tables have been cleared
 To: <stable@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Greg KH <greg@kroah.com>, Sasha Levin <sashal@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>
-Message-ID: <20200312132740.225241-2-santosh@fossix.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Greg KH <greg@kroah.com>, Sasha Levin <sashal@kernel.org>, Will Deacon <will.deacon@arm.com>
+Message-ID: <20200312132740.225241-3-santosh@fossix.org>
 
-From: Peter Zijlstra <peterz@infradead.org>
+From: Will Deacon <will.deacon@arm.com>
 
-commit 22a61c3c4f1379ef8b0ce0d5cb78baf3178950e2 upstream
+commit a6d60245d6d9b1caf66b0d94419988c4836980af upstream
 
-Some architectures require different TLB invalidation instructions
-depending on whether it is only the last-level of page table being
-changed, or whether there are also changes to the intermediate
-(directory) entries higher up the tree.
+It is common for architectures with hugepage support to require only a
+single TLB invalidation operation per hugepage during unmap(), rather than
+iterating through the mapping at a PAGE_SIZE increment. Currently,
+however, the level in the page table where the unmap() operation occurs
+is not stored in the mmu_gather structure, therefore forcing
+architectures to issue additional TLB invalidation operations or to give
+up and over-invalidate by e.g. invalidating the entire TLB.
 
-Add a new bit to the flags bitfield in struct mmu_gather so that the
-architecture code can operate accordingly if it's the intermediate
-levels being invalidated.
+Ideally, we could add an interval rbtree to the mmu_gather structure,
+which would allow us to associate the correct mapping granule with the
+various sub-mappings within the range being invalidated. However, this
+is costly in terms of book-keeping and memory management, so instead we
+approximate by keeping track of the page table levels that are cleared
+and provide a means to query the smallest granule required for invalidation.
 
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Will Deacon <will.deacon@arm.com>
 Cc: <stable@vger.kernel.org> # 4.19
 Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
-[santosh: prerequisite for tlbflush backports]
+[santosh: prerequisite for upcoming tlbflush backports]
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- include/asm-generic/tlb.h |   31 +++++++++++++++++++++++--------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ include/asm-generic/tlb.h |   58 +++++++++++++++++++++++++++++++++++++++-------
+ mm/memory.c               |    4 ++-
+ 2 files changed, 53 insertions(+), 9 deletions(-)
 
 --- a/include/asm-generic/tlb.h
 +++ b/include/asm-generic/tlb.h
-@@ -97,12 +97,22 @@ struct mmu_gather {
- #endif
- 	unsigned long		start;
- 	unsigned long		end;
--	/* we are in the middle of an operation to clear
--	 * a full mm and can make some optimizations */
--	unsigned int		fullmm : 1,
--	/* we have performed an operation which
--	 * requires a complete flush of the tlb */
--				need_flush_all : 1;
-+	/*
-+	 * we are in the middle of an operation to clear
-+	 * a full mm and can make some optimizations
-+	 */
-+	unsigned int		fullmm : 1;
-+
-+	/*
-+	 * we have performed an operation which
-+	 * requires a complete flush of the tlb
-+	 */
-+	unsigned int		need_flush_all : 1;
-+
-+	/*
-+	 * we have removed page directories
-+	 */
-+	unsigned int		freed_tables : 1;
+@@ -114,6 +114,14 @@ struct mmu_gather {
+ 	 */
+ 	unsigned int		freed_tables : 1;
  
++	/*
++	 * at which levels have we cleared entries?
++	 */
++	unsigned int		cleared_ptes : 1;
++	unsigned int		cleared_pmds : 1;
++	unsigned int		cleared_puds : 1;
++	unsigned int		cleared_p4ds : 1;
++
  	struct mmu_gather_batch *active;
  	struct mmu_gather_batch	local;
-@@ -137,6 +147,7 @@ static inline void __tlb_reset_range(str
- 		tlb->start = TASK_SIZE;
+ 	struct page		*__pages[MMU_GATHER_BUNDLE];
+@@ -148,6 +156,10 @@ static inline void __tlb_reset_range(str
  		tlb->end = 0;
  	}
-+	tlb->freed_tables = 0;
+ 	tlb->freed_tables = 0;
++	tlb->cleared_ptes = 0;
++	tlb->cleared_pmds = 0;
++	tlb->cleared_puds = 0;
++	tlb->cleared_p4ds = 0;
  }
  
  static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
-@@ -278,6 +289,7 @@ static inline void tlb_remove_check_page
+@@ -197,6 +209,25 @@ static inline void tlb_remove_check_page
+ }
+ #endif
+ 
++static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
++{
++	if (tlb->cleared_ptes)
++		return PAGE_SHIFT;
++	if (tlb->cleared_pmds)
++		return PMD_SHIFT;
++	if (tlb->cleared_puds)
++		return PUD_SHIFT;
++	if (tlb->cleared_p4ds)
++		return P4D_SHIFT;
++
++	return PAGE_SHIFT;
++}
++
++static inline unsigned long tlb_get_unmap_size(struct mmu_gather *tlb)
++{
++	return 1UL << tlb_get_unmap_shift(tlb);
++}
++
+ /*
+  * In the case of tlb vma handling, we can optimise these away in the
+  * case where we're doing a full MM flush.  When we're doing a munmap,
+@@ -230,13 +261,19 @@ static inline void tlb_remove_check_page
+ #define tlb_remove_tlb_entry(tlb, ptep, address)		\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->cleared_ptes = 1;				\
+ 		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+-#define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	     \
+-	do {							     \
+-		__tlb_adjust_range(tlb, address, huge_page_size(h)); \
+-		__tlb_remove_tlb_entry(tlb, ptep, address);	     \
++#define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	\
++	do {							\
++		unsigned long _sz = huge_page_size(h);		\
++		__tlb_adjust_range(tlb, address, _sz);		\
++		if (_sz == PMD_SIZE)				\
++			tlb->cleared_pmds = 1;			\
++		else if (_sz == PUD_SIZE)			\
++			tlb->cleared_puds = 1;			\
++		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+ /**
+@@ -250,6 +287,7 @@ static inline void tlb_remove_check_page
+ #define tlb_remove_pmd_tlb_entry(tlb, pmdp, address)			\
+ 	do {								\
+ 		__tlb_adjust_range(tlb, address, HPAGE_PMD_SIZE);	\
++		tlb->cleared_pmds = 1;					\
+ 		__tlb_remove_pmd_tlb_entry(tlb, pmdp, address);		\
+ 	} while (0)
+ 
+@@ -264,6 +302,7 @@ static inline void tlb_remove_check_page
+ #define tlb_remove_pud_tlb_entry(tlb, pudp, address)			\
+ 	do {								\
+ 		__tlb_adjust_range(tlb, address, HPAGE_PUD_SIZE);	\
++		tlb->cleared_puds = 1;					\
+ 		__tlb_remove_pud_tlb_entry(tlb, pudp, address);		\
+ 	} while (0)
+ 
+@@ -289,7 +328,8 @@ static inline void tlb_remove_check_page
  #define pte_free_tlb(tlb, ptep, address)			\
  	do {							\
  		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-+		tlb->freed_tables = 1;			\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_pmds = 1;				\
  		__pte_free_tlb(tlb, ptep, address);		\
  	} while (0)
  #endif
-@@ -285,7 +297,8 @@ static inline void tlb_remove_check_page
- #ifndef pmd_free_tlb
+@@ -298,7 +338,8 @@ static inline void tlb_remove_check_page
  #define pmd_free_tlb(tlb, pmdp, address)			\
  	do {							\
--		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
-+		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-+		tlb->freed_tables = 1;			\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_puds = 1;				\
  		__pmd_free_tlb(tlb, pmdp, address);		\
  	} while (0)
  #endif
-@@ -295,6 +308,7 @@ static inline void tlb_remove_check_page
+@@ -308,7 +349,8 @@ static inline void tlb_remove_check_page
  #define pud_free_tlb(tlb, pudp, address)			\
  	do {							\
  		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-+		tlb->freed_tables = 1;			\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_p4ds = 1;				\
  		__pud_free_tlb(tlb, pudp, address);		\
  	} while (0)
  #endif
-@@ -304,7 +318,8 @@ static inline void tlb_remove_check_page
- #ifndef p4d_free_tlb
+@@ -319,7 +361,7 @@ static inline void tlb_remove_check_page
  #define p4d_free_tlb(tlb, pudp, address)			\
  	do {							\
--		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
-+		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-+		tlb->freed_tables = 1;			\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
  		__p4d_free_tlb(tlb, pudp, address);		\
  	} while (0)
  #endif
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -279,8 +279,10 @@ void arch_tlb_finish_mmu(struct mmu_gath
+ {
+ 	struct mmu_gather_batch *batch, *next;
+ 
+-	if (force)
++	if (force) {
++		__tlb_reset_range(tlb);
+ 		__tlb_adjust_range(tlb, start, end - start);
++	}
+ 
+ 	tlb_flush_mmu(tlb);
+ 
 
 
 Patches currently in stable-queue which might be from santosh@fossix.org are
