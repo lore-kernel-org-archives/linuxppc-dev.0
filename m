@@ -2,72 +2,93 @@ Return-Path: <SRS0=cwfL=GH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E6AFC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 099B9C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:35:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44F0522241
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:05:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44F0522241
+	by mail.kernel.org (Postfix) with ESMTPS id 1B12521D93
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:34:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B12521D93
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8cps5jNJzDqDr
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:05:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
- helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8dSc0wPFzDqLB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:34:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from smtpout1.mo804.mail-out.ovh.net
- (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8cmc70XxzDqDG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:03:36 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.12])
- by mo804.mail-out.ovh.net (Postfix) with ESMTPS id 11D7A7F358D0;
- Mon,  4 Jan 2021 15:03:26 +0100 (CET)
-Received: from kaod.org (37.59.142.101) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 4 Jan 2021
- 15:03:25 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-101G004d5da9b64-da8c-42c2-b526-71373a01c04d,
- E6F5FD2F8B81D51FFC90B89046B6334D311E5876) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-Subject: Re: [PATCH 17/23] powerpc/watchdog: Declare soft_nmi_interrupt()
- prototype
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- <linuxppc-dev@lists.ozlabs.org>
-References: <20201221074222.403894-1-clg@kaod.org>
- <20201221074222.403894-18-clg@kaod.org>
- <8174a721-0407-1788-c2d1-dd4b274b314e@csgroup.eu>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <8387a97a-75b6-02ec-421f-8184ff2caa03@kaod.org>
-Date: Mon, 4 Jan 2021 15:03:24 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dPl3RyLzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:27 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 104EVmBm053407; Mon, 4 Jan 2021 09:32:16 -0500
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35v4jtgh4p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 04 Jan 2021 09:32:15 -0500
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EVrOJ029298;
+ Mon, 4 Jan 2021 14:32:13 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma03fra.de.ibm.com with ESMTP id 35tgf8h0jt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 04 Jan 2021 14:32:13 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 104EWBXA26870140
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 4 Jan 2021 14:32:11 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 80C2F4C044;
+ Mon,  4 Jan 2021 14:32:11 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3E8E44C04E;
+ Mon,  4 Jan 2021 14:32:11 +0000 (GMT)
+Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:11 +0000 (GMT)
+Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 79FC722016B;
+ Mon,  4 Jan 2021 15:32:10 +0100 (CET)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 03/23] powerpc/pseries/eeh: Make
+ pseries_pcibios_bus_add_device() static
+Date: Mon,  4 Jan 2021 15:31:46 +0100
+Message-Id: <20210104143206.695198-4-clg@kaod.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
+References: <20210104143206.695198-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <8174a721-0407-1788-c2d1-dd4b274b314e@csgroup.eu>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.101]
-X-ClientProxiedBy: DAG2EX2.mxp5.local (172.16.2.12) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: ae3e8330-5ed0-441e-8057-d9e7ae1b79b2
-X-Ovh-Tracer-Id: 2318509386801712093
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrvdeffedgiedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeehtdeviefhgfeugfevjeeiveefvedtvdehhfejleduveejieefhfeffeetfeeunecuffhomhgrihhnpehoiihlrggsshdrohhrghenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuh
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2021-01-04_08:2021-01-04,
+ 2021-01-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ phishscore=0 priorityscore=1501 spamscore=0 malwarescore=0 bulkscore=0
+ suspectscore=0 clxscore=1034 mlxlogscore=999 adultscore=0 mlxscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101040091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,63 +100,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Barrat?= <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/21/20 9:48 AM, Christophe Leroy wrote:
-> 
-> 
-> Le 21/12/2020 à 08:42, Cédric Le Goater a écrit :
->> It fixes this W=1 compile error :
->>
->> ../arch/powerpc/kernel/watchdog.c:250:6: error: no previous prototype for ‘soft_nmi_interrupt’ [-Werror=missing-prototypes]
->>    250 | void soft_nmi_interrupt(struct pt_regs *regs)
->>        |      ^~~~~~~~~~~~~~~~~~
->>
->> Cc: Nicholas Piggin <npiggin@gmail.com>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>   arch/powerpc/include/asm/asm-prototypes.h | 1 +
-> 
-> This is a misuse of asm/asm-prototypes.h
+pseries_pcibios_bus_add_device() is a local routine defining the
+pcibios_bus_add_device() handler of the pseries machine in
+eeh_pseries_init(). It doesn't need to be external.
 
-yes. <asm/nmi.h> is a better place.
+It fixes this W=3D1 compile error:
 
-Thanks for the review,
+../arch/powerpc/platforms/pseries/eeh_pseries.c:46:6: error: no previous =
+prototype for =E2=80=98pseries_pcibios_bus_add_device=E2=80=99 [-Werror=3D=
+missing-prototypes]
+   46 | void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-C. 
+Fixes: dae7253f9f78 ("powerpc/pseries: Add pseries SR-IOV Machine depende=
+nt calls")
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Fr=C3=A9d=C3=A9ric Barrat <fbarrat@linux.ibm.com>
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-> This file is for prototypes of ASM functions.
-> 
-> See discussion at https://patchwork.ozlabs.org/project/linuxppc-dev/patch/1463534212-4879-2-git-send-email-dja@axtens.net/
-> 
-> 
->>   arch/powerpc/kernel/watchdog.c            | 1 +
->>   2 files changed, 2 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
->> index d0b832cbbec8..0f39eefbd5a5 100644
->> --- a/arch/powerpc/include/asm/asm-prototypes.h
->> +++ b/arch/powerpc/include/asm/asm-prototypes.h
->> @@ -84,6 +84,7 @@ void machine_check_exception(struct pt_regs *regs);
->>   void emulation_assist_interrupt(struct pt_regs *regs);
->>   long do_slb_fault(struct pt_regs *regs, unsigned long ea);
->>   void do_bad_slb_fault(struct pt_regs *regs, unsigned long ea, long err);
->> +void soft_nmi_interrupt(struct pt_regs *regs);
->>     /* signals, syscalls and interrupts */
->>   long sys_swapcontext(struct ucontext __user *old_ctx,
->> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
->> index af3c15a1d41e..855716f563ac 100644
->> --- a/arch/powerpc/kernel/watchdog.c
->> +++ b/arch/powerpc/kernel/watchdog.c
->> @@ -27,6 +27,7 @@
->>   #include <linux/smp.h>
->>     #include <asm/paca.h>
->> +#include <asm/asm-prototypes.h>
->>     /*
->>    * The powerpc watchdog ensures that each CPU is able to service timers.
->>
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/=
+platforms/pseries/eeh_pseries.c
+index cf024fa37bda..de45ceb634f9 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -43,7 +43,7 @@ static int ibm_get_config_addr_info;
+ static int ibm_get_config_addr_info2;
+ static int ibm_configure_pe;
+=20
+-void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
++static void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+ {
+ 	struct pci_dn *pdn =3D pci_get_pdn(pdev);
+=20
+--=20
+2.26.2
 
