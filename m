@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6D54C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9424FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:08:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6E202076D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:06:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6E202076D
+	by mail.kernel.org (Postfix) with ESMTPS id 96C932071E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:08:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96C932071E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8f8W1V7zzDqWm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:06:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8fBz6gw2zDqM7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:08:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
@@ -31,55 +31,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dQ30PVszDqMt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dQ46z2kzDqM5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:44 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 104EVn2I033378; Mon, 4 Jan 2021 09:32:30 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35v3ph2964-1
+ 104EVkVV033113; Mon, 4 Jan 2021 09:32:37 -0500
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35v3ph2966-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 09:32:28 -0500
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 104EVu8B033962;
- Mon, 4 Jan 2021 09:32:25 -0500
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 35v3ph2946-1
+ Mon, 04 Jan 2021 09:32:35 -0500
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWPTT029383;
+ Mon, 4 Jan 2021 14:32:25 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03fra.de.ibm.com with ESMTP id 35tgf8h0jw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 09:32:25 -0500
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWIdT017641;
- Mon, 4 Jan 2021 14:32:23 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma05fra.de.ibm.com with ESMTP id 35tgf890r9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 14:32:22 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 104EWK6E40698114
+ Mon, 04 Jan 2021 14:32:25 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 104EWNW745416888
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Jan 2021 14:32:20 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 97419A4068;
- Mon,  4 Jan 2021 14:32:20 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5BD00A4060;
- Mon,  4 Jan 2021 14:32:20 +0000 (GMT)
+ Mon, 4 Jan 2021 14:32:23 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A2BBA404D;
+ Mon,  4 Jan 2021 14:32:23 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E3298A4040;
+ Mon,  4 Jan 2021 14:32:22 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  4 Jan 2021 14:32:20 +0000 (GMT)
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:22 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id A6B2B22016B;
- Mon,  4 Jan 2021 15:32:19 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 3956B22016B;
+ Mon,  4 Jan 2021 15:32:22 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 17/23] powerpc/watchdog: Declare soft_nmi_interrupt()
- prototype
-Date: Mon,  4 Jan 2021 15:32:00 +0100
-Message-Id: <20210104143206.695198-18-clg@kaod.org>
+Subject: [PATCH v2 21/23] powerpc/pseries: Make IOV setup routines static
+Date: Mon,  4 Jan 2021 15:32:04 +0100
+Message-Id: <20210104143206.695198-22-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
 References: <20210104143206.695198-1-clg@kaod.org>
@@ -93,7 +85,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
  malwarescore=0 impostorscore=0 suspectscore=0 bulkscore=0 adultscore=0
- mlxlogscore=875 phishscore=0 spamscore=0 priorityscore=1501 mlxscore=0
+ mlxlogscore=932 phishscore=0 spamscore=0 priorityscore=1501 mlxscore=0
  clxscore=1034 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2101040091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -109,54 +101,77 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Nicholas Piggin <npiggin@gmail.com>
+ =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Barrat?= <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-soft_nmi_interrupt() usage requires PPC_WATCHDOG to be configured.
-Check the CONFIG definition to declare the prototype.
+These are only used locally. It fixes these W=3D1 compile errors :
 
-It fixes this W=3D1 compile error :
+../arch/powerpc/platforms/pseries/setup.c:610:17: error: no previous prot=
+otype for =E2=80=98pseries_get_iov_fw_value=E2=80=99 [-Werror=3Dmissing-p=
+rototypes]
+  610 | resource_size_t pseries_get_iov_fw_value(struct pci_dev *dev, int=
+ resno,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/setup.c:646:6: error: no previous proto=
+type for =E2=80=98of_pci_set_vf_bar_size=E2=80=99 [-Werror=3Dmissing-prot=
+otypes]
+  646 | void of_pci_set_vf_bar_size(struct pci_dev *dev, const int *index=
+es)
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/platforms/pseries/setup.c:668:6: error: no previous proto=
+type for =E2=80=98of_pci_parse_iov_addrs=E2=80=99 [-Werror=3Dmissing-prot=
+otypes]
+  668 | void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *index=
+es)
+      |      ^~~~~~~~~~~~~~~~~~~~~~
 
-../arch/powerpc/kernel/watchdog.c:250:6: error: no previous prototype for=
- =E2=80=98soft_nmi_interrupt=E2=80=99 [-Werror=3Dmissing-prototypes]
-  250 | void soft_nmi_interrupt(struct pt_regs *regs)
-      |      ^~~~~~~~~~~~~~~~~~
-
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Fr=C3=A9d=C3=A9ric Barrat <fbarrat@linux.ibm.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/nmi.h | 1 +
- arch/powerpc/kernel/watchdog.c | 1 +
- 2 files changed, 2 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nm=
-i.h
-index 84b4cfe73edd..63eccea93796 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -4,6 +4,7 @@
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platfo=
+rms/pseries/setup.c
+index 090c13f6c881..0272aa4e74e3 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -607,8 +607,8 @@ enum get_iov_fw_value_index {
+ 	WDW_SIZE      =3D 3     /*  Get Window Size */
+ };
 =20
- #ifdef CONFIG_PPC_WATCHDOG
- extern void arch_touch_nmi_watchdog(void);
-+void soft_nmi_interrupt(struct pt_regs *regs);
- #else
- static inline void arch_touch_nmi_watchdog(void) {}
- #endif
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdo=
-g.c
-index af3c15a1d41e..3ae13c2a10cf 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -27,6 +27,7 @@
- #include <linux/smp.h>
+-resource_size_t pseries_get_iov_fw_value(struct pci_dev *dev, int resno,
+-					 enum get_iov_fw_value_index value)
++static resource_size_t pseries_get_iov_fw_value(struct pci_dev *dev, int=
+ resno,
++						enum get_iov_fw_value_index value)
+ {
+ 	const int *indexes;
+ 	struct device_node *dn =3D pci_device_to_OF_node(dev);
+@@ -643,7 +643,7 @@ resource_size_t pseries_get_iov_fw_value(struct pci_d=
+ev *dev, int resno,
+ 	return ret;
+ }
 =20
- #include <asm/paca.h>
-+#include <asm/nmi.h>
+-void of_pci_set_vf_bar_size(struct pci_dev *dev, const int *indexes)
++static void of_pci_set_vf_bar_size(struct pci_dev *dev, const int *index=
+es)
+ {
+ 	struct resource *res;
+ 	resource_size_t base, size;
+@@ -665,7 +665,7 @@ void of_pci_set_vf_bar_size(struct pci_dev *dev, cons=
+t int *indexes)
+ 	}
+ }
 =20
- /*
-  * The powerpc watchdog ensures that each CPU is able to service timers.
+-void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
++static void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *index=
+es)
+ {
+ 	struct resource *res, *root, *conflict;
+ 	resource_size_t base, size;
 --=20
 2.26.2
 
