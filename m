@@ -7,71 +7,71 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E46C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D2B5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:18:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E798C221E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:16:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E798C221E5
+	by mail.kernel.org (Postfix) with ESMTPS id 7382F207BC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:18:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7382F207BC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8fNJ1dWgzDqcK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:16:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8fQz3S6fzDqlh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:18:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dQw6vg6zDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:33:28 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dR54yS5zDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:33:37 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 104EWuZ9023735; Mon, 4 Jan 2021 09:33:17 -0500
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35v38r329s-1
+ 104E2dvb003974; Mon, 4 Jan 2021 09:33:29 -0500
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35v3svsqt7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 09:33:15 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EVi2s031844;
- Mon, 4 Jan 2021 14:32:15 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 35u3pmhast-1
+ Mon, 04 Jan 2021 09:33:28 -0500
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWCVY017631;
+ Mon, 4 Jan 2021 14:32:12 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma05fra.de.ibm.com with ESMTP id 35tgf890r5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 14:32:15 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 104EWDGd38863290
+ Mon, 04 Jan 2021 14:32:12 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 104EWAP414549460
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Jan 2021 14:32:13 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 542ABA4060;
- Mon,  4 Jan 2021 14:32:13 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2038FA4054;
- Mon,  4 Jan 2021 14:32:13 +0000 (GMT)
+ Mon, 4 Jan 2021 14:32:10 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 14B49AE05A;
+ Mon,  4 Jan 2021 14:32:10 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D677EAE058;
+ Mon,  4 Jan 2021 14:32:09 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  4 Jan 2021 14:32:13 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:09 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 7C2E5220073;
- Mon,  4 Jan 2021 15:32:12 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 1DCFC22016B;
+ Mon,  4 Jan 2021 15:32:09 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 06/23] powerpc/setup_64: Make some routines static
-Date: Mon,  4 Jan 2021 15:31:49 +0100
-Message-Id: <20210104143206.695198-7-clg@kaod.org>
+Subject: [PATCH v2 01/23] powerpc/mm: Include __find_linux_pte() prototype
+Date: Mon,  4 Jan 2021 15:31:44 +0100
+Message-Id: <20210104143206.695198-2-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
 References: <20210104143206.695198-1-clg@kaod.org>
@@ -83,10 +83,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-04_08:2021-01-04,
  2021-01-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0
- impostorscore=0 clxscore=1034 mlxscore=0 spamscore=0 mlxlogscore=553
- phishscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ lowpriorityscore=0
+ clxscore=1034 suspectscore=0 mlxlogscore=823 malwarescore=0 spamscore=0
+ phishscore=0 bulkscore=0 mlxscore=0 priorityscore=1501 adultscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2101040091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -100,74 +100,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The following routines are only called by local services and do not
-need to be external symbols.
+It fixes this W=3D1 compile error :
 
-It fixes these W=3D1 errors :
+../arch/powerpc/mm/pgtable.c:337:8: error: no previous prototype for =E2=80=
+=98__find_linux_pte=E2=80=99 [-Werror=3Dmissing-prototypes]
+  337 | pte_t *__find_linux_pte(pgd_t *pgdir, unsigned long ea,
+      |        ^~~~~~~~~~~~~~~~
 
-../arch/powerpc/kernel/setup_64.c:261:13: error: no previous prototype fo=
-r =E2=80=98record_spr_defaults=E2=80=99 [-Werror=3Dmissing-prototypes]
-  261 | void __init record_spr_defaults(void)
-      |             ^~~~~~~~~~~~~~~~~~~
-../arch/powerpc/kernel/setup_64.c:1011:6: error: no previous prototype fo=
-r =E2=80=98entry_flush_enable=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1011 | void entry_flush_enable(bool enable)
-      |      ^~~~~~~~~~~~~~~~~~
-../arch/powerpc/kernel/setup_64.c:1023:6: error: no previous prototype fo=
-r =E2=80=98uaccess_flush_enable=E2=80=99 [-Werror=3Dmissing-prototypes]
- 1023 | void uaccess_flush_enable(bool enable)
-      |      ^~~~~~~~~~~~~~~~~~~~
-
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kernel/setup_64.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/pgtable.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_6=
-4.c
-index c28e949cc222..560ed8b975e7 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -67,6 +67,7 @@
- #include <asm/kup.h>
- #include <asm/early_ioremap.h>
- #include <asm/pgalloc.h>
-+#include <asm/asm-prototypes.h>
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 15555c95cebc..3a41545e5c07 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -26,6 +26,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ #include <asm/hugetlb.h>
++#include <asm/pte-walk.h>
 =20
- #include "setup.h"
-=20
-@@ -258,7 +259,7 @@ static void cpu_ready_for_interrupts(void)
-=20
- unsigned long spr_default_dscr =3D 0;
-=20
--void __init record_spr_defaults(void)
-+static void __init record_spr_defaults(void)
+ static inline int is_exec_fault(void)
  {
- 	if (early_cpu_has_feature(CPU_FTR_DSCR))
- 		spr_default_dscr =3D mfspr(SPRN_DSCR);
-@@ -1008,7 +1009,7 @@ void rfi_flush_enable(bool enable)
- 	rfi_flush =3D enable;
- }
-=20
--void entry_flush_enable(bool enable)
-+static void entry_flush_enable(bool enable)
- {
- 	if (enable) {
- 		do_entry_flush_fixups(enabled_flush_types);
-@@ -1020,7 +1021,7 @@ void entry_flush_enable(bool enable)
- 	entry_flush =3D enable;
- }
-=20
--void uaccess_flush_enable(bool enable)
-+static void uaccess_flush_enable(bool enable)
- {
- 	if (enable) {
- 		do_uaccess_flush_fixups(enabled_flush_types);
 --=20
 2.26.2
 
