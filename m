@@ -2,84 +2,59 @@ Return-Path: <SRS0=cwfL=GH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0F49C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 21:03:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B567C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 21:33:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 058352053B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 21:02:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 058352053B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C407321919
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 21:33:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C407321919
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8p4L0By7zDqSL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 08:02:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8plP1LkNzDqMv
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 08:33:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f30;
- helo=mail-qv1-xf30.google.com; envelope-from=natechancellor@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=tXg34Bi0; dkim-atps=neutral
-Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com
- [IPv6:2607:f8b0:4864:20::f30])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=k+JzBVwd; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8p1H1V40zDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 08:00:18 +1100 (AEDT)
-Received: by mail-qv1-xf30.google.com with SMTP id d11so13692655qvo.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jan 2021 13:00:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=2E48a8501cvft0YkWjvJEBQif0+UmPCQbs5NE+bNygg=;
- b=tXg34Bi0XOseVJr5UoJacS8ykQjH116YS2PcHbFf7A4BNICd57eoM9GkkMapVESLEM
- 0qyYb5kNnMdStYO1SumzKK9/kO7TfDnTgvLZkFLqCZ8GAAQYPTinJdAFvSXIvuO9tQ+c
- fr+xBOLaSwuDD6MTs3thEIEP7yz/7sWFtyWDg6mYOrL5y0ICYC/jZIYwuO9vxA1MHOTG
- LZvdoqgmGBu4SzNdlYvUu00yDNcEV85RQK1TZEO9t/jjoJuj0RN/10GKzCtzZDXq5UsV
- KspcFYbezhp5H0e1I3PCjWcFD1KYB6RkWU1S6TgRkUVIgbv4kH84H+Awx0uVy7clx8RU
- btOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=2E48a8501cvft0YkWjvJEBQif0+UmPCQbs5NE+bNygg=;
- b=ulC4EY4PNfV4cZ27iEIZnJ8Etk1/c72N7o9A2+IpyCVSV7mu8xn82Wa1XySvq6sSC9
- aiXgFWmIiLYmt7W2WEbPAXi0ig9OkWnhHXxt0AajQANzFdrC+PKDwWkpsXjWdYMBcBtA
- /iZnJFQ3M0TiMIil5XPlW1vzLFzqtFjwnPO6gcp8DvU9Sha2h75e4hkKVJEengbuqx1L
- LwSBQntfUClNNOVj9zWDY5Msf1qI7mD4qybRmHcl6bTPn0uik/7BNeJke/3Cb0vY01l6
- 8OT9T/YMyA5Dj/3Tlak54RkiER+WJaAhd2NkLG0LONz5nwuSKjdgbh4MfpuDhssz3ohD
- iT8Q==
-X-Gm-Message-State: AOAM532KXL7idGt/QM4hihJueBPOScXmLKMwd1pDuyFqCOWRYkMAqwYQ
- UbjrGhe9RUU3vNWuixg6YbM=
-X-Google-Smtp-Source: ABdhPJya+ZmAK68T/hIsH/3E7ve05TqDM/FCR3w6bx5agpPHLJHEg/P1bFvdRXc0DgqkFSXXIQ/bhg==
-X-Received: by 2002:ad4:4a70:: with SMTP id cn16mr77948768qvb.38.1609794013571; 
- Mon, 04 Jan 2021 13:00:13 -0800 (PST)
-Received: from localhost.localdomain ([2604:1380:45f1:1d00::1])
- by smtp.gmail.com with ESMTPSA id v145sm15509352qka.27.2021.01.04.13.00.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 04 Jan 2021 13:00:12 -0800 (PST)
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc: Handle .text.{hot,unlikely}.* in linker script
-Date: Mon,  4 Jan 2021 13:59:53 -0700
-Message-Id: <20210104205952.1399409-1-natechancellor@gmail.com>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210104204850.990966-1-natechancellor@gmail.com>
-References: <20210104204850.990966-1-natechancellor@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8pgl2pQxzDqQk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 08:30:11 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id B71D2224F9;
+ Mon,  4 Jan 2021 21:30:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1609795808;
+ bh=+VIp1fbOslRnEXjmav/oSNMgrzek7YuC7KXDOGeIgvY=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=k+JzBVwdepZQVgi2qtp4pO4mRtkbC85HHzefaSm3bVgVdzoucfBrFhavNCFbsNU4e
+ lGhkeEHQVG3r3W5VZm1c2wAUjQQ74VpVQaXkNeHE/Gan60/GykIldLRemE4geTmcF8
+ DJLl7sTv8OlEuzc8SY1+sW6QU85J4TzeCuwWdotj7S+MnvK1YiQbjiOV/bWpbxByNc
+ Wo7C3QPnS90DiIFzZ2ETgN3A6siZPH8YW/sYxMcZp9bswCV6X7XLv/75xhMYkXFvwQ
+ bMUD9VtVDI94q3jZy2KDkfB90MsDVhfTgse5pc/g0j+A440DKCnDMe34+G04meBQJt
+ jJycRxRyU18xg==
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-X-Patchwork-Bot: notify
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] ibmvnic: fix: NULL pointer dereference.
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <160979580868.407.15154718207027980381.git-patchwork-notify@kernel.org>
+Date: Mon, 04 Jan 2021 21:30:08 +0000
+References: <1609312994-121032-1-git-send-email-abaci-bugfix@linux.alibaba.com>
+In-Reply-To: <1609312994-121032-1-git-send-email-abaci-bugfix@linux.alibaba.com>
+To: YANG LI <abaci-bugfix@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,68 +66,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, clang-built-linux@googlegroups.com,
- Paul Mackerras <paulus@samba.org>,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, ljp@linux.ibm.com,
+ drt@linux.ibm.com, kuba@kernel.org, sukadev@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit eff8728fe698 ("vmlinux.lds.h: Add PGO and AutoFDO input
-sections") added ".text.unlikely.*" and ".text.hot.*" due to an LLVM
-change [1].
+Hello:
 
-After another LLVM change [2], these sections are seen in some PowerPC
-builds, where there is a orphan section warning then build failure:
+This patch was applied to netdev/net.git (refs/heads/master):
 
-$ make -skj"$(nproc)" \
-       ARCH=powerpc CROSS_COMPILE=powerpc64le-linux-gnu- LLVM=1 O=out \
-       distclean powernv_defconfig zImage.epapr
-ld.lld: warning: kernel/built-in.a(panic.o):(.text.unlikely.) is being placed in '.text.unlikely.'
-...
-ld.lld: warning: address (0xc000000000009314) of section .text is not a multiple of alignment (256)
-...
-ERROR: start_text address is c000000000009400, should be c000000000008000
-ERROR: try to enable LD_HEAD_STUB_CATCH config option
-ERROR: see comments in arch/powerpc/tools/head_check.sh
-...
+On Wed, 30 Dec 2020 15:23:14 +0800 you wrote:
+> The error is due to dereference a null pointer in function
+> reset_one_sub_crq_queue():
+> 
+> if (!scrq) {
+>     netdev_dbg(adapter->netdev,
+>                "Invalid scrq reset. irq (%d) or msgs(%p).\n",
+> 		scrq->irq, scrq->msgs);
+> 		return -EINVAL;
+> }
+> 
+> [...]
 
-Explicitly handle these sections like in the main linker script so
-there is no more build failure.
+Here is the summary with links:
+  - ibmvnic: fix: NULL pointer dereference.
+    https://git.kernel.org/netdev/net/c/862aecbd9569
 
-[1]: https://reviews.llvm.org/D79600
-[2]: https://reviews.llvm.org/D92493
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-Cc: stable@vger.kernel.org
-Fixes: 83a092cf95f2 ("powerpc: Link warning for orphan sections")
-Link: https://github.com/ClangBuiltLinux/linux/issues/1218
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
-
-v1 -> v2:
-
-* Add missing [1] and [2] references in commit message. Thanks to Sedat
-  Dilek for pointing it out!
-
- arch/powerpc/kernel/vmlinux.lds.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0318ba436f34..8e0b1298bf19 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -85,7 +85,7 @@ SECTIONS
- 		ALIGN_FUNCTION();
- #endif
- 		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
-+		*(.text.hot .text.hot.* TEXT_MAIN .text.fixup .text.unlikely .text.unlikely.* .fixup __ftr_alt_* .ref.text);
- #ifdef CONFIG_PPC64
- 		*(.tramp.ftrace.text);
- #endif
-
-base-commit: d8a4f20584d5906093a8fc6aa06622102a501095
--- 
-2.30.0
 
