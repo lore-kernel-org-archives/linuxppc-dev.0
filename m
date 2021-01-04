@@ -2,76 +2,79 @@ Return-Path: <SRS0=cwfL=GH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D76C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:10:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45574C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:12:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C83D21BE5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:10:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C83D21BE5
+	by mail.kernel.org (Postfix) with ESMTPS id 502C7207BC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 15:12:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 502C7207BC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8fFh29PNzDqhn
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:10:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8fHt3VKczDqhb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:12:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dQT2H2GzDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:33:05 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dQc2L1zzDqL0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:33:12 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 104EIYwB084769; Mon, 4 Jan 2021 09:32:46 -0500
+ 104E2eLo003979; Mon, 4 Jan 2021 09:33:00 -0500
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35v4nwrauy-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 35v3svsqxk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 09:32:45 -0500
+ Mon, 04 Jan 2021 09:33:00 -0500
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EVQb4031448;
- Mon, 4 Jan 2021 14:32:12 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma04ams.nl.ibm.com with ESMTP id 35u3pmhasq-1
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EVeoW031839;
+ Mon, 4 Jan 2021 14:32:24 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 35u3pmhat0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 14:32:11 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 104EW9qM50004332
+ Mon, 04 Jan 2021 14:32:24 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 104EWJdm31326570
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Jan 2021 14:32:09 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B5FCCAE04D;
- Mon,  4 Jan 2021 14:32:09 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 81C93AE045;
- Mon,  4 Jan 2021 14:32:09 +0000 (GMT)
+ Mon, 4 Jan 2021 14:32:19 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7FDE34C046;
+ Mon,  4 Jan 2021 14:32:22 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 45D934C044;
+ Mon,  4 Jan 2021 14:32:22 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  4 Jan 2021 14:32:09 +0000 (GMT)
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:22 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 87810220073;
- Mon,  4 Jan 2021 15:32:08 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 9233D220073;
+ Mon,  4 Jan 2021 15:32:21 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 00/23] powerpc: Fix W=1 compile errors
-Date: Mon,  4 Jan 2021 15:31:43 +0100
-Message-Id: <20210104143206.695198-1-clg@kaod.org>
+Subject: [PATCH v2 20/23] KVM: PPC: Book3S HV: Declare some prototypes
+Date: Mon,  4 Jan 2021 15:32:03 +0100
+Message-Id: <20210104143206.695198-21-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
+References: <20210104143206.695198-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -80,10 +83,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-04_08:2021-01-04,
  2021-01-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1034 suspectscore=0
- mlxscore=0 lowpriorityscore=0 malwarescore=0 bulkscore=0 adultscore=0
- mlxlogscore=275 phishscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ lowpriorityscore=0
+ clxscore=1034 suspectscore=0 mlxlogscore=641 malwarescore=0 spamscore=0
+ phishscore=0 bulkscore=0 mlxscore=0 priorityscore=1501 adultscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2101040091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,78 +105,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+This fixes these W=3D1 compile errors:
 
-Here is an assorted collection of fixes for W=3D1.
+../arch/powerpc/kvm/book3s_hv_builtin.c:425:6: error: no previous prototy=
+pe for =E2=80=98kvmppc_read_intr=E2=80=99 [-Werror=3Dmissing-prototypes]
+  425 | long kvmppc_read_intr(void)
+      |      ^~~~~~~~~~~~~~~~
+../arch/powerpc/kvm/book3s_hv_builtin.c:652:6: error: no previous prototy=
+pe for =E2=80=98kvmppc_bad_interrupt=E2=80=99 [-Werror=3Dmissing-prototyp=
+es]
+  652 | void kvmppc_bad_interrupt(struct pt_regs *regs)
+      |      ^~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/kvm/book3s_hv_builtin.c:695:6: error: no previous prototy=
+pe for =E2=80=98kvmhv_p9_set_lpcr=E2=80=99 [-Werror=3Dmissing-prototypes]
+  695 | void kvmhv_p9_set_lpcr(struct kvm_split_mode *sip)
+      |      ^~~~~~~~~~~~~~~~~
+../arch/powerpc/kvm/book3s_hv_builtin.c:740:6: error: no previous prototy=
+pe for =E2=80=98kvmhv_p9_restore_lpcr=E2=80=99 [-Werror=3Dmissing-prototy=
+pes]
+  740 | void kvmhv_p9_restore_lpcr(struct kvm_split_mode *sip)
+      |      ^~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/kvm/book3s_hv_builtin.c:768:6: error: no previous prototy=
+pe for =E2=80=98kvmppc_set_msr_hv=E2=80=99 [-Werror=3Dmissing-prototypes]
+  768 | void kvmppc_set_msr_hv(struct kvm_vcpu *vcpu, u64 msr)
+      |      ^~~~~~~~~~~~~~~~~
+../arch/powerpc/kvm/book3s_hv_builtin.c:817:6: error: no previous prototy=
+pe for =E2=80=98kvmppc_inject_interrupt_hv=E2=80=99 [-Werror=3Dmissing-pr=
+ototypes]
+  817 | void kvmppc_inject_interrupt_hv(struct kvm_vcpu *vcpu, int vec, u=
+64 srr1_flags)
 
-After this series, only a few errors are left, some missing declarations
-in arch/powerpc/kernel/sys_ppc32.c, panic_smp_self_stop() declaration
-and a few of these which I don't know how to fix :
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/include/asm/kvm_book3s.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-  ./arch/powerpc/xmon/xmon.c: In function =E2=80=98xmon_print_symbol=E2=80=
-=99:
-  ./arch/powerpc/xmon/xmon.c:3656:14: error: variable =E2=80=98name=E2=80=
-=99 might be clobbered by =E2=80=98longjmp=E2=80=99 or =E2=80=98vfork=E2=80=
-=99 [-Werror=3Dclobbered]
-   3656 |  const char *name =3D NULL;
-        |              ^~~~
-
-Cheers,
-
-C.=20
-
-Changes in v2 :
-
- - improved commit logs
- - reworked some changes to reduce the number of lines.=20
- - fixed misuse of asm/asm-prototypes.h for soft_nmi_interrupt()
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
+/asm/kvm_book3s.h
+index d32ec9ae73bd..2f5f919f6cd3 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -277,6 +277,13 @@ extern int kvmppc_hcall_impl_hv_realmode(unsigned lo=
+ng cmd);
+ extern void kvmppc_copy_to_svcpu(struct kvm_vcpu *vcpu);
+ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu);
 =20
-C=C3=A9dric Le Goater (23):
-  powerpc/mm: Include __find_linux_pte() prototype
-  powerpc/pseries/ras: Remove unused variable 'status'
-  powerpc/pseries/eeh: Make pseries_pcibios_bus_add_device() static
-  powerpc/pseries/ras: Make init_ras_hotplug_IRQ() static
-  powerpc/pmem: Include pmem prototypes
-  powerpc/setup_64: Make some routines static
-  powerpc/mce: Include prototypes
-  powerpc/smp: Include tick_broadcast() prototype
-  powerpc/smp: Make debugger_ipi_callback() static
-  powerpc/optprobes: Remove unused routine patch_imm32_load_insns()
-  powerpc/optprobes: Make patch_imm64_load_insns() static
-  powerpc/mm: Declare some prototypes
-  powerpc/mm: Move hpte_insert_repeating() prototype
-  powerpc/mm: Declare preload_new_slb_context() prototype
-  powerpc/mm/hugetlb: Make pseries_alloc_bootmem_huge_page() static
-  powerpc/mm: Declare arch_report_meminfo() prototype.
-  powerpc/watchdog: Declare soft_nmi_interrupt() prototype
-  KVM: PPC: Make the VMX instruction emulation routines static
-  KVM: PPC: Book3S HV: Include prototypes
-  KVM: PPC: Book3S HV: Declare some prototypes
-  powerpc/pseries: Make IOV setup routines static
-  powerpc/pcidn: Make IOV setup routines static
-  powerpc/pseries/eeh: Make pseries_send_allow_unfreeze() static
-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 +++++
- arch/powerpc/include/asm/kvm_book3s.h         |  7 +++++++
- arch/powerpc/include/asm/nmi.h                |  1 +
- arch/powerpc/include/asm/pgtable.h            |  3 +++
- arch/powerpc/kernel/mce.c                     |  1 +
- arch/powerpc/kernel/optprobes.c               | 21 +------------------
- arch/powerpc/kernel/setup_64.c                |  7 ++++---
- arch/powerpc/kernel/smp.c                     |  3 ++-
- arch/powerpc/kernel/watchdog.c                |  1 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c           |  1 +
- arch/powerpc/kvm/powerpc.c                    |  8 +++----
- arch/powerpc/lib/pmem.c                       |  1 +
- arch/powerpc/mm/book3s64/hash_hugetlbpage.c   |  4 ----
- arch/powerpc/mm/hugetlbpage.c                 |  2 +-
- arch/powerpc/mm/pgtable.c                     |  1 +
- arch/powerpc/platforms/pseries/eeh_pseries.c  |  5 ++---
- arch/powerpc/platforms/pseries/pci.c          | 15 +++++++------
- arch/powerpc/platforms/pseries/ras.c          | 15 +++++--------
- arch/powerpc/platforms/pseries/setup.c        |  8 +++----
- 19 files changed, 51 insertions(+), 58 deletions(-)
-
++long kvmppc_read_intr(void);
++void kvmppc_bad_interrupt(struct pt_regs *regs);
++void kvmhv_p9_set_lpcr(struct kvm_split_mode *sip);
++void kvmhv_p9_restore_lpcr(struct kvm_split_mode *sip);
++void kvmppc_set_msr_hv(struct kvm_vcpu *vcpu, u64 msr);
++void kvmppc_inject_interrupt_hv(struct kvm_vcpu *vcpu, int vec, u64 srr1=
+_flags);
++
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
+ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
 --=20
 2.26.2
 
