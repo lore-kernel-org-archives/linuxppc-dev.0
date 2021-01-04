@@ -7,72 +7,71 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01FDBC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA137C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:59:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F53E22211
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:58:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F53E22211
+	by mail.kernel.org (Postfix) with ESMTPS id 77C3422211
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jan 2021 14:59:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77C3422211
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8dzY1ZBPzDqPQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:58:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8f1P6B88zDqM6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 01:59:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dPy3yKhzDqLx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8dPy44wdzDqM3
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 01:32:38 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 104DrEdq109694; Mon, 4 Jan 2021 09:32:24 -0500
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 35v4a114vu-1
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 104EVkVb033093; Mon, 4 Jan 2021 09:32:24 -0500
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 35v3ph293r-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Mon, 04 Jan 2021 09:32:24 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EWKSL005590;
- Mon, 4 Jan 2021 14:32:20 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 35tg3h9y9t-1
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104EVQb5031448;
+ Mon, 4 Jan 2021 14:32:22 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04ams.nl.ibm.com with ESMTP id 35u3pmhasy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Jan 2021 14:32:20 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 104EWFWt30474674
+ Mon, 04 Jan 2021 14:32:22 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 104EWKc740436216
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Jan 2021 14:32:15 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9B57FA4053;
- Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 60E29A4051;
- Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
+ Mon, 4 Jan 2021 14:32:20 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EDAF14C04E;
+ Mon,  4 Jan 2021 14:32:19 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B3BA34C040;
+ Mon,  4 Jan 2021 14:32:19 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  4 Jan 2021 14:32:18 +0000 (GMT)
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon,  4 Jan 2021 14:32:19 +0000 (GMT)
 Received: from yukon.ibmuc.com (sig-9-145-4-90.uk.ibm.com [9.145.4.90])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id A324D220073;
- Mon,  4 Jan 2021 15:32:17 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 0285F220073;
+ Mon,  4 Jan 2021 15:32:18 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 14/23] powerpc/mm: Declare preload_new_slb_context()
- prototype
-Date: Mon,  4 Jan 2021 15:31:57 +0100
-Message-Id: <20210104143206.695198-15-clg@kaod.org>
+Subject: [PATCH v2 16/23] powerpc/mm: Declare arch_report_meminfo() prototype.
+Date: Mon,  4 Jan 2021 15:31:59 +0100
+Message-Id: <20210104143206.695198-17-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210104143206.695198-1-clg@kaod.org>
 References: <20210104143206.695198-1-clg@kaod.org>
@@ -84,12 +83,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-04_08:2021-01-04,
  2021-01-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- lowpriorityscore=0 spamscore=0 mlxscore=0 mlxlogscore=897
- priorityscore=1501 adultscore=0 suspectscore=0 phishscore=0
- impostorscore=0 clxscore=1034 malwarescore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101040087
+ lowpriorityscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 bulkscore=0 adultscore=0
+ mlxlogscore=938 phishscore=0 spamscore=0 priorityscore=1501 mlxscore=0
+ clxscore=1034 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101040091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,31 +108,32 @@ Sender: "Linuxppc-dev"
 
 It fixes this W=3D1 compile error :
 
-../arch/powerpc/mm/book3s64/slb.c:380:6: error: no previous prototype for=
- =E2=80=98preload_new_slb_context=E2=80=99 [-Werror=3Dmissing-prototypes]
-  380 | void preload_new_slb_context(unsigned long start, unsigned long s=
-p)
-      |      ^~~~~~~~~~~~~~~~~~~~~~~
+../arch/powerpc/mm/book3s64/pgtable.c:411:6: error: no previous prototype=
+ for =E2=80=98arch_report_meminfo=E2=80=99 [-Werror=3Dmissing-prototypes]
+  411 | void arch_report_meminfo(struct seq_file *m)
+      |      ^~~~~~~~~~~~~~~~~~~
 
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/pgtable.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc=
-/include/asm/book3s/64/mmu-hash.h
-index 2bffc7a0fdb8..f911bdb68d8b 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -525,6 +525,7 @@ void slb_dump_contents(struct slb_entry *slb_ptr);
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/as=
+m/pgtable.h
+index f7613f43c9cf..4eed82172e33 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -162,6 +162,9 @@ static inline bool is_ioremap_addr(const void *x)
 =20
- extern void slb_vmalloc_update(void);
- extern void slb_set_size(u16 size);
-+void preload_new_slb_context(unsigned long start, unsigned long sp);
+ 	return addr >=3D IOREMAP_BASE && addr < IOREMAP_END;
+ }
++
++struct seq_file;
++void arch_report_meminfo(struct seq_file *m);
+ #endif /* CONFIG_PPC64 */
+=20
  #endif /* __ASSEMBLY__ */
-=20
- /*
 --=20
 2.26.2
 
