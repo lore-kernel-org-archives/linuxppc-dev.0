@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1497BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44FFCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:33:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D38B2256F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:31:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D38B2256F
+	by mail.kernel.org (Postfix) with ESMTPS id 64A812256F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 02:33:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64A812256F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4D8xMW2gq3zDqTQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 13:31:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4D8xPP0lqvzDqWt
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jan 2021 13:33:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
@@ -27,15 +27,15 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8xKK6gnZzDqM6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 13:29:41 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPS id E4D502256F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 02:29:38 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D8xKY0PzxzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 13:29:53 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id B1E302256F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2021 02:29:50 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 210911] error: implicit declaration of function
  'cleanup_cpu_mmu_context' [-Werror=implicit-function-declaration]
-Date: Tue, 05 Jan 2021 02:29:38 +0000
+Date: Tue, 05 Jan 2021 02:29:50 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -45,13 +45,13 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Status: CLOSED
 X-Bugzilla-Resolution: CODE_FIX
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc resolution
-Message-ID: <bug-210911-206035-hD3tbPrKFE@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: bug_status
+Message-ID: <bug-210911-206035-pusVsU14qL@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-210911-206035@https.bugzilla.kernel.org/>
 References: <bug-210911-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -80,13 +80,7 @@ Michael Ellerman (michael@ellerman.id.au) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-                 CC|                            |michael@ellerman.id.au
-         Resolution|---                         |CODE_FIX
-
---- Comment #1 from Michael Ellerman (michael@ellerman.id.au) ---
-Fixed in c1bea0a840ac ("powerpc/32s: Fix cleanup_cpu_mmu_context() compile
-bug")
+             Status|RESOLVED                    |CLOSED
 
 --=20
 You may reply to this email to add a comment.
