@@ -1,92 +1,91 @@
-Return-Path: <SRS0=QPm8=GK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=SAHw=GL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36354C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jan 2021 23:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0641C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Jan 2021 04:22:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75E1F2360D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jan 2021 23:33:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E1F2360D
+	by mail.kernel.org (Postfix) with ESMTPS id CBE6C2075A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Jan 2021 04:22:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBE6C2075A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DBjGS2vjQzDr9v
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Jan 2021 10:33:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DBqhS49KgzDr6t
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Jan 2021 15:22:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=konrad.wilk@oracle.com; receiver=<UNKNOWN>)
+ envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=k3kFeIEg; 
+ header.s=corp-2020-01-29 header.b=mUALdhUi; 
  dkim-atps=neutral
+X-Greylist: delayed 2346 seconds by postgrey-1.36 at bilbo;
+ Fri, 08 Jan 2021 15:20:10 AEDT
 Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DBjDs21WKzDqHK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2021 10:31:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DBqdQ73hxzDqqW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2021 15:20:10 +1100 (AEDT)
 Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 107HrhgY122489;
- Thu, 7 Jan 2021 18:02:40 GMT
+ by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 1084A72P106543;
+ Fri, 8 Jan 2021 04:20:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2020-01-29;
- bh=ONFAFUzWR9/dYKX6R5UPSmvsMe/XM4yxSwwcXYnlluo=;
- b=k3kFeIEgW4vzaR4ZfvPTjVDuH82iItpQcMeLnIZSpNlBXO/nlBJ/2BedFegemuW7x/n9
- 5T6zuoIODh1nvQIYNbV9vtdd0rkp3MUUvbNymJpULPQWthCaupOJ61QzYsXDU2hvVRhn
- qSOhtKNsApENoFNmZMg9EGRXgSsWsgqbyJEs0W+O4pQl3q7wgB3x2Tc1NIu0vNPjaYLF
- ahKo9px5Rnbgx2GNFk96Gn3MxndBpVBPpEgZqrkAzR0w7bYROrVdVAjXFF1piDy5oe49
- 6/Q4bDILkejn3BnDHnJupHVRcGxIzzKa+mHpAQh45hxoZjVrh8Rc5ocBK4sOtLZhDO5Y lQ== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by userp2130.oracle.com with ESMTP id 35wftxd6hd-1
+ h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=D8QYOeQGXSvAjNKY8pJROHJxHIla8RMRGjNlXk1LD30=;
+ b=mUALdhUikHSxGR4nrlgP8mr/ZuYXmE12KLJG1OC+eT0h6RuhDjh5O89REmI9cu/1zeI0
+ x2LOeAUBwK8FostLfmv+Achp66ewhKwpoH12RNE9nDZbnSIqHRIVH8FJscOOoNVi8naX
+ yKDtP7BpyUAXt993WRIQXT5smtNNaVdUlyoNwo3f7VH02s+EG9p5/N6iS+DH2Gn+H69h
+ QCN97WkX2V9wQ+WOG+3isMQhHlIUSZH0pj0buptXDfTJmQyLZ48CkMrxDy2v9I+diY1M
+ /RnqL6mxeUkZqeUcCgRHXHwkcoesxR2pO4O23Q2hiHZr1JJsIKpwWAEcKcsCRrMhRO8+ GQ== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by userp2130.oracle.com with ESMTP id 35wftxeyte-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 07 Jan 2021 18:02:40 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 107HsxJ2096626;
- Thu, 7 Jan 2021 18:00:39 GMT
+ Fri, 08 Jan 2021 04:20:02 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10849SPe170611;
+ Fri, 8 Jan 2021 04:20:01 GMT
 Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserp3020.oracle.com with ESMTP id 35v1fbhu8s-1
+ by userp3030.oracle.com with ESMTP id 35w3g3r4rg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 07 Jan 2021 18:00:39 +0000
-Received: from abhmp0013.oracle.com (abhmp0013.oracle.com [141.146.116.19])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 107I0YBv019522;
- Thu, 7 Jan 2021 18:00:34 GMT
-Received: from char.us.oracle.com (/10.152.32.25)
+ Fri, 08 Jan 2021 04:20:01 +0000
+Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 1084Jv6I031018;
+ Fri, 8 Jan 2021 04:20:00 GMT
+Received: from ca-mkp.ca.oracle.com (/10.156.108.201)
  by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Thu, 07 Jan 2021 18:00:33 +0000
-Received: by char.us.oracle.com (Postfix, from userid 1000)
- id 56A6B6A00C3; Thu,  7 Jan 2021 13:00:32 -0500 (EST)
-Date: Thu, 7 Jan 2021 13:00:32 -0500
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [RFC PATCH v3 5/6] dt-bindings: of: Add restricted DMA pool
-Message-ID: <20210107180032.GB16519@char.us.oracle.com>
-References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-6-tientzu@chromium.org>
- <20210106185757.GB109735@localhost.localdomain>
- <CALiNf2_dV13jbHqLt-r1eK+dtOcAKBGcWQCVMQn+eL6MuOrETQ@mail.gmail.com>
+ with ESMTP ; Thu, 07 Jan 2021 20:19:56 -0800
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ james.bottomley@hansenpartnership.com
+Subject: Re: [PATCH] ibmvfc: fix missing cast of ibmvfc_event pointer to u64
+ handle
+Date: Thu,  7 Jan 2021 23:19:41 -0500
+Message-Id: <161007949340.9892.9443484467279726588.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210106203721.1054693-1-tyreld@linux.ibm.com>
+References: <20210106203721.1054693-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CALiNf2_dV13jbHqLt-r1eK+dtOcAKBGcWQCVMQn+eL6MuOrETQ@mail.gmail.com>
-User-Agent: Mutt/1.9.1 (2017-09-22)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9857
  signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
- phishscore=0
- suspectscore=0 spamscore=0 bulkscore=0 adultscore=0 mlxscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101070105
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
+ malwarescore=0 adultscore=0
+ phishscore=0 spamscore=0 mlxlogscore=999 suspectscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101080021
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9857
  signatures=668683
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
@@ -94,7 +93,7 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
  bulkscore=0 priorityscore=1501 impostorscore=0 clxscore=1015
  lowpriorityscore=0 mlxlogscore=999 malwarescore=0 spamscore=0 adultscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101070105
+ definitions=main-2101080021
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,108 +105,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, peterz@infradead.org, grant.likely@arm.com,
- paulus@samba.org, Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, sstabellini@kernel.org,
- Saravana Kannan <saravanak@google.com>,
- "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>,
- Joerg Roedel <joro@8bytes.org>, " <joro@8bytes.org>,
- rafael.j.wysocki@intel.com, Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>,
- xen-devel@lists.xenproject.org, Thierry Reding <treding@nvidia.com>,
- linux-devicetree <devicetree@vger.kernel.org>, will@kernel.org,
- dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
- Rob Herring <robh+dt@kernel.org>, boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
- rdunlap@infradead.org, lkml <linux-kernel@vger.kernel.org>,
- Tomasz Figa <tfiga@chromium.org>,
- "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>,
- Joerg Roedel <joro@8bytes.org>, " <iommu@lists.linux-foundation.org>,
- xypron.glpk@gmx.de, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: kernel test robot <lkp@intel.com>, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ "Martin K . Petersen" <martin.petersen@oracle.com>, brking@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 08, 2021 at 01:39:43AM +0800, Claire Chang wrote:
-> On Thu, Jan 7, 2021 at 2:58 AM Konrad Rzeszutek Wilk
-> <konrad.wilk@oracle.com> wrote:
-> >
-> > On Wed, Jan 06, 2021 at 11:41:23AM +0800, Claire Chang wrote:
-> > > Introduce the new compatible string, restricted-dma-pool, for restricted
-> > > DMA. One can specify the address and length of the restricted DMA memory
-> > > region by restricted-dma-pool in the device tree.
-> > >
-> > > Signed-off-by: Claire Chang <tientzu@chromium.org>
-> > > ---
-> > >  .../reserved-memory/reserved-memory.txt       | 24 +++++++++++++++++++
-> > >  1 file changed, 24 insertions(+)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt b/Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-> > > index e8d3096d922c..44975e2a1fd2 100644
-> > > --- a/Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-> > > +++ b/Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-> > > @@ -51,6 +51,20 @@ compatible (optional) - standard definition
-> > >            used as a shared pool of DMA buffers for a set of devices. It can
-> > >            be used by an operating system to instantiate the necessary pool
-> > >            management subsystem if necessary.
-> > > +        - restricted-dma-pool: This indicates a region of memory meant to be
-> > > +          used as a pool of restricted DMA buffers for a set of devices. The
-> > > +          memory region would be the only region accessible to those devices.
-> > > +          When using this, the no-map and reusable properties must not be set,
-> > > +          so the operating system can create a virtual mapping that will be used
-> > > +          for synchronization. The main purpose for restricted DMA is to
-> > > +          mitigate the lack of DMA access control on systems without an IOMMU,
-> > > +          which could result in the DMA accessing the system memory at
-> > > +          unexpected times and/or unexpected addresses, possibly leading to data
-> > > +          leakage or corruption. The feature on its own provides a basic level
-> > > +          of protection against the DMA overwriting buffer contents at
-> > > +          unexpected times. However, to protect against general data leakage and
-> > > +          system memory corruption, the system needs to provide way to restrict
-> > > +          the DMA to a predefined memory region.
-> >
-> > Heya!
-> >
-> > I think I am missing something obvious here so please bear with my
-> > questions:
-> >
-> >  - This code adds the means of having the SWIOTLB pool tied to a specific
-> >    memory correct?
-> 
-> It doesn't affect the existing SWIOTLB. It just utilizes the existing SWIOTLB
-> code to create another DMA pool tied to a specific memory region for a given set
-> of devices. It bounces the streaming DMA (map/unmap) in and out of that region
-> and does the memory allocation (dma_direct_alloc) from the same region.
+On Wed, 6 Jan 2021 14:37:21 -0600, Tyrel Datwyler wrote:
 
-Right, so why can't it follow the same mechanism that Xen SWIOTLB does - which
-had exactly the same problem (needed special handling on the pool) - and do
-a similar code?
+> Commit 2aa0102c6688 ("scsi: ibmvfc: Use correlation token to tag
+> commands") sets the vfcFrame correlation token to the pointer handle of
+> the associated ibmvfc_event. However, that commit failed to cast the
+> pointer to an appropriate type which in this case is a u64. As such
+> sparse warnings are generated for both correlation token assignments.
+> 
+>  ibmvfc.c:2375:36: sparse: incorrect type in argument 1 (different base types)
+>  ibmvfc.c:2375:36: sparse: expected unsigned long long [usertype] val
+>  ibmvfc.c:2375:36: sparse: got struct ibmvfc_event *[assigned] evt
+> 
+> [...]
 
-> 
-> >
-> >
-> >  - Nothing stops the physical device from bypassing the SWIOTLB buffer.
-> >    That is if an errant device screwed up the length or DMA address, the
-> >    SWIOTLB would gladly do what the device told it do?
-> 
-> So the system needs to provide a way to lock down the memory access, e.g. MPU.
+Applied to 5.11/scsi-fixes, thanks!
 
-OK! Would it be prudent to have this in the description above perhaps?
-> 
-> >
-> >  - This has to be combined with SWIOTLB-force-ish to always use the
-> >    bounce buffer, otherwise you could still do DMA without using
-> >    SWIOTLB (by not hitting the criteria for needing to use SWIOTLB)?
-> 
-> Since restricted DMA is for the devices that are not behind an IOMMU, I change
-> the criteria
-> `if (unlikely(swiotlb_force == SWIOTLB_FORCE))`
-> to
-> `if (unlikely(swiotlb_force == SWIOTLB_FORCE) || dev->dma_io_tlb_mem)`
-> in dma_direct_map_page().
-> 
-> Also, even if SWIOTLB=force, the restricted DMA pool is preferred if available
-> (get_io_tlb_mem in https://lore.kernel.org/patchwork/patch/1360995/).
-> 
-> Thanks!
+[1/1] ibmvfc: fix missing cast of ibmvfc_event pointer to u64 handle
+      https://git.kernel.org/mkp/scsi/c/901d01c8e50c
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
