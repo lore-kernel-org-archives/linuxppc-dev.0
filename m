@@ -2,50 +2,60 @@ Return-Path: <SRS0=bRvR=GM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1662C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 02:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57470C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 03:32:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF46023A82
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 02:57:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF46023A82
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8B109239D1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 03:32:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B109239D1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DCPlG6fG5zDqx2
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 13:57:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DCQXN3j0LzDqrT
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jan 2021 14:32:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
- envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=alpha.franken.de
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DCLZb1sX6zDr95
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2021 11:34:31 +1100 (AEDT)
-Received: from uucp (helo=alpha)
- by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
- id 1ky2D2-0008AZ-00; Sat, 09 Jan 2021 01:34:24 +0100
-Received: by alpha.franken.de (Postfix, from userid 1000)
- id AFC99C0870; Sat,  9 Jan 2021 01:33:52 +0100 (CET)
-Date: Sat, 9 Jan 2021 01:33:52 +0100
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Paul Cercueil <paul@crapouillou.net>
-Subject: Re: [patch V3 13/37] mips/mm/highmem: Switch to generic kmap atomic
-Message-ID: <20210109003352.GA18102@alpha.franken.de>
-References: <JUTMMQ.NNFWKIUV7UUJ1@crapouillou.net>
- <20210108235805.GA17543@alpha.franken.de>
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=codefail.de
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DCQTw6BJbzDqvv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2021 14:30:44 +1100 (AEDT)
+Received: from MTA-07-4.privateemail.com (mta-07.privateemail.com
+ [198.54.127.57])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id A56FC8097D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2021 22:26:16 -0500 (EST)
+Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
+ by MTA-07.privateemail.com (Postfix) with ESMTP id C6733600D0;
+ Fri,  8 Jan 2021 22:26:06 -0500 (EST)
+Received: from oc8246131445.ibm.com (unknown [10.20.151.217])
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id 86CBF600D9;
+ Sat,  9 Jan 2021 03:26:06 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 7/8] powerpc/signal64: Rewrite handle_rt_signal64() to
+ minimise uaccess switches
+Date: Fri,  8 Jan 2021 21:25:56 -0600
+Message-Id: <20210109032557.13831-8-cmr@codefail.de>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20210109032557.13831-1-cmr@codefail.de>
+References: <20210109032557.13831-1-cmr@codefail.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210108235805.GA17543@alpha.franken.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Sat, 09 Jan 2021 13:54:00 +1100
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,63 +67,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, linux-aio@kvack.org, airlied@linux.ie,
- nouveau@lists.freedesktop.org, bigeasy@linutronix.de,
- dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
- bsegall@google.com, jcmvbkbc@gmail.com, ray.huang@amd.com, paulus@samba.org,
- kraxel@redhat.com, sparclinux@vger.kernel.org, deanbo422@gmail.com, hch@lst.de,
- vincent.guittot@linaro.org, paulmck@kernel.org, x86@kernel.org,
- linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@kernel.org,
- peterz@infradead.org, linux-graphics-maintainer@vmware.com, bskeggs@redhat.com,
- airlied@redhat.com, linux-snps-arc@lists.infradead.org, linux-mm@kvack.org,
- mgorman@suse.de, linux-xtensa@linux-xtensa.org, arnd@arndb.de,
- intel-gfx@lists.freedesktop.org, sroland@vmware.com, josef@toxicpanda.com,
- rostedt@goodmis.org, torvalds@linuxfoundation.org, green.hu@gmail.com,
- rodrigo.vivi@intel.com, dsterba@suse.com, tglx@linutronix.de,
- virtualization@lists.linux-foundation.org, dietmar.eggemann@arm.com,
- linux-arm-kernel@lists.infradead.org, chris@zankel.net, monstr@monstr.eu,
- nickhu@andestech.com, clm@fb.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, christian.koenig@amd.com, bcrl@kvack.org,
- spice-devel@lists.freedesktop.org, vgupta@synopsys.com,
- linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, bristot@redhat.com,
- davem@davemloft.net, linux-btrfs@vger.kernel.org, viro@zeniv.linux.org.uk
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jan 09, 2021 at 12:58:05AM +0100, Thomas Bogendoerfer wrote:
-> On Fri, Jan 08, 2021 at 08:20:43PM +0000, Paul Cercueil wrote:
-> > Hi Thomas,
-> > 
-> > 5.11 does not boot anymore on Ingenic SoCs, I bisected it to this commit.
-> > 
-> > Any idea what could be happening?
-> 
-> not yet, kernel crash log of a Malta QEMU is below.
+From: Daniel Axtens <dja@axtens.net>
 
-update:
+Add uaccess blocks and use the 'unsafe' versions of functions doing user
+access where possible to reduce the number of times uaccess has to be
+opened/closed.
 
-This dirty hack lets the Malta QEMU boot again:
+There is no 'unsafe' version of copy_siginfo_to_user, so move it
+slightly to allow for a "longer" uaccess block.
 
-diff --git a/mm/highmem.c b/mm/highmem.c
-index c3a9ea7875ef..190cdda1149d 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -515,7 +515,7 @@ void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	BUG_ON(!pte_none(*(kmap_pte - idx)));
- 	pteval = pfn_pte(pfn, prot);
--	set_pte_at(&init_mm, vaddr, kmap_pte - idx, pteval);
-+	set_pte(kmap_pte - idx, pteval);
- 	arch_kmap_local_post_map(vaddr, pteval);
- 	current->kmap_ctrl.pteval[kmap_local_idx()] = pteval;
- 	preempt_enable();
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+Co-developed-by: Christopher M. Riedl <cmr@codefail.de>
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/powerpc/kernel/signal_64.c | 54 +++++++++++++++++++++------------
+ 1 file changed, 34 insertions(+), 20 deletions(-)
 
-set_pte_at() tries to update cache and could do an kmap_atomic() there.
-Not sure, if this is allowed at this point.
-
-Thomas.
-
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 0c7f633b832b..7e62d62ef482 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -848,44 +848,51 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	unsigned long msr __maybe_unused = regs->msr;
+ 
+ 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 0);
+-	if (!access_ok(frame, sizeof(*frame)))
+-		goto badframe;
+ 
+-	err |= __put_user(&frame->info, &frame->pinfo);
+-	err |= __put_user(&frame->uc, &frame->puc);
+-	err |= copy_siginfo_to_user(&frame->info, &ksig->info);
+-	if (err)
++	/* This only applies when calling unsafe_setup_sigcontext() and must be
++	 * called before opening the uaccess window.
++	 */
++	if (!MSR_TM_ACTIVE(msr))
++		prepare_setup_sigcontext(tsk, 1);
++
++	if (!user_write_access_begin(frame, sizeof(*frame)))
+ 		goto badframe;
+ 
++	unsafe_put_user(&frame->info, &frame->pinfo, badframe_block);
++	unsafe_put_user(&frame->uc, &frame->puc, badframe_block);
++
+ 	/* Create the ucontext.  */
+-	err |= __put_user(0, &frame->uc.uc_flags);
+-	err |= __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
++	unsafe_put_user(0, &frame->uc.uc_flags, badframe_block);
++	unsafe_save_altstack(&frame->uc.uc_stack, regs->gpr[1], badframe_block);
+ 
+ 	if (MSR_TM_ACTIVE(msr)) {
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 		/* The ucontext_t passed to userland points to the second
+ 		 * ucontext_t (for transactional state) with its uc_link ptr.
+ 		 */
+-		err |= __put_user(&frame->uc_transact, &frame->uc.uc_link);
++		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link, badframe_block);
++
++		user_write_access_end();
++
+ 		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
+ 					    &frame->uc_transact.uc_mcontext,
+ 					    tsk, ksig->sig, NULL,
+ 					    (unsigned long)ksig->ka.sa.sa_handler,
+ 					    msr);
++
++		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
++			goto badframe;
++
+ #endif
+ 	} else {
+-		err |= __put_user(0, &frame->uc.uc_link);
+-		prepare_setup_sigcontext(tsk, 1);
+-		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
+-			return -EFAULT;
+-		err |= __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
+-						ksig->sig, NULL,
+-						(unsigned long)ksig->ka.sa.sa_handler, 1);
+-		user_write_access_end();
++		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
++		unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
++					NULL, (unsigned long)ksig->ka.sa.sa_handler,
++					1, badframe_block);
+ 	}
+-	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+-	if (err)
+-		goto badframe;
++
++	unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), badframe_block);
++	user_write_access_end();
+ 
+ 	/* Make sure signal handler doesn't get spurious FP exceptions */
+ 	tsk->thread.fp_state.fpscr = 0;
+@@ -900,6 +907,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 		regs->nip = (unsigned long) &frame->tramp[0];
+ 	}
+ 
++
++	/* Save the siginfo outside of the unsafe block. */
++	if (copy_siginfo_to_user(&frame->info, &ksig->info))
++		goto badframe;
++
+ 	/* Allocate a dummy caller frame for the signal handler. */
+ 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
+ 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
+@@ -939,6 +951,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 
+ 	return 0;
+ 
++badframe_block:
++	user_write_access_end();
+ badframe:
+ 	signal_fault(current, regs, "handle_rt_signal64", frame);
+ 
 -- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+2.26.1
+
