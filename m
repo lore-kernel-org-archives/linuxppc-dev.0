@@ -7,43 +7,46 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B52C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:24:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C804C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:26:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C690227C3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:24:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C690227C3
+	by mail.kernel.org (Postfix) with ESMTPS id BA33C22AAA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:26:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA33C22AAA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DDXwT2ymyzDqRD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:24:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DDXym54jQzDqMF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:26:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.183.200;
- helo=relay7-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
+ smtp.mailfrom=bootlin.com (client-ip=217.70.183.194;
+ helo=relay2-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=bootlin.com
-Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net
- [217.70.183.200])
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net
+ [217.70.183.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXnh28cszDqLZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXnj1WyMzDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:14 +1100 (AEDT)
 X-Originating-IP: 86.202.109.140
 Received: from localhost (lfbn-lyo-1-13-140.w86-202.abo.wanadoo.fr
  [86.202.109.140])
  (Authenticated sender: alexandre.belloni@bootlin.com)
- by relay7-d.mail.gandi.net (Postfix) with ESMTPSA id B812420004;
- Sun, 10 Jan 2021 23:18:02 +0000 (UTC)
+ by relay2-d.mail.gandi.net (Postfix) with ESMTPSA id E8FE740006;
+ Sun, 10 Jan 2021 23:18:06 +0000 (UTC)
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: linux-rtc@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>,
+To: linux-rtc@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
+ Gregory Clement <gregory.clement@bootlin.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Alessandro Zummo <a.zummo@towertech.it>,
  Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: [PATCH 01/17] rtc: introduce features bitfield
-Date: Mon, 11 Jan 2021 00:17:36 +0100
-Message-Id: <20210110231752.1418816-2-alexandre.belloni@bootlin.com>
+Subject: [PATCH 03/17] rtc: armada38x: remove armada38x_rtc_ops_noirq
+Date: Mon, 11 Jan 2021 00:17:38 +0100
+Message-Id: <20210110231752.1418816-4-alexandre.belloni@bootlin.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
 References: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
@@ -66,133 +69,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce a bitfield to allow the drivers to announce the available
-features for an RTC.
-
-The main use case would be to better handle alarms, that could be present
-or not or have a minute resolution or may need a correct week day to be set.
-
-Use the newly introduced RTC_FEATURE_ALARM bit to then test whether alarms
-are available instead of relying on the presence of ops->set_alarm.
+Clear RTC_FEATURE_ALARM to signal that alarms are not available instead of
+having a supplementary struct rtc_class_ops with a NULL .set_alarm.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 ---
- drivers/rtc/class.c      |  5 +++++
- drivers/rtc/interface.c  | 12 ++++++------
- include/linux/rtc.h      |  2 ++
- include/uapi/linux/rtc.h |  5 +++++
- 4 files changed, 18 insertions(+), 6 deletions(-)
+ drivers/rtc/rtc-armada38x.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/rtc/class.c b/drivers/rtc/class.c
-index 7e470fbd5e4d..03abd0aa229a 100644
---- a/drivers/rtc/class.c
-+++ b/drivers/rtc/class.c
-@@ -231,6 +231,8 @@ static struct rtc_device *rtc_allocate_device(void)
- 	rtc->pie_timer.function = rtc_pie_update_irq;
- 	rtc->pie_enabled = 0;
+diff --git a/drivers/rtc/rtc-armada38x.c b/drivers/rtc/rtc-armada38x.c
+index 807a79c07f08..cc542e6b1d5b 100644
+--- a/drivers/rtc/rtc-armada38x.c
++++ b/drivers/rtc/rtc-armada38x.c
+@@ -458,14 +458,6 @@ static const struct rtc_class_ops armada38x_rtc_ops = {
+ 	.set_offset = armada38x_rtc_set_offset,
+ };
  
-+	set_bit(RTC_FEATURE_ALARM, rtc->features);
-+
- 	return rtc;
- }
- 
-@@ -386,6 +388,9 @@ int __devm_rtc_register_device(struct module *owner, struct rtc_device *rtc)
- 		return -EINVAL;
+-static const struct rtc_class_ops armada38x_rtc_ops_noirq = {
+-	.read_time = armada38x_rtc_read_time,
+-	.set_time = armada38x_rtc_set_time,
+-	.read_alarm = armada38x_rtc_read_alarm,
+-	.read_offset = armada38x_rtc_read_offset,
+-	.set_offset = armada38x_rtc_set_offset,
+-};
+-
+ static const struct armada38x_rtc_data armada38x_data = {
+ 	.update_mbus_timing = rtc_update_38x_mbus_timing_params,
+ 	.read_rtc_reg = read_rtc_register_38x_wa,
+@@ -540,20 +532,15 @@ static __init int armada38x_rtc_probe(struct platform_device *pdev)
  	}
+ 	platform_set_drvdata(pdev, rtc);
  
-+	if (!rtc->ops->set_alarm)
-+		clear_bit(RTC_FEATURE_ALARM, rtc->features);
-+
- 	rtc->owner = owner;
- 	rtc_device_get_offset(rtc);
+-	if (rtc->irq != -1) {
++	if (rtc->irq != -1)
+ 		device_init_wakeup(&pdev->dev, 1);
+-		rtc->rtc_dev->ops = &armada38x_rtc_ops;
+-	} else {
+-		/*
+-		 * If there is no interrupt available then we can't
+-		 * use the alarm
+-		 */
+-		rtc->rtc_dev->ops = &armada38x_rtc_ops_noirq;
+-	}
++	else
++		clear_bit(RTC_FEATURE_ALARM, rtc->rtc_dev->features);
  
-diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
-index 794a4f036b99..dcb34c73319e 100644
---- a/drivers/rtc/interface.c
-+++ b/drivers/rtc/interface.c
-@@ -186,7 +186,7 @@ static int rtc_read_alarm_internal(struct rtc_device *rtc,
+ 	/* Update RTC-MBUS bridge timing parameters */
+ 	rtc->data->update_mbus_timing(rtc);
  
- 	if (!rtc->ops) {
- 		err = -ENODEV;
--	} else if (!rtc->ops->read_alarm) {
-+	} else if (!test_bit(RTC_FEATURE_ALARM, rtc->features) || !rtc->ops->read_alarm) {
- 		err = -EINVAL;
- 	} else {
- 		alarm->enabled = 0;
-@@ -392,7 +392,7 @@ int rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
- 		return err;
- 	if (!rtc->ops) {
- 		err = -ENODEV;
--	} else if (!rtc->ops->read_alarm) {
-+	} else if (!test_bit(RTC_FEATURE_ALARM, rtc->features) || !rtc->ops->read_alarm) {
- 		err = -EINVAL;
- 	} else {
- 		memset(alarm, 0, sizeof(struct rtc_wkalrm));
-@@ -436,7 +436,7 @@ static int __rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
++	rtc->rtc_dev->ops = &armada38x_rtc_ops;
+ 	rtc->rtc_dev->range_max = U32_MAX;
  
- 	if (!rtc->ops)
- 		err = -ENODEV;
--	else if (!rtc->ops->set_alarm)
-+	else if (!test_bit(RTC_FEATURE_ALARM, rtc->features))
- 		err = -EINVAL;
- 	else
- 		err = rtc->ops->set_alarm(rtc->dev.parent, alarm);
-@@ -451,7 +451,7 @@ int rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
- 
- 	if (!rtc->ops)
- 		return -ENODEV;
--	else if (!rtc->ops->set_alarm)
-+	else if (!test_bit(RTC_FEATURE_ALARM, rtc->features))
- 		return -EINVAL;
- 
- 	err = rtc_valid_tm(&alarm->time);
-@@ -531,7 +531,7 @@ int rtc_alarm_irq_enable(struct rtc_device *rtc, unsigned int enabled)
- 		/* nothing */;
- 	else if (!rtc->ops)
- 		err = -ENODEV;
--	else if (!rtc->ops->alarm_irq_enable)
-+	else if (!test_bit(RTC_FEATURE_ALARM, rtc->features) || !rtc->ops->alarm_irq_enable)
- 		err = -EINVAL;
- 	else
- 		err = rtc->ops->alarm_irq_enable(rtc->dev.parent, enabled);
-@@ -843,7 +843,7 @@ static int rtc_timer_enqueue(struct rtc_device *rtc, struct rtc_timer *timer)
- 
- static void rtc_alarm_disable(struct rtc_device *rtc)
- {
--	if (!rtc->ops || !rtc->ops->alarm_irq_enable)
-+	if (!rtc->ops || !test_bit(RTC_FEATURE_ALARM, rtc->features) || !rtc->ops->alarm_irq_enable)
- 		return;
- 
- 	rtc->ops->alarm_irq_enable(rtc->dev.parent, false);
-diff --git a/include/linux/rtc.h b/include/linux/rtc.h
-index 568909449c13..bd611e26291d 100644
---- a/include/linux/rtc.h
-+++ b/include/linux/rtc.h
-@@ -141,6 +141,8 @@ struct rtc_device {
- 	 */
- 	unsigned long set_offset_nsec;
- 
-+	unsigned long features[BITS_TO_LONGS(RTC_FEATURE_CNT)];
-+
- 	time64_t range_min;
- 	timeu64_t range_max;
- 	time64_t start_secs;
-diff --git a/include/uapi/linux/rtc.h b/include/uapi/linux/rtc.h
-index fa9aff91cbf2..f950bff75e97 100644
---- a/include/uapi/linux/rtc.h
-+++ b/include/uapi/linux/rtc.h
-@@ -110,6 +110,11 @@ struct rtc_pll_info {
- #define RTC_AF 0x20	/* Alarm interrupt */
- #define RTC_UF 0x10	/* Update interrupt for 1Hz RTC */
- 
-+/* feature list */
-+#define RTC_FEATURE_ALARM		0
-+#define RTC_FEATURE_ALARM_RES_MINUTE	1
-+#define RTC_FEATURE_NEED_WEEK_DAY	2
-+#define RTC_FEATURE_CNT			3
- 
- #define RTC_MAX_FREQ	8192
- 
+ 	return devm_rtc_register_device(rtc->rtc_dev);
 -- 
 2.29.2
 
