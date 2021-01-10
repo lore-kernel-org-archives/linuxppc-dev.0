@@ -7,45 +7,43 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCD2DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 001E6C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:42:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 201C4229C9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:41:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 201C4229C9
+	by mail.kernel.org (Postfix) with ESMTPS id 1326322AAC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:42:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1326322AAC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DDYJ35rM9zDqty
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:41:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DDYKx0JCMzDqwN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:42:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.183.195;
- helo=relay3-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
+ smtp.mailfrom=bootlin.com (client-ip=217.70.183.199;
+ helo=relay9-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=bootlin.com
-Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net
- [217.70.183.195])
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
+ [217.70.183.199])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXnw2WHszDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXny3qk2zDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:30 +1100 (AEDT)
 X-Originating-IP: 86.202.109.140
 Received: from localhost (lfbn-lyo-1-13-140.w86-202.abo.wanadoo.fr
  [86.202.109.140])
  (Authenticated sender: alexandre.belloni@bootlin.com)
- by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id DC80260008;
- Sun, 10 Jan 2021 23:18:23 +0000 (UTC)
+ by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id 04E7CFF809;
+ Sun, 10 Jan 2021 23:18:26 +0000 (UTC)
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: linux-rtc@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Alessandro Zummo <a.zummo@towertech.it>,
+To: linux-rtc@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>,
  Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: [PATCH 12/17] rtc: opal: constify opal_rtc_ops
-Date: Mon, 11 Jan 2021 00:17:47 +0100
-Message-Id: <20210110231752.1418816-13-alexandre.belloni@bootlin.com>
+Subject: [PATCH 14/17] rtc: rv3029: constify rv3029_rtc_ops
+Date: Mon, 11 Jan 2021 00:17:49 +0100
+Message-Id: <20210110231752.1418816-15-alexandre.belloni@bootlin.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
 References: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
@@ -74,43 +72,43 @@ const.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 ---
- drivers/rtc/rtc-opal.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/rtc/rtc-rv3029c2.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
-index c586f695bdc9..f8f49a969c23 100644
---- a/drivers/rtc/rtc-opal.c
-+++ b/drivers/rtc/rtc-opal.c
-@@ -224,9 +224,12 @@ static int opal_tpo_alarm_irq_enable(struct device *dev, unsigned int enabled)
- 	return enabled ? 0 : opal_set_tpo_time(dev, &alarm);
- }
+diff --git a/drivers/rtc/rtc-rv3029c2.c b/drivers/rtc/rtc-rv3029c2.c
+index dc1bda62095e..c1f4c0bba1e5 100644
+--- a/drivers/rtc/rtc-rv3029c2.c
++++ b/drivers/rtc/rtc-rv3029c2.c
+@@ -694,10 +694,13 @@ static void rv3029_hwmon_register(struct device *dev, const char *name)
  
--static struct rtc_class_ops opal_rtc_ops = {
-+static const struct rtc_class_ops opal_rtc_ops = {
- 	.read_time	= opal_get_rtc_time,
- 	.set_time	= opal_set_rtc_time,
-+	.read_alarm	= opal_get_tpo_time,
-+	.set_alarm	= opal_set_tpo_time,
-+	.alarm_irq_enable = opal_tpo_alarm_irq_enable,
+ #endif /* CONFIG_RTC_DRV_RV3029_HWMON */
+ 
+-static struct rtc_class_ops rv3029_rtc_ops = {
++static const struct rtc_class_ops rv3029_rtc_ops = {
+ 	.read_time	= rv3029_read_time,
+ 	.set_time	= rv3029_set_time,
+ 	.ioctl		= rv3029_ioctl,
++	.read_alarm	= rv3029_read_alarm,
++	.set_alarm	= rv3029_set_alarm,
++	.alarm_irq_enable = rv3029_alarm_irq_enable,
  };
  
- static int opal_rtc_probe(struct platform_device *pdev)
-@@ -239,12 +242,10 @@ static int opal_rtc_probe(struct platform_device *pdev)
+ static int rv3029_probe(struct device *dev, struct regmap *regmap, int irq,
+@@ -739,12 +742,10 @@ static int rv3029_probe(struct device *dev, struct regmap *regmap, int irq,
+ 		if (rc) {
+ 			dev_warn(dev, "unable to request IRQ, alarms disabled\n");
+ 			rv3029->irq = 0;
+-		} else {
+-			rv3029_rtc_ops.read_alarm = rv3029_read_alarm;
+-			rv3029_rtc_ops.set_alarm = rv3029_set_alarm;
+-			rv3029_rtc_ops.alarm_irq_enable = rv3029_alarm_irq_enable;
+ 		}
+ 	}
++	if (!rv3029->irq)
++		clear_bit(RTC_FEATURE_ALARM, rv3029->rtc->features);
  
- 	if (pdev->dev.of_node &&
- 	    (of_property_read_bool(pdev->dev.of_node, "wakeup-source") ||
--	     of_property_read_bool(pdev->dev.of_node, "has-tpo")/* legacy */)) {
-+	     of_property_read_bool(pdev->dev.of_node, "has-tpo")/* legacy */))
- 		device_set_wakeup_capable(&pdev->dev, true);
--		opal_rtc_ops.read_alarm	= opal_get_tpo_time;
--		opal_rtc_ops.set_alarm = opal_set_tpo_time;
--		opal_rtc_ops.alarm_irq_enable = opal_tpo_alarm_irq_enable;
--	}
-+	else
-+		clear_bit(RTC_FEATURE_ALARM, rtc->features);
- 
- 	rtc->ops = &opal_rtc_ops;
- 	rtc->range_min = RTC_TIMESTAMP_BEGIN_0000;
+ 	rv3029->rtc->ops = &rv3029_rtc_ops;
+ 	rv3029->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
 -- 
 2.29.2
 
