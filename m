@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5957CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:34:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10057C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:36:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95B5922AAA
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:34:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95B5922AAA
+	by mail.kernel.org (Postfix) with ESMTPS id 7EDEB22AAB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Jan 2021 23:36:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EDEB22AAB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DDY8T3b2wzDqV1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:34:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DDYBT4nK5zDqRB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 10:36:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bootlin.com (client-ip=217.70.183.195;
  helo=relay3-d.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com;
@@ -30,20 +30,20 @@ Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net
  [217.70.183.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXnr2pwhzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DDXns0wZSzDqPv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 10:18:22 +1100 (AEDT)
 X-Originating-IP: 86.202.109.140
 Received: from localhost (lfbn-lyo-1-13-140.w86-202.abo.wanadoo.fr
  [86.202.109.140])
  (Authenticated sender: alexandre.belloni@bootlin.com)
- by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id 8745260006;
- Sun, 10 Jan 2021 23:18:17 +0000 (UTC)
+ by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id 91A7760005;
+ Sun, 10 Jan 2021 23:18:15 +0000 (UTC)
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
 To: linux-rtc@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>,
  Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: [PATCH 06/17] rtc: m48t59: remove m48t02_rtc_ops
-Date: Mon, 11 Jan 2021 00:17:41 +0100
-Message-Id: <20210110231752.1418816-7-alexandre.belloni@bootlin.com>
+Subject: [PATCH 05/17] rtc: mv: remove mv_rtc_alarm_ops
+Date: Mon, 11 Jan 2021 00:17:40 +0100
+Message-Id: <20210110231752.1418816-6-alexandre.belloni@bootlin.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
 References: <20210110231752.1418816-1-alexandre.belloni@bootlin.com>
@@ -66,76 +66,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Clear RTC_FEATURE_ALARM to signal that alarms are not available instead of
-having a supplementary struct rtc_class_ops without alarm callbacks.
+Move the alarm callbacks in mv_rtc_ops and clear RTC_FEATURE_ALARM to
+signal that alarms are not available instead of having a supplementary
+struct rtc_class_ops.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 ---
- drivers/rtc/rtc-m48t59.c | 22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+ drivers/rtc/rtc-mv.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/rtc/rtc-m48t59.c b/drivers/rtc/rtc-m48t59.c
-index 5f5898d3b055..1d2e99a70fce 100644
---- a/drivers/rtc/rtc-m48t59.c
-+++ b/drivers/rtc/rtc-m48t59.c
-@@ -313,11 +313,6 @@ static const struct rtc_class_ops m48t59_rtc_ops = {
- 	.alarm_irq_enable = m48t59_rtc_alarm_irq_enable,
- };
- 
--static const struct rtc_class_ops m48t02_rtc_ops = {
--	.read_time	= m48t59_rtc_read_time,
--	.set_time	= m48t59_rtc_set_time,
+diff --git a/drivers/rtc/rtc-mv.c b/drivers/rtc/rtc-mv.c
+index f8e2ecea1d8d..6c526e2ec56d 100644
+--- a/drivers/rtc/rtc-mv.c
++++ b/drivers/rtc/rtc-mv.c
+@@ -200,11 +200,6 @@ static irqreturn_t mv_rtc_interrupt(int irq, void *data)
+ static const struct rtc_class_ops mv_rtc_ops = {
+ 	.read_time	= mv_rtc_read_time,
+ 	.set_time	= mv_rtc_set_time,
 -};
 -
- static int m48t59_nvram_read(void *priv, unsigned int offset, void *val,
- 			     size_t size)
- {
-@@ -366,7 +361,6 @@ static int m48t59_rtc_probe(struct platform_device *pdev)
- 	struct m48t59_private *m48t59 = NULL;
- 	struct resource *res;
- 	int ret = -ENOMEM;
--	const struct rtc_class_ops *ops;
- 	struct nvmem_config nvmem_cfg = {
- 		.name = "m48t59-",
- 		.word_size = 1,
-@@ -438,17 +432,21 @@ static int m48t59_rtc_probe(struct platform_device *pdev)
- 		if (ret)
- 			return ret;
+-static const struct rtc_class_ops mv_rtc_alarm_ops = {
+-	.read_time	= mv_rtc_read_time,
+-	.set_time	= mv_rtc_set_time,
+ 	.read_alarm	= mv_rtc_read_alarm,
+ 	.set_alarm	= mv_rtc_set_alarm,
+ 	.alarm_irq_enable = mv_rtc_alarm_irq_enable,
+@@ -268,13 +263,12 @@ static int __init mv_rtc_probe(struct platform_device *pdev)
+ 		}
  	}
-+
-+	m48t59->rtc = devm_rtc_allocate_device(&pdev->dev);
-+	if (IS_ERR(m48t59->rtc))
-+		return PTR_ERR(m48t59->rtc);
-+
- 	switch (pdata->type) {
- 	case M48T59RTC_TYPE_M48T59:
--		ops = &m48t59_rtc_ops;
- 		pdata->offset = 0x1ff0;
- 		break;
- 	case M48T59RTC_TYPE_M48T02:
--		ops = &m48t02_rtc_ops;
-+		clear_bit(RTC_FEATURE_ALARM, m48t59->rtc->features);
- 		pdata->offset = 0x7f0;
- 		break;
- 	case M48T59RTC_TYPE_M48T08:
--		ops = &m48t02_rtc_ops;
-+		clear_bit(RTC_FEATURE_ALARM, m48t59->rtc->features);
- 		pdata->offset = 0x1ff0;
- 		break;
- 	default:
-@@ -459,11 +457,7 @@ static int m48t59_rtc_probe(struct platform_device *pdev)
- 	spin_lock_init(&m48t59->lock);
- 	platform_set_drvdata(pdev, m48t59);
  
--	m48t59->rtc = devm_rtc_allocate_device(&pdev->dev);
--	if (IS_ERR(m48t59->rtc))
--		return PTR_ERR(m48t59->rtc);
--
--	m48t59->rtc->ops = ops;
-+	m48t59->rtc->ops = &m48t59_rtc_ops;
+-	if (pdata->irq >= 0) {
++	if (pdata->irq >= 0)
+ 		device_init_wakeup(&pdev->dev, 1);
+-		pdata->rtc->ops = &mv_rtc_alarm_ops;
+-	} else {
+-		pdata->rtc->ops = &mv_rtc_ops;
+-	}
++	else
++		clear_bit(RTC_FEATURE_ALARM, pdata->rtc->features);
  
- 	nvmem_cfg.size = pdata->offset;
- 	ret = devm_rtc_nvmem_register(m48t59->rtc, &nvmem_cfg);
++	pdata->rtc->ops = &mv_rtc_ops;
+ 	pdata->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
+ 	pdata->rtc->range_max = RTC_TIMESTAMP_END_2099;
+ 
 -- 
 2.29.2
 
