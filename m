@@ -2,25 +2,25 @@ Return-Path: <SRS0=L4S4=GO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C21FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 08:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE9BFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 08:33:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43C602226A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 08:31:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43C602226A
+	by mail.kernel.org (Postfix) with ESMTPS id 230802226A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 08:32:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 230802226A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=windriver.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DDn3m3CryzDqVK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 19:31:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DDn5j5RWtzDqYj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 19:32:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=windriver.com (client-ip=40.107.220.48;
  helo=nam11-co1-obe.outbound.protection.outlook.com;
@@ -30,21 +30,21 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=windriversystems.onmicrosoft.com
  header.i=@windriversystems.onmicrosoft.com header.a=rsa-sha256
- header.s=selector2-windriversystems-onmicrosoft-com header.b=dNpLR6Xj; 
+ header.s=selector2-windriversystems-onmicrosoft-com header.b=e+5M1fxT; 
  dkim-atps=neutral
 Received: from NAM11-CO1-obe.outbound.protection.outlook.com
  (mail-co1nam11on2048.outbound.protection.outlook.com [40.107.220.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DDn156V6XzDqTh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 19:28:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DDn1726mpzDqTh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 19:28:59 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=fFWWlyW23lTVdhIvsfOiUOcq1RwCCFpIfl0ntXNRBneR/PVf8vCljFQdH48F5JiIC010X70OpY6GZNKDValW+qzbkgudk25V3XTI0pffLMAtbNmG7ciyS6++61kST7A8B+5YfPCGEfeo4Y6GOdpV65SJEqlRvamiyuJYrDMPh+5FJdPqnVtPD8CBZTUD9qgycRnZWAxQhPZHACxFNTGaHSQsMe34dq0Q0acVtT5DiTZkD33QFGldm+GDG2t/yDLkr7bojlcKUdqA2ly1TqxnTD4QhtxCqPgaYnV0ZyYLXqBh/ZotVkBfq5xdHnEV52kyagpONvNwSNmnq00rBSbiDg==
+ b=bq1KftOJbkhw92VAVnc6HYyfvm5R/EqKFAYnwDSL5G2FYd0o6hTM7O2DzJ37/OsNQyjAT+icugSrOdg9f2JO2AoL/KPQGcLrTU4Nfr/TegE4uQ4LBhF/7fh/aTpFFVm2qNT01armd2aK2U9xv7p+YmqHDT+YnS906YB+imJn0jlze6FqWJz/1aGdcfuG3z3MkbqAvwPZOWcJnXjliy9HE0CDhSAiqH9QvYYyNz2B0XT5x2Qgas2zmYfXRmp6YfSVseFVg2M8gsKr+fD/TFTSThc56bI545UkDCvKl4YVc05T8SNWcvnFHPXXyI69nPfldFVUgGX7doPKFlq5ScwKUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=C4lKGdK+lHy6HBkhXMfESlpwT1Uc6c6Kg8+QyVjsMPE=;
- b=V+38VFjf2T6O6JXXr6FKvO+5YpoWqnmm2nGE29kLk2yW4Ibqndgjs0nfsyNlhI2kTSLsOvSdTmQAF9d8cGnfEjqDnWkRZeHo0KS2HCIXAj5EJFosJyYgzl26yhD6GPWxztWc68rV2Ww+lkJ/3EhjLU8SZ81/G7HUQ/RFSVXNPpCuiqiUQ3Wz9rgb4edW/WPGiXCgJfiX9J4zf16BHAQZS9muJqeU0a7/fgc7Mq/qYDMZdl9a9+F4MyBtMKkRfBPRRxsTkt0mSpC2kG9/yIm+iug+OCcQXYUhyC2aikzSm2kCrWw9/W+01G1SvC/zW1pRs2MlqUOSNEy5Wf+lbfUJWQ==
+ bh=+RfPmekk1bGWvDKiEJAa33Se06KjXQI71ovevjxo9Yw=;
+ b=Ge5KPINyX0ePYQGnQWz25lfDkX+zEFXEf1fhU7z9R6e5kFxs+c3jXiSzHrYRdFeo/5VNuRK6m/d8fw7W0MB1oOAniU8s1XcK/IOZIZla9OZJW7IVxI36sUn5wPFT5gnb+nmC0/O/5QAvJMVf2v0XuAM0/iDjP/UBvO0cO73TMmfV1Jay1mVfQu9sggVPWtCvbYE1mcadp93rNltD12w5nYavrLn9vUBjcsz3UvFORLW7tr81+bJEXVFW3ITAB6S1RZ4zt4nliaH7EEP4krKKj6vS8JTXf0S+kWRrA1jp+TXbWpUoiB3Gop1hKJDGcWR6i3E5s1wm/HB3cT2ej+oRsg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=windriver.com; dmarc=pass action=none
  header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
@@ -52,8 +52,8 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=windriversystems.onmicrosoft.com;
  s=selector2-windriversystems-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=C4lKGdK+lHy6HBkhXMfESlpwT1Uc6c6Kg8+QyVjsMPE=;
- b=dNpLR6XjvumQLyI2VPT0RaNmscnxpf1CsWyIcR/jodUI3v4DsuP1O4k4Nzcf1fngCmoXJfS8xADiJr5doo2woc8hpPuA217Jsv+ODjDMLdAIdLlwvkQMWEk/muMdQKzrl86xgoty6VV/oTWtZYKpye6nFVWVC116idQBWR65bhE=
+ bh=+RfPmekk1bGWvDKiEJAa33Se06KjXQI71ovevjxo9Yw=;
+ b=e+5M1fxTnKy9xiCJzWG2usDdGKFlQk+O13cbEdaArk9ZxRoi1g6EWVjZCju7kdpK1NCdgnP1MRuWPSWlPPrY+IeYo4x31yRZPFx4mKGQIDU0m8T8r0MmRVTIvSps9ZjYchV2tk6HJWCf9cv1EBrGrOt+Ozwef+OladMAiorv79M=
 Authentication-Results: lists.ozlabs.org; dkim=none (message not signed)
  header.d=none;lists.ozlabs.org; dmarc=none action=none
  header.from=windriver.com;
@@ -61,17 +61,19 @@ Received: from DM6PR11MB4545.namprd11.prod.outlook.com (2603:10b6:5:2ae::14)
  by DM6PR11MB4740.namprd11.prod.outlook.com (2603:10b6:5:2ad::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3742.6; Mon, 11 Jan
- 2021 08:28:49 +0000
+ 2021 08:28:51 +0000
 Received: from DM6PR11MB4545.namprd11.prod.outlook.com
  ([fe80::87:8baa:7135:501d]) by DM6PR11MB4545.namprd11.prod.outlook.com
  ([fe80::87:8baa:7135:501d%6]) with mapi id 15.20.3742.012; Mon, 11 Jan 2021
- 08:28:49 +0000
+ 08:28:51 +0000
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] Retire remaining WindRiver embedded SBC BSPs
-Date: Mon, 11 Jan 2021 03:28:20 -0500
-Message-Id: <20210111082823.99562-1-paul.gortmaker@windriver.com>
+Subject: [PATCH 3/3] MAINTAINERS: update for Paul Gortmaker
+Date: Mon, 11 Jan 2021 03:28:23 -0500
+Message-Id: <20210111082823.99562-4-paul.gortmaker@windriver.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210111082823.99562-1-paul.gortmaker@windriver.com>
+References: <20210111082823.99562-1-paul.gortmaker@windriver.com>
 Content-Type: text/plain
 X-Originating-IP: [128.224.252.2]
 X-ClientProxiedBy: YTXPR0101CA0036.CANPRD01.PROD.OUTLOOK.COM
@@ -82,47 +84,47 @@ X-MS-Exchange-MessageSentRepresentingType: 1
 Received: from yow-pgortmak-lx2.corp.ad.wrs.com (128.224.252.2) by
  YTXPR0101CA0036.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b00::49) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3742.6 via Frontend Transport; Mon, 11 Jan 2021 08:28:49 +0000
+ 15.20.3742.6 via Frontend Transport; Mon, 11 Jan 2021 08:28:51 +0000
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 694b73e1-dbb0-4bde-809b-08d8b60aebed
+X-MS-Office365-Filtering-Correlation-Id: 775ce56b-9271-457e-bf46-08d8b60aed09
 X-MS-TrafficTypeDiagnostic: DM6PR11MB4740:
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM6PR11MB474055CD31F0523524B672B983AB0@DM6PR11MB4740.namprd11.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:3968;
+X-Microsoft-Antispam-PRVS: <DM6PR11MB4740C356DB60F357F7D5E69983AB0@DM6PR11MB4740.namprd11.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:296;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 5cZRuCjtvdJzbNr32eAVvq9zzq7YFepPu81uop8qQyN23A2MT95dAv1xKo9VA+QoKh+nDs1m7EBYWFO9yFYPcmbswLoQs+/65UQEQ46cWg3Zi3uXPTfcsRPL/p/9SwRUnEQJITUWFp2PMYK/KRzcnnMNS3dCB2tk/fn6zCUH4HEoZS46RdPyonXHZ/yphARC/324h5u+ZYAWRS356RIvSgtIIfF9w5XVG4XpFHtRmPDv+m01Xq3hNup8ziGIkSx7xvQfSzzOxLrVxoWCPcZsfbKb7LLwB6ZcrL36qn2jpXKrxekpupyP2pSRlpq8tN5Kf9yXBqX4V287/yZth3sypRp3b7btxm2QdLJi/cDZwQnpg/jfKd5X3BQC0KQNGHJfzD29FcYWhbU3nkfLah0+Qw==
+X-Microsoft-Antispam-Message-Info: TWhMz/HMDyB4v9qRMXs2oyc/o6cSu8KlKqvZsle98BVc+9ss59kiLctrdr13fc3Xe3StSUBq2IwSxWgFnXcZEg6eMeBcNmTaiklZgP8nxUrQz/ih65hj42bFe4+gtLzagQTKC9aqTtYgSzrNRvp2Ar8xEIYxF+wzHv/TouF6GfZOHgBYQ8eMNxyRGbDHRLj0VzT2jcuBKmQ4qigJJd9k+GPQnmpmf3fo/fOZXvprBHtb63hTtjLTzeFxHsUHNhL5Q7AIx7A+QM0huMe71iYQl1Gu4hv47xfMzh1G7Xwol2W3FFc8AGnLDTtbTdWW5uXj9eIvEqA1DutW+rE9rlVaaY9HGGfFpOs90PtfkEP959ly8n3cFsSqn99hANGyTak53oEpG/n4Js76PBqTa2cQeA==
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DM6PR11MB4545.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(346002)(376002)(39840400004)(366004)(396003)(136003)(26005)(186003)(54906003)(2616005)(6506007)(16526019)(6916009)(44832011)(86362001)(956004)(478600001)(83380400001)(6512007)(36756003)(6486002)(66476007)(66556008)(1076003)(4326008)(5660300002)(8936002)(52116002)(66946007)(8676002)(2906002)(6666004)(316002);
+ SFS:(4636009)(346002)(376002)(39840400004)(366004)(396003)(136003)(26005)(186003)(2616005)(6506007)(16526019)(6916009)(44832011)(86362001)(956004)(478600001)(83380400001)(6512007)(36756003)(6486002)(66476007)(66556008)(1076003)(4326008)(5660300002)(107886003)(8936002)(52116002)(66946007)(8676002)(2906002)(6666004)(316002)(4744005);
  DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?lgcKA28ha77ihQgwUI/qxMgDcBvocnRmZVbqXSjYOnZecIJ70vjge/3cDZ6h?=
- =?us-ascii?Q?gLqLz5T7/pyfWxzLcoBsN1CGrou4+y7gsgFBIx+KVL4O2XFF/lpqm0TO4/xz?=
- =?us-ascii?Q?Q+2CBrtuBDlfnUBexlAyQnuCkVQTobIQbWU/hz0VfKoMJs85xRHJuXcVvbEf?=
- =?us-ascii?Q?IlkA+jJtbDH4HOxoqRZmDbsV7ImLDQ6YzStl2zVJJAAev0ZgEx29iAkgDs4P?=
- =?us-ascii?Q?cSZWdA1A00l52Ahwvt8MU3xqq6MlYwG0+MU4nNKrhOZeETHsC+fDBpnKk9OL?=
- =?us-ascii?Q?YPO/5jB5We6zSnGcExf8GX8VxjGtVzFxs2kinkKUdbnDB6gFfFi7CjLa9LCA?=
- =?us-ascii?Q?Ok3T/+yuNaVSMZEEGy5viKb/ZEN779dPRHGwmMNU32DErBiLShgROuIjZ53+?=
- =?us-ascii?Q?L7B953d+G0lhibb1ww9G36GORGwXrAPLJxPHEnCvX2FwWUv5SXrSu8/CbyfF?=
- =?us-ascii?Q?i1ie8k1M/+yyL0es1V1qG5awAoSsyVVuHvNeR8GpD2VtZ3ZxgyIcV3rxj64o?=
- =?us-ascii?Q?rZHOUmdGPduVD2LfNhJsnLZwknQ6q7+QqlEhy5bA46CSiNV1S/Hz1aIsJAmz?=
- =?us-ascii?Q?Jn8vat4RcbhZRMOyaiWfWanVsA9l3SVZ977bYN7WmkCE62AVVTews3+EprdC?=
- =?us-ascii?Q?oLZXZ3RIhFhizJIQz2PHKfKoM8gbmto0mJRgAD8ilvxMkTHRalWjELw6rkJj?=
- =?us-ascii?Q?D4tkDe5O7ToMLP+LCCGSySf+ijohycOxJJEmzMxvd5R9DHcmOJ20d1Unr+0u?=
- =?us-ascii?Q?dLrhMXMc9ZH4hI+MF3zoRY5Ve3LDYLKBmFT6O3zRXC6VM8Q3YBpD1PBASVmI?=
- =?us-ascii?Q?lEJK3w5C34BgcCWbBzewsiXVPk/+plLL9Co/stnt2t6h1yj8By/J0K4VvIGx?=
- =?us-ascii?Q?KQYToAKfU4BDPAsodiHwrVhvZBvgviA8C5XvZ3rhCQyOjstDHuB0QYrq516N?=
- =?us-ascii?Q?OAsNUHTzQRQ31DXUArJw1c+xDZZfy/X5OEOLiHpkDWZ6WymZlXJaB4ijwpRy?=
- =?us-ascii?Q?opyL?=
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?yiegjbKdE1PHeTLt4E12SyLSP4UQjPf+6Ew2UYHflyMDAn3JCajHKn1cMC1N?=
+ =?us-ascii?Q?bP9T6QfAD09I+eQ6dE0xpODzz9Zr022wUd453WDuFR5Kdbp0hTtNx0pZEP1w?=
+ =?us-ascii?Q?EGPvxvUUQ5DQZYw8a6C97Sn6IzvGaz3iVt9KwRTr3L7FgjB9ChGuj6GnUN4v?=
+ =?us-ascii?Q?i6TFjUMaVUyTR9dKfj5Kdz+Mi/PY8hpdtn26s8KNJ9605BUU79aDW4sg0knw?=
+ =?us-ascii?Q?wnYwFYlTvhPITtZPEHthij/YUIBrkpP9/bD/2gOPw45mM2FbsLKql0Btpad5?=
+ =?us-ascii?Q?WT5eNR6FVOfk7iG1n6EH3quqWfcXrgcBbQeUdG1Tl+4LWu/A41gc2hbo8kqj?=
+ =?us-ascii?Q?s5acihrgMBsFSgxTi1xbbBV1KzZh9srRXECUNzdFruuuEtj7jrLyQeeRjei4?=
+ =?us-ascii?Q?0AD39y/ybvJcSfkJnDJyWonYR1csqRlfxtDihVtk89TZa+Vn5FlnMw60Wlds?=
+ =?us-ascii?Q?3NwzRukTeWZwGinQd4D/TDpr33Dco06N9nawi2hMUGTpZ+pP8fysqErNBkg7?=
+ =?us-ascii?Q?4/kLWkoIr5rShaKiTq6Kts7w07kzF8xLlQPVzdTz8HoXhg/NaqBjQoi73Xk3?=
+ =?us-ascii?Q?PnWA5hxPWvWIYG892H9u6b0UfUdCQXwDU1hY3CmmfLo0Ojc/xA17wVDPfomT?=
+ =?us-ascii?Q?dAQeTBTL6yPWwqOPm8t4LOhczfblGV8G4AEDFnLS94L1BWuzDEI1YcJ9pV4X?=
+ =?us-ascii?Q?xM5C4y7V0/295N5BpmpO4H2TRU2lVgMqvMrt4ApZvLyQPc0C5qLM6a52sCXa?=
+ =?us-ascii?Q?ELTklfAY+RlGm0yjLcv0mSOTAmfdVGIzBEtSJnV/yZHPig08FyciTzBBUC1F?=
+ =?us-ascii?Q?tQXr/DNNvHtVG+U6wWV3DUtGQIYMtfFdl1/ElnLc6wCPK7kUxZly1TGNRRXy?=
+ =?us-ascii?Q?qux9JL8qgL+/xQoTn1NVm0KqITydG7SrY2hvXUDM52oS/5ZfqZq5WIO3uifm?=
+ =?us-ascii?Q?nRdBeohkgvNmeutPbrLr96cZMcdoW4ONoF/G0CT3Rga69jrIANSyf7S/r2N6?=
+ =?us-ascii?Q?nSFY?=
 X-OriginatorOrg: windriver.com
 X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB4545.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Jan 2021 08:28:49.5003 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Jan 2021 08:28:51.4437 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
-X-MS-Exchange-CrossTenant-Network-Message-Id: 694b73e1-dbb0-4bde-809b-08d8b60aebed
+X-MS-Exchange-CrossTenant-Network-Message-Id: 775ce56b-9271-457e-bf46-08d8b60aed09
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: DfUJslox3CJdlbjw/Mpph4MT/iKbZ5jwnkQB2XuNB+nmJzWDRUcrT6PtB9Drhi3LWrWC7qZMZYGed7IjgUbsC9IYWWCHnbFVCvhfP7SM630=
+X-MS-Exchange-CrossTenant-UserPrincipalName: DLTdFhynG2i+nEyiSpyEKDoMPpxVlkmRTai/MpzkD2bBu6r+76quNCMBkL8pc9FYn/qnTjj+DtuAD7Jq/TJGyXwChy51lPhDJTycJ0VzI0k=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR11MB4740
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -135,94 +137,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In v2.6.27 (2008, 917f0af9e5a9) the sbc8260 support was implicitly
-retired by not being carried forward through the ppc --> powerpc
-device tree transition.
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ MAINTAINERS | 1 -
+ 1 file changed, 1 deletion(-)
 
-Then, in v3.6 (2012, b048b4e17cbb) we retired the support for the
-sbc8560 boards.
-
-Next, in v4.18 (2017, 3bc6cf5a86e5) we retired the support for the
-2006 vintage sbc834x boards.
-
-The sbc8548 and sbc8641d boards were maybe 1-2 years newer than the
-sbc834x boards, but it is also 3+ years later, so it makes sense to
-now retire them as well - which is what is done here.
-
-These two remaining WR boards were based on the Freescale MPC8548-CDS
-and the MPC8641D-HPCN reference board implementations.  Having had the
-chance to use these and many other Fsl ref boards, I know this:  The
-Freescale reference boards were typically produced in limited quantity
-and primarily available to BSP developers and hardware designers, and
-not likely to have found a 2nd life with hobbyists and/or collectors.
-
-It was good to have that BSP code subjected to mainline review and
-hence also widely available back in the day. But given the above, we
-should probably also be giving serious consideration to retiring
-additional similar age/type reference board platforms as well.
-
-I've always felt it is important for us to be proactive in retiring
-old code, since it has a genuine non-zero carrying cost, as described
-in the 930d52c012b8 merge log.  But for the here and now, we just
-clean up the remaining BSP code that I had added for SBC platforms.
-
-Paul.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cc1e6a5ee6e6..c5f5cdb24674 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6529,7 +6529,6 @@ F:	Documentation/admin-guide/media/em28xx*
+ F:	drivers/media/usb/em28xx/
+ 
+ EMBEDDED LINUX
+-M:	Paul Gortmaker <paul.gortmaker@windriver.com>
+ M:	Matt Mackall <mpm@selenic.com>
+ M:	David Woodhouse <dwmw2@infradead.org>
+ L:	linux-embedded@vger.kernel.org
 -- 
+2.17.1
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Scott Wood <oss@buserror.net>
-
-The following changes since commit 7c53f6b671f4aba70ff15e1b05148b10d58c2837:
-
-  Linux 5.11-rc3 (2021-01-10 14:34:50 -0800)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux.git wr_sbc-delete
-
-for you to fetch changes up to 1dfb28199572e3f6517cada41f6a150551749da1:
-
-  MAINTAINERS: update for Paul Gortmaker (2021-01-11 00:06:01 -0500)
-
-----------------------------------------------------------------
-Paul Gortmaker (3):
-      powerpc: retire sbc8548 board support
-      powerpc: retire sbc8641d board support
-      MAINTAINERS: update for Paul Gortmaker
-
- MAINTAINERS                                 |   1 -
- arch/powerpc/boot/Makefile                  |   1 -
- arch/powerpc/boot/dts/fsl/sbc8641d.dts      | 176 -----------------
- arch/powerpc/boot/dts/sbc8548-altflash.dts  | 111 -----------
- arch/powerpc/boot/dts/sbc8548-post.dtsi     | 289 ----------------------------
- arch/powerpc/boot/dts/sbc8548-pre.dtsi      |  48 -----
- arch/powerpc/boot/dts/sbc8548.dts           | 106 ----------
- arch/powerpc/boot/wrapper                   |   2 +-
- arch/powerpc/configs/85xx/sbc8548_defconfig |  50 -----
- arch/powerpc/configs/mpc85xx_base.config    |   1 -
- arch/powerpc/configs/mpc86xx_base.config    |   1 -
- arch/powerpc/configs/ppc6xx_defconfig       |   1 -
- arch/powerpc/platforms/85xx/Kconfig         |   6 -
- arch/powerpc/platforms/85xx/Makefile        |   1 -
- arch/powerpc/platforms/85xx/sbc8548.c       | 134 -------------
- arch/powerpc/platforms/86xx/Kconfig         |   8 +-
- arch/powerpc/platforms/86xx/Makefile        |   1 -
- arch/powerpc/platforms/86xx/sbc8641d.c      |  87 ---------
- 18 files changed, 2 insertions(+), 1022 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/fsl/sbc8641d.dts
- delete mode 100644 arch/powerpc/boot/dts/sbc8548-altflash.dts
- delete mode 100644 arch/powerpc/boot/dts/sbc8548-post.dtsi
- delete mode 100644 arch/powerpc/boot/dts/sbc8548-pre.dtsi
- delete mode 100644 arch/powerpc/boot/dts/sbc8548.dts
- delete mode 100644 arch/powerpc/configs/85xx/sbc8548_defconfig
- delete mode 100644 arch/powerpc/platforms/85xx/sbc8548.c
- delete mode 100644 arch/powerpc/platforms/86xx/sbc8641d.c
