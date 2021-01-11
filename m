@@ -2,24 +2,24 @@ Return-Path: <SRS0=L4S4=GO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 771DAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 184B5C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:28:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C21C922D05
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:26:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C21C922D05
+	by mail.kernel.org (Postfix) with ESMTPS id 8E2FA22D05
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:28:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E2FA22D05
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DF8x01DTnzDqvv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:26:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DF8yp2zmzzDqkd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:28:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -28,59 +28,62 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=kMwbwFep; dkim-atps=neutral
+ header.s=pp1 header.b=iJTiM3e3; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8ch3Kw6zDqbf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 10:12:35 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8cj599ZzDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 10:12:37 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10BN3ZpQ114052; Mon, 11 Jan 2021 18:12:30 -0500
+ 10BN2UOp175352; Mon, 11 Jan 2021 18:12:35 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=vXRmV53+iMI/kUv8GPmGXRolEiOWwD9WIfb7eRbSsMc=;
- b=kMwbwFepZK83/ZgmxhyqCYGsPRkzX8s0j4EAtBHzU2XhVmc6hNwQS82qmxHd6X/zWsax
- LzR/Ze32oJ874CbxqldEdxgi3U8X70qr/7KVDdw1eO33cpoxNNLOu/Bbm0v4dVNSd/YP
- ZyFzz9UB5RMXith8Mn+ufA7OWQACro+92Ezh5j5uDnOiK0kicMwVcu1lfpeSc3hoY0o8
- MpGqSMVXj0w3ZR2axrqSXN6KQC3c/BjJB1gLW++8Y7yYt341PFwVr4EhCacXyGYLGKwJ
- Rr1rP8TsQuxZCDOUvkkVPOvplmM3cqDSM/xeSK5Zysz0VONa5gNLlvaPfIqzhHl+V4DD UQ== 
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 360y9ksbtq-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=y2i4GWq5LEr5rklEQ6slWMtaroYCAfGe74ncTmgMpHs=;
+ b=iJTiM3e3q/m54PXJUvSrsCAoFFyOx/upTQSbhRAMO0F84qvH6vE37kkUkwfIK8k4njou
+ vvYSz3nLA7xcBJVJ9V8AqHQ6LKS2WejQEt74cdGy3FPoysiemoeWGPOqWmPAE/CMT3kS
+ Gnuz7WeesXWS8uU3CaFPHXbI/cSjruKaMTy37aiWG87OyHd8RKTVh7w5sgHoqmtnVX6V
+ kkOjFWGkUAxhPPlunc6pyfFIxVfl6Txe8fSXB5I5eE7Yn4Nql5p05by6UOY/C+3XXGJF
+ Jhn8l88nUdFGTJKBzVzDDpfx7QxeNYGA0tfaO4/IIKDoYUURS6TWv/KVqbb1OURHOUWd Kw== 
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 360yvkrf42-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 18:12:30 -0500
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN77ee004792;
- Mon, 11 Jan 2021 23:12:29 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma03wdc.us.ibm.com with ESMTP id 35y448syq1-1
+ Mon, 11 Jan 2021 18:12:35 -0500
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN89Rf011995;
+ Mon, 11 Jan 2021 23:12:34 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma05wdc.us.ibm.com with ESMTP id 35y448sxff-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 23:12:29 +0000
+ Mon, 11 Jan 2021 23:12:34 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10BNCRQ124707338
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10BNCWs28323354
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Jan 2021 23:12:27 GMT
+ Mon, 11 Jan 2021 23:12:32 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C89F878064;
- Mon, 11 Jan 2021 23:12:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B28357805C;
+ Mon, 11 Jan 2021 23:12:32 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65CFC78066;
- Mon, 11 Jan 2021 23:12:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 479D078064;
+ Mon, 11 Jan 2021 23:12:32 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Jan 2021 23:12:27 +0000 (GMT)
+ Mon, 11 Jan 2021 23:12:32 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v4 00/21] ibmvfc: initial MQ development
-Date: Mon, 11 Jan 2021 17:12:04 -0600
-Message-Id: <20210111231225.105347-1-tyreld@linux.ibm.com>
+Subject: [PATCH v4 10/21] ibmvfc: define Sub-CRQ interrupt handler routine
+Date: Mon, 11 Jan 2021 17:12:14 -0600
+Message-Id: <20210111231225.105347-11-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210111231225.105347-1-tyreld@linux.ibm.com>
+References: <20210111231225.105347-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -88,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-11_32:2021-01-11,
  2021-01-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0
- adultscore=0 priorityscore=1501 impostorscore=0 lowpriorityscore=0
- malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0 mlxlogscore=999
+ adultscore=0 impostorscore=0
+ malwarescore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=999
+ lowpriorityscore=0 phishscore=0 priorityscore=1501 suspectscore=0
  clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101110130
+ engine=8.12.0-2009150000 definitions=main-2101110126
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,66 +114,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Recent updates in pHyp Firmware and VIOS releases provide new infrastructure
-towards enabling Subordinate Command Response Queues (Sub-CRQs) such that each
-Sub-CRQ is a channel backed by an actual hardware queue in the FC stack on the
-partner VIOS. Sub-CRQs are registered with the firmware via hypercalls and then
-negotiated with the VIOS via new Management Datagrams (MADs) for channel setup.
+Simple handler that calls Sub-CRQ drain routine directly.
 
-This initial implementation adds the necessary Sub-CRQ framework and implements
-the new MADs for negotiating and assigning a set of Sub-CRQs to associated VIOS
-HW backed channels.
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-This latest series is completely rebased and reimplemented on top of the recent
-("ibmvfc: MQ prepartory locking work") series. [1]
-
-[1] https://lore.kernel.org/linux-scsi/20210106201835.1053593-1-tyreld@linux.ibm.com/
-
-changes in v4:
-* Series rebased and reworked on top of previous ibmvfc locking series
-* Dropped all previous Reviewed-by tags
-
-changes in v3:
-* Patch 4: changed firmware support logging to dev_warn_once
-* Patch 6: adjusted locking
-* Patch 15: dropped logging verbosity, moved cancel event tracking into subqueue
-* Patch 17: removed write permission for migration module parameters
-	    drive hard reset after update to num of scsi channels
-
-changes in v2:
-* Patch 4: NULL'd scsi_scrq reference after deallocation
-* Patch 6: Added switch case to handle XPORT event
-* Patch 9: fixed ibmvfc_event leak and double free
-* added support for cancel command with MQ
-* added parameter toggles for MQ settings
-
-Tyrel Datwyler (21):
-  ibmvfc: add vhost fields and defaults for MQ enablement
-  ibmvfc: move event pool init/free routines
-  ibmvfc: init/free event pool during queue allocation/free
-  ibmvfc: add size parameter to ibmvfc_init_event_pool
-  ibmvfc: define hcall wrapper for registering a Sub-CRQ
-  ibmvfc: add Subordinate CRQ definitions
-  ibmvfc: add alloc/dealloc routines for SCSI Sub-CRQ Channels
-  ibmvfc: add Sub-CRQ IRQ enable/disable routine
-  ibmvfc: add handlers to drain and complete Sub-CRQ responses
-  ibmvfc: define Sub-CRQ interrupt handler routine
-  ibmvfc: map/request irq and register Sub-CRQ interrupt handler
-  ibmvfc: implement channel enquiry and setup commands
-  ibmvfc: advertise client support for using hardware channels
-  ibmvfc: set and track hw queue in ibmvfc_event struct
-  ibmvfc: send commands down HW Sub-CRQ when channelized
-  ibmvfc: register Sub-CRQ handles with VIOS during channel setup
-  ibmvfc: add cancel mad initialization helper
-  ibmvfc: send Cancel MAD down each hw scsi channel
-  ibmvfc: purge scsi channels after transport loss/reset
-  ibmvfc: enable MQ and set reasonable defaults
-  ibmvfc: provide modules parameters for MQ settings
-
- drivers/scsi/ibmvscsi/ibmvfc.c | 914 ++++++++++++++++++++++++++++-----
- drivers/scsi/ibmvscsi/ibmvfc.h |  38 ++
- 2 files changed, 824 insertions(+), 128 deletions(-)
-
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index f3cd092478ee..51bcafad9490 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -3571,6 +3571,16 @@ static void ibmvfc_drain_sub_crq(struct ibmvfc_queue *scrq)
+ 	}
+ }
+ 
++static irqreturn_t ibmvfc_interrupt_scsi(int irq, void *scrq_instance)
++{
++	struct ibmvfc_queue *scrq = (struct ibmvfc_queue *)scrq_instance;
++
++	ibmvfc_toggle_scrq_irq(scrq, 0);
++	ibmvfc_drain_sub_crq(scrq);
++
++	return IRQ_HANDLED;
++}
++
+ /**
+  * ibmvfc_init_tgt - Set the next init job step for the target
+  * @tgt:		ibmvfc target struct
 -- 
 2.27.0
 
