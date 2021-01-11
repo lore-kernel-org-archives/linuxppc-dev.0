@@ -7,80 +7,81 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB662C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:23:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CFF1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:25:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 426A222D3E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:23:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 426A222D3E
+	by mail.kernel.org (Postfix) with ESMTPS id B915722CF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:24:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B915722CF6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DF8s65cxzzDqlK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:23:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DF8tx747mzDql5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:24:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=r3PmpfOu; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=dJC8UE+Q; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8ch3pKtzDqbr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8ch1zPRzDqYn
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 10:12:35 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10BNBrbs017938; Mon, 11 Jan 2021 18:12:31 -0500
+ 10BN9Fe8028249; Mon, 11 Jan 2021 18:12:33 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=tW30Dz7n8q+6qhgZvSJ2mdmZP94XSZx4NCukQuMrLos=;
- b=r3PmpfOuffHCHW/Mya3jDFb5U8ZFAMwJJCyaCIJrOVxbJwxc2K7lF29qxHZ3iyQT3AYm
- FQl3qahFR4K/wA54X0LDGKPQL0n+ZaIrIDm+85IIC3E2/hHnKrkZmwbP5BeB+juYaghR
- wFk44a9tF/zZiEdqFFHQsxAjCEYeYGV0sKjsUNqzmwDRK0PA+zDiAvprtv631iJyIPKy
- mompwZeYbWflFX9hTGq+i3z1PMSWvrbxdj0kt/ytoQVvFuNbgJvQ34SaZKKREzqsOaHf
- rk1Bnrw6JswYrAghRFbGKwpbZxV0ECfHOpam+kvnhQdN+SF4dbqE+KiZqf5h82N3HZp2 Ew== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36104wg083-1
+ bh=BcDVb3bASKP8n3XTdtz5NuaFmqzBKGe0LTF+tKXgA6s=;
+ b=dJC8UE+Qn8ezpMR9v4a1FBDNruf36aK7UkDppWX7QLY2DjmvD5uFxMmTtRkfhka6JrGx
+ MLt5aP134olB584DSObpeyisXAsFWg39F5zLcuqYHwpMv8WGJBNDS6ZTUD50tD1dzHXz
+ X2ZJlAQAfOHodhdmXcJBsVXW33wGAVEAKDhH3zcfM6k8Ms2TxxxdGP+whThEDQ9K7DwQ
+ uBoKnWMaIelS76l4GtxinOBlCe2jXlExZy+HgBRqABpfi+5WF5m6FwUdyyee6lT6I+dZ
+ yBkt7ITuUlUKKgC3YgZjjrDHlIkcx5PaBbXH7pfF0G9ScXXhG/8EQ/XyOrWKKWLRtRtF +Q== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 360yc7ry3c-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 18:12:31 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN8Who022027;
- Mon, 11 Jan 2021 23:12:30 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04dal.us.ibm.com with ESMTP id 35y448xfh4-1
+ Mon, 11 Jan 2021 18:12:32 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN8CXs008286;
+ Mon, 11 Jan 2021 23:12:32 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03dal.us.ibm.com with ESMTP id 35y448xcp0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 23:12:30 +0000
+ Mon, 11 Jan 2021 23:12:31 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10BNCSUM28180986
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10BNCUjP27656678
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Jan 2021 23:12:28 GMT
+ Mon, 11 Jan 2021 23:12:30 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BDE4578064;
- Mon, 11 Jan 2021 23:12:28 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3E7BA78066;
+ Mon, 11 Jan 2021 23:12:30 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C56678063;
- Mon, 11 Jan 2021 23:12:28 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C7B6B7805E;
+ Mon, 11 Jan 2021 23:12:29 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Jan 2021 23:12:28 +0000 (GMT)
+ Mon, 11 Jan 2021 23:12:29 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v4 02/21] ibmvfc: move event pool init/free routines
-Date: Mon, 11 Jan 2021 17:12:06 -0600
-Message-Id: <20210111231225.105347-3-tyreld@linux.ibm.com>
+Subject: [PATCH v4 05/21] ibmvfc: define hcall wrapper for registering a
+ Sub-CRQ
+Date: Mon, 11 Jan 2021 17:12:09 -0600
+Message-Id: <20210111231225.105347-6-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210111231225.105347-1-tyreld@linux.ibm.com>
 References: <20210111231225.105347-1-tyreld@linux.ibm.com>
@@ -88,14 +89,14 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-11_32:2021-01-11,
+ definitions=2021-01-11_34:2021-01-11,
  2021-01-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- lowpriorityscore=0 mlxscore=0 impostorscore=0 adultscore=0 phishscore=0
- bulkscore=0 suspectscore=0 mlxlogscore=947 clxscore=1015 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101110126
+ malwarescore=0 adultscore=0
+ spamscore=0 mlxlogscore=999 mlxscore=0 lowpriorityscore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 impostorscore=0 phishscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101110130
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,188 +115,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The next patch in this series reworks the event pool allocation calls to
-happen within the individual queue allocation routines instead of as
-independent calls.
-
-Move the init/free routines earlier in ibmvfc.c to prevent undefined
-reference errors when calling these functions from the queue allocation
-code. No functional change.
+Sub-CRQs are registred with firmware via a hypercall. Abstract that
+interface into a simpler helper function.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 151 +++++++++++++++++----------------
- 1 file changed, 76 insertions(+), 75 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 9200fe49c57e..cd9273a5fadb 100644
+index 524e81164d70..612c7f3d7bd3 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -716,6 +716,82 @@ static int ibmvfc_send_crq_init_complete(struct ibmvfc_host *vhost)
- 	return ibmvfc_send_crq(vhost, 0xC002000000000000LL, 0);
- }
+@@ -138,6 +138,20 @@ static void ibmvfc_tgt_move_login(struct ibmvfc_target *);
  
-+/**
-+ * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
-+ * @vhost:	ibmvfc host who owns the event pool
-+ *
-+ * Returns zero on success.
-+ **/
-+static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
-+				  struct ibmvfc_queue *queue)
+ static const char *unknown_error = "unknown error";
+ 
++static long h_reg_sub_crq(unsigned long unit_address, unsigned long ioba,
++			  unsigned long length, unsigned long *cookie,
++			  unsigned long *irq)
 +{
-+	int i;
-+	struct ibmvfc_event_pool *pool = &queue->evt_pool;
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
 +
-+	ENTER;
-+	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
-+	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
-+	if (!pool->events)
-+		return -ENOMEM;
++	rc = plpar_hcall(H_REG_SUB_CRQ, retbuf, unit_address, ioba, length);
++	*cookie = retbuf[0];
++	*irq = retbuf[1];
 +
-+	pool->iu_storage = dma_alloc_coherent(vhost->dev,
-+					      pool->size * sizeof(*pool->iu_storage),
-+					      &pool->iu_token, 0);
-+
-+	if (!pool->iu_storage) {
-+		kfree(pool->events);
-+		return -ENOMEM;
-+	}
-+
-+	INIT_LIST_HEAD(&queue->sent);
-+	INIT_LIST_HEAD(&queue->free);
-+	spin_lock_init(&queue->l_lock);
-+
-+	for (i = 0; i < pool->size; ++i) {
-+		struct ibmvfc_event *evt = &pool->events[i];
-+
-+		atomic_set(&evt->free, 1);
-+		evt->crq.valid = 0x80;
-+		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
-+		evt->xfer_iu = pool->iu_storage + i;
-+		evt->vhost = vhost;
-+		evt->queue = queue;
-+		evt->ext_list = NULL;
-+		list_add_tail(&evt->queue_list, &queue->free);
-+	}
-+
-+	LEAVE;
-+	return 0;
++	return rc;
 +}
 +
-+/**
-+ * ibmvfc_free_event_pool - Frees memory of the event pool of a host
-+ * @vhost:	ibmvfc host who owns the event pool
-+ *
-+ **/
-+static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
-+				   struct ibmvfc_queue *queue)
-+{
-+	int i;
-+	struct ibmvfc_event_pool *pool = &queue->evt_pool;
-+
-+	ENTER;
-+	for (i = 0; i < pool->size; ++i) {
-+		list_del(&pool->events[i].queue_list);
-+		BUG_ON(atomic_read(&pool->events[i].free) != 1);
-+		if (pool->events[i].ext_list)
-+			dma_pool_free(vhost->sg_pool,
-+				      pool->events[i].ext_list,
-+				      pool->events[i].ext_list_token);
-+	}
-+
-+	kfree(pool->events);
-+	dma_free_coherent(vhost->dev,
-+			  pool->size * sizeof(*pool->iu_storage),
-+			  pool->iu_storage, pool->iu_token);
-+	LEAVE;
-+}
-+
- /**
-  * ibmvfc_free_queue - Deallocate queue
-  * @vhost:	ibmvfc host struct
-@@ -1312,81 +1388,6 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
- 	strncpy(login_info->drc_name, location, IBMVFC_MAX_NAME);
- }
- 
--/**
-- * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
-- * @vhost:	ibmvfc host who owns the event pool
-- *
-- * Returns zero on success.
-- **/
--static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
--				  struct ibmvfc_queue *queue)
--{
--	int i;
--	struct ibmvfc_event_pool *pool = &queue->evt_pool;
--
--	ENTER;
--	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
--	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
--	if (!pool->events)
--		return -ENOMEM;
--
--	pool->iu_storage = dma_alloc_coherent(vhost->dev,
--					      pool->size * sizeof(*pool->iu_storage),
--					      &pool->iu_token, 0);
--
--	if (!pool->iu_storage) {
--		kfree(pool->events);
--		return -ENOMEM;
--	}
--
--	INIT_LIST_HEAD(&queue->sent);
--	INIT_LIST_HEAD(&queue->free);
--	spin_lock_init(&queue->l_lock);
--
--	for (i = 0; i < pool->size; ++i) {
--		struct ibmvfc_event *evt = &pool->events[i];
--		atomic_set(&evt->free, 1);
--		evt->crq.valid = 0x80;
--		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
--		evt->xfer_iu = pool->iu_storage + i;
--		evt->vhost = vhost;
--		evt->queue = queue;
--		evt->ext_list = NULL;
--		list_add_tail(&evt->queue_list, &queue->free);
--	}
--
--	LEAVE;
--	return 0;
--}
--
--/**
-- * ibmvfc_free_event_pool - Frees memory of the event pool of a host
-- * @vhost:	ibmvfc host who owns the event pool
-- *
-- **/
--static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
--				   struct ibmvfc_queue *queue)
--{
--	int i;
--	struct ibmvfc_event_pool *pool = &queue->evt_pool;
--
--	ENTER;
--	for (i = 0; i < pool->size; ++i) {
--		list_del(&pool->events[i].queue_list);
--		BUG_ON(atomic_read(&pool->events[i].free) != 1);
--		if (pool->events[i].ext_list)
--			dma_pool_free(vhost->sg_pool,
--				      pool->events[i].ext_list,
--				      pool->events[i].ext_list_token);
--	}
--
--	kfree(pool->events);
--	dma_free_coherent(vhost->dev,
--			  pool->size * sizeof(*pool->iu_storage),
--			  pool->iu_storage, pool->iu_token);
--	LEAVE;
--}
--
- /**
-  * ibmvfc_get_event - Gets the next free event in pool
-  * @vhost:	ibmvfc host struct
+ static int ibmvfc_check_caps(struct ibmvfc_host *vhost, unsigned long cap_flags)
+ {
+ 	u64 host_caps = be64_to_cpu(vhost->login_buf->resp.capabilities);
 -- 
 2.27.0
 
