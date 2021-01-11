@@ -7,81 +7,80 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44893C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC17C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:41:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A99C322BED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:39:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A99C322BED
+	by mail.kernel.org (Postfix) with ESMTPS id EDDED22D00
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:41:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDDED22D00
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DF9Cz1DhDzDqyj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:39:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DF9G06LXNzDr6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:41:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VG7ab5Uo; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=tJgxcxYt; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8cm4cw7zDqZH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8cm4QGVzDqZB
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 10:12:40 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10BN1fA7094032; Mon, 11 Jan 2021 18:12:37 -0500
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 10BN2UBG175401; Mon, 11 Jan 2021 18:12:38 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=hZeV9JzufbxYww9v6JS4tA3P/nR0IZfx3kmIVf3DC8U=;
- b=VG7ab5UoE+/4X3JX3wTBQQ9+8yiSJOF8x5fPEPsd/A5u/hTKq0NTKjw8JtOZbyC23g+X
- a6FvlAjM5ijiSWyxqCmjVNo7pSobH2Jm8J8Q+EFZ/2WwoHuzU1VRCk/6UkGg3AWLYDHG
- rzIW08lfFo9/Dm5Xzpn6AmiZG3lO5Qi4r8+O2Uf2yRInql+x0BS1J1IhC2Tgyhfd7lIW
- kbW2HLZRJxHhl7H0luCT3Nr/THj9EUeJ/J6VTiz5OHPf6FqAKs0FWj36J6ciUIru8v8m
- G8YFdeWWsffaG7emJUf6L61bCCTBho6pNM19RK15uVY69wRTZMQgjMW9RARd4piedt9S 7g== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 360yexs1dp-1
+ bh=GmNvDU70WRRDHGJO5ab1fmTFybGNSQl2UdTKfI7awiA=;
+ b=tJgxcxYtkfnXs6IVD/eBdT0dQl+tDnTPOk6AFTab02hgb+Tauz/9fKDeWfWvGM2T14dn
+ aqZMipMs3zqICG/tSn3cCvOPQ/mfaROcc/fEqJtPjilDUkgYMNMnJW+hGwNzrlxCytzL
+ 0xvGgzyD4jPDraTzexOSAcdnFmqD1BIJwl7+W/YV2IiEpUOpCuRWSbVXQfUzbWteYq9F
+ 0JEPV3KkUdO3GyRVeULyGAjzXup7q41Zxa4YNgk+R4i2po0lQiTABl0gHPonSKh7Pa1U
+ 1iIvVJj50I6oLKBKbo8d5AIOetDuND7K3Y3YQhiCmakTmzr7zTapHQy0xg+YrFwCH2xf SQ== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 360yvkrf51-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 18:12:37 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN7PLV010308;
- Mon, 11 Jan 2021 23:12:36 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma01wdc.us.ibm.com with ESMTP id 35y448sys9-1
+ Mon, 11 Jan 2021 18:12:38 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN7xjI008136;
+ Mon, 11 Jan 2021 23:12:37 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03dal.us.ibm.com with ESMTP id 35y448xcph-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 23:12:36 +0000
+ Mon, 11 Jan 2021 23:12:37 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10BNCXVm37159268
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10BNCa7v23855526
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Jan 2021 23:12:33 GMT
+ Mon, 11 Jan 2021 23:12:36 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 32ACF78064;
- Mon, 11 Jan 2021 23:12:33 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 164407805F;
+ Mon, 11 Jan 2021 23:12:36 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C573D78067;
- Mon, 11 Jan 2021 23:12:32 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A962C78067;
+ Mon, 11 Jan 2021 23:12:35 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Jan 2021 23:12:32 +0000 (GMT)
+ Mon, 11 Jan 2021 23:12:35 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v4 11/21] ibmvfc: map/request irq and register Sub-CRQ
- interrupt handler
-Date: Mon, 11 Jan 2021 17:12:15 -0600
-Message-Id: <20210111231225.105347-12-tyreld@linux.ibm.com>
+Subject: [PATCH v4 17/21] ibmvfc: add cancel mad initialization helper
+Date: Mon, 11 Jan 2021 17:12:21 -0600
+Message-Id: <20210111231225.105347-18-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210111231225.105347-1-tyreld@linux.ibm.com>
 References: <20210111231225.105347-1-tyreld@linux.ibm.com>
@@ -92,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-11_32:2021-01-11,
  2021-01-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0
- lowpriorityscore=0 mlxlogscore=999 clxscore=1015 priorityscore=1501
- mlxscore=0 spamscore=0 bulkscore=0 adultscore=0 suspectscore=0
- malwarescore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2101110126
+ adultscore=0 impostorscore=0
+ malwarescore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=999
+ lowpriorityscore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101110126
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,64 +114,109 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Create an irq mapping for the hw_irq number provided from phyp firmware.
-Request an irq assigned our Sub-CRQ interrupt handler. Unmap these irqs
-at Sub-CRQ teardown.
+Add a helper routine for initializing a Cancel MAD. This will be useful
+for a channelized client that needs to send Cancel commands down every
+channel commands were sent for a particular LUN.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 68 ++++++++++++++++++++--------------
+ 1 file changed, 40 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 51bcafad9490..d3d7c6b53d4f 100644
+index 578e27180f10..b0b0212344f3 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -5292,12 +5292,34 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
- 		goto reg_failed;
+@@ -2379,6 +2379,45 @@ static int ibmvfc_wait_for_ops(struct ibmvfc_host *vhost, void *device,
+ 	return SUCCESS;
+ }
+ 
++static struct ibmvfc_event *ibmvfc_init_tmf(struct ibmvfc_queue *queue,
++					    struct scsi_device *sdev,
++					    int type)
++{
++	struct ibmvfc_host *vhost = shost_priv(sdev->host);
++	struct scsi_target *starget = scsi_target(sdev);
++	struct fc_rport *rport = starget_to_rport(starget);
++	struct ibmvfc_event *evt;
++	struct ibmvfc_tmf *tmf;
++
++	evt = ibmvfc_get_event(queue);
++	ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_MAD_FORMAT);
++
++	tmf = &evt->iu.tmf;
++	memset(tmf, 0, sizeof(*tmf));
++	if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN)) {
++		tmf->common.version = cpu_to_be32(2);
++		tmf->target_wwpn = cpu_to_be64(rport->port_name);
++	} else {
++		tmf->common.version = cpu_to_be32(1);
++	}
++	tmf->common.opcode = cpu_to_be32(IBMVFC_TMF_MAD);
++	tmf->common.length = cpu_to_be16(sizeof(*tmf));
++	tmf->scsi_id = cpu_to_be64(rport->port_id);
++	int_to_scsilun(sdev->lun, &tmf->lun);
++	if (!ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPRESS_ABTS))
++		type &= ~IBMVFC_TMF_SUPPRESS_ABTS;
++	if (vhost->state == IBMVFC_ACTIVE)
++		tmf->flags = cpu_to_be32((type | IBMVFC_TMF_LUA_VALID));
++	else
++		tmf->flags = cpu_to_be32(((type & IBMVFC_TMF_SUPPRESS_ABTS) | IBMVFC_TMF_LUA_VALID));
++	tmf->cancel_key = cpu_to_be32((unsigned long)sdev->hostdata);
++	tmf->my_cancel_key = cpu_to_be32((unsigned long)starget->hostdata);
++
++	init_completion(&evt->comp);
++
++	return evt;
++}
++
+ /**
+  * ibmvfc_cancel_all - Cancel all outstanding commands to the device
+  * @sdev:	scsi device to cancel commands
+@@ -2393,9 +2432,6 @@ static int ibmvfc_wait_for_ops(struct ibmvfc_host *vhost, void *device,
+ static int ibmvfc_cancel_all(struct scsi_device *sdev, int type)
+ {
+ 	struct ibmvfc_host *vhost = shost_priv(sdev->host);
+-	struct scsi_target *starget = scsi_target(sdev);
+-	struct fc_rport *rport = starget_to_rport(starget);
+-	struct ibmvfc_tmf *tmf;
+ 	struct ibmvfc_event *evt, *found_evt;
+ 	union ibmvfc_iu rsp;
+ 	int rsp_rc = -EBUSY;
+@@ -2422,32 +2458,8 @@ static int ibmvfc_cancel_all(struct scsi_device *sdev, int type)
  	}
  
-+	scrq->irq = irq_create_mapping(NULL, scrq->hw_irq);
-+
-+	if (!scrq->irq) {
-+		rc = -EINVAL;
-+		dev_err(dev, "Error mapping sub-crq[%d] irq\n", index);
-+		goto irq_failed;
-+	}
-+
-+	snprintf(scrq->name, sizeof(scrq->name), "ibmvfc-%x-scsi%d",
-+		 vdev->unit_address, index);
-+	rc = request_irq(scrq->irq, ibmvfc_interrupt_scsi, 0, scrq->name, scrq);
-+
-+	if (rc) {
-+		dev_err(dev, "Couldn't register sub-crq[%d] irq\n", index);
-+		irq_dispose_mapping(scrq->irq);
-+		goto irq_failed;
-+	}
-+
- 	scrq->hwq_id = index;
- 	scrq->vhost = vhost;
+ 	if (vhost->logged_in) {
+-		evt = ibmvfc_get_event(&vhost->crq);
+-		ibmvfc_init_event(evt, ibmvfc_sync_completion, IBMVFC_MAD_FORMAT);
+-
+-		tmf = &evt->iu.tmf;
+-		memset(tmf, 0, sizeof(*tmf));
+-		if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN)) {
+-			tmf->common.version = cpu_to_be32(2);
+-			tmf->target_wwpn = cpu_to_be64(rport->port_name);
+-		} else {
+-			tmf->common.version = cpu_to_be32(1);
+-		}
+-		tmf->common.opcode = cpu_to_be32(IBMVFC_TMF_MAD);
+-		tmf->common.length = cpu_to_be16(sizeof(*tmf));
+-		tmf->scsi_id = cpu_to_be64(rport->port_id);
+-		int_to_scsilun(sdev->lun, &tmf->lun);
+-		if (!ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPRESS_ABTS))
+-			type &= ~IBMVFC_TMF_SUPPRESS_ABTS;
+-		if (vhost->state == IBMVFC_ACTIVE)
+-			tmf->flags = cpu_to_be32((type | IBMVFC_TMF_LUA_VALID));
+-		else
+-			tmf->flags = cpu_to_be32(((type & IBMVFC_TMF_SUPPRESS_ABTS) | IBMVFC_TMF_LUA_VALID));
+-		tmf->cancel_key = cpu_to_be32((unsigned long)sdev->hostdata);
+-		tmf->my_cancel_key = cpu_to_be32((unsigned long)starget->hostdata);
+-
++		evt = ibmvfc_init_tmf(&vhost->crq, sdev, type);
+ 		evt->sync_iu = &rsp;
+-		init_completion(&evt->comp);
+ 		rsp_rc = ibmvfc_send_event(evt, vhost, default_timeout);
+ 	}
  
- 	LEAVE;
- 	return 0;
- 
-+irq_failed:
-+	do {
-+		plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
-+	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
- reg_failed:
- 	ibmvfc_free_queue(vhost, scrq);
- 	LEAVE;
-@@ -5313,6 +5335,9 @@ static void ibmvfc_deregister_scsi_channel(struct ibmvfc_host *vhost, int index)
- 
- 	ENTER;
- 
-+	free_irq(scrq->irq, scrq);
-+	irq_dispose_mapping(scrq->irq);
-+
- 	do {
- 		rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address,
- 					scrq->cookie);
 -- 
 2.27.0
 
