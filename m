@@ -2,61 +2,71 @@ Return-Path: <SRS0=j7bs=GP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5624C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 14:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D020C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 17:07:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9EA722CE3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 14:13:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9EA722CE3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A2EEF2311A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 17:07:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2EEF2311A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DFXc61s40zDr2c
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 01:13:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DFcT00gXpzDqyd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 04:07:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=S+ljzYYL; 
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=tb0Nw+JZ; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=0NjtFpZU; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DFXQd579MzDrQ7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 01:05:13 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A42AE22CE3;
- Tue, 12 Jan 2021 14:05:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1610460310;
- bh=YIZSFd4ngdBu3d+V+tCrhUDlUF7epBaWbFsCZCkzGJs=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=S+ljzYYL3QMPhhApX5VwhFNyceVrA27EHM0FStNvwzUR1cQ7GFOIPOcEYTO0fdDaA
- Kj7O7lmy0yWuWK+AZisJL2LrmlkoM/j63MxdM7S787vyvaT4LD71jTgKDStmGrzxuQ
- L0/NqqEzqp6wU8ndgl0gsmTuxMJL2Vz98cUyPebone1iHGoyH3HLXEv/yY8kVzE9/C
- 3JxXpkug6tFhHh2/KJ9Ii5coAgelm+gr542ObqppAE3GEOphOgXDNiAJFxaofg4s3u
- N68pjfATVrUXDVMPlwIcydiug5iK5JLd2AIK2alwIqlmLf7Si7Qy4TLd2kqk9nbCgG
- c2IYKYoLXP3bw==
-Date: Tue, 12 Jan 2021 14:05:00 +0000
-From: Will Deacon <will@kernel.org>
-To: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Subject: Re: [PATCH v2] arch: consolidate pm_power_off callback
-Message-ID: <20210112140459.GC9277@willie-the-truck>
-References: <20201227140129.19932-1-info@metux.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DFcQ14cKjzDr6W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 04:04:54 +1100 (AEDT)
+Message-Id: <20210112170411.056306194@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1610471090;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:  references:references;
+ bh=ILrs8j28FO3zCfEleUzqqCm1xJVBHSVkYVI9ahwbtj0=;
+ b=tb0Nw+JZctFWFFRaYBghqD30vzGGQq0xZ63WD+mafLo/BbBc9IVaP8WGFGYad7u0ml8URq
+ MM2KCJ99mn7EnO4DDfE2431luacWhtmKhXlaq0vtVViKN9hEh6EqQ6EEGU1SK7iKJAUtxF
+ 6cJfw7YGjQG3uDHarORNdNFeFkG42Auy8GxlmR5r9OuJYWsGvaOydpAsjyjFZ59dpikzAv
+ adffa4Gr/O9qBds6RcF/6iPj7bXa8GgnMSOwrc+bWGTmrrgvpFlNTXznqRZ9EOcVSkGNWZ
+ Xz+9vdXq1tYzgleIhIkKw6cAVNztEHnyNgmtfDgIc3HK5dEei5vepwA9ri3nAA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1610471090;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:  references:references;
+ bh=ILrs8j28FO3zCfEleUzqqCm1xJVBHSVkYVI9ahwbtj0=;
+ b=0NjtFpZUXugW2G2xT1Np0nXncnyBC7n1Akw+1YIn8I0EsqwCJze0+mqAfufkzOFyuLZc+S
+ +KihGneOryXKSwBA==
+Date: Tue, 12 Jan 2021 18:01:38 +0100
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch 2/4] mm/highmem: Prepare for overriding set_pte_at()
+References: <20210112170136.078559026@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201227140129.19932-1-info@metux.net>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8-bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,55 +78,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-mips@vger.kernel.org, James.Bottomley@HansenPartnership.com,
- jcmvbkbc@gmail.com, paulus@samba.org, linux-csky@vger.kernel.org,
- hpa@zytor.com, linux-riscv@lists.infradead.org, tglx@linutronix.de,
- jonas@southpole.se, linux-s390@vger.kernel.org, sstabellini@kernel.org,
- linux-c6x-dev@linux-c6x.org, ysato@users.sourceforge.jp,
- linux-hexagon@vger.kernel.org, deller@gmx.de, x86@kernel.org,
- ley.foon.tan@intel.com, mingo@redhat.com, geert@linux-m68k.org,
- catalin.marinas@arm.com, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, linux-pm@vger.kernel.org, msalter@redhat.com,
- jacquiot.aurelien@gmail.com, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, bp@alien8.de, shorne@gmail.com,
- stefan.kristiansson@saunalahti.fi, christian@brauner.io, chris@zankel.net,
- tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Andreas Larsson <andreas@gaisler.com>, Peter Zijlstra <peterz@infradead.org>,
+ Paul Cercueil <paul@crapouillou.net>, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Dec 27, 2020 at 03:01:28PM +0100, Enrico Weigelt, metux IT consult wrote:
-> Move the pm_power_off callback into one global place and also add an
-> function for conditionally calling it (when not NULL), in order to remove
-> code duplication in all individual archs.
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+The generic kmap_local() map function uses set_pte_at(), but MIPS requires
+set_pte() and PowerPC wants __set_pte_at().
 
-[...]
+Provide arch_kmap_local_set_pte() and default it to set_pte_at().
 
-> diff --git a/kernel/reboot.c b/kernel/reboot.c
-> index eb1b15850761..ec4cd66dd1ae 100644
-> --- a/kernel/reboot.c
-> +++ b/kernel/reboot.c
-> @@ -53,6 +53,16 @@ int reboot_force;
->  void (*pm_power_off_prepare)(void);
->  EXPORT_SYMBOL_GPL(pm_power_off_prepare);
->  
-> +void (*pm_power_off)(void);
-> +EXPORT_SYMBOL_GPL(pm_power_off);
-> +
-> +void do_power_off(void)
-> +{
-> +	if (pm_power_off)
-> +		pm_power_off();
-> +}
-> +EXPORT_SYMBOL_GPL(do_power_off);
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ mm/highmem.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Could this just live as a static inline in pm.h to avoid having to export
-the extra symbol?
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -473,6 +473,11 @@ static inline void *arch_kmap_local_high
+ }
+ #endif
+ 
++#ifndef arch_kmap_local_set_pte
++#define arch_kmap_local_set_pte(mm, vaddr, ptep, ptev)	\
++	set_pte_at(mm, vaddr, ptep, ptev)
++#endif
++
+ /* Unmap a local mapping which was obtained by kmap_high_get() */
+ static inline bool kmap_high_unmap_local(unsigned long vaddr)
+ {
+@@ -515,7 +520,7 @@ void *__kmap_local_pfn_prot(unsigned lon
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	BUG_ON(!pte_none(*(kmap_pte - idx)));
+ 	pteval = pfn_pte(pfn, prot);
+-	set_pte_at(&init_mm, vaddr, kmap_pte - idx, pteval);
++	arch_kmap_local_set_pte(&init_mm, vaddr, kmap_pte - idx, pteval);
+ 	arch_kmap_local_post_map(vaddr, pteval);
+ 	current->kmap_ctrl.pteval[kmap_local_idx()] = pteval;
+ 	preempt_enable();
 
-Will
