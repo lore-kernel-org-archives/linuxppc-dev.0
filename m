@@ -1,102 +1,64 @@
-Return-Path: <SRS0=L4S4=GO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=j7bs=GP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63751C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBB07C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 01:15:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA57422BED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jan 2021 23:49:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA57422BED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DA7152250F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 01:15:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA7152250F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DF9Rb5nCnzDrRt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 10:49:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Wf4VU+0r; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DFCLC6mQwzDr1b
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 12:15:15 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DF8cr07SbzDqb0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 10:12:43 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10BN1Q9l093675; Mon, 11 Jan 2021 18:12:41 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=OCeqXqTg76Y0WcH/KI/byd9/8vHZqFTCU6yOhsYJqt8=;
- b=Wf4VU+0rh3h1LzOaPCugHkxlezrad9NmmDbC+er4jDxv5GhnAsiqIdxL0wczk+0Gj1gL
- uVKiavzYHTqIr7lrQ5hXxLQOUFXNQ49ye3uebPe0RDzOk/9otJbodgQQaigmiK9GlP3a
- Gd3xdgKJcGYSi3Vd1affXtQRJKUetb2Ful9GnlauOr8pTkkE6iFIWcPDEb6cLlN+nLYN
- hvcxLYdj+WGXM9P6JVkLHCCsBQ2mT1oty+Aon07LRuazVOlKt83ysWpKiESfuwDcCzXi
- lLIM8t0w/GO9EBm4FJxIC7vAmNJtRCiL0qVD9rb6ogZEvv6tbQaBBKTOzujfGgfvJj0P 4g== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 360wgfmekf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 18:12:41 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10BN7Q1I010322;
- Mon, 11 Jan 2021 23:12:40 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01wdc.us.ibm.com with ESMTP id 35y448sysj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Jan 2021 23:12:40 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10BNCbfl27656688
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Jan 2021 23:12:37 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B84C7805C;
- Mon, 11 Jan 2021 23:12:37 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9E71678060;
- Mon, 11 Jan 2021 23:12:36 +0000 (GMT)
-Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Jan 2021 23:12:36 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v4 19/21] ibmvfc: purge scsi channels after transport
- loss/reset
-Date: Mon, 11 Jan 2021 17:12:23 -0600
-Message-Id: <20210111231225.105347-20-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210111231225.105347-1-tyreld@linux.ibm.com>
-References: <20210111231225.105347-1-tyreld@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DFCHy22xWzDqlh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 12:13:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=YRh6ZWH6; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DFCHq17dGz9sVb;
+ Tue, 12 Jan 2021 12:13:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1610413996;
+ bh=S/7jgyEMX8jCF5ztHgwvPqBfJNWba57wkdKj3Nr9QCw=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=YRh6ZWH6YuZrrwd6OqvvWNWIDNFe6gjRx+RhHgekSnr4iTmcRETBtNN8OY4l1RGWu
+ PGaXOw/talGTPXbsb/6uL4tKQl63WmMdSvx5Zs3I3QFcTmSZi5mFKi1B2hV58SSXR6
+ wP1OhqQbVEXK5K2EVjzZCJlh+BZeYfGx78I1auMbIwwrVVCccgg10AQpUF9Iexmy0+
+ Pen36dQldkfejeM7Q4zdsef9R+hRcKAZOvbkVxoEWDIuSOWm71uWWDk5nzlqOMmd5G
+ BprOb35vsULgTcFLTQmvQHW2p4Lx77kTryrgK1mr+ao88v54ZOaE25HWgksJA7BFP5
+ KJqyZAIc5YzRw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, schwab@linux-m68k.org
+Subject: Re: [PATCH v2] powerpc/vdso: fix clock_gettime_fallback for vdso32
+In-Reply-To: <77cb8f5e668a2f6e00ea6e90d5f4f37763957b5b.1610383963.git.christophe.leroy@csgroup.eu>
+References: <77cb8f5e668a2f6e00ea6e90d5f4f37763957b5b.1610383963.git.christophe.leroy@csgroup.eu>
+Date: Tue, 12 Jan 2021 12:13:06 +1100
+Message-ID: <87v9c3j6u5.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-11_32:2021-01-11,
- 2021-01-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 suspectscore=0
- impostorscore=0 lowpriorityscore=0 malwarescore=0 bulkscore=0 mlxscore=0
- priorityscore=1501 mlxlogscore=999 spamscore=0 adultscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101110126
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,56 +70,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Grab the queue and list lock for each Sub-CRQ and add any uncompleted
-events to the host purge list.
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> From: Andreas Schwab <schwab@linux-m68k.org>
+>
+> The second argument of __kernel_clock_gettime64 points to a struct
+> __kernel_timespec, with 64-bit time_t, so use the clock_gettime64 syscall
+> in the fallback function for the 32-bit vdso.  Similarily,
+> clock_getres_fallback should use the clock_getres_time64 syscall, though
+> it isn't yet called from the 32-bit vdso.
+>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> [chleroy: Moved into the #ifdef CONFIG_VDSO32 block]
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+That doesn't build for 64-bit with compat VDSO. Should I just take
+Andreas' version, or do you want to send a v3?
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 24e1278acfeb..b413f5da71ce 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1056,7 +1056,13 @@ static void ibmvfc_fail_request(struct ibmvfc_event *evt, int error_code)
- static void ibmvfc_purge_requests(struct ibmvfc_host *vhost, int error_code)
- {
- 	struct ibmvfc_event *evt, *pos;
-+	struct ibmvfc_queue *queues = vhost->scsi_scrqs.scrqs;
- 	unsigned long flags;
-+	int hwqs = 0;
-+	int i;
-+
-+	if (vhost->using_channels)
-+		hwqs = vhost->scsi_scrqs.active_queues;
- 
- 	ibmvfc_dbg(vhost, "Purging all requests\n");
- 	spin_lock_irqsave(&vhost->crq.l_lock, flags);
-@@ -1064,6 +1070,16 @@ static void ibmvfc_purge_requests(struct ibmvfc_host *vhost, int error_code)
- 		ibmvfc_fail_request(evt, error_code);
- 	list_splice_init(&vhost->crq.sent, &vhost->purge);
- 	spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
-+
-+	for (i = 0; i < hwqs; i++) {
-+		spin_lock_irqsave(queues[i].q_lock, flags);
-+		spin_lock(&queues[i].l_lock);
-+		list_for_each_entry_safe(evt, pos, &queues[i].sent, queue_list)
-+			ibmvfc_fail_request(evt, error_code);
-+		list_splice_init(&queues[i].sent, &vhost->purge);
-+		spin_unlock(&queues[i].l_lock);
-+		spin_unlock_irqrestore(queues[i].q_lock, flags);
-+	}
- }
- 
- /**
--- 
-2.27.0
+cheers
 
+> Fixes: d0e3fc69d00d ("powerpc/vdso: Provide __kernel_clock_gettime64() on vdso32")
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/include/asm/vdso/gettimeofday.h | 27 +++++++++++++++-----
+>  1 file changed, 21 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h b/arch/powerpc/include/asm/vdso/gettimeofday.h
+> index 7a215cc5da77..3ecddd9c6302 100644
+> --- a/arch/powerpc/include/asm/vdso/gettimeofday.h
+> +++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
+> @@ -102,22 +102,22 @@ int gettimeofday_fallback(struct __kernel_old_timeval *_tv, struct timezone *_tz
+>  	return do_syscall_2(__NR_gettimeofday, (unsigned long)_tv, (unsigned long)_tz);
+>  }
+>  
+> +#ifdef CONFIG_VDSO32
+> +
+> +#define BUILD_VDSO32		1
+> +
+>  static __always_inline
+>  int clock_gettime_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
+>  {
+> -	return do_syscall_2(__NR_clock_gettime, _clkid, (unsigned long)_ts);
+> +	return do_syscall_2(__NR_clock_gettime64, _clkid, (unsigned long)_ts);
+>  }
+>  
+>  static __always_inline
+>  int clock_getres_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
+>  {
+> -	return do_syscall_2(__NR_clock_getres, _clkid, (unsigned long)_ts);
+> +	return do_syscall_2(__NR_clock_getres_time64, _clkid, (unsigned long)_ts);
+>  }
+>  
+> -#ifdef CONFIG_VDSO32
+> -
+> -#define BUILD_VDSO32		1
+> -
+>  static __always_inline
+>  int clock_gettime32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)
+>  {
+> @@ -129,6 +129,21 @@ int clock_getres32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)
+>  {
+>  	return do_syscall_2(__NR_clock_getres, _clkid, (unsigned long)_ts);
+>  }
+> +
+> +#else
+> +
+> +static __always_inline
+> +int clock_gettime_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
+> +{
+> +	return do_syscall_2(__NR_clock_gettime, _clkid, (unsigned long)_ts);
+> +}
+> +
+> +static __always_inline
+> +int clock_getres_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
+> +{
+> +	return do_syscall_2(__NR_clock_getres, _clkid, (unsigned long)_ts);
+> +}
+> +
+>  #endif
+>  
+>  static __always_inline u64 __arch_get_hw_counter(s32 clock_mode,
+> -- 
+> 2.25.0
