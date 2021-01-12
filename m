@@ -2,89 +2,89 @@ Return-Path: <SRS0=j7bs=GP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C6E9C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 07:59:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 142E1C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 09:40:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBA6922E01
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 07:59:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBA6922E01
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2B55E22DD3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 09:40:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B55E22DD3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DFNJD5hFQzDr0t
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 18:59:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DFQXn5NmyzDr3B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 20:40:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::f35;
- helo=mail-qv1-xf35.google.com; envelope-from=tientzu@chromium.org;
+ smtp.mailfrom=redhat.com (client-ip=63.128.21.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=jolsa@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=Muj3J6AU; dkim-atps=neutral
-Received: from mail-qv1-xf35.google.com (mail-qv1-xf35.google.com
- [IPv6:2607:f8b0:4864:20::f35])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=XUckyEyp; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=XUckyEyp; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [63.128.21.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DFND71Cc0zDqxH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 18:55:30 +1100 (AEDT)
-Received: by mail-qv1-xf35.google.com with SMTP id h16so542142qvu.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 23:55:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=j7gLFMlxBCQENVWtNxS2npLHFlF1Oh0HPmJ2b4uXz4E=;
- b=Muj3J6AUcKeWXk2QVKpBxfCJmD1ZNU3ECoTrLMhnZ3l10BcmT1KWV3KJZVJiyjnmgp
- tXnYNLGybukalejR/JL4Ccq0hthA+yksiWl3Xj9n38DlJXhcHL4x7k7Hi60j74u9oC5X
- xVXg0JvakYs/Mgnk3DB5tWgDJ2Wm5qz5NT8oI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=j7gLFMlxBCQENVWtNxS2npLHFlF1Oh0HPmJ2b4uXz4E=;
- b=jCHnrMF0nJbIxQTP2yk7ABKoTQFmuvYWW0MmH9I/z/6cLXYA455ztMYgW7Xp6rsZWl
- 7CG97JIEugGeMuL+6LM7fGKOuKSN+rW8FR/Try1TcOPE8RI0p6hzxl012KPznihpUOW4
- m9lLQ6tNR4C2dRaZA0x1a8GxhKDM49EYG3aE9OE3CuExzaZ/NJnUCODLpJbYtiG8uHWw
- 3VGtcSA5i38CsYmdnr8AQpuUuMRuit8NlTNsKl4grMlCS+Cgz7UcxfG4BgebOw4Tb3zx
- cdjXaRmzABTiDkjd5cEMjpIp+cSGt1b4qWSFL143wTtFm7deN4qLieXtFU7pMO4ANo7t
- 8m7g==
-X-Gm-Message-State: AOAM533r8kLBiZxvaxQsnu2bPa3d9s58pZNauG3LJigKuWHnL6FTX8NS
- rg+LXXJSHZnZd5AEThn84sFmUo2ZfK2B0+f8
-X-Google-Smtp-Source: ABdhPJyh7IKHCp3nIrEla2jTSJwRc39Ot9oOnX6wqp8uu0XGi0HcSnVdjOOINhlhBck4gC0EzTaubg==
-X-Received: by 2002:ad4:4390:: with SMTP id s16mr3388596qvr.28.1610438126151; 
- Mon, 11 Jan 2021 23:55:26 -0800 (PST)
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com.
- [209.85.160.177])
- by smtp.gmail.com with ESMTPSA id k141sm1009948qke.38.2021.01.11.23.55.25
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 11 Jan 2021 23:55:25 -0800 (PST)
-Received: by mail-qt1-f177.google.com with SMTP id v5so1022913qtv.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2021 23:55:25 -0800 (PST)
-X-Received: by 2002:a05:6638:c52:: with SMTP id
- g18mr3073726jal.84.1610437670186; 
- Mon, 11 Jan 2021 23:47:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DFQVs4dCtzDqJq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 20:38:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1610444299;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=M2YUbzTNTo+u/6WuZUqpyQ6bpHfdOyLxqxTbatpQROA=;
+ b=XUckyEypIcZGDgpwBxGUalpvJb4QnxwSO/5K+eLrWcTbHo7/XtavSNS1xgDJUixsSViSRW
+ Z2tWcwUUFEepTw7w1Vt3CfdSvjcu+IwQ2HU7azzz4cx18+RNPg+Dcn4/QdvEz3zpjNmkZx
+ ufU9xtfofMAd44mg3MLuaEqhpPBMIVY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1610444299;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=M2YUbzTNTo+u/6WuZUqpyQ6bpHfdOyLxqxTbatpQROA=;
+ b=XUckyEypIcZGDgpwBxGUalpvJb4QnxwSO/5K+eLrWcTbHo7/XtavSNS1xgDJUixsSViSRW
+ Z2tWcwUUFEepTw7w1Vt3CfdSvjcu+IwQ2HU7azzz4cx18+RNPg+Dcn4/QdvEz3zpjNmkZx
+ ufU9xtfofMAd44mg3MLuaEqhpPBMIVY=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-192-xTMu6VdUOIKLTnQ7nGxXJQ-1; Tue, 12 Jan 2021 04:38:16 -0500
+X-MC-Unique: xTMu6VdUOIKLTnQ7nGxXJQ-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id C5AAD8018A7;
+ Tue, 12 Jan 2021 09:38:14 +0000 (UTC)
+Received: from krava (unknown [10.40.195.50])
+ by smtp.corp.redhat.com (Postfix) with SMTP id 9CEC319712;
+ Tue, 12 Jan 2021 09:38:12 +0000 (UTC)
+Date: Tue, 12 Jan 2021 10:38:11 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tools/perf: Fix powerpc gap between kernel end and
+ module start
+Message-ID: <20210112093811.GA1272772@krava>
+References: <1609208054-1566-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-6-tientzu@chromium.org>
- <20210106185757.GB109735@localhost.localdomain>
- <CALiNf2_dV13jbHqLt-r1eK+dtOcAKBGcWQCVMQn+eL6MuOrETQ@mail.gmail.com>
- <20210107180032.GB16519@char.us.oracle.com>
- <4cce7692-7184-9b25-70f2-b821065f3b25@gmail.com>
-In-Reply-To: <4cce7692-7184-9b25-70f2-b821065f3b25@gmail.com>
-From: Claire Chang <tientzu@chromium.org>
-Date: Tue, 12 Jan 2021 15:47:39 +0800
-X-Gmail-Original-Message-ID: <CALiNf29Kqr1WP3BEjX-y5Xtife7AinqiXAcRD2g4eB9isTaXfQ@mail.gmail.com>
-Message-ID: <CALiNf29Kqr1WP3BEjX-y5Xtife7AinqiXAcRD2g4eB9isTaXfQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 5/6] dt-bindings: of: Add restricted DMA pool
-To: Florian Fainelli <f.fainelli@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1609208054-1566-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=jolsa@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,47 +96,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, peterz@infradead.org, grant.likely@arm.com,
- paulus@samba.org, Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, sstabellini@kernel.org,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
- rafael.j.wysocki@intel.com, Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>,
- xen-devel@lists.xenproject.org, Thierry Reding <treding@nvidia.com>,
- linux-devicetree <devicetree@vger.kernel.org>, will@kernel.org,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
- boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
- rdunlap@infradead.org, lkml <linux-kernel@vger.kernel.org>,
- Tomasz Figa <tfiga@chromium.org>,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- xypron.glpk@gmx.de, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: maddy@linux.ibm.com, acme@kernel.org, jolsa@kernel.org, kjain@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 8, 2021 at 2:15 AM Florian Fainelli <f.fainelli@gmail.com> wrote:
->
-> On 1/7/21 10:00 AM, Konrad Rzeszutek Wilk wrote:
-> >>>
-> >>>
-> >>>  - Nothing stops the physical device from bypassing the SWIOTLB buffer.
-> >>>    That is if an errant device screwed up the length or DMA address, the
-> >>>    SWIOTLB would gladly do what the device told it do?
-> >>
-> >> So the system needs to provide a way to lock down the memory access, e.g. MPU.
-> >
-> > OK! Would it be prudent to have this in the description above perhaps?
->
-> Yes this is something that must be documented as a requirement for the
-> restricted DMA pool users, otherwise attempting to do restricted DMA
-> pool is no different than say, using a device private CMA region.
-> Without the enforcement, this is just a best effort.
+On Mon, Dec 28, 2020 at 09:14:14PM -0500, Athira Rajeev wrote:
 
-Will add in the next version.
+SNIP
 
-> --
-> Florian
+> c000000002799370 b backtrace_flag
+> c000000002799378 B radix_tree_node_cachep
+> c000000002799380 B __bss_stop
+> c0000000027a0000 B _end
+> c008000003890000 t icmp_checkentry      [ip_tables]
+> c008000003890038 t ipt_alloc_initial_table      [ip_tables]
+> c008000003890468 T ipt_do_table [ip_tables]
+> c008000003890de8 T ipt_unregister_table_pre_exit        [ip_tables]
+> ...
+> 
+> Perf calls function symbols__fixup_end() which sets the end of symbol
+> to 0xc008000003890000, which is the next address and this is the start
+> address of first module (icmp_checkentry in above) which will make the
+> huge symbol size of 0x80000010f0000.
+> 
+> After symbols__fixup_end:
+> symbols__fixup_end: sym->name: _end, sym->start: 0xc0000000027a0000,
+> sym->end: 0xc008000003890000
+> 
+> On powerpc, kernel text segment is located at 0xc000000000000000
+> whereas the modules are located at very high memory addresses,
+> 0xc00800000xxxxxxx. Since the gap between end of kernel text segment
+> and beginning of first module's address is high, histogram allocation
+> using calloc fails.
+> 
+> Fix this by detecting the kernel's last symbol and limiting
+> the range of last kernel symbol to pagesize.
+> 
+> Signed-off-by: Athira Rajeev<atrajeev@linux.vnet.ibm.com>
+
+I can't test, but since the same approach works for arm and s390,
+this also looks ok
+
+Acked-by: Jiri Olsa <jolsa@redhat.com>
+
+thanks,
+jirka
+
+> ---
+>  tools/perf/arch/powerpc/util/Build     |  1 +
+>  tools/perf/arch/powerpc/util/machine.c | 24 ++++++++++++++++++++++++
+>  2 files changed, 25 insertions(+)
+>  create mode 100644 tools/perf/arch/powerpc/util/machine.c
+> 
+> diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+> index e86e210bf514..b7945e5a543b 100644
+> --- a/tools/perf/arch/powerpc/util/Build
+> +++ b/tools/perf/arch/powerpc/util/Build
+> @@ -1,4 +1,5 @@
+>  perf-y += header.o
+> +perf-y += machine.o
+>  perf-y += kvm-stat.o
+>  perf-y += perf_regs.o
+>  perf-y += mem-events.o
+> diff --git a/tools/perf/arch/powerpc/util/machine.c b/tools/perf/arch/powerpc/util/machine.c
+> new file mode 100644
+> index 000000000000..c30e5cc88c16
+> --- /dev/null
+> +++ b/tools/perf/arch/powerpc/util/machine.c
+> @@ -0,0 +1,24 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#include <stdio.h>
+> +#include <string.h>
+> +#include <internal/lib.h> // page_size
+> +#include "debug.h"
+> +#include "symbol.h"
+> +
+> +/* On powerpc kernel text segment start at memory addresses, 0xc000000000000000
+> + * whereas the modules are located at very high memory addresses,
+> + * for example 0xc00800000xxxxxxx. The gap between end of kernel text segment
+> + * and beginning of first module's text segment is very high.
+> + * Therefore do not fill this gap and do not assign it to the kernel dso map.
+> + */
+> +
+> +void arch__symbols__fixup_end(struct symbol *p, struct symbol *c)
+> +{
+> +	if (strchr(p->name, '[') == NULL && strchr(c->name, '['))
+> +		/* Limit the range of last kernel symbol */
+> +		p->end += page_size;
+> +	else
+> +		p->end = c->start;
+> +	pr_debug4("%s sym:%s end:%#lx\n", __func__, p->name, p->end);
+> +}
+> -- 
+> 1.8.3.1
+> 
+
