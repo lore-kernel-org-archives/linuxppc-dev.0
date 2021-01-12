@@ -2,75 +2,76 @@ Return-Path: <SRS0=j7bs=GP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4275C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 23:41:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA81EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 23:43:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20D1423120
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 23:41:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20D1423120
+	by mail.kernel.org (Postfix) with ESMTPS id 0BD6123130
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jan 2021 23:43:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD6123130
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DFnCZ23flzDrQ9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 10:41:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DFnFy0fWBzDr7b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 10:43:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e;
- helo=mail-pf1-x42e.google.com; envelope-from=f.fainelli@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634;
+ helo=mail-pl1-x634.google.com; envelope-from=f.fainelli@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=UKePpehy; dkim-atps=neutral
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
+ header.s=20161025 header.b=MNrJSs5y; dkim-atps=neutral
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
+ [IPv6:2607:f8b0:4864:20::634])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DFn9M3G9FzDqp5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 10:39:34 +1100 (AEDT)
-Received: by mail-pf1-x42e.google.com with SMTP id w2so45793pfc.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 15:39:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DFnD23NfgzDqpK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 10:41:54 +1100 (AEDT)
+Received: by mail-pl1-x634.google.com with SMTP id j1so24756pld.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2021 15:41:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
  :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=Z1JTaErEPrP1NDii1O59Lox44MzvMpWGpFox9KE1gVY=;
- b=UKePpehyURF8t+N2rQ5ZHAhDwXpyKRgmiyV5YUyxDySmCwajsK6hrTUsMtjo+YsyNw
- N5kxarVDgFdxzmC2AQZM1P4GzsUArih2cguOAiQ0uZi57ZcEeEdGXk0PGC5+6R0rdJTN
- uayI09AMBs7G3DsdYfNiCIG09zpVbRgXFE2ew7+NBckBvqHNkZmDbMixyI+j4Y/V4WsG
- iCIt+EGp1TxyHM2FUsJ5ZsNd4OBN+ss4jXhcW7f8vd/chbDgmVolI+2PoxCgabTEtyoK
- /Iy+otUvMiDfP5HrvoTupYn9OBARRP5yAgas5cHeO56WsXTDDuHtTSiyHCu8Ex3k7ERz
- xA9g==
+ bh=jiJJEd6NpHk7kCu6CYi0ZOx+ayTWk5LzTwqK3Nr8GN4=;
+ b=MNrJSs5yR5TAV4nJFeyDAe0GGDw0/pTlXcrpyP0L7R3V+gr2Lk4hfPKWiwiFM+qx5/
+ Smd8qlJ6dgU/DkKE3VnYw7ycSyr3o3UOv5bYo8SJ9vbaOZ6C4EhheS1DWAVWe278M1Ra
+ 1/X1N0cW/V6Wrv/8AaK6vyArWm2laMHdai7WRr7xxU2dcC3M4OCik/jeSbsqQDC623p1
+ OToEnPGssKkEVG3tgVrBMhwTqCNRIxsvviwAUlsrSTNMPVdeOUTDaflEPg8bLmOk4j2T
+ KYYIO63SDSa0mLFCDcHwHvVZ0DBmyOtl8oBp1BarP4CUElETFdI85krO8+INBge5NN0a
+ NQ2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=Z1JTaErEPrP1NDii1O59Lox44MzvMpWGpFox9KE1gVY=;
- b=rTY45GVDXPuY1c4J565OGFv0mV2hxYrVpGmOOtHp0e1l3uimYNAfxr2akx2IAJwH6D
- CjNOGCykPZgkrO1umQvjQwOAIbX61s6gdXJe3quPM+1qZyXoFmkNEQxiOpSmaSqzKa+4
- azJCT1s70Ek4LIezmF9ciR9Ga63jGYa7xDv6YJhW1/dsHoOcRTaWalOJ98Wfmsujp5vw
- 0wf0OSiQhZNQz0Tc8Ah2lvX7w380W7W6tRWwqYyXWX2wAbI5wKdjGn1foptoXwEKWOdP
- 8XPNVlKls0vViWJlojX0kQvPjD+zCZtExySvaqX4LVhGVE8t/Vw2jCONLl9OtM7oP3qz
- 4HPw==
-X-Gm-Message-State: AOAM532bBEL5y6hr+nEIsRPk0AG9i4AP6bweqLiU9TXu6pjkDBJ+xLud
- sOn2tJs/FU0EtaUvYR6CzQ0=
-X-Google-Smtp-Source: ABdhPJyArjqVLqeIkvjKKBsKMdQRC3Og1Bx7l3Wh1YJGTJpOBPi6m2rYNCjntb6GGu54j6vcfyrGWA==
-X-Received: by 2002:a63:585a:: with SMTP id i26mr1465672pgm.330.1610494771102; 
- Tue, 12 Jan 2021 15:39:31 -0800 (PST)
+ bh=jiJJEd6NpHk7kCu6CYi0ZOx+ayTWk5LzTwqK3Nr8GN4=;
+ b=uhUHcFwHvr1VrLgSd29iPSjXHYTVe8IXS1n2FaL3yMC7G2SVTNR3bBegWEkY5B1+0W
+ KWGs9kCW9yjwFEDXeViS9rvjCG/dc2z/vGQOpV9KFmVI4v7pqyRObP7aOCLJdIAC9FZr
+ u0VsYsnqKCaHAuPziX5zHUVXPbUiC/kevQs1L8e5zuzH7ILdjNQyDLtxgs554TGO+ftC
+ qfGwz5sgDu6ZARxLw1f5FIJN6dGHa6XGe4sIX30izZvM+kzxZ/CFJ9TK0K8WQx4bV7Gq
+ uk5VOSXzBK0RBMYt2NsyYaXgIHb+urkY1CkuNM4DjTW4MGAFC3lTX5K61cx4XabdqBfC
+ tKPA==
+X-Gm-Message-State: AOAM5338gkUCEym+yaZR2MDYV1jEge/rWg3gPY+9oxJ6KDxF7/Fulz0b
+ wck/ufJxNfHN+QVjmHXDUlA=
+X-Google-Smtp-Source: ABdhPJwrt/Z/EmHNy2d3yoZ568Za3OrumA7har7HRFuVqqkJomUyFjrO1CFroe8EilBTG4QSlZLX5w==
+X-Received: by 2002:a17:90a:5802:: with SMTP id h2mr137566pji.68.1610494910815; 
+ Tue, 12 Jan 2021 15:41:50 -0800 (PST)
 Received: from [10.67.48.230] ([192.19.223.252])
- by smtp.googlemail.com with ESMTPSA id v125sm88579pgv.6.2021.01.12.15.39.26
+ by smtp.googlemail.com with ESMTPSA id q2sm149460pjd.33.2021.01.12.15.41.47
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 12 Jan 2021 15:39:30 -0800 (PST)
-Subject: Re: [RFC PATCH v3 3/6] swiotlb: Use restricted DMA pool if available
+ Tue, 12 Jan 2021 15:41:50 -0800 (PST)
+Subject: Re: [RFC PATCH v3 4/6] swiotlb: Add restricted DMA alloc/free support.
 To: Claire Chang <tientzu@chromium.org>, robh+dt@kernel.org,
  mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
  joro@8bytes.org, will@kernel.org, frowand.list@gmail.com,
@@ -78,7 +79,7 @@ To: Claire Chang <tientzu@chromium.org>, robh+dt@kernel.org,
  sstabellini@kernel.org, hch@lst.de, m.szyprowski@samsung.com,
  robin.murphy@arm.com
 References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-4-tientzu@chromium.org>
+ <20210106034124.30560-5-tientzu@chromium.org>
 From: Florian Fainelli <f.fainelli@gmail.com>
 Autocrypt: addr=f.fainelli@gmail.com; prefer-encrypt=mutual; keydata=
  mQGiBEjPuBIRBACW9MxSJU9fvEOCTnRNqG/13rAGsj+vJqontvoDSNxRgmafP8d3nesnqPyR
@@ -134,12 +135,12 @@ Autocrypt: addr=f.fainelli@gmail.com; prefer-encrypt=mutual; keydata=
  caxTGgc5zzQHeX67eMzrGomG3ZnIxmd1sAbgvJUDaD2GrYlulfwGWwWyTNbWRvMighVdPkSF
  6XFgQaosWxkV0OELLy2N485YrTr2Uq64VKyxpncLh50e2RnyAJ9Za0Dx0yyp44iD1OvHtkEI
  M5kY0ACeNhCZJvZ5g4C2Lc9fcTHu8jxmEkI=
-Message-ID: <7b9b598c-5ccd-f897-a962-14c0ed7af6de@gmail.com>
-Date: Tue, 12 Jan 2021 15:39:23 -0800
+Message-ID: <cc23b28f-4ebf-3183-cb4c-7c6fd17f5663@gmail.com>
+Date: Tue, 12 Jan 2021 15:41:46 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210106034124.30560-4-tientzu@chromium.org>
+In-Reply-To: <20210106034124.30560-5-tientzu@chromium.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -167,24 +168,28 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 1/5/21 7:41 PM, Claire Chang wrote:
-> Regardless of swiotlb setting, the restricted DMA pool is preferred if
-> available.
-> 
-> The restricted DMA pools provide a basic level of protection against
-> the DMA overwriting buffer contents at unexpected times. However, to
-> protect against general data leakage and system memory corruption, the
-> system needs to provide a way to restrict the DMA to a predefined memory
-> region.
+> Add the functions, swiotlb_alloc and swiotlb_free to support the
+> memory allocation from restricted DMA pool.
 > 
 > Signed-off-by: Claire Chang <tientzu@chromium.org>
+> ---
 
-You could probably split this patch into two:
+[snip]
 
-- one that introduces the get_io_tlb_mem() getter, updates all callers
-of is_swiotlb_buffer() to gain a 'struct device' argument
-- another one that does add support for a non-default swiotlb pool and
-adds dev->dma_io_tlb_mem
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 30ccbc08e229..126e9b3354d6 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -137,6 +137,11 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  	void *ret;
+>  	int err;
+>  
+> +#ifdef CONFIG_SWIOTLB
+> +	if (unlikely(dev->dma_io_tlb_mem))
+> +		return swiotlb_alloc(dev, size, dma_handle, attrs);
+> +#endif
 
-Other than that, LGTM!
+While this is potentially a hot path, I am not sure of the unkikely is
+warranted, maybe best left as a plain conditional.
 -- 
 Florian
