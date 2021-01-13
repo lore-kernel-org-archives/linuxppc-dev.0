@@ -2,60 +2,83 @@ Return-Path: <SRS0=WgSo=GQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A635C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 15:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45F73C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 16:43:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A8F023382
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 15:30:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A8F023382
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 74B0A23788
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 16:43:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74B0A23788
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGBGT3nxFzDrfv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 02:30:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGCtt2bk6zDq97
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 03:43:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42e;
+ helo=mail-wr1-x42e.google.com; envelope-from=lee.jones@linaro.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DGBCd4C23zDqQX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 02:27:55 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AE5B5142F;
- Wed, 13 Jan 2021 07:27:52 -0800 (PST)
-Received: from [10.57.56.43] (unknown [10.57.56.43])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D92A83F66E;
- Wed, 13 Jan 2021 07:27:39 -0800 (PST)
-Subject: Re: [RFC PATCH v3 2/6] swiotlb: Add restricted DMA pool
-To: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
- Florian Fainelli <f.fainelli@gmail.com>, Claire Chang
- <tientzu@chromium.org>, robh+dt@kernel.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org, joro@8bytes.org,
- will@kernel.org, frowand.list@gmail.com, konrad.wilk@oracle.com,
- boris.ostrovsky@oracle.com, jgross@suse.com, sstabellini@kernel.org,
- hch@lst.de, m.szyprowski@samsung.com
-References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-3-tientzu@chromium.org>
- <95ae9c1e-c1f1-5736-fe86-12ced1f648f9@gmail.com>
- <7ed51025f051f65f3dfe10a88caeb648821994b1.camel@suse.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <4c4989b5-f825-7e04-ca66-038cf6b9d5e9@arm.com>
-Date: Wed, 13 Jan 2021 15:27:34 +0000
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=wibdpcpc; dkim-atps=neutral
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com
+ [IPv6:2a00:1450:4864:20::42e])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGCrf4mmyzDrVT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 03:41:38 +1100 (AEDT)
+Received: by mail-wr1-x42e.google.com with SMTP id a12so2801180wrv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 08:41:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=F0dvH29ffi2i4F8zScMsXrCXjoLq5dAgU1ImPQgyxOk=;
+ b=wibdpcpcVpqQHxtGL4Ai5SGD5EVrLUQO5Ly9cf7Aq2JcCEh4zDIybpj/dPs65Do5kI
+ gvz7nkcYf4edgF5Ik8Isyw5YYiQTjT6troPEqGhyeEXTuaq01Pi+6R9+rpjyl/cGsfCc
+ Ceh4jbARCc/OvZeoE6YplRkf9iZtmCaAQwb0aCZyNQWVNohTpORK3ZIz50vUYRGWgEob
+ csr1PcBK3/glDfNEXOE9EjJOlbAnXW39VC4Ur2WuD4kH+cWSa3/AAt67BTDxRZ+Z1Pps
+ rC82FPnTMc3T8zlTSaNytt2bEdMrf5s3H/F5QJfW21qJP3Fdp6D0rjvTRT54JKqIORoe
+ HyZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=F0dvH29ffi2i4F8zScMsXrCXjoLq5dAgU1ImPQgyxOk=;
+ b=TF2XyzZqR/e1nFOo9IiolencdUKs11wfbGAKKVab4h+rvNCpeSmScmtFrqGDyEYE26
+ T1YmtDcvLOOOz/MQIjTF7uvt6WvlfR5tQKYjr7OZSyEoSVkusPTS33my9ZS6lg+zNLME
+ HjA8ophu9zeIQ350WBR/kHtmzPjKtV9Lw6hyuP75TZTnGWfwwsIcW92DS35wVDLQK8LP
+ d3ijEvH7psMSGfImMsT+VSWXwGBaxLS7FpTCkrI3IdqqyiQuAVPNtA6WvRgxmUcQ/491
+ TRBmh63n9wbyxgvFuCYXbcVwUwTDn1THeEEcCWFG+ZVsCPY5xwkSyHMS4JC75Ccri0mt
+ VlIA==
+X-Gm-Message-State: AOAM5318R2PAlki1bICvPqF4cwjSd4LeTbxv+igK73ZPM5work+IOHxq
+ YQtF4BkJymmpkAd8PUt6tSJn2g==
+X-Google-Smtp-Source: ABdhPJzJ9Z74XOA6gEvmFmXS6Z7WD6p71MlRifSd5NwXrD9UD4gxMch0et8aOg1lY2mrZvNlI1qYWQ==
+X-Received: by 2002:adf:82c8:: with SMTP id 66mr3473869wrc.420.1610556094790; 
+ Wed, 13 Jan 2021 08:41:34 -0800 (PST)
+Received: from dell.default ([91.110.221.229])
+ by smtp.gmail.com with ESMTPSA id t16sm3836510wmi.3.2021.01.13.08.41.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 13 Jan 2021 08:41:34 -0800 (PST)
+From: Lee Jones <lee.jones@linaro.org>
+To: lee.jones@linaro.org
+Subject: [PATCH 5/7] net: ethernet: ibm: ibmvnic: Fix some kernel-doc
+ misdemeanours
+Date: Wed, 13 Jan 2021 16:41:21 +0000
+Message-Id: <20210113164123.1334116-6-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210113164123.1334116-1-lee.jones@linaro.org>
+References: <20210113164123.1334116-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <7ed51025f051f65f3dfe10a88caeb648821994b1.camel@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -68,120 +91,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, heikki.krogerus@linux.intel.com,
- grant.likely@arm.com, saravanak@google.com, peterz@infradead.org,
- xypron.glpk@gmx.de, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org,
- treding@nvidia.com, bgolaszewski@baylibre.com,
- iommu@lists.linux-foundation.org, drinkcat@chromium.org, rdunlap@infradead.org,
- gregkh@linuxfoundation.org, xen-devel@lists.xenproject.org,
- dan.j.williams@intel.com, andriy.shevchenko@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Santiago Leon <santi_leon@yahoo.com>, Jakub Kicinski <kuba@kernel.org>,
+ netdev@vger.kernel.org, Lijun Pan <ljp@linux.ibm.com>,
+ Dany Madden <drt@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-01-13 13:59, Nicolas Saenz Julienne wrote:
-> Hi All,
-> 
-> On Tue, 2021-01-12 at 16:03 -0800, Florian Fainelli wrote:
->> On 1/5/21 7:41 PM, Claire Chang wrote:
->>> Add the initialization function to create restricted DMA pools from
->>> matching reserved-memory nodes in the device tree.
->>>
->>> Signed-off-by: Claire Chang <tientzu@chromium.org>
->>> ---
->>>   include/linux/device.h  |   4 ++
->>>   include/linux/swiotlb.h |   7 +-
->>>   kernel/dma/Kconfig      |   1 +
->>>   kernel/dma/swiotlb.c    | 144 ++++++++++++++++++++++++++++++++++------
->>>   4 files changed, 131 insertions(+), 25 deletions(-)
->>>
->>> diff --git a/include/linux/device.h b/include/linux/device.h
->>> index 89bb8b84173e..ca6f71ec8871 100644
->>> --- a/include/linux/device.h
->>> +++ b/include/linux/device.h
->>> @@ -413,6 +413,7 @@ struct dev_links_info {
->>>    * @dma_pools:	Dma pools (if dma'ble device).
->>>    * @dma_mem:	Internal for coherent mem override.
->>>    * @cma_area:	Contiguous memory area for dma allocations
->>> + * @dma_io_tlb_mem: Internal for swiotlb io_tlb_mem override.
->>>    * @archdata:	For arch-specific additions.
->>>    * @of_node:	Associated device tree node.
->>>    * @fwnode:	Associated device node supplied by platform firmware.
->>> @@ -515,6 +516,9 @@ struct device {
->>>   #ifdef CONFIG_DMA_CMA
->>>   	struct cma *cma_area;		/* contiguous memory area for dma
->>>   					   allocations */
->>> +#endif
->>> +#ifdef CONFIG_SWIOTLB
->>> +	struct io_tlb_mem	*dma_io_tlb_mem;
->>>   #endif
->>>   	/* arch specific additions */
->>>   	struct dev_archdata	archdata;
->>> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
->>> index dd8eb57cbb8f..a1bbd7788885 100644
->>> --- a/include/linux/swiotlb.h
->>> +++ b/include/linux/swiotlb.h
->>> @@ -76,12 +76,13 @@ extern enum swiotlb_force swiotlb_force;
->>>    *
->>>    * @start:	The start address of the swiotlb memory pool. Used to do a quick
->>>    *		range check to see if the memory was in fact allocated by this
->>> - *		API.
->>> + *		API. For restricted DMA pool, this is device tree adjustable.
->>
->> Maybe write it as this is "firmware adjustable" such that when/if ACPI
->> needs something like this, the description does not need updating.
+Fixes the following W=1 kernel build warning(s):
 
-TBH I really don't think this needs calling out at all. Even in the 
-regular case, the details of exactly how and where the pool is allocated 
-are beyond the scope of this code - architectures already have several 
-ways to control that and make their own decisions.
+ from drivers/net/ethernet/ibm/ibmvnic.c:35:
+ inlined from ‘handle_vpd_rsp’ at drivers/net/ethernet/ibm/ibmvnic.c:4124:3:
+ drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter or member 'hdr_field' not described in 'build_hdr_data'
+ drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter or member 'skb' not described in 'build_hdr_data'
+ drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter or member 'hdr_len' not described in 'build_hdr_data'
+ drivers/net/ethernet/ibm/ibmvnic.c:1362: warning: Function parameter or member 'hdr_data' not described in 'build_hdr_data'
+ drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'hdr_field' not described in 'create_hdr_descs'
+ drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'hdr_data' not described in 'create_hdr_descs'
+ drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'len' not described in 'create_hdr_descs'
+ drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'hdr_len' not described in 'create_hdr_descs'
+ drivers/net/ethernet/ibm/ibmvnic.c:1423: warning: Function parameter or member 'scrq_arr' not described in 'create_hdr_descs'
+ drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter or member 'txbuff' not described in 'build_hdr_descs_arr'
+ drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter or member 'num_entries' not described in 'build_hdr_descs_arr'
+ drivers/net/ethernet/ibm/ibmvnic.c:1474: warning: Function parameter or member 'hdr_field' not described in 'build_hdr_descs_arr'
+ drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter or member 'adapter' not described in 'do_change_param_reset'
+ drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter or member 'rwi' not described in 'do_change_param_reset'
+ drivers/net/ethernet/ibm/ibmvnic.c:1832: warning: Function parameter or member 'reset_state' not described in 'do_change_param_reset'
+ drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter or member 'adapter' not described in 'do_reset'
+ drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter or member 'rwi' not described in 'do_reset'
+ drivers/net/ethernet/ibm/ibmvnic.c:1911: warning: Function parameter or member 'reset_state' not described in 'do_reset'
 
->>
->> [snip]
->>
->>> +static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
->>> +				    struct device *dev)
->>> +{
->>> +	struct io_tlb_mem *mem = rmem->priv;
->>> +	int ret;
->>> +
->>> +	if (dev->dma_io_tlb_mem)
->>> +		return -EBUSY;
->>> +
->>> +	if (!mem) {
->>> +		mem = kzalloc(sizeof(*mem), GFP_KERNEL);
->>> +		if (!mem)
->>> +			return -ENOMEM;
->>> +
->>> +		if (!memremap(rmem->base, rmem->size, MEMREMAP_WB)) {
->>
->> MEMREMAP_WB sounds appropriate as a default.
-> 
-> As per the binding 'no-map' has to be disabled here. So AFAIU, this memory will
-> be part of the linear mapping. Is this really needed then?
+Cc: Dany Madden <drt@linux.ibm.com>
+Cc: Lijun Pan <ljp@linux.ibm.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Santiago Leon <santi_leon@yahoo.com>
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Cc: John Allen <jallen@linux.vnet.ibm.com>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 27 +++++++++++++--------------
+ drivers/net/xen-netfront.c         |  6 +++---
+ 2 files changed, 16 insertions(+), 17 deletions(-)
 
-More than that, I'd assume that we *have* to use the linear/direct map 
-address rather than anything that has any possibility of being a vmalloc 
-remap, otherwise we can no longer safely rely on 
-phys_to_dma/dma_to_phys, no?
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index aed985e08e8ad..4c4252e68de5a 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1384,10 +1384,10 @@ static int ibmvnic_close(struct net_device *netdev)
+ 
+ /**
+  * build_hdr_data - creates L2/L3/L4 header data buffer
+- * @hdr_field - bitfield determining needed headers
+- * @skb - socket buffer
+- * @hdr_len - array of header lengths
+- * @tot_len - total length of data
++ * @hdr_field: bitfield determining needed headers
++ * @skb: socket buffer
++ * @hdr_len: array of header lengths
++ * @hdr_data: buffer to write the header to
+  *
+  * Reads hdr_field to determine which headers are needed by firmware.
+  * Builds a buffer containing these headers.  Saves individual header
+@@ -1444,11 +1444,11 @@ static int build_hdr_data(u8 hdr_field, struct sk_buff *skb,
+ 
+ /**
+  * create_hdr_descs - create header and header extension descriptors
+- * @hdr_field - bitfield determining needed headers
+- * @data - buffer containing header data
+- * @len - length of data buffer
+- * @hdr_len - array of individual header lengths
+- * @scrq_arr - descriptor array
++ * @hdr_field: bitfield determining needed headers
++ * @hdr_data: buffer containing header data
++ * @len: length of data buffer
++ * @hdr_len: array of individual header lengths
++ * @scrq_arr: descriptor array
+  *
+  * Creates header and, if needed, header extension descriptors and
+  * places them in a descriptor array, scrq_arr
+@@ -1496,10 +1496,9 @@ static int create_hdr_descs(u8 hdr_field, u8 *hdr_data, int len, int *hdr_len,
+ 
+ /**
+  * build_hdr_descs_arr - build a header descriptor array
+- * @skb - socket buffer
+- * @num_entries - number of descriptors to be sent
+- * @subcrq - first TX descriptor
+- * @hdr_field - bit field determining which headers will be sent
++ * @txbuff: tx buffer
++ * @num_entries: number of descriptors to be sent
++ * @hdr_field: bit field determining which headers will be sent
+  *
+  * This function will build a TX descriptor array with applicable
+  * L2/L3/L4 packet header descriptors to be sent by send_subcrq_indirect.
+@@ -1925,7 +1924,7 @@ static int ibmvnic_set_mac(struct net_device *netdev, void *p)
+ 	return rc;
+ }
+ 
+-/**
++/*
+  * do_reset returns zero if we are able to keep processing reset events, or
+  * non-zero if we hit a fatal error and must halt.
+  */
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index c20b78120bb42..6ef2adbd283a3 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1580,7 +1580,7 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
+ 	return ERR_PTR(err);
+ }
+ 
+-/**
++/*
+  * Entry point to this code when a new device is created.  Allocate the basic
+  * structures and the ring buffers for communication with the backend, and
+  * inform the backend of the appropriate details for those.
+@@ -1657,7 +1657,7 @@ static void xennet_disconnect_backend(struct netfront_info *info)
+ 	}
+ }
+ 
+-/**
++/*
+  * We are reconnecting to the backend, due to a suspend/resume, or a backend
+  * driver restart.  We tear down our netif structure and recreate it, but
+  * leave the device-layer structures intact so that this is transparent to the
+@@ -2303,7 +2303,7 @@ static int xennet_connect(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-/**
++/*
+  * Callback received when the backend's state changes.
+  */
+ static void netback_changed(struct xenbus_device *dev,
+-- 
+2.25.1
 
-That said, given that we're not actually using the returned address, I'm 
-not entirely sure what the point of this call is anyway. If we can 
-assume it's always going to return the linear map address via 
-try_ram_remap() then we can equally just go ahead and use the linear map 
-address straight away. I don't really see how we could ever hit the 
-"is_ram == REGION_MIXED" case in memremap() that would return NULL, if 
-we passed the memblock check earlier in __reserved_mem_alloc_size() such 
-that this rmem node ever got to be initialised at all.
-
-Robin.
-
->> Documentation/devicetree/bindings/reserved-memory/ramoops.txt does
->> define an "unbuffered" property which in premise could be applied to the
->> generic reserved memory binding as well and that we may have to be
->> honoring here, if we were to make it more generic. Oh well, this does
->> not need to be addressed right now I guess.
-> 
-> 
-> 
