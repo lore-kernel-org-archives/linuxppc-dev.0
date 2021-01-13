@@ -2,23 +2,24 @@ Return-Path: <SRS0=WgSo=GQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 035E9C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 12:45:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01CFBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 12:48:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 025D8230FC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 12:45:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 025D8230FC
+	by mail.kernel.org (Postfix) with ESMTPS id E64632337F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 12:48:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E64632337F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DG6cT6nKWzDrQP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 23:45:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DG6gg69FQzDqJY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jan 2021 23:48:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,21 +29,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DG6XR4GLxzDqDh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 23:42:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DG6Zw4mM7zDrQP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2021 23:44:24 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 3EA2768B02; Wed, 13 Jan 2021 13:42:09 +0100 (CET)
-Date: Wed, 13 Jan 2021 13:42:09 +0100
+ id 5DAEB68AFE; Wed, 13 Jan 2021 13:44:16 +0100 (CET)
+Date: Wed, 13 Jan 2021 13:44:16 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [RFC PATCH v3 2/6] swiotlb: Add restricted DMA pool
-Message-ID: <20210113124209.GA1383@lst.de>
+Subject: Re: [RFC PATCH v3 3/6] swiotlb: Use restricted DMA pool if available
+Message-ID: <20210113124416.GB1383@lst.de>
 References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-3-tientzu@chromium.org>
+ <20210106034124.30560-4-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210106034124.30560-3-tientzu@chromium.org>
+In-Reply-To: <20210106034124.30560-4-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,31 +73,21 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 > +#ifdef CONFIG_SWIOTLB
-> +	struct io_tlb_mem	*dma_io_tlb_mem;
->  #endif
+> +	if (unlikely(swiotlb_force == SWIOTLB_FORCE) || dev->dma_io_tlb_mem)
+>  		return swiotlb_map(dev, phys, size, dir, attrs);
+> +#endif
 
-Please add a new config option for this code instead of always building
-it when swiotlb is enabled.
+Please provide a wrapper for the dev->dma_io_tlb_mem check that
+always returns false if the per-device swiotlb support is not enabled.
 
-> +static int swiotlb_init_io_tlb_mem(struct io_tlb_mem *mem, phys_addr_t start,
-> +				   size_t size)
+> index 7fb2ac087d23..1f05af09e61a 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -222,7 +222,6 @@ int __init swiotlb_init_with_tbl(char *tlb, unsigned long nslabs, int verbose)
+>  		mem->orig_addr[i] = INVALID_PHYS_ADDR;
+>  	}
+>  	mem->index = 0;
+> -	no_iotlb_memory = false;
 
-Can you split the refactoring in swiotlb.c into one or more prep
-patches?
+How does this fit in here?
 
-> +static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
-> +				    struct device *dev)
-> +{
-> +	struct io_tlb_mem *mem = rmem->priv;
-> +	int ret;
-> +
-> +	if (dev->dma_io_tlb_mem)
-> +		return -EBUSY;
-> +
-> +	if (!mem) {
-> +		mem = kzalloc(sizeof(*mem), GFP_KERNEL);
-> +		if (!mem)
-> +			return -ENOMEM;
-
-What is the calling convention here that allows for a NULL and non-NULL
-private data?
