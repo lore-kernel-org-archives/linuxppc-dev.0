@@ -2,62 +2,87 @@ Return-Path: <SRS0=IYgH=GR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EDE1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45BC1C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:58:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0E2521D46
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:56:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0E2521D46
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6FE072137B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:58:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FE072137B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGw6z5D5nzDrQb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:56:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGw8p5MYwzDr5d
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:58:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::429;
+ helo=mail-wr1-x429.google.com; envelope-from=lee.jones@linaro.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jHfHFDrk; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=j/heu2mu; dkim-atps=neutral
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com
+ [IPv6:2a00:1450:4864:20::429])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DGw4k43VczDr5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 06:54:30 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 10D7523B2F;
- Thu, 14 Jan 2021 16:49:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1610642959;
- bh=65pHwfEnxIO+KB+8lFvkgezdzPtnmMUdO//94olI6vI=;
- h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
- b=jHfHFDrkdgJpDwQVRHeWH7b30XpaXrfdc82v4IFN913LRBw0YvDm28IVCZClxBv0L
- l7LUzN1ljXzazxofxAQZ5MJYb00sqpIAvYqGSdQbkHXVwUM25k+1TkkzhD66+oIAY+
- 95aMx6p1Opg1xcRBLduZ/ST/jTvH2066akpcZvnzYPm8FxfNSe0uH9gWrKL13G8vgI
- d7nurpcITHiVvedCfSIF0ox6wSYRJxF8q+88fj5bLADaXXFgcjAz89kAGc5FB9TlQy
- IAFlMGOvUHhEKGTzSywqhiqlF/UlcFaM9oQKdBDF+I2un/Iqrg4UelvIF9VHwtX8v2
- QcnNQGduZPXSg==
-From: Mark Brown <broonie@kernel.org>
-To: Linus Walleij <linus.walleij@linaro.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Sven Van Asbroeck <thesven73@gmail.com>
-In-Reply-To: <6b51cc2bfbca70d3e9b9da7b7aa4c7a9d793ca0e.1610629002.git.christophe.leroy@csgroup.eu>
-References: <6b51cc2bfbca70d3e9b9da7b7aa4c7a9d793ca0e.1610629002.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] spi: fsl: Fix driver breakage when SPI_CS_HIGH is not set
- in spi->mode
-Message-Id: <161064292109.43781.3127571598832303421.b4-ty@kernel.org>
-Date: Thu, 14 Jan 2021 16:48:41 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGw4n5zPfzDr5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 06:54:31 +1100 (AEDT)
+Received: by mail-wr1-x429.google.com with SMTP id 91so7057263wrj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 11:54:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to;
+ bh=Jco6OKkBzH2W5YMgKN8CdIkvv1c2tCGRqtwwKgOzoTU=;
+ b=j/heu2munUhWuITG04w2E1rUlnHuKEPX2QcskO7PII2HtxbjLoBk0vUIcYEDq+Wzro
+ YLJmhogwgK7dlTRE23UGZqyCSoOgK1BzwC0fWeASrYRSGQazGVMHHmXW9K9wa+vH4eTp
+ 7hJXY4pc3DRmorYpfjoKJWoFz8Uvtjw+DBeVr5OjnyRmzsb+lM9WLIg/+YMqhXwLk5qd
+ RNXYmJFSZxYTOJYA90oJcZWqt6vrrA3MHDsaWY5r8+hnBBr2/7nsrV2TFzYqtCwHCchP
+ 4WXaxG6eUxVUnT80m6hPSIQ9Qd9QUYa1vNxPvRIelB9mmyGw38k8IiFKHNclOgN9xw/C
+ ayag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to;
+ bh=Jco6OKkBzH2W5YMgKN8CdIkvv1c2tCGRqtwwKgOzoTU=;
+ b=lHE6yrib3727diUO8fo2talVEPqVluBrQvA5mbUYfCSQLqa4Mm2Am2PcKdg83QkVD5
+ mT2XPWej95Ch8BmEy16UOKqUqIkPFAWdrsdHmh/OGdzGruQFXkwfFDnWWc0nKTOaNQiW
+ z/mEkDPXDarad2v5dBkmef31mUJpf2cT2ma01AuHbPHL1oegkRGBk9rDt9UROrDdfvZ9
+ 7GO9bD3DdNiWLdO/ZpSbOVmtQ18/7mUiHAYbsLzXdouICqCocKuDN0Ef3+cq8fWu/Ph9
+ jiAm3pueao2ugPakA/DzKkaUK95rvRMwrvB5+q+v995ZkP2+zUcNvdrFNeRrMge0JLMv
+ XQPQ==
+X-Gm-Message-State: AOAM530YHhjoeskGLgBhdmAmW2m1hRqvaw1pE1TRoXEdCuipCiwCaq2r
+ qxV0bqA2QgCv5r2M3wAeZKUYGA==
+X-Google-Smtp-Source: ABdhPJwTAnSC8i9erqyaC2T3bmWeIfWfGjCjtI2qx+TyOz9rMatI0AIgHFfUQq4dPzhL98mW7iEdYA==
+X-Received: by 2002:adf:9d42:: with SMTP id o2mr9465225wre.135.1610654066061; 
+ Thu, 14 Jan 2021 11:54:26 -0800 (PST)
+Received: from dell ([91.110.221.178])
+ by smtp.gmail.com with ESMTPSA id b3sm5050877wme.32.2021.01.14.11.54.24
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 14 Jan 2021 11:54:25 -0800 (PST)
+Date: Thu, 14 Jan 2021 19:54:22 +0000
+From: Lee Jones <lee.jones@linaro.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH v2 0/7] Rid W=1 warnings in Ethernet
+Message-ID: <20210114195422.GB3975472@dell>
+References: <20210113164123.1334116-1-lee.jones@linaro.org>
+ <20210113183551.6551a6a2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20210114083349.GI3975472@dell>
+ <20210114091453.30177d20@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210114091453.30177d20@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,44 +94,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-spi@vger.kernel.org
+Cc: Paul Durrant <paul@xen.org>, Kurt Kanzenbach <kurt@linutronix.de>,
+ Alexei Starovoitov <ast@kernel.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, Peter Cammaert <pc@denkart.be>,
+ Paul Mackerras <paulus@samba.org>, Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
+ Wei Liu <wei.liu@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Santiago Leon <santi_leon@yahoo.com>, xen-devel@lists.xenproject.org,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, Daris A Nevil <dnevil@snmc.com>,
+ Lijun Pan <ljp@linux.ibm.com>, Ivan Khoronzhuk <ivan.khoronzhuk@linaro.org>,
+ Nicolas Pitre <nico@fluxnic.net>, Geoff Levand <geoff@infradead.org>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Erik Stahlman <erik@vt.edu>, John Allen <jallen@linux.vnet.ibm.com>,
+ Utz Bacher <utz.bacher@de.ibm.com>, Dany Madden <drt@linux.ibm.com>,
+ bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Russell King <rmk@arm.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Jan 2021 13:09:37 +0000 (UTC), Christophe Leroy wrote:
-> Commit 766c6b63aa04 ("spi: fix client driver breakages when using GPIO
-> descriptors") broke fsl spi driver.
+On Thu, 14 Jan 2021, Jakub Kicinski wrote:
+
+> On Thu, 14 Jan 2021 08:33:49 +0000 Lee Jones wrote:
+> > On Wed, 13 Jan 2021, Jakub Kicinski wrote:
+> > 
+> > > On Wed, 13 Jan 2021 16:41:16 +0000 Lee Jones wrote:  
+> > > > Resending the stragglers again.                                                                                  
+> > > > 
+> > > > This set is part of a larger effort attempting to clean-up W=1                                                   
+> > > > kernel builds, which are currently overwhelmingly riddled with                                                   
+> > > > niggly little warnings.                                                                                          
+> > > >                                                                                                                  
+> > > > v2:                                                                                                              
+> > > >  - Squashed IBM patches                                                                                      
+> > > >  - Fixed real issue in SMSC
+> > > >  - Added Andrew's Reviewed-by tags on remainder  
+> > > 
+> > > Does not apply, please rebase on net-next/master.  
+> > 
+> > These are based on Tuesday's next/master.
 > 
-> As now we fully rely on gpiolib for handling the polarity of
-> chip selects, the driver shall not alter the GPIO value anymore
-> when SPI_CS_HIGH is not set in spi->mode.
+> What's next/master?
 
-Applied to
+I'm not sure if this is a joke, or not? :)
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
+next/master == Linux Next.  The daily merged repo where all of the
+*-next branches end up to ensure interoperability.  It's also the
+branch that is most heavily tested by the auto-builders to ensure the
+vast majority of issues are ironed out before hitting Mainline.
 
-Thanks!
+> This is net-next:
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/
 
-[1/1] spi: fsl: Fix driver breakage when SPI_CS_HIGH is not set in spi->mode
-      commit: 7a2da5d7960a64ee923fe3e31f01a1101052c66f
+Looks like net-next gets merged into next/master:
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+commit 452958f1f3d1c8980a8414f9c37c8c6de24c7d32
+Merge: 1eabba209a17a f50e2f9f79164
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Thu Jan 14 10:35:40 2021 +1100
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+    Merge remote-tracking branch 'net-next/master'
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+So I'm not sure what it's conflicting with.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+Do you have patches in net-next that didn't make it into next/master
+for some reason?
 
-Thanks,
-Mark
+I'll try to rebase again tomorrow.
+
+Hopefully I am able to reproduce your issue by then.
+
+> > I just rebased them now with no issue.
+> > 
+> > What conflict are you seeing?
+> 
+> Applying: net: ethernet: smsc: smc91x: Fix function name in kernel-doc header
+> error: patch failed: drivers/net/ethernet/smsc/smc91x.c:2192
+> error: drivers/net/ethernet/smsc/smc91x.c: patch does not apply
+> Patch failed at 0001 net: ethernet: smsc: smc91x: Fix function name in kernel-doc header
+> hint: Use 'git am --show-current-patch=diff' to see the failed patch
+> When you have resolved this problem, run "git am --continue".
+> If you prefer to skip this patch, run "git am --skip" instead.
+> To restore the original branch and stop patching, run "git am --abort".
+
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog
