@@ -2,100 +2,101 @@ Return-Path: <SRS0=IYgH=GR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74A11C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 22:10:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A06AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 22:12:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B779E2310A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 22:10:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B779E2310A
+	by mail.kernel.org (Postfix) with ESMTPS id B678B22A84
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 22:12:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B678B22A84
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGz5s2fPqzDsZR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 09:10:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGz7q4ZLNzDsPw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 09:12:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=RdbCeeNq; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=W8ldI+0g; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DGysq3HkPzDsPt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 09:00:14 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10ELgQDm001461; Thu, 14 Jan 2021 17:00:07 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGysq4qz0zDsPv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 09:00:15 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 10ELWcOF023486; Thu, 14 Jan 2021 17:00:09 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-type :
+ : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=NOHoatsnegVdxaRI/wuUzS/4ybVXrl1Q9NZcvu3qhkw=;
- b=RdbCeeNqFoe8j3vhK4Om3iMxEhEWw+jro4Q0+Wd3kbd487C8eJmbApcgCuwFnxHs+T1X
- AkIrWfjc17+QBTfI9WXqPl0eeFigcBf1z2/+4REfTozp1boKqpHRCvPq7iLAUqPiEO2W
- Sg4UPbwzER7+oRYIIrB1ztbFwt9Xpu3UJ+9o7yP/ZmIyfQSInzW0bdLQtUvy7nm8KVVw
- wNONgjZzo3pLhAeX49FdtYw20NhS2vAgCbc6VO/UzUvi+suPMxTT36S7VTbLKMxruMgL
- FsvSW9NCKXFce12J9aLDTaOtVHsm6yIbC8poOvi2nqbvNgaUwE/1NfpjtR1Qlk3wn5sr mw== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 362x3r8att-1
+ bh=a0XWaV4X1JBvqAlmDy4c/K1A6qjScGXOtcvS+noK1ao=;
+ b=W8ldI+0gPbKLqRpsIyjM5fGo3YXDcumfYZZI3o/va2Dxn/y12q3VBE2SERtoSW0MH4Yx
+ QY82zprj02/+6ozNfeps22Ot66RAUm7xWqBo88Kmjoj4wX7qj0tsUShxJ/nfM28W6VZM
+ KoPSfB8xS4Z9YXRmzv150AnXMRyedyC9AG0JN0jaDko7gzvKa+2bM6AGhCyE6nWLNiOv
+ XZpZpqhiIK25hL8YiA/xrLdtLOniAenAuHxZPuuTZLrWO8+r6mF16Rr6DyuBLOwiEMsU
+ OPW6gHasYLtezT84SNb4NA8psE+lvazmpOmb19yew50qNv5PGRUdY5mJPJg9NBEECjpc sA== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 362vwr24p8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 14 Jan 2021 17:00:07 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10ELv88Q023426;
- Thu, 14 Jan 2021 22:00:06 GMT
+ Thu, 14 Jan 2021 17:00:09 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10ELwJ7k011122;
+ Thu, 14 Jan 2021 22:00:08 GMT
 Received: from b03cxnp08025.gho.boulder.ibm.com
  (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma01wdc.us.ibm.com with ESMTP id 35y449g8kc-1
+ by ppma03dal.us.ibm.com with ESMTP id 35y449t7xx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 14 Jan 2021 22:00:06 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ Thu, 14 Jan 2021 22:00:08 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10EM059X28705076
+ 10EM070418088418
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 14 Jan 2021 22:00:05 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2772CBE054;
- Thu, 14 Jan 2021 22:00:05 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4597BE051;
- Thu, 14 Jan 2021 22:00:04 +0000 (GMT)
+ Thu, 14 Jan 2021 22:00:07 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2DFB178069;
+ Thu, 14 Jan 2021 22:00:07 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 196257806E;
+ Thu, 14 Jan 2021 22:00:07 +0000 (GMT)
 Received: from localhost (unknown [9.163.36.68])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 14 Jan 2021 22:00:04 +0000 (GMT)
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Jan 2021 22:00:07 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/6] powerpc/rtas: miscellaneous cleanups,
- user region allocation
-Date: Thu, 14 Jan 2021 15:59:58 -0600
-Message-Id: <20210114220004.1138993-1-nathanl@linux.ibm.com>
+Subject: [PATCH 5/6] powerpc/rtas: rename RTAS_RMOBUF_MAX to
+ RTAS_USER_REGION_SIZE
+Date: Thu, 14 Jan 2021 16:00:03 -0600
+Message-Id: <20210114220004.1138993-6-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210114220004.1138993-1-nathanl@linux.ibm.com>
+References: <20210114220004.1138993-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-14_08:2021-01-14,
  2021-01-14 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=617 spamscore=0
- bulkscore=0 impostorscore=0 phishscore=0 suspectscore=0 mlxscore=0
- lowpriorityscore=0 priorityscore=1501 malwarescore=0 adultscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101140122
+ adultscore=0 suspectscore=0
+ impostorscore=0 priorityscore=1501 mlxscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1015 malwarescore=0 mlxlogscore=999
+ bulkscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101140124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,34 +114,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The region exposed to user space for use as work areas passed to
-sys_rtas() can be incorrectly allocated on radix, leading to failures
-in users of librtas. Correct this and clean up some of the code
-visited along the way.
+RTAS_RMOBUF_MAX doesn't actually describe a "maximum" value in any
+sense. It represents the size of an area of memory set aside for user
+space to use as work areas for certain RTAS calls.
 
-I think the cleanups should be unobjectionable and I've placed them
-first in the series. Please check my work on the rtas_rmo_buf
-allocation changes; they are only lightly tested so far (slot add on
-Power9 PowerVM, and comparison of /memory@0/reg with the contents of
-/proc/powerpc/rtas/rmo_buf on qemu Power9 w/radix).
+Rename it to RTAS_USER_REGION, and express the value in terms of the
+number of work areas allocated.
 
-I suspect the per-cpu RTAS argument structures for reentrant calls
-need similar measures, but I can add that to the series once there is
-consensus on the approach.
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 
-Nathan Lynch (6):
-  powerpc/rtas: improve ppc_rtas_rmo_buf_show documentation
-  powerpc/rtas-proc: remove unused RMO_READ_BUF_MAX
-  powerpc/rtas: remove ibm_suspend_me_token
-  powerpc/rtas: move syscall filter setup into separate function
-  powerpc/rtas: rename RTAS_RMOBUF_MAX to RTAS_USER_REGION_SIZE
-  powerpc/rtas: constrain user region allocation to RMA
+squash! powerpc/rtas: rename RTAS_RMOBUF_MAX to RTAS_USER_REGION_SIZE
+---
+ arch/powerpc/include/asm/rtas.h | 9 ++++++---
+ arch/powerpc/kernel/rtas-proc.c | 2 +-
+ arch/powerpc/kernel/rtas.c      | 2 +-
+ 3 files changed, 8 insertions(+), 5 deletions(-)
 
- arch/powerpc/include/asm/rtas.h |   9 ++-
- arch/powerpc/kernel/rtas-proc.c |  15 +++--
- arch/powerpc/kernel/rtas.c      | 108 ++++++++++++++++++++++++--------
- 3 files changed, 98 insertions(+), 34 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 332e1000ca0f..1aa7ab1cbc84 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -19,8 +19,11 @@
+ #define RTAS_UNKNOWN_SERVICE (-1)
+ #define RTAS_INSTANTIATE_MAX (1ULL<<30) /* Don't instantiate rtas at/above this value */
+ 
+-/* Buffer size for ppc_rtas system call. */
+-#define RTAS_RMOBUF_MAX (64 * 1024)
++/* Work areas shared with RTAS must be 4K, naturally aligned. */
++#define RTAS_WORK_AREA_SIZE   4096
++
++/* Work areas allocated for user space access. */
++#define RTAS_USER_REGION_SIZE (RTAS_WORK_AREA_SIZE * 16)
+ 
+ /* RTAS return status codes */
+ #define RTAS_BUSY		-2    /* RTAS Busy */
+@@ -357,7 +360,7 @@ extern void rtas_take_timebase(void);
+ static inline int page_is_rtas_user_buf(unsigned long pfn)
+ {
+ 	unsigned long paddr = (pfn << PAGE_SHIFT);
+-	if (paddr >= rtas_rmo_buf && paddr < (rtas_rmo_buf + RTAS_RMOBUF_MAX))
++	if (paddr >= rtas_rmo_buf && paddr < (rtas_rmo_buf + RTAS_USER_REGION_SIZE))
+ 		return 1;
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/rtas-proc.c b/arch/powerpc/kernel/rtas-proc.c
+index d2b0d99824a4..6857a5b0a1c3 100644
+--- a/arch/powerpc/kernel/rtas-proc.c
++++ b/arch/powerpc/kernel/rtas-proc.c
+@@ -767,6 +767,6 @@ static int ppc_rtas_tone_volume_show(struct seq_file *m, void *v)
+  */
+ static int ppc_rtas_rmo_buf_show(struct seq_file *m, void *v)
+ {
+-	seq_printf(m, "%016lx %x\n", rtas_rmo_buf, RTAS_RMOBUF_MAX);
++	seq_printf(m, "%016lx %x\n", rtas_rmo_buf, RTAS_USER_REGION_SIZE);
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 55f6aa170e57..da65faadbbb2 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -1204,7 +1204,7 @@ void __init rtas_initialize(void)
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		rtas_region = min(ppc64_rma_size, RTAS_INSTANTIATE_MAX);
+ #endif
+-	rtas_rmo_buf = memblock_phys_alloc_range(RTAS_RMOBUF_MAX, PAGE_SIZE,
++	rtas_rmo_buf = memblock_phys_alloc_range(RTAS_USER_REGION_SIZE, PAGE_SIZE,
+ 						 0, rtas_region);
+ 	if (!rtas_rmo_buf)
+ 		panic("ERROR: RTAS: Failed to allocate %lx bytes below %pa\n",
 -- 
 2.29.2
 
