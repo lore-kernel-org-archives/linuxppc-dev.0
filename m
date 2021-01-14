@@ -2,87 +2,100 @@ Return-Path: <SRS0=IYgH=GR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45BC1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8577C433E9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:34:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FE072137B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:58:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FE072137B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id D218B23A5E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:34:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D218B23A5E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGw8p5MYwzDr5d
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:58:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGwyV0t37zDrRy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 07:34:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::429;
- helo=mail-wr1-x429.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=j/heu2mu; dkim-atps=neutral
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com
- [IPv6:2a00:1450:4864:20::429])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=eWg2vY6R; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DGw4n5zPfzDr5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 06:54:31 +1100 (AEDT)
-Received: by mail-wr1-x429.google.com with SMTP id 91so7057263wrj.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 11:54:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to;
- bh=Jco6OKkBzH2W5YMgKN8CdIkvv1c2tCGRqtwwKgOzoTU=;
- b=j/heu2munUhWuITG04w2E1rUlnHuKEPX2QcskO7PII2HtxbjLoBk0vUIcYEDq+Wzro
- YLJmhogwgK7dlTRE23UGZqyCSoOgK1BzwC0fWeASrYRSGQazGVMHHmXW9K9wa+vH4eTp
- 7hJXY4pc3DRmorYpfjoKJWoFz8Uvtjw+DBeVr5OjnyRmzsb+lM9WLIg/+YMqhXwLk5qd
- RNXYmJFSZxYTOJYA90oJcZWqt6vrrA3MHDsaWY5r8+hnBBr2/7nsrV2TFzYqtCwHCchP
- 4WXaxG6eUxVUnT80m6hPSIQ9Qd9QUYa1vNxPvRIelB9mmyGw38k8IiFKHNclOgN9xw/C
- ayag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:content-transfer-encoding
- :in-reply-to;
- bh=Jco6OKkBzH2W5YMgKN8CdIkvv1c2tCGRqtwwKgOzoTU=;
- b=lHE6yrib3727diUO8fo2talVEPqVluBrQvA5mbUYfCSQLqa4Mm2Am2PcKdg83QkVD5
- mT2XPWej95Ch8BmEy16UOKqUqIkPFAWdrsdHmh/OGdzGruQFXkwfFDnWWc0nKTOaNQiW
- z/mEkDPXDarad2v5dBkmef31mUJpf2cT2ma01AuHbPHL1oegkRGBk9rDt9UROrDdfvZ9
- 7GO9bD3DdNiWLdO/ZpSbOVmtQ18/7mUiHAYbsLzXdouICqCocKuDN0Ef3+cq8fWu/Ph9
- jiAm3pueao2ugPakA/DzKkaUK95rvRMwrvB5+q+v995ZkP2+zUcNvdrFNeRrMge0JLMv
- XQPQ==
-X-Gm-Message-State: AOAM530YHhjoeskGLgBhdmAmW2m1hRqvaw1pE1TRoXEdCuipCiwCaq2r
- qxV0bqA2QgCv5r2M3wAeZKUYGA==
-X-Google-Smtp-Source: ABdhPJwTAnSC8i9erqyaC2T3bmWeIfWfGjCjtI2qx+TyOz9rMatI0AIgHFfUQq4dPzhL98mW7iEdYA==
-X-Received: by 2002:adf:9d42:: with SMTP id o2mr9465225wre.135.1610654066061; 
- Thu, 14 Jan 2021 11:54:26 -0800 (PST)
-Received: from dell ([91.110.221.178])
- by smtp.gmail.com with ESMTPSA id b3sm5050877wme.32.2021.01.14.11.54.24
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 14 Jan 2021 11:54:25 -0800 (PST)
-Date: Thu, 14 Jan 2021 19:54:22 +0000
-From: Lee Jones <lee.jones@linaro.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH v2 0/7] Rid W=1 warnings in Ethernet
-Message-ID: <20210114195422.GB3975472@dell>
-References: <20210113164123.1334116-1-lee.jones@linaro.org>
- <20210113183551.6551a6a2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210114083349.GI3975472@dell>
- <20210114091453.30177d20@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGwvx6kWYzDrQb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 07:31:57 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 10EK3WpO133088; Thu, 14 Jan 2021 15:31:54 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=w9GOEHUIwadmmQ6/WimiQJ9BqdJfITO+Oan6ZTv5mO4=;
+ b=eWg2vY6Rpq1pKQ9E+c/N4BRnUP81IpJSiX4tmCZ1qYPq7GAQ2r9dnrRSuBG3dNggOzpi
+ Q5saCITWT7H8DEYFeJWWBz6AtAuDORvQkzx6f2K7aIm8Xf4b3L66BiixFAksMPAeCUKN
+ oBf4fhzneIkC+N++QKzaNcTqYSObJNEr9jZ9wZV9qUTkJfeSOv94leXKiakeU6SeueoH
+ Pk2fNjCmfeuenvLZCdTBf2wZKxMQu7VM4MjFht3K+TWc3CPT8OMlqKfn9CQZ0zg5Ixq4
+ c4SnOmKlaJdFDmSaeFutQ0Fpf4/gcSpizxLA6O7n/tgy7ZnatMsdQ0oYbbBs1DBbj1Yi HQ== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 362vnm8pe0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 14 Jan 2021 15:31:53 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10EKRP40032079;
+ Thu, 14 Jan 2021 20:31:52 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04wdc.us.ibm.com with ESMTP id 35y449fsjs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 14 Jan 2021 20:31:52 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10EKVpHX27066818
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 14 Jan 2021 20:31:51 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 31CF16E052;
+ Thu, 14 Jan 2021 20:31:51 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D2F906E04C;
+ Thu, 14 Jan 2021 20:31:50 +0000 (GMT)
+Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Jan 2021 20:31:50 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Subject: [PATCH v5 02/21] ibmvfc: move event pool init/free routines
+Date: Thu, 14 Jan 2021 14:31:29 -0600
+Message-Id: <20210114203148.246656-3-tyreld@linux.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210114203148.246656-1-tyreld@linux.ibm.com>
+References: <20210114203148.246656-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210114091453.30177d20@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2021-01-14_07:2021-01-14,
+ 2021-01-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=959 phishscore=0
+ mlxscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
+ lowpriorityscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101140115
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,96 +107,197 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Durrant <paul@xen.org>, Kurt Kanzenbach <kurt@linutronix.de>,
- Alexei Starovoitov <ast@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, Peter Cammaert <pc@denkart.be>,
- Paul Mackerras <paulus@samba.org>, Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
- Wei Liu <wei.liu@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- John Fastabend <john.fastabend@gmail.com>,
- Santiago Leon <santi_leon@yahoo.com>, xen-devel@lists.xenproject.org,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
- Rusty Russell <rusty@rustcorp.com.au>, Daris A Nevil <dnevil@snmc.com>,
- Lijun Pan <ljp@linux.ibm.com>, Ivan Khoronzhuk <ivan.khoronzhuk@linaro.org>,
- Nicolas Pitre <nico@fluxnic.net>, Geoff Levand <geoff@infradead.org>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Erik Stahlman <erik@vt.edu>, John Allen <jallen@linux.vnet.ibm.com>,
- Utz Bacher <utz.bacher@de.ibm.com>, Dany Madden <drt@linux.ibm.com>,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, Russell King <rmk@arm.linux.org.uk>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Jan 2021, Jakub Kicinski wrote:
+The next patch in this series reworks the event pool allocation calls to
+happen within the individual queue allocation routines instead of as
+independent calls.
 
-> On Thu, 14 Jan 2021 08:33:49 +0000 Lee Jones wrote:
-> > On Wed, 13 Jan 2021, Jakub Kicinski wrote:
-> > 
-> > > On Wed, 13 Jan 2021 16:41:16 +0000 Lee Jones wrote:  
-> > > > Resending the stragglers again.                                                                                  
-> > > > 
-> > > > This set is part of a larger effort attempting to clean-up W=1                                                   
-> > > > kernel builds, which are currently overwhelmingly riddled with                                                   
-> > > > niggly little warnings.                                                                                          
-> > > >                                                                                                                  
-> > > > v2:                                                                                                              
-> > > >  - Squashed IBM patches                                                                                      
-> > > >  - Fixed real issue in SMSC
-> > > >  - Added Andrew's Reviewed-by tags on remainder  
-> > > 
-> > > Does not apply, please rebase on net-next/master.  
-> > 
-> > These are based on Tuesday's next/master.
-> 
-> What's next/master?
+Move the init/free routines earlier in ibmvfc.c to prevent undefined
+reference errors when calling these functions from the queue allocation
+code. No functional change.
 
-I'm not sure if this is a joke, or not? :)
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 151 +++++++++++++++++----------------
+ 1 file changed, 76 insertions(+), 75 deletions(-)
 
-next/master == Linux Next.  The daily merged repo where all of the
-*-next branches end up to ensure interoperability.  It's also the
-branch that is most heavily tested by the auto-builders to ensure the
-vast majority of issues are ironed out before hitting Mainline.
-
-> This is net-next:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/
-
-Looks like net-next gets merged into next/master:
-
-commit 452958f1f3d1c8980a8414f9c37c8c6de24c7d32
-Merge: 1eabba209a17a f50e2f9f79164
-Author: Stephen Rothwell <sfr@canb.auug.org.au>
-Date:   Thu Jan 14 10:35:40 2021 +1100
-
-    Merge remote-tracking branch 'net-next/master'
-
-So I'm not sure what it's conflicting with.
-
-Do you have patches in net-next that didn't make it into next/master
-for some reason?
-
-I'll try to rebase again tomorrow.
-
-Hopefully I am able to reproduce your issue by then.
-
-> > I just rebased them now with no issue.
-> > 
-> > What conflict are you seeing?
-> 
-> Applying: net: ethernet: smsc: smc91x: Fix function name in kernel-doc header
-> error: patch failed: drivers/net/ethernet/smsc/smc91x.c:2192
-> error: drivers/net/ethernet/smsc/smc91x.c: patch does not apply
-> Patch failed at 0001 net: ethernet: smsc: smc91x: Fix function name in kernel-doc header
-> hint: Use 'git am --show-current-patch=diff' to see the failed patch
-> When you have resolved this problem, run "git am --continue".
-> If you prefer to skip this patch, run "git am --skip" instead.
-> To restore the original branch and stop patching, run "git am --abort".
-
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 9200fe49c57e..cd9273a5fadb 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -716,6 +716,82 @@ static int ibmvfc_send_crq_init_complete(struct ibmvfc_host *vhost)
+ 	return ibmvfc_send_crq(vhost, 0xC002000000000000LL, 0);
+ }
+ 
++/**
++ * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
++ * @vhost:	ibmvfc host who owns the event pool
++ *
++ * Returns zero on success.
++ **/
++static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
++				  struct ibmvfc_queue *queue)
++{
++	int i;
++	struct ibmvfc_event_pool *pool = &queue->evt_pool;
++
++	ENTER;
++	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
++	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
++	if (!pool->events)
++		return -ENOMEM;
++
++	pool->iu_storage = dma_alloc_coherent(vhost->dev,
++					      pool->size * sizeof(*pool->iu_storage),
++					      &pool->iu_token, 0);
++
++	if (!pool->iu_storage) {
++		kfree(pool->events);
++		return -ENOMEM;
++	}
++
++	INIT_LIST_HEAD(&queue->sent);
++	INIT_LIST_HEAD(&queue->free);
++	spin_lock_init(&queue->l_lock);
++
++	for (i = 0; i < pool->size; ++i) {
++		struct ibmvfc_event *evt = &pool->events[i];
++
++		atomic_set(&evt->free, 1);
++		evt->crq.valid = 0x80;
++		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
++		evt->xfer_iu = pool->iu_storage + i;
++		evt->vhost = vhost;
++		evt->queue = queue;
++		evt->ext_list = NULL;
++		list_add_tail(&evt->queue_list, &queue->free);
++	}
++
++	LEAVE;
++	return 0;
++}
++
++/**
++ * ibmvfc_free_event_pool - Frees memory of the event pool of a host
++ * @vhost:	ibmvfc host who owns the event pool
++ *
++ **/
++static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
++				   struct ibmvfc_queue *queue)
++{
++	int i;
++	struct ibmvfc_event_pool *pool = &queue->evt_pool;
++
++	ENTER;
++	for (i = 0; i < pool->size; ++i) {
++		list_del(&pool->events[i].queue_list);
++		BUG_ON(atomic_read(&pool->events[i].free) != 1);
++		if (pool->events[i].ext_list)
++			dma_pool_free(vhost->sg_pool,
++				      pool->events[i].ext_list,
++				      pool->events[i].ext_list_token);
++	}
++
++	kfree(pool->events);
++	dma_free_coherent(vhost->dev,
++			  pool->size * sizeof(*pool->iu_storage),
++			  pool->iu_storage, pool->iu_token);
++	LEAVE;
++}
++
+ /**
+  * ibmvfc_free_queue - Deallocate queue
+  * @vhost:	ibmvfc host struct
+@@ -1312,81 +1388,6 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+ 	strncpy(login_info->drc_name, location, IBMVFC_MAX_NAME);
+ }
+ 
+-/**
+- * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
+- * @vhost:	ibmvfc host who owns the event pool
+- *
+- * Returns zero on success.
+- **/
+-static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
+-				  struct ibmvfc_queue *queue)
+-{
+-	int i;
+-	struct ibmvfc_event_pool *pool = &queue->evt_pool;
+-
+-	ENTER;
+-	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
+-	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
+-	if (!pool->events)
+-		return -ENOMEM;
+-
+-	pool->iu_storage = dma_alloc_coherent(vhost->dev,
+-					      pool->size * sizeof(*pool->iu_storage),
+-					      &pool->iu_token, 0);
+-
+-	if (!pool->iu_storage) {
+-		kfree(pool->events);
+-		return -ENOMEM;
+-	}
+-
+-	INIT_LIST_HEAD(&queue->sent);
+-	INIT_LIST_HEAD(&queue->free);
+-	spin_lock_init(&queue->l_lock);
+-
+-	for (i = 0; i < pool->size; ++i) {
+-		struct ibmvfc_event *evt = &pool->events[i];
+-		atomic_set(&evt->free, 1);
+-		evt->crq.valid = 0x80;
+-		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
+-		evt->xfer_iu = pool->iu_storage + i;
+-		evt->vhost = vhost;
+-		evt->queue = queue;
+-		evt->ext_list = NULL;
+-		list_add_tail(&evt->queue_list, &queue->free);
+-	}
+-
+-	LEAVE;
+-	return 0;
+-}
+-
+-/**
+- * ibmvfc_free_event_pool - Frees memory of the event pool of a host
+- * @vhost:	ibmvfc host who owns the event pool
+- *
+- **/
+-static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
+-				   struct ibmvfc_queue *queue)
+-{
+-	int i;
+-	struct ibmvfc_event_pool *pool = &queue->evt_pool;
+-
+-	ENTER;
+-	for (i = 0; i < pool->size; ++i) {
+-		list_del(&pool->events[i].queue_list);
+-		BUG_ON(atomic_read(&pool->events[i].free) != 1);
+-		if (pool->events[i].ext_list)
+-			dma_pool_free(vhost->sg_pool,
+-				      pool->events[i].ext_list,
+-				      pool->events[i].ext_list_token);
+-	}
+-
+-	kfree(pool->events);
+-	dma_free_coherent(vhost->dev,
+-			  pool->size * sizeof(*pool->iu_storage),
+-			  pool->iu_storage, pool->iu_token);
+-	LEAVE;
+-}
+-
+ /**
+  * ibmvfc_get_event - Gets the next free event in pool
+  * @vhost:	ibmvfc host struct
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.27.0
+
