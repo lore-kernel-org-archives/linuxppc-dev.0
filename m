@@ -2,145 +2,116 @@ Return-Path: <SRS0=IYgH=GR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6A1DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B2BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:31:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 366D023B3E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:26:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 366D023B3E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 312E723B53
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 19:31:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 312E723B53
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGvS15ZW2zDrpn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:26:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629;
- helo=mail-pl1-x629.google.com; envelope-from=f.fainelli@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGvZj2X7yzDrp4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:31:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=sJaFTBZ3; dkim-atps=neutral
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com
- [IPv6:2607:f8b0:4864:20::629])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=EFG4XU3+; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DGvMB5ZNCzDscm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 06:21:57 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id j1so3425476pld.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 11:21:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=tF8uyKERWCoMyAnlRKqJDO1qWaCVQS8YdldPCqsx9S0=;
- b=sJaFTBZ37WgPKnSYnIC9X0ttgJ4KnYrNxbfK23tXhe3FVi2plUEkuCgczIjgNj1soe
- zOgfMT0+s/KHUkB+I8lHtDfOggJsnE+TBYwLFhae8QCqBUKHfhXAvx6taH8R3eQrNryU
- hCeov6owT+z0GIUsPKd2AQykVhGzkhAt7EfpX9InyZPXfN8HL1URiEfPWV3Vk08PnIMr
- vJ89xFZQq+npyP4fyXbsm4M9Q0OfURLHAXeBS6jYm9atoBh443ZHdzRCKQ+Wysf+i4ZI
- zfPeZwqnzRaeFDAUlmAIk8KrE5opaScYFnCLgvucoARS2zz9WsfsCWydTb7yNvShWYlM
- LIwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=tF8uyKERWCoMyAnlRKqJDO1qWaCVQS8YdldPCqsx9S0=;
- b=XnjcKOq6ga6D0A7FC7L+Ug1/mobyjRI7QHq0GqaQIvulRMakMx+CtdXjy1xIohhwae
- 3kJ0XbgY98SL55VrXzt/MICc3brIqDLPv6+q3rJgNMTsWx1ftKJpymAm1kZlO5wzOWRq
- Na+7uY4OUTsSmEthlwHdjAB/aJoAXZXJHnsy4V7FMF8v2hnch5zU0LbaVU159aix3SUL
- DG4NYdy9/F+bhE/Zl28nYK54zPYNjdWduxSgChIPucqI2M6dYTe64TybNFtAUxO+ATaL
- wOA2lKPkaJWtXxd4vL+V3ev9+vxRA8xQUbD70JyRVtZ9K7G1s8JpeEw2hnMYZ8lcovmF
- 7aWw==
-X-Gm-Message-State: AOAM532Cfi94kWTP0BwVWfQ8H9PDOnhw9UYLHjib6Nw7z4NTj0AZWpX/
- WR9zL4Qc1l/3taZixF8bCXPGLvk3xX8=
-X-Google-Smtp-Source: ABdhPJyPo9ML0x66bHS+KgpIhpg94ojy5fT6fH9mQxG7FMKBoEYl0Sy3IFq3hGAQTn1h+1yxXOP42w==
-X-Received: by 2002:aa7:81d6:0:b029:19e:2987:7465 with SMTP id
- c22-20020aa781d60000b029019e29877465mr8761737pfn.29.1610650373721; 
- Thu, 14 Jan 2021 10:52:53 -0800 (PST)
-Received: from [10.67.48.230] ([192.19.223.252])
- by smtp.googlemail.com with ESMTPSA id r11sm43351596pjj.2.2021.01.14.10.52.50
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 14 Jan 2021 10:52:52 -0800 (PST)
-Subject: Re: [RFC PATCH v3 6/6] of: Add plumbing for restricted DMA pool
-To: Claire Chang <tientzu@chromium.org>
-References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-7-tientzu@chromium.org>
- <95e6dd76-5e18-e445-c351-19fba18f36de@gmail.com>
- <CALiNf29+8Yi93RacsZHr=qYBhQRwqujW6KZVVD=9xPMhpLH5pA@mail.gmail.com>
-From: Florian Fainelli <f.fainelli@gmail.com>
-Autocrypt: addr=f.fainelli@gmail.com; prefer-encrypt=mutual; keydata=
- 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
- M5kY0ACeNhCZJvZ5g4C2Lc9fcTHu8jxmEkI=
-Message-ID: <5f276678-3ab2-ddc8-640c-6dbbe173463c@gmail.com>
-Date: Thu, 14 Jan 2021 10:52:44 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGvXK0fSKzDqft
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 06:29:52 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 10EH9hvR184364; Thu, 14 Jan 2021 12:24:39 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=O2dcG2TjnlorTozOyHjBrG5WVWzj7GSsdgjwEfc4Oqo=;
+ b=EFG4XU3+FpG7A1Sit/iwVmQQCiBn1ZtsIg7uMmyzRlPNX/dCjo+9WFpLmymr/XtmIE/8
+ 1uFBwLRUrXnf3n1dL/sJcFpFi7FkODZLcnYkauJPO2pICACeUtzxfHqK3+swK9Z+M0Mj
+ f6uMnLLDcskBjdVlmNcYRsf34z1JbpVDAHf2Y/E0RSQH7nX8bBr6xK6xJHXDYDzn15U+
+ 7TMnbRYUwKQb7fTCygdyBRxfwATXUNgy4pdloUcEibsFpNCg92BZvvfJft3ZzXdWFrOT
+ g4Imw/7cOTjb6KBV7nV+YJ/6rHyFXdSQvkaEJ9dYp3AHUj0czVRjwuf+tHoSpwXFyoB/ Uw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 362s9b25wr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 14 Jan 2021 12:24:39 -0500
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 10EHAR1t186175;
+ Thu, 14 Jan 2021 12:24:39 -0500
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 362s9b25wb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 14 Jan 2021 12:24:38 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10EHNPFd011309;
+ Thu, 14 Jan 2021 17:24:38 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma04wdc.us.ibm.com with ESMTP id 35y449es8v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 14 Jan 2021 17:24:38 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10EHOaKM24445320
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 14 Jan 2021 17:24:36 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B9EB3C6059;
+ Thu, 14 Jan 2021 17:24:36 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2E9ABC6055;
+ Thu, 14 Jan 2021 17:24:36 +0000 (GMT)
+Received: from oc6034535106.ibm.com (unknown [9.163.16.139])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Jan 2021 17:24:36 +0000 (GMT)
+Subject: Re: [PATCH v4 01/21] ibmvfc: add vhost fields and defaults for MQ
+ enablement
+To: Ming Lei <ming.lei@redhat.com>
+References: <20210111231225.105347-1-tyreld@linux.ibm.com>
+ <20210111231225.105347-2-tyreld@linux.ibm.com>
+ <0525bee7-433f-dcc7-9e35-e8706d6edee5@linux.vnet.ibm.com>
+ <a8623705-6d49-2056-09bb-80190e0b6f52@linux.ibm.com>
+ <51bfc34b-c2c4-bf14-c903-d37015f65361@linux.vnet.ibm.com>
+ <20210114012738.GA237540@T590>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <9c5f7786-cd13-6a49-2d71-d0c438318bcb@linux.vnet.ibm.com>
+Date: Thu, 14 Jan 2021 11:24:35 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
 MIME-Version: 1.0
-In-Reply-To: <CALiNf29+8Yi93RacsZHr=qYBhQRwqujW6KZVVD=9xPMhpLH5pA@mail.gmail.com>
+In-Reply-To: <20210114012738.GA237540@T590>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2021-01-14_06:2021-01-14,
+ 2021-01-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 adultscore=0
+ priorityscore=1501 mlxscore=0 bulkscore=0 mlxlogscore=999 clxscore=1015
+ lowpriorityscore=0 suspectscore=0 spamscore=0 malwarescore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101140094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -152,92 +123,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, peterz@infradead.org, grant.likely@arm.com,
- paulus@samba.org, Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, sstabellini@kernel.org,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
- rafael.j.wysocki@intel.com, Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>,
- xen-devel@lists.xenproject.org, Thierry Reding <treding@nvidia.com>,
- linux-devicetree <devicetree@vger.kernel.org>, will@kernel.org,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
- boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
- rdunlap@infradead.org, lkml <linux-kernel@vger.kernel.org>,
- Tomasz Figa <tfiga@chromium.org>, iommu@lists.linux-foundation.org,
- xypron.glpk@gmx.de, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ james.smart@broadcom.com, james.bottomley@hansenpartnership.com,
+ brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/14/21 1:08 AM, Claire Chang wrote:
-> On Wed, Jan 13, 2021 at 7:48 AM Florian Fainelli <f.fainelli@gmail.com> wrote:
->>
->> On 1/5/21 7:41 PM, Claire Chang wrote:
->>> If a device is not behind an IOMMU, we look up the device node and set
->>> up the restricted DMA when the restricted-dma-pool is presented.
+On 1/13/21 7:27 PM, Ming Lei wrote:
+> On Wed, Jan 13, 2021 at 11:13:07AM -0600, Brian King wrote:
+>> On 1/12/21 6:33 PM, Tyrel Datwyler wrote:
+>>> On 1/12/21 2:54 PM, Brian King wrote:
+>>>> On 1/11/21 5:12 PM, Tyrel Datwyler wrote:
+>>>>> Introduce several new vhost fields for managing MQ state of the adapter
+>>>>> as well as initial defaults for MQ enablement.
+>>>>>
+>>>>> Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+>>>>> ---
+>>>>>  drivers/scsi/ibmvscsi/ibmvfc.c | 8 ++++++++
+>>>>>  drivers/scsi/ibmvscsi/ibmvfc.h | 9 +++++++++
+>>>>>  2 files changed, 17 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+>>>>> index ba95438a8912..9200fe49c57e 100644
+>>>>> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+>>>>> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+>>>>> @@ -3302,6 +3302,7 @@ static struct scsi_host_template driver_template = {
+>>>>>  	.max_sectors = IBMVFC_MAX_SECTORS,
+>>>>>  	.shost_attrs = ibmvfc_attrs,
+>>>>>  	.track_queue_depth = 1,
+>>>>> +	.host_tagset = 1,
+>>>>
+>>>> This doesn't seem right. You are setting host_tagset, which means you want a
+>>>> shared, host wide, tag set for commands. It also means that the total
+>>>> queue depth for the host is can_queue. However, it looks like you are allocating
+>>>> max_requests events for each sub crq, which means you are over allocating memory.
 >>>
->>> Signed-off-by: Claire Chang <tientzu@chromium.org>
->>> ---
+>>> With the shared tagset yes the queue depth for the host is can_queue, but this
+>>> also implies that the max queue depth for each hw queue is also can_queue. So,
+>>> in the worst case that all commands are queued down the same hw queue we need an
+>>> event pool with can_queue commands.
+>>>
+>>>>
+>>>> Looking at this closer, we might have bigger problems. There is a host wide
+>>>> max number of commands that the VFC host supports, which gets returned on
+>>>> NPIV Login. This value can change across a live migration event.
+>>>
+>>> From what I understand the max commands can only become less.
+>>>
+>>>>
+>>>> The ibmvfc driver, which does the same thing the lpfc driver does, modifies
+>>>> can_queue on the scsi_host *after* the tag set has been allocated. This looks
+>>>> to be a concern with ibmvfc, not sure about lpfc, as it doesn't look like
+>>>> we look at can_queue once the tag set is setup, and I'm not seeing a good way
+>>>> to dynamically change the host queue depth once the tag set is setup. 
+>>>>
+>>>> Unless I'm missing something, our best options appear to either be to implement
+>>>> our own host wide busy reference counting, which doesn't sound very good, or
+>>>> we need to add some API to block / scsi that allows us to dynamically change
+>>>> can_queue.
+>>>
+>>> Changing can_queue won't do use any good with the shared tagset becasue each
+>>> queue still needs to be able to queue can_queue number of commands in the worst
+>>> case.
 >>
->> [snip]
+>> The issue I'm trying to highlight here is the following scenario:
 >>
->>> +int of_dma_set_restricted_buffer(struct device *dev)
->>> +{
->>> +     struct device_node *node;
->>> +     int count, i;
->>> +
->>> +     if (!dev->of_node)
->>> +             return 0;
->>> +
->>> +     count = of_property_count_elems_of_size(dev->of_node, "memory-region",
->>> +                                             sizeof(phandle));
+>> 1. We set shost->can_queue, then call scsi_add_host, which allocates the tag set.
 >>
->> You could have an early check for count < 0, along with an error
->> message, if that is deemed useful.
+>> 2. On our NPIV login response from the VIOS, we might get a lower value than we
+>> initially set in shost->can_queue, so we update it, but nobody ever looks at it
+>> again, and we don't have any protection against sending too many commands to the host.
 >>
->>> +     for (i = 0; i < count; i++) {
->>> +             node = of_parse_phandle(dev->of_node, "memory-region", i);
->>> +             if (of_device_is_compatible(node, "restricted-dma-pool"))
 >>
->> And you may want to add here an of_device_is_available(node). A platform
->> that provides the Device Tree firmware and try to support multiple
->> different SoCs may try to determine if an IOMMU is present, and if it
->> is, it could be marking the restriced-dma-pool region with a 'status =
->> "disabled"' property, or any variant of that scheme.
+>> Basically, we no longer have any code that ensures we don't send more
+>> commands to the VIOS than we are told it supports. According to the architecture,
+>> if we actually do this, the VIOS will do an h_free_crq, which would be a bit
+>> of a bug on our part.
+>>
+>> I don't think it was ever clearly defined in the API that a driver can
+>> change shost->can_queue after calling scsi_add_host, but up until
+>> commit 6eb045e092efefafc6687409a6fa6d1dabf0fb69, this worked and now
+>> it doesn't. 
 > 
-> This function is called only when there is no IOMMU present (check in
-> drivers/of/device.c). I can still add of_device_is_available(node)
-> here if you think it's helpful.
+> Actually it isn't related with commit 6eb045e092ef, because blk_mq_alloc_tag_set()
+> uses .can_queue to create driver tag sbitmap and request pool.
+> 
+> So even thought without 6eb045e092ef, the updated .can_queue can't work
+> as expected because the max driver tag depth has been fixed by blk-mq already.
 
-I believe it is, since boot loader can have a shared Device Tree blob
-skeleton and do various adaptations based on the chip (that's what we
-do) and adding a status property is much simpler than insertion new
-nodes are run time.
+There are two scenarios here. In the scenario of someone increasing can_queue
+after the tag set is allocated, I agree, blk-mq will never take advantage
+of this. However, in the scenario of someone *decreasing* can_queue after the
+tag set is allocated, prior to 6eb045e092ef, the shost->host_busy code provided
+this protection.
 
 > 
->>
->>> +                     return of_reserved_mem_device_init_by_idx(
->>> +                             dev, dev->of_node, i);
->>
->> This does not seem to be supporting more than one memory region, did not
->> you want something like instead:
->>
->>                 ret = of_reserved_mem_device_init_by_idx(...);
->>                 if (ret)
->>                         return ret;
->>
+> What 6eb045e092ef does is just to remove the double check on max
+> host-wide allowed commands because that has been respected by blk-mq
+> driver tag allocation already.
 > 
-> Yes. This implement only supports one restriced-dma-pool memory region
-> with the assumption that there is only one memory region with the
-> compatible string, restricted-dma-pool, in the dts. IIUC, it's similar
-> to shared-dma-pool.
+>>
+>> I started looking through drivers that do this, and so far, it looks like the
+>> following drivers do: ibmvfc, lpfc, aix94xx, libfc, BusLogic, and likely others...
+>>
+>> We probably need an API that lets us change shost->can_queue dynamically.
+> 
+> I'd suggest to confirm changing .can_queue is one real usecase.
 
-Then if here is such a known limitation it should be both documented and
-enforced here, you shouldn ot be iterating over all of the phandles that
-you find, stop at the first one and issue a warning if count > 1?
+For ibmvfc, the total number of commands that the scsi host supports is very
+much a dynamic value. It can increase and it can decrease. Live migrating
+a logical partition from one system to another is the usual cause of
+such a capability change. For ibmvfc, at least, this only ever happens
+when we've self blocked the host and have sent back all outstanding I/O.
+
+However, looking at other drivers that modify can_queue dynamically, this
+doesn't always hold true. Looking at libfc, it looks to dynamically ramp
+up and ramp down can_queue based on its ability to handle requests.
+
+There are certainly a number of other drivers that change can_queue
+after the tag set has been allocated. Some of these drivers could
+likely be changed to avoid doing this, but changing them all will likely
+be difficult.
+
+Thanks,
+
+Brian
+
 -- 
-Florian
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
+
