@@ -2,24 +2,24 @@ Return-Path: <SRS0=IYgH=GR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8577C433E9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F18D8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:36:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D218B23A5E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:34:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D218B23A5E
+	by mail.kernel.org (Postfix) with ESMTPS id 071A323A34
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jan 2021 20:36:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 071A323A34
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DGwyV0t37zDrRy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 07:34:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DGx1S1Jg9zDrRx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 07:36:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -28,62 +28,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=eWg2vY6R; dkim-atps=neutral
+ header.s=pp1 header.b=WkQFYndS; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DGwvx6kWYzDrQb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DGwvx6SrWzDrQZ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 07:31:57 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10EK3WpO133088; Thu, 14 Jan 2021 15:31:54 -0500
+ 10EK3eFO188422; Thu, 14 Jan 2021 15:31:53 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=w9GOEHUIwadmmQ6/WimiQJ9BqdJfITO+Oan6ZTv5mO4=;
- b=eWg2vY6Rpq1pKQ9E+c/N4BRnUP81IpJSiX4tmCZ1qYPq7GAQ2r9dnrRSuBG3dNggOzpi
- Q5saCITWT7H8DEYFeJWWBz6AtAuDORvQkzx6f2K7aIm8Xf4b3L66BiixFAksMPAeCUKN
- oBf4fhzneIkC+N++QKzaNcTqYSObJNEr9jZ9wZV9qUTkJfeSOv94leXKiakeU6SeueoH
- Pk2fNjCmfeuenvLZCdTBf2wZKxMQu7VM4MjFht3K+TWc3CPT8OMlqKfn9CQZ0zg5Ixq4
- c4SnOmKlaJdFDmSaeFutQ0Fpf4/gcSpizxLA6O7n/tgy7ZnatMsdQ0oYbbBs1DBbj1Yi HQ== 
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 362vnm8pe0-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=yb88OLKBP+AJmj0kV5KKr5DZmvyl7S3yGW+RSF3VqMs=;
+ b=WkQFYndShidZxsWtvQCcXJaU4jXDI2k5PGVVmpV3b2R0LY7NvdPdJP4jjRtE4GqXt4eg
+ nRmxb4fIydVE8W0iYLgh9TkQBwbnRef2APTqs4APIRrEGXRLS1A2+LXwoUWiM3qDS7gN
+ 7iVF7eAAS9jMX60zqfxIqoxyFWhqhTDrqLnadqPHRnKS0qOG49d7XJVLCGM/BG1NIN7e
+ 9sQ/Mq2fdWKirHEObLbGU904u4YLy2jjL8+GcuLbMh6kZUWohqACGqQR5EavLwMTbixH
+ YYaINoDTb0ZZf/5QjEOTYJtZk99buWtfNPew5+xa0HGfflX23c4owfoUecHSovn5lKB9 3w== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 362vfkgy2c-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 14 Jan 2021 15:31:53 -0500
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10EKRP40032079;
+ Thu, 14 Jan 2021 15:31:52 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10EKSBnb015074;
  Thu, 14 Jan 2021 20:31:52 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04wdc.us.ibm.com with ESMTP id 35y449fsjs-1
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma02dal.us.ibm.com with ESMTP id 35y44a1q2j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 14 Jan 2021 20:31:52 +0000
 Received: from b03ledav001.gho.boulder.ibm.com
  (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10EKVpHX27066818
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10EKVoN924248648
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 14 Jan 2021 20:31:51 GMT
+ Thu, 14 Jan 2021 20:31:50 GMT
 Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 31CF16E052;
- Thu, 14 Jan 2021 20:31:51 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D2F906E04C;
+ by IMSVA (Postfix) with ESMTP id 55E486E058;
  Thu, 14 Jan 2021 20:31:50 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 09C6D6E04C;
+ Thu, 14 Jan 2021 20:31:49 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 14 Jan 2021 20:31:50 +0000 (GMT)
+ Thu, 14 Jan 2021 20:31:49 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH v5 02/21] ibmvfc: move event pool init/free routines
-Date: Thu, 14 Jan 2021 14:31:29 -0600
-Message-Id: <20210114203148.246656-3-tyreld@linux.ibm.com>
+Subject: [PATCH v5 00/21] ibmvfc: initial MQ development/enablement
+Date: Thu, 14 Jan 2021 14:31:27 -0600
+Message-Id: <20210114203148.246656-1-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210114203148.246656-1-tyreld@linux.ibm.com>
-References: <20210114203148.246656-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -91,11 +88,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-14_07:2021-01-14,
  2021-01-14 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=959 phishscore=0
- mlxscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
- lowpriorityscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101140115
+ adultscore=0
+ lowpriorityscore=0 impostorscore=0 mlxlogscore=999 spamscore=0
+ malwarescore=0 suspectscore=0 clxscore=1015 phishscore=0 bulkscore=0
+ priorityscore=1501 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2101140115
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,196 +105,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian King <brking@linux.vnet.ibm.com>, brking@linux.ibm.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The next patch in this series reworks the event pool allocation calls to
-happen within the individual queue allocation routines instead of as
-independent calls.
+Recent updates in pHyp Firmware and VIOS releases provide new infrastructure
+towards enabling Subordinate Command Response Queues (Sub-CRQs) such that each
+Sub-CRQ is a channel backed by an actual hardware queue in the FC stack on the
+partner VIOS. Sub-CRQs are registered with the firmware via hypercalls and then
+negotiated with the VIOS via new Management Datagrams (MADs) for channel setup.
 
-Move the init/free routines earlier in ibmvfc.c to prevent undefined
-reference errors when calling these functions from the queue allocation
-code. No functional change.
+This initial implementation adds the necessary Sub-CRQ framework and implements
+the new MADs for negotiating and assigning a set of Sub-CRQs to associated VIOS
+HW backed channels.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 151 +++++++++++++++++----------------
- 1 file changed, 76 insertions(+), 75 deletions(-)
+This latest series is completely rebased and reimplemented on top of the recent
+("ibmvfc: MQ prepartory locking work") series. [1]
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 9200fe49c57e..cd9273a5fadb 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -716,6 +716,82 @@ static int ibmvfc_send_crq_init_complete(struct ibmvfc_host *vhost)
- 	return ibmvfc_send_crq(vhost, 0xC002000000000000LL, 0);
- }
- 
-+/**
-+ * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
-+ * @vhost:	ibmvfc host who owns the event pool
-+ *
-+ * Returns zero on success.
-+ **/
-+static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
-+				  struct ibmvfc_queue *queue)
-+{
-+	int i;
-+	struct ibmvfc_event_pool *pool = &queue->evt_pool;
-+
-+	ENTER;
-+	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
-+	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
-+	if (!pool->events)
-+		return -ENOMEM;
-+
-+	pool->iu_storage = dma_alloc_coherent(vhost->dev,
-+					      pool->size * sizeof(*pool->iu_storage),
-+					      &pool->iu_token, 0);
-+
-+	if (!pool->iu_storage) {
-+		kfree(pool->events);
-+		return -ENOMEM;
-+	}
-+
-+	INIT_LIST_HEAD(&queue->sent);
-+	INIT_LIST_HEAD(&queue->free);
-+	spin_lock_init(&queue->l_lock);
-+
-+	for (i = 0; i < pool->size; ++i) {
-+		struct ibmvfc_event *evt = &pool->events[i];
-+
-+		atomic_set(&evt->free, 1);
-+		evt->crq.valid = 0x80;
-+		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
-+		evt->xfer_iu = pool->iu_storage + i;
-+		evt->vhost = vhost;
-+		evt->queue = queue;
-+		evt->ext_list = NULL;
-+		list_add_tail(&evt->queue_list, &queue->free);
-+	}
-+
-+	LEAVE;
-+	return 0;
-+}
-+
-+/**
-+ * ibmvfc_free_event_pool - Frees memory of the event pool of a host
-+ * @vhost:	ibmvfc host who owns the event pool
-+ *
-+ **/
-+static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
-+				   struct ibmvfc_queue *queue)
-+{
-+	int i;
-+	struct ibmvfc_event_pool *pool = &queue->evt_pool;
-+
-+	ENTER;
-+	for (i = 0; i < pool->size; ++i) {
-+		list_del(&pool->events[i].queue_list);
-+		BUG_ON(atomic_read(&pool->events[i].free) != 1);
-+		if (pool->events[i].ext_list)
-+			dma_pool_free(vhost->sg_pool,
-+				      pool->events[i].ext_list,
-+				      pool->events[i].ext_list_token);
-+	}
-+
-+	kfree(pool->events);
-+	dma_free_coherent(vhost->dev,
-+			  pool->size * sizeof(*pool->iu_storage),
-+			  pool->iu_storage, pool->iu_token);
-+	LEAVE;
-+}
-+
- /**
-  * ibmvfc_free_queue - Deallocate queue
-  * @vhost:	ibmvfc host struct
-@@ -1312,81 +1388,6 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
- 	strncpy(login_info->drc_name, location, IBMVFC_MAX_NAME);
- }
- 
--/**
-- * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
-- * @vhost:	ibmvfc host who owns the event pool
-- *
-- * Returns zero on success.
-- **/
--static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
--				  struct ibmvfc_queue *queue)
--{
--	int i;
--	struct ibmvfc_event_pool *pool = &queue->evt_pool;
--
--	ENTER;
--	pool->size = max_requests + IBMVFC_NUM_INTERNAL_REQ;
--	pool->events = kcalloc(pool->size, sizeof(*pool->events), GFP_KERNEL);
--	if (!pool->events)
--		return -ENOMEM;
--
--	pool->iu_storage = dma_alloc_coherent(vhost->dev,
--					      pool->size * sizeof(*pool->iu_storage),
--					      &pool->iu_token, 0);
--
--	if (!pool->iu_storage) {
--		kfree(pool->events);
--		return -ENOMEM;
--	}
--
--	INIT_LIST_HEAD(&queue->sent);
--	INIT_LIST_HEAD(&queue->free);
--	spin_lock_init(&queue->l_lock);
--
--	for (i = 0; i < pool->size; ++i) {
--		struct ibmvfc_event *evt = &pool->events[i];
--		atomic_set(&evt->free, 1);
--		evt->crq.valid = 0x80;
--		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
--		evt->xfer_iu = pool->iu_storage + i;
--		evt->vhost = vhost;
--		evt->queue = queue;
--		evt->ext_list = NULL;
--		list_add_tail(&evt->queue_list, &queue->free);
--	}
--
--	LEAVE;
--	return 0;
--}
--
--/**
-- * ibmvfc_free_event_pool - Frees memory of the event pool of a host
-- * @vhost:	ibmvfc host who owns the event pool
-- *
-- **/
--static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
--				   struct ibmvfc_queue *queue)
--{
--	int i;
--	struct ibmvfc_event_pool *pool = &queue->evt_pool;
--
--	ENTER;
--	for (i = 0; i < pool->size; ++i) {
--		list_del(&pool->events[i].queue_list);
--		BUG_ON(atomic_read(&pool->events[i].free) != 1);
--		if (pool->events[i].ext_list)
--			dma_pool_free(vhost->sg_pool,
--				      pool->events[i].ext_list,
--				      pool->events[i].ext_list_token);
--	}
--
--	kfree(pool->events);
--	dma_free_coherent(vhost->dev,
--			  pool->size * sizeof(*pool->iu_storage),
--			  pool->iu_storage, pool->iu_token);
--	LEAVE;
--}
--
- /**
-  * ibmvfc_get_event - Gets the next free event in pool
-  * @vhost:	ibmvfc host struct
+[1] https://lore.kernel.org/linux-scsi/20210106201835.1053593-1-tyreld@linux.ibm.com/
+
+changes in v5:
+* Addressed comments from brking in following patches:
+* Patch 18: Drop queue lock in loop after sending cancel event
+	    Remove cancel event from list after completion
+	    Return -EIO on unknown failure
+* Patch 21: Removed can_queue rebase artifact and range check user supplied
+            nr_scsi_hw_queue value
+
+changes in v4:
+* Series rebased and reworked on top of previous ibmvfc locking series
+* Dropped all previous Reviewed-by tags
+
+changes in v3:
+* Patch 4: changed firmware support logging to dev_warn_once
+* Patch 6: adjusted locking
+* Patch 15: dropped logging verbosity, moved cancel event tracking into subqueue
+* Patch 17: removed write permission for migration module parameters
+	    drive hard reset after update to num of scsi channels
+
+changes in v2:
+* Patch 4: NULL'd scsi_scrq reference after deallocation
+* Patch 6: Added switch case to handle XPORT event
+* Patch 9: fixed ibmvfc_event leak and double free
+* added support for cancel command with MQ
+* added parameter toggles for MQ settings
+
+Tyrel Datwyler (21):
+  ibmvfc: add vhost fields and defaults for MQ enablement
+  ibmvfc: move event pool init/free routines
+  ibmvfc: init/free event pool during queue allocation/free
+  ibmvfc: add size parameter to ibmvfc_init_event_pool
+  ibmvfc: define hcall wrapper for registering a Sub-CRQ
+  ibmvfc: add Subordinate CRQ definitions
+  ibmvfc: add alloc/dealloc routines for SCSI Sub-CRQ Channels
+  ibmvfc: add Sub-CRQ IRQ enable/disable routine
+  ibmvfc: add handlers to drain and complete Sub-CRQ responses
+  ibmvfc: define Sub-CRQ interrupt handler routine
+  ibmvfc: map/request irq and register Sub-CRQ interrupt handler
+  ibmvfc: implement channel enquiry and setup commands
+  ibmvfc: advertise client support for using hardware channels
+  ibmvfc: set and track hw queue in ibmvfc_event struct
+  ibmvfc: send commands down HW Sub-CRQ when channelized
+  ibmvfc: register Sub-CRQ handles with VIOS during channel setup
+  ibmvfc: add cancel mad initialization helper
+  ibmvfc: send Cancel MAD down each hw scsi channel
+  ibmvfc: purge scsi channels after transport loss/reset
+  ibmvfc: enable MQ and set reasonable defaults
+  ibmvfc: provide modules parameters for MQ settings
+
+ drivers/scsi/ibmvscsi/ibmvfc.c | 917 ++++++++++++++++++++++++++++-----
+ drivers/scsi/ibmvscsi/ibmvfc.h |  39 ++
+ 2 files changed, 828 insertions(+), 128 deletions(-)
+
 -- 
 2.27.0
 
