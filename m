@@ -2,79 +2,81 @@ Return-Path: <SRS0=Y1I/=GS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96CF8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 16:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79A53C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 16:56:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CAAFD20738
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 16:54:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAAFD20738
+	by mail.kernel.org (Postfix) with ESMTPS id 01DFC238EB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 16:56:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01DFC238EB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DHS31724pzDsjp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 03:54:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DHS5J0cp4zDqB3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 03:56:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529;
- helo=mail-pg1-x529.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d;
+ helo=mail-pf1-x42d.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=HrhlcP+3; dkim-atps=neutral
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com
- [IPv6:2607:f8b0:4864:20::529])
+ header.s=20161025 header.b=bCuRfVsA; dkim-atps=neutral
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
+ [IPv6:2607:f8b0:4864:20::42d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DHRxv3BbbzDsgt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 03:50:24 +1100 (AEDT)
-Received: by mail-pg1-x529.google.com with SMTP id g15so6344621pgu.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 08:50:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DHRxx1n4RzDsgt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 03:50:28 +1100 (AEDT)
+Received: by mail-pf1-x42d.google.com with SMTP id c13so5815594pfi.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 08:50:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=MfjRxN4woMY7XfdobGTFDwQ3AeUfO5nxcq/kr0icYJQ=;
- b=HrhlcP+3T+R20waWerfMNvgzHkNW+eFoaFmt2UPZWh+A/NAS2YYuFvHAWxOFYi7SKv
- qBgDTDAnhxKUt1aFzZiGbbJ26ResWiBnBuyuCqIXsCLwp5VPGkgaQ2urLzEvOXq7EaMN
- KB5euOaWDVfc4OPldY/KNBT+gF2I4n3BOyUDKPugm5AQCkB00z68owfiHqrQUp44VZFA
- lnR+U7ETb/4YQJU9dN2RtQu8uBFu7RHHMbtbi2UCu+QjMeZ6B6Ppej09jFsoiCe85r+H
- ntnZG8P/7238+Oe08RGF1EXAe9zkr2k/xwIRKuvLenavbb3VxzbbXsK17+wFf89QmB/K
- yeJg==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=BiXWZD14AytAqUE2Q2Qh5NDUePbaWTvuLLAljFHRolY=;
+ b=bCuRfVsAgJdSFktZ5a41ivDshSONMkTdL7QNZfm1AfDUvpny00SbigcCKmukNI+Wf0
+ S99HRh2g80LUEm4inHZKkGUQn8WT8csuRZGCTe3njFgqAbOaOpXti6oWWRN6wFduVkgE
+ UkyqXuspWMOTVwOIPugdqiHhaWYtI3kVrW31BjA4YOhL6Hw+pqGLTgY6bWB76wol0TxO
+ Uoue+tcxto1GGJ/+rkZ1ud22OEJnh9z/fZsrYHn/lBfvIhEOGCFqlnFB4NLawCR9tM72
+ bUflNhSRahlY4WB/SRsKl38KKSjazmVszEY+IJ+oJu2Hqi2TRQ7VppUoKrxNnG9a9++K
+ sh3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=MfjRxN4woMY7XfdobGTFDwQ3AeUfO5nxcq/kr0icYJQ=;
- b=XsNf4WQnWB2k2u7rqdVZAUpp47Qu2agM8nhNpogYzoYdABQfNp2BquIu6aWzRD2nzM
- o2PsVEL2NamunTYcLAD4ERXNOYJ7FGCLFk7pehFrAwHAvEI7rfygygtJufGl9b4b/7Hq
- aMgF6QRX2tUJ8DP8Ak84JKalEcRnKhxhHNztnUKGAX6QH5lWU3mfkb0thEg/fpojBcGe
- Y+wo2JDolxQr+Ko7Gg+3HH2AFCV2eebtd/I+9PVtK2iLObXVUKwYmtE6z6Pie+kG3kyP
- Ck9fYFtUiIqlysWAUmiFWDUuxgviFaiqK28VMaS5GyeaLsZpKCte2nrrafyWTqfKympl
- vVsw==
-X-Gm-Message-State: AOAM532zWnGwh1wkhVD0xk5Ar7yjmkGUbGeQr6Vvzybb090ZUUtjRQhC
- 63CjoAbcbZLa2Yd/x0yu/wJ9HQOdglI=
-X-Google-Smtp-Source: ABdhPJzG+6LCHu/Dxadlj8H9S34QSix4ZzjkuWawvIeJW70cEWB+TtMwwpQxW5wp2e+OdJ718GGcpg==
-X-Received: by 2002:aa7:9619:0:b029:1ae:33b2:780f with SMTP id
- q25-20020aa796190000b02901ae33b2780fmr13293817pfg.26.1610729420148; 
- Fri, 15 Jan 2021 08:50:20 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=BiXWZD14AytAqUE2Q2Qh5NDUePbaWTvuLLAljFHRolY=;
+ b=Ft2zlRFKDbKLoA2hd8WanOCSEPFOjTR8MiImCnlztUa+ngno9UQAKUuiZCg6FwX4FO
+ sYCMpmDQudjCuNBGDN8+7pUJ0THlRi+PKe6slh5Oj/mLHZbQnPkl4N9gUJaooNldjANJ
+ XU5oNXVrODsAtwYGPj2B6LNq4/ITSskD7V4bwZ9BntW9NKJtU7xNdilFW/myVe9Ss5ZA
+ fGjFCugVVAQjAFFdmVZz+0DjB5JoSoX6JH6jYkS3pORiRpdFvtNI8mtcYy4gdXWQj8QT
+ QGqkRkHzo/4R9s9bYaSr4Fzg6sL3SqyxbdvwZw1/+npStGrUagd64JxiFbuya4W42ERx
+ kN9g==
+X-Gm-Message-State: AOAM5301OyWXHPfWBGtlFxTlXRunw8Sr5y36raa8bfhNm1cFyG2XFDrf
+ v+A5hmnwTONrTR988I/qa4+77XXfQ/o=
+X-Google-Smtp-Source: ABdhPJx/rcFEV+o+Rr6AWlPMpaLRO3FQic8B28yelIIdF6Kzrt5SXbendBcVHIYESrUhyo9xtP24Ew==
+X-Received: by 2002:a63:725d:: with SMTP id c29mr8099472pgn.236.1610729426284; 
+ Fri, 15 Jan 2021 08:50:26 -0800 (PST)
 Received: from bobo.ibm.com ([124.170.13.62])
- by smtp.gmail.com with ESMTPSA id u1sm8455477pjr.51.2021.01.15.08.50.17
+ by smtp.gmail.com with ESMTPSA id u1sm8455477pjr.51.2021.01.15.08.50.23
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 15 Jan 2021 08:50:19 -0800 (PST)
+ Fri, 15 Jan 2021 08:50:25 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 00/39] powerpc: interrupt wrappers
-Date: Sat, 16 Jan 2021 02:49:33 +1000
-Message-Id: <20210115165012.1260253-1-npiggin@gmail.com>
+Subject: [PATCH v6 02/39] powerpc/32s: move DABR match out of handle_page_fault
+Date: Sat, 16 Jan 2021 02:49:35 +1000
+Message-Id: <20210115165012.1260253-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210115165012.1260253-1-npiggin@gmail.com>
+References: <20210115165012.1260253-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,152 +95,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds interrupt handler wrapper functions, similar to the
-generic / x86 code, and moves several common operations into them
-from either asm or open coded in the individual handlers.
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-This series is based on upstream plus "powerpc/64s: fix scv entry
-fallback flush vs interrupt".
+handle_page_fault() has some code dedicated to book3s/32 to
+call do_break() when the DSI is a DABR match.
 
-Since v1:
-- Fixed a couple of compile issues
-- Fixed perf weirdness (sometimes NMI, sometimes not)
-- Also move irq_enter/exit into wrappers
+On other platforms, do_break() is handled separately.
 
-Since v2:
-- Rebased upstream
-- Took code in patch 3 from Christophe
-- Fixed some compile errors from 0day
+Do the same for book3s/32, do it earlier in the process of DSI.
 
-Since v3:
-- Rebased
-- Split Christophe's 32s DABR patch into its own patch
-- Fixed missing asm from 32s on patch 3 noticed by Christophe.
-- Moved changes around, split out one more patch (patch 9) to make
-  changes more logical and atomic.
-- Add comments explaining _RAW handlers (SLB, HPTE) interrupts better
+This change also avoid doing the test on ISI.
 
-Since v4:
-- Rebased (on top of scv fallback flush fix)
-- Rearranged a few changes into different patches from Christophe,
-  e.g., the ___do_page_fault change from patch 2 to 10. I didn't
-  do everything (e.g., splitting to update __hash_page to drop the
-  msr argument before the bulk of patch 2 seemed like churn without
-  much improvement), and also other things like removing the new
-  ___do_page_fault variant if we can change hash fault context tracking
-  I didn't get time to completely investigate and implement. I think
-  this shouldn't be a showstopper though we can make more improvements
-  as we go.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/entry_32.S       | 15 ---------------
+ arch/powerpc/kernel/head_book3s_32.S |  3 +++
+ 2 files changed, 3 insertions(+), 15 deletions(-)
 
-Since v5:
-- Lots of good review suggestions from Christophe, see v5 email threads.
-- Major change being do_break is left in asm and selected early as an
-  alternate interrupt handler now, which is a smaller step and matches
-  other subarchs better.
-- Rearranged patches, split, moved things, bug fixes, etc.
-- Converted a few more missed exception handlers for debug and ras
-  stuff.
-- Found a few relatively minor bugs, comment updates, and tidy ups that
-  don't really have to be part of this series but might as well be.
-
-Thanks,
-Nick
-
-Christophe Leroy (1):
-  powerpc/32s: move DABR match out of handle_page_fault
-
-Nicholas Piggin (38):
-  KVM: PPC: Book3S HV: Context tracking exit guest context before
-    enabling irqs
-  powerpc/64s: move DABR match out of handle_page_fault
-  powerpc/64s: move the hash fault handling logic to C
-  powerpc: remove arguments from fault handler functions
-  powerpc: do_break get registers from regs
-  powerpc: bad_page_fault get registers from regs
-  powerpc: rearrange do_page_fault error case to be inside
-    exception_enter
-  powerpc/64s: move bad_page_fault handling to C
-  powerpc/64s: split do_hash_fault
-  powerpc/mm: Remove stale do_page_fault comment referring to SLB faults
-  powerpc/64s: slb comment update
-  powerpc/traps: add NOKPROBE_SYMBOL for sreset and mce
-  powerpc/perf: move perf irq/nmi handling details into traps.c
-  powerpc/time: move timer_broadcast_interrupt prototype to asm/time.h
-  powerpc: add and use unknown_async_exception
-  powerpc/fsl_booke/32: CacheLockingException remove args
-  powerpc: DebugException remove args
-  powerpc/cell: tidy up pervasive declarations
-  powerpc: introduce die_mce
-  powerpc/mce: ensure machine check handler always tests RI
-  powerpc: improve handling of unrecoverable system reset
-  powerpc: interrupt handler wrapper functions
-  powerpc: add interrupt wrapper entry / exit stub functions
-  powerpc: convert interrupt handlers to use wrappers
-  powerpc: add interrupt_cond_local_irq_enable helper
-  powerpc/64: context tracking remove _TIF_NOHZ
-  powerpc/64s/hash: improve context tracking of hash faults
-  powerpc/64: context tracking move to interrupt wrappers
-  powerpc/64: add context tracking to asynchronous interrupts
-  powerpc: handle irq_enter/irq_exit in interrupt handler wrappers
-  powerpc/64s: move context tracking exit to interrupt exit path
-  powerpc/64s: reconcile interrupts in C
-  powerpc/64: move account_stolen_time into its own function
-  powerpc/64: entry cpu time accounting in C
-  powerpc: move NMI entry/exit code into wrapper
-  powerpc/64s: move NMI soft-mask handling to C
-  powerpc/64s: runlatch interrupt handling in C
-  powerpc/64s: power4 nap fixup in C
-
- arch/powerpc/Kconfig                       |   1 -
- arch/powerpc/include/asm/asm-prototypes.h  |  29 --
- arch/powerpc/include/asm/bug.h             |   9 +-
- arch/powerpc/include/asm/cputime.h         |  14 +
- arch/powerpc/include/asm/debug.h           |   4 -
- arch/powerpc/include/asm/hw_irq.h          |   9 -
- arch/powerpc/include/asm/interrupt.h       | 434 +++++++++++++++++++++
- arch/powerpc/include/asm/ppc_asm.h         |  24 --
- arch/powerpc/include/asm/processor.h       |   1 +
- arch/powerpc/include/asm/thread_info.h     |  10 +-
- arch/powerpc/include/asm/time.h            |   2 +
- arch/powerpc/kernel/dbell.c                |   9 +-
- arch/powerpc/kernel/entry_32.S             |  25 +-
- arch/powerpc/kernel/exceptions-64e.S       |   8 +-
- arch/powerpc/kernel/exceptions-64s.S       | 310 ++-------------
- arch/powerpc/kernel/head_40x.S             |  11 +-
- arch/powerpc/kernel/head_8xx.S             |  11 +-
- arch/powerpc/kernel/head_book3s_32.S       |  14 +-
- arch/powerpc/kernel/head_booke.h           |   6 +-
- arch/powerpc/kernel/head_fsl_booke.S       |   6 +-
- arch/powerpc/kernel/idle_book3s.S          |   4 +
- arch/powerpc/kernel/irq.c                  |   7 +-
- arch/powerpc/kernel/mce.c                  |  16 +-
- arch/powerpc/kernel/process.c              |   8 +-
- arch/powerpc/kernel/ptrace/ptrace.c        |   4 -
- arch/powerpc/kernel/signal.c               |   4 -
- arch/powerpc/kernel/syscall_64.c           |  30 +-
- arch/powerpc/kernel/tau_6xx.c              |   5 +-
- arch/powerpc/kernel/time.c                 |   7 +-
- arch/powerpc/kernel/traps.c                | 263 +++++++------
- arch/powerpc/kernel/watchdog.c             |  15 +-
- arch/powerpc/kvm/book3s_hv.c               |   7 +-
- arch/powerpc/kvm/book3s_hv_builtin.c       |   1 +
- arch/powerpc/kvm/booke.c                   |   1 +
- arch/powerpc/mm/book3s64/hash_utils.c      |  96 +++--
- arch/powerpc/mm/book3s64/slb.c             |  40 +-
- arch/powerpc/mm/fault.c                    |  80 ++--
- arch/powerpc/perf/core-book3s.c            |  35 +-
- arch/powerpc/perf/core-fsl-emb.c           |  25 --
- arch/powerpc/platforms/8xx/machine_check.c |   2 +-
- arch/powerpc/platforms/cell/pervasive.c    |   1 +
- arch/powerpc/platforms/cell/pervasive.h    |   3 -
- arch/powerpc/platforms/cell/ras.c          |   6 +-
- arch/powerpc/platforms/cell/ras.h          |   9 +-
- arch/powerpc/platforms/powernv/idle.c      |   1 +
- arch/powerpc/platforms/powernv/opal.c      |   2 +-
- arch/powerpc/platforms/pseries/ras.c       |   2 +-
- 47 files changed, 867 insertions(+), 744 deletions(-)
- create mode 100644 arch/powerpc/include/asm/interrupt.h
-
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 1c9b0ccc2172..238eacfda7b0 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -670,10 +670,6 @@ ppc_swapcontext:
+ 	.globl	handle_page_fault
+ handle_page_fault:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-#ifdef CONFIG_PPC_BOOK3S_32
+-	andis.  r0,r5,DSISR_DABRMATCH@h
+-	bne-    handle_dabr_fault
+-#endif
+ 	bl	do_page_fault
+ 	cmpwi	r3,0
+ 	beq+	ret_from_except
+@@ -687,17 +683,6 @@ handle_page_fault:
+ 	bl	__bad_page_fault
+ 	b	ret_from_except_full
+ 
+-#ifdef CONFIG_PPC_BOOK3S_32
+-	/* We have a data breakpoint exception - handle it */
+-handle_dabr_fault:
+-	SAVE_NVGPRS(r1)
+-	lwz	r0,_TRAP(r1)
+-	clrrwi	r0,r0,1
+-	stw	r0,_TRAP(r1)
+-	bl      do_break
+-	b	ret_from_except_full
+-#endif
+-
+ /*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 349bf3f0c3af..fc9a12768a14 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -680,7 +680,10 @@ handle_page_fault_tramp_1:
+ 	lwz	r5, _DSISR(r11)
+ 	/* fall through */
+ handle_page_fault_tramp_2:
++	andis.	r0, r5, DSISR_DABRMATCH@h
++	bne-	1f
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
++1:	EXC_XFER_STD(0x300, do_break)
+ 
+ #ifdef CONFIG_VMAP_STACK
+ .macro save_regs_thread		thread
 -- 
 2.23.0
 
