@@ -2,70 +2,72 @@ Return-Path: <SRS0=P4SC=GT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B78FFC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32AD9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:45:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 463C220643
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:43:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 463C220643
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6EC0F206D8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:45:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EC0F206D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DJCky4PJwzDsml
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 09:43:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DJCmr4fhszDvVj
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 09:45:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=W/+YhIqh; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=ACULAB.COM
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DHbCF6JNbzDsqH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 09:17:29 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 783FC23B2F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 22:17:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1610749047;
- bh=51AgOraSDUgeKFnzRXPrgQAF8UQsqnNhAJF/wHnUnuA=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=W/+YhIqhwKpXMR1YHjsUDC/1vi3AWO14SB7s0CrInE/m/l9jIXs2gKoWQtGg6DRi1
- mf4Us2McffrGNfxp4IKqE9Krhk9PJ6mRw52FrXdnWRw8t7OGbutqFJFImF//XaAK3B
- k296fxiI4dCA4u0e733GVj0Fpxayev4L71aTiRKsi0yNHKw3Gn80vLuK3OmBZXWmyw
- oknAsGz6IZ87kZfT4BR2bsmLOb9d+uOeSqnk8nhAisGl7bkTC8POoU9m8/KrTzm54l
- klHJ4yfGG8GXfWeMFLvQaAf6u+lkXxtZwfx2ZfsR0uBSzeGhBbnktJm2piA7XJhISW
- g81QIgbXjkJ+w==
-Received: by mail-ot1-f46.google.com with SMTP id x13so10060724oto.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 14:17:27 -0800 (PST)
-X-Gm-Message-State: AOAM531NoxidCGsYFMFi6ZBIzu4Vu7UFyMobQ2fsLTBHgkoQdpXo2+PN
- yB9pIjnmgJ7XENcI9xJFHjseWpRMSAGg8x2lvJA=
-X-Google-Smtp-Source: ABdhPJzHJByccZmsXaGOr/S4V/q8avY6+thC6kueUHGkctW9f6W31ifVaDPG/I+0qa2z+2m2Zdjz/ZATG5ejh/XajAM=
-X-Received: by 2002:a05:6830:2413:: with SMTP id
- j19mr10338611ots.251.1610749045821; 
- Fri, 15 Jan 2021 14:17:25 -0800 (PST)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DHbkW3X05zDvWP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 09:41:07 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id uk-mta-8-lXDDyAc-MTCPOuhWUXC4Tg-1;
+ Fri, 15 Jan 2021 22:39:47 +0000
+X-MC-Unique: lXDDyAc-MTCPOuhWUXC4Tg-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Fri, 15 Jan 2021 22:39:44 +0000
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Fri, 15 Jan 2021 22:39:44 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Arnd Bergmann' <arnd@kernel.org>
+Subject: RE: [PATCH] Adds a new ioctl32 syscall for backwards compatibility
+ layers
+Thread-Topic: [PATCH] Adds a new ioctl32 syscall for backwards compatibility
+ layers
+Thread-Index: AQHW6wzXd1V6Thk8U0iiUgMFo8hTJqopEBwAgAAyHoCAAARq4A==
+Date: Fri, 15 Jan 2021 22:39:44 +0000
+Message-ID: <313c380c4b1b477fbd09aac66eed4505@AcuMS.aculab.com>
 References: <20210106064807.253112-1-Sonicadvance1@gmail.com>
  <20210115070326.294332-1-Sonicadvance1@gmail.com>
  <b15672b1caec4cf980f2753d06b03596@AcuMS.aculab.com>
-In-Reply-To: <b15672b1caec4cf980f2753d06b03596@AcuMS.aculab.com>
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Fri, 15 Jan 2021 23:17:09 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
-Message-ID: <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
-Subject: Re: [PATCH] Adds a new ioctl32 syscall for backwards compatibility
- layers
-To: David Laight <David.Laight@aculab.com>
-Content-Type: text/plain; charset="UTF-8"
+ <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
+In-Reply-To: <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
+MIME-Version: 1.0
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-Mailman-Approved-At: Sun, 17 Jan 2021 09:38:28 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,8 +80,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- Rich Felker <dalias@libc.org>, Jan Kara <jack@suse.cz>,
+Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, Rich
+ Felker <dalias@libc.org>, Jan Kara <jack@suse.cz>,
  Miklos Szeredi <mszeredi@redhat.com>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -96,8 +98,8 @@ Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
  "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
  Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
  YueHaibing <yuehaibing@huawei.com>, Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo
+ Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>,
  "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
@@ -105,20 +107,20 @@ Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
  Vasily Gorbik <gor@linux.ibm.com>,
  "sonicadvance1@gmail.com" <sonicadvance1@gmail.com>,
  Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>,
- David Rientjes <rientjes@google.com>, Willem de Bruijn <willemb@google.com>,
- Nicholas Piggin <npiggin@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
- Aleksa Sarai <cyphar@cyphar.com>,
+ David Rientjes <rientjes@google.com>, Willem de
+ Bruijn <willemb@google.com>, Nicholas Piggin <npiggin@gmail.com>, Suren
+ Baghdasaryan <surenb@google.com>, Aleksa Sarai <cyphar@cyphar.com>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Xiaoming Ni <nixiaoming@huawei.com>,
- Vlastimil Babka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Andy
+ Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Xiaoming Ni <nixiaoming@huawei.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
  "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
  "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Minchan Kim <minchan@kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Oleg
+ Nesterov <oleg@redhat.com>, Minchan Kim <minchan@kernel.org>,
  "Eric W. Biederman" <ebiederm@xmission.com>,
  "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
  "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
@@ -130,59 +132,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 15, 2021 at 9:01 PM David Laight <David.Laight@aculab.com> wrote:
->
-> From: sonicadvance1@gmail.com
-> > Sent: 15 January 2021 07:03
-> > Problem presented:
-> > A backwards compatibility layer that allows running x86-64 and x86
-> > processes inside of an AArch64 process.
-> >   - CPU is emulated
-> >   - Syscall interface is mostly passthrough
-> >   - Some syscalls require patching or emulation depending on behaviour
-> >   - Not viable from the emulator design to use an AArch32 host process
-> >
->
-> You are going to need to add all the x86 compatibility code into
-> your arm64 kernel.
-> This is likely to be different from the 32bit arm compatibility
-> because 64bit items are only aligned on 32bit boundaries.
-> The x86 x32 compatibility will be more like the 32bit arm 'compat'
-> code - I'm pretty sure arm32 64bit aligned 64bit data.
+Li4uDQo+IEhlJ3MgYWxyZWFkeSBkb2luZyB0aGUgc3lzdGVtIGNhbGwgZW11bGF0aW9uIGZvciBh
+bGwgdGhlIHN5c3RlbQ0KPiBjYWxscyBvdGhlciB0aGFuIGlvY3RsIGluIHVzZXIgc3BhY2UgdGhv
+dWdoLiBJbiBteSBleHBlcmllbmNlLA0KPiB0aGVyZSBhcmUgYWN0dWFsbHkgZmFpcmx5IGZldyBp
+b2N0bCBjb21tYW5kcyB0aGF0IGFyZSBkaWZmZXJlbnQNCj4gYmV0d2VlbiBhcmNoaXRlY3R1cmVz
+IC0tIG1vc3Qgb2YgdGhlbSBoYXZlIG5vIG1pc2FsaWduZWQNCj4gb3IgYXJjaGl0ZWN0dXJlLWRl
+ZmluZWQgc3RydWN0IG1lbWJlcnMgYXQgYWxsLg0KDQpBcmVuJ3QgdGhlcmUgYWxzbyBzb21lIGlu
+dHJhY3RhYmxlIGlzc3VlcyB3aXRoIHNvY2tldCBvcHRpb25zPw0KSUlSQyB0aGUga2VybmVsIGNv
+ZGUgdGhhdCB0cmllZCB0byBjaGFuZ2UgdGhlbSB0byA2NGJpdCB3YXMNCmhvcnJpYmx5IGJyb2tl
+biBpbiBzb21lIG9ic2N1cmUgY2FzZXMuDQoNClB1c2hpbmcgdGhlIGNvbnZlcnNpb24gZG93biB0
+aGUgc3RhY2sgbm90IG9ubHkgaWRlbnRpZmllZCB0aGUNCmlzc3VlcywgaXQgYWxzbyBtYWRlIHRo
+ZW0gZWFzaWVyIHRvIGZpeC4NCg0KSWYgeW91IGNoYW5nZSB0aGUga2VybmVsIHNvIGEgNjRiaXQg
+cHJvY2VzcyBjYW4gZXhlY3V0ZSAzMmJpdA0Kc3lzdGVtIGNhbGxzIHRoZW4gYSBsb3Qgb2YgdGhl
+IHByb2JsZW1zIGRvIGdvIGF3YXkuDQpUaGlzIGlzIHByb2JhYmx5IGVhc2llc3QgZG9uZSBieSBz
+ZXR0aW5nIGEgaGlnaCBiaXQgb24gdGhlDQpzeXN0ZW0gY2FsbCBudW1iZXIgLSBhcyB4ODZfNjQg
+ZG9lcyBmb3IgeDMyIGNhbGxzLg0KDQpZb3Ugc3RpbGwgaGF2ZSB0byBzb2x2ZSB0aGUgZGlmZmVy
+ZW50IGFsaWdubWVudCBvZiA2NGJpdCBkYXRhDQpvbiBpMzg2Lg0KDQpPZiBjb3Vyc2UgdGhlIHN5
+c3RlbSBjYWxsIG51bWJlcnMgYXJlIGRpZmZlcmVudCAtIGJ1dCB0aGF0IGlzDQpqdXN0IGEgbG9v
+a3VwLg0KDQoJRGF2aWQNCg0KLQ0KUmVnaXN0ZXJlZCBBZGRyZXNzIExha2VzaWRlLCBCcmFtbGV5
+IFJvYWQsIE1vdW50IEZhcm0sIE1pbHRvbiBLZXluZXMsIE1LMSAxUFQsIFVLDQpSZWdpc3RyYXRp
+b24gTm86IDEzOTczODYgKFdhbGVzKQ0K
 
-All other architectures that have both 32-bit and 64-bit variants
-use the same alignment for all types, except for x86.
-
-There are additional differences though, especially if one
-were to try to generalize the interface to all architectures.
-A subset of the issues includes
-
-- x32 has 64-bit types in places of some types that are
-  32 bit everywhere else (time_t, ino_t, off_t, clock_t, ...)
-
-- m68k aligns struct members to at most 16 bits
-
-- uid_t/gid_t/ino_t/dev_t/... are
-
-> You'll then need to remember how the process entered the kernel
-> to work out which compatibility code to invoke.
-> This is what x86 does.
-> It allows a single process to do all three types of system call.
->
-> Trying to 'patch up' structures outside the kernel, or in the
-> syscall interface code will always cause grief somewhere.
-> The only sane place is in the code that uses the structures.
-> Which, for ioctls, means inside the driver that parses them.
-
-He's already doing the system call emulation for all the system
-calls other than ioctl in user space though. In my experience,
-there are actually fairly few ioctl commands that are different
-between architectures -- most of them have no misaligned
-or architecture-defined struct members at all.
-
-Once you have conversion functions to deal with the 32/64-bit
-interface differences and architecture specifics of sockets,
-sysvipc, signals, stat, and input_event, handling the
-x86-32 specific ioctl commands is comparably easy.
-
-         Arnd
