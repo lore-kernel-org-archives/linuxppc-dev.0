@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CA14C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D0F1C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:49:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 996BC23A59
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:47:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 996BC23A59
+	by mail.kernel.org (Postfix) with ESMTPS id B6D9C23A59
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:49:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6D9C23A59
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DHVXT4R79zDvYT
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 05:47:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DHVZs3fpyzDvYY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 05:49:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
  helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
@@ -28,30 +28,30 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=ktUyR6Wf; 
+ header.a=rsa-sha256 header.s=default header.b=Jf5B9mbO; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DHSr85qy4zDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 04:30:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DHSrB153kzDsbB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 04:30:34 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 5E52B20B6C43;
- Fri, 15 Jan 2021 09:30:25 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 5E52B20B6C43
+ by linux.microsoft.com (Postfix) with ESMTPSA id 687B420B6C48;
+ Fri, 15 Jan 2021 09:30:29 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 687B420B6C48
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1610731826;
- bh=Sd8T0e6P8u+loATpNeokWfqgEz2Z/zfdEmJ6vGkoVO0=;
+ s=default; t=1610731830;
+ bh=axPbEa6PnZm+iW25Zsi9IlEECBFRe6hBfmO2Ulu9IEs=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ktUyR6WfaUt3tm6L1bWQ7aEaN75ohK6Vy3cFhF9qh2P/nDpZ1cqHHI6Chl5xnxb+0
- J6n53fRktOiFEmPUfaMCBCKHBprjN5TyV3uEod1uTgFWZ4QPY2VcSqtzGs49ikj/Z8
- XFxb1OIMj9HZMEp8zMm2Tvr8kr5Pwysb7cGvuq18=
+ b=Jf5B9mbOV5Z9FseEFixwYoYT/sNPZ5VkfqSOIKX7Wxxb9AhFYZty+z0EHderu5hsO
+ Q0FbrBbSam7UfegH2wIKa7xQINuS9tmb0xkcOkg9PB81roGo2LGW+AA3EgUIL3fqq2
+ 0nNAIysgt1rH6iOnFkvlf9vgxHXlYh1eXm2WkQ5E=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  catalin.marinas@arm.com, mpe@ellerman.id.au
-Subject: [PATCH v15 04/10] powerpc: Use common of_kexec_setup_new_fdt()
-Date: Fri, 15 Jan 2021 09:30:11 -0800
-Message-Id: <20210115173017.30617-5-nramas@linux.microsoft.com>
+Subject: [PATCH v15 09/10] arm64: Call kmalloc() to allocate DTB buffer
+Date: Fri, 15 Jan 2021 09:30:16 -0800
+Message-Id: <20210115173017.30617-10-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210115173017.30617-1-nramas@linux.microsoft.com>
 References: <20210115173017.30617-1-nramas@linux.microsoft.com>
@@ -81,172 +81,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rob Herring <robh@kernel.org>
+create_dtb() function allocates kernel virtual memory for
+the device tree blob (DTB).  This is not consistent with other
+architectures, such as powerpc, which calls kmalloc() for allocating
+memory for the DTB.
 
-The code for setting up the /chosen node in the device tree
-and updating the memory reservation for the next kernel has been
-moved to of_kexec_setup_new_fdt() defined in "drivers/of/kexec.c".
+Call kmalloc() to allocate memory for the DTB, and kfree() to free
+the allocated memory.
 
-Use the common of_kexec_setup_new_fdt() to setup the device tree
-and update the memory reservation for kexec for powerpc.
-
-Signed-off-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Reviewed-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 ---
- arch/powerpc/kexec/file_load.c | 125 ++-------------------------------
- 1 file changed, 6 insertions(+), 119 deletions(-)
+ arch/arm64/kernel/machine_kexec_file.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index e452b11df631..956bcb2d1ec2 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -16,6 +16,7 @@
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index 7de9c47dee7c..51c40143d6fa 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -29,7 +29,7 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
  
- #include <linux/slab.h>
- #include <linux/kexec.h>
-+#include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
- #include <asm/setup.h>
-@@ -156,132 +157,18 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 		  unsigned long initrd_load_addr, unsigned long initrd_len,
- 		  const char *cmdline)
+ int arch_kimage_file_post_load_cleanup(struct kimage *image)
  {
--	int ret, chosen_node;
--	const void *prop;
--
--	/* Remove memory reservation for the current device tree. */
--	ret = delete_fdt_mem_rsv(fdt, __pa(initial_boot_params),
--				 fdt_totalsize(initial_boot_params));
--	if (ret == 0)
--		pr_debug("Removed old device tree reservation.\n");
--	else if (ret != -ENOENT)
--		return ret;
--
--	chosen_node = fdt_path_offset(fdt, "/chosen");
--	if (chosen_node == -FDT_ERR_NOTFOUND) {
--		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
--					      "chosen");
--		if (chosen_node < 0) {
--			pr_err("Error creating /chosen.\n");
--			return -EINVAL;
--		}
--	} else if (chosen_node < 0) {
--		pr_err("Malformed device tree: error reading /chosen.\n");
--		return -EINVAL;
--	}
--
--	/* Did we boot using an initrd? */
--	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
--	if (prop) {
--		uint64_t tmp_start, tmp_end, tmp_size;
--
--		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
--
--		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
--		if (!prop) {
--			pr_err("Malformed device tree.\n");
--			return -EINVAL;
--		}
--		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
--
--		/*
--		 * kexec reserves exact initrd size, while firmware may
--		 * reserve a multiple of PAGE_SIZE, so check for both.
--		 */
--		tmp_size = tmp_end - tmp_start;
--		ret = delete_fdt_mem_rsv(fdt, tmp_start, tmp_size);
--		if (ret == -ENOENT)
--			ret = delete_fdt_mem_rsv(fdt, tmp_start,
--						 round_up(tmp_size, PAGE_SIZE));
--		if (ret == 0)
--			pr_debug("Removed old initrd reservation.\n");
--		else if (ret != -ENOENT)
--			return ret;
--
--		/* If there's no new initrd, delete the old initrd's info. */
--		if (initrd_len == 0) {
--			ret = fdt_delprop(fdt, chosen_node,
--					  "linux,initrd-start");
--			if (ret) {
--				pr_err("Error deleting linux,initrd-start.\n");
--				return -EINVAL;
--			}
--
--			ret = fdt_delprop(fdt, chosen_node, "linux,initrd-end");
--			if (ret) {
--				pr_err("Error deleting linux,initrd-end.\n");
--				return -EINVAL;
--			}
--		}
--	}
--
--	if (initrd_len) {
--		ret = fdt_setprop_u64(fdt, chosen_node,
--				      "linux,initrd-start",
--				      initrd_load_addr);
--		if (ret < 0)
--			goto err;
--
--		/* initrd-end is the first address after the initrd image. */
--		ret = fdt_setprop_u64(fdt, chosen_node, "linux,initrd-end",
--				      initrd_load_addr + initrd_len);
--		if (ret < 0)
--			goto err;
--
--		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
--		if (ret) {
--			pr_err("Error reserving initrd memory: %s\n",
--			       fdt_strerror(ret));
--			return -EINVAL;
--		}
--	}
--
--	if (cmdline != NULL) {
--		ret = fdt_setprop_string(fdt, chosen_node, "bootargs", cmdline);
--		if (ret < 0)
--			goto err;
--	} else {
--		ret = fdt_delprop(fdt, chosen_node, "bootargs");
--		if (ret && ret != -FDT_ERR_NOTFOUND) {
--			pr_err("Error deleting bootargs.\n");
--			return -EINVAL;
--		}
--	}
-+	int ret;
+-	vfree(image->arch.dtb);
++	kfree(image->arch.dtb);
+ 	image->arch.dtb = NULL;
  
--	if (image->type == KEXEC_TYPE_CRASH) {
--		/*
--		 * Avoid elfcorehdr from being stomped on in kdump kernel by
--		 * setting up memory reserve map.
--		 */
--		ret = fdt_add_mem_rsv(fdt, image->arch.elf_headers_mem,
--				      image->arch.elf_headers_sz);
--		if (ret) {
--			pr_err("Error reserving elfcorehdr memory: %s\n",
--			       fdt_strerror(ret));
--			goto err;
--		}
--	}
-+	ret = of_kexec_setup_new_fdt(image, fdt, initrd_load_addr, initrd_len, cmdline);
-+	if (ret)
-+		goto err;
+ 	vfree(image->arch.elf_headers);
+@@ -59,19 +59,21 @@ static int create_dtb(struct kimage *image,
+ 			+ cmdline_len + DTB_EXTRA_SPACE;
  
--	ret = setup_ima_buffer(image, fdt, chosen_node);
-+	ret = setup_ima_buffer(image, fdt, fdt_path_offset(fdt, "/chosen"));
- 	if (ret) {
- 		pr_err("Error setting up the new device tree.\n");
- 		return ret;
- 	}
+ 	for (;;) {
+-		buf = vmalloc(buf_size);
++		buf = kmalloc(buf_size, GFP_KERNEL);
+ 		if (!buf)
+ 			return -ENOMEM;
  
--	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
--	if (ret)
--		goto err;
--
+ 		/* duplicate a device tree blob */
+ 		ret = fdt_open_into(initial_boot_params, buf, buf_size);
+-		if (ret)
++		if (ret) {
++			kfree(buf);
+ 			return -EINVAL;
++		}
+ 
+ 		ret = of_kexec_setup_new_fdt(image, buf, initrd_load_addr,
+ 					     initrd_len, cmdline);
+ 		if (ret) {
+-			vfree(buf);
++			kfree(buf);
+ 			if (ret == -ENOMEM) {
+ 				/* unlikely, but just in case */
+ 				buf_size += DTB_EXTRA_SPACE;
+@@ -217,6 +219,6 @@ int load_other_segments(struct kimage *image,
  	return 0;
  
- err:
+ out_err:
+-	vfree(dtb);
++	kfree(dtb);
+ 	return ret;
+ }
 -- 
 2.30.0
 
