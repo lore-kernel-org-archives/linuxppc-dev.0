@@ -2,104 +2,68 @@ Return-Path: <SRS0=Y1I/=GS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 701FAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C642C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 07:39:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 952D0239EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 06:18:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 952D0239EF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7B2C223436
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 07:39:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B2C223436
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DH9wP3nWYzDsWr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 17:18:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DHCkg6SSFzDscG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:39:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.222.181;
+ helo=mail-qk1-f181.google.com; envelope-from=namhyung@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=mR74Mn9r; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com
+ [209.85.222.181])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DH9tV4ywtzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 17:16:34 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10F62AKm076774; Fri, 15 Jan 2021 01:16:30 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=98rgnhvDfACiQJuLd/w/T6bc5DrbraZo/Iuds/YV1r8=;
- b=mR74Mn9rFdP/SD15DK7VxLnjY8Jl1Y82jt9NBUy8rxLw/juit0h0kzO9Kj0jWx32ngUK
- qWnBKxlbAsUp3GqPTogkt6cblCzblc9hssxMY9aiWenGmV8JCuPUrQULUj1QTX2vrigc
- 0Nh1HLcazF7aIg9fIeyW9P3W5tV93SMqN6HI6aLlkYLHUYFPBdWclm6h42xC44Ac4iW0
- lYnDz5TnEEtpsaURqbvQMfK2eBJUoSQZxwe6s4o4RZMUwIn6FNgR/mol5mZE49PIw2iw
- 4HjtpDbRiZhWEf/7LLyzLpnQoGemQrL13aeRJjLyK2lZT7eb0ZfaJLL/lv83okJD3Dkt +g== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3635e60dt2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 15 Jan 2021 01:16:29 -0500
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 10F63uPi089871;
- Fri, 15 Jan 2021 01:16:29 -0500
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3635e60dsk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 15 Jan 2021 01:16:29 -0500
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10F69Fb7028867;
- Fri, 15 Jan 2021 06:16:27 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma02fra.de.ibm.com with ESMTP id 35y448ks7f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 15 Jan 2021 06:16:27 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10F6GOfj41746892
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 15 Jan 2021 06:16:24 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E6A6F4C04A;
- Fri, 15 Jan 2021 06:16:23 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 352244C044;
- Fri, 15 Jan 2021 06:16:22 +0000 (GMT)
-Received: from bangoria.ibmuc.com (unknown [9.199.41.69])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 15 Jan 2021 06:16:21 +0000 (GMT)
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/sstep: Fix array out of bound warning
-Date: Fri, 15 Jan 2021 11:46:20 +0530
-Message-Id: <20210115061620.692500-1-ravi.bangoria@linux.ibm.com>
-X-Mailer: git-send-email 2.29.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DHChS0T9QzDsbF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2021 18:37:58 +1100 (AEDT)
+Received: by mail-qk1-f181.google.com with SMTP id b64so10868095qkc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2021 23:37:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=4VQLhch2tvznClXcvsEtRp0FtI7Q9qiifzg7hnwGe2Y=;
+ b=BoSVgb2tYBRre2nCpSJ9YhK2SQBRYAhINA39uF9q8yz1aL2+X0GVLsHd+uWf/Qos3w
+ a0a6pqJh2r0rJmG5rDjkiXFHId632uPfWrNR7hdD523CW8AXTCiUR6MODiRW/8mRhOBH
+ b5vT/xNEMEMy4sFMPXxp2KDYWrVFR6Gv7n0msidvHbds9Fg0KgSEnX2glc2D5VT8/etr
+ 29E/V5w7XymsvK4OMJNytzdw3GIfbpUtYcKeH0Bilgk+n26RXx8cQGyvrcn2G5wnESDW
+ FBsqks6z7PwJdlYLH15YWnkJOXmK3vHfFZAlTPZTlZbcCPX/yEKx+x7/+h2T+ih3o4GA
+ YStw==
+X-Gm-Message-State: AOAM531tTpWBXBOOnfFXNUbCii+ffDbbwNydO83HCD+B17V0hRUvZHAW
+ DOPZjbyFQbyAZ3vnsQfmcseO7ARPGmclqSw9XUk=
+X-Google-Smtp-Source: ABdhPJwlUosA4V5gN1uUNGSCPi+KOJSFEDqHzEVZldToXcd/a0pXtbK4/llHzOVo/MjUrR0CNxaW5uttIhERTvn/K8A=
+X-Received: by 2002:a05:620a:12f8:: with SMTP id
+ f24mr11003851qkl.132.1610696276033; 
+ Thu, 14 Jan 2021 23:37:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-15_01:2021-01-15,
- 2021-01-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- suspectscore=0 mlxlogscore=992 impostorscore=0 clxscore=1011
- malwarescore=0 spamscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- adultscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101150031
+References: <20210113080128.10286-1-jslaby@suse.cz>
+ <20210113104618.GB1331835@krava>
+ <388a2e21-14ee-4609-84d0-c8824154c015@suse.cz>
+ <CAM9d7cgmUqLX+C1wDPe9qaxDh1tY4sVmLx2qZqey3CQSmZSo2Q@mail.gmail.com>
+ <87sg73kbsq.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87sg73kbsq.fsf@mpe.ellerman.id.au>
+From: Namhyung Kim <namhyung@kernel.org>
+Date: Fri, 15 Jan 2021 16:37:44 +0900
+Message-ID: <CAM9d7cicU-Nhi+eHMshv5QMbBK__yEF2UfyJxeeuNy9c-bX7-w@mail.gmail.com>
+Subject: Re: [PATCH] perf tools: Resolve symbols against debug file first
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,200 +75,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.ibm.com, ravi.bangoria@linux.ibm.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, jniethe5@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Jiri Slaby <jslaby@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, Jiri Olsa <jolsa@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Compiling kernel with -Warray-bounds throws below warning:
+Hello,
 
-  In function 'emulate_vsx_store':
-  warning: array subscript is above array bounds [-Warray-bounds]
-  buf.d[2] = byterev_8(reg->d[1]);
-  ~~~~~^~~
-  buf.d[3] = byterev_8(reg->d[0]);
-  ~~~~~^~~
+On Thu, Jan 14, 2021 at 8:17 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Namhyung Kim <namhyung@kernel.org> writes:
+> > On Wed, Jan 13, 2021 at 8:43 PM Jiri Slaby <jslaby@suse.cz> wrote:
+> >>
+> >> On 13. 01. 21, 11:46, Jiri Olsa wrote:
+> >> > On Wed, Jan 13, 2021 at 09:01:28AM +0100, Jiri Slaby wrote:
+> >> >> With LTO, there are symbols like these:
+> >> >> /usr/lib/debug/usr/lib64/libantlr4-runtime.so.4.8-4.8-1.4.x86_64.debug
+> >> >>   10305: 0000000000955fa4     0 NOTYPE  LOCAL  DEFAULT   29 Predicate.cpp.2bc410e7
+> >> >>
+> >> >> This comes from a runtime/debug split done by the standard way:
+> >> >> objcopy --only-keep-debug $runtime $debug
+> >> >> objcopy --add-gnu-debuglink=$debugfn -R .comment -R .GCC.command.line --strip-all $runtime
+> >> >>
+> ...
+> >> >> diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
+> >> >> index f3577f7d72fe..a31b716fa61c 100644
+> >> >> --- a/tools/perf/util/symbol-elf.c
+> >> >> +++ b/tools/perf/util/symbol-elf.c
+> >> >> @@ -1226,12 +1226,20 @@ int dso__load_sym(struct dso *dso, struct map *map, struct symsrc *syms_ss,
+> >> >>              if (sym.st_shndx == SHN_ABS)
+> >> >>                      continue;
+> >> >>
+> >> >> -            sec = elf_getscn(runtime_ss->elf, sym.st_shndx);
+> >> >> +            sec = elf_getscn(syms_ss->elf, sym.st_shndx);
+> >> >>              if (!sec)
+> >> >>                      goto out_elf_end;
+> >> >
+> >> > we iterate symbols from syms_ss, so the fix seems to be correct
+> >> > to call elf_getscn on syms_ss, not on runtime_ss as we do now
+> >> >
+> >> > I'd think this worked only when runtime_ss == syms_ss
+> >>
+> >> No, because the headers are copied 1:1 from runtime_ss to syms_ss. And
+> >> runtime_ss is then stripped, so only .debug* sections are removed there.
+> >> (And syms_ss's are set as NOBITS.)
+> >>
+> >> We iterated .debug* sections in syms_ss and used runtime_ss section
+> >> _headers_ only to adjust symbols (sometimes). That worked.
+> >
+> > It seems PPC has an opd section only in the runtime_ss and that's why
+> > we use it for section headers.
+>
+> At least on my system (Ubuntu 20.04.1) I see .opd in the debug file with
+> NOBITS set:
+>
+> $ readelf -e vmlinux.debug | grep opd
+>   [37] .opd              NOBITS           c000000001c1f548  01202e14
+>
+>
+> But possibly that's not the case with older toolchains?
 
-Fix it by converting local variable 'union vsx_reg buf' into an array.
-Also consider function argument 'union vsx_reg *reg' as array instead
-of pointer because callers are actually passing an array to it.
+I was referring to this commit:
 
-Fixes: af99da74333b ("powerpc/sstep: Support VSX vector paired storage access instructions")
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
----
- arch/powerpc/lib/sstep.c | 61 ++++++++++++++++++++--------------------
- 1 file changed, 31 insertions(+), 30 deletions(-)
+commit 261360b6e90a782f0a63d8f61a67683c376c88cf
+Author: Cody P Schafer <cody@linux.vnet.ibm.com>
+Date:   Fri Aug 10 15:23:01 2012 -0700
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index bf7a7d62ae8b..5b4281ade5b6 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -723,7 +723,8 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 	const unsigned char *bp;
- 
- 	size = GETSIZE(op->type);
--	reg->d[0] = reg->d[1] = 0;
-+	reg[0].d[0] = reg[0].d[1] = 0;
-+	reg[1].d[0] = reg[1].d[1] = 0;
- 
- 	switch (op->element_size) {
- 	case 32:
-@@ -742,25 +743,25 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 		/* scalar loads, lxvd2x, lxvdsx */
- 		read_size = (size >= 8) ? 8 : size;
- 		i = IS_LE ? 8 : 8 - read_size;
--		memcpy(&reg->b[i], mem, read_size);
-+		memcpy(&reg[0].b[i], mem, read_size);
- 		if (rev)
--			do_byte_reverse(&reg->b[i], 8);
-+			do_byte_reverse(&reg[0].b[i], 8);
- 		if (size < 8) {
- 			if (op->type & SIGNEXT) {
- 				/* size == 4 is the only case here */
--				reg->d[IS_LE] = (signed int) reg->d[IS_LE];
-+				reg[0].d[IS_LE] = (signed int)reg[0].d[IS_LE];
- 			} else if (op->vsx_flags & VSX_FPCONV) {
- 				preempt_disable();
--				conv_sp_to_dp(&reg->fp[1 + IS_LE],
--					      &reg->dp[IS_LE]);
-+				conv_sp_to_dp(&reg[0].fp[1 + IS_LE],
-+					      &reg[0].dp[IS_LE]);
- 				preempt_enable();
- 			}
- 		} else {
- 			if (size == 16) {
- 				unsigned long v = *(unsigned long *)(mem + 8);
--				reg->d[IS_BE] = !rev ? v : byterev_8(v);
-+				reg[0].d[IS_BE] = !rev ? v : byterev_8(v);
- 			} else if (op->vsx_flags & VSX_SPLAT)
--				reg->d[IS_BE] = reg->d[IS_LE];
-+				reg[0].d[IS_BE] = reg[0].d[IS_LE];
- 		}
- 		break;
- 	case 4:
-@@ -768,13 +769,13 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 		wp = mem;
- 		for (j = 0; j < size / 4; ++j) {
- 			i = IS_LE ? 3 - j : j;
--			reg->w[i] = !rev ? *wp++ : byterev_4(*wp++);
-+			reg[0].w[i] = !rev ? *wp++ : byterev_4(*wp++);
- 		}
- 		if (op->vsx_flags & VSX_SPLAT) {
--			u32 val = reg->w[IS_LE ? 3 : 0];
-+			u32 val = reg[0].w[IS_LE ? 3 : 0];
- 			for (; j < 4; ++j) {
- 				i = IS_LE ? 3 - j : j;
--				reg->w[i] = val;
-+				reg[0].w[i] = val;
- 			}
- 		}
- 		break;
-@@ -783,7 +784,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 		hp = mem;
- 		for (j = 0; j < size / 2; ++j) {
- 			i = IS_LE ? 7 - j : j;
--			reg->h[i] = !rev ? *hp++ : byterev_2(*hp++);
-+			reg[0].h[i] = !rev ? *hp++ : byterev_2(*hp++);
- 		}
- 		break;
- 	case 1:
-@@ -791,7 +792,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 		bp = mem;
- 		for (j = 0; j < size; ++j) {
- 			i = IS_LE ? 15 - j : j;
--			reg->b[i] = *bp++;
-+			reg[0].b[i] = *bp++;
- 		}
- 		break;
- 	}
-@@ -804,7 +805,7 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- {
- 	int size, write_size;
- 	int i, j;
--	union vsx_reg buf;
-+	union vsx_reg buf[2];
- 	unsigned int *wp;
- 	unsigned short *hp;
- 	unsigned char *bp;
-@@ -818,11 +819,11 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 			break;
- 		if (rev) {
- 			/* reverse 32 bytes */
--			buf.d[0] = byterev_8(reg->d[3]);
--			buf.d[1] = byterev_8(reg->d[2]);
--			buf.d[2] = byterev_8(reg->d[1]);
--			buf.d[3] = byterev_8(reg->d[0]);
--			reg = &buf;
-+			buf[0].d[0] = byterev_8(reg[1].d[1]);
-+			buf[0].d[1] = byterev_8(reg[1].d[0]);
-+			buf[1].d[0] = byterev_8(reg[0].d[1]);
-+			buf[1].d[1] = byterev_8(reg[0].d[0]);
-+			reg = buf;
- 		}
- 		memcpy(mem, reg, size);
- 		break;
-@@ -834,9 +835,9 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 			rev = !rev;
- 		if (rev) {
- 			/* reverse 16 bytes */
--			buf.d[0] = byterev_8(reg->d[1]);
--			buf.d[1] = byterev_8(reg->d[0]);
--			reg = &buf;
-+			buf[0].d[0] = byterev_8(reg[0].d[1]);
-+			buf[0].d[1] = byterev_8(reg[0].d[0]);
-+			reg = buf;
- 		}
- 		memcpy(mem, reg, size);
- 		break;
-@@ -845,15 +846,15 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 		write_size = (size >= 8) ? 8 : size;
- 		i = IS_LE ? 8 : 8 - write_size;
- 		if (size < 8 && op->vsx_flags & VSX_FPCONV) {
--			buf.d[0] = buf.d[1] = 0;
-+			buf[0].d[0] = buf[0].d[1] = 0;
- 			preempt_disable();
--			conv_dp_to_sp(&reg->dp[IS_LE], &buf.fp[1 + IS_LE]);
-+			conv_dp_to_sp(&reg[0].dp[IS_LE], &buf[0].fp[1 + IS_LE]);
- 			preempt_enable();
--			reg = &buf;
-+			reg = buf;
- 		}
--		memcpy(mem, &reg->b[i], write_size);
-+		memcpy(mem, &reg[0].b[i], write_size);
- 		if (size == 16)
--			memcpy(mem + 8, &reg->d[IS_BE], 8);
-+			memcpy(mem + 8, &reg[0].d[IS_BE], 8);
- 		if (unlikely(rev)) {
- 			do_byte_reverse(mem, write_size);
- 			if (size == 16)
-@@ -865,7 +866,7 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 		wp = mem;
- 		for (j = 0; j < size / 4; ++j) {
- 			i = IS_LE ? 3 - j : j;
--			*wp++ = !rev ? reg->w[i] : byterev_4(reg->w[i]);
-+			*wp++ = !rev ? reg[0].w[i] : byterev_4(reg[0].w[i]);
- 		}
- 		break;
- 	case 2:
-@@ -873,7 +874,7 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 		hp = mem;
- 		for (j = 0; j < size / 2; ++j) {
- 			i = IS_LE ? 7 - j : j;
--			*hp++ = !rev ? reg->h[i] : byterev_2(reg->h[i]);
-+			*hp++ = !rev ? reg[0].h[i] : byterev_2(reg[0].h[i]);
- 		}
- 		break;
- 	case 1:
-@@ -881,7 +882,7 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 		bp = mem;
- 		for (j = 0; j < size; ++j) {
- 			i = IS_LE ? 15 - j : j;
--			*bp++ = reg->b[i];
-+			*bp++ = reg[0].b[i];
- 		}
- 		break;
- 	}
--- 
-2.26.2
+    perf symbols: Convert dso__load_syms to take 2 symsrc's
 
+    To properly handle platforms with an opd section, both a runtime image
+    (which contains the opd section but possibly lacks symbols) and a symbol
+    image (which probably lacks an opd section but has symbols).
+
+    The next patch ("perf symbol: use both runtime and debug images")
+    adjusts the callsite in dso__load() to take advantage of being able to
+    pass both runtime & debug images.
+
+    Assumptions made here:
+
+     - The opd section, if it exists in the runtime image, has headers in
+       both the runtime image and the debug/syms image.
+
+     - The index of the opd section (again, only if it exists in the runtime
+       image) is the same in both the runtime and debug/symbols image.
+
+    Both of these are true on RHEL, but it is unclear how accurate they are
+    in general (on platforms with function descriptors in opd sections).
+
+    Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+
+
+Thanks,
+Namhyung
