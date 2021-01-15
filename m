@@ -2,65 +2,68 @@ Return-Path: <SRS0=Y1I/=GS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44A5AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:34:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45B8FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:36:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C29E723A58
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:34:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C29E723A58
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 920282399A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jan 2021 18:36:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 920282399A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DHVFT6TD8zDvWb
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 05:34:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DHVHh5sPQzDvW6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 05:36:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=iW5vxKMW; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DHS5H0m18zDsbR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 03:56:50 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7979C20738;
- Fri, 15 Jan 2021 16:56:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1610729807;
- bh=65KME7dlQ6ZxSIcs/tBhxcihrYV+4nzB/aZGW3JS39U=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=iW5vxKMW9vNDJos4it09xTOONBPZKklsLnEyxEmE4xEDwArUAAIjUc6JNJFqx7Ijw
- DyGUNyWEQI19X/6El61kkAvRhz4DXcIaGio0nqsD8aSOld7nU8cL2WOHM817fNloUF
- bRJsslHS7zn51K8eZee/SERyxtjaG9PT8mU/+Iz6VtMcwkYZgkiVusJE1xYp8IpK3c
- Y7pJgKlcI/1XyLYRlU4875q9xrd8YpE2GDuJM3JPykPxcZ+5gKYBq/0Zl5nJ/pZvRr
- 7iH+PfMh+QvJHiDK9j99EYhdStd2dpM7vx3ND4d8ntZqm8bBB7rXitiWgoecnzTKQk
- oBFQNYyCMINqA==
-Date: Fri, 15 Jan 2021 08:56:45 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 0/7] Rid W=1 warnings in Ethernet
-Message-ID: <20210115085645.0f27864a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <20210115133848.GK3975472@dell>
-References: <20210113164123.1334116-1-lee.jones@linaro.org>
- <20210113183551.6551a6a2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210114083349.GI3975472@dell>
- <20210114091453.30177d20@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210114195422.GB3975472@dell> <20210115111823.GH3975472@dell>
- <bc775cc3-fda3-0280-5f92-53058996f02f@csgroup.eu>
- <20210115133848.GK3975472@dell>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DHSMz0qCMzDqyB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 04:09:27 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DHSMb4dNhz9tyFN;
+ Fri, 15 Jan 2021 18:09:15 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id mCmDzucNLA7p; Fri, 15 Jan 2021 18:09:15 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DHSMb3BY5z9tyF6;
+ Fri, 15 Jan 2021 18:09:15 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 130A48B82F;
+ Fri, 15 Jan 2021 18:09:17 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id BomduMrBh07W; Fri, 15 Jan 2021 18:09:16 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 780F68B82C;
+ Fri, 15 Jan 2021 18:09:15 +0100 (CET)
+Subject: Re: [PATCH v6 07/39] powerpc: bad_page_fault get registers from regs
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20210115165012.1260253-1-npiggin@gmail.com>
+ <20210115165012.1260253-8-npiggin@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <9120125b-6dce-4e89-7113-dfdcea43e191@csgroup.eu>
+Date: Fri, 15 Jan 2021 18:09:13 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20210115165012.1260253-8-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,35 +75,188 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Durrant <paul@xen.org>, Kurt Kanzenbach <kurt@linutronix.de>,
- Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
- Peter Cammaert <pc@denkart.be>, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.ibm.com>, Wei Liu <wei.liu@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Utz Bacher <utz.bacher@de.ibm.com>,
- John Fastabend <john.fastabend@gmail.com>,
- Santiago Leon <santi_leon@yahoo.com>, xen-devel@lists.xenproject.org,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
- Rusty Russell <rusty@rustcorp.com.au>, Daris A Nevil <dnevil@snmc.com>,
- Lijun Pan <ljp@linux.ibm.com>, Ivan Khoronzhuk <ivan.khoronzhuk@linaro.org>,
- Nicolas Pitre <nico@fluxnic.net>, Geoff Levand <geoff@infradead.org>,
- netdev@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Erik Stahlman <erik@vt.edu>, John Allen <jallen@linux.vnet.ibm.com>,
- Dany Madden <drt@linux.ibm.com>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Russell King <rmk@arm.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 15 Jan 2021 13:38:48 +0000 Lee Jones wrote:
-> Okay, so what would you like me to do?  Would you like me to re-submit
-> the set based only on net-next
 
-Yes, rebase your patches on net-next, recheck everything builds okay
-and resubmit. You should always develop against the tree that will
-merge your patches. I appreciate for your janitorial work using
-linux-next is more expedient, but as you can see it causes trouble,
-this is not the first time your patches don't apply to net-next IIRC.
+
+Le 15/01/2021 à 17:49, Nicholas Piggin a écrit :
+> Similar to the previous patch this makes interrupt handler function
+> types more regular so they can be wrapped with the next patch.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>   arch/powerpc/include/asm/bug.h             |  5 +++--
+>   arch/powerpc/kernel/entry_32.S             |  3 +--
+>   arch/powerpc/kernel/exceptions-64e.S       |  3 +--
+>   arch/powerpc/kernel/exceptions-64s.S       |  4 +---
+>   arch/powerpc/kernel/traps.c                |  2 +-
+>   arch/powerpc/mm/book3s64/hash_utils.c      |  4 ++--
+>   arch/powerpc/mm/book3s64/slb.c             |  2 +-
+>   arch/powerpc/mm/fault.c                    | 13 ++++++++++---
+>   arch/powerpc/platforms/8xx/machine_check.c |  2 +-
+>   9 files changed, 21 insertions(+), 17 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> index f7827e993196..8f09ddae9305 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -112,8 +112,9 @@
+>   
+>   struct pt_regs;
+>   long do_page_fault(struct pt_regs *);
+> -extern void bad_page_fault(struct pt_regs *, unsigned long, int);
+> -void __bad_page_fault(struct pt_regs *regs, unsigned long address, int sig);
+> +void bad_page_fault(struct pt_regs *, int);
+> +void __bad_page_fault(struct pt_regs *regs, int sig);
+> +void do_bad_page_fault_segv(struct pt_regs *regs);
+
+What is that do_bad_page_fault_segv() ? Shouldn't it be in a separate patch ?
+
+>   extern void _exception(int, struct pt_regs *, int, unsigned long);
+>   extern void _exception_pkey(struct pt_regs *, unsigned long, int);
+>   extern void die(const char *, struct pt_regs *, long);
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index d6ea3f2d6cc0..b102b40c4988 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -672,9 +672,8 @@ handle_page_fault:
+>   	lwz	r0,_TRAP(r1)
+>   	clrrwi	r0,r0,1
+>   	stw	r0,_TRAP(r1)
+> -	mr	r5,r3
+> +	mr	r4,r3		/* err arg for bad_page_fault */
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	lwz	r4,_DAR(r1)
+>   	bl	__bad_page_fault
+>   	b	ret_from_except_full
+>   
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index 43e71d86dcbf..52421042a020 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -1018,9 +1018,8 @@ storage_fault_common:
+>   	bne-	1f
+>   	b	ret_from_except_lite
+>   1:	bl	save_nvgprs
+> -	mr	r5,r3
+> +	mr	r4,r3
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	ld	r4,_DAR(r1)
+>   	bl	__bad_page_fault
+>   	b	ret_from_except
+>   
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 839dcb94eea7..b90d3cde14cf 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -2151,9 +2151,7 @@ EXC_COMMON_BEGIN(h_data_storage_common)
+>   	GEN_COMMON h_data_storage
+>   	addi    r3,r1,STACK_FRAME_OVERHEAD
+>   BEGIN_MMU_FTR_SECTION
+> -	ld	r4,_DAR(r1)
+> -	li	r5,SIGSEGV
+> -	bl      bad_page_fault
+> +	bl      do_bad_page_fault_segv
+>   MMU_FTR_SECTION_ELSE
+>   	bl      unknown_exception
+>   ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_TYPE_RADIX)
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 3ec7b443fe6b..f3f6af3141ee 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1612,7 +1612,7 @@ void alignment_exception(struct pt_regs *regs)
+>   	if (user_mode(regs))
+>   		_exception(sig, regs, code, regs->dar);
+>   	else
+> -		bad_page_fault(regs, regs->dar, sig);
+> +		bad_page_fault(regs, sig);
+>   
+>   bail:
+>   	exception_exit(prev_state);
+> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+> index 9a499af3eebf..1a270cc37d97 100644
+> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+> @@ -1539,7 +1539,7 @@ long do_hash_fault(struct pt_regs *regs)
+>   	 * the access, or panic if there isn't a handler.
+>   	 */
+>   	if (unlikely(in_nmi())) {
+> -		bad_page_fault(regs, ea, SIGSEGV);
+> +		bad_page_fault(regs, SIGSEGV);
+>   		return 0;
+>   	}
+>   
+> @@ -1578,7 +1578,7 @@ long do_hash_fault(struct pt_regs *regs)
+>   			else
+>   				_exception(SIGBUS, regs, BUS_ADRERR, ea);
+>   		} else {
+> -			bad_page_fault(regs, ea, SIGBUS);
+> +			bad_page_fault(regs, SIGBUS);
+>   		}
+>   		err = 0;
+>   
+> diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+> index 985902ce0272..c581548b533f 100644
+> --- a/arch/powerpc/mm/book3s64/slb.c
+> +++ b/arch/powerpc/mm/book3s64/slb.c
+> @@ -874,7 +874,7 @@ void do_bad_slb_fault(struct pt_regs *regs)
+>   		if (user_mode(regs))
+>   			_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
+>   		else
+> -			bad_page_fault(regs, regs->dar, SIGSEGV);
+> +			bad_page_fault(regs, SIGSEGV);
+>   	} else if (err == -EINVAL) {
+>   		unrecoverable_exception(regs);
+>   	} else {
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 273ff845eccf..e476d7701413 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -566,7 +566,7 @@ NOKPROBE_SYMBOL(do_page_fault);
+>    * It is called from the DSI and ISI handlers in head.S and from some
+>    * of the procedures in traps.c.
+>    */
+> -void __bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+> +void __bad_page_fault(struct pt_regs *regs, int sig)
+>   {
+>   	int is_write = page_fault_is_write(regs->dsisr);
+>   
+> @@ -604,7 +604,7 @@ void __bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+>   	die("Kernel access of bad area", regs, sig);
+>   }
+>   
+> -void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+> +void bad_page_fault(struct pt_regs *regs, int sig)
+>   {
+>   	const struct exception_table_entry *entry;
+>   
+> @@ -613,5 +613,12 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+>   	if (entry)
+>   		instruction_pointer_set(regs, extable_fixup(entry));
+>   	else
+> -		__bad_page_fault(regs, address, sig);
+> +		__bad_page_fault(regs, sig);
+>   }
+> +
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +void do_bad_page_fault_segv(struct pt_regs *regs)
+> +{
+> +	bad_page_fault(regs, SIGSEGV);
+> +}
+> +#endif
+> diff --git a/arch/powerpc/platforms/8xx/machine_check.c b/arch/powerpc/platforms/8xx/machine_check.c
+> index 88dedf38eccd..656365975895 100644
+> --- a/arch/powerpc/platforms/8xx/machine_check.c
+> +++ b/arch/powerpc/platforms/8xx/machine_check.c
+> @@ -26,7 +26,7 @@ int machine_check_8xx(struct pt_regs *regs)
+>   	 * to deal with that than having a wart in the mcheck handler.
+>   	 * -- BenH
+>   	 */
+> -	bad_page_fault(regs, regs->dar, SIGBUS);
+> +	bad_page_fault(regs, SIGBUS);
+>   	return 1;
+>   #else
+>   	return 0;
+> 
