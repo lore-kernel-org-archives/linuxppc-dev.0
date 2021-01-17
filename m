@@ -2,57 +2,63 @@ Return-Path: <SRS0=TEE+=GU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64589C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 17:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3DCDC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 20:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB8862222F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 17:28:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB8862222F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id DE62C21D7F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 20:32:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE62C21D7F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DJhhg1MG5zDqC3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jan 2021 04:28:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DJmnT2CjPzDrSM
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jan 2021 07:32:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.42;
- helo=h1.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
- receiver=<UNKNOWN>)
-Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
- [131.153.2.42])
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=PfM2ylZI; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DJhfy0K7gzDrcH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2021 04:26:49 +1100 (AEDT)
-Received: from MTA-08-4.privateemail.com (mta-08.privateemail.com
- [68.65.122.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id CDC7B800C6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jan 2021 12:26:46 -0500 (EST)
-Received: from MTA-08.privateemail.com (localhost [127.0.0.1])
- by MTA-08.privateemail.com (Postfix) with ESMTP id 27B9760090;
- Sun, 17 Jan 2021 12:26:43 -0500 (EST)
-Received: from localhost (unknown [10.20.151.227])
- by MTA-08.privateemail.com (Postfix) with ESMTPA id E892F6008F;
- Sun, 17 Jan 2021 17:26:42 +0000 (UTC)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH v3 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- <linuxppc-dev@lists.ozlabs.org>
-Date: Sun, 17 Jan 2021 11:19:18 -0600
-Message-Id: <C8LLSM3UC598.L4E2VMGJOI06@geist>
-In-Reply-To: <eb4f68f4-f606-007d-6552-8a46cb9912b4@csgroup.eu>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DJmld48NlzDr2s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2021 07:31:09 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 2FD2D21D7F;
+ Sun, 17 Jan 2021 20:31:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1610915466;
+ bh=wRda/Od136zEOR5r+9Z/a9Z3oldgv76IApzPnuBzupo=;
+ h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+ b=PfM2ylZIGRLjAH9vEzQ0usMGD0Bh6Tld7a39BqITE5XAMkl9/rW/aE7/Glqn76Fhv
+ biU/QamZbVuDz0kszZuYs61Zt4tjqvkkzA/5xJoMJDJhiDomFHJB0LhNCrkFThOYTH
+ 8qf2oGNCCYh7NhLYMd+4ByYgPti/c+7Fqrh4AzmJZRhYnVE8KxMo4L333GbmMYbPhl
+ cxUSf8XkN9SUx7e07AMu7a06M5klWozWKERR1Q0iHgHMjDlje9x8bNGfk1Nc5hC6V5
+ yEMF2GcsXkjTX93guHfS0faplqyo9jE4ZLZn8dVEnL/v55sSmm8jVbIxqWvI7BiESE
+ 5nKBI+CerbSvA==
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.11-4 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87o8hnn9of.fsf@mpe.ellerman.id.au>
+References: <87o8hnn9of.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List
+ <linuxppc-dev.lists.ozlabs.org>
+X-PR-Tracked-Message-Id: <87o8hnn9of.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.11-4
+X-PR-Tracked-Commit-Id: 41131a5e54ae7ba5a2bb8d7b30d1818b3f5b13d2
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: a1339d6355ac42e1bf4fcdfce8bfce61172f8891
+Message-Id: <161091546605.25840.15782559954148445248.pr-tracker-bot@kernel.org>
+Date: Sun, 17 Jan 2021 20:31:06 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,135 +70,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: arielmarcovitch@gmail.com, schwab@linux-m68k.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon Jan 11, 2021 at 7:22 AM CST, Christophe Leroy wrote:
->
->
-> Le 09/01/2021 =C3=A0 04:25, Christopher M. Riedl a =C3=A9crit :
-> > Implement raw_copy_from_user_allowed() which assumes that userspace rea=
-d
-> > access is open. Use this new function to implement raw_copy_from_user()=
-.
-> > Finally, wrap the new function to follow the usual "unsafe_" convention
-> > of taking a label argument.
->
-> I think there is no point implementing raw_copy_from_user_allowed(), see
-> https://github.com/linuxppc/linux/commit/4b842e4e25b1 and
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/8c74fc9ce8131cabb=
-10b3e95dc0e430f396ee83e.1610369143.git.christophe.leroy@csgroup.eu/
->
-> You should simply do:
->
-> #define unsafe_copy_from_user(d, s, l, e) \
-> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
->
+The pull request you sent on Sun, 17 Jan 2021 21:24:00 +1100:
 
-I gave this a try and the signal ops decreased by ~8K. Now, to be
-honest, I am not sure what an "acceptable" benchmark number here
-actually is - so maybe this is ok? Same loss with both radix and hash:
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.11-4
 
-	|                                      | hash   | radix  |
-	| ------------------------------------ | ------ | ------ |
-	| linuxppc/next                        | 118693 | 133296 |
-	| linuxppc/next w/o KUAP+KUEP          | 228911 | 228654 |
-	| unsafe-signal64                      | 200480 | 234067 |
-	| unsafe-signal64 (__copy_tofrom_user) | 192467 | 225119 |
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/a1339d6355ac42e1bf4fcdfce8bfce61172f8891
 
-To put this into perspective, prior to KUAP and uaccess flush, signal
-performance in this benchmark was ~290K on hash.
+Thank you!
 
->
-> Christophe
->
-> >=20
-> > The new raw_copy_from_user_allowed() calls non-inline __copy_tofrom_use=
-r()
-> > internally. This is still safe to call inside user access blocks formed
-> > with user_*_access_begin()/user_*_access_end() since asm functions are =
-not
-> > instrumented for tracing.
-> >=20
-> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
-> > ---
-> >   arch/powerpc/include/asm/uaccess.h | 28 +++++++++++++++++++---------
-> >   1 file changed, 19 insertions(+), 9 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/=
-asm/uaccess.h
-> > index 501c9a79038c..698f3a6d6ae5 100644
-> > --- a/arch/powerpc/include/asm/uaccess.h
-> > +++ b/arch/powerpc/include/asm/uaccess.h
-> > @@ -403,38 +403,45 @@ raw_copy_in_user(void __user *to, const void __us=
-er *from, unsigned long n)
-> >   }
-> >   #endif /* __powerpc64__ */
-> >  =20
-> > -static inline unsigned long raw_copy_from_user(void *to,
-> > -		const void __user *from, unsigned long n)
-> > +static inline unsigned long
-> > +raw_copy_from_user_allowed(void *to, const void __user *from, unsigned=
- long n)
-> >   {
-> > -	unsigned long ret;
-> >   	if (__builtin_constant_p(n) && (n <=3D 8)) {
-> > -		ret =3D 1;
-> > +		unsigned long ret =3D 1;
-> >  =20
-> >   		switch (n) {
-> >   		case 1:
-> >   			barrier_nospec();
-> > -			__get_user_size(*(u8 *)to, from, 1, ret);
-> > +			__get_user_size_allowed(*(u8 *)to, from, 1, ret);
-> >   			break;
-> >   		case 2:
-> >   			barrier_nospec();
-> > -			__get_user_size(*(u16 *)to, from, 2, ret);
-> > +			__get_user_size_allowed(*(u16 *)to, from, 2, ret);
-> >   			break;
-> >   		case 4:
-> >   			barrier_nospec();
-> > -			__get_user_size(*(u32 *)to, from, 4, ret);
-> > +			__get_user_size_allowed(*(u32 *)to, from, 4, ret);
-> >   			break;
-> >   		case 8:
-> >   			barrier_nospec();
-> > -			__get_user_size(*(u64 *)to, from, 8, ret);
-> > +			__get_user_size_allowed(*(u64 *)to, from, 8, ret);
-> >   			break;
-> >   		}
-> >   		if (ret =3D=3D 0)
-> >   			return 0;
-> >   	}
-> >  =20
-> > +	return __copy_tofrom_user((__force void __user *)to, from, n);
-> > +}
-> > +
-> > +static inline unsigned long
-> > +raw_copy_from_user(void *to, const void __user *from, unsigned long n)
-> > +{
-> > +	unsigned long ret;
-> > +
-> >   	barrier_nospec();
-> >   	allow_read_from_user(from, n);
-> > -	ret =3D __copy_tofrom_user((__force void __user *)to, from, n);
-> > +	ret =3D raw_copy_from_user_allowed(to, from, n);
-> >   	prevent_read_from_user(from, n);
-> >   	return ret;
-> >   }
-> > @@ -542,6 +549,9 @@ user_write_access_begin(const void __user *ptr, siz=
-e_t len)
-> >   #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x,=
- p), e)
-> >   #define unsafe_put_user(x, p, e) __put_user_goto(x, p, e)
-> >  =20
-> > +#define unsafe_copy_from_user(d, s, l, e) \
-> > +	unsafe_op_wrap(raw_copy_from_user_allowed(d, s, l), e)
-> > +
-> >   #define unsafe_copy_to_user(d, s, l, e) \
-> >   do {									\
-> >   	u8 __user *_dst =3D (u8 __user *)(d);				\
-> >=20
-
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
