@@ -1,54 +1,60 @@
-Return-Path: <SRS0=P4SC=GT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=TEE+=GU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB217C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:47:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1E4DC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 02:22:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD031206D8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jan 2021 22:47:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD031206D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
+	by mail.kernel.org (Postfix) with ESMTPS id F3592223E8
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 02:22:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3592223E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DJCpw6c5dzDvWK
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 09:47:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DJJb00rKbzDqW9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Jan 2021 13:22:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=libc.org
- (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
- envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=libc.org
-X-Greylist: delayed 946 seconds by postgrey-1.36 at bilbo;
- Sat, 16 Jan 2021 09:56:39 AEDT
-Received: from brightrain.aerifal.cx (brightrain.aerifal.cx [216.12.86.13])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=LBqHqoWJ; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DHc4R1BD7zDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2021 09:56:37 +1100 (AEDT)
-Date: Fri, 15 Jan 2021 17:23:25 -0500
-From: Rich Felker <dalias@libc.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [PATCH] Adds a new ioctl32 syscall for backwards compatibility
- layers
-Message-ID: <20210115222325.GJ23432@brightrain.aerifal.cx>
-References: <20210106064807.253112-1-Sonicadvance1@gmail.com>
- <20210115070326.294332-1-Sonicadvance1@gmail.com>
- <b15672b1caec4cf980f2753d06b03596@AcuMS.aculab.com>
- <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DJJXr6DpLzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jan 2021 13:20:12 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 1EA7322CB8;
+ Sun, 17 Jan 2021 02:20:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1610850010;
+ bh=ORQl1ZFd11tXszy9IjdFFuITzpen0YjySzTPviRMEh4=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=LBqHqoWJucjw3HIAcEiRHddbHmZGc/5C4egWd3sUP+8sDHxa0OHsmth8puPy2dWsd
+ vJf/Az2S4ocZDZmHYbQpKNneAnc7At1mKvWjmrEKToq8hnJUu+CC/nInGc6WyDKBnm
+ 6flzMGPOoSjiTeJ7IdgNQxCWlVJq89w4IZ1zYBJwfcyYwvI2ZkFbBrdcXpKDv5bc9f
+ u5XeQNfe553p0wxKpQdtZ4GsQ2j9pfNxFoKQ+nkvsfP40Zm5XNxD6Eq9fbmg81j/Cn
+ LVtRvh1kHLuzhYc5Oi6POmY2Wmb/cwHx6OShdHvNAftGN6hzRB/nAnHQi0kD7hOPwu
+ sVtsfh7ba/xzw==
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAK8P3a1gqt-gBCPTdNeY+8SaG8eUGN4zkCrNKSjA=aEL-TkaUQ@mail.gmail.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-Mailman-Approved-At: Sun, 17 Jan 2021 09:38:28 +1100
+Content-Transfer-Encoding: 8bit
+Subject: Re: [RESEND v2 0/7] Rid W=1 warnings in Ethernet
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <161085001003.18239.10975020699076928503.git-patchwork-notify@kernel.org>
+Date: Sun, 17 Jan 2021 02:20:10 +0000
+References: <20210115200905.3470941-1-lee.jones@linaro.org>
+In-Reply-To: <20210115200905.3470941-1-lee.jones@linaro.org>
+To: Lee Jones <lee.jones@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,126 +66,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- Jan Kara <jack@suse.cz>, Miklos Szeredi <mszeredi@redhat.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- YueHaibing <yuehaibing@huawei.com>, Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
- Vasily Gorbik <gor@linux.ibm.com>,
- "sonicadvance1@gmail.com" <sonicadvance1@gmail.com>,
- Brian Gerst <brgerst@gmail.com>, Heiko Carstens <hca@linux.ibm.com>,
- David Rientjes <rientjes@google.com>, Willem de Bruijn <willemb@google.com>,
- Nicholas Piggin <npiggin@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
- Aleksa Sarai <cyphar@cyphar.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Xiaoming Ni <nixiaoming@huawei.com>,
- Vlastimil Babka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Minchan Kim <minchan@kernel.org>,
- David Laight <David.Laight@aculab.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: paul@xen.org, kurt@linutronix.de, ast@kernel.org, gustavoars@kernel.org,
+ pc@denkart.be, paulus@samba.org, sukadev@linux.ibm.com, wei.liu@kernel.org,
+ daniel@iogearbox.net, john.fastabend@gmail.com, santi_leon@yahoo.com,
+ kuba@kernel.org, grygorii.strashko@ti.com, tlfalcon@linux.vnet.ibm.com,
+ hawk@kernel.org, Jens.Osterkamp@de.ibm.com, rusty@rustcorp.com.au,
+ dnevil@snmc.com, ljp@linux.ibm.com, xen-devel@lists.xenproject.org,
+ ivan.khoronzhuk@linaro.org, nico@fluxnic.net, geoff@infradead.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, erik@vt.edu,
+ jallen@linux.vnet.ibm.com, utz.bacher@de.ibm.com, drt@linux.ibm.com,
+ bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ rmk@arm.linux.org.uk
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 15, 2021 at 11:17:09PM +0100, Arnd Bergmann wrote:
-> On Fri, Jan 15, 2021 at 9:01 PM David Laight <David.Laight@aculab.com> wrote:
-> >
-> > From: sonicadvance1@gmail.com
-> > > Sent: 15 January 2021 07:03
-> > > Problem presented:
-> > > A backwards compatibility layer that allows running x86-64 and x86
-> > > processes inside of an AArch64 process.
-> > >   - CPU is emulated
-> > >   - Syscall interface is mostly passthrough
-> > >   - Some syscalls require patching or emulation depending on behaviour
-> > >   - Not viable from the emulator design to use an AArch32 host process
-> > >
-> >
-> > You are going to need to add all the x86 compatibility code into
-> > your arm64 kernel.
-> > This is likely to be different from the 32bit arm compatibility
-> > because 64bit items are only aligned on 32bit boundaries.
-> > The x86 x32 compatibility will be more like the 32bit arm 'compat'
-> > code - I'm pretty sure arm32 64bit aligned 64bit data.
-> 
-> All other architectures that have both 32-bit and 64-bit variants
-> use the same alignment for all types, except for x86.
-> 
-> There are additional differences though, especially if one
-> were to try to generalize the interface to all architectures.
-> A subset of the issues includes
-> 
-> - x32 has 64-bit types in places of some types that are
->   32 bit everywhere else (time_t, ino_t, off_t, clock_t, ...)
-> 
-> - m68k aligns struct members to at most 16 bits
-> 
-> - uid_t/gid_t/ino_t/dev_t/... are
-> 
-> > You'll then need to remember how the process entered the kernel
-> > to work out which compatibility code to invoke.
-> > This is what x86 does.
-> > It allows a single process to do all three types of system call.
-> >
-> > Trying to 'patch up' structures outside the kernel, or in the
-> > syscall interface code will always cause grief somewhere.
-> > The only sane place is in the code that uses the structures.
-> > Which, for ioctls, means inside the driver that parses them.
-> 
-> He's already doing the system call emulation for all the system
-> calls other than ioctl in user space though. In my experience,
-> there are actually fairly few ioctl commands that are different
-> between architectures -- most of them have no misaligned
-> or architecture-defined struct members at all.
-> 
-> Once you have conversion functions to deal with the 32/64-bit
-> interface differences and architecture specifics of sockets,
-> sysvipc, signals, stat, and input_event, handling the
-> x86-32 specific ioctl commands is comparably easy.
+Hello:
 
-Indeed, all of this should just be done in userspace. Note (as you of
-course know, but others on CC probably don't) that we did this in musl
-libc for the sake of being able to run a time64 userspace on a
-pre-time64 kernel, with translation from the new time64 ioctl
-structures to the versions needed by the old ioctls and back using a
-fairly simple table:
+This series was applied to netdev/net-next.git (refs/heads/master):
 
-https://git.musl-libc.org/cgit/musl/tree/src/misc/ioctl.c?id=v1.2.2
+On Fri, 15 Jan 2021 20:08:58 +0000 you wrote:
+> Resending the stragglers again.
+> This set is part of a larger effort attempting to clean-up W=1
+> kernel builds, which are currently overwhelmingly riddled with
+> niggly little warnings.
+> 
+> No changes since v2, just a rebase onto net-next.
+> 
+> [...]
 
-I imagine there's a fair bit more to be done for 32-/64-bit mismatch
-in size/long/pointer types and different alignments, but the problem
-is almost certainly tractable, and much easier than what they already
-have to be doing for syscalls.
+Here is the summary with links:
+  - [1/7] net: ethernet: smsc: smc91x: Fix function name in kernel-doc header
+    https://git.kernel.org/netdev/net-next/c/7d2a92445e3f
+  - [2/7] net: xen-netback: xenbus: Demote nonconformant kernel-doc headers
+    https://git.kernel.org/netdev/net-next/c/090c7ae8e0d0
+  - [3/7] net: ethernet: ti: am65-cpsw-qos: Demote non-conformant function header
+    https://git.kernel.org/netdev/net-next/c/935888cda820
+  - [4/7] net: ethernet: ti: am65-cpts: Document am65_cpts_rx_enable()'s 'en' parameter
+    https://git.kernel.org/netdev/net-next/c/e49e4647f3e2
+  - [5/7] net: ethernet: ibm: ibmvnic: Fix some kernel-doc misdemeanours
+    https://git.kernel.org/netdev/net-next/c/807086021bf5
+  - [6/7] net: ethernet: toshiba: ps3_gelic_net: Fix some kernel-doc misdemeanours
+    https://git.kernel.org/netdev/net-next/c/b51036321461
+  - [7/7] net: ethernet: toshiba: spider_net: Document a whole bunch of function parameters
+    https://git.kernel.org/netdev/net-next/c/e242d5989965
 
-Rich
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
