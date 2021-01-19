@@ -2,74 +2,99 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C1ACC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 20:17:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61791C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 21:02:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A62BB23107
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 20:17:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A62BB23107
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id CCAB522D71
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 21:02:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCAB522D71
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DL0LX1wzRzDqkW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 07:17:08 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DL00C2Ds8zDqS4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 07:01:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=TeLHWEk4; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by ozlabs.org (Postfix) with ESMTP id 4DL00C1Mw6z9sW8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 07:01:15 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4DL00C1097z9sVy; Wed, 20 Jan 2021 07:01:15 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx2.suse.de;
- envelope-from=lpechacek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=TeLHWEk4; dkim-atps=neutral
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DL1ML5KzxzDr1D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 08:02:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=CEpaa6KR; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4DL00B5Vnjz9sVr
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2021 07:01:13 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1611086468; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=uhp7vaLHjs9Tk81yLi/x0yqdOjAbc2dEtLX5Qqby/TQ=;
- b=TeLHWEk4Azxz4zpaHKcFoSIw5YH3QFZhAZJs0M1cNBb6d1Uauj218Np2jKxoBwJ32LeF0c
- zGSMzTxlP0BG4+VZ3WVbg4L4L2vCpXPMLacMfbk53f53Qg+9kgbHWDGbcvuJFtuPnk8w8i
- SRDXuwh/03vCkUkMBU6IbVE/cMrCEu0=
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 330AFAC63;
- Tue, 19 Jan 2021 20:01:08 +0000 (UTC)
-Date: Tue, 19 Jan 2021 21:01:07 +0100
-From: Libor Pechacek <lpechacek@suse.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] selftests/powerpc: Only test lwm/stmw on big endian
-Message-ID: <YAc6g2laaVprHX7K@fmn>
-References: <20210119041800.3093047-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DL1K45ZtPzDq7k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 08:00:56 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 10JKv5Vd033393; Tue, 19 Jan 2021 16:00:50 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=ZchYG6yr7O7lmZfuAmsSaKC/kbB5ljiGSYyFQnFfZys=;
+ b=CEpaa6KRt9eyZIKQ8VHV1vmnYSA+Y5mFHtLdz2wDvNg4/jFijvE+4YVBRizBHiQUmXNm
+ Wu9Xri//OT7Atzr8KmU+ZaW5SWHPbFDiyWxI6B7WLkxILIW+oQEET4jxZf0AO4/W/Emk
+ Ipzh8t7qxui/n1MIXRl1h7Yl4PaFB9noQzTjQa5YmkoLtolH2taMTN3KRRc1jTaQAXoo
+ dICt+SJp544+o2PorlrGWWKFoWqIEOP9PV9s4JDRnp2aq157dtvHTS3CDQWitt6Xunrd
+ mvRD670Webk0bd0NIYM3LKRJ/7/q2sFvKyogK/Lv+nqMLag045PJTMyeMAqhF9FqHFfk zA== 
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3666wmg2yf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 19 Jan 2021 16:00:50 -0500
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10JKuvTa028439;
+ Tue, 19 Jan 2021 21:00:50 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma02wdc.us.ibm.com with ESMTP id 363qs90xty-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 19 Jan 2021 21:00:49 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10JL0mPn21299484
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 19 Jan 2021 21:00:48 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8F1BC6E058;
+ Tue, 19 Jan 2021 21:00:48 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 70A356E053;
+ Tue, 19 Jan 2021 21:00:48 +0000 (GMT)
+Received: from localhost (unknown [9.211.72.22])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 19 Jan 2021 21:00:48 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/6] powerpc/rtas: constrain user region allocation to RMA
+In-Reply-To: <87mtx5qp1g.fsf@mpe.ellerman.id.au>
+References: <20210114220004.1138993-1-nathanl@linux.ibm.com>
+ <20210114220004.1138993-7-nathanl@linux.ibm.com>
+ <87mtx5qp1g.fsf@mpe.ellerman.id.au>
+Date: Tue, 19 Jan 2021 15:00:48 -0600
+Message-ID: <874kjcy73z.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210119041800.3093047-1-mpe@ellerman.id.au>
-X-Mailman-Approved-At: Wed, 20 Jan 2021 07:15:17 +1100
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
+ definitions=2021-01-19_09:2021-01-18,
+ 2021-01-19 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 adultscore=0
+ suspectscore=0 malwarescore=0 mlxlogscore=999 phishscore=0 spamscore=0
+ impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2101190110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,69 +106,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, msuchanek@suse.de
+Cc: aik@ozlabs.ru, tyreld@linux.ibm.com, brking@linux.ibm.com,
+ ajd@linux.ibm.com, aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Út 19-01-21 15:18:00, Michael Ellerman wrote:
-> Newer binutils (>= 2.36) refuse to assemble lmw/stmw when building in
-> little endian mode. That breaks compilation of our alignment handler
-> test:
-> 
->   /tmp/cco4l14N.s: Assembler messages:
->   /tmp/cco4l14N.s:1440: Error: `lmw' invalid when little-endian
->   /tmp/cco4l14N.s:1814: Error: `stmw' invalid when little-endian
->   make[2]: *** [../../lib.mk:139: /output/kselftest/powerpc/alignment/alignment_handler] Error 1
-> 
-> These tests do pass on little endian machines, as the kernel will
-> still emulate those instructions even when running little
-> endian (which is arguably a kernel bug).
-> 
-> But we don't really need to test that case, so ifdef those
-> instructions out to get the alignment test building again.
-> 
-> Reported-by: Libor Pechacek <lpechacek@suse.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>> Memory locations passed as arguments from the OS to RTAS usually need
+>> to be addressable in 32-bit mode and must reside in the Real Mode
+>> Area. On PAPR guests, the RMA starts at logical address 0 and is the
+>> first logical memory block reported in the LPAR=E2=80=99s device tree.
+>>
+>> On powerpc targets with RTAS, Linux makes available to user space a
+>> region of memory suitable for arguments to be passed to RTAS via
+>> sys_rtas(). This region (rtas_rmo_buf) is allocated via the memblock
+>> API during boot in order to ensure that it satisfies the requirements
+>> described above.
+>>
+>> With radix MMU, the upper limit supplied to the memblock allocation
+>> can exceed the bounds of the first logical memory block, since
+>> ppc64_rma_size is ULONG_MAX and RTAS_INSTANTIATE_MAX is 1GB.
+>
+> Why does the size of the first memory block matter for radix?
 
-Tested-by: Libor Pechacek <lpechacek@suse.com>
+Here is my understanding: in the platform architecture, the size of the
+first memory block equals the RMA, regardless of the MMU mode. It just
+so happens that when using radix, Linux can pass ibm,configure-connector
+a work area address outside of the RMA because the allocation
+constraints for the work area are computed differently. It would be
+wrong of the OS to pass RTAS arguments outside of this region with hash
+MMU as well.
 
-Thanks, Michael, for the fix!
+> The 1GB limit is sufficient to make it accessible by 32-bit code.
 
-Libor
+But the requirement is that memory arguments passed to RTAS reside in
+the RMA, which may be less than 1GB.
 
-> ---
->  .../testing/selftests/powerpc/alignment/alignment_handler.c  | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> index cb53a8b777e6..c25cf7cd45e9 100644
-> --- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> +++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> @@ -443,7 +443,6 @@ int test_alignment_handler_integer(void)
->  	LOAD_DFORM_TEST(ldu);
->  	LOAD_XFORM_TEST(ldx);
->  	LOAD_XFORM_TEST(ldux);
-> -	LOAD_DFORM_TEST(lmw);
->  	STORE_DFORM_TEST(stb);
->  	STORE_XFORM_TEST(stbx);
->  	STORE_DFORM_TEST(stbu);
-> @@ -462,7 +461,11 @@ int test_alignment_handler_integer(void)
->  	STORE_XFORM_TEST(stdx);
->  	STORE_DFORM_TEST(stdu);
->  	STORE_XFORM_TEST(stdux);
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	LOAD_DFORM_TEST(lmw);
->  	STORE_DFORM_TEST(stmw);
-> +#endif
->  
->  	return rc;
->  }
-> -- 
-> 2.25.1
-> 
 
--- 
-Libor Pechacek
-SUSE Labs                                Remember to have fun...
+>> (512MB is a common size of the first memory block according to a small s=
+ample of
+>> LPARs I have checked.)
+>
+> That's the minimum we request, see prom_init.c:
+>
+> 	/* option vector 2: Open Firmware options supported */
+> 	.vec2 =3D {
+> 		.byte1 =3D OV2_REAL_MODE,
+> 		.reserved =3D 0,
+> 		.real_base =3D cpu_to_be32(0xffffffff),
+> 		.real_size =3D cpu_to_be32(0xffffffff),
+> 		.virt_base =3D cpu_to_be32(0xffffffff),
+> 		.virt_size =3D cpu_to_be32(0xffffffff),
+> 		.load_base =3D cpu_to_be32(0xffffffff),
+> 		.min_rma =3D cpu_to_be32(512),		/* 512MB min RMA */
+>
+> Since v4.12 in 2017.
+
+Thanks for the pointer, I had been trying to find this without success.
