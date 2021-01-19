@@ -2,86 +2,76 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 253B0C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:44:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3EA6C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:04:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4763823121
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:44:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4763823121
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BD3420776
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:04:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD3420776
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKwbm69p5zDr2k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 04:28:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKx2n6xmbzDr2K
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 04:48:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=A3TBUaI4; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tmd+C37l; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.54; helo=mail-ot1-f54.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com
+ [209.85.210.54])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKwYT5xgdzDqyP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 04:26:17 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1611077174;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=mAzpHVdlnMaDyvxGTKzMDyi59keeJ2kOytyejQDWyqg=;
- b=A3TBUaI40AOAUFrkN/5HW9PVF17Ua7uAwz0L/GOItz2ko8k4oGl+ErH65vh2/U3rfuWfIO
- 2mUn3UyHl6e18BemLqrCi9QrqJDKojuTK76aA4t+PWLKNq6PYtn0vMaQnTKf3XxcZoereo
- FCwy/XVemOliGRb+NdkwpTrWVHkYWuw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1611077175;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=mAzpHVdlnMaDyvxGTKzMDyi59keeJ2kOytyejQDWyqg=;
- b=Tmd+C37lin2uvhOfSYvesO6v22bF1T/JWWafoCivLs2LVQyJ6c4W5D/0Y599gLyLirwLdS
- Kssw83pIzBUh807iL2OwvjtC+Cswq9V8ik6DFwL0AyDJssoacG5QHQL+xJHWJiTsnjFEYD
- CN43kn7AQt8Nz3QHfh7IszGVNxEbFC8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-299-AXabtRcgOPCQB4xr3nWivg-1; Tue, 19 Jan 2021 12:26:10 -0500
-X-MC-Unique: AXabtRcgOPCQB4xr3nWivg-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B3CF01936B8A;
- Tue, 19 Jan 2021 17:26:07 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.194.45])
- by smtp.corp.redhat.com (Postfix) with SMTP id 0C6A260C9C;
- Tue, 19 Jan 2021 17:26:04 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
- oleg@redhat.com; Tue, 19 Jan 2021 18:26:07 +0100 (CET)
-Date: Tue, 19 Jan 2021 18:26:03 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/uprobes: Don't allow probe on suffix of prefixed
- instruction
-Message-ID: <20210119172603.GA16696@redhat.com>
-References: <20210119091234.76317-1-ravi.bangoria@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKx0s6LFXzDr1f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 04:46:31 +1100 (AEDT)
+Received: by mail-ot1-f54.google.com with SMTP id n42so20568303ota.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 09:46:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=Stocj1hJiSUyMpN8/XHAwp/pg2JCejqGaP8S1nhKqno=;
+ b=iAhqskhM/fV+6lcHHiw3c0f5H4hiYMm5MJ9IRnDStqIsac+b3autyHLfFBXgDXefWh
+ TJk0ggTrD+gJRH+Iv5X9SSP4by/OoyOMzN++TEg42lw7h95vE59DnoI/MeqvplRfIR6w
+ Sg+w1b3T0d6Y0LUF96L10rIwloFn3v5dQ5hxYL8mvJUXp5GrMY93Ju2Ml8Wl1JATi81X
+ X8NrkPA7D5HtoTHzOKMTrTQg0vHU57uwIpLwNVHnH7K+SMLcPQ/pP33QRgkJzkD21Acv
+ xUqawFqv3SB6+cw2ydLL6P7slyHbuHLzi0OmsDMnmWExfYSqAxqOzmMQpB8vtWl5xn2j
+ RNkA==
+X-Gm-Message-State: AOAM531gsC/jtK7igJl+ka3dCkob1q2RxzuugKRudR9AID8E6gjMYrQF
+ Bo6sbdJsZL0B8/Q0/CAYO/UdOBHYxZo=
+X-Google-Smtp-Source: ABdhPJxJmqVhScDkzPh6kr1Akn9S3iipXQ3OeJIu2ITZoOoJddao5SmAsefNaJKDbqpaZ/ZbtZX2tQ==
+X-Received: by 2002:a9d:1ec:: with SMTP id e99mr3586239ote.257.1611078388817; 
+ Tue, 19 Jan 2021 09:46:28 -0800 (PST)
+Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com.
+ [209.85.167.178])
+ by smtp.gmail.com with ESMTPSA id m7sm4331834oou.11.2021.01.19.09.46.27
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 19 Jan 2021 09:46:28 -0800 (PST)
+Received: by mail-oi1-f178.google.com with SMTP id r189so12397127oih.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 09:46:27 -0800 (PST)
+X-Received: by 2002:a54:4489:: with SMTP id v9mr570652oiv.154.1611078387805;
+ Tue, 19 Jan 2021 09:46:27 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210119091234.76317-1-ravi.bangoria@linux.ibm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
+ <20191128145554.1297-5-linux@rasmusvillemoes.dk>
+ <a80b9c70-f9f2-0f76-15d0-d7a1c926f485@csgroup.eu>
+In-Reply-To: <a80b9c70-f9f2-0f76-15d0-d7a1c926f485@csgroup.eu>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Tue, 19 Jan 2021 11:46:16 -0600
+X-Gmail-Original-Message-ID: <CADRPPNQLfw-JHLf1vpc6fB0DLAd9er2zM+BrxWQriujwTdx-sA@mail.gmail.com>
+Message-ID: <CADRPPNQLfw-JHLf1vpc6fB0DLAd9er2zM+BrxWQriujwTdx-sA@mail.gmail.com>
+Subject: Re: [PATCH v6 04/49] soc: fsl: qe: introduce qe_io{read,
+ write}* wrappers
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,55 +83,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, paulus@samba.org,
- sandipan@linux.ibm.com, jniethe5@gmail.com, naveen.n.rao@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Timur Tabi <timur@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ lkml <linux-kernel@vger.kernel.org>, Scott Wood <oss@buserror.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/19, Ravi Bangoria wrote:
+On Tue, Jan 19, 2021 at 11:35 AM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
 >
-> Probe on 2nd word of a prefixed instruction is invalid scenario and
-> should be restricted.
+> Hi Rasmus,
+>
+> Le 28/11/2019 =C3=A0 15:55, Rasmus Villemoes a =C3=A9crit :
+> > The QUICC engine drivers use the powerpc-specific out_be32() etc. In
+> > order to allow those drivers to build for other architectures, those
+> > must be replaced by iowrite32be(). However, on powerpc, out_be32() is
+> > a simple inline function while iowrite32be() is out-of-line. So in
+> > order not to introduce a performance regression on powerpc when making
+> > the drivers work on other architectures, introduce qe_io* helpers.
+> >
+> > Also define the qe_{clr,set,clrset}bits* helpers in terms of these new
+> > macros.
+>
+> Since commit https://github.com/linuxppc/linux/commit/894fa235eb4ca0bfa69=
+2dbe4932c2f940cdc8c1e
+> ioread/iowrite wrappers are also inlined on PPC32, so this commit can now=
+ be reverted.
 
-I don't understand this ppc-specific problem, but...
+Yes.  That will be great.
 
-> +#ifdef CONFIG_PPC64
-> +int arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
-> +			      uprobe_opcode_t opcode)
-> +{
-> +	uprobe_opcode_t prefix;
-> +	void *kaddr;
-> +	struct ppc_inst inst;
-> +
-> +	/* Don't check if vaddr is pointing to the beginning of page */
-> +	if (!(vaddr & ~PAGE_MASK))
-> +		return 0;
-
-So the fix is incomplete? Or insn at the start of page can't be prefixed?
-
-> +int __weak arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
-> +				     uprobe_opcode_t opcode)
-> +{
-> +	return 0;
-> +}
-> +
->  static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t *new_opcode)
->  {
->  	uprobe_opcode_t old_opcode;
-> @@ -275,6 +281,8 @@ static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t
->  	if (is_swbp_insn(new_opcode)) {
->  		if (is_swbp)		/* register: already installed? */
->  			return 0;
-> +		if (arch_uprobe_verify_opcode(page, vaddr, old_opcode))
-> +			return -EINVAL;
-
-Well, this doesn't look good...
-
-To me it would be better to change the prepare_uprobe() path to copy
-the potential prefix into uprobe->arch and check ppc_inst_prefixed()
-in arch_uprobe_analyze_insn(). What do you think?
-
-Oleg.
-
+>
+> Christophe
+>
+> >
+> > Reviewed-by: Timur Tabi <timur@kernel.org>
+> > Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> > ---
+> >   include/soc/fsl/qe/qe.h | 34 +++++++++++++++++++++++++---------
+> >   1 file changed, 25 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
+> > index a1aa4eb28f0c..9cac04c692fd 100644
+> > --- a/include/soc/fsl/qe/qe.h
+> > +++ b/include/soc/fsl/qe/qe.h
+> > @@ -241,21 +241,37 @@ static inline int qe_alive_during_sleep(void)
+> >   #define qe_muram_offset cpm_muram_offset
+> >   #define qe_muram_dma cpm_muram_dma
+> >
+> > -#define qe_setbits_be32(_addr, _v) iowrite32be(ioread32be(_addr) |  (_=
+v), (_addr))
+> > -#define qe_clrbits_be32(_addr, _v) iowrite32be(ioread32be(_addr) & ~(_=
+v), (_addr))
+> > +#ifdef CONFIG_PPC32
+> > +#define qe_iowrite8(val, addr)     out_8(addr, val)
+> > +#define qe_iowrite16be(val, addr)  out_be16(addr, val)
+> > +#define qe_iowrite32be(val, addr)  out_be32(addr, val)
+> > +#define qe_ioread8(addr)           in_8(addr)
+> > +#define qe_ioread16be(addr)        in_be16(addr)
+> > +#define qe_ioread32be(addr)        in_be32(addr)
+> > +#else
+> > +#define qe_iowrite8(val, addr)     iowrite8(val, addr)
+> > +#define qe_iowrite16be(val, addr)  iowrite16be(val, addr)
+> > +#define qe_iowrite32be(val, addr)  iowrite32be(val, addr)
+> > +#define qe_ioread8(addr)           ioread8(addr)
+> > +#define qe_ioread16be(addr)        ioread16be(addr)
+> > +#define qe_ioread32be(addr)        ioread32be(addr)
+> > +#endif
+> > +
+> > +#define qe_setbits_be32(_addr, _v) qe_iowrite32be(qe_ioread32be(_addr)=
+ |  (_v), (_addr))
+> > +#define qe_clrbits_be32(_addr, _v) qe_iowrite32be(qe_ioread32be(_addr)=
+ & ~(_v), (_addr))
+> >
+> > -#define qe_setbits_be16(_addr, _v) iowrite16be(ioread16be(_addr) |  (_=
+v), (_addr))
+> > -#define qe_clrbits_be16(_addr, _v) iowrite16be(ioread16be(_addr) & ~(_=
+v), (_addr))
+> > +#define qe_setbits_be16(_addr, _v) qe_iowrite16be(qe_ioread16be(_addr)=
+ |  (_v), (_addr))
+> > +#define qe_clrbits_be16(_addr, _v) qe_iowrite16be(qe_ioread16be(_addr)=
+ & ~(_v), (_addr))
+> >
+> > -#define qe_setbits_8(_addr, _v) iowrite8(ioread8(_addr) |  (_v), (_add=
+r))
+> > -#define qe_clrbits_8(_addr, _v) iowrite8(ioread8(_addr) & ~(_v), (_add=
+r))
+> > +#define qe_setbits_8(_addr, _v) qe_iowrite8(qe_ioread8(_addr) |  (_v),=
+ (_addr))
+> > +#define qe_clrbits_8(_addr, _v) qe_iowrite8(qe_ioread8(_addr) & ~(_v),=
+ (_addr))
+> >
+> >   #define qe_clrsetbits_be32(addr, clear, set) \
+> > -     iowrite32be((ioread32be(addr) & ~(clear)) | (set), (addr))
+> > +     qe_iowrite32be((qe_ioread32be(addr) & ~(clear)) | (set), (addr))
+> >   #define qe_clrsetbits_be16(addr, clear, set) \
+> > -     iowrite16be((ioread16be(addr) & ~(clear)) | (set), (addr))
+> > +     qe_iowrite16be((qe_ioread16be(addr) & ~(clear)) | (set), (addr))
+> >   #define qe_clrsetbits_8(addr, clear, set) \
+> > -     iowrite8((ioread8(addr) & ~(clear)) | (set), (addr))
+> > +     qe_iowrite8((qe_ioread8(addr) & ~(clear)) | (set), (addr))
+> >
+> >   /* Structure that defines QE firmware binary files.
+> >    *
+> >
