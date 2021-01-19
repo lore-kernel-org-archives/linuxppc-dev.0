@@ -2,66 +2,59 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3993C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2727BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:21:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7FE38216FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FE38216FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 321DC20706
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:21:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 321DC20706
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKwf53BdkzDqx4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 04:30:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKz644GddzDqv3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 06:21:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKwZj01d0zDr0k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 04:27:19 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DKwZR4Ybsz9v6Jy;
- Tue, 19 Jan 2021 18:27:11 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id tQGVZ9BnH2i8; Tue, 19 Jan 2021 18:27:11 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DKwZR3Wlbz9v6Jw;
- Tue, 19 Jan 2021 18:27:11 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 309A08B7DE;
- Tue, 19 Jan 2021 18:27:13 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id H3vc7DNMvSAO; Tue, 19 Jan 2021 18:27:13 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D0A3A8B7C7;
- Tue, 19 Jan 2021 18:27:12 +0100 (CET)
-Subject: Re: [PATCH v3 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-To: "Christopher M. Riedl" <cmr@codefail.de>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <C8NAORBNJH4S.KKQFN1HWO8XH@geist>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <1e6309a4-58fe-c6a4-6e47-d8659177846c@csgroup.eu>
-Date: Tue, 19 Jan 2021 18:27:04 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
+ receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKz3Z1YVGzDqxl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 06:19:05 +1100 (AEDT)
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1l1wWT-0005To-Hy; Tue, 19 Jan 2021 20:18:37 +0100
+Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1l1wWN-0007tb-CB; Tue, 19 Jan 2021 20:18:31 +0100
+Date: Tue, 19 Jan 2021 20:18:31 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Dany Madden <drt@linux.ibm.com>
+Subject: Re: ibmvnic: Race condition in remove callback
+Message-ID: <20210119191831.7tvf26tia7vcsp2n@pengutronix.de>
+References: <20210117101242.dpwayq6wdgfdzirl@pengutronix.de>
+ <b725079b34031595887b019d1d2f6fc7@imap.linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <C8NAORBNJH4S.KKQFN1HWO8XH@geist>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="k4hz2aaja2cpa25v"
+Content-Disposition: inline
+In-Reply-To: <b725079b34031595887b019d1d2f6fc7@imap.linux.ibm.com>
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,74 +66,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Juliet Kim <julietk@linux.vnet.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lijun Pan <ljp@linux.ibm.com>,
+ kernel@pengutronix.de, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--k4hz2aaja2cpa25v
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Le 19/01/2021 à 18:02, Christopher M. Riedl a écrit :
-> On Tue Jan 19, 2021 at 6:33 AM CST, Christophe Leroy wrote:
->>
->>
->> Le 19/01/2021 à 03:11, Michael Ellerman a écrit :
->>> "Christopher M. Riedl" <cmr@codefail.de> writes:
->>>> On Mon Jan 11, 2021 at 7:22 AM CST, Christophe Leroy wrote:
->>>>> Le 09/01/2021 à 04:25, Christopher M. Riedl a écrit :
->>>>>> Implement raw_copy_from_user_allowed() which assumes that userspace read
->>>>>> access is open. Use this new function to implement raw_copy_from_user().
->>>>>> Finally, wrap the new function to follow the usual "unsafe_" convention
->>>>>> of taking a label argument.
->>>>>
->>>>> I think there is no point implementing raw_copy_from_user_allowed(), see
->>>>> https://github.com/linuxppc/linux/commit/4b842e4e25b1 and
->>>>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/8c74fc9ce8131cabb10b3e95dc0e430f396ee83e.1610369143.git.christophe.leroy@csgroup.eu/
->>>>>
->>>>> You should simply do:
->>>>>
->>>>> #define unsafe_copy_from_user(d, s, l, e) \
->>>>> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
->>>>>
->>>>
->>>> I gave this a try and the signal ops decreased by ~8K. Now, to be
->>>> honest, I am not sure what an "acceptable" benchmark number here
->>>> actually is - so maybe this is ok? Same loss with both radix and hash:
->>>>
->>>> 	|                                      | hash   | radix  |
->>>> 	| ------------------------------------ | ------ | ------ |
->>>> 	| linuxppc/next                        | 118693 | 133296 |
->>>> 	| linuxppc/next w/o KUAP+KUEP          | 228911 | 228654 |
->>>> 	| unsafe-signal64                      | 200480 | 234067 |
->>>> 	| unsafe-signal64 (__copy_tofrom_user) | 192467 | 225119 |
->>>>
->>>> To put this into perspective, prior to KUAP and uaccess flush, signal
->>>> performance in this benchmark was ~290K on hash.
->>>
->>> If I'm doing the math right 8K is ~4% of the best number.
->>>
->>> It seems like 4% is worth a few lines of code to handle these constant
->>> sizes. It's not like we have performance to throw away.
->>>
->>> Or, we should chase down where the call sites are that are doing small
->>> constant copies with copy_to/from_user() and change them to use
->>> get/put_user().
->>>
->>
->> Christopher, when you say you gave it a try, is I my series or only the
->> following ?
->>
->> #define unsafe_copy_from_user(d, s, l, e) \
->> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
->>
-> 
-> I only used the above to replace this patch in my series (so none of my
-> changes implementing raw_copy_from_user_allowed() are included).
+Hello Dany,
 
-Then I see no reason why the performance would be different, because you only call 
-unsafe_copy_from_user() with non trivial lengthes.
+On Tue, Jan 19, 2021 at 10:14:25AM -0800, Dany Madden wrote:
+> On 2021-01-17 02:12, Uwe Kleine-K=F6nig wrote:
+> > while working on some cleanup I stumbled over a problem in the ibmvnic's
+> > remove callback. Since commit
+> >=20
+> >         7d7195a026ba ("ibmvnic: Do not process device remove during
+> > device reset")
+> >=20
+> > there is the following code in the remove callback:
+> >=20
+> >         static int ibmvnic_remove(struct vio_dev *dev)
+> >         {
+> >                 ...
+> >                 spin_lock_irqsave(&adapter->state_lock, flags);
+> >                 if (test_bit(0, &adapter->resetting)) {
+> >                         spin_unlock_irqrestore(&adapter->state_lock,
+> > flags);
+> >                         return -EBUSY;
+> >                 }
+> >=20
+> >                 adapter->state =3D VNIC_REMOVING;
+> >                 spin_unlock_irqrestore(&adapter->state_lock, flags);
+> >=20
+> >                 flush_work(&adapter->ibmvnic_reset);
+> >                 flush_delayed_work(&adapter->ibmvnic_delayed_reset);
+> >                 ...
+> >         }
+> >=20
+> > Unfortunately returning -EBUSY doesn't work as intended. That's because
+> > the return value of this function is ignored[1] and the device is
+> > considered unbound by the device core (shortly) after ibmvnic_remove()
+> > returns.
+>=20
+> Oh! I was not aware of this.
 
-> 
->>
->> Because I see no use of unsafe_copy_from_user() that would explain that.
->>
->> Christophe
+There are not very many people who are aware. That's why I'm working on
+making all these remove callbacks return void. (And that's how I stubled
+over this driver's expectations when returning -EBUSY.)
+
+> In our code review, a question on whether or not device reset should
+> have a higher precedence over device remove was raised before. So, now
+> it is clear that this driver has to take care of remove over reset.
+
+Yes, either you have to sleep in .remove until the reset is completed,
+or you cancel the request.
+
+> > While looking into fixing that I noticed a worse problem:
+> >=20
+> > If ibmvnic_reset() (e.g. called by the tx_timeout callback) calls
+> > schedule_work(&adapter->ibmvnic_reset); just after the work queue is
+> > flushed above the problem that 7d7195a026ba intends to fix will trigger
+> > resulting in a use-after-free.
+>=20
+> It was proposed that when coming into ibmvnic_remove() we lock down the
+> workqueue to prevent future access, flush, cleanup, then unregister the
+> device. Your thought on this?
+
+This is already done a bit, as ibmvnic_reset() checks for adapter->state
+=3D=3D VNIC_REMOVING. The problem is just that this check is racy.
+
+> > Also ibmvnic_reset() checks for adapter->state without holding the lock
+> > which might be racy, too.
+>
+> Suka started addressing consistent locking with this patch series:
+> https://lists.openwall.net/netdev/2021/01/08/89
+>=20
+> He is reworking this.
+
+Please understand that I won't look into this. This is not in my area of
+expertise and interest and I'd like to consider this problem already
+done for me with my report. I'm glad you're acting on it. Depending on
+how quick this is fixed I plan to submit a patch that changes
+
+	return -EBUSY;
+
+to
+
+	return 0;
+
+to prepare changing the prototype of the remove callback to return void.
+
+> Thank you for taking the time to review this driver, Uwe. This is very
+> helpful for us.
+
+You're welcome.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--k4hz2aaja2cpa25v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmAHMIQACgkQwfwUeK3K
+7AntFQgAmr0IOZwp51V1vzHF0tc5kP+UsD+uAHogNIIyzA3RBWvyn2+jbGtdPMNg
+USUS6HoyTiw46kW6iSZGpHaKSvxJtSqG6VCVDu2q1+xXrBZzwJcHqree+jeUiBzb
+LUrK2AZBCYPiZuTBhOE50ldxTUfa7MQDbQiURGeuC2MXEnP0QfPq9XIXXhcBDHsv
+y7FREkBCfHiPD4Bv8zLJlFNZACahB4EIUnJoj2gLtlaTetmwpseYTxc8xTKZ+4ur
+T2Z37RNdub8ynHmOkwYvyh6iG6MMksTygL16tNLTJG+uy6DeUmoc6FwNg6BRt/lW
+FurpfQVmpvR8ZlZH8y0LDxkkFCOQtw==
+=m6FS
+-----END PGP SIGNATURE-----
+
+--k4hz2aaja2cpa25v--
