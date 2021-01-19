@@ -2,103 +2,60 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3058FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:15:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A81DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:30:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3564323135
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:15:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3564323135
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0FB55221F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:30:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FB55221F7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKjfb1xZczDr40
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 20:15:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKjzw68RVzDqX0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 20:30:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WmnH56xc; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKjcj4BVVzDqsd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 20:13:24 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10J9AjxY134957; Tue, 19 Jan 2021 04:12:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=B9fPVhsYHZ9MUgvx5shkeAk+LRY3aHnUMBspjKAb654=;
- b=WmnH56xcFfo4qr+gZAKshSPC/i9jp69EncdX3atomCknagdx8SQ7J4S+ijX77Y/g6uVP
- i/QxsX36YAePLFsaa3rrjwHnSGkU1kIKDY6qGlxU9LAWDChYtojnSSVMXr3dLv6Te40N
- lDWqQ2jwg0oRU7cz1MkhwPtKSgOzvig2qTE+fy5a88cpzN/BjviPWoAX7dVQ2VgH5ae3
- 75ztiDJ5BirGzS+X6zpIsRIFmMwnUPN2SllZhjYTNwkMnVSBTTpPqRb5ZRVcYJossxbw
- 4l2UhVyVu0ET2LCQMI2Va1ZMavsm6jbtghF/M8JoQK7EKCZAE74UB391e44UdWLLZL7Z Cg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 365v9a89sw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 04:12:51 -0500
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 10J9Cpb4139548;
- Tue, 19 Jan 2021 04:12:51 -0500
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 365v9a89sj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 04:12:51 -0500
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10J9BLQB030385;
- Tue, 19 Jan 2021 09:12:49 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03ams.nl.ibm.com with ESMTP id 363qs7jvq4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 09:12:49 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10J9Ck6f41484590
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 19 Jan 2021 09:12:46 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C6450A4054;
- Tue, 19 Jan 2021 09:12:46 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A0605A405C;
- Tue, 19 Jan 2021 09:12:44 +0000 (GMT)
-Received: from bangoria.ibmuc.com (unknown [9.199.45.223])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 19 Jan 2021 09:12:44 +0000 (GMT)
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/uprobes: Don't allow probe on suffix of prefixed
- instruction
-Date: Tue, 19 Jan 2021 14:42:34 +0530
-Message-Id: <20210119091234.76317-1-ravi.bangoria@linux.ibm.com>
-X-Mailer: git-send-email 2.29.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-19_01:2021-01-18,
- 2021-01-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- spamscore=0 impostorscore=0 adultscore=0 mlxlogscore=999 phishscore=0
- bulkscore=0 malwarescore=0 mlxscore=0 suspectscore=0 clxscore=1011
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101190052
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKjy61BDfzDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 20:28:27 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DKjxy3kpzz9tygP;
+ Tue, 19 Jan 2021 10:28:22 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id fCy10mwiE3V2; Tue, 19 Jan 2021 10:28:22 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DKjxy2py0z9tygH;
+ Tue, 19 Jan 2021 10:28:22 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 70C058B7AE;
+ Tue, 19 Jan 2021 10:28:23 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id MfolsJsVvjLe; Tue, 19 Jan 2021 10:28:23 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3DB408B7BB;
+ Tue, 19 Jan 2021 10:28:23 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 3234C66A64; Tue, 19 Jan 2021 07:00:00 +0000 (UTC)
+Message-Id: <2fed79b1154c872194f98bac4422c23918325e61.1611039590.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/47x: Disable 256k page size
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 19 Jan 2021 07:00:00 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,117 +67,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com, oleg@redhat.com,
- rostedt@goodmis.org, linux-kernel@vger.kernel.org, paulus@samba.org,
- sandipan@linux.ibm.com, naveen.n.rao@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Probe on 2nd word of a prefixed instruction is invalid scenario and
-should be restricted.
+PPC47x_TLBE_SIZE isn't defined for 256k pages, so
+this size of page shall not be selected for 47x.
 
-There are two ways probed instruction is changed in mapped pages.
-First, when Uprobe is activated, it searches for all the relevant
-pages and replace instruction in them. In this case, if we notice
-that probe is on the 2nd word of prefixed instruction, error out
-directly. Second, when Uprobe is already active and user maps a
-relevant page via mmap(), instruction is replaced via mmap() code
-path. But because Uprobe is invalid, entire mmap() operation can
-not be stopped. In this case just print an error and continue.
-
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Fixes: e7f75ad01d59 ("powerpc/47x: Base ppc476 support")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/uprobes.c | 28 ++++++++++++++++++++++++++++
- include/linux/uprobes.h       |  1 +
- kernel/events/uprobes.c       |  8 ++++++++
- 3 files changed, 37 insertions(+)
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/uprobes.c b/arch/powerpc/kernel/uprobes.c
-index e8a63713e655..c73d5a397164 100644
---- a/arch/powerpc/kernel/uprobes.c
-+++ b/arch/powerpc/kernel/uprobes.c
-@@ -7,6 +7,7 @@
-  * Adapted from the x86 port by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-  */
- #include <linux/kernel.h>
-+#include <linux/highmem.h>
- #include <linux/sched.h>
- #include <linux/ptrace.h>
- #include <linux/uprobes.h>
-@@ -44,6 +45,33 @@ int arch_uprobe_analyze_insn(struct arch_uprobe *auprobe,
- 	return 0;
- }
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 107bb4319e0e..a685e42d3993 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -772,7 +772,7 @@ config PPC_64K_PAGES
  
-+#ifdef CONFIG_PPC64
-+int arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
-+			      uprobe_opcode_t opcode)
-+{
-+	uprobe_opcode_t prefix;
-+	void *kaddr;
-+	struct ppc_inst inst;
-+
-+	/* Don't check if vaddr is pointing to the beginning of page */
-+	if (!(vaddr & ~PAGE_MASK))
-+		return 0;
-+
-+	kaddr = kmap_atomic(page);
-+	memcpy(&prefix, kaddr + ((vaddr - 4) & ~PAGE_MASK), UPROBE_SWBP_INSN_SIZE);
-+	kunmap_atomic(kaddr);
-+
-+	inst = ppc_inst_prefix(prefix, opcode);
-+
-+	if (ppc_inst_prefixed(inst)) {
-+		printk_ratelimited("Cannot register a uprobe on the second "
-+				   "word of prefixed instruction\n");
-+		return -1;
-+	}
-+	return 0;
-+}
-+#endif
-+
- /*
-  * arch_uprobe_pre_xol - prepare to execute out of line.
-  * @auprobe: the probepoint information.
-diff --git a/include/linux/uprobes.h b/include/linux/uprobes.h
-index f46e0ca0169c..5a3b45878e13 100644
---- a/include/linux/uprobes.h
-+++ b/include/linux/uprobes.h
-@@ -128,6 +128,7 @@ extern bool uprobe_deny_signal(void);
- extern bool arch_uprobe_skip_sstep(struct arch_uprobe *aup, struct pt_regs *regs);
- extern void uprobe_clear_state(struct mm_struct *mm);
- extern int  arch_uprobe_analyze_insn(struct arch_uprobe *aup, struct mm_struct *mm, unsigned long addr);
-+int arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t opcode);
- extern int  arch_uprobe_pre_xol(struct arch_uprobe *aup, struct pt_regs *regs);
- extern int  arch_uprobe_post_xol(struct arch_uprobe *aup, struct pt_regs *regs);
- extern bool arch_uprobe_xol_was_trapped(struct task_struct *tsk);
-diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
-index bf9edd8d75be..be02e6c26e3f 100644
---- a/kernel/events/uprobes.c
-+++ b/kernel/events/uprobes.c
-@@ -255,6 +255,12 @@ static void copy_to_page(struct page *page, unsigned long vaddr, const void *src
- 	kunmap_atomic(kaddr);
- }
+ config PPC_256K_PAGES
+ 	bool "256k page size"
+-	depends on 44x && !STDBINUTILS
++	depends on 44x && !STDBINUTILS && !PPC_47x
+ 	help
+ 	  Make the page size 256k.
  
-+int __weak arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
-+				     uprobe_opcode_t opcode)
-+{
-+	return 0;
-+}
-+
- static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t *new_opcode)
- {
- 	uprobe_opcode_t old_opcode;
-@@ -275,6 +281,8 @@ static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t
- 	if (is_swbp_insn(new_opcode)) {
- 		if (is_swbp)		/* register: already installed? */
- 			return 0;
-+		if (arch_uprobe_verify_opcode(page, vaddr, old_opcode))
-+			return -EINVAL;
- 	} else {
- 		if (!is_swbp)		/* unregister: was it changed by us? */
- 			return 0;
 -- 
-2.26.2
+2.25.0
 
