@@ -2,82 +2,56 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6DA2C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 03:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A80BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 04:19:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33B5D20867
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 03:59:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33B5D20867
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 324CA20756
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 04:19:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 324CA20756
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKZfz67xdzDqyw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 14:59:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f;
- helo=mail-pg1-x52f.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=vI7IiA3J; dkim-atps=neutral
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com
- [IPv6:2607:f8b0:4864:20::52f])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKb5k6ZFnzDqD0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 15:19:38 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKZdC5QMQzDqyl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 14:58:23 +1100 (AEDT)
-Received: by mail-pg1-x52f.google.com with SMTP id p18so12177846pgm.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2021 19:58:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=APfSjC8lha7M2bwxfE1k9EduMMXfuaY2NfyE3k5SdcU=;
- b=vI7IiA3Jmfv14hLka8UwPlAEGRd+ah/GTg5h2SyqyEX7drCEbmxbTWlXOXbO1Gt/R/
- wJb+Xqw6OT43TtjLP/366scamxUqfNQ0BBF5Q0H3rk31UEkcKtfYFRKb+gg5JCwHENZS
- zyu2kUopCV3P8tynpV6XrE1LL/y6InlpnAHYvbU6lUirslNHfZt6gNN9tjtrikHofr55
- HJLi4fEJBKxLkHKx9GfiO+feVP7Y67PpoknUOQCNiabE5rAn03AkiqQ7wplfv6U2Ey9b
- DNHylVgupYTV+k+JWUM1xbzDCVjuvSe1/GGPqwewvsY8pQ8vq6CoVJ+CLEMAmQYv9A2B
- GXpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=APfSjC8lha7M2bwxfE1k9EduMMXfuaY2NfyE3k5SdcU=;
- b=SGiN/O6IjkLCCAlvmGV5l7etfZP12VIQ4cOEwvSaWgYSIfcBG65DtZHSLuYO1bEE4F
- dEqelHvwOe/fGONb4aCFxtS9eag6XsdckN7NL5KiA9lhjR5Z3bkOGP9da20utd3OPazL
- qKpCcb6trs8JSe2vNT9wrO5UPpDQnLCTnM/+8DbMqpGG6Pb96osSc3tGmg/E+i8owOww
- IO0B9gp9KHpUSvvtGsbGbWtYGt865pUSVEZo6xVUqZDTkXEbGtbE7N7I5t0vmDhz9fLJ
- wQ5xs6pUkX+HqndXrsp92v6tOpjFGcNMOIES6xUXfeVzjOhNf6Nzd+xrIlFk667wQXHl
- CoCQ==
-X-Gm-Message-State: AOAM532kTCeuzsgOzOzkbSUFHKq/qGsPFWDLlOVVbjAEfco4mBBzOnU/
- Y97jEy33uea7wIOof4MgdbLJN75Mbvc=
-X-Google-Smtp-Source: ABdhPJy9yjpSeM6Ct/gvKsJrKDwTk9C83/OnvGOiUVCTuTBynppQ6iuBtVVvvBl4tlQfBjgsoEMPVA==
-X-Received: by 2002:a63:4517:: with SMTP id s23mr2672682pga.267.1611028699720; 
- Mon, 18 Jan 2021 19:58:19 -0800 (PST)
-Received: from localhost ([124.170.13.62])
- by smtp.gmail.com with ESMTPSA id gt21sm878744pjb.56.2021.01.18.19.58.18
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 Jan 2021 19:58:18 -0800 (PST)
-Date: Tue, 19 Jan 2021 13:58:13 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3] powerpc/mce: Remove per cpu variables from MCE handlers
-To: Ganesh Goudar <ganeshgr@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-References: <20210115125845.28224-1-ganeshgr@linux.ibm.com>
-In-Reply-To: <20210115125845.28224-1-ganeshgr@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKb451H8BzDqxL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 15:18:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=BUFb2W7o; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4DKb443kGxz9sSC; Tue, 19 Jan 2021 15:18:12 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4DKb442pGnz9sVv; Tue, 19 Jan 2021 15:18:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1611029892;
+ bh=misKX5uL3AbkVLa2M9yaBWDV48HFwCsTxz1mkWD2tvs=;
+ h=From:To:Cc:Subject:Date:From;
+ b=BUFb2W7oxfIhBavWRcnQlM9jTq47AokC7lDBCN0m1QEN7S+v7fw8ehnpCP7KKl3SJ
+ E5dgVFX6gNzop0rauU49NxP/anmkB84JltwEpxZTKDJbSWml24yiDidmD4W/AxUaQD
+ YqoIoNJrrkKAcZA4HvF9XBIqdAbeGFLbX6IBt0gbkUMDyunbRjwftSwmI4Te+QuoNF
+ nxqWfzYjLQggBdJG9XCyQXl5UaeeNiwHXbgUQt64LvfOWy1gmsLTf4g94gBCvMKONY
+ FA2v85ouXSUn2PHrKwsCLcaVPis6kX4yraqTkhnFB8+OOkiaywdLYAJPjelyvxtjHX
+ TizbpjWkAf05w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] selftests/powerpc: Only test lwm/stmw on big endian
+Date: Tue, 19 Jan 2021 15:18:00 +1100
+Message-Id: <20210119041800.3093047-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Message-Id: <1611028087.3uko7j7l9g.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,79 +63,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.ibm.com
+Cc: msuchanek@suse.de, lpechacek@suse.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Ganesh Goudar's message of January 15, 2021 10:58 pm:
-> Access to per-cpu variables requires translation to be enabled on
-> pseries machine running in hash mmu mode, Since part of MCE handler
-> runs in realmode and part of MCE handling code is shared between ppc
-> architectures pseries and powernv, it becomes difficult to manage
-> these variables differently on different architectures, So have
-> these variables in paca instead of having them as per-cpu variables
-> to avoid complications.
+Newer binutils (>= 2.36) refuse to assemble lmw/stmw when building in
+little endian mode. That breaks compilation of our alignment handler
+test:
 
-Seems okay.
+  /tmp/cco4l14N.s: Assembler messages:
+  /tmp/cco4l14N.s:1440: Error: `lmw' invalid when little-endian
+  /tmp/cco4l14N.s:1814: Error: `stmw' invalid when little-endian
+  make[2]: *** [../../lib.mk:139: /output/kselftest/powerpc/alignment/alignment_handler] Error 1
 
->=20
-> Maximum recursive depth of MCE is 4, Considering the maximum depth
-> allowed reduce the size of event to 10 from 100.
+These tests do pass on little endian machines, as the kernel will
+still emulate those instructions even when running little
+endian (which is arguably a kernel bug).
 
-Could you make this a separate patch, with memory saving numbers?
-"Delayed" MCEs are not necessarily the same as recursive (several=20
-sequential MCEs can occur before the first event is processed).
-But I agree 100 is pretty overboard (as is 4 recursive MCEs really).
+But we don't really need to test that case, so ifdef those
+instructions out to get the alignment test building again.
 
->=20
-> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
-> ---
-> v2: Dynamically allocate memory for machine check event info
->=20
-> v3: Remove check for hash mmu lpar, use memblock_alloc_try_nid
->     to allocate memory.
-> ---
->  arch/powerpc/include/asm/mce.h     | 21 ++++++++-
->  arch/powerpc/include/asm/paca.h    |  4 ++
->  arch/powerpc/kernel/mce.c          | 76 +++++++++++++++++-------------
->  arch/powerpc/kernel/setup-common.c |  2 +-
->  4 files changed, 69 insertions(+), 34 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mc=
-e.h
-> index e6c27ae843dc..8d6e3a7a9f37 100644
-> --- a/arch/powerpc/include/asm/mce.h
-> +++ b/arch/powerpc/include/asm/mce.h
-> @@ -204,7 +204,18 @@ struct mce_error_info {
->  	bool			ignore_event;
->  };
-> =20
-> -#define MAX_MC_EVT	100
-> +#define MAX_MC_EVT	10
+Reported-by: Libor Pechacek <lpechacek@suse.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ .../testing/selftests/powerpc/alignment/alignment_handler.c  | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-> +
-> +struct mce_info {
-> +	int mce_nest_count;
-> +	struct machine_check_event mce_event[MAX_MC_EVT];
-> +	/* Queue for delayed MCE events. */
-> +	int mce_queue_count;
-> +	struct machine_check_event mce_event_queue[MAX_MC_EVT];
-> +	/* Queue for delayed MCE UE events. */
-> +	int mce_ue_count;
-> +	struct machine_check_event  mce_ue_event_queue[MAX_MC_EVT];
-> +};
-> =20
->  /* Release flags for get_mce_event() */
->  #define MCE_EVENT_RELEASE	true
-> @@ -233,5 +244,13 @@ long __machine_check_early_realmode_p7(struct pt_reg=
-s *regs);
->  long __machine_check_early_realmode_p8(struct pt_regs *regs);
->  long __machine_check_early_realmode_p9(struct pt_regs *regs);
->  long __machine_check_early_realmode_p10(struct pt_regs *regs);
-> +#define get_mce_info() local_paca->mce_info
+diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+index cb53a8b777e6..c25cf7cd45e9 100644
+--- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
++++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+@@ -443,7 +443,6 @@ int test_alignment_handler_integer(void)
+ 	LOAD_DFORM_TEST(ldu);
+ 	LOAD_XFORM_TEST(ldx);
+ 	LOAD_XFORM_TEST(ldux);
+-	LOAD_DFORM_TEST(lmw);
+ 	STORE_DFORM_TEST(stb);
+ 	STORE_XFORM_TEST(stbx);
+ 	STORE_DFORM_TEST(stbu);
+@@ -462,7 +461,11 @@ int test_alignment_handler_integer(void)
+ 	STORE_XFORM_TEST(stdx);
+ 	STORE_DFORM_TEST(stdu);
+ 	STORE_XFORM_TEST(stdux);
++
++#ifdef __BIG_ENDIAN__
++	LOAD_DFORM_TEST(lmw);
+ 	STORE_DFORM_TEST(stmw);
++#endif
+ 
+ 	return rc;
+ }
+-- 
+2.25.1
 
-I don't think this adds anything. Could you open code it?
-
-Thanks,
-Nick
