@@ -2,108 +2,97 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD987C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 07:27:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58A87C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 07:38:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B50512070B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 07:27:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B50512070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 482D422CB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 07:38:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 482D422CB1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKgGG15mjzDr2K
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:27:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKgW80jS7zDr2F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:38:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=gPRGb6lX; dkim-atps=neutral
+ header.s=pp1 header.b=FLWoteV3; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKgD30XDFzDqyd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 18:25:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKgT74VcXzDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 18:36:39 +1100 (AEDT)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10J73fDp141028; Tue, 19 Jan 2021 02:12:53 -0500
+ 10J73e9V140934; Tue, 19 Jan 2021 02:36:35 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=TjgaFPFDJH1Zmk+EzMNJQgevie8By4s9zWMwEvR//Lo=;
- b=gPRGb6lXM+mGqGH+seThTFc3N3rUpsS8X8QVKzuHcMRFuHUURfThfsB8YZCKmPHnB2Ne
- 9NgJHgddYYhJCrpEr1Da9CdIsheLpF2jyKTcVrNeS69FICG67Fa1GM6Yn7KAeiuISurp
- 4FIBtP259ujP5O1ikYGsfQEaYUu5S+26fylmtBL02CtD9HcKwBTLYNKCvBIhmQVPxkgq
- KyODj0p26OUxl0XixLgn2FX2WB5vDsz460HgHpuPjZRHx2pa4nuK93XWrw0QqrRoj79r
- RUMq/kreWzc+uAJnf4cW5i5VvPknivmpbmDexXhmfQTlAXARQTk4KyO09NVFwveJ0IcG jQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 365sm19mf5-1
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=H9lFNIok7egNoSls13xwTJrZmOLSjGHrccQldgeUpgg=;
+ b=FLWoteV3zDoZBLo4ch91fryS+GXOYAuHQen1Ilu6p5rRd7oet+i+h+zMgWBB8glHx0+3
+ edenom1olE7RvOYwkGmiS/NHoVgyApNinDdGhPxx0oImeyVluK1Sjxf6lZ//MBeVfqnm
+ IBF0qpGwr+swFcH2w1orDpRkxAMnLFh4jcsqOciZxpClPfuyJdoGg+/s79vJin7u+x0n
+ VGNjJ0deR8q5g9UFYdsGLmpTM3B1zD0a1gQqPiSBorbprXAoXt9prENhSG5vq6/tUnBN
+ os9Nz3QCt32YdiyB52NDQbLu1ObTclniUl3KPS5TSKZ01RWJTsO/A68oIIoeTOPlS8FA Ww== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 365sm1a6da-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 02:12:52 -0500
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 10J75AUW003059;
- Tue, 19 Jan 2021 02:12:52 -0500
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 365sm19mej-1
+ Tue, 19 Jan 2021 02:36:35 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10J7WJaD001012;
+ Tue, 19 Jan 2021 07:36:34 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 363qs9hp1f-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 02:12:52 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10J7032Q025006;
- Tue, 19 Jan 2021 07:12:50 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06ams.nl.ibm.com with ESMTP id 363qdhat4d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 07:12:49 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10J7Cl1r40763666
+ Tue, 19 Jan 2021 07:36:34 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 10J7aXcc20251062
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 19 Jan 2021 07:12:47 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA9C3A4051;
- Tue, 19 Jan 2021 07:12:47 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 97971A4040;
- Tue, 19 Jan 2021 07:12:44 +0000 (GMT)
-Received: from [9.77.206.253] (unknown [9.77.206.253])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 19 Jan 2021 07:12:44 +0000 (GMT)
-Subject: Re: [RFC Qemu PATCH v2 1/2] spapr: drc: Add support for async hcalls
- at the drc level
-To: David Gibson <david@gibson.dropbear.id.au>, Greg Kurz <groug@kaod.org>
-References: <160674929554.2492771.17651548703390170573.stgit@lep8c.aus.stglabs.ibm.com>
- <160674938210.2492771.1728601884822491679.stgit@lep8c.aus.stglabs.ibm.com>
- <20201221130853.15c8ddfd@bahia.lan> <20201228083800.GN6952@yekko.fritz.box>
-From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-Message-ID: <3b47312a-217f-8df5-0bfd-1a653598abad@linux.ibm.com>
-Date: Tue, 19 Jan 2021 12:40:31 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
-MIME-Version: 1.0
-In-Reply-To: <20201228083800.GN6952@yekko.fritz.box>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+ Tue, 19 Jan 2021 07:36:33 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 515AEC6059;
+ Tue, 19 Jan 2021 07:36:33 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 71B1DC605B;
+ Tue, 19 Jan 2021 07:36:32 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.79.213.81])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 19 Jan 2021 07:36:32 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 0570B2E2E70; Tue, 19 Jan 2021 13:06:28 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Nathan Lynch <nathanl@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc/cacheinfo: Lookup cache by dt node and
+ thread-group id
+Date: Tue, 19 Jan 2021 13:06:19 +0530
+Message-Id: <1611041780-8640-2-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1611041780-8640-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1611041780-8640-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
  definitions=2021-01-19_01:2021-01-18,
  2021-01-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  mlxscore=0 bulkscore=0
- spamscore=0 suspectscore=0 clxscore=1011 mlxlogscore=999 phishscore=0
+ spamscore=0 suspectscore=0 clxscore=1015 mlxlogscore=999 phishscore=0
  adultscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
  malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2101190041
@@ -118,50 +107,278 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: xiaoguangrong.eric@gmail.com, linux-nvdimm@lists.01.org,
- aneesh.kumar@linux.ibm.com, mst@redhat.com, qemu-devel@nongnu.org,
- kvm-ppc@vger.kernel.org, shivaprasadbhat@gmail.com, qemu-ppc@nongnu.org,
- bharata@linux.vnet.ibm.com, imammedo@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks for the comments!
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
+Currently the cacheinfo code on powerpc indexes the "cache" objects
+(modelling the L1/L2/L3 caches) where the key is device-tree node
+corresponding to that cache. On some of the POWER server platforms
+thread-groups within the core share different sets of caches (Eg: On
+SMT8 POWER9 systems, threads 0,2,4,6 of a core share L1 cache and
+threads 1,3,5,7 of the same core share another L1 cache). On such
+platforms, there is a single device-tree node corresponding to that
+cache and the cache-configuration within the threads of the core is
+indicated via "ibm,thread-groups" device-tree property.
 
-On 12/28/20 2:08 PM, David Gibson wrote:
+Since the current code is not aware of the "ibm,thread-groups"
+property, on the aforementoined systems, cacheinfo code still treats
+all the threads in the core to be sharing the cache because of the
+single device-tree node (In the earlier example, the cacheinfo code
+would says CPUs 0-7 share L1 cache).
 
-> On Mon, Dec 21, 2020 at 01:08:53PM +0100, Greg Kurz wrote:
-...
->> The overall idea looks good but I think you should consider using
->> a thread pool to implement it. See below.
-> I am not convinced, however.  Specifically, attaching this to the DRC
-> doesn't make sense to me.  We're adding exactly one DRC related async
-> hcall, and I can't really see much call for another one.  We could
-> have other async hcalls - indeed we already have one for HPT resizing
-> - but attaching this to DRCs doesn't help for those.
+In this patch, we make the powerpc cacheinfo code aware of the
+"ibm,thread-groups" property. We indexe the "cache" objects by the
+key-pair (device-tree node, thread-group id). For any CPUX, for a
+given level of cache, the thread-group id is defined to be the first
+CPU in the "ibm,thread-groups" cache-group containing CPUX. For levels
+of cache which are not represented in "ibm,thread-groups" property,
+the thread-group id is -1.
 
-The semantics of the hcall made me think, if this is going to be
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/smp.h  |  3 ++
+ arch/powerpc/kernel/cacheinfo.c | 80 +++++++++++++++++++++++++++++------------
+ 2 files changed, 61 insertions(+), 22 deletions(-)
 
-re-usable for future if implemented at DRC level. Other option
-
-is to move the async-hcall-state/list into the NVDIMMState structure
-
-in include/hw/mem/nvdimm.h and handle it with machine->nvdimms_state
-
-at a global level.
-
-
-Hope you are okay with using the pool based approach that Greg
-
-suggested.
-
-
-Please let me know.
-
-
-Thanks,
-
-Shivaprasad
-
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index c4e2d53..39de24b 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -32,6 +32,9 @@
+ 
+ extern int cpu_to_chip_id(int cpu);
+ 
++DECLARE_PER_CPU(cpumask_var_t, thread_group_l1_cache_map);
++DECLARE_PER_CPU(cpumask_var_t, thread_group_l2_cache_map);
++
+ #ifdef CONFIG_SMP
+ 
+ struct smp_ops_t {
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index 6f903e9a..5a6925d 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -120,6 +120,7 @@ struct cache {
+ 	struct cpumask shared_cpu_map; /* online CPUs using this cache */
+ 	int type;                      /* split cache disambiguation */
+ 	int level;                     /* level not explicit in device tree */
++	int group_id;                  /* id of the group of threads that share this cache */
+ 	struct list_head list;         /* global list of cache objects */
+ 	struct cache *next_local;      /* next cache of >= level */
+ };
+@@ -142,22 +143,24 @@ static const char *cache_type_string(const struct cache *cache)
+ }
+ 
+ static void cache_init(struct cache *cache, int type, int level,
+-		       struct device_node *ofnode)
++		       struct device_node *ofnode, int group_id)
+ {
+ 	cache->type = type;
+ 	cache->level = level;
+ 	cache->ofnode = of_node_get(ofnode);
++	cache->group_id = group_id;
+ 	INIT_LIST_HEAD(&cache->list);
+ 	list_add(&cache->list, &cache_list);
+ }
+ 
+-static struct cache *new_cache(int type, int level, struct device_node *ofnode)
++static struct cache *new_cache(int type, int level,
++			       struct device_node *ofnode, int group_id)
+ {
+ 	struct cache *cache;
+ 
+ 	cache = kzalloc(sizeof(*cache), GFP_KERNEL);
+ 	if (cache)
+-		cache_init(cache, type, level, ofnode);
++		cache_init(cache, type, level, ofnode, group_id);
+ 
+ 	return cache;
+ }
+@@ -309,20 +312,24 @@ static struct cache *cache_find_first_sibling(struct cache *cache)
+ 		return cache;
+ 
+ 	list_for_each_entry(iter, &cache_list, list)
+-		if (iter->ofnode == cache->ofnode && iter->next_local == cache)
++		if (iter->ofnode == cache->ofnode &&
++		    iter->group_id == cache->group_id &&
++		    iter->next_local == cache)
+ 			return iter;
+ 
+ 	return cache;
+ }
+ 
+-/* return the first cache on a local list matching node */
+-static struct cache *cache_lookup_by_node(const struct device_node *node)
++/* return the first cache on a local list matching node and thread-group id */
++static struct cache *cache_lookup_by_node_group(const struct device_node *node,
++						int group_id)
+ {
+ 	struct cache *cache = NULL;
+ 	struct cache *iter;
+ 
+ 	list_for_each_entry(iter, &cache_list, list) {
+-		if (iter->ofnode != node)
++		if (iter->ofnode != node ||
++		    iter->group_id != group_id)
+ 			continue;
+ 		cache = cache_find_first_sibling(iter);
+ 		break;
+@@ -352,14 +359,15 @@ static int cache_is_unified_d(const struct device_node *np)
+ 		CACHE_TYPE_UNIFIED_D : CACHE_TYPE_UNIFIED;
+ }
+ 
+-static struct cache *cache_do_one_devnode_unified(struct device_node *node, int level)
++static struct cache *cache_do_one_devnode_unified(struct device_node *node, int group_id,
++						  int level)
+ {
+ 	pr_debug("creating L%d ucache for %pOFP\n", level, node);
+ 
+-	return new_cache(cache_is_unified_d(node), level, node);
++	return new_cache(cache_is_unified_d(node), level, node, group_id);
+ }
+ 
+-static struct cache *cache_do_one_devnode_split(struct device_node *node,
++static struct cache *cache_do_one_devnode_split(struct device_node *node, int group_id,
+ 						int level)
+ {
+ 	struct cache *dcache, *icache;
+@@ -367,8 +375,8 @@ static struct cache *cache_do_one_devnode_split(struct device_node *node,
+ 	pr_debug("creating L%d dcache and icache for %pOFP\n", level,
+ 		 node);
+ 
+-	dcache = new_cache(CACHE_TYPE_DATA, level, node);
+-	icache = new_cache(CACHE_TYPE_INSTRUCTION, level, node);
++	dcache = new_cache(CACHE_TYPE_DATA, level, node, group_id);
++	icache = new_cache(CACHE_TYPE_INSTRUCTION, level, node, group_id);
+ 
+ 	if (!dcache || !icache)
+ 		goto err;
+@@ -382,31 +390,32 @@ static struct cache *cache_do_one_devnode_split(struct device_node *node,
+ 	return NULL;
+ }
+ 
+-static struct cache *cache_do_one_devnode(struct device_node *node, int level)
++static struct cache *cache_do_one_devnode(struct device_node *node, int group_id, int level)
+ {
+ 	struct cache *cache;
+ 
+ 	if (cache_node_is_unified(node))
+-		cache = cache_do_one_devnode_unified(node, level);
++		cache = cache_do_one_devnode_unified(node, group_id, level);
+ 	else
+-		cache = cache_do_one_devnode_split(node, level);
++		cache = cache_do_one_devnode_split(node, group_id, level);
+ 
+ 	return cache;
+ }
+ 
+ static struct cache *cache_lookup_or_instantiate(struct device_node *node,
++						 int group_id,
+ 						 int level)
+ {
+ 	struct cache *cache;
+ 
+-	cache = cache_lookup_by_node(node);
++	cache = cache_lookup_by_node_group(node, group_id);
+ 
+ 	WARN_ONCE(cache && cache->level != level,
+ 		  "cache level mismatch on lookup (got %d, expected %d)\n",
+ 		  cache->level, level);
+ 
+ 	if (!cache)
+-		cache = cache_do_one_devnode(node, level);
++		cache = cache_do_one_devnode(node, group_id, level);
+ 
+ 	return cache;
+ }
+@@ -443,7 +452,27 @@ static void do_subsidiary_caches_debugcheck(struct cache *cache)
+ 		  of_node_get_device_type(cache->ofnode));
+ }
+ 
+-static void do_subsidiary_caches(struct cache *cache)
++/*
++ * If sub-groups of threads in a core containing @cpu_id share the
++ * L@level-cache (information obtained via "ibm,thread-groups"
++ * device-tree property), then we identify the group by the first
++ * thread-sibling in the group. We define this to be the group-id.
++ *
++ * In the absence of any thread-group information for L@level-cache,
++ * this function returns -1.
++ */
++static int get_group_id(unsigned int cpu_id, int level)
++{
++	if (has_big_cores && level == 1)
++		return cpumask_first(per_cpu(thread_group_l1_cache_map,
++					     cpu_id));
++	else if (thread_group_shares_l2 && level == 2)
++		return cpumask_first(per_cpu(thread_group_l2_cache_map,
++					     cpu_id));
++	return -1;
++}
++
++static void do_subsidiary_caches(struct cache *cache, unsigned int cpu_id)
+ {
+ 	struct device_node *subcache_node;
+ 	int level = cache->level;
+@@ -452,9 +481,11 @@ static void do_subsidiary_caches(struct cache *cache)
+ 
+ 	while ((subcache_node = of_find_next_cache_node(cache->ofnode))) {
+ 		struct cache *subcache;
++		int group_id;
+ 
+ 		level++;
+-		subcache = cache_lookup_or_instantiate(subcache_node, level);
++		group_id = get_group_id(cpu_id, level);
++		subcache = cache_lookup_or_instantiate(subcache_node, group_id, level);
+ 		of_node_put(subcache_node);
+ 		if (!subcache)
+ 			break;
+@@ -468,6 +499,7 @@ static struct cache *cache_chain_instantiate(unsigned int cpu_id)
+ {
+ 	struct device_node *cpu_node;
+ 	struct cache *cpu_cache = NULL;
++	int group_id;
+ 
+ 	pr_debug("creating cache object(s) for CPU %i\n", cpu_id);
+ 
+@@ -476,11 +508,13 @@ static struct cache *cache_chain_instantiate(unsigned int cpu_id)
+ 	if (!cpu_node)
+ 		goto out;
+ 
+-	cpu_cache = cache_lookup_or_instantiate(cpu_node, 1);
++	group_id = get_group_id(cpu_id, 1);
++
++	cpu_cache = cache_lookup_or_instantiate(cpu_node, group_id, 1);
+ 	if (!cpu_cache)
+ 		goto out;
+ 
+-	do_subsidiary_caches(cpu_cache);
++	do_subsidiary_caches(cpu_cache, cpu_id);
+ 
+ 	cache_cpu_set(cpu_cache, cpu_id);
+ out:
+@@ -848,13 +882,15 @@ static struct cache *cache_lookup_by_cpu(unsigned int cpu_id)
+ {
+ 	struct device_node *cpu_node;
+ 	struct cache *cache;
++	int group_id;
+ 
+ 	cpu_node = of_get_cpu_node(cpu_id, NULL);
+ 	WARN_ONCE(!cpu_node, "no OF node found for CPU %i\n", cpu_id);
+ 	if (!cpu_node)
+ 		return NULL;
+ 
+-	cache = cache_lookup_by_node(cpu_node);
++	group_id = get_group_id(cpu_id, 1);
++	cache = cache_lookup_by_node_group(cpu_node, group_id);
+ 	of_node_put(cpu_node);
+ 
+ 	return cache;
+-- 
+1.9.4
 
