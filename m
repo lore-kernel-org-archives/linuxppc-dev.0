@@ -2,100 +2,86 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C1B9C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 253B0C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:44:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8369323103
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:34:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8369323103
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4763823121
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 18:44:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4763823121
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKxgf6tJGzDr5T
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 05:16:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKwbm69p5zDr2k
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 04:28:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Cp+o6tyL; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=A3TBUaI4; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tmd+C37l; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKxdK6j8hzDr27
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 05:14:39 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10JI2AjH191920; Tue, 19 Jan 2021 13:14:29 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=mime-version :
- content-type : content-transfer-encoding : date : from : to : cc : subject
- : in-reply-to : references : message-id; s=pp1;
- bh=+jRQ4MLeCEyfxgyBDiWRUBdmyqZZjWjMFGyfxcSxzqo=;
- b=Cp+o6tyLMeYzyUd83MTdy9uKFkAP1y0DOSJK4rZiqo0zjbjdzZrRpPXDmDQw0pM/Vzvn
- 9UmwzLDX5jlljUywLp4XsilBgCF0udhya3yc3fsTiCHTVDySYJAnjtgOHSB+fKTmWvqK
- /zo3wWOr6Z8xtWXS0dL4e8I2HASQeWr3yMk13g9Ik7n7tvXw+uBRBwLNTtHURkcPC8MM
- KY30VeUYBBQWWaeae7Mt56VkxKPWfguEyRd2YshrOkDVgxC7VTljLoWnTulYuCT1qJct
- 6mG5/AEj6EbFd3n+HU7SpOkmfs015kaFO4j+8D9ew5eeiGf4L/ijZ2UkHIxReLxL0uAd KQ== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3664780mjr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 13:14:29 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10JIELbG007164;
- Tue, 19 Jan 2021 18:14:28 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma01wdc.us.ibm.com with ESMTP id 363qs904qb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 18:14:28 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10JIERWG26870260
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 19 Jan 2021 18:14:27 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 145787805E;
- Tue, 19 Jan 2021 18:14:27 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 487AE7805C;
- Tue, 19 Jan 2021 18:14:26 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.10.229.42])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 19 Jan 2021 18:14:26 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKwYT5xgdzDqyP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 04:26:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1611077174;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=mAzpHVdlnMaDyvxGTKzMDyi59keeJ2kOytyejQDWyqg=;
+ b=A3TBUaI40AOAUFrkN/5HW9PVF17Ua7uAwz0L/GOItz2ko8k4oGl+ErH65vh2/U3rfuWfIO
+ 2mUn3UyHl6e18BemLqrCi9QrqJDKojuTK76aA4t+PWLKNq6PYtn0vMaQnTKf3XxcZoereo
+ FCwy/XVemOliGRb+NdkwpTrWVHkYWuw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1611077175;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=mAzpHVdlnMaDyvxGTKzMDyi59keeJ2kOytyejQDWyqg=;
+ b=Tmd+C37lin2uvhOfSYvesO6v22bF1T/JWWafoCivLs2LVQyJ6c4W5D/0Y599gLyLirwLdS
+ Kssw83pIzBUh807iL2OwvjtC+Cswq9V8ik6DFwL0AyDJssoacG5QHQL+xJHWJiTsnjFEYD
+ CN43kn7AQt8Nz3QHfh7IszGVNxEbFC8=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-299-AXabtRcgOPCQB4xr3nWivg-1; Tue, 19 Jan 2021 12:26:10 -0500
+X-MC-Unique: AXabtRcgOPCQB4xr3nWivg-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B3CF01936B8A;
+ Tue, 19 Jan 2021 17:26:07 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.194.45])
+ by smtp.corp.redhat.com (Postfix) with SMTP id 0C6A260C9C;
+ Tue, 19 Jan 2021 17:26:04 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+ oleg@redhat.com; Tue, 19 Jan 2021 18:26:07 +0100 (CET)
+Date: Tue, 19 Jan 2021 18:26:03 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/uprobes: Don't allow probe on suffix of prefixed
+ instruction
+Message-ID: <20210119172603.GA16696@redhat.com>
+References: <20210119091234.76317-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-Date: Tue, 19 Jan 2021 10:14:25 -0800
-From: Dany Madden <drt@linux.ibm.com>
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: ibmvnic: Race condition in remove callback
-In-Reply-To: <20210117101242.dpwayq6wdgfdzirl@pengutronix.de>
-References: <20210117101242.dpwayq6wdgfdzirl@pengutronix.de>
-Message-ID: <b725079b34031595887b019d1d2f6fc7@imap.linux.ibm.com>
-X-Sender: drt@linux.ibm.com
-User-Agent: Roundcube Webmail/1.1.12
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-19_07:2021-01-18,
- 2021-01-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011
- lowpriorityscore=0 impostorscore=0 priorityscore=1501 bulkscore=0
- mlxlogscore=873 mlxscore=0 malwarescore=0 phishscore=0 adultscore=0
- spamscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101190099
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210119091234.76317-1-ravi.bangoria@linux.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,89 +93,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Juliet Kim <julietk@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
- netdev@vger.kernel.org, Lijun Pan <ljp@linux.ibm.com>, kernel@pengutronix.de,
- Paul Mackerras <paulus@samba.org>, Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, paulus@samba.org,
+ sandipan@linux.ibm.com, jniethe5@gmail.com, naveen.n.rao@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-01-17 02:12, Uwe Kleine-König wrote:
-> Hello,
-> 
-> while working on some cleanup I stumbled over a problem in the 
-> ibmvnic's
-> remove callback. Since commit
-> 
->         7d7195a026ba ("ibmvnic: Do not process device remove during
-> device reset")
-> 
-> there is the following code in the remove callback:
-> 
->         static int ibmvnic_remove(struct vio_dev *dev)
->         {
->                 ...
->                 spin_lock_irqsave(&adapter->state_lock, flags);
->                 if (test_bit(0, &adapter->resetting)) {
->                         spin_unlock_irqrestore(&adapter->state_lock, 
-> flags);
->                         return -EBUSY;
->                 }
-> 
->                 adapter->state = VNIC_REMOVING;
->                 spin_unlock_irqrestore(&adapter->state_lock, flags);
-> 
->                 flush_work(&adapter->ibmvnic_reset);
->                 flush_delayed_work(&adapter->ibmvnic_delayed_reset);
->                 ...
->         }
-> 
-> Unfortunately returning -EBUSY doesn't work as intended. That's because
-> the return value of this function is ignored[1] and the device is
-> considered unbound by the device core (shortly) after ibmvnic_remove()
-> returns.
+On 01/19, Ravi Bangoria wrote:
+>
+> Probe on 2nd word of a prefixed instruction is invalid scenario and
+> should be restricted.
 
-Oh! I was not aware of this. In our code review, a question on whether 
-or not device reset should have a higher precedence over device remove 
-was raised before. So, now it is clear that this driver has to take care 
-of remove over reset.
+I don't understand this ppc-specific problem, but...
 
-> 
-> While looking into fixing that I noticed a worse problem:
-> 
-> If ibmvnic_reset() (e.g. called by the tx_timeout callback) calls
-> schedule_work(&adapter->ibmvnic_reset); just after the work queue is
-> flushed above the problem that 7d7195a026ba intends to fix will trigger
-> resulting in a use-after-free.
+> +#ifdef CONFIG_PPC64
+> +int arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
+> +			      uprobe_opcode_t opcode)
+> +{
+> +	uprobe_opcode_t prefix;
+> +	void *kaddr;
+> +	struct ppc_inst inst;
+> +
+> +	/* Don't check if vaddr is pointing to the beginning of page */
+> +	if (!(vaddr & ~PAGE_MASK))
+> +		return 0;
 
-It was proposed that when coming into ibmvnic_remove() we lock down the 
-workqueue to prevent future access, flush, cleanup, then unregister the 
-device. Your thought on this?
+So the fix is incomplete? Or insn at the start of page can't be prefixed?
 
-> 
-> Also ibmvnic_reset() checks for adapter->state without holding the lock
-> which might be racy, too.
-> 
-Suka started addressing consistent locking with this patch series:
-https://lists.openwall.net/netdev/2021/01/08/89
+> +int __weak arch_uprobe_verify_opcode(struct page *page, unsigned long vaddr,
+> +				     uprobe_opcode_t opcode)
+> +{
+> +	return 0;
+> +}
+> +
+>  static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t *new_opcode)
+>  {
+>  	uprobe_opcode_t old_opcode;
+> @@ -275,6 +281,8 @@ static int verify_opcode(struct page *page, unsigned long vaddr, uprobe_opcode_t
+>  	if (is_swbp_insn(new_opcode)) {
+>  		if (is_swbp)		/* register: already installed? */
+>  			return 0;
+> +		if (arch_uprobe_verify_opcode(page, vaddr, old_opcode))
+> +			return -EINVAL;
 
-He is reworking this.
+Well, this doesn't look good...
 
-> Best regards
-> Uwe
+To me it would be better to change the prepare_uprobe() path to copy
+the potential prefix into uprobe->arch and check ppc_inst_prefixed()
+in arch_uprobe_analyze_insn(). What do you think?
 
-Thank you for taking the time to review this driver, Uwe. This is very 
-helpful for us.
+Oleg.
 
-Best Regards,
-Dany
-
-> 
-> [1] vio_bus_remove (in arch/powerpc/platforms/pseries/vio.c) records 
-> the
->     return value and passes it on. But the driver core doesn't care for
->     the return value (see __device_release_driver() in 
-> drivers/base/dd.c
->     calling dev->bus->remove()).
