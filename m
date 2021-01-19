@@ -2,65 +2,60 @@ Return-Path: <SRS0=EbLt=GW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99FE4C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 08:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E209AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:02:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54AE223103
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 08:55:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54AE223103
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id DB9DA23103
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 09:02:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB9DA23103
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DKjDT4DmHzDr2w
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 19:55:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DKjNH2Y06zDr44
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jan 2021 20:02:39 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DKjBJ3yBwzDr1F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 19:53:55 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DKjB66gTVz9tyhW;
- Tue, 19 Jan 2021 09:53:50 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ZS4zMvIw1KiY; Tue, 19 Jan 2021 09:53:50 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DKjB65jcHz9tyh3;
- Tue, 19 Jan 2021 09:53:50 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D22498B7AE;
- Tue, 19 Jan 2021 09:53:51 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1ZAV85L9P2Ej; Tue, 19 Jan 2021 09:53:51 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 568338B7B9;
- Tue, 19 Jan 2021 09:53:51 +0100 (CET)
-Subject: Re: [PATCH v3 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-To: "Christopher M. Riedl" <cmr@codefail.de>, linuxppc-dev@lists.ozlabs.org
-References: <C8LLSM3UC598.L4E2VMGJOI06@geist>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <5863d631-08a2-29ed-09b5-78d9009ca1df@csgroup.eu>
-Date: Tue, 19 Jan 2021 08:29:11 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DKjL56zhczDqkd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 20:00:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=UW4jOfQ1; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DKjL46NJdz9s24;
+ Tue, 19 Jan 2021 20:00:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1611046844;
+ bh=cHNpqBjjlw8Pr4axpRHQyxwCq/g05L5in9E5bsY/hec=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=UW4jOfQ1xHYkRKzCwGIRSdeDy4jQDIYAV33Z8Zo7vISoNzYqYS3BmGmVhKG52kC8u
+ Dp3b3EdqeMoq1IK4R9rZBNuscFWGL72u2B3VicH0kuqkNEKB46JDgpTqWYfD/yiyxZ
+ rbSKLH9Phi+lDCe7XRAitpTTW34Sfx0FQLl1tmG31+brFeUZGLDyKrxT53RXogEVW4
+ DpWC8I/Ug1F8S+21SaVKgeutlm3QQqnONGETffaoNqXl5vUHdYRWcDT/3yoIpcWVqW
+ 36XvbAIQSZZslCv/Z35ZCW2QY7STj3Qt/dAx0u3kwf2KTFgRfmH0a18ZNEjHYo8Ur9
+ L8br38tfmUG5w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/6] powerpc/rtas: constrain user region allocation to RMA
+In-Reply-To: <20210114220004.1138993-7-nathanl@linux.ibm.com>
+References: <20210114220004.1138993-1-nathanl@linux.ibm.com>
+ <20210114220004.1138993-7-nathanl@linux.ibm.com>
+Date: Tue, 19 Jan 2021 20:00:43 +1100
+Message-ID: <87mtx5qp1g.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <C8LLSM3UC598.L4E2VMGJOI06@geist>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,131 +67,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: aik@ozlabs.ru, tyreld@linux.ibm.com, brking@linux.ibm.com,
+ ajd@linux.ibm.com, aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Memory locations passed as arguments from the OS to RTAS usually need
+> to be addressable in 32-bit mode and must reside in the Real Mode
+> Area. On PAPR guests, the RMA starts at logical address 0 and is the
+> first logical memory block reported in the LPAR=E2=80=99s device tree.
+>
+> On powerpc targets with RTAS, Linux makes available to user space a
+> region of memory suitable for arguments to be passed to RTAS via
+> sys_rtas(). This region (rtas_rmo_buf) is allocated via the memblock
+> API during boot in order to ensure that it satisfies the requirements
+> described above.
+>
+> With radix MMU, the upper limit supplied to the memblock allocation
+> can exceed the bounds of the first logical memory block, since
+> ppc64_rma_size is ULONG_MAX and RTAS_INSTANTIATE_MAX is 1GB.
 
+Why does the size of the first memory block matter for radix?
 
-Le 17/01/2021 à 18:19, Christopher M. Riedl a écrit :
-> On Mon Jan 11, 2021 at 7:22 AM CST, Christophe Leroy wrote:
->>
->>
->> Le 09/01/2021 à 04:25, Christopher M. Riedl a écrit :
->>> Implement raw_copy_from_user_allowed() which assumes that userspace read
->>> access is open. Use this new function to implement raw_copy_from_user().
->>> Finally, wrap the new function to follow the usual "unsafe_" convention
->>> of taking a label argument.
->>
->> I think there is no point implementing raw_copy_from_user_allowed(), see
->> https://github.com/linuxppc/linux/commit/4b842e4e25b1 and
->> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/8c74fc9ce8131cabb10b3e95dc0e430f396ee83e.1610369143.git.christophe.leroy@csgroup.eu/
->>
->> You should simply do:
->>
->> #define unsafe_copy_from_user(d, s, l, e) \
->> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
->>
-> 
-> I gave this a try and the signal ops decreased by ~8K. Now, to be
-> honest, I am not sure what an "acceptable" benchmark number here
-> actually is - so maybe this is ok? Same loss with both radix and hash:
+The 1GB limit is sufficient to make it accessible by 32-bit code.
 
-I don't think this is ok, but it probably means that you are using unsafe_copy_from_user() to copy 
-small constant size data that should be copied with unsafe_get_user() instead.
+> (512MB is a common size of the first memory block according to a small sa=
+mple of
+> LPARs I have checked.)
 
-> 
-> 	|                                      | hash   | radix  |
-> 	| ------------------------------------ | ------ | ------ |
-> 	| linuxppc/next                        | 118693 | 133296 |
-> 	| linuxppc/next w/o KUAP+KUEP          | 228911 | 228654 |
-> 	| unsafe-signal64                      | 200480 | 234067 |
-> 	| unsafe-signal64 (__copy_tofrom_user) | 192467 | 225119 |
-> 
-> To put this into perspective, prior to KUAP and uaccess flush, signal
-> performance in this benchmark was ~290K on hash.
-> 
->>
->> Christophe
->>
->>>
->>> The new raw_copy_from_user_allowed() calls non-inline __copy_tofrom_user()
->>> internally. This is still safe to call inside user access blocks formed
->>> with user_*_access_begin()/user_*_access_end() since asm functions are not
->>> instrumented for tracing.
->>>
->>> Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
->>> ---
->>>    arch/powerpc/include/asm/uaccess.h | 28 +++++++++++++++++++---------
->>>    1 file changed, 19 insertions(+), 9 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
->>> index 501c9a79038c..698f3a6d6ae5 100644
->>> --- a/arch/powerpc/include/asm/uaccess.h
->>> +++ b/arch/powerpc/include/asm/uaccess.h
->>> @@ -403,38 +403,45 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
->>>    }
->>>    #endif /* __powerpc64__ */
->>>    
->>> -static inline unsigned long raw_copy_from_user(void *to,
->>> -		const void __user *from, unsigned long n)
->>> +static inline unsigned long
->>> +raw_copy_from_user_allowed(void *to, const void __user *from, unsigned long n)
->>>    {
->>> -	unsigned long ret;
->>>    	if (__builtin_constant_p(n) && (n <= 8)) {
->>> -		ret = 1;
->>> +		unsigned long ret = 1;
->>>    
->>>    		switch (n) {
->>>    		case 1:
->>>    			barrier_nospec();
->>> -			__get_user_size(*(u8 *)to, from, 1, ret);
->>> +			__get_user_size_allowed(*(u8 *)to, from, 1, ret);
->>>    			break;
->>>    		case 2:
->>>    			barrier_nospec();
->>> -			__get_user_size(*(u16 *)to, from, 2, ret);
->>> +			__get_user_size_allowed(*(u16 *)to, from, 2, ret);
->>>    			break;
->>>    		case 4:
->>>    			barrier_nospec();
->>> -			__get_user_size(*(u32 *)to, from, 4, ret);
->>> +			__get_user_size_allowed(*(u32 *)to, from, 4, ret);
->>>    			break;
->>>    		case 8:
->>>    			barrier_nospec();
->>> -			__get_user_size(*(u64 *)to, from, 8, ret);
->>> +			__get_user_size_allowed(*(u64 *)to, from, 8, ret);
->>>    			break;
->>>    		}
->>>    		if (ret == 0)
->>>    			return 0;
->>>    	}
->>>    
->>> +	return __copy_tofrom_user((__force void __user *)to, from, n);
->>> +}
->>> +
->>> +static inline unsigned long
->>> +raw_copy_from_user(void *to, const void __user *from, unsigned long n)
->>> +{
->>> +	unsigned long ret;
->>> +
->>>    	barrier_nospec();
->>>    	allow_read_from_user(from, n);
->>> -	ret = __copy_tofrom_user((__force void __user *)to, from, n);
->>> +	ret = raw_copy_from_user_allowed(to, from, n);
->>>    	prevent_read_from_user(from, n);
->>>    	return ret;
->>>    }
->>> @@ -542,6 +549,9 @@ user_write_access_begin(const void __user *ptr, size_t len)
->>>    #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
->>>    #define unsafe_put_user(x, p, e) __put_user_goto(x, p, e)
->>>    
->>> +#define unsafe_copy_from_user(d, s, l, e) \
->>> +	unsafe_op_wrap(raw_copy_from_user_allowed(d, s, l), e)
->>> +
->>>    #define unsafe_copy_to_user(d, s, l, e) \
->>>    do {									\
->>>    	u8 __user *_dst = (u8 __user *)(d);				\
->>>
+That's the minimum we request, see prom_init.c:
+
+	/* option vector 2: Open Firmware options supported */
+	.vec2 =3D {
+		.byte1 =3D OV2_REAL_MODE,
+		.reserved =3D 0,
+		.real_base =3D cpu_to_be32(0xffffffff),
+		.real_size =3D cpu_to_be32(0xffffffff),
+		.virt_base =3D cpu_to_be32(0xffffffff),
+		.virt_size =3D cpu_to_be32(0xffffffff),
+		.load_base =3D cpu_to_be32(0xffffffff),
+		.min_rma =3D cpu_to_be32(512),		/* 512MB min RMA */
+
+Since v4.12 in 2017.
+
+cheers
