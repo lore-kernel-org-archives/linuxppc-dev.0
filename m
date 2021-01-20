@@ -2,57 +2,61 @@ Return-Path: <SRS0=bcc2=GX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5545C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 05:44:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F46C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 05:47:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFD232313A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 05:44:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFD232313A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id F25BF2313C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 05:47:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F25BF2313C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DLDxJ5vC6zDr1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 16:44:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
- helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
- receiver=<UNKNOWN>)
-Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
- [131.153.2.45])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLF0h6MX9zDqxb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 16:47:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DLDvQ6DwdzDqVr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 16:42:58 +1100 (AEDT)
-Received: from MTA-08-4.privateemail.com (mta-08.privateemail.com
- [68.65.122.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id B36E1805FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 00:42:54 -0500 (EST)
-Received: from MTA-08.privateemail.com (localhost [127.0.0.1])
- by MTA-08.privateemail.com (Postfix) with ESMTP id 330D960099;
- Wed, 20 Jan 2021 00:42:50 -0500 (EST)
-Received: from localhost (unknown [10.20.151.213])
- by MTA-08.privateemail.com (Postfix) with ESMTPA id E32356005C;
- Wed, 20 Jan 2021 05:42:49 +0000 (UTC)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH v3 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>, "Michael Ellerman"
- <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 19 Jan 2021 23:08:03 -0600
-Message-Id: <C8NQ4D6KZV3H.1XZG3F3L7A3MW@geist>
-In-Reply-To: <1e6309a4-58fe-c6a4-6e47-d8659177846c@csgroup.eu>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLDyc0J0hzDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 16:45:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=l8BIBTeW; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DLDyZ6qHMz9rx6;
+ Wed, 20 Jan 2021 16:45:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1611121543;
+ bh=ISBNVX3LDUBTyhkPqMavSnFG3QO/ASLTAlab4isvt/Y=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=l8BIBTeW9QzGb/pmvDh762sGhBJD5+xKpauVBQzHEuLYeW1a57zcSmRA3c5HkUsF8
+ cGIVRTRmQc302mYniglMXvmn5jRe5I2ysuX431rvSI2y+RHaW+IxX83ibAzgU1hYPG
+ 7EnecDGKQyy6fJpmuOvkrd4Ew4Vx4Uh71UxXJxEdxDB2tRNH/0yorv66R4LDo6zzTT
+ UhrPs4efphD0mLUCwl/4mXQ2p4rOr5GE5ZCJ9MZ/YND0N8p1PHdj5U+P1XcjnrQE52
+ 2BWJPpD+zyfVF23MzGCp0ZJzvN5+Bh0erX1IcGKC4yNfRVph0A5KIMV3oT/SXUogSc
+ kNxWlRd9IWP1A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc/47x: Disable 256k page size
+In-Reply-To: <2fed79b1154c872194f98bac4422c23918325e61.1611039590.git.christophe.leroy@csgroup.eu>
+References: <2fed79b1154c872194f98bac4422c23918325e61.1611039590.git.christophe.leroy@csgroup.eu>
+Date: Wed, 20 Jan 2021 16:45:38 +1100
+Message-ID: <87h7ncqhz1.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,120 +68,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue Jan 19, 2021 at 11:27 AM CST, Christophe Leroy wrote:
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> PPC47x_TLBE_SIZE isn't defined for 256k pages, so
+> this size of page shall not be selected for 47x.
 >
+> Reported-by: kernel test robot <lkp@intel.com>
+> Fixes: e7f75ad01d59 ("powerpc/47x: Base ppc476 support")
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> Le 19/01/2021 =C3=A0 18:02, Christopher M. Riedl a =C3=A9crit :
-> > On Tue Jan 19, 2021 at 6:33 AM CST, Christophe Leroy wrote:
-> >>
-> >>
-> >> Le 19/01/2021 =C3=A0 03:11, Michael Ellerman a =C3=A9crit :
-> >>> "Christopher M. Riedl" <cmr@codefail.de> writes:
-> >>>> On Mon Jan 11, 2021 at 7:22 AM CST, Christophe Leroy wrote:
-> >>>>> Le 09/01/2021 =C3=A0 04:25, Christopher M. Riedl a =C3=A9crit :
-> >>>>>> Implement raw_copy_from_user_allowed() which assumes that userspac=
-e read
-> >>>>>> access is open. Use this new function to implement raw_copy_from_u=
-ser().
-> >>>>>> Finally, wrap the new function to follow the usual "unsafe_" conve=
-ntion
-> >>>>>> of taking a label argument.
-> >>>>>
-> >>>>> I think there is no point implementing raw_copy_from_user_allowed()=
-, see
-> >>>>> https://github.com/linuxppc/linux/commit/4b842e4e25b1 and
-> >>>>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/8c74fc9ce81=
-31cabb10b3e95dc0e430f396ee83e.1610369143.git.christophe.leroy@csgroup.eu/
-> >>>>>
-> >>>>> You should simply do:
-> >>>>>
-> >>>>> #define unsafe_copy_from_user(d, s, l, e) \
-> >>>>> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), =
-e)
-> >>>>>
-> >>>>
-> >>>> I gave this a try and the signal ops decreased by ~8K. Now, to be
-> >>>> honest, I am not sure what an "acceptable" benchmark number here
-> >>>> actually is - so maybe this is ok? Same loss with both radix and has=
-h:
-> >>>>
-> >>>> 	|                                      | hash   | radix  |
-> >>>> 	| ------------------------------------ | ------ | ------ |
-> >>>> 	| linuxppc/next                        | 118693 | 133296 |
-> >>>> 	| linuxppc/next w/o KUAP+KUEP          | 228911 | 228654 |
-> >>>> 	| unsafe-signal64                      | 200480 | 234067 |
-> >>>> 	| unsafe-signal64 (__copy_tofrom_user) | 192467 | 225119 |
-> >>>>
-> >>>> To put this into perspective, prior to KUAP and uaccess flush, signa=
-l
-> >>>> performance in this benchmark was ~290K on hash.
-> >>>
-> >>> If I'm doing the math right 8K is ~4% of the best number.
-> >>>
-> >>> It seems like 4% is worth a few lines of code to handle these constan=
-t
-> >>> sizes. It's not like we have performance to throw away.
-> >>>
-> >>> Or, we should chase down where the call sites are that are doing smal=
-l
-> >>> constant copies with copy_to/from_user() and change them to use
-> >>> get/put_user().
-> >>>
-> >>
-> >> Christopher, when you say you gave it a try, is I my series or only th=
-e
-> >> following ?
-> >>
-> >> #define unsafe_copy_from_user(d, s, l, e) \
-> >> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
-> >>
-> >=20
-> > I only used the above to replace this patch in my series (so none of my
-> > changes implementing raw_copy_from_user_allowed() are included).
->
-> Then I see no reason why the performance would be different, because you
-> only call
-> unsafe_copy_from_user() with non trivial lengthes.
->
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 107bb4319e0e..a685e42d3993 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -772,7 +772,7 @@ config PPC_64K_PAGES
+>  
+>  config PPC_256K_PAGES
+>  	bool "256k page size"
+> -	depends on 44x && !STDBINUTILS
+> +	depends on 44x && !STDBINUTILS && !PPC_47x
 
-Ok I made a mistake - this actually included the other improvements from
-your feedback on this series; specifically moving the unsafe_get_user()
-call to read the msr regs value into the #ifdef. My first pass resulted
-in another __get_user() call which explains some of the perf loss.
+Do we still need this STDBINUTILS thing?
 
-With that mistake fixed, the benchmark performance is still only ~197k
-on hash (consistent). I agree that there are no places where
-unsafe_copy_from_user() is called with trivial lengths so the only
-conclusion I can draw is that the changes in this patch marginally
-speed-up the other __copy_from_user() calls. I started comparing the
-disassembly but nothing immediately obvious stands out to me. In fact, I
-observe the speed-up even if I keep this patch _and_ apply this change:
+It's pretty gross, and I notice we have zero defconfigs which disable
+it, meaning it's only randconfig builds that will ever test 256K pages.
 
-#define unsafe_copy_from_user(d, s, l, e) \
-unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
+Can we just drop it and say if you enable 256K pages you need to know
+what you're doing?
 
-Related to that, I think sigset_t is always 8B on ppc64 so these will
-probably need a wrapper if we pick-up your series to get rid of trivial
-size optimizations:
-
-__copy_from_user(&set, &uc->uc_sigmask, sizeof(set))
-
-I can bring performance up to ~200K on hash again by replacing the two
-__copy_from_user(&set, ...) with direct calls to __get_user_size() (it's
-kind of hacky I think). See the last commit in this tree:
-
-https://git.sr.ht/~cmr/linux/log/unsafe-signal64-v4
-
-All my comments apply to performance on radix as well.
-
-> >=20
-> >>
-> >> Because I see no use of unsafe_copy_from_user() that would explain tha=
-t.
-> >>
-> >> Christophe
-
+cheers
