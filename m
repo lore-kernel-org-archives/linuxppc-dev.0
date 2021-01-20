@@ -2,101 +2,69 @@ Return-Path: <SRS0=bcc2=GX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5563FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 01:19:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87E97C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 01:47:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88BD22222F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 01:19:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88BD22222F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CCC0721D79
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 01:47:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCC0721D79
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DL7333ZZGzDqwC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 12:19:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DL7gB6MCHzDqvH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 12:47:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=N/PkPNl6; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.53; helo=mail-ot1-f53.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com
+ [209.85.210.53])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DL70t4fvFzDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 12:17:17 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10K13YIX069054; Tue, 19 Jan 2021 20:17:15 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=dj7bc47IkKwE8y2iCoozzm11KNTiyzTrnAMfxw+Ud2Q=;
- b=N/PkPNl6LDjaIOLQmiPROxM3jA51KnEuZdFWvBjQY8998fD/YM9FXt3Pu+T3SwcGqB5o
- JrPMlfXkbs3uvRPRz5hiYiYEYF+XbpWLaKf7tkHkrNFHsvohykxVU/YUqiFLWsP1dcK9
- M3XjkPDobq3wcP6B4lhiaVKHONxM/9eSYawrFDZ8liZftgZCW9/HRhwa4RR3eJaEJrS2
- ZKCKj60CMoSJaefcmTI16cf+I14uDYc7NDUPrPCgFnucBV65XeZ3JFxy6iM/ECMJzNmP
- cLYi/OSsbzmC5w26mrjP5dlV4K58qsydviyXdz31u1rsRNFT05ohgGa8DzwSDWLWuNHL rA== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 366a8t0hjk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 19 Jan 2021 20:17:15 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10K1CY4B017204;
- Wed, 20 Jan 2021 01:17:14 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma05wdc.us.ibm.com with ESMTP id 3668nw0mnh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Jan 2021 01:17:14 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10K1HEtC38994272
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Jan 2021 01:17:14 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1516D2805E;
- Wed, 20 Jan 2021 01:17:14 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C71642805A;
- Wed, 20 Jan 2021 01:17:13 +0000 (GMT)
-Received: from localhost (unknown [9.211.72.22])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 20 Jan 2021 01:17:13 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 5/6] powerpc/rtas: rename RTAS_RMOBUF_MAX to
- RTAS_USER_REGION_SIZE
-In-Reply-To: <6905c3d2-e524-b6d8-036f-7812ea3f8b85@ozlabs.ru>
-References: <20210114220004.1138993-1-nathanl@linux.ibm.com>
- <20210114220004.1138993-6-nathanl@linux.ibm.com>
- <d91c5b15-7c3d-a332-45ac-1b865341e962@ozlabs.ru>
- <87a6taxkgf.fsf@linux.ibm.com>
- <6905c3d2-e524-b6d8-036f-7812ea3f8b85@ozlabs.ru>
-Date: Tue, 19 Jan 2021 19:17:13 -0600
-Message-ID: <87y2gowgo6.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DL7cq0Bc9zDqqW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 12:44:58 +1100 (AEDT)
+Received: by mail-ot1-f53.google.com with SMTP id 36so10343368otp.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2021 17:44:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=4zFLIX6YbpN5aLim6yrRCBFClVwkiMJYaqWYmkOOPrQ=;
+ b=iAgPFUwxGoHCALP76RdpHA3sS3EMR44OaLCHYlf39JixMuEdo2dPaf3zzgFZcL/bfz
+ cEFFuIn5zDIlEgqVYwo42QbYeoyA6XXaoxMywupPesSCmB+NWqe0eyb8pkj8e5MM/+JN
+ sTXLNJHNP8jvrhL2F/FT4FSvAfPh2NgqU0aWAYPjxKepMpB9IHMggwwRqcKPonc+bqWi
+ l7kuF61h4Dvvqy9yqE8k5vKqCTa5NyoEeQyyZZbW4pEMHnPs7Tz8jpOV7T4UHMAtk5kh
+ fAC+t92cgIJhnye71sdxNwld7wv1uYoEDbzP42TSU1EyQk7CJRb3KwGNSZH1/td4ZF9r
+ h4Sg==
+X-Gm-Message-State: AOAM530R7nU7jua3OHEtxDTi4+c4wlbO/ViB+TVo3v4dgjemkIX6+J+i
+ eSKDeqtlGFfredOr0dBOJA==
+X-Google-Smtp-Source: ABdhPJzNzLwDdCRWb7mfJZPjC5yXOTPWn6hRch00Trm6xqHb+giSCQZAzkcjk4lDkIWsGAcxhvOK9g==
+X-Received: by 2002:a9d:313:: with SMTP id 19mr5381524otv.147.1611107095736;
+ Tue, 19 Jan 2021 17:44:55 -0800 (PST)
+Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.gmail.com with ESMTPSA id s24sm99037oij.20.2021.01.19.17.44.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 19 Jan 2021 17:44:54 -0800 (PST)
+Received: (nullmailer pid 3016866 invoked by uid 1000);
+ Wed, 20 Jan 2021 01:44:53 -0000
+Date: Tue, 19 Jan 2021 19:44:53 -0600
+From: Rob Herring <robh@kernel.org>
+To: Johan Jonker <jbx6244@gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: powerpc: Add a schema for the 'sleep'
+ property
+Message-ID: <20210120014453.GA3706951@robh.at.kernel.org>
+References: <20201008142420.2083861-1-robh@kernel.org>
+ <752e9355-defb-6d3c-248b-f626247d4cee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-19_15:2021-01-18,
- 2021-01-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- priorityscore=1501 malwarescore=0 suspectscore=0 adultscore=0
- lowpriorityscore=0 mlxlogscore=999 clxscore=1015 spamscore=0
- impostorscore=0 mlxscore=0 phishscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101200000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <752e9355-defb-6d3c-248b-f626247d4cee@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,61 +76,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, brking@linux.ibm.com, ajd@linux.ibm.com,
- aneesh.kumar@linux.ibm.com
+Cc: devicetree@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+ linux-kernel@vger.kernel.org,
+ "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> On 16/01/2021 02:56, Nathan Lynch wrote:
->> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->>> On 15/01/2021 09:00, Nathan Lynch wrote:
->>>> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
->>>> index 332e1000ca0f..1aa7ab1cbc84 100644
->>>> --- a/arch/powerpc/include/asm/rtas.h
->>>> +++ b/arch/powerpc/include/asm/rtas.h
->>>> @@ -19,8 +19,11 @@
->>>>    #define RTAS_UNKNOWN_SERVICE (-1)
->>>>    #define RTAS_INSTANTIATE_MAX (1ULL<<30) /* Don't instantiate rtas at/above this value */
->>>>    
->>>> -/* Buffer size for ppc_rtas system call. */
->>>> -#define RTAS_RMOBUF_MAX (64 * 1024)
->>>> +/* Work areas shared with RTAS must be 4K, naturally aligned. */
->>>
->>> Why exactly 4K and not (for example) PAGE_SIZE?
->> 
->> 4K is a platform requirement and isn't related to Linux's configured
->> page size. See the PAPR specification for RTAS functions such as
->> ibm,configure-connector, ibm,update-nodes, ibm,update-properties.
->
-> Good, since we are documenting things here - add to the comment ("per 
-> PAPR")?
+On Sun, Jan 17, 2021 at 05:10:03PM +0100, Johan Jonker wrote:
+> Hi Rob,
+> 
+> This patch generates notifications in the Rockchip ARM and arm64 tree.
+> Could you limit the scope to PowerPC only.
+> 
+> Kind regards,
+> 
+> Johan Jonker
+> 
+> make ARCH=arm dtbs_check
+> DT_SCHEMA_FILES=Documentation/devicetree/bindings/powerpc/sleep.yaml
+> 
+> make ARCH=arm64 dtbs_check
+> DT_SCHEMA_FILES=Documentation/devicetree/bindings/powerpc/sleep.yaml
+> 
+> Example:
+> 
+> /arch/arm64/boot/dts/rockchip/rk3399pro-rock-pi-n10.dt.yaml: pinctrl:
+> sleep: {'ddrio-pwroff': {'rockchip,pins': [[0, 1, 1, 168]]},
+> 'ap-pwroff': {'rockchip,pins': [[1, 5, 1, 168]]}} is not of type 'array'
+> 	From schema: /Documentation/devicetree/bindings/powerpc/sleep.yaml
 
-But almost every constant in this header relates to a specification or
-requirement in PAPR.
+IMO, the node name should be changed or just removed. The grouping 
+doesn't serve any purpose and changing wouldn't break the ABI.
 
-
->> There are other calls with work area parameters where alignment isn't
->> specified (e.g. ibm,get-system-parameter) but 4KB alignment is a safe
->> choice for those.
->> 
->>>> +#define RTAS_WORK_AREA_SIZE   4096
->>>> +
->>>> +/* Work areas allocated for user space access. */
->>>> +#define RTAS_USER_REGION_SIZE (RTAS_WORK_AREA_SIZE * 16)
->>>
->>> This is still 64K but no clarity why. There is 16 of something, what
->>> is it?
->> 
->> There are 16 4KB work areas in the region. I can name it
->> RTAS_NR_USER_WORK_AREAS or similar.
->
->
-> Why 16? PAPR (then add "per PAPR") or we just like 16 ("should be
-> enough")?
-
-PAPR doesn't know anything about the user region; it's a Linux
-construct. It's been 64KB since pre-git days and I'm not sure what the
-original reason is. At this point, maintaining a kernel-user ABI seems
-like enough justification for the value.
+Rob
