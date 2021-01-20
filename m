@@ -2,61 +2,45 @@ Return-Path: <SRS0=bcc2=GX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE466C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 12:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44304C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 13:32:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18205206FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 12:19:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18205206FA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 4E51A2245C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 13:32:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E51A2245C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DLPhw068hzDqYP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 23:19:28 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLRKX1rmnzDr2g
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 00:32:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DLPZK4qQSzDr3D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2021 23:13:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=RYrGbM9n; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4DLPZ26GRRz9sSs;
- Wed, 20 Jan 2021 23:13:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1611144811;
- bh=ppadVC+DL6S8kUf6MYt+6Kmx9PUix51IZVSbnepnAnc=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=RYrGbM9ngTO+dfsaJhMTrkr+H1le5n+yE8WF11w4k2b2aPiETn8QJSr2WwjBSmwA9
- 7ihvGsX26SsszUYSmrFE+7YpG5gMX75fslCZeib1Oz/gLAn9JHvyuiYk5L4M22LB9H
- Ndif/KYCiPSs3p+KoAaTIX2MyS0D3DwfjmiC+ciWnIFQruTlML1TSAbIaSq6GTbhX/
- 1w8xCrU8KGN1g6xNJ5nY2b+is0B4ITjus7PAd1ttlou7qdGnMKlQYeW4oeqLEeyByv
- g9F2EiMhzHFhpkkbAo1pFwYHGBfvCj5Z1vqz7enzGgV6LmWme3mGBm1bnDyrKnSwIu
- ftFX9rR98sH7g==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 6/6] powerpc/rtas: constrain user region allocation to RMA
-In-Reply-To: <874kjcy73z.fsf@linux.ibm.com>
-References: <20210114220004.1138993-1-nathanl@linux.ibm.com>
- <20210114220004.1138993-7-nathanl@linux.ibm.com>
- <87mtx5qp1g.fsf@mpe.ellerman.id.au> <874kjcy73z.fsf@linux.ibm.com>
-Date: Wed, 20 Jan 2021 23:13:28 +1100
-Message-ID: <87czxzrel3.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLRDv3VtHzDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 00:28:47 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id F3B33AAAE;
+ Wed, 20 Jan 2021 13:28:43 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix build error in paravirt.h
+Date: Wed, 20 Jan 2021 14:28:38 +0100
+Message-Id: <20210120132838.15589-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,44 +52,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, tyreld@linux.ibm.com, brking@linux.ibm.com,
- ajd@linux.ibm.com, aneesh.kumar@linux.ibm.com
+Cc: Juergen Gross <jgross@suse.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Deep Shah <sdeep@vmware.com>,
+ "VMware, Inc." <pv-drivers@vmware.com>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, Paul Mackerras <paulus@samba.org>,
+ Waiman Long <longman@redhat.com>, Michal Suchanek <msuchanek@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nathan Lynch <nathanl@linux.ibm.com> writes:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> Nathan Lynch <nathanl@linux.ibm.com> writes:
->>> Memory locations passed as arguments from the OS to RTAS usually need
->>> to be addressable in 32-bit mode and must reside in the Real Mode
->>> Area. On PAPR guests, the RMA starts at logical address 0 and is the
->>> first logical memory block reported in the LPAR=E2=80=99s device tree.
->>>
->>> On powerpc targets with RTAS, Linux makes available to user space a
->>> region of memory suitable for arguments to be passed to RTAS via
->>> sys_rtas(). This region (rtas_rmo_buf) is allocated via the memblock
->>> API during boot in order to ensure that it satisfies the requirements
->>> described above.
->>>
->>> With radix MMU, the upper limit supplied to the memblock allocation
->>> can exceed the bounds of the first logical memory block, since
->>> ppc64_rma_size is ULONG_MAX and RTAS_INSTANTIATE_MAX is 1GB.
->>
->> Why does the size of the first memory block matter for radix?
->
-> Here is my understanding: in the platform architecture, the size of the
-> first memory block equals the RMA, regardless of the MMU mode. It just
-> so happens that when using radix, Linux can pass ibm,configure-connector
-> a work area address outside of the RMA because the allocation
-> constraints for the work area are computed differently. It would be
-> wrong of the OS to pass RTAS arguments outside of this region with hash
-> MMU as well.
+./arch/powerpc/include/asm/paravirt.h:83:44: error: implicit declaration
+of function 'smp_processor_id'; did you mean 'raw_smp_processor_id'?
 
-If that's the requirement then shouldn't we be adjusting ppc64_rma_size?
-Otherwise aren't other uses of ppc64_rma_size going to run into similar
-problems.
+smp_processor_id is defined in linux/smp.h but it is not included.
 
-Or does the RMA only apply for RTAS calls when using radix?
+The build error happens only when the patch is applied to 5.3 kernel but
+it only works by chance in mainline.
 
-cheers
+Fixes: ca3f969dcb11 ("powerpc/paravirt: Use is_kvm_guest() in vcpu_is_preempted()")
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/include/asm/paravirt.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
+index edc08f04aef7..5d1726bb28e7 100644
+--- a/arch/powerpc/include/asm/paravirt.h
++++ b/arch/powerpc/include/asm/paravirt.h
+@@ -10,6 +10,7 @@
+ #endif
+ 
+ #ifdef CONFIG_PPC_SPLPAR
++#include <linux/smp.h>
+ #include <asm/kvm_guest.h>
+ #include <asm/cputhreads.h>
+ 
+-- 
+2.26.2
+
