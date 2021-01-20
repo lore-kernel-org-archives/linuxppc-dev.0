@@ -7,49 +7,48 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF5EC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 19:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A64D7C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 19:09:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E8E8233EB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 19:07:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E8E8233EB
+	by mail.kernel.org (Postfix) with ESMTPS id EC564233FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 19:09:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC564233FE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DLZlV5bfjzDqdm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 06:07:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLZnv1XSFzDqgS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 06:09:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DLZd54DfdzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 06:01:44 +1100 (AEDT)
-IronPort-SDR: WUcKylos6M1INnj2UJIqsxlgwXzpq88TSwNlhwgINkszjkhmhjiNZctJ5wlmAwF+D88PYVNeIw
- 6DBQxFUrhoSw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9870"; a="158340280"
-X-IronPort-AV: E=Sophos;i="5.79,361,1602572400"; d="scan'208";a="158340280"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jan 2021 11:01:39 -0800
-IronPort-SDR: gDl9ZoQQ1JHTGIjC9Nft2Xtu/wiZvrap0mtm4tW+YzApgkhcTjySXwebiLxTegH8LbNnUoId/Z
- DjjwbSekoqQg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLZd83lVpzDqWv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 06:01:47 +1100 (AEDT)
+IronPort-SDR: NGWbbH34FVLYasFTmMERN7Baal4RrE1u7rMwNdvbKr0NB4qaO6I6Iocv01oT+83mGyfkjenQxW
+ jt1MiXd0S8LA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9870"; a="240702295"
+X-IronPort-AV: E=Sophos;i="5.79,361,1602572400"; d="scan'208";a="240702295"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Jan 2021 11:01:40 -0800
+IronPort-SDR: ryq/QpWWA9+U8UqX0jy8larLunBnyTYB854V5lh7dJAhXHyeN1PFk51uL+JL20bU69OBIOjdNm
+ 4uBbaMXU1RWA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,361,1602572400"; d="scan'208";a="399867335"
+X-IronPort-AV: E=Sophos;i="5.79,361,1602572400"; d="scan'208";a="384974696"
 Received: from lkp-server01.sh.intel.com (HELO 260eafd5ecd0) ([10.239.97.150])
- by fmsmga004.fm.intel.com with ESMTP; 20 Jan 2021 11:01:38 -0800
+ by orsmga008.jf.intel.com with ESMTP; 20 Jan 2021 11:01:38 -0800
 Received: from kbuild by 260eafd5ecd0 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1l2Ija-0005x8-2b; Wed, 20 Jan 2021 19:01:38 +0000
-Date: Thu, 21 Jan 2021 03:01:06 +0800
+ id 1l2IjZ-0005wz-Lx; Wed, 20 Jan 2021 19:01:37 +0000
+Date: Thu, 21 Jan 2021 03:00:59 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- 04483fc005f81d678e4fe63e36eab4fb39c5277b
-Message-ID: <60087df2.lA/Ng5XelATMR9vb%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS 034dfbf2e25530e4ee252464b397f30a5f55fbb7
+Message-ID: <60087deb.1/0l/bm4/I2JJ5V5%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,10 +69,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 04483fc005f81d678e4fe63e36eab4fb39c5277b  powerpc: Always enable queued spinlocks for 64s, disable for others
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 034dfbf2e25530e4ee252464b397f30a5f55fbb7  Automatic merge of 'fixes' into merge (2021-01-20 15:45)
 
-elapsed time: 815m
+elapsed time: 817m
 
 configs tested: 142
 configs skipped: 2
@@ -96,8 +95,6 @@ c6x                        evmc6474_defconfig
 powerpc                      mgcoge_defconfig
 powerpc                 mpc8313_rdb_defconfig
 riscv                            alldefconfig
-xtensa                generic_kc705_defconfig
-arm                            qcom_defconfig
 arm                         cm_x300_defconfig
 powerpc                 xes_mpc85xx_defconfig
 arm                         s3c6400_defconfig
@@ -127,23 +124,27 @@ arm                       omap2plus_defconfig
 powerpc                     pq2fads_defconfig
 powerpc                       eiger_defconfig
 arc                              alldefconfig
-mips                         tb0287_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                       maple_defconfig
-parisc                generic-64bit_defconfig
-arm                            hisi_defconfig
+powerpc                     redwood_defconfig
+arm                         at91_dt_defconfig
+powerpc                     rainier_defconfig
+mips                        bcm63xx_defconfig
+arm                              alldefconfig
 mips                     loongson1b_defconfig
 mips                           jazz_defconfig
 mips                        omega2p_defconfig
 powerpc                 canyonlands_defconfig
-powerpc                      tqm8xx_defconfig
-arm                            lart_defconfig
-mips                     cu1000-neo_defconfig
-arm                       cns3420vb_defconfig
-um                             i386_defconfig
-xtensa                           alldefconfig
-arm                           stm32_defconfig
-sh                           se7780_defconfig
+nds32                            alldefconfig
+xtensa                    xip_kc705_defconfig
+sh                           se7724_defconfig
+arm                          pcm027_defconfig
+sh                   secureedge5410_defconfig
+mips                       lemote2f_defconfig
+riscv                    nommu_k210_defconfig
+parisc                generic-32bit_defconfig
+arm                             ezx_defconfig
+arm                          pxa168_defconfig
+riscv                          rv32_defconfig
+powerpc                 mpc837x_rdb_defconfig
 arm                        spear6xx_defconfig
 openrisc                            defconfig
 powerpc                     skiroot_defconfig
@@ -192,24 +193,22 @@ x86_64               randconfig-a016-20210120
 x86_64               randconfig-a011-20210120
 x86_64               randconfig-a013-20210120
 x86_64               randconfig-a014-20210120
-i386                 randconfig-a011-20210119
-i386                 randconfig-a012-20210119
-i386                 randconfig-a016-20210119
-i386                 randconfig-a015-20210119
-i386                 randconfig-a013-20210119
-i386                 randconfig-a014-20210119
 i386                 randconfig-a013-20210120
 i386                 randconfig-a011-20210120
 i386                 randconfig-a012-20210120
 i386                 randconfig-a014-20210120
 i386                 randconfig-a015-20210120
 i386                 randconfig-a016-20210120
-riscv                    nommu_k210_defconfig
+i386                 randconfig-a011-20210119
+i386                 randconfig-a012-20210119
+i386                 randconfig-a016-20210119
+i386                 randconfig-a015-20210119
+i386                 randconfig-a013-20210119
+i386                 randconfig-a014-20210119
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
-riscv                          rv32_defconfig
 riscv                            allmodconfig
 x86_64                                   rhel
 x86_64                           allyesconfig
