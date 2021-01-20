@@ -1,80 +1,72 @@
-Return-Path: <SRS0=iciS=GY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=bcc2=GX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54989C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 18:48:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A981C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 20:58:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6602C230F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 18:48:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6602C230F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 89ED6233FC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Jan 2021 20:58:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89ED6233FC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=walle.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DMBHK6F3nzDrYb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 05:48:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLdCJ3FQDzDqnl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 07:58:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42b;
- helo=mail-wr1-x42b.google.com; envelope-from=lijunp213@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=NaLSF6mn; dkim-atps=neutral
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com
- [IPv6:2a00:1450:4864:20::42b])
+ smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
+ helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
+ header.s=mail2016061301 header.b=miTTwPJ3; 
+ dkim-atps=neutral
+X-Greylist: delayed 30747 seconds by postgrey-1.36 at bilbo;
+ Thu, 21 Jan 2021 06:25:58 AEDT
+Received: from ssl.serverraum.org (ssl.serverraum.org
+ [IPv6:2a01:4f8:151:8464::1:2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DMBFC2zY6zDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 05:46:39 +1100 (AEDT)
-Received: by mail-wr1-x42b.google.com with SMTP id l12so2778184wry.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 10:46:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=eLTRmgCPr+HYEN4cQ2gWxgBb6XXHtvoKZev3zSDlplo=;
- b=NaLSF6mnOsSALBNUwoEWqpOszUcKRSjhhfwqZ0GLuhUE3tE+owsFUGFQDGiVNk85FB
- cfWX+W2cwseXNzPuKQGS1lyUQ2SNqWjuFQO1G+mV8S0FdyxEpel7XZC7RJ1fwAX4vzO9
- YERQAINr3dSMYhdy7FatFADHHERaJVLMfydBTNp4ozPSKriY6ABhroeFhyoczJ0ke98b
- M0uLbIB8Wr39FDdgqvBixY+JkFYsqzzNxAmIAWs3d8k/6hX7ex+esQCzY6b77uUD75Db
- Koio5k8vQXUnGf8rafgxU3is0H9j5bK3+21cu/gGh7RfAqDk6yHhX40fkSAswC2aYanD
- cVRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=eLTRmgCPr+HYEN4cQ2gWxgBb6XXHtvoKZev3zSDlplo=;
- b=ZxQixvsXQLkZnJPLcMEFfDZj05hrgYo395PT5RfDh8Lson4EL4Cfs6Bz8wwVnoqtKP
- 6rm7aQU5vs6eSxyrX3dBpHmyJkqy8tP51wpj4/OpWxBly2VtzT8ooNDWxQzdmPFDPh0/
- E7Pv8PG/BKj13+G/MNAteK1tGHhPTHrWLN0OC70od4/Dd0QrjJ9zCJJPAJy0d3t/caVh
- 3tZ9lG0TeYqQ5SQmC9xhpuMzzz7V299cdRz7sz7ysl6zIXsfwtj/i3ri3GVNqwG4nBTj
- Hwy3rHXBi2tsvaa5x6IBr78uqb8E2wwODz9wKIwsjQlB9BNkkPJFgmXEgaxWw8p9u2zY
- GFPQ==
-X-Gm-Message-State: AOAM533qLCxBwoGlrF/q41uaqm6/ort2olHufQhii0TXEbw87m6OCRh7
- 38ehK0A3D/HPGWL5LlDhwUwIUlwp5uPHC4ALCzA=
-X-Google-Smtp-Source: ABdhPJxFJI5jBFOrwJgGW7fDzLgZnW9nyzCxEwUsPE+DW1/63MX/JCCf8P+lfc0O2FAiheO9+xeTNBBy8Ziy0Mn0Wy0=
-X-Received: by 2002:a5d:4ecb:: with SMTP id s11mr857330wrv.334.1611254794427; 
- Thu, 21 Jan 2021 10:46:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLb924kqNzDqCY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 06:25:53 +1100 (AEDT)
+Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ssl.serverraum.org (Postfix) with ESMTPSA id 27EE622727;
+ Wed, 20 Jan 2021 20:25:46 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
+ s=mail2016061301; t=1611170746;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=8Ob7KUwKuR0nwFPm6ISDKf74WkwKvOKiqWXqn3cjXq4=;
+ b=miTTwPJ3DtMSDIJ557R+SQ07RWGLYMYbiHcOHy/FBwqEOPhREbpehfwHDCrQ1LUSLmRfIQ
+ Gv/SFl3qrWmnvAEQl1eh+Mtx3U9pOR+3PjPlrugHpuLdvZxxeAhu0ZZNdKS317cRghifnO
+ rcfP8XLVRxq17yPcSoiTiTE4L/tdBpY=
 MIME-Version: 1.0
-References: <20210121062005.53271-1-ljp@linux.ibm.com>
- <c34816a13d857b7f5d1a25991b58ec63@imap.linux.ibm.com>
-In-Reply-To: <c34816a13d857b7f5d1a25991b58ec63@imap.linux.ibm.com>
-From: Lijun Pan <lijunp213@gmail.com>
-Date: Thu, 21 Jan 2021 12:46:23 -0600
-Message-ID: <CAOhMmr6LdZQpE7Ah1XVn0ApOO8Ch1XfAuoo1tPNgT0rG0zrc=A@mail.gmail.com>
-Subject: Re: [PATCH net] ibmvnic: device remove has higher precedence over
- reset
-To: Dany Madden <drt@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Wed, 20 Jan 2021 20:25:45 +0100
+From: Michael Walle <michael@walle.cc>
+To: undisclosed-recipients:;
+Subject: Re: [PATCH] PCI: dwc: layerscape: convert to builtin_platform_driver()
+In-Reply-To: <CAGETcx86HMo=gaDdXFyJ4QQ-pGXWzw2G0J=SjC-eq4K7B1zQHg@mail.gmail.com>
+References: <20210120105246.23218-1-michael@walle.cc>
+ <CAL_JsqLSJCLtgPyAdKSqsy=JoHSLYef_0s-stTbiJ+VCq2qaSA@mail.gmail.com>
+ <CAGETcx86HMo=gaDdXFyJ4QQ-pGXWzw2G0J=SjC-eq4K7B1zQHg@mail.gmail.com>
+User-Agent: Roundcube Webmail/1.4.10
+Message-ID: <66e4bf55b2809893ad9c87458c170f99@walle.cc>
+X-Sender: michael@walle.cc
+X-Mailman-Approved-At: Thu, 21 Jan 2021 07:49:58 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,86 +78,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gregkh@linuxfoundation.org, julietk@linux.vnet.ibm.com,
- netdev@vger.kernel.org,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Jakub Kicinski <kuba@kernel.org>, Lijun Pan <ljp@linux.ibm.com>,
- kernel@pengutronix.de, paulus@samba.org, sukadev@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 21, 2021 at 12:42 PM Dany Madden <drt@linux.ibm.com> wrote:
->
-> On 2021-01-20 22:20, Lijun Pan wrote:
-> > Returning -EBUSY in ibmvnic_remove() does not actually hold the
-> > removal procedure since driver core doesn't care for the return
-> > value (see __device_release_driver() in drivers/base/dd.c
-> > calling dev->bus->remove()) though vio_bus_remove
-> > (in arch/powerpc/platforms/pseries/vio.c) records the
-> > return value and passes it on. [1]
-> >
-> > During the device removal precedure, we should not schedule
-> > any new reset (ibmvnic_reset check for REMOVING and exit),
-> > and should rely on the flush_work and flush_delayed_work
-> > to complete the pending resets, specifically we need to
-> > let __ibmvnic_reset() keep running while in REMOVING state since
-> > flush_work and flush_delayed_work shall call __ibmvnic_reset finally.
-> > So we skip the checking for REMOVING in __ibmvnic_reset.
-> >
-> > [1]
-> > https://lore.kernel.org/linuxppc-dev/20210117101242.dpwayq6wdgfdzirl@pe=
-ngutronix.de/T/#m48f5befd96bc9842ece2a3ad14f4c27747206a53
-> > Reported-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> > Fixes: 7d7195a026ba ("ibmvnic: Do not process device remove during
-> > device reset")
-> > Signed-off-by: Lijun Pan <ljp@linux.ibm.com>
-> > ---
-> > v1 versus RFC:
-> >   1/ articulate why remove the REMOVING checking in __ibmvnic_reset
-> >   and why keep the current checking for REMOVING in ibmvnic_reset.
-> >   2/ The locking issue mentioned by Uwe are being addressed separately
-> >      by       https://lists.openwall.net/netdev/2021/01/08/89
-> >   3/ This patch does not have merge conflict with 2/
-> >
-> >  drivers/net/ethernet/ibm/ibmvnic.c | 8 +-------
-> >  1 file changed, 1 insertion(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
-> > b/drivers/net/ethernet/ibm/ibmvnic.c
-> > index aed985e08e8a..11f28fd03057 100644
-> > --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> > +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> > @@ -2235,8 +2235,7 @@ static void __ibmvnic_reset(struct work_struct
-> > *work)
-> >       while (rwi) {
-> >               spin_lock_irqsave(&adapter->state_lock, flags);
-> >
-> > -             if (adapter->state =3D=3D VNIC_REMOVING ||
-> > -                 adapter->state =3D=3D VNIC_REMOVED) {
-> > +             if (adapter->state =3D=3D VNIC_REMOVED) {
->
-> If we do get here, we would crash because ibmvnic_remove() happened. It
-> frees the adapter struct already.
+Am 2021-01-20 20:02, schrieb Saravana Kannan:
+> On Wed, Jan 20, 2021 at 6:24 AM Rob Herring <robh@kernel.org> wrote:
+>> 
+>> On Wed, Jan 20, 2021 at 4:53 AM Michael Walle <michael@walle.cc> 
+>> wrote:
+>> >
+>> > fw_devlink will defer the probe until all suppliers are ready. We can't
+>> > use builtin_platform_driver_probe() because it doesn't retry after probe
+>> > deferral. Convert it to builtin_platform_driver().
+>> 
+>> If builtin_platform_driver_probe() doesn't work with fw_devlink, then
+>> shouldn't it be fixed or removed?
+> 
+> I was actually thinking about this too. The problem with fixing
+> builtin_platform_driver_probe() to behave like
+> builtin_platform_driver() is that these probe functions could be
+> marked with __init. But there are also only 20 instances of
+> builtin_platform_driver_probe() in the kernel:
+> $ git grep ^builtin_platform_driver_probe | wc -l
+> 20
+> 
+> So it might be easier to just fix them to not use
+> builtin_platform_driver_probe().
+> 
+> Michael,
+> 
+> Any chance you'd be willing to help me by converting all these to
+> builtin_platform_driver() and delete builtin_platform_driver_probe()?
 
-Not exactly. viodev is gone; netdev is done; ibmvnic_adapter is still there=
-.
+If it just moving the probe function to the _driver struct and
+remove the __init annotations. I could look into that.
 
-Lijun
->
-> >                       spin_unlock_irqrestore(&adapter->state_lock, flag=
-s);
-> >                       kfree(rwi);
-> >                       rc =3D EBUSY;
-> > @@ -5372,11 +5371,6 @@ static int ibmvnic_remove(struct vio_dev *dev)
-> >       unsigned long flags;
-> >
-> >       spin_lock_irqsave(&adapter->state_lock, flags);
-> > -     if (test_bit(0, &adapter->resetting)) {
-> > -             spin_unlock_irqrestore(&adapter->state_lock, flags);
-> > -             return -EBUSY;
-> > -     }
-> > -
-> >       adapter->state =3D VNIC_REMOVING;
-> >       spin_unlock_irqrestore(&adapter->state_lock, flags);
+-michael
