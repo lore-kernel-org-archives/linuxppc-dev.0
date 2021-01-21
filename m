@@ -2,56 +2,59 @@ Return-Path: <SRS0=iciS=GY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69E08C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:31:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DAB1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:34:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D088D22A83
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:31:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D088D22A83
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 85FDA2054F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:34:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85FDA2054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DM8Zs2scLzDrT3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 04:31:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DM8X53mc9zDrBB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 04:29:23 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B74E611B3;
- Thu, 21 Jan 2021 09:29:20 -0800 (PST)
-Received: from [10.57.39.58] (unknown [10.57.39.58])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 13E233F66E;
- Thu, 21 Jan 2021 09:29:14 -0800 (PST)
-Subject: Re: [RFC PATCH v3 5/6] dt-bindings: of: Add restricted DMA pool
-To: Rob Herring <robh@kernel.org>
-References: <20210106034124.30560-1-tientzu@chromium.org>
- <20210106034124.30560-6-tientzu@chromium.org>
- <20210120165348.GA220770@robh.at.kernel.org>
- <313f8052-a591-75de-c4c2-ee9ea8f02e7f@arm.com>
- <CAL_JsqKjTqcCbCLksRbCh7=f-A3Y09A3jNqtUApaA+p=RKd_Eg@mail.gmail.com>
- <c0d631de-8840-4f6e-aebf-41bb8449f78c@arm.com>
- <CAL_JsqLv-FaiY_k+wS=iXG5AtccsXSBtvTfEGHvsN-VNqXdwpA@mail.gmail.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <1a570c5c-e0da-7d86-4384-4a4c50193c94@arm.com>
-Date: Thu, 21 Jan 2021 17:29:13 +0000
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DM8dd27flzDrSJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 04:34:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.a=rsa-sha256 header.s=default header.b=eAsCtlFB; 
+ dkim-atps=neutral
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DM8Xz2cPvzDqRm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 04:30:10 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
+ [73.42.176.67])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 0502320B6C40;
+ Thu, 21 Jan 2021 09:30:09 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 0502320B6C40
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1611250209;
+ bh=n1S4TbdTz/yn+EbNkKnNYjNg0Ij/jNTpwezyFWx+1Wk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=eAsCtlFB0Ga2tjsVs2efUQkBP05ADsVa3PFbpGHO6NxCZ9d+aeud6uOEVSBOeM0yy
+ wlgMATBedMKfgED6W2A9Hn2fuFadHgOjsAdLQqdOQsLGx7l4nAUhK7+tSUsXFhyfUV
+ Lqd/AjcKAYmtv/LX0PWPrEw3WUq+ulrfRj7UrN8w=
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+To: zohar@linux.ibm.com, bauerman@linux.ibm.com, dmitry.kasatkin@gmail.com,
+ ebiederm@xmission.com, gregkh@linuxfoundation.org, sashal@kernel.org,
+ tyhicks@linux.microsoft.com
+Subject: [PATCH 2/2] ima: Free IMA measurement buffer after kexec syscall
+Date: Thu, 21 Jan 2021 09:30:03 -0800
+Message-Id: <20210121173003.18324-2-nramas@linux.microsoft.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210121173003.18324-1-nramas@linux.microsoft.com>
+References: <20210121173003.18324-1-nramas@linux.microsoft.com>
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqLv-FaiY_k+wS=iXG5AtccsXSBtvTfEGHvsN-VNqXdwpA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,148 +66,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Grant Likely <grant.likely@arm.com>,
- Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Saravana Kannan <saravanak@google.com>,
- Heinrich Schuchardt <xypron.glpk@gmx.de>, Joerg Roedel <joro@8bytes.org>,
- "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
- Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>,
- xen-devel@lists.xenproject.org, Thierry Reding <treding@nvidia.com>,
- devicetree@vger.kernel.org, Will Deacon <will@kernel.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Nicolas Boichat <drinkcat@chromium.org>, Claire Chang <tientzu@chromium.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Juergen Gross <jgross@suse.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Tomasz Figa <tfiga@chromium.org>,
- Linux IOMMU <iommu@lists.linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-01-21 15:48, Rob Herring wrote:
-> On Wed, Jan 20, 2021 at 7:10 PM Robin Murphy <robin.murphy@arm.com>
-> wrote:
->> 
->> On 2021-01-20 21:31, Rob Herring wrote:
->>> On Wed, Jan 20, 2021 at 11:30 AM Robin Murphy
->>> <robin.murphy@arm.com> wrote:
->>>> 
->>>> On 2021-01-20 16:53, Rob Herring wrote:
->>>>> On Wed, Jan 06, 2021 at 11:41:23AM +0800, Claire Chang
->>>>> wrote:
->>>>>> Introduce the new compatible string, restricted-dma-pool,
->>>>>> for restricted DMA. One can specify the address and length
->>>>>> of the restricted DMA memory region by restricted-dma-pool
->>>>>> in the device tree.
->>>>> 
->>>>> If this goes into DT, I think we should be able to use
->>>>> dma-ranges for this purpose instead. Normally, 'dma-ranges'
->>>>> is for physical bus restrictions, but there's no reason it
->>>>> can't be used for policy or to express restrictions the
->>>>> firmware has enabled.
->>>> 
->>>> There would still need to be some way to tell SWIOTLB to pick
->>>> up the corresponding chunk of memory and to prevent the kernel
->>>> from using it for anything else, though.
->>> 
->>> Don't we already have that problem if dma-ranges had a very
->>> small range? We just get lucky because the restriction is
->>> generally much more RAM than needed.
->> 
->> Not really - if a device has a naturally tiny addressing capability
->> that doesn't even cover ZONE_DMA32 where the regular SWIOTLB buffer
->> will be allocated then it's unlikely to work well, but that's just
->> crap system design. Yes, memory pressure in ZONE_DMA{32} is
->> particularly problematic for such limited devices, but it's
->> irrelevant to the issue at hand here.
-> 
-> Yesterday's crap system design is today's security feature. Couldn't 
-> this feature make crap system design work better?
+IMA allocates kernel virtual memory to carry forward the measurement
+list, from the current kernel to the next kernel on kexec system call,
+in ima_add_kexec_buffer() function.  This buffer is not freed before
+completing the kexec system call resulting in memory leak.
 
-Indeed! Say you bring out your shiny new "Strawberry Flan 4" machine
-with all the latest connectivity, but tragically its PCIe can only
-address 25% of the RAM. So you decide to support deploying it in two
-configurations: one where it runs normally for best performance, and
-another "secure" one where it dedicates that quarter of RAM as a 
-restricted DMA pool for any PCIe devices - that way, even if that hotel 
-projector you plug in turns out to be a rogue Thunderbolt endpoint, it 
-can never snarf your private keys off your eMMC out of the page cache.
+Add ima_buffer field in "struct kimage" to store the virtual address
+of the buffer allocated for the IMA measurement list.
+Free the memory allocated for the IMA measurement list in
+kimage_file_post_load_cleanup() function.
 
-(Yes, is is the thinnest of strawmen, but it sets the scene for the 
-point you raised...)
+Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Tyler Hicks <tyhicks@linux.microsoft.com>
+Fixes: 7b8589cc29e7 ("ima: on soft reboot, save the measurement list")
+---
+ include/linux/kexec.h              | 5 +++++
+ kernel/kexec_file.c                | 5 +++++
+ security/integrity/ima/ima_kexec.c | 2 ++
+ 3 files changed, 12 insertions(+)
 
-...which is that in both cases the dma-ranges will still be identical. 
-So how is the kernel going to know whether to steal that whole area from 
-memblock before anything else can allocate from it, or not?
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 9e93bef52968..5f61389f5f36 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -300,6 +300,11 @@ struct kimage {
+ 	/* Information for loading purgatory */
+ 	struct purgatory_info purgatory_info;
+ #endif
++
++#ifdef CONFIG_IMA_KEXEC
++	/* Virtual address of IMA measurement buffer for kexec syscall */
++	void *ima_buffer;
++#endif
+ };
+ 
+ /* kexec interface functions */
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index b02086d70492..5c3447cf7ad5 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -166,6 +166,11 @@ void kimage_file_post_load_cleanup(struct kimage *image)
+ 	vfree(pi->sechdrs);
+ 	pi->sechdrs = NULL;
+ 
++#ifdef CONFIG_IMA_KEXEC
++	vfree(image->ima_buffer);
++	image->ima_buffer = NULL;
++#endif /* CONFIG_IMA_KEXEC */
++
+ 	/* See if architecture has anything to cleanup post load */
+ 	arch_kimage_file_post_load_cleanup(image);
+ 
+diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
+index 212145008a01..8eadd0674629 100644
+--- a/security/integrity/ima/ima_kexec.c
++++ b/security/integrity/ima/ima_kexec.c
+@@ -130,6 +130,8 @@ void ima_add_kexec_buffer(struct kimage *image)
+ 		return;
+ 	}
+ 
++	image->ima_buffer = kexec_buffer;
++
+ 	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
+ 		 kbuf.mem);
+ }
+-- 
+2.30.0
 
-I don't disagree that even in Claire's original intended case it would 
-be semantically correct to describe the hardware-firewalled region with 
-dma-ranges. It just turns out not to be necessary, and you're already 
-arguing for not adding anything in DT that doesn't need to be.
-
->> What we have here is a device that's not allowed to see *kernel*
->> memory at all. It's been artificially constrained to a particular
->> region by a TZASC or similar, and the only data which should ever
->> be placed in that
-> 
-> May have been constrained, but that's entirely optional.
-> 
-> In the optional case where the setup is entirely up to the OS, I
-> don't think this belongs in the DT at all. Perhaps that should be
-> solved first.
-
-Yes! Let's definitely consider that case! Say you don't have any 
-security or physical limitations but want to use a bounce pool for some 
-device anyway because reasons (perhaps copying streaming DMA data to a 
-better guaranteed alignment gives an overall performance win). Now the 
-*only* relevant thing to communicate to the kernel is to, ahem, reserve 
-a large chunk of memory, and use it for this special purpose. Isn't that 
-literally what reserved-memory bindings are for?
-
->> region is data intended for that device to see. That way if it
->> tries to go rogue it physically can't start slurping data intended
->> for other devices or not mapped for DMA at all. The bouncing is an
->> important part of this - I forget the title off-hand but there was
->> an interesting paper a few years ago which demonstrated that even
->> with an IOMMU, streaming DMA of in-place buffers could reveal
->> enough adjacent data from the same page to mount an attack on the
->> system. Memory pressure should be immaterial since the size of each
->> bounce pool carveout will presumably be tuned for the needs of the
->> given device.
->> 
->>> In any case, wouldn't finding all the dma-ranges do this? We're 
->>> already walking the tree to find the max DMA address now.
->> 
->> If all you can see are two "dma-ranges" properties, how do you
->> propose to tell that one means "this is the extent of what I can
->> address, please set my masks and dma-range-map accordingly and try
->> to allocate things where I can reach them" while the other means
->> "take this output range away from the page allocator and hook it up
->> as my dedicated bounce pool, because it is Serious Security Time"?
->> Especially since getting that choice wrong either way would be a
->> Bad Thing.
-> 
-> Either we have some heuristic based on the size or we add some hint. 
-> The point is let's build on what we already have for defining DMA 
-> accessible memory in DT rather than some parallel mechanism.
-
-The point I'm trying to bang home is that it's really not about the DMA 
-accessibility, it's about the purpose of the memory itself. Even when 
-DMA accessibility *is* relevant it's already implied by that purpose, 
-from the point of view of the implementation. The only difference it 
-might make is to the end user if they want to ascertain whether the 
-presence of such a pool represents protection against an untrusted 
-device or just some DMA optimisation tweak.
-
-Robin.
