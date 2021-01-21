@@ -2,24 +2,24 @@ Return-Path: <SRS0=iciS=GY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06BE4C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 07:55:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2200C4332E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 07:57:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 297832343E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 07:55:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 297832343E
+	by mail.kernel.org (Postfix) with ESMTPS id 2DFD8238E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 07:57:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DFD8238E2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DLvp75t6szDr4m
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 18:55:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLvrY01twzDr6L
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 18:57:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,29 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=lEUjKYCe; 
+ header.s=casper.20170209 header.b=T6cm3ehW; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DLvm156NczDqvV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLvlz5hB7zDqvR
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 18:53:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
- Content-Description:In-Reply-To:References;
- bh=UGANRP/KM5q83XfobVV7DWx5ZvtoCTKMobbFGMONdGw=; b=lEUjKYCeFs939aYUT/oDk6x8Y8
- cQ3mrs840LqXWpjhVo/H1r9njWTQ2UPMp9vFEXNfezGdicLLr/cpJYuAIPKokMcQdsrz5ps+wCZNK
- nZ2RUpOEkYuO5olwBDJmnGrb7/ILlsTg617y335c8QBpy3BbsWSMBVQgNHVcD3kQsM+HbV3hK4fA9
- oqMsrTu5NsH9B5ZNHX/iQUwurf1JG18BrQ4usaMdfm8xeUK3jmKB47YIhmvEp4W3VqZRJ+yOtCKrq
- 95e+rD3HXbyxkwd44BUDiR7XtNG/my8cZkRGEyei9qwBKaHcXWITUTwK8+IKHsYEr6qESVUJyPNHu
- 1BsbRzLQ==;
-Received: from 089144206130.atnat0015.highway.bob.at ([89.144.206.130]
- helo=localhost)
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=ONID8gyRp4D9LboqpnEB5JYovGYChIbNg2MDOx4Yqrs=; b=T6cm3ehW9rEwrCZeH7coydp9rd
+ OywS7RMVA+H/yjIPo3Pbc5aU94bgMFH/85dZrDUn2R91HDRElis1VQSFCF4A94flMwa7f4J2Kacop
+ lZsl7aKgDr+nhZHQytsIu2GpzY6eXIZkNnQaakRBRpoQUTkmhWhrNullFS7owS//1+1xpAI2m3jWK
+ ANEjDej31QQM3eUYwZOCpVNHDEzDkykwcjyHVQ+K6eS/l0yQ72S9CIZg65akaCu74Tgpx88mq26ln
+ Ly3kQ48c2/5Lgk70JRsBHASD17utaXqjVbEuV3IlxoEzh70Q055ozUNYF/o/xMbgmTTILtRCwERHo
+ ouNoDBPA==;
+Received: from [2001:4bb8:188:1954:d5b3:2657:287:e45f] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l2UlI-00Gm22-Ef; Thu, 21 Jan 2021 07:52:17 +0000
+ id 1l2Uld-00Gm2M-4T; Thu, 21 Jan 2021 07:52:37 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -60,10 +59,12 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: module loader dead code removal and cleanusp
-Date: Thu, 21 Jan 2021 08:49:46 +0100
-Message-Id: <20210121074959.313333-1-hch@lst.de>
+Subject: [PATCH 01/13] powerpc/powernv: remove get_cxl_module
+Date: Thu, 21 Jan 2021 08:49:47 +0100
+Message-Id: <20210121074959.313333-2-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210121074959.313333-1-hch@lst.de>
+References: <20210121074959.313333-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -87,43 +88,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+The static inline get_cxl_module function is entirely unused,
+remove it.
 
-this series removes support for long term unused export types and
-cleans up various loose ends in the module loader.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/powerpc/platforms/powernv/pci-cxl.c | 22 ----------------------
+ 1 file changed, 22 deletions(-)
 
-Diffstat:
- arch/arm/configs/bcm2835_defconfig          |    1 
- arch/arm/configs/mxs_defconfig              |    1 
- arch/mips/configs/nlm_xlp_defconfig         |    1 
- arch/mips/configs/nlm_xlr_defconfig         |    1 
- arch/parisc/configs/generic-32bit_defconfig |    1 
- arch/parisc/configs/generic-64bit_defconfig |    1 
- arch/powerpc/configs/ppc6xx_defconfig       |    1 
- arch/powerpc/platforms/powernv/pci-cxl.c    |   22 -
- arch/s390/configs/debug_defconfig           |    1 
- arch/s390/configs/defconfig                 |    1 
- arch/sh/configs/edosk7760_defconfig         |    1 
- arch/sh/configs/sdk7780_defconfig           |    1 
- arch/x86/configs/i386_defconfig             |    1 
- arch/x86/configs/x86_64_defconfig           |    1 
- arch/x86/tools/relocs.c                     |    4 
- drivers/gpu/drm/drm_crtc_helper_internal.h  |   10 
- drivers/gpu/drm/drm_fb_helper.c             |   21 -
- drivers/gpu/drm/drm_kms_helper_common.c     |   26 +-
- include/asm-generic/vmlinux.lds.h           |   42 ---
- include/linux/export.h                      |    9 
- include/linux/kallsyms.h                    |   17 -
- include/linux/module.h                      |   42 ---
- init/Kconfig                                |   17 -
- kernel/kallsyms.c                           |    8 
- kernel/livepatch/core.c                     |   61 +----
- kernel/module.c                             |  319 ++++++++++------------------
- kernel/trace/trace_kprobe.c                 |    4 
- lib/bug.c                                   |    3 
- scripts/checkpatch.pl                       |    6 
- scripts/mod/modpost.c                       |   50 ----
- scripts/mod/modpost.h                       |    3 
- scripts/module.lds.S                        |    6 
- tools/include/linux/export.h                |    3 
- 33 files changed, 181 insertions(+), 505 deletions(-)
+diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
+index 8c739c94ed28d6..53172862d23bd3 100644
+--- a/arch/powerpc/platforms/powernv/pci-cxl.c
++++ b/arch/powerpc/platforms/powernv/pci-cxl.c
+@@ -150,25 +150,3 @@ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 	return 0;
+ }
+ EXPORT_SYMBOL(pnv_cxl_ioda_msi_setup);
+-
+-#if IS_MODULE(CONFIG_CXL)
+-static inline int get_cxl_module(void)
+-{
+-	struct module *cxl_module;
+-
+-	mutex_lock(&module_mutex);
+-
+-	cxl_module = find_module("cxl");
+-	if (cxl_module)
+-		__module_get(cxl_module);
+-
+-	mutex_unlock(&module_mutex);
+-
+-	if (!cxl_module)
+-		return -ENODEV;
+-
+-	return 0;
+-}
+-#else
+-static inline int get_cxl_module(void) { return 0; }
+-#endif
+-- 
+2.29.2
+
