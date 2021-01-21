@@ -2,57 +2,69 @@ Return-Path: <SRS0=iciS=GY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67DD8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:36:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3F6BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:47:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C02BB22A85
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:36:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C02BB22A85
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id F1DB122B2B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 17:47:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1DB122B2B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DM8hL5LFkzDrSK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 04:36:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DM8wt60sjzDrV2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 04:47:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=ei/uUMtO; 
- dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DM8Xz3Sh7zDr55
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 04:30:10 +1100 (AEDT)
-Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
- [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id AB70B20B7192;
- Thu, 21 Jan 2021 09:30:08 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com AB70B20B7192
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1611250208;
- bh=YiTmzmg5J73novUtm6vEd4VPk53XO64N4ccc6961PuA=;
- h=From:To:Cc:Subject:Date:From;
- b=ei/uUMtO1yzKPHNhK4bGp7mmR5GayhbwKrS3EaQbHeXn60i6nEtntPd7qCfgf2cdf
- pgwGNK3FoG1agO97qcOj4fU3AF9pbBG0E5h2BxOmGKSa9UVTaO22SVQv8T4uCfmWo5
- rR2i6wJylWw54R2/jOZYCiHov1HvoIsBhM8ymxEU=
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-To: zohar@linux.ibm.com, bauerman@linux.ibm.com, dmitry.kasatkin@gmail.com,
- ebiederm@xmission.com, gregkh@linuxfoundation.org, sashal@kernel.org,
- tyhicks@linux.microsoft.com
-Subject: [PATCH 1/2] ima: Free IMA measurement buffer on error
-Date: Thu, 21 Jan 2021 09:30:02 -0800
-Message-Id: <20210121173003.18324-1-nramas@linux.microsoft.com>
-X-Mailer: git-send-email 2.30.0
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DM8tD3rbmzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 04:45:06 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id uk-mta-7-70jJZbebO02FvmwaO8iuwQ-1;
+ Thu, 21 Jan 2021 17:44:57 +0000
+X-MC-Unique: 70jJZbebO02FvmwaO8iuwQ-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Thu, 21 Jan 2021 17:44:55 +0000
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Thu, 21 Jan 2021 17:44:55 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christoph Hellwig' <hch@lst.de>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>
+Subject: RE: [PATCH 02/13] module: add a module_loaded helper
+Thread-Topic: [PATCH 02/13] module: add a module_loaded helper
+Thread-Index: AQHW8BhvE0+Qt/OaHkK/jwqI2nu4BKoyViXg
+Date: Thu, 21 Jan 2021 17:44:55 +0000
+Message-ID: <8d59f11971764db2a104c87937e1d3ab@AcuMS.aculab.com>
+References: <20210121074959.313333-1-hch@lst.de>
+ <20210121074959.313333-3-hch@lst.de>
+ <844a7fc3-2cba-46d2-fd4e-e5fe16b08573@csgroup.eu>
+ <20210121171119.GA29916@lst.de>
+In-Reply-To: <20210121171119.GA29916@lst.de>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,46 +76,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Petr Mladek <pmladek@suse.com>, Michal Marek <michal.lkml@markovi.net>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Jessica Yu <jeyu@kernel.org>,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Masahiro
+ Yamada <masahiroy@kernel.org>, Jiri Kosina <jikos@kernel.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Maxime Ripard <mripard@kernel.org>, Joe Lawrence <joe.lawrence@redhat.com>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>,
+ "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
+ Daniel Vetter <daniel@ffwll.ch>, Miroslav Benes <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-IMA allocates kernel virtual memory to carry forward the measurement
-list, from the current kernel to the next kernel on kexec system call,
-in ima_add_kexec_buffer() function.  In error code paths this memory
-is not freed resulting in memory leak.
+>=20
+> On Thu, Jan 21, 2021 at 11:00:20AM +0100, Christophe Leroy wrote:
+> > > +bool module_loaded(const char *name);
+> >
+> > Maybe module_is_loaded() would be a better name.
+>=20
+> Fine with me.
 
-Free the memory allocated for the IMA measurement list in
-the error code paths in ima_add_kexec_buffer() function.
+It does look like both callers aren't 'unsafe'.
+But it is a bit strange returning a stale value.
 
-Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Suggested-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-Fixes: 7b8589cc29e7 ("ima: on soft reboot, save the measurement list")
----
- security/integrity/ima/ima_kexec.c | 2 ++
- 1 file changed, 2 insertions(+)
+It did make be look a bit more deeply at try_module_get().
+For THIS_MODULE (eg to get an extra reference for a kthread)
+I doubt it can ever fail.
 
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-index 121de3e04af2..212145008a01 100644
---- a/security/integrity/ima/ima_kexec.c
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -119,12 +119,14 @@ void ima_add_kexec_buffer(struct kimage *image)
- 	ret = kexec_add_buffer(&kbuf);
- 	if (ret) {
- 		pr_err("Error passing over kexec measurement buffer.\n");
-+		vfree(kexec_buffer);
- 		return;
- 	}
- 
- 	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
- 	if (ret) {
- 		pr_err("Error passing over kexec measurement buffer.\n");
-+		vfree(kexec_buffer);
- 		return;
- 	}
- 
--- 
-2.30.0
+But the other cases require a 'module' structure be passed in.
+ISTM that unloading the module could invalidate the pointer
+that has just been read from some other structure.
+
+I'm guessing that some other lock must always be held.
+
+=09David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
