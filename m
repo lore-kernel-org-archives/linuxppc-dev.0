@@ -2,69 +2,70 @@ Return-Path: <SRS0=iciS=GY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3032EC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 10:16:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1CCFC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 10:19:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8FF21239E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 10:16:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FF21239E4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id E43D9221F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 10:19:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E43D9221F8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DLywc2g36zDqcJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 21:16:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DLz0S0Gd1zDr5n
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jan 2021 21:19:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=207.82.80.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DLysR1BpBzDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 21:13:45 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-266-osQAcjJMPe6N46_Gst67UA-1; Thu, 21 Jan 2021 10:13:37 +0000
-X-MC-Unique: osQAcjJMPe6N46_Gst67UA-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Thu, 21 Jan 2021 10:13:35 +0000
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Thu, 21 Jan 2021 10:13:35 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christophe Leroy' <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 02/13] module: add a module_loaded helper
-Thread-Topic: [PATCH 02/13] module: add a module_loaded helper
-Thread-Index: AQHW79xgE0+Qt/OaHkK/jwqI2nu4BKox2+LA
-Date: Thu, 21 Jan 2021 10:13:35 +0000
-Message-ID: <39a4c883684c418ba324c3db702802b6@AcuMS.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DLyy43x36zDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2021 21:17:41 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DLyxs3nT1z9v6LZ;
+ Thu, 21 Jan 2021 11:17:37 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id IuF8rVa5Or7Y; Thu, 21 Jan 2021 11:17:37 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DLyxs2wgwz9v6LV;
+ Thu, 21 Jan 2021 11:17:37 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 94E288B7F9;
+ Thu, 21 Jan 2021 11:17:38 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id oAVzoo93QngR; Thu, 21 Jan 2021 11:17:38 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 55CB18B771;
+ Thu, 21 Jan 2021 11:17:38 +0100 (CET)
+Subject: Re: [PATCH 02/13] module: add a module_loaded helper
+To: David Laight <David.Laight@ACULAB.COM>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Christoph Hellwig <hch@lst.de>
 References: <20210121074959.313333-1-hch@lst.de>
  <20210121074959.313333-3-hch@lst.de>
  <9052b54a-e05a-1534-9e0f-c73c8b3509bd@csgroup.eu>
-In-Reply-To: <9052b54a-e05a-1534-9e0f-c73c8b3509bd@csgroup.eu>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ <39a4c883684c418ba324c3db702802b6@AcuMS.aculab.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <474764c3-7aff-1119-95bb-2180b6a12c78@csgroup.eu>
+Date: Thu, 21 Jan 2021 11:17:39 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.1
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+In-Reply-To: <39a4c883684c418ba324c3db702802b6@AcuMS.aculab.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,32 +81,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-RnJvbTogQ2hyaXN0b3BoZSBMZXJveQ0KPiBTZW50OiAyMSBKYW51YXJ5IDIwMjEgMTA6MDANCj4g
-DQo+IExlIDIxLzAxLzIwMjEgw6AgMDg6NDksIENocmlzdG9waCBIZWxsd2lnIGEgw6ljcml0wqA6
-DQo+ID4gQWRkIGEgaGVscGVyIHRoYXQgdGFrZXMgbW9kdWxlc19tdXRleCBhbmQgdXNlcyBmaW5k
-X21vZHVsZSB0byBjaGVjayBpZiBhDQo+ID4gZ2l2ZW4gbW9kdWxlIGlzIGxvYWRlZC4gIFRoaXMg
-cHJvdmlkZXMgYSBiZXR0ZXIgYWJzdHJhY3Rpb24gZm9yIHRoZSB0d28NCj4gPiBjYWxsZXJzLCBh
-bmQgYWxsb3dzIHRvIHVuZXhwb3J0IG1vZHVsZXNfbXV0ZXggYW5kIGZpbmRfbW9kdWxlLg0KPiA+
-DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBsc3QuZGU+DQo+ID4g
-LS0tDQo+ID4gICBkcml2ZXJzL2dwdS9kcm0vZHJtX2ZiX2hlbHBlci5jIHwgIDcgKy0tLS0tLQ0K
-PiA+ICAgaW5jbHVkZS9saW51eC9tb2R1bGUuaCAgICAgICAgICB8ICAzICsrKw0KPiA+ICAga2Vy
-bmVsL21vZHVsZS5jICAgICAgICAgICAgICAgICB8IDE0ICsrKysrKysrKysrKy0tDQo+ID4gICBr
-ZXJuZWwvdHJhY2UvdHJhY2Vfa3Byb2JlLmMgICAgIHwgIDQgKy0tLQ0KPiA+ICAgNCBmaWxlcyBj
-aGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCAxMSBkZWxldGlvbnMoLSkNCj4gPg0KPiANCj4gPiBk
-aWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9tb2R1bGUuaCBiL2luY2x1ZGUvbGludXgvbW9kdWxl
-LmgNCj4gPiBpbmRleCA3YTBiY2I1YjFmZmNjZC4uYjQ2NTRmOGE0MDgxMzQgMTAwNjQ0DQo+ID4g
-LS0tIGEvaW5jbHVkZS9saW51eC9tb2R1bGUuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvbW9k
-dWxlLmgNCj4gPiBAQCAtNTg5LDYgKzU4OSw5IEBAIHN0YXRpYyBpbmxpbmUgYm9vbCB3aXRoaW5f
-bW9kdWxlKHVuc2lnbmVkIGxvbmcgYWRkciwgY29uc3Qgc3RydWN0IG1vZHVsZSAqbW9kKQ0KPiA+
-ICAgLyogU2VhcmNoIGZvciBtb2R1bGUgYnkgbmFtZTogbXVzdCBob2xkIG1vZHVsZV9tdXRleC4g
-Ki8NCj4gPiAgIHN0cnVjdCBtb2R1bGUgKmZpbmRfbW9kdWxlKGNvbnN0IGNoYXIgKm5hbWUpOw0K
-PiA+DQo+ID4gKy8qIENoZWNrIGlmIGEgbW9kdWxlIGlzIGxvYWRlZC4gKi8NCj4gPiArYm9vbCBt
-b2R1bGVfbG9hZGVkKGNvbnN0IGNoYXIgKm5hbWUpOw0KPiANCj4gTWF5YmUgbW9kdWxlX2lzX2xv
-YWRlZCgpIHdvdWxkIGJlIGEgYmV0dGVyIG5hbWUuDQoNCkkgY2FuJ3Qgc2VlIHRoZSBvcmlnaW5h
-bCBwYXRjaC4NCg0KV2hhdCBpcyB0aGUgcG9pbnQgb2YgdGhlIGZ1bmN0aW9uLg0KQnkgdGhlIHRp
-bWUgaXQgcmV0dXJucyB0aGUgaW5mb3JtYXRpb24gaXMgc3RhbGUgLSBzbyBtb3N0bHkgdXNlbGVz
-cy4NCg0KU3VyZWx5IHlvdSBuZWVkIHRvIHVzZSB0cnlfbW9kdWxlX2dldCgpIGluc3RlYWQ/DQoN
-CglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3MgTGFrZXNpZGUsIEJyYW1sZXkgUm9hZCwg
-TW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQVCwgVUsNClJlZ2lzdHJhdGlvbiBObzog
-MTM5NzM4NiAoV2FsZXMpDQo=
+Le 21/01/2021 à 11:13, David Laight a écrit :
+> From: Christophe Leroy
 
+Sorry I hit "Reply to the list" instead of "Reply all"
+
+Cc Christoph H. who is the author.
+
+>> Sent: 21 January 2021 10:00
+>>
+>> Le 21/01/2021 à 08:49, Christoph Hellwig a écrit :
+>>> Add a helper that takes modules_mutex and uses find_module to check if a
+>>> given module is loaded.  This provides a better abstraction for the two
+>>> callers, and allows to unexport modules_mutex and find_module.
+>>>
+>>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>>> ---
+>>>    drivers/gpu/drm/drm_fb_helper.c |  7 +------
+>>>    include/linux/module.h          |  3 +++
+>>>    kernel/module.c                 | 14 ++++++++++++--
+>>>    kernel/trace/trace_kprobe.c     |  4 +---
+>>>    4 files changed, 17 insertions(+), 11 deletions(-)
+>>>
+>>
+>>> diff --git a/include/linux/module.h b/include/linux/module.h
+>>> index 7a0bcb5b1ffccd..b4654f8a408134 100644
+>>> --- a/include/linux/module.h
+>>> +++ b/include/linux/module.h
+>>> @@ -589,6 +589,9 @@ static inline bool within_module(unsigned long addr, const struct module *mod)
+>>>    /* Search for module by name: must hold module_mutex. */
+>>>    struct module *find_module(const char *name);
+>>>
+>>> +/* Check if a module is loaded. */
+>>> +bool module_loaded(const char *name);
+>>
+>> Maybe module_is_loaded() would be a better name.
+> 
+> I can't see the original patch.
+
+You have it there 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20210121074959.313333-3-hch@lst.de/
+
+> 
+> What is the point of the function.
+> By the time it returns the information is stale - so mostly useless.
+> 
+> Surely you need to use try_module_get() instead?
+> 
+> 	David
+> 
+> -
+> Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+> Registration No: 1397386 (Wales)
+> 
