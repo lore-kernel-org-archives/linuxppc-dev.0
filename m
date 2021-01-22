@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47F62C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3CB7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:21:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99E0D22D57
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:20:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99E0D22D57
+	by mail.kernel.org (Postfix) with ESMTPS id 505E422D57
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:21:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 505E422D57
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DMZy76Z1szDqVD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:19:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DMb0G3hTfzDr3k
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:21:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdc6PVQzDrdb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 21:05:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdX2MzjzDrB5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 21:05:36 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DMZdX4QdPz9vBnH;
- Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DMZdM5LQZz9vBmw;
+ Fri, 22 Jan 2021 11:05:27 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QsV3_9iY41fq; Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ with ESMTP id oIsxJJLXGj1u; Fri, 22 Jan 2021 11:05:27 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdX3g8Wz9vBml;
- Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdM4R5jz9vBml;
+ Fri, 22 Jan 2021 11:05:27 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9A8ED8B818;
- Fri, 22 Jan 2021 11:05:37 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B83E28B818;
+ Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9taSRjNp2N1W; Fri, 22 Jan 2021 11:05:37 +0100 (CET)
+ with ESMTP id eRpNFiB2Wcw4; Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 396778B817;
- Fri, 22 Jan 2021 11:05:37 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7F3358B817;
+ Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 1306366AAE; Fri, 22 Jan 2021 10:05:37 +0000 (UTC)
-Message-Id: <db8509f11903afc733668a4e6b3ae8c565af1ff9.1611309841.git.christophe.leroy@csgroup.eu>
+ id 595F266AAE; Fri, 22 Jan 2021 10:05:28 +0000 (UTC)
+Message-Id: <fa49013eb6aaea3048bed1276b2334adbfce7c1c.1611309841.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 References: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 13/14] powerpc/32: Remove msr argument in
- EXC_XFER_TEMPLATE()
+Subject: [PATCH v2 05/14] powerpc/40x: Save SRR0/SRR1 and r10/r11 earlier in
+ critical exception
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 22 Jan 2021 10:05:37 +0000 (UTC)
+Date: Fri, 22 Jan 2021 10:05:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,72 +76,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-msr argument is not used anymore, remove it.
+In order to be able to switch MMU on in exception prolog, save
+SRR0 and SRR1 earlier.
+
+Also save r10 and r11 into stack earlier to better match with the
+normal exception prolog.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_32.h  | 8 +++-----
- arch/powerpc/kernel/head_40x.S | 5 +----
- 2 files changed, 4 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 9 ---------
+ arch/powerpc/kernel/head_40x.S | 8 ++++++++
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 7209e63db366..98ed5b928642 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -213,7 +213,7 @@
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
- 	xfer(n, hdlr)
- 
--#define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)		\
-+#define EXC_XFER_TEMPLATE(hdlr, trap, tfer, ret)		\
- 	li	r10,trap;					\
- 	stw	r10,_TRAP(r11);					\
- 	bl	tfer;						\
-@@ -221,12 +221,10 @@
- 	.long	ret
- 
- #define EXC_XFER_STD(n, hdlr)		\
--	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, transfer_to_handler_full,	\
--			  ret_from_except_full)
-+	EXC_XFER_TEMPLATE(hdlr, n, transfer_to_handler_full, ret_from_except_full)
- 
- #define EXC_XFER_LITE(n, hdlr)		\
--	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, transfer_to_handler, \
--			  ret_from_except)
-+	EXC_XFER_TEMPLATE(hdlr, n + 1, transfer_to_handler, ret_from_except)
- 
- .macro vmap_stack_overflow_exception
- #ifdef CONFIG_SMP
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index b102b40c4988..715a8b1aafc6 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -107,15 +107,6 @@ _ASM_NOKPROBE_SYMBOL(crit_transfer_to_handler)
+ #ifdef CONFIG_40x
+ 	.globl	crit_transfer_to_handler
+ crit_transfer_to_handler:
+-	lwz	r0,crit_r10@l(0)
+-	stw	r0,GPR10(r11)
+-	lwz	r0,crit_r11@l(0)
+-	stw	r0,GPR11(r11)
+-	mfspr	r0,SPRN_SRR0
+-	stw	r0,crit_srr0@l(0)
+-	mfspr	r0,SPRN_SRR1
+-	stw	r0,crit_srr1@l(0)
+-
+ 	/* set the stack limit to the current stack */
+ 	mfspr	r8,SPRN_SPRG_THREAD
+ 	lwz	r0,KSP_LIMIT(r8)
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 96ec800ebf7f..8cec630cccab 100644
+index 595a4cf83391..6394040bbaba 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -184,8 +184,7 @@ _ENTRY(saved_ksp_limit)
- 	START_EXCEPTION(n, label);				\
- 	CRITICAL_EXCEPTION_PROLOG;				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
--	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
--			  crit_transfer_to_handler, ret_from_crit_exc)
-+	EXC_XFER_TEMPLATE(hdlr, n+2, crit_transfer_to_handler, ret_from_crit_exc)
- 
- /*
-  * 0x0100 - Critical Interrupt Exception
-@@ -495,7 +494,6 @@ _ENTRY(saved_ksp_limit)
- 2:	mfspr	r4,SPRN_DBSR
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_TEMPLATE(DebugException, 0x2002, \
--		(MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
- 		crit_transfer_to_handler, ret_from_crit_exc)
- 
- 	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
-@@ -517,7 +515,6 @@ WDTException:
- 	CRITICAL_EXCEPTION_PROLOG;
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
- 	EXC_XFER_TEMPLATE(WatchdogException, 0x1020+2,
--	                  (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)),
- 			  crit_transfer_to_handler, ret_from_crit_exc)
- 
- /* Other PowerPC processors, namely those derived from the 6xx-series
+@@ -103,6 +103,10 @@ _ENTRY(saved_ksp_limit)
+ .macro CRITICAL_EXCEPTION_PROLOG
+ 	stw	r10,crit_r10@l(0)	/* save two registers to work with */
+ 	stw	r11,crit_r11@l(0)
++	mfspr	r10,SPRN_SRR0
++	mfspr	r11,SPRN_SRR1
++	stw	r10,crit_srr0@l(0)
++	stw	r11,crit_srr1@l(0)
+ 	mfcr	r10			/* save CR in r10 for now	   */
+ 	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
+ 	andi.	r11,r11,MSR_PR
+@@ -120,6 +124,10 @@ _ENTRY(saved_ksp_limit)
+ 	stw	r9,GPR9(r11)
+ 	mflr	r10
+ 	stw	r10,_LINK(r11)
++	lwz	r10,crit_r10@l(0)
++	lwz	r12,crit_r11@l(0)
++	stw	r10,GPR10(r11)
++	stw	r12,GPR11(r11)
+ 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
+ 	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+ 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
 -- 
 2.25.0
 
