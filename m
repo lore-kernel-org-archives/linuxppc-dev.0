@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 290BCC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:27:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 828BEC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:29:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93AF12376F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:27:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93AF12376F
+	by mail.kernel.org (Postfix) with ESMTPS id B3FDB2376F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:29:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3FDB2376F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DMb7B6KB0zDsPd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:27:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DMb8y3mf8zDsWr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:29:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdc04v1zDrdZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 21:05:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdX5Cm3zDrbd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 21:05:36 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DMZdW3JZwz9vBnG;
- Fri, 22 Jan 2021 11:05:35 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DMZdR1vWnz9vBn5;
+ Fri, 22 Jan 2021 11:05:31 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id xAuGhYkkFcp1; Fri, 22 Jan 2021 11:05:35 +0100 (CET)
+ with ESMTP id R3mQeZUOB0ja; Fri, 22 Jan 2021 11:05:31 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdW2L16z9vBml;
- Fri, 22 Jan 2021 11:05:35 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdR1419z9vBml;
+ Fri, 22 Jan 2021 11:05:31 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 803D48B818;
- Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 593D38B818;
+ Fri, 22 Jan 2021 11:05:32 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id kQXw0UI6kV6H; Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ with ESMTP id grkWQ1gjJhvU; Fri, 22 Jan 2021 11:05:32 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 334C98B817;
- Fri, 22 Jan 2021 11:05:36 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 160AD8B817;
+ Fri, 22 Jan 2021 11:05:32 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 0C30166AAE; Fri, 22 Jan 2021 10:05:35 +0000 (UTC)
-Message-Id: <3f15863e065e2ed2441cecc126f91589882910cd.1611309841.git.christophe.leroy@csgroup.eu>
+ id D7E2966AAE; Fri, 22 Jan 2021 10:05:31 +0000 (UTC)
+Message-Id: <f377fa2a5b24665376dc796c73bfd46250a1f90c.1611309841.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 References: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 12/14] powerpc/32: Enable instruction translation at the
- same time as data translation
+Subject: [PATCH v2 08/14] powerpc/40x: Prepare normal exception handler for
+ enabling MMU early
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 22 Jan 2021 10:05:35 +0000 (UTC)
+Date: Fri, 22 Jan 2021 10:05:31 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,249 +76,118 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 40x and 8xx, kernel text is pinned.
-On book3s/32, kernel text is mapped by BATs.
+Ensure normal exception handler are able to manage stuff with
+MMU enabled. For that we use CONFIG_VMAP_STACK related code
+allthough there is no intention to really activate CONFIG_VMAP_STACK
+on powerpc 40x for the moment.
 
-Enable instruction translation at the same time as data translation, it
-makes things simpler.
-
-In syscall handler, MSR_RI can also be set at the same time because
-srr0/srr1 are already saved and r1 is set properly.
-
-On booke, translation is always on, so at the end all PPC32
-have translation on early.
-
-Also update comment in power_save_ppc32_restore().
+40x uses SPRN_DEAR instead of SPRN_DAR and SPRN_ESR instead of
+SPRN_DSISR. Take it into account in common macros.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/entry_32.S   | 44 ++++++++++----------------------
- arch/powerpc/kernel/head_32.h    | 39 ++++++++++++----------------
- arch/powerpc/kernel/head_40x.S   | 10 +++++---
- arch/powerpc/kernel/head_booke.h |  7 ++---
- 4 files changed, 39 insertions(+), 61 deletions(-)
+ arch/powerpc/kernel/entry_32.S |  2 +-
+ arch/powerpc/kernel/head_32.h  | 15 ++++++++++++++-
+ arch/powerpc/kernel/head_40x.S | 17 ++++++-----------
+ 3 files changed, 21 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 8a0e5885b731..6e70c6fdfe8a 100644
+index 715a8b1aafc6..859a13d34bdc 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -198,12 +198,8 @@ transfer_to_handler:
- transfer_to_handler_cont:
- 3:
- 	mflr	r9
--	tovirt(r9, r9)
- 	lwz	r11,0(r9)		/* virtual address of handler */
- 	lwz	r9,4(r9)		/* where to go when done */
--#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
--	mtspr	SPRN_NRI, r0
--#endif
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/*
- 	 * When tracing IRQ state (lockdep) we enable the MMU before we call
-@@ -219,13 +215,9 @@ transfer_to_handler_cont:
- 
- 	/* MSR isn't changing, just transition directly */
- #endif
--	mtspr	SPRN_SRR0,r11
--	mtspr	SPRN_SRR1,r10
-+	mtctr	r11
- 	mtlr	r9
--	rfi				/* jump to handler, enable MMU */
--#ifdef CONFIG_40x
--	b .	/* Prevent prefetch past rfi */
--#endif
-+	bctr				/* jump to handler */
- 
- #if defined (CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
- 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
-@@ -245,21 +237,7 @@ _ASM_NOKPROBE_SYMBOL(transfer_to_handler)
- _ASM_NOKPROBE_SYMBOL(transfer_to_handler_cont)
- 
- #ifdef CONFIG_TRACE_IRQFLAGS
--1:	/* MSR is changing, re-enable MMU so we can notify lockdep. We need to
--	 * keep interrupts disabled at this point otherwise we might risk
--	 * taking an interrupt before we tell lockdep they are enabled.
--	 */
--	lis	r12,reenable_mmu@h
--	ori	r12,r12,reenable_mmu@l
--	LOAD_REG_IMMEDIATE(r0, MSR_KERNEL)
--	mtspr	SPRN_SRR0,r12
--	mtspr	SPRN_SRR1,r0
--	rfi
--#ifdef CONFIG_40x
--	b .	/* Prevent prefetch past rfi */
--#endif
--
--reenable_mmu:
-+1:
- 	/*
- 	 * We save a bunch of GPRs,
- 	 * r3 can be different from GPR3(r1) at this point, r9 and r11
-@@ -1334,16 +1312,20 @@ _GLOBAL(enter_rtas)
- 	mtspr	SPRN_SRR1,r9
- 	rfi
- 1:
--	li	r0, MSR_KERNEL & ~MSR_IR	/* can take DTLB miss */
--	mtmsr	r0
--	isync
-+	lis	r8, 1f@h
-+	ori	r8, r8, 1f@l
-+	LOAD_REG_IMMEDIATE(r9,MSR_KERNEL)
-+	mtspr	SPRN_SRR0,r8
-+	mtspr	SPRN_SRR1,r9
-+	rfi			/* Reactivate MMU translation */
-+1:
- 	lwz	r8,INT_FRAME_SIZE+4(r1)	/* get return address */
- 	lwz	r9,8(r1)	/* original msr value */
- 	addi	r1,r1,INT_FRAME_SIZE
- 	li	r0,0
- 	stw	r0, THREAD + RTAS_SP(r2)
--	mtspr	SPRN_SRR0,r8
--	mtspr	SPRN_SRR1,r9
--	rfi			/* return to caller */
-+	mtlr	r8
-+	mtmsr	r9
-+	blr			/* return to caller */
- _ASM_NOKPROBE_SYMBOL(enter_rtas)
- #endif /* CONFIG_PPC_RTAS */
+@@ -162,7 +162,7 @@ transfer_to_handler:
+ 	li	r12,-1			/* clear all pending debug events */
+ 	mtspr	SPRN_DBSR,r12
+ 	lis	r11,global_dbcr0@ha
+-	tophys(r11,r11)
++	tophys_novmstack r11,r11
+ 	addi	r11,r11,global_dbcr0@l
+ #ifdef CONFIG_SMP
+ 	lwz	r9,TASK_CPU(r2)
 diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 5ba4c6391107..7209e63db366 100644
+index a2f72c966baf..1f5e64c70ddb 100644
 --- a/arch/powerpc/kernel/head_32.h
 +++ b/arch/powerpc/kernel/head_32.h
-@@ -57,10 +57,14 @@
- .endm
+@@ -22,9 +22,17 @@
+ #ifdef CONFIG_VMAP_STACK
+ 	mfspr	r10, SPRN_SPRG_THREAD
+ 	.if	\handle_dar_dsisr
++#ifdef CONFIG_40x
++	mfspr	r11, SPRN_DEAR
++#else
+ 	mfspr	r11, SPRN_DAR
++#endif
+ 	stw	r11, DAR(r10)
++#ifdef CONFIG_40x
++	mfspr	r11, SPRN_ESR
++#else
+ 	mfspr	r11, SPRN_DSISR
++#endif
+ 	stw	r11, DSISR(r10)
+ 	.endif
+ 	mfspr	r11, SPRN_SRR0
+@@ -190,7 +198,7 @@
+ 	li	r12,-1			/* clear all pending debug events */
+ 	mtspr	SPRN_DBSR,r12
+ 	lis	r11,global_dbcr0@ha
+-	tophys(r11,r11)
++	tophys_novmstack(r11,r11)
+ 	addi	r11,r11,global_dbcr0@l
+ 	lwz	r12,0(r11)
+ 	mtspr	SPRN_DBCR0,r12
+@@ -228,8 +236,13 @@
  
- .macro EXCEPTION_PROLOG_2 handle_dar_dsisr=0
--	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
--	mtmsr	r11
--	isync
-+	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~MSR_RI) /* re-enable MMU */
-+	mtspr	SPRN_SRR1, r11
-+	lis	r11, 1f@h
-+	ori	r11, r11, 1f@l
-+	mtspr	SPRN_SRR0, r11
- 	mfspr	r11, SPRN_SPRG_SCRATCH2
-+	rfi
-+1:
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
- 	mr	r11, r1
-@@ -86,7 +90,7 @@
- #ifdef CONFIG_40x
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
--	li	r10, MSR_KERNEL & ~MSR_IR /* can take exceptions */
-+	li	r10, MSR_KERNEL		/* can take exceptions */
- 	mtmsr	r10			/* (except for mach check in rtas) */
+ .macro save_dar_dsisr_on_stack reg1, reg2, sp
+ #ifndef CONFIG_VMAP_STACK
++#ifdef CONFIG_40x
++	mfspr	\reg1, SPRN_DEAR
++	mfspr	\reg2, SPRN_ESR
++#else
+ 	mfspr	\reg1, SPRN_DAR
+ 	mfspr	\reg2, SPRN_DSISR
++#endif
+ 	stw	\reg1, _DAR(\sp)
+ 	stw	\reg2, _DSISR(\sp)
  #endif
- 	stw	r0,GPR0(r11)
-@@ -107,9 +111,13 @@
- 	lwz	r1,TASK_STACK-THREAD(r12)
- 	beq-	99f
- 	addi	r1, r1, THREAD_SIZE - INT_FRAME_SIZE
--	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
--	mtmsr	r10
--	isync
-+	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL)		/* can take exceptions */
-+	mtspr	SPRN_SRR1, r10
-+	lis	r10, 1f@h
-+	ori	r10, r10, 1f@l
-+	mtspr	SPRN_SRR0, r10
-+	rfi
-+1:
- 	tovirt(r12, r12)
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
-@@ -123,9 +131,6 @@
- 	stw	r10,_CCR(r11)		/* save registers */
- #ifdef CONFIG_40x
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
--#else
--	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~MSR_IR) /* can take exceptions */
--	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
- 	stw	r2,GPR2(r11)
-@@ -162,8 +167,6 @@
- #endif
- 
- 3:
--	lis	r11, transfer_to_syscall@h
--	ori	r11, r11, transfer_to_syscall@l
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/*
- 	 * If MSR is changing we need to keep interrupts disabled at this point
-@@ -175,15 +178,8 @@
- #else
- 	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL | MSR_EE)
- #endif
--#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
--	mtspr	SPRN_NRI, r0
--#endif
--	mtspr	SPRN_SRR1,r10
--	mtspr	SPRN_SRR0,r11
--	rfi				/* jump to handler, enable MMU */
--#ifdef CONFIG_40x
--	b .	/* Prevent prefetch past rfi */
--#endif
-+	mtmsr	r10
-+	b	transfer_to_syscall		/* jump to handler */
- 99:	b	ret_from_kernel_syscall
- .endm
- 
-@@ -220,7 +216,6 @@
- #define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)		\
- 	li	r10,trap;					\
- 	stw	r10,_TRAP(r11);					\
--	LOAD_REG_IMMEDIATE(r10, msr);				\
- 	bl	tfer;						\
- 	.long	hdlr;						\
- 	.long	ret
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 6b23cbd7f9c5..96ec800ebf7f 100644
+index c0582ad84117..ef0bdc20849f 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -128,9 +128,13 @@ _ENTRY(saved_ksp_limit)
- 	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
- 1:	stw	r1,crit_r1@l(0)
- 	addi	r1,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
--	LOAD_REG_IMMEDIATE(r11,MSR_KERNEL & ~(MSR_IR | MSR_RI))
--	mtmsr	r11
--	isync
-+	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)) /* re-enable MMU */
-+	mtspr	SPRN_SRR1, r11
-+	lis	r11, 1f@h
-+	ori	r11, r11, 1f@l
-+	mtspr	SPRN_SRR0, r11
-+	rfi
-+1:
- 	lwz	r11,crit_r1@l(0)
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 5d0402c48ebc..2e3cb1cc42fb 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -157,8 +157,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	stw	r12,4(r11)
+@@ -223,11 +223,8 @@ _ENTRY(saved_ksp_limit)
+  * if they can't resolve the lightweight TLB fault.
+  */
+ 	START_EXCEPTION(0x0300,	DataStorage)
+-	EXCEPTION_PROLOG
+-	mfspr	r5, SPRN_ESR		/* Grab the ESR, save it */
+-	stw	r5, _ESR(r11)
+-	mfspr	r4, SPRN_DEAR		/* Grab the DEAR, save it */
+-	stw	r4, _DEAR(r11)
++	EXCEPTION_PROLOG handle_dar_dsisr=1
++	save_dar_dsisr_on_stack	r4, r5, r11
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
  
- 3:
--	lis	r11, transfer_to_syscall@h
--	ori	r11, r11, transfer_to_syscall@l
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/*
- 	 * If MSR is changing we need to keep interrupts disabled at this point
-@@ -172,9 +170,8 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	lis	r10, (MSR_KERNEL | MSR_EE)@h
- 	ori	r10, r10, (MSR_KERNEL | MSR_EE)@l
- #endif
--	mtspr	SPRN_SRR1,r10
--	mtspr	SPRN_SRR0,r11
--	rfi				/* jump to handler, enable MMU */
-+	mtmsr	r10
-+	b	transfer_to_syscall	/* jump to handler */
- 99:	b	ret_from_kernel_syscall
- .endm
+ /*
+@@ -246,17 +243,15 @@ _ENTRY(saved_ksp_limit)
+ 
+ /* 0x0600 - Alignment Exception */
+ 	START_EXCEPTION(0x0600, Alignment)
+-	EXCEPTION_PROLOG
+-	mfspr	r4,SPRN_DEAR		/* Grab the DEAR and save it */
+-	stw	r4,_DEAR(r11)
++	EXCEPTION_PROLOG handle_dar_dsisr=1
++	save_dar_dsisr_on_stack r4, r5, r11
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x600, alignment_exception)
+ 
+ /* 0x0700 - Program Exception */
+ 	START_EXCEPTION(0x0700, ProgramCheck)
+-	EXCEPTION_PROLOG
+-	mfspr	r4,SPRN_ESR		/* Grab the ESR and save it */
+-	stw	r4,_ESR(r11)
++	EXCEPTION_PROLOG handle_dar_dsisr=1
++	save_dar_dsisr_on_stack r4, r5, r11
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x700, program_check_exception)
  
 -- 
 2.25.0
