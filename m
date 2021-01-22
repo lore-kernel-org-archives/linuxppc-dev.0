@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 828BEC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76DDFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:31:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3FDB2376F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:29:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3FDB2376F
+	by mail.kernel.org (Postfix) with ESMTPS id D992C239EE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 10:31:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D992C239EE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DMb8y3mf8zDsWr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:29:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DMbC94cqJzDrB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jan 2021 21:31:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdX5Cm3zDrbd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DMZdX4QckzDrbB
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2021 21:05:36 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DMZdR1vWnz9vBn5;
- Fri, 22 Jan 2021 11:05:31 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DMZdN4jl9z9vBmx;
+ Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id R3mQeZUOB0ja; Fri, 22 Jan 2021 11:05:31 +0100 (CET)
+ with ESMTP id uN5HQiVgtVbx; Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdR1419z9vBml;
- Fri, 22 Jan 2021 11:05:31 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DMZdN3qpdz9vBml;
+ Fri, 22 Jan 2021 11:05:28 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 593D38B818;
- Fri, 22 Jan 2021 11:05:32 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B892A8B818;
+ Fri, 22 Jan 2021 11:05:29 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id grkWQ1gjJhvU; Fri, 22 Jan 2021 11:05:32 +0100 (CET)
+ with ESMTP id 8adpFOmttzR0; Fri, 22 Jan 2021 11:05:29 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 160AD8B817;
- Fri, 22 Jan 2021 11:05:32 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 85E898B817;
+ Fri, 22 Jan 2021 11:05:29 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D7E2966AAE; Fri, 22 Jan 2021 10:05:31 +0000 (UTC)
-Message-Id: <f377fa2a5b24665376dc796c73bfd46250a1f90c.1611309841.git.christophe.leroy@csgroup.eu>
+ id 5FA2966AAE; Fri, 22 Jan 2021 10:05:29 +0000 (UTC)
+Message-Id: <434c69e46655d79f3d26e8ab114dcc40b8274af6.1611309841.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 References: <cover.1611309841.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 08/14] powerpc/40x: Prepare normal exception handler for
- enabling MMU early
+Subject: [PATCH v2 06/14] powerpc/40x: Reorder a few instructions in critical
+ exception prolog
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 22 Jan 2021 10:05:31 +0000 (UTC)
+Date: Fri, 22 Jan 2021 10:05:29 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,119 +76,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ensure normal exception handler are able to manage stuff with
-MMU enabled. For that we use CONFIG_VMAP_STACK related code
-allthough there is no intention to really activate CONFIG_VMAP_STACK
-on powerpc 40x for the moment.
-
-40x uses SPRN_DEAR instead of SPRN_DAR and SPRN_ESR instead of
-SPRN_DSISR. Take it into account in common macros.
+In order to ease preparation for CONFIG_VMAP_STACK, reorder
+a few instruction, especially save r1 into stack frame earlier.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/entry_32.S |  2 +-
- arch/powerpc/kernel/head_32.h  | 15 ++++++++++++++-
- arch/powerpc/kernel/head_40x.S | 17 ++++++-----------
- 3 files changed, 21 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/head_40x.S | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 715a8b1aafc6..859a13d34bdc 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -162,7 +162,7 @@ transfer_to_handler:
- 	li	r12,-1			/* clear all pending debug events */
- 	mtspr	SPRN_DBSR,r12
- 	lis	r11,global_dbcr0@ha
--	tophys(r11,r11)
-+	tophys_novmstack r11,r11
- 	addi	r11,r11,global_dbcr0@l
- #ifdef CONFIG_SMP
- 	lwz	r9,TASK_CPU(r2)
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index a2f72c966baf..1f5e64c70ddb 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -22,9 +22,17 @@
- #ifdef CONFIG_VMAP_STACK
- 	mfspr	r10, SPRN_SPRG_THREAD
- 	.if	\handle_dar_dsisr
-+#ifdef CONFIG_40x
-+	mfspr	r11, SPRN_DEAR
-+#else
- 	mfspr	r11, SPRN_DAR
-+#endif
- 	stw	r11, DAR(r10)
-+#ifdef CONFIG_40x
-+	mfspr	r11, SPRN_ESR
-+#else
- 	mfspr	r11, SPRN_DSISR
-+#endif
- 	stw	r11, DSISR(r10)
- 	.endif
- 	mfspr	r11, SPRN_SRR0
-@@ -190,7 +198,7 @@
- 	li	r12,-1			/* clear all pending debug events */
- 	mtspr	SPRN_DBSR,r12
- 	lis	r11,global_dbcr0@ha
--	tophys(r11,r11)
-+	tophys_novmstack(r11,r11)
- 	addi	r11,r11,global_dbcr0@l
- 	lwz	r12,0(r11)
- 	mtspr	SPRN_DBCR0,r12
-@@ -228,8 +236,13 @@
- 
- .macro save_dar_dsisr_on_stack reg1, reg2, sp
- #ifndef CONFIG_VMAP_STACK
-+#ifdef CONFIG_40x
-+	mfspr	\reg1, SPRN_DEAR
-+	mfspr	\reg2, SPRN_ESR
-+#else
- 	mfspr	\reg1, SPRN_DAR
- 	mfspr	\reg2, SPRN_DSISR
-+#endif
- 	stw	\reg1, _DAR(\sp)
- 	stw	\reg2, _DSISR(\sp)
- #endif
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index c0582ad84117..ef0bdc20849f 100644
+index 6394040bbaba..b7caaa09c860 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -223,11 +223,8 @@ _ENTRY(saved_ksp_limit)
-  * if they can't resolve the lightweight TLB fault.
-  */
- 	START_EXCEPTION(0x0300,	DataStorage)
--	EXCEPTION_PROLOG
--	mfspr	r5, SPRN_ESR		/* Grab the ESR, save it */
--	stw	r5, _ESR(r11)
--	mfspr	r4, SPRN_DEAR		/* Grab the DEAR, save it */
--	stw	r4, _DEAR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack	r4, r5, r11
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- /*
-@@ -246,17 +243,15 @@ _ENTRY(saved_ksp_limit)
- 
- /* 0x0600 - Alignment Exception */
- 	START_EXCEPTION(0x0600, Alignment)
--	EXCEPTION_PROLOG
--	mfspr	r4,SPRN_DEAR		/* Grab the DEAR and save it */
--	stw	r4,_DEAR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack r4, r5, r11
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
- 
- /* 0x0700 - Program Exception */
- 	START_EXCEPTION(0x0700, ProgramCheck)
--	EXCEPTION_PROLOG
--	mfspr	r4,SPRN_ESR		/* Grab the ESR and save it */
--	stw	r4,_ESR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack r4, r5, r11
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x700, program_check_exception)
- 
+@@ -119,6 +119,9 @@ _ENTRY(saved_ksp_limit)
+ 	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
+ 1:	addi	r11,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
+ 	tophys(r11,r11)
++	stw	r1,GPR1(r11)
++	stw	r1,0(r11)
++	tovirt(r1,r11)
+ 	stw	r10,_CCR(r11)		/* save various registers	   */
+ 	stw	r12,GPR12(r11)
+ 	stw	r9,GPR9(r11)
+@@ -129,14 +132,11 @@ _ENTRY(saved_ksp_limit)
+ 	stw	r10,GPR10(r11)
+ 	stw	r12,GPR11(r11)
+ 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
+-	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+ 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
++	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+ 	stw	r9,_ESR(r11)		/* exception was taken		   */
+ 	mfspr	r12,SPRN_SRR2
+-	stw	r1,GPR1(r11)
+ 	mfspr	r9,SPRN_SRR3
+-	stw	r1,0(r11)
+-	tovirt(r1,r11)
+ 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?)	   */
+ 	stw	r0,GPR0(r11)
+ 	lis	r10, STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
 -- 
 2.25.0
 
