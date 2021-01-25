@@ -2,99 +2,65 @@ Return-Path: <SRS0=yv7X=G4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17F24C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 13:13:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D7B2C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:51:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D949221F9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 13:13:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D949221F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id BAD3E20848
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:51:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAD3E20848
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DPVfV3WJwzDqR6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 00:13:06 +1100 (AEDT)
+Received: from bilbo.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DPXqX25gBzDqWc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 01:51:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ananth@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=pdixOHyO; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DPVWS60r6zDqpJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 00:07:00 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 10PCslWX070808; Mon, 25 Jan 2021 08:06:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : from : to : cc
- : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=ls4pBfnYZyCj1N77xEP9ZZfURoZIb4BlnrrvhaTrAuY=;
- b=pdixOHyO+opXoGAtj2Sk1g70CRaKlqoVhQJ3/uPdCAdT97Ftwg+5maFeJ6+r0pQd6usU
- xxgIEZ/ZMB5vsF4AjNLRgYKIXMwToDDRxGnDX5/SmnMJuPZVPWRWTpvKgi8VpnIv8jwT
- kqy5+2U23hfgTp+XRrsJNxdMGowD5Y5rV7saOeBcUDwwx+HklaKPa1Nj6Pz56sU5H+A3
- CbTRXATzuhzB36yXK8P3O5Ia6Nz30qpWvA1KDM8DzTsKSM0SIzJ+q9FOlyAX8r1ZOjbq
- qcC7hSyHpGpw/IiAGIILLJ2N2ZB5vJlNh5Ov5ARjWcsQ7RY+9mGAXWOhNj9Psz60Ox7Y TQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 369npsf2yk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 25 Jan 2021 08:06:51 -0500
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 10PCvU8g024011;
- Mon, 25 Jan 2021 13:06:49 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03fra.de.ibm.com with ESMTP id 368be88xdv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 25 Jan 2021 13:06:49 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 10PD6k3K48038244
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Jan 2021 13:06:46 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9EAB642041;
- Mon, 25 Jan 2021 13:06:46 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2818542045;
- Mon, 25 Jan 2021 13:06:45 +0000 (GMT)
-Received: from thinktux.local (unknown [9.199.44.75])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 25 Jan 2021 13:06:44 +0000 (GMT)
-Subject: [PATCH v2 2/2] powerpc/sstep: Fix incorrect return from
- analyze_instr()
-From: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 25 Jan 2021 18:36:43 +0530
-Message-ID: <161157999039.64773.14950289716779364766.stgit@thinktux.local>
-In-Reply-To: <161157995977.64773.13794501093457185080.stgit@thinktux.local>
-References: <161157995977.64773.13794501093457185080.stgit@thinktux.local>
-User-Agent: StGit/0.23
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343, 18.0.737
- definitions=2021-01-25_04:2021-01-25,
- 2021-01-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 phishscore=0
- priorityscore=1501 mlxlogscore=910 malwarescore=0 spamscore=0
- impostorscore=0 clxscore=1015 suspectscore=0 bulkscore=0 adultscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101250074
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmN4brXzDqjg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:20 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DPXmC6PMdz9v0Gr;
+ Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id uvQYM7EDjgEU; Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmC5cGzz9v0Gh;
+ Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A3668B79E;
+ Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Wiqam-I718rs; Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 055C28B79B;
+ Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id EEE5566AD8; Mon, 25 Jan 2021 14:48:16 +0000 (UTC)
+Message-Id: <a5a5baa72c9126fa3ab88d20e7bbbb1b45e3d03c.1611585031.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1611585031.git.christophe.leroy@csgroup.eu>
+References: <cover.1611585031.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 04/23] powerpc/32: Reorder instructions to avoid using CTR
+ in syscall entry
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, msuchanek@suse.de
+Date: Mon, 25 Jan 2021 14:48:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,53 +72,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, paulus@samba.org, naveen.n.rao@linux.ibm.com,
- msuchanek@suse.de, dja@axtens.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We currently just percolate the return value from analyze_instr()
-to the caller of emulate_step(), especially if it is a -1.
+Now that we are using rfi instead of mtmsr to reactivate MMU, it is
+possible to reorder instructions and avoid the need to use CTR for
+stashing SRR0.
 
-For one particular case (opcode = 4) for instructions that aren't
-currently emulated, we are returning 'should not be single-stepped'
-while we should have returned 0 which says 'did not emulate, may
-have to single-step'.
+null_syscall on 8xx is reduced by 3 cycles (283 => 280 cycles).
 
-Fixes: 930d6288a26787 ("powerpc: sstep: Add support for maddhd, maddhdu, maddld instructions")
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Reviewed-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/lib/sstep.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_32.h | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index f859cbbb6375..e96cff845ef7 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1445,6 +1445,11 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index 4029c51dce5d..24dc326e0d56 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -116,30 +116,28 @@
+ .endm
  
- #ifdef __powerpc64__
- 	case 4:
-+		/*
-+		 * There are very many instructions with this primary opcode
-+		 * introduced in the ISA as early as v2.03. However, the ones
-+		 * we currently emulate were all introduced with ISA 3.0
-+		 */
- 		if (!cpu_has_feature(CPU_FTR_ARCH_300))
- 			goto unknown_opcode;
- 
-@@ -1472,7 +1477,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 		 * There are other instructions from ISA 3.0 with the same
- 		 * primary opcode which do not have emulation support yet.
- 		 */
--		return -1;
-+		goto unknown_opcode;
- #endif
- 
- 	case 7:		/* mulli */
-
+ .macro SYSCALL_ENTRY trapno
+-	mfspr	r12,SPRN_SPRG_THREAD
+ 	mfspr	r9, SPRN_SRR1
+-	mfspr	r11, SPRN_SRR0
+-	mtctr	r11
++	mfspr	r10, SPRN_SRR0
+ 	andi.	r11, r9, MSR_PR
++	beq-	99f
++	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL)		/* can take exceptions */
++	lis	r12, 1f@h
++	ori	r12, r12, 1f@l
++	mtspr	SPRN_SRR1, r11
++	mtspr	SPRN_SRR0, r12
++	mfspr	r12,SPRN_SPRG_THREAD
+ 	mr	r11, r1
+ 	lwz	r1,TASK_STACK-THREAD(r12)
+-	beq-	99f
++	tovirt(r12, r12)
+ 	addi	r1, r1, THREAD_SIZE - INT_FRAME_SIZE
+-	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL)		/* can take exceptions */
+-	mtspr	SPRN_SRR1, r10
+-	lis	r10, 1f@h
+-	ori	r10, r10, 1f@l
+-	mtspr	SPRN_SRR0, r10
+ 	rfi
+ 1:
+-	tovirt(r12, r12)
+ 	stw	r11,GPR1(r1)
+ 	stw	r11,0(r1)
+ 	mr	r11, r1
++	stw	r10,_NIP(r11)
+ 	mflr	r10
+ 	stw	r10, _LINK(r11)
+-	mfctr	r10
+-	stw	r10,_NIP(r11)
+ 	mfcr	r10
+ 	rlwinm	r10,r10,0,4,2	/* Clear SO bit in CR */
+ 	stw	r10,_CCR(r11)		/* save registers */
+-- 
+2.25.0
 
