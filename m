@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F933C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B26AEC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:07:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1329322D50
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:05:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1329322D50
+	by mail.kernel.org (Postfix) with ESMTPS id 1C7F522DD6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:07:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C7F522DD6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DPY854TRtzDqTR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 02:05:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DPYBK2HBxzDqxM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 02:07:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmR5v8DzDqfY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmT2mLlzDqjy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:25 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DPXmD6kwDz9v0Gt;
- Mon, 25 Jan 2021 15:48:12 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DPXmK04nCz9v0Gw;
+ Mon, 25 Jan 2021 15:48:17 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id BIT-ayrxheUd; Mon, 25 Jan 2021 15:48:12 +0100 (CET)
+ with ESMTP id fp_abqPNS7eL; Mon, 25 Jan 2021 15:48:16 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmD5tfnz9v0Gh;
- Mon, 25 Jan 2021 15:48:12 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmJ6Qjyz9v0Gh;
+ Mon, 25 Jan 2021 15:48:16 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EF3D8B79E;
- Mon, 25 Jan 2021 15:48:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 699208B79E;
+ Mon, 25 Jan 2021 15:48:22 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ZzVE4RS9--hq; Mon, 25 Jan 2021 15:48:18 +0100 (CET)
+ with ESMTP id YYgsJyARkR8x; Mon, 25 Jan 2021 15:48:22 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FFC98B79B;
- Mon, 25 Jan 2021 15:48:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A6B28B79B;
+ Mon, 25 Jan 2021 15:48:22 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 0566766AD8; Mon, 25 Jan 2021 14:48:17 +0000 (UTC)
-Message-Id: <0f0efde4b821684f848a644c9b8eb3cf39852382.1611585031.git.christophe.leroy@csgroup.eu>
+ id 2005B66AD8; Mon, 25 Jan 2021 14:48:22 +0000 (UTC)
+Message-Id: <ec6db54fc95360f532ba235f3f53645fa1e3c0c3.1611585031.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 References: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 05/23] powerpc/64s: Make kuap_check_amr() and
- kuap_get_and_check_amr() generic
+Subject: [PATCH v4 09/23] powerpc/irq: Rework helpers that manipulate
+ MSR[EE/RI]
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon, 25 Jan 2021 14:48:17 +0000 (UTC)
+Date: Mon, 25 Jan 2021 14:48:22 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,138 +77,139 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation of porting powerpc32 to C syscall entry/exit,
-rename kuap_check_amr() and kuap_get_and_check_amr() as kuap_check()
-and kuap_get_and_check(), and move in the generic asm/kup.h the stub
-for when CONFIG_PPC_KUAP is not selected.
+In preparation of porting PPC32 to C syscall entry/exit,
+rewrite the following helpers as static inline functions and
+add support for PPC32 in them:
+	__hard_irq_enable()
+	__hard_irq_disable()
+	__hard_EE_RI_disable()
+	__hard_RI_enable()
+
+Then use them in PPC32 version of arch_local_irq_disable()
+and arch_local_irq_enable() to avoid code duplication.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/book3s/64/kup.h | 24 ++----------------------
- arch/powerpc/include/asm/kup.h           |  9 ++++++++-
- arch/powerpc/kernel/syscall_64.c         | 12 ++++++------
- 3 files changed, 16 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h | 75 +++++++++++++++++++++----------
+ arch/powerpc/include/asm/reg.h    |  1 +
+ 2 files changed, 52 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-index f50f72e535aa..1507681ad4ef 100644
---- a/arch/powerpc/include/asm/book3s/64/kup.h
-+++ b/arch/powerpc/include/asm/book3s/64/kup.h
-@@ -281,7 +281,7 @@ static inline void kuap_kernel_restore(struct pt_regs *regs,
- 	 */
- }
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index ed0c3b049dfd..4739f61e632c 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -50,6 +50,55 @@
  
--static inline unsigned long kuap_get_and_check_amr(void)
-+static inline unsigned long kuap_get_and_check(void)
- {
- 	if (mmu_has_feature(MMU_FTR_BOOK3S_KUAP)) {
- 		unsigned long amr = mfspr(SPRN_AMR);
-@@ -292,27 +292,7 @@ static inline unsigned long kuap_get_and_check_amr(void)
- 	return 0;
- }
+ #ifndef __ASSEMBLY__
  
--#else /* CONFIG_PPC_PKEY */
--
--static inline void kuap_user_restore(struct pt_regs *regs)
--{
--}
--
--static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long amr)
--{
--}
--
--static inline unsigned long kuap_get_and_check_amr(void)
--{
--	return 0;
--}
--
--#endif /* CONFIG_PPC_PKEY */
--
--
--#ifdef CONFIG_PPC_KUAP
--
--static inline void kuap_check_amr(void)
-+static inline void kuap_check(void)
- {
- 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && mmu_has_feature(MMU_FTR_BOOK3S_KUAP))
- 		WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index bf221a2a523e..6ef9f9cfbed0 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -66,7 +66,14 @@ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
- 	return false;
- }
- 
--static inline void kuap_check_amr(void) { }
-+static inline void kuap_check(void) { }
-+static inline void kuap_user_restore(struct pt_regs *regs) { }
-+static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long amr) { }
-+
-+static inline unsigned long kuap_get_and_check(void)
++static inline void __hard_irq_enable(void)
 +{
-+	return 0;
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(MSR_EE);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EIE);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_EE | MSR_RI, 1);
++	else
++		mtmsr(mfmsr() | MSR_EE);
 +}
++
++static inline void __hard_irq_disable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(0);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EID);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_RI, 1);
++	else
++		mtmsr(mfmsr() & ~MSR_EE);
++}
++
++static inline void __hard_EE_RI_disable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(0);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_NRI);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(0, 1);
++	else
++		mtmsr(mfmsr() & ~(MSR_EE | MSR_RI));
++}
++
++static inline void __hard_RI_enable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		return;
++
++	if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EID);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_RI, 1);
++	else
++		mtmsr(mfmsr() | MSR_RI);
++}
++
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
  
- /*
-  * book3s/64/kup-radix.h defines these functions for the !KUAP case to flush
-diff --git a/arch/powerpc/kernel/syscall_64.c b/arch/powerpc/kernel/syscall_64.c
-index 32f72965da26..b627a6384029 100644
---- a/arch/powerpc/kernel/syscall_64.c
-+++ b/arch/powerpc/kernel/syscall_64.c
-@@ -65,7 +65,7 @@ notrace long system_call_exception(long r3, long r4, long r5,
- 			isync();
- 	} else
- #endif
--		kuap_check_amr();
-+		kuap_check();
+@@ -212,18 +261,6 @@ static inline bool arch_irqs_disabled(void)
  
- 	account_cpu_user_entry();
+ #endif /* CONFIG_PPC_BOOK3S */
  
-@@ -181,7 +181,7 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+-#ifdef CONFIG_PPC_BOOK3E
+-#define __hard_irq_enable()	wrtee(MSR_EE)
+-#define __hard_irq_disable()	wrtee(0)
+-#define __hard_EE_RI_disable()	wrtee(0)
+-#define __hard_RI_enable()	do { } while (0)
+-#else
+-#define __hard_irq_enable()	__mtmsrd(MSR_EE|MSR_RI, 1)
+-#define __hard_irq_disable()	__mtmsrd(MSR_RI, 1)
+-#define __hard_EE_RI_disable()	__mtmsrd(0, 1)
+-#define __hard_RI_enable()	__mtmsrd(MSR_RI, 1)
+-#endif
+-
+ #define hard_irq_disable()	do {					\
+ 	unsigned long flags;						\
+ 	__hard_irq_disable();						\
+@@ -322,22 +359,12 @@ static inline unsigned long arch_local_irq_save(void)
  
- 	CT_WARN_ON(ct_state() == CONTEXT_USER);
- 
--	kuap_check_amr();
-+	kuap_check();
- 
- 	regs->result = r3;
- 
-@@ -303,7 +303,7 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned
- 	 * We don't need to restore AMR on the way back to userspace for KUAP.
- 	 * AMR can only have been unlocked if we interrupted the kernel.
- 	 */
--	kuap_check_amr();
-+	kuap_check();
- 
- 	local_irq_save(flags);
- 
-@@ -381,7 +381,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsign
- 	unsigned long *ti_flagsp = &current_thread_info()->flags;
- 	unsigned long flags;
- 	unsigned long ret = 0;
--	unsigned long amr;
-+	unsigned long kuap;
- 
- 	if (IS_ENABLED(CONFIG_PPC_BOOK3S) && unlikely(!(regs->msr & MSR_RI)))
- 		unrecoverable_exception(regs);
-@@ -394,7 +394,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsign
- 	if (TRAP(regs) != 0x700)
- 		CT_WARN_ON(ct_state() == CONTEXT_USER);
- 
--	amr = kuap_get_and_check_amr();
-+	kuap = kuap_get_and_check();
- 
- 	if (unlikely(*ti_flagsp & _TIF_EMULATE_STACK_STORE)) {
- 		clear_bits(_TIF_EMULATE_STACK_STORE, ti_flagsp);
-@@ -446,7 +446,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsign
- 	 * which would cause Read-After-Write stalls. Hence, we take the AMR
- 	 * value from the check above.
- 	 */
--	kuap_kernel_restore(regs, amr);
-+	kuap_kernel_restore(regs, kuap);
- 
- 	return ret;
+ static inline void arch_local_irq_disable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE))
+-		wrtee(0);
+-	else if (IS_ENABLED(CONFIG_PPC_8xx))
+-		wrtspr(SPRN_EID);
+-	else
+-		mtmsr(mfmsr() & ~MSR_EE);
++	__hard_irq_disable();
  }
+ 
+ static inline void arch_local_irq_enable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE))
+-		wrtee(MSR_EE);
+-	else if (IS_ENABLED(CONFIG_PPC_8xx))
+-		wrtspr(SPRN_EIE);
+-	else
+-		mtmsr(mfmsr() | MSR_EE);
++	__hard_irq_enable();
+ }
+ 
+ static inline bool arch_irqs_disabled_flags(unsigned long flags)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index e40a921d78f9..d05dca30604d 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1375,6 +1375,7 @@
+ #define mtmsr(v)	asm volatile("mtmsr %0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#define __mtmsrd(v, l)	BUILD_BUG()
+ #define __MTMSR		"mtmsr"
+ #endif
+ 
 -- 
 2.25.0
 
