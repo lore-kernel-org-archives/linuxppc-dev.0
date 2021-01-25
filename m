@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 207C6C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:12:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3139C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:14:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85CB822E03
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:12:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85CB822E03
+	by mail.kernel.org (Postfix) with ESMTPS id 6E85822ADF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 15:14:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E85822ADF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DPYJj5VgKzDrBq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 02:12:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DPYLs5RcYzDqDT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 02:14:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmX2XmZzDqjb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmY4dwpzDqfY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:29 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DPXmN0VQ7z9v0H3;
+ by localhost (Postfix) with ESMTP id 4DPXmN6vR1z9v0H4;
  Mon, 25 Jan 2021 15:48:20 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hy79YT4UEz6t; Mon, 25 Jan 2021 15:48:19 +0100 (CET)
+ with ESMTP id SQT9Hvp7-JeT; Mon, 25 Jan 2021 15:48:20 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmM6BnJz9v0Gh;
- Mon, 25 Jan 2021 15:48:19 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmN68LTz9v0Gh;
+ Mon, 25 Jan 2021 15:48:20 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 634BA8B79E;
- Mon, 25 Jan 2021 15:48:25 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 67A4B8B79E;
+ Mon, 25 Jan 2021 15:48:26 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id XU2mawkGT9Wt; Mon, 25 Jan 2021 15:48:25 +0100 (CET)
+ with ESMTP id DXA7C3O9gK3N; Mon, 25 Jan 2021 15:48:26 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 451948B79B;
- Mon, 25 Jan 2021 15:48:25 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 469B98B79B;
+ Mon, 25 Jan 2021 15:48:26 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3439466AD8; Mon, 25 Jan 2021 14:48:25 +0000 (UTC)
-Message-Id: <83673797466c59fbbfe85dbd85436af6afc5eb63.1611585031.git.christophe.leroy@csgroup.eu>
+ id 3B58166AD8; Mon, 25 Jan 2021 14:48:26 +0000 (UTC)
+Message-Id: <e7c02d97ad70aed06e47756d1b0dda06c6e264a8.1611585031.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 References: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 12/23] powerpc/syscall: Make syscall.c buildable on PPC32
+Subject: [PATCH v4 13/23] powerpc/syscall: Use is_compat_task()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon, 25 Jan 2021 14:48:25 +0000 (UTC)
+Date: Mon, 25 Jan 2021 14:48:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,82 +76,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ifdef out specific PPC64 stuff to allow building
-syscall.c on PPC32.
-
-Modify Makefile to always build syscall.o
+Instead of hard comparing task flags with _TIF_32BIT, use
+is_compat_task(). The advantage is that it returns 0 on PPC32
+allthough _TIF_32BIT is always set.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/Makefile  | 4 ++--
- arch/powerpc/kernel/syscall.c | 9 +++++----
- 2 files changed, 7 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/syscall.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 1cbc51fc82fd..23c127db0d0c 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -46,10 +46,10 @@ obj-y				:= cputable.o syscalls.o \
- 				   prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o misc_$(BITS).o \
- 				   of_platform.o prom_parse.o firmware.o \
--				   hw_breakpoint_constraints.o
-+				   hw_breakpoint_constraints.o syscall.o
- obj-y				+= ptrace/
- obj-$(CONFIG_PPC64)		+= setup_64.o \
--				   paca.o nvram_64.o note.o syscall.o
-+				   paca.o nvram_64.o note.o
- obj-$(CONFIG_COMPAT)		+= sys_ppc32.o signal_32.o
- obj-$(CONFIG_VDSO32)		+= vdso32/
- obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
 diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index b627a6384029..bf9bf4b5bc41 100644
+index bf9bf4b5bc41..cb415170b8f2 100644
 --- a/arch/powerpc/kernel/syscall.c
 +++ b/arch/powerpc/kernel/syscall.c
-@@ -39,7 +39,7 @@ notrace long system_call_exception(long r3, long r4, long r5,
- 		BUG_ON(!(regs->msr & MSR_RI));
- 	BUG_ON(!(regs->msr & MSR_PR));
- 	BUG_ON(!FULL_REGS(regs));
--	BUG_ON(regs->softe != IRQS_ENABLED);
-+	BUG_ON(arch_irq_disabled_regs(regs));
+@@ -2,6 +2,8 @@
  
- #ifdef CONFIG_PPC_PKEY
- 	if (mmu_has_feature(MMU_FTR_PKEY)) {
-@@ -77,7 +77,7 @@ notrace long system_call_exception(long r3, long r4, long r5,
- 	 * frame, or if the unwinder was taught the first stack frame always
- 	 * returns to user with IRQS_ENABLED, this store could be avoided!
- 	 */
--	regs->softe = IRQS_ENABLED;
-+	irq_soft_mask_regs_set_state(regs, IRQS_ENABLED);
+ #include <linux/context_tracking.h>
+ #include <linux/err.h>
++#include <linux/compat.h>
++
+ #include <asm/asm-prototypes.h>
+ #include <asm/kup.h>
+ #include <asm/cputime.h>
+@@ -116,7 +118,7 @@ notrace long system_call_exception(long r3, long r4, long r5,
+ 	/* May be faster to do array_index_nospec? */
+ 	barrier_nospec();
  
- 	local_irq_enable();
+-	if (unlikely(is_32bit_task())) {
++	if (unlikely(is_compat_task())) {
+ 		f = (void *)compat_sys_call_table[r0];
  
-@@ -147,6 +147,7 @@ static notrace inline bool prep_irq_for_enabled_exit(bool clear_ri)
- 		__hard_EE_RI_disable();
- 	else
- 		__hard_irq_disable();
-+#ifdef CONFIG_PPC64
- 	if (unlikely(lazy_irq_pending_nocheck())) {
- 		/* Took an interrupt, may have more exit work to do. */
- 		if (clear_ri)
-@@ -158,7 +159,7 @@ static notrace inline bool prep_irq_for_enabled_exit(bool clear_ri)
- 	}
- 	local_paca->irq_happened = 0;
- 	irq_soft_mask_set(IRQS_ENABLED);
--
-+#endif
- 	return true;
- }
- 
-@@ -281,7 +282,7 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
- 	return ret;
- }
- 
--#ifdef CONFIG_PPC_BOOK3S /* BOOK3E not yet using this */
-+#ifdef CONFIG_PPC_BOOK3S_64 /* BOOK3E not yet using this */
- notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned long msr)
- {
- #ifdef CONFIG_PPC_BOOK3E
+ 		r3 &= 0x00000000ffffffffULL;
 -- 
 2.25.0
 
