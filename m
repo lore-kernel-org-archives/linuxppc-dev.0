@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D7B2C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE50C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:52:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAD3E20848
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:51:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAD3E20848
+	by mail.kernel.org (Postfix) with ESMTPS id 7203020848
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jan 2021 14:52:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7203020848
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DPXqX25gBzDqWc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 01:51:04 +1100 (AEDT)
+Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DPXsc2nwHzDr0K
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 01:52:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmN4brXzDqjg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DPXmN4ZNvzDqjb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:48:17 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DPXmC6PMdz9v0Gr;
- Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DPXm85JjNz9v0Gq;
+ Mon, 25 Jan 2021 15:48:08 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uvQYM7EDjgEU; Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+ with ESMTP id hUZgnv7Ch2pW; Mon, 25 Jan 2021 15:48:08 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXmC5cGzz9v0Gh;
- Mon, 25 Jan 2021 15:48:11 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DPXm844zHz9v0Gn;
+ Mon, 25 Jan 2021 15:48:08 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A3668B79E;
- Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DF9C8B79E;
+ Mon, 25 Jan 2021 15:48:14 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Wiqam-I718rs; Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+ with ESMTP id o-diI42oB_zm; Mon, 25 Jan 2021 15:48:14 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 055C28B79B;
- Mon, 25 Jan 2021 15:48:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E5F918B79B;
+ Mon, 25 Jan 2021 15:48:13 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EEE5566AD8; Mon, 25 Jan 2021 14:48:16 +0000 (UTC)
-Message-Id: <a5a5baa72c9126fa3ab88d20e7bbbb1b45e3d03c.1611585031.git.christophe.leroy@csgroup.eu>
+ id DB84566AD8; Mon, 25 Jan 2021 14:48:13 +0000 (UTC)
+Message-Id: <20405972e4b90444bf762189dbda22e919f13182.1611585031.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 References: <cover.1611585031.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 04/23] powerpc/32: Reorder instructions to avoid using CTR
- in syscall entry
+Subject: [PATCH v4 01/23] powerpc/32s: Add missing call to kuep_lock on
+ syscall entry
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon, 25 Jan 2021 14:48:16 +0000 (UTC)
+Date: Mon, 25 Jan 2021 14:48:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,62 +77,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that we are using rfi instead of mtmsr to reactivate MMU, it is
-possible to reorder instructions and avoid the need to use CTR for
-stashing SRR0.
+Userspace Execution protection and fast syscall entry were implemented
+independently from each other and were both merged in kernel 5.2,
+leading to syscall entry missing userspace execution protection.
 
-null_syscall on 8xx is reduced by 3 cycles (283 => 280 cycles).
+On syscall entry, execution of user space memory must be
+locked in the same way as on exception entry.
 
+Fixes: b86fb88855ea ("powerpc/32: implement fast entry for syscalls on non BOOKE")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_32.h | 22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 4029c51dce5d..24dc326e0d56 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -116,30 +116,28 @@
- .endm
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index b102b40c4988..b1e36602c013 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -351,6 +351,9 @@ trace_syscall_entry_irq_off:
  
- .macro SYSCALL_ENTRY trapno
--	mfspr	r12,SPRN_SPRG_THREAD
- 	mfspr	r9, SPRN_SRR1
--	mfspr	r11, SPRN_SRR0
--	mtctr	r11
-+	mfspr	r10, SPRN_SRR0
- 	andi.	r11, r9, MSR_PR
-+	beq-	99f
-+	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL)		/* can take exceptions */
-+	lis	r12, 1f@h
-+	ori	r12, r12, 1f@l
-+	mtspr	SPRN_SRR1, r11
-+	mtspr	SPRN_SRR0, r12
-+	mfspr	r12,SPRN_SPRG_THREAD
- 	mr	r11, r1
- 	lwz	r1,TASK_STACK-THREAD(r12)
--	beq-	99f
-+	tovirt(r12, r12)
- 	addi	r1, r1, THREAD_SIZE - INT_FRAME_SIZE
--	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL)		/* can take exceptions */
--	mtspr	SPRN_SRR1, r10
--	lis	r10, 1f@h
--	ori	r10, r10, 1f@l
--	mtspr	SPRN_SRR0, r10
- 	rfi
- 1:
--	tovirt(r12, r12)
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
- 	mr	r11, r1
-+	stw	r10,_NIP(r11)
- 	mflr	r10
- 	stw	r10, _LINK(r11)
--	mfctr	r10
--	stw	r10,_NIP(r11)
- 	mfcr	r10
- 	rlwinm	r10,r10,0,4,2	/* Clear SO bit in CR */
- 	stw	r10,_CCR(r11)		/* save registers */
+ 	.globl	transfer_to_syscall
+ transfer_to_syscall:
++#ifdef CONFIG_PPC_BOOK3S_32
++	kuep_lock r11, r12
++#endif
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ 	andi.	r12,r9,MSR_EE
+ 	beq-	trace_syscall_entry_irq_off
 -- 
 2.25.0
 
