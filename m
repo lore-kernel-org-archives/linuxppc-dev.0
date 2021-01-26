@@ -2,70 +2,87 @@ Return-Path: <SRS0=8Wjn=G5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C836C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 08:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3043C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:49:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E2342220B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 08:52:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E2342220B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id C35D120780
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:49:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C35D120780
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DQ0qQ5gs4zDqpd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 19:52:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DQ2585Wj8zDqqW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 20:49:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.48; helo=mail-ot1-f48.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f48.google.com (mail-ot1-f48.google.com
- [209.85.210.48])
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529;
+ helo=mail-pg1-x529.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=W2PrIvrI; dkim-atps=neutral
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com
+ [IPv6:2607:f8b0:4864:20::529])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DQ0n60gLzzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 19:50:29 +1100 (AEDT)
-Received: by mail-ot1-f48.google.com with SMTP id d1so15501704otl.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 00:50:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DQ22x6h6qzDql6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 20:47:34 +1100 (AEDT)
+Received: by mail-pg1-x529.google.com with SMTP id t25so3222913pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:47:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=SPAzPMHTUwMywoI0YQ3zzW5m1bqgTd/Dm/sAyJYiZoU=;
+ b=W2PrIvrIVmdbuaEdejTXL/7FLIJb/5mP1qpGdgnJtEEGw7NLZ+e/FI97ohHsWVDipd
+ 5dF8C5mNdVkZUqB8JfAS7PVUERPWq0KWNurxULF9TUHwuvDN0DeZRbbdCL34p8Gvz4rL
+ lmYEI8nq984fQtKOef6ZAELQJyH11zFN8f4BrI4A2zhXFdY6nTsAOBxwfPyggbwFRezg
+ fqippu/BO5P96Mb8WjAFpfV2A8YAsRcRl8N4VBP7YTcQzZte9XHY+e/2unQxKMhd6eSy
+ UmIiqO7KXZL6uSq5C2Wr8+0OKovo+QEy7YhcRTzibFN1n3rz7n4oqURRM4erA2+Pfj+/
+ 3vRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=dQS05gAa+WfDRZQbLeXyiyoUlWSeuuqlrJ0M+LF4pGw=;
- b=VIbs0eaZxgIyvmdas4mvtUBuc4+vzknpJpH7EiNhcuBMp++oMYY56X65fkCjAXySbD
- NKZ9MpevBj8CSVwreeBk7Ml3IfQKpc3LbTrzc/+RqmGyyKSd8ke77WjEnih83HXFAgdp
- ybp47CrLMqS/ALfk8wVNF1hBDcPzVrGXyDNDX50almd8ilNcpc0BL2k4KFZnDcWISE4M
- pyK0IX+IIywv2sRyFin6SrXk3+XAAMH9uCI9t2p3prD1V4UnyB7hwfQtK56h0wYmuaqk
- HDLKcZaW030TWnErfFHetkTad4lxcoVEDphJ+/BHJToPwn2RpG8nrHG0+dqa9UEM5Ecm
- jjCA==
-X-Gm-Message-State: AOAM532kseQFLx2v9UueMUG11qTMm+LknPKueqDooxhyuzXq2Vg6YONo
- fJ6S3nI8NUJv0cZCt8JMdwbFHyBt0JjjLNf1Cdg=
-X-Google-Smtp-Source: ABdhPJydB/0YI6k0pmQhCEPbC77QKWeRVaG2MIkeegbghOEhRTqm/NdHbTtvjdrHIu5hkpVekXoUN0XUzbHHm5UHQp4=
-X-Received: by 2002:a05:6830:15cc:: with SMTP id
- j12mr3278439otr.145.1611651025336; 
- Tue, 26 Jan 2021 00:50:25 -0800 (PST)
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=SPAzPMHTUwMywoI0YQ3zzW5m1bqgTd/Dm/sAyJYiZoU=;
+ b=deYLT9CXo/bBUgBmru5xy2YtTp86scNhqbYLrjH7Brs9ItHo2KDJARomF8lWfJBGCJ
+ ttjCVOc5dXA4nS7tLLNe6yTDP6vSmw6a5Ur8+lbGZYV/OdC25T8PQwnYoCEmGXzy3SEH
+ axBynaMFWRyKD3DfCGzcs8D1lohc0vcv3OMuPAeXiM1WUvR5K6PfMU7h1CVxVygg7YwW
+ XaGN/9YTyokD2fbs/C6zbBsdMFL9RIqHdnJBdFWjTxV1SIj2kxbz61ajHfSmDQ5TgIrh
+ Ogqr7PwCU+N9tdsshoWZUXuWZwohu8HCCkmWexHCfcVErgzdW05YwMyhavDR735NBcQH
+ SHDQ==
+X-Gm-Message-State: AOAM530CuSyUhwGvNfDPQ67MdaJW9Vm2zNFJQmDvDmIz9Ep2eCgrwyY2
+ MgniyufWq9661Zv/9iK8NZA=
+X-Google-Smtp-Source: ABdhPJw2MXPKRaA2kctx6FW3cVhePx8H93ZknPUe2RtbSEpjbwM/uc3AYcTkxnbnOic06K/F2HkFzQ==
+X-Received: by 2002:a62:54c3:0:b029:1bc:731c:dfc1 with SMTP id
+ i186-20020a6254c30000b02901bc731cdfc1mr4627362pfb.20.1611654448148; 
+ Tue, 26 Jan 2021 01:47:28 -0800 (PST)
+Received: from localhost
+ (192.156.221.203.dial.dynamic.acc50-nort-cbr.comindico.com.au.
+ [203.221.156.192])
+ by smtp.gmail.com with ESMTPSA id v21sm1095752pfn.80.2021.01.26.01.47.26
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 26 Jan 2021 01:47:27 -0800 (PST)
+Date: Tue, 26 Jan 2021 19:47:22 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v11 12/13] mm/vmalloc: Hugepage vmalloc mappings
+To: Andrew Morton <akpm@linux-foundation.org>, Ding Tianhong
+ <dingtianhong@huawei.com>, linux-mm@kvack.org
+References: <20210126044510.2491820-1-npiggin@gmail.com>
+ <20210126044510.2491820-13-npiggin@gmail.com>
+ <0f360e6e-6d34-19ce-6c76-a17a5f4f7fc3@huawei.com>
+In-Reply-To: <0f360e6e-6d34-19ce-6c76-a17a5f4f7fc3@huawei.com>
 MIME-Version: 1.0
-References: <20210120105246.23218-1-michael@walle.cc>
- <CAL_JsqLSJCLtgPyAdKSqsy=JoHSLYef_0s-stTbiJ+VCq2qaSA@mail.gmail.com>
- <CAGETcx86HMo=gaDdXFyJ4QQ-pGXWzw2G0J=SjC-eq4K7B1zQHg@mail.gmail.com>
- <c3e35b90e173b15870a859fd7001a712@walle.cc>
- <CAGETcx8eZRd1fJ3yuO_t2UXBFHObeNdv-c8oFH3mXw6zi=zOkQ@mail.gmail.com>
- <f706c0e4b684e07635396fcf02f4c9a6@walle.cc>
- <CAGETcx8_6Hp+MWFOhRohXwdWFSfCc7A=zpb5QYNHZE5zv0bDig@mail.gmail.com>
- <CAMuHMdWvFej-6vkaLM44t7eX2LpkDSXu4_7VH-X-3XRueXTO=A@mail.gmail.com>
- <a24391e62b107040435766fff52bdd31@walle.cc>
- <CAGETcx8FO+YSM0jwCnDdnvE3NCdjZ=1FSmAZpyaOEOvCgd4SXw@mail.gmail.com>
-In-Reply-To: <CAGETcx8FO+YSM0jwCnDdnvE3NCdjZ=1FSmAZpyaOEOvCgd4SXw@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 26 Jan 2021 09:50:14 +0100
-Message-ID: <CAMuHMdX8__juNc-Lx8Tu9abMKq-pT=yA4s6D1w4ZeStKOasGpg@mail.gmail.com>
-Subject: Re: [PATCH] PCI: dwc: layerscape: convert to builtin_platform_driver()
-To: Saravana Kannan <saravanak@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-Id: <1611653945.t3oot63nwn.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,106 +94,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Roy Zang <roy.zang@nxp.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Minghuan Lian <minghuan.Lian@nxp.com>, Michael Walle <michael@walle.cc>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mingkai Hu <mingkai.hu@nxp.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>,
+ Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Saravana,
+Excerpts from Ding Tianhong's message of January 26, 2021 4:59 pm:
+> On 2021/1/26 12:45, Nicholas Piggin wrote:
+>> Support huge page vmalloc mappings. Config option HAVE_ARCH_HUGE_VMALLOC
+>> enables support on architectures that define HAVE_ARCH_HUGE_VMAP and
+>> supports PMD sized vmap mappings.
+>>=20
+>> vmalloc will attempt to allocate PMD-sized pages if allocating PMD size
+>> or larger, and fall back to small pages if that was unsuccessful.
+>>=20
+>> Architectures must ensure that any arch specific vmalloc allocations
+>> that require PAGE_SIZE mappings (e.g., module allocations vs strict
+>> module rwx) use the VM_NOHUGE flag to inhibit larger mappings.
+>>=20
+>> When hugepage vmalloc mappings are enabled in the next patch, this
+>> reduces TLB misses by nearly 30x on a `git diff` workload on a 2-node
+>> POWER9 (59,800 -> 2,100) and reduces CPU cycles by 0.54%.
+>>=20
+>> This can result in more internal fragmentation and memory overhead for a
+>> given allocation, an option nohugevmalloc is added to disable at boot.
+>>=20
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  arch/Kconfig            |  11 ++
+>>  include/linux/vmalloc.h |  21 ++++
+>>  mm/page_alloc.c         |   5 +-
+>>  mm/vmalloc.c            | 215 +++++++++++++++++++++++++++++++---------
+>>  4 files changed, 205 insertions(+), 47 deletions(-)
+>>=20
+>> diff --git a/arch/Kconfig b/arch/Kconfig
+>> index 24862d15f3a3..eef170e0c9b8 100644
+>> --- a/arch/Kconfig
+>> +++ b/arch/Kconfig
+>> @@ -724,6 +724,17 @@ config HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
+>>  config HAVE_ARCH_HUGE_VMAP
+>>  	bool
+>> =20
+>> +#
+>> +#  Archs that select this would be capable of PMD-sized vmaps (i.e.,
+>> +#  arch_vmap_pmd_supported() returns true), and they must make no assum=
+ptions
+>> +#  that vmalloc memory is mapped with PAGE_SIZE ptes. The VM_NO_HUGE_VM=
+AP flag
+>> +#  can be used to prohibit arch-specific allocations from using hugepag=
+es to
+>> +#  help with this (e.g., modules may require it).
+>> +#
+>> +config HAVE_ARCH_HUGE_VMALLOC
+>> +	depends on HAVE_ARCH_HUGE_VMAP
+>> +	bool
+>> +
+>>  config ARCH_WANT_HUGE_PMD_SHARE
+>>  	bool
+>> =20
+>> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+>> index 99ea72d547dc..93270adf5db5 100644
+>> --- a/include/linux/vmalloc.h
+>> +++ b/include/linux/vmalloc.h
+>> @@ -25,6 +25,7 @@ struct notifier_block;		/* in notifier.h */
+>>  #define VM_NO_GUARD		0x00000040      /* don't add guard page */
+>>  #define VM_KASAN		0x00000080      /* has allocated kasan shadow memory =
+*/
+>>  #define VM_MAP_PUT_PAGES	0x00000100	/* put pages and free array in vfre=
+e */
+>> +#define VM_NO_HUGE_VMAP		0x00000200	/* force PAGE_SIZE pte mapping */
+>>=20
+>>  /*
+>>   * VM_KASAN is used slighly differently depending on CONFIG_KASAN_VMALL=
+OC.
+>> @@ -59,6 +60,9 @@ struct vm_struct {
+>>  	unsigned long		size;
+>>  	unsigned long		flags;
+>>  	struct page		**pages;
+>> +#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
+>> +	unsigned int		page_order;
+>> +#endif
+>>  	unsigned int		nr_pages;
+>>  	phys_addr_t		phys_addr;
+>>  	const void		*caller;
+> Hi Nicholas:
+>=20
+> Give a suggestion :)
+>=20
+> The page order was only used to indicate the huge page flag for vm area, =
+and only valid when
+> size bigger than PMD_SIZE, so can we use the vm flgas to instead of that,=
+ just like define the
+> new flag named VM_HUGEPAGE, it would not break the vm struct, and it is e=
+asier for me to backport the serious
+> patches to our own branches. (Base on the lts version).
 
-On Mon, Jan 25, 2021 at 11:42 PM Saravana Kannan <saravanak@google.com> wrote:
-> On Mon, Jan 25, 2021 at 11:49 AM Michael Walle <michael@walle.cc> wrote:
-> > Am 2021-01-21 12:01, schrieb Geert Uytterhoeven:
-> > > On Thu, Jan 21, 2021 at 1:05 AM Saravana Kannan <saravanak@google.com>
-> > > wrote:
-> > >> On Wed, Jan 20, 2021 at 3:53 PM Michael Walle <michael@walle.cc>
-> > >> wrote:
-> > >> > Am 2021-01-20 20:47, schrieb Saravana Kannan:
-> > >> > > On Wed, Jan 20, 2021 at 11:28 AM Michael Walle <michael@walle.cc>
-> > >> > > wrote:
-> > >> > >>
-> > >> > >> [RESEND, fat-fingered the buttons of my mail client and converted
-> > >> > >> all CCs to BCCs :(]
-> > >> > >>
-> > >> > >> Am 2021-01-20 20:02, schrieb Saravana Kannan:
-> > >> > >> > On Wed, Jan 20, 2021 at 6:24 AM Rob Herring <robh@kernel.org> wrote:
-> > >> > >> >>
-> > >> > >> >> On Wed, Jan 20, 2021 at 4:53 AM Michael Walle <michael@walle.cc>
-> > >> > >> >> wrote:
-> > >> > >> >> >
-> > >> > >> >> > fw_devlink will defer the probe until all suppliers are ready. We can't
-> > >> > >> >> > use builtin_platform_driver_probe() because it doesn't retry after probe
-> > >> > >> >> > deferral. Convert it to builtin_platform_driver().
-> > >> > >> >>
-> > >> > >> >> If builtin_platform_driver_probe() doesn't work with fw_devlink, then
-> > >> > >> >> shouldn't it be fixed or removed?
-> > >> > >> >
-> > >> > >> > I was actually thinking about this too. The problem with fixing
-> > >> > >> > builtin_platform_driver_probe() to behave like
-> > >> > >> > builtin_platform_driver() is that these probe functions could be
-> > >> > >> > marked with __init. But there are also only 20 instances of
-> > >> > >> > builtin_platform_driver_probe() in the kernel:
-> > >> > >> > $ git grep ^builtin_platform_driver_probe | wc -l
-> > >> > >> > 20
-> > >> > >> >
-> > >> > >> > So it might be easier to just fix them to not use
-> > >> > >> > builtin_platform_driver_probe().
-> > >> > >> >
-> > >> > >> > Michael,
-> > >> > >> >
-> > >> > >> > Any chance you'd be willing to help me by converting all these to
-> > >> > >> > builtin_platform_driver() and delete builtin_platform_driver_probe()?
-> > >> > >>
-> > >> > >> If it just moving the probe function to the _driver struct and
-> > >> > >> remove the __init annotations. I could look into that.
-> > >> > >
-> > >> > > Yup. That's pretty much it AFAICT.
-> > >> > >
-> > >> > > builtin_platform_driver_probe() also makes sure the driver doesn't ask
-> > >> > > for async probe, etc. But I doubt anyone is actually setting async
-> > >> > > flags and still using builtin_platform_driver_probe().
-> > >> >
-> > >> > Hasn't module_platform_driver_probe() the same problem? And there
-> > >> > are ~80 drivers which uses that.
-> > >>
-> > >> Yeah. The biggest problem with all of these is the __init markers.
-> > >> Maybe some familiar with coccinelle can help?
-> > >
-> > > And dropping them will increase memory usage.
-> >
-> > Although I do have the changes for the builtin_platform_driver_probe()
-> > ready, I don't think it makes much sense to send these unless we agree
-> > on the increased memory footprint. While there are just a few
-> > builtin_platform_driver_probe() and memory increase _might_ be
-> > negligible, there are many more module_platform_driver_probe().
->
-> While it's good to drop code that'll not be used past kernel init, the
-> module_platform_driver_probe() is going even more extreme. It doesn't
-> even allow deferred probe (well before kernel init is done). I don't
-> think that behavior is right and that's why we should delete it. Also,
+Hmm, it might be possible. I'm not sure if 1GB vmallocs will be used any=20
+time soon (or maybe they will for edge case configurations? It would be=20
+trivial to add support for).
 
-This construct is typically used for builtin hardware for which the
-dependencies are registered very early, and thus known to probe at
-first try (if present).
+The other concern I have is that Christophe IIRC was asking about=20
+implementing a mapping for PPC which used TLB mappings that were=20
+different than kernel page table tree size. Although I guess we could=20
+deal with that when it comes.
 
-> I doubt if any of these probe functions even take up 4KB of memory.
+I like the flexibility of page_order though. How hard would it be for=20
+you to do the backport with VM_HUGEPAGE yourself?
 
-How many 4 KiB pages do you have in a system with 10 MiB of SRAM?
-How many can you afford to waste?
+I should also say, thanks for all the review and testing from the Huawei=20
+team. Do you have an x86 patch?
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+Nick
