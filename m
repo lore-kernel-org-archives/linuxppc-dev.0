@@ -2,89 +2,56 @@ Return-Path: <SRS0=8Wjn=G5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F85DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:52:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 993F6C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:55:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98028206B5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:52:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98028206B5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 94C9820780
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 09:55:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94C9820780
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DQ28X0vxwzDqWk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 20:52:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DQ2Cs229zzDqVs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jan 2021 20:55:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534;
- helo=mail-pg1-x534.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=HAPMFftR; dkim-atps=neutral
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com
- [IPv6:2607:f8b0:4864:20::534])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DQ25y178FzDq9l
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 20:50:13 +1100 (AEDT)
-Received: by mail-pg1-x534.google.com with SMTP id b21so4325679pgk.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 01:50:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=0BoP+OYH6EXdZxnw4jTi+ce0h1kJJ+YvrP995HEeEfk=;
- b=HAPMFftRZxQG/fBZeVQHKpfYqezKjPzUFWYma5LOeOZuhMrSgaQnFghwR82Hi0Tcad
- 6i4fqeK0OEgAe0lPjMHX+w/LEXKabwaw3WgD+7gti+Eq3I7UGN+6+YRRaTKc5T6KgGFT
- x+FH14E2Wga0siPTYUQdnIEKHn+e2plYn73AjOkuryD4Sp/FSHEuDne1lLKJVidRQtNt
- obqeveTlFYP05jEmDI0GDr5yXXaz9RQ4vG8/zio/JQSQ+/5P7bwkD8IJjsswZP/7emSG
- r4VtW5DBjjmSYLx8gY9cAkgVlI/TN/bJJNxZzeydR0tM7Q0sJIlZvG5IcVD30HdqeCXI
- GG4Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=0BoP+OYH6EXdZxnw4jTi+ce0h1kJJ+YvrP995HEeEfk=;
- b=QReAPEzskgfX/PS4YfxrkITtmzUma6jxrKGsvD1ctZOEsPyVIfdKRRMpRp6/X3MT2b
- kq7uOZ7hwxXeN/zN6kXP4RO7wwzeSG9BG4Epk4VpTgKycfefRu1N36233XrMXN97bNnu
- X1leD7YuTlav/lUjbcXWNqbeIjJaLJTklap2aTERBAImZyYqoszxPlDgJymDIRfGCqGj
- kdgW/ZUkDCw9HKwNiZP5mwWLL5qxPBiwWu9X+Q6U7HH2cRd7WmK14ksrBYHoaNVBHXDQ
- 2KisoWnMhR37XARvi31yIsBVQKpby/Lx9tm6/+kKskvvp9VM/Or/d6MthVgkTq31sbnH
- Xdrg==
-X-Gm-Message-State: AOAM5301jktLQLeIQObQi7GLzLHfWEO2vqL/68iAMSFEo1/UopziR6Rp
- G8o4GIOmQJ4xw6AA5rg5ZtA=
-X-Google-Smtp-Source: ABdhPJzy2Ur7IdM2ZfVTsqMbS5tBjuUgvkwINi0xes7/ASkks7ScG4l9nU4ZAYkMr3Wud5aCblU1YA==
-X-Received: by 2002:aa7:8b0f:0:b029:1c0:e782:ba29 with SMTP id
- f15-20020aa78b0f0000b02901c0e782ba29mr4498133pfd.37.1611654610729; 
- Tue, 26 Jan 2021 01:50:10 -0800 (PST)
-Received: from localhost
- (192.156.221.203.dial.dynamic.acc50-nort-cbr.comindico.com.au.
- [203.221.156.192])
- by smtp.gmail.com with ESMTPSA id c11sm17063325pfl.185.2021.01.26.01.50.09
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 26 Jan 2021 01:50:10 -0800 (PST)
-Date: Tue, 26 Jan 2021 19:50:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: RE: [PATCH v10 11/12] mm/vmalloc: Hugepage vmalloc mappings
-To: Andrew Morton <akpm@linux-foundation.org>, 'Christophe Leroy'
- <christophe.leroy@csgroup.eu>, David Laight <David.Laight@ACULAB.COM>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <20210124082230.2118861-1-npiggin@gmail.com>
- <20210124082230.2118861-12-npiggin@gmail.com>
- <933352bd-dcf3-c483-4d7a-07afe1116cf1@csgroup.eu>
- <7749b310046c4b9baa07037af1d97d87@AcuMS.aculab.com>
-In-Reply-To: <7749b310046c4b9baa07037af1d97d87@AcuMS.aculab.com>
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
+ envelope-from=linmiaohe@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DPxvw3CJhzDqCY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2021 17:41:08 +1100 (AEDT)
+Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.60])
+ by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4DPxst15TDzl9tD;
+ Tue, 26 Jan 2021 14:39:30 +0800 (CST)
+Received: from [10.174.179.117] (10.174.179.117) by
+ DGGEMS405-HUB.china.huawei.com (10.3.19.205) with Microsoft SMTP Server id
+ 14.3.498.0; Tue, 26 Jan 2021 14:40:50 +0800
+Subject: Re: [PATCH v11 01/13] mm/vmalloc: fix HUGE_VMAP regression by
+ enabling huge pages in vmalloc_to_page
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <20210126044510.2491820-1-npiggin@gmail.com>
+ <20210126044510.2491820-2-npiggin@gmail.com>
+From: Miaohe Lin <linmiaohe@huawei.com>
+Message-ID: <76f6c211-c383-51d2-7c5a-575f0d51b82d@huawei.com>
+Date: Tue, 26 Jan 2021 14:40:50 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
 MIME-Version: 1.0
-Message-Id: <1611654541.je6x6v0xw5.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20210126044510.2491820-2-npiggin@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.179.117]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Tue, 26 Jan 2021 20:53:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,93 +63,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Ding Tianhong <dingtianhong@huawei.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@infradead.org>,
- =?iso-8859-1?q?Zefan=0A?= Li <lizefan@huawei.com>,
- Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, Ding Tianhong <dingtianhong@huawei.com>,
+ linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ Linux-MM <linux-mm@kvack.org>, Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from David Laight's message of January 25, 2021 10:24 pm:
-> From: Christophe Leroy
->> Sent: 25 January 2021 09:15
->>=20
->> Le 24/01/2021 =C3=A0 09:22, Nicholas Piggin a =C3=A9crit=C2=A0:
->> > Support huge page vmalloc mappings. Config option HAVE_ARCH_HUGE_VMALL=
-OC
->> > enables support on architectures that define HAVE_ARCH_HUGE_VMAP and
->> > supports PMD sized vmap mappings.
->> >
->> > vmalloc will attempt to allocate PMD-sized pages if allocating PMD siz=
-e
->> > or larger, and fall back to small pages if that was unsuccessful.
->> >
->> > Architectures must ensure that any arch specific vmalloc allocations
->> > that require PAGE_SIZE mappings (e.g., module allocations vs strict
->> > module rwx) use the VM_NOHUGE flag to inhibit larger mappings.
->> >
->> > When hugepage vmalloc mappings are enabled in the next patch, this
->> > reduces TLB misses by nearly 30x on a `git diff` workload on a 2-node
->> > POWER9 (59,800 -> 2,100) and reduces CPU cycles by 0.54%.
->> >
->> > This can result in more internal fragmentation and memory overhead for=
- a
->> > given allocation, an option nohugevmalloc is added to disable at boot.
->> >
->> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> > ---
->> >   arch/Kconfig            |  10 +++
->> >   include/linux/vmalloc.h |  18 ++++
->> >   mm/page_alloc.c         |   5 +-
->> >   mm/vmalloc.c            | 192 ++++++++++++++++++++++++++++++--------=
---
->> >   4 files changed, 177 insertions(+), 48 deletions(-)
->> >
->>=20
->> > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> > index 0377e1d059e5..eef61e0f5170 100644
->> > --- a/mm/vmalloc.c
->> > +++ b/mm/vmalloc.c
->>=20
->> > @@ -2691,15 +2746,18 @@ EXPORT_SYMBOL_GPL(vmap_pfn);
->> >   #endif /* CONFIG_VMAP_PFN */
->> >
->> >   static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_m=
-ask,
->> > -				 pgprot_t prot, int node)
->> > +				 pgprot_t prot, unsigned int page_shift,
->> > +				 int node)
->> >   {
->> >   	const gfp_t nested_gfp =3D (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZE=
-RO;
->> > -	unsigned int nr_pages =3D get_vm_area_size(area) >> PAGE_SHIFT;
->> > -	unsigned long array_size;
->> > -	unsigned int i;
->> > +	unsigned int page_order =3D page_shift - PAGE_SHIFT;
->> > +	unsigned long addr =3D (unsigned long)area->addr;
->> > +	unsigned long size =3D get_vm_area_size(area);
->> > +	unsigned int nr_small_pages =3D size >> PAGE_SHIFT;
->> >   	struct page **pages;
->> > +	unsigned int i;
->> >
->> > -	array_size =3D (unsigned long)nr_pages * sizeof(struct page *);
->> > +	array_size =3D (unsigned long)nr_small_pages * sizeof(struct page *)=
-;
->>=20
->> array_size() is a function in include/linux/overflow.h
->>=20
->> For some reason, it breaks the build with your series.
->=20
-> I can't see the replacement definition for array_size.
-> The old local variable is deleted.
+Hi:
+On 2021/1/26 12:44, Nicholas Piggin wrote:
+> vmalloc_to_page returns NULL for addresses mapped by larger pages[*].
+> Whether or not a vmap is huge depends on the architecture details,
+> alignments, boot options, etc., which the caller can not be expected
+> to know. Therefore HUGE_VMAP is a regression for vmalloc_to_page.
+> 
+> This change teaches vmalloc_to_page about larger pages, and returns
+> the struct page that corresponds to the offset within the large page.
+> This makes the API agnostic to mapping implementation details.
+> 
+> [*] As explained by commit 029c54b095995 ("mm/vmalloc.c: huge-vmap:
+>     fail gracefully on unexpected huge vmap mappings")
+> 
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  mm/vmalloc.c | 41 ++++++++++++++++++++++++++---------------
+>  1 file changed, 26 insertions(+), 15 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index e6f352bf0498..62372f9e0167 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -34,7 +34,7 @@
+>  #include <linux/bitops.h>
+>  #include <linux/rbtree_augmented.h>
+>  #include <linux/overflow.h>
+> -
+> +#include <linux/pgtable.h>
+>  #include <linux/uaccess.h>
+>  #include <asm/tlbflush.h>
+>  #include <asm/shmparam.h>
+> @@ -343,7 +343,9 @@ int is_vmalloc_or_module_addr(const void *x)
+>  }
+>  
+>  /*
+> - * Walk a vmap address to the struct page it maps.
+> + * Walk a vmap address to the struct page it maps. Huge vmap mappings will
+> + * return the tail page that corresponds to the base page address, which
+> + * matches small vmap mappings.
+>   */
+>  struct page *vmalloc_to_page(const void *vmalloc_addr)
+>  {
+> @@ -363,25 +365,33 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
+>  
+>  	if (pgd_none(*pgd))
+>  		return NULL;
+> +	if (WARN_ON_ONCE(pgd_leaf(*pgd)))
+> +		return NULL; /* XXX: no allowance for huge pgd */
+> +	if (WARN_ON_ONCE(pgd_bad(*pgd)))
+> +		return NULL;
+> +
+>  	p4d = p4d_offset(pgd, addr);
+>  	if (p4d_none(*p4d))
+>  		return NULL;
+> -	pud = pud_offset(p4d, addr);
+> +	if (p4d_leaf(*p4d))
+> +		return p4d_page(*p4d) + ((addr & ~P4D_MASK) >> PAGE_SHIFT);
+> +	if (WARN_ON_ONCE(p4d_bad(*p4d)))
+> +		return NULL;
+>  
+> -	/*
+> -	 * Don't dereference bad PUD or PMD (below) entries. This will also
+> -	 * identify huge mappings, which we may encounter on architectures
+> -	 * that define CONFIG_HAVE_ARCH_HUGE_VMAP=y. Such regions will be
+> -	 * identified as vmalloc addresses by is_vmalloc_addr(), but are
+> -	 * not [unambiguously] associated with a struct page, so there is
+> -	 * no correct value to return for them.
+> -	 */
+> -	WARN_ON_ONCE(pud_bad(*pud));
+> -	if (pud_none(*pud) || pud_bad(*pud))
+> +	pud = pud_offset(p4d, addr);
+> +	if (pud_none(*pud))
+> +		return NULL;
+> +	if (pud_leaf(*pud))
+> +		return pud_page(*pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+> +	if (WARN_ON_ONCE(pud_bad(*pud)))
+>  		return NULL;
+> +
+>  	pmd = pmd_offset(pud, addr);
+> -	WARN_ON_ONCE(pmd_bad(*pmd));
+> -	if (pmd_none(*pmd) || pmd_bad(*pmd))
+> +	if (pmd_none(*pmd))
+> +		return NULL;
+> +	if (pmd_leaf(*pmd))
+> +		return pmd_page(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+> +	if (WARN_ON_ONCE(pmd_bad(*pmd)))
+>  		return NULL;
+>  
+>  	ptep = pte_offset_map(pmd, addr);
+> @@ -389,6 +399,7 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
+>  	if (pte_present(pte))
+>  		page = pte_page(pte);
+>  	pte_unmap(ptep);
+> +
+>  	return page;
+>  }
+>  EXPORT_SYMBOL(vmalloc_to_page);
+> 
 
-Yeah I saw that after taking another look. Must have sent in a bad diff.=20
-The v11 fixed that and a couple of other compile issues.
+LGTM. Thanks.
 
-Thanks,
-Nick
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
