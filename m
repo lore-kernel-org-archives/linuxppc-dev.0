@@ -2,62 +2,63 @@ Return-Path: <SRS0=6Hi5=G6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50289C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jan 2021 18:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F7BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jan 2021 18:04:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B940264DA0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jan 2021 18:02:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B940264DA0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8928A64DA0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jan 2021 18:04:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8928A64DA0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DQryz3StZzDr1Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:02:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DQs1q1YQ1zDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:04:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=I8l5HtBl; 
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=qSG9vSF3; 
  dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DQrwF4RH8zDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:59:41 +1100 (AEDT)
-Received: from [192.168.0.104] (c-73-42-176-67.hsd1.wa.comcast.net
- [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 8887120B7192;
- Wed, 27 Jan 2021 09:59:38 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 8887120B7192
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1611770379;
- bh=u6YDtCnPbqCR0gis78ss8Y7oDmOQBhIrTOjdneH59BY=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=I8l5HtBlTBedrIQBGerHNcZYLR35V9yPxqkGcZTZfVC0F5ANK7kYqJko9VbWh+e4B
- WyL8zYfK6cVs+7f5JIUpGAoDBqNXBX/k77L3StP9OpEO0arTI6RNBm0OBKhV02U7da
- 3QrrsCCB5/Mu3bh4h0E8igoAVJJmAiIbLxoo4p9A=
-Subject: Re: [PATCH v15 09/10] arm64: Call kmalloc() to allocate DTB buffer
-To: Will Deacon <will@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DQrzk6J0qzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 05:02:42 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D404664DAB;
+ Wed, 27 Jan 2021 18:02:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1611770560;
+ bh=/DgxQRCaQ+bjOKRCBN5t16Filx/2Xbp2TwXvChsBqCQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=qSG9vSF3mDlNwCCULEl6l24OPcV44Jmusij7YRPP1IC5bdAh7ceBgqKWM0xuAOewn
+ NVHyVRKDbbYRehmj2RGQ5BtIopm9rf+shq+6+R77lDYxwuKOvU7jYvtiQ8hjF4U4ro
+ eTJIQw8PxFZr1SRr+dFs6CglAsDv7dSS9CflXFYv8CLnw/k809/kWy5K5L4Eg7g/Bh
+ +PPnE3LazntbQjf9i14fz+0P48+8LWQ7Nv2FA/qvIDqt7Wd0pijK2k8F5M2R2f4GSi
+ KsncqGDHnG1EZwHY1IkZUASFGR6P03jG3HIiV1CC9i3Z/VOy5WaFGFlnG1hKn4Zzxf
+ w0WRGvIEhS7cQ==
+Date: Wed, 27 Jan 2021 18:02:30 +0000
+From: Will Deacon <will@kernel.org>
+To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Subject: Re: [PATCH v15 10/10] arm64: Add IMA log information in kimage used
+ for kexec
+Message-ID: <20210127180230.GA593@willie-the-truck>
 References: <20210115173017.30617-1-nramas@linux.microsoft.com>
- <20210115173017.30617-10-nramas@linux.microsoft.com>
- <20210127165208.GA358@willie-the-truck>
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <d3330793-6054-6e59-b727-44bf8e5653cd@linux.microsoft.com>
-Date: Wed, 27 Jan 2021 09:59:38 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <20210115173017.30617-11-nramas@linux.microsoft.com>
+ <20210127165424.GB358@willie-the-truck>
+ <dec23eb8-0b27-3227-d1ef-f759338a7f9f@linux.microsoft.com>
 MIME-Version: 1.0
-In-Reply-To: <20210127165208.GA358@willie-the-truck>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dec23eb8-0b27-3227-d1ef-f759338a7f9f@linux.microsoft.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,54 +85,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/27/21 8:52 AM, Will Deacon wrote:
-
-Hi Will,
-
-> On Fri, Jan 15, 2021 at 09:30:16AM -0800, Lakshmi Ramasubramanian wrote:
->> create_dtb() function allocates kernel virtual memory for
->> the device tree blob (DTB).  This is not consistent with other
->> architectures, such as powerpc, which calls kmalloc() for allocating
->> memory for the DTB.
->>
->> Call kmalloc() to allocate memory for the DTB, and kfree() to free
->> the allocated memory.
->>
->> Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
->> Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
->> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
->> ---
->>   arch/arm64/kernel/machine_kexec_file.c | 12 +++++++-----
->>   1 file changed, 7 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
->> index 7de9c47dee7c..51c40143d6fa 100644
->> --- a/arch/arm64/kernel/machine_kexec_file.c
->> +++ b/arch/arm64/kernel/machine_kexec_file.c
->> @@ -29,7 +29,7 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
->>   
->>   int arch_kimage_file_post_load_cleanup(struct kimage *image)
->>   {
->> -	vfree(image->arch.dtb);
->> +	kfree(image->arch.dtb);
->>   	image->arch.dtb = NULL;
->>   
->>   	vfree(image->arch.elf_headers);
->> @@ -59,19 +59,21 @@ static int create_dtb(struct kimage *image,
->>   			+ cmdline_len + DTB_EXTRA_SPACE;
->>   
->>   	for (;;) {
->> -		buf = vmalloc(buf_size);
->> +		buf = kmalloc(buf_size, GFP_KERNEL);
+On Wed, Jan 27, 2021 at 09:56:53AM -0800, Lakshmi Ramasubramanian wrote:
+> On 1/27/21 8:54 AM, Will Deacon wrote:
+> > On Fri, Jan 15, 2021 at 09:30:17AM -0800, Lakshmi Ramasubramanian wrote:
+> > > Address and size of the buffer containing the IMA measurement log need
+> > > to be passed from the current kernel to the next kernel on kexec.
+> > > 
+> > > Add address and size fields to "struct kimage_arch" for ARM64 platform
+> > > to hold the address and size of the IMA measurement log buffer.
+> > > 
+> > > Update CONFIG_KEXEC_FILE to select CONFIG_HAVE_IMA_KEXEC, if CONFIG_IMA
+> > > is enabled, to indicate that the IMA measurement log information is
+> > > present in the device tree for ARM64.
+> > > 
+> > > Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+> > > Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+> > > Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+> > > Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> > > ---
+> > >   arch/arm64/Kconfig             | 1 +
+> > >   arch/arm64/include/asm/kexec.h | 5 +++++
+> > >   2 files changed, 6 insertions(+)
+> > > 
+> > > diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> > > index 1d466addb078..ea7f7fe3dccd 100644
+> > > --- a/arch/arm64/Kconfig
+> > > +++ b/arch/arm64/Kconfig
+> > > @@ -1094,6 +1094,7 @@ config KEXEC
+> > >   config KEXEC_FILE
+> > >   	bool "kexec file based system call"
+> > >   	select KEXEC_CORE
+> > > +	select HAVE_IMA_KEXEC if IMA
+> > >   	help
+> > >   	  This is new version of kexec system call. This system call is
+> > >   	  file based and takes file descriptors as system call argument
+> > > diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
+> > > index d24b527e8c00..2bd19ccb6c43 100644
+> > > --- a/arch/arm64/include/asm/kexec.h
+> > > +++ b/arch/arm64/include/asm/kexec.h
+> > > @@ -100,6 +100,11 @@ struct kimage_arch {
+> > >   	void *elf_headers;
+> > >   	unsigned long elf_headers_mem;
+> > >   	unsigned long elf_headers_sz;
+> > > +
+> > > +#ifdef CONFIG_IMA_KEXEC
+> > > +	phys_addr_t ima_buffer_addr;
+> > > +	size_t ima_buffer_size;
+> > > +#endif
+> > 
+> > Why do these need to be in the arch structure instead of 'struct kimage'?
+> > 
 > 
-> Is there a functional need for this patch? I build the 'dtbs' target just
-> now and sdm845-db845c.dtb is approaching 100K, which feels quite large
-> for kmalloc().
+> Currently, only powerpc and, with this patch set, arm64 have support for
+> carrying forward IMA measurement list across kexec system call. The above
+> fields are used for tracking IMA measurement list.
+> 
+> Do you see a reason to move these fields to "struct kimage"?
 
-Changing the allocation from vmalloc() to kmalloc() would help us 
-further consolidate the DTB setup code for powerpc and arm64.
+If they're gated on CONFIG_IMA_KEXEC, then it seems harmless for them to
+be added to the shared structure. Or are you saying that there are
+architectures which have CONFIG_IMA_KEXEC but do not want these fields?
 
-thanks,
-  -lakshmi
-
-
+Will
