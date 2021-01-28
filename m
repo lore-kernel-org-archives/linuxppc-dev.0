@@ -5,21 +5,21 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F920C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:21:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 123CDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:23:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7211264DD6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:21:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7211264DD6
+	by mail.kernel.org (Postfix) with ESMTPS id D3CA264E1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:23:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3CA264E1C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTLp1GBnzDrgx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:21:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTPD1yrtzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:23:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=JrXlXz27; 
+ header.s=casper.20170209 header.b=p4NhGTdU; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTCn6ggxzDrZ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTCq2f9BzDrdJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=fOGP2fwzT2JhZvsiTzA+wVkqRw7CvPV2PR044xdNRuY=; b=JrXlXz27/mzG2g1VdPZUxTrM1W
- Oona3eMQfcz7R7M+O+Lo4QIA7oJJf710/28xl/+/09Lgcoi5qDaXiJiKGKALoCc7OnrHpc8uacY7W
- BOm73nKO5zs/tLQHoPldiFiCSxVFstOJUSvDj5GIOBKfrEWTuHTkdkwwJrP6v2Brp8JFKHGaUug5G
- LKk9emCqi8DCShtS3rQhC1nt1wfQXdA8bfRLCjyxZBGGW9zPkCqwtywiggwei98SbJws8xQic47A0
- JOusy0/bIcl8DzKg+ZFBTQhGbkoNpj7LNfq+5N2kQOrD8J8Kchsh+NpW/7u0MgJRBid3Fe35rrtqy
- ceNg/hCw==;
+ bh=tlNH0GImJ28FUndbA3Nv1X4L5OHbCQsFUKLhO1OFkXY=; b=p4NhGTdUZ5yI/Png3fjEr1fCfu
+ V9Y1uE90oaupU7+h9ePNo6ZYLtcKnqgI1QtQ9dzSME8dW6l2dAD6lFOKBifKRKFf/7YpRoOs0nZDn
+ BP+B0PPpTkH2l/mOhcJLlIKwMf8PaRi7EaEpWX2MSuf7Csiwevd3CMg56Vl2iwG3bsUcSv8s2+IdJ
+ UFHbRAzkd7/orOa8xt4agB1HIpaRgE6I7iXE37dwyKhNOOv1kbMrdGLYjNAZphCivvkB+nBPLdr56
+ +JvnAMezZMcVdeXASaPjQL4c0DNF2AZqfOOC8te448vh8oWdarqhkSYV732DenTK53lfeHuN6uWDb
+ hnRA/LOw==;
 Received: from [2001:4bb8:198:6bf4:e052:196b:7e32:37d9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l5BoS-008nr8-5T; Thu, 28 Jan 2021 18:14:38 +0000
+ id 1l5Boi-008nrr-Uk; Thu, 28 Jan 2021 18:14:54 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,9 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 02/13] drm: remove drm_fb_helper_modinit
-Date: Thu, 28 Jan 2021 19:14:10 +0100
-Message-Id: <20210128181421.2279-3-hch@lst.de>
+Subject: [PATCH 04/13] module: use RCU to synchronize find_module
+Date: Thu, 28 Jan 2021 19:14:12 +0100
+Message-Id: <20210128181421.2279-5-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210128181421.2279-1-hch@lst.de>
 References: <20210128181421.2279-1-hch@lst.de>
@@ -88,105 +88,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-drm_fb_helper_modinit has a lot of boilerplate for what is not very
-simple functionality.  Just open code it in the only caller using
-IS_ENABLED and IS_MODULE, and skip the find_module check as a
-request_module is harmless if the module is already loaded (and not
-other caller has this find_module check either).
+Allow for a RCU-sched critical section around find_module, following
+the lower level find_module_all helper, and switch the two callers
+outside of module.c to use such a RCU-sched critical section instead
+of module_mutex.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/gpu/drm/drm_crtc_helper_internal.h | 10 ---------
- drivers/gpu/drm/drm_fb_helper.c            | 21 ------------------
- drivers/gpu/drm/drm_kms_helper_common.c    | 25 +++++++++++-----------
- 3 files changed, 12 insertions(+), 44 deletions(-)
+ include/linux/module.h      | 2 +-
+ kernel/livepatch/core.c     | 5 +++--
+ kernel/module.c             | 1 -
+ kernel/trace/trace_kprobe.c | 4 ++--
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_crtc_helper_internal.h b/drivers/gpu/drm/drm_crtc_helper_internal.h
-index 25ce42e799952c..61e09f8a8d0ff0 100644
---- a/drivers/gpu/drm/drm_crtc_helper_internal.h
-+++ b/drivers/gpu/drm/drm_crtc_helper_internal.h
-@@ -32,16 +32,6 @@
- #include <drm/drm_encoder.h>
- #include <drm/drm_modes.h>
- 
--/* drm_fb_helper.c */
--#ifdef CONFIG_DRM_FBDEV_EMULATION
--int drm_fb_helper_modinit(void);
--#else
--static inline int drm_fb_helper_modinit(void)
--{
--	return 0;
--}
--#endif
--
- /* drm_dp_aux_dev.c */
- #ifdef CONFIG_DRM_DP_AUX_CHARDEV
- int drm_dp_aux_dev_init(void);
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 4b81195106875d..0b9f1ae1b7864c 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -2499,24 +2499,3 @@ void drm_fbdev_generic_setup(struct drm_device *dev,
- 	drm_client_register(&fb_helper->client);
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 7a0bcb5b1ffccd..a64aa84d1b182c 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -586,7 +586,7 @@ static inline bool within_module(unsigned long addr, const struct module *mod)
+ 	return within_module_init(addr, mod) || within_module_core(addr, mod);
  }
- EXPORT_SYMBOL(drm_fbdev_generic_setup);
--
--/* The Kconfig DRM_KMS_HELPER selects FRAMEBUFFER_CONSOLE (if !EXPERT)
-- * but the module doesn't depend on any fb console symbols.  At least
-- * attempt to load fbcon to avoid leaving the system without a usable console.
-- */
--int __init drm_fb_helper_modinit(void)
--{
--#if defined(CONFIG_FRAMEBUFFER_CONSOLE_MODULE) && !defined(CONFIG_EXPERT)
--	const char name[] = "fbcon";
--	struct module *fbcon;
--
+ 
+-/* Search for module by name: must hold module_mutex. */
++/* Search for module by name: must be in a RCU-sched critical section. */
+ struct module *find_module(const char *name);
+ 
+ struct symsearch {
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index f76fdb9255323d..262cd9b003b9f0 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -19,6 +19,7 @@
+ #include <linux/moduleloader.h>
+ #include <linux/completion.h>
+ #include <linux/memory.h>
++#include <linux/rcupdate.h>
+ #include <asm/cacheflush.h>
+ #include "core.h"
+ #include "patch.h"
+@@ -57,7 +58,7 @@ static void klp_find_object_module(struct klp_object *obj)
+ 	if (!klp_is_module(obj))
+ 		return;
+ 
 -	mutex_lock(&module_mutex);
--	fbcon = find_module(name);
--	mutex_unlock(&module_mutex);
--
--	if (!fbcon)
--		request_module_nowait(name);
--#endif
--	return 0;
--}
--EXPORT_SYMBOL(drm_fb_helper_modinit);
-diff --git a/drivers/gpu/drm/drm_kms_helper_common.c b/drivers/gpu/drm/drm_kms_helper_common.c
-index 221a8528c9937a..f933da1656eb52 100644
---- a/drivers/gpu/drm/drm_kms_helper_common.c
-+++ b/drivers/gpu/drm/drm_kms_helper_common.c
-@@ -64,19 +64,18 @@ MODULE_PARM_DESC(edid_firmware,
++	rcu_read_lock_sched();
+ 	/*
+ 	 * We do not want to block removal of patched modules and therefore
+ 	 * we do not take a reference here. The patches are removed by
+@@ -74,7 +75,7 @@ static void klp_find_object_module(struct klp_object *obj)
+ 	if (mod && mod->klp_alive)
+ 		obj->mod = mod;
  
- static int __init drm_kms_helper_init(void)
- {
--	int ret;
--
--	/* Call init functions from specific kms helpers here */
--	ret = drm_fb_helper_modinit();
--	if (ret < 0)
--		goto out;
--
--	ret = drm_dp_aux_dev_init();
--	if (ret < 0)
--		goto out;
--
--out:
--	return ret;
-+	/*
-+	 * The Kconfig DRM_KMS_HELPER selects FRAMEBUFFER_CONSOLE (if !EXPERT)
-+	 * but the module doesn't depend on any fb console symbols.  At least
-+	 * attempt to load fbcon to avoid leaving the system without a usable
-+	 * console.
-+	 */
-+	if (IS_ENABLED(CONFIG_DRM_FBDEV_EMULATION) &&
-+	    IS_MODULE(CONFIG_FRAMEBUFFER_CONSOLE) &&
-+	    !IS_ENABLED(CONFIG_EXPERT))
-+		request_module_nowait("fbcon");
-+
-+	return drm_dp_aux_dev_init();
+-	mutex_unlock(&module_mutex);
++	rcu_read_unlock_sched();
  }
  
- static void __exit drm_kms_helper_exit(void)
+ static bool klp_initialized(void)
+diff --git a/kernel/module.c b/kernel/module.c
+index 981302f616b411..6772fb2680eb3e 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -668,7 +668,6 @@ static struct module *find_module_all(const char *name, size_t len,
+ 
+ struct module *find_module(const char *name)
+ {
+-	module_assert_mutex();
+ 	return find_module_all(name, strlen(name), false);
+ }
+ 
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index e6fba1798771b4..3137992baa5e7a 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -124,9 +124,9 @@ static nokprobe_inline bool trace_kprobe_module_exist(struct trace_kprobe *tk)
+ 	if (!p)
+ 		return true;
+ 	*p = '\0';
+-	mutex_lock(&module_mutex);
++	rcu_read_lock_sched();
+ 	ret = !!find_module(tk->symbol);
+-	mutex_unlock(&module_mutex);
++	rcu_read_unlock_sched();
+ 	*p = ':';
+ 
+ 	return ret;
 -- 
 2.29.2
 
