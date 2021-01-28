@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16932C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:32:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8921DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:33:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7012264DD9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:32:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7012264DD9
+	by mail.kernel.org (Postfix) with ESMTPS id 8643D64DD9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:33:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8643D64DD9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2yS5423zDr2l
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:32:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR30F3hflzDrVb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:33:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
@@ -27,35 +27,35 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=sbF1zyKj; 
+ header.s=dec2015msa header.b=htPDLFVT; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h0Mk4zDqS4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h5mdqzDqZX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:28 +1100 (AEDT)
 Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
  [126.26.94.251]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 10S0pjIt024172;
- Thu, 28 Jan 2021 09:52:16 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIt024172
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIi024172;
+ Thu, 28 Jan 2021 09:52:02 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIi024172
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611795137;
- bh=JsW4AefmFWLB04cbPHKLRf+ySMBFBV/y4dlQQ7Rprvs=;
+ s=dec2015msa; t=1611795123;
+ bh=8LKOeh8wDSb8BIof2AfD5uB6wjyW5KsgSaXh3UzQGfw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=sbF1zyKjEAe3Uti7KpSL8Gn7aVPgeWns1ZJGE4PlTDtsdWHjr/VjE1Oy7QuCIKGD/
- YzbESvGNKZD4sx9HFruTcPGvOC//DQTyhQqf8UqEsLr0TBlOk/dTWmUNCQlWFuvCId
- DmcqOK1t5gGkyaUkApkrYdMjeFPdqGlIgzwyVMhooYzvWlWaQAWMVYZ4+BZ7JNcWxs
- p0QQzfm39TLqIn+0Df5YapK1PvmcZ/EzauWiWCgNeNWhQNqx9UKtp3RL9TXusIDIMI
- pT5mgVa4PqoDR2zrQYyZPcu/tV7rJxi85BtZvBruZynX6Dx128V7Or3vhQyxYgcUUM
- SgitQ8r7u9bQw==
+ b=htPDLFVT7not9OIuRM8Kjohlj92lfUtnbdhEW6VzKx0VFC8HiM8Rq9o7l3aX0IEw+
+ M7xgK2j911+JdwM6qhXKVoW0nNsXY+JOPUSzkC1MayyWjx84O8FOBbbtliysKYFdAz
+ N0aoPM1TUzftvX0G3FbNm6c9YhkP9Fs4Hoegcz5iRyZP+5skPM9IK9BApMFTLYQ71x
+ jxsA8v77jwtjW7v82lcmEClQ7TTz/gEzUDyrL1FJMzPtLBWN0MqR3TOGr5CSQpbKd9
+ 4BT+aD+caamfV6skUJH96yjSo/GFairUwhYTqK91JYxXyZaDahld2KKqEd6owy2+mt
+ P8X/wxmEaopmA==
 X-Nifty-SrcIP: [126.26.94.251]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 24/27] powerpc: add missing FORCE and fix 'targets' to make
+Subject: [PATCH 13/27] microblaze: add missing FORCE and fix 'targets' to make
  if_changed work
-Date: Thu, 28 Jan 2021 09:51:06 +0900
-Message-Id: <20210128005110.2613902-25-masahiroy@kernel.org>
+Date: Thu, 28 Jan 2021 09:50:55 +0900
+Message-Id: <20210128005110.2613902-14-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
 References: <20210128005110.2613902-1-masahiroy@kernel.org>
@@ -95,54 +95,27 @@ Fix all of them so the if_changed rules work correctly.
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/powerpc/kernel/syscalls/Makefile | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ arch/microblaze/kernel/syscalls/Makefile | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/syscalls/Makefile b/arch/powerpc/kernel/syscalls/Makefile
-index 27b48954808d..d609f0040b2a 100644
---- a/arch/powerpc/kernel/syscalls/Makefile
-+++ b/arch/powerpc/kernel/syscalls/Makefile
-@@ -22,31 +22,31 @@ quiet_cmd_systbl = SYSTBL  $@
+diff --git a/arch/microblaze/kernel/syscalls/Makefile b/arch/microblaze/kernel/syscalls/Makefile
+index 659faefdcb1d..1c42d2d2926d 100644
+--- a/arch/microblaze/kernel/syscalls/Makefile
++++ b/arch/microblaze/kernel/syscalls/Makefile
+@@ -21,18 +21,19 @@ quiet_cmd_systbl = SYSTBL  $@
+ 		   '$(systbl_abi_$(basetarget))'		\
  		   '$(systbl_offset_$(basetarget))'
  
- syshdr_abis_unistd_32 := common,nospu,32
 -$(uapi)/unistd_32.h: $(syscall) $(syshdr)
 +$(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
  	$(call if_changed,syshdr)
  
- syshdr_abis_unistd_64 := common,nospu,64
--$(uapi)/unistd_64.h: $(syscall) $(syshdr)
-+$(uapi)/unistd_64.h: $(syscall) $(syshdr) FORCE
- 	$(call if_changed,syshdr)
- 
- systbl_abis_syscall_table_32 := common,nospu,32
- systbl_abi_syscall_table_32 := 32
--$(kapi)/syscall_table_32.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table_32.h: $(syscall) $(systbl) FORCE
+-$(kapi)/syscall_table.h: $(syscall) $(systbl)
++$(kapi)/syscall_table.h: $(syscall) $(systbl) FORCE
  	$(call if_changed,systbl)
  
- systbl_abis_syscall_table_64 := common,nospu,64
- systbl_abi_syscall_table_64 := 64
--$(kapi)/syscall_table_64.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table_64.h: $(syscall) $(systbl) FORCE
- 	$(call if_changed,systbl)
- 
- systbl_abis_syscall_table_c32 := common,nospu,32
- systbl_abi_syscall_table_c32 := c32
--$(kapi)/syscall_table_c32.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table_c32.h: $(syscall) $(systbl) FORCE
- 	$(call if_changed,systbl)
- 
- systbl_abis_syscall_table_spu := common,spu
- systbl_abi_syscall_table_spu := spu
--$(kapi)/syscall_table_spu.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table_spu.h: $(syscall) $(systbl) FORCE
- 	$(call if_changed,systbl)
- 
- uapisyshdr-y		+= unistd_32.h unistd_64.h
-@@ -55,9 +55,10 @@ kapisyshdr-y		+= syscall_table_32.h		\
- 			   syscall_table_c32.h		\
- 			   syscall_table_spu.h
+ uapisyshdr-y		+= unistd_32.h
+ kapisyshdr-y		+= syscall_table.h
  
 -targets	+= $(uapisyshdr-y) $(kapisyshdr-y)
 +uapisyshdr-y	:= $(addprefix $(uapi)/, $(uapisyshdr-y))
