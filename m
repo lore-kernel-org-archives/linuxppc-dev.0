@@ -5,21 +5,21 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FF77C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:33:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F252BC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:35:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E4C864D99
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:33:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E4C864D99
+	by mail.kernel.org (Postfix) with ESMTPS id 7174264E46
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:35:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7174264E46
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTcg1Q2tzDrq8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:33:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTgK2YgczDsMN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:35:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=pq1XnTh1; 
+ header.s=casper.20170209 header.b=nAJtiVFm; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTDW4ScNzDrdJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTDc4644zDrfQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:16:00 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=B1ucH3tkRRt9wazwepkLKNtNgSkWWnX1LihkgPmU4Pk=; b=pq1XnTh15xxK01ObyGRDkJdHol
- 9Drz4BmVYVP2bkWkKxaNijT1vXJPAFmxqpvSnfUl76VLDoBVA2TbyIltR3WX41b9OHl7QhbayDu63
- oOSW+cjoLLNDPuyCN8BxF5oQGyZKlNtPCjTkrJMltwGqUn8UsHmKIw2NgJrdw/UNMSHsNsZdtxlVE
- OlbDeehVFRiK8Etun8XUXZre2P26FiJWtgMeAIc4lCWzgOoFYD0vP576ZMvlyW+qrJ6zWAnZLfRVK
- eiBlagv/WeMPjcGKUva/Q6dVC5uygu8vkzZ2/KCtxFTsnzU/0QDiUNQ3/5dxdi3J2rlSNh1Dl/TZr
- Amez+7QQ==;
+ bh=yOKk2fnchUKV6dOiYsd/LFOPy1HkZGzrcOtdtIA5vO0=; b=nAJtiVFmSQNbH/fB1Kbd5zgUb8
+ xXTEhPGqK+FjplkLgB7xtXa0eAVF82tbSHGC3soj/Y6zfdCQ5mFbZw4JZDJdix7n4R7rJfwF06ha1
+ uEGUOHi/XXdQpBOP1LKQgWC3AbzZjIIeCXPDBigle/o+zgPq5VxFbvxgoKG8tCCajzHEF7cKvqhag
+ W+FAgV3+ubvrJz8izfaANvAqk0lwfS8rLnySG6NDuaTKMmX8htcht2QnxxU5RxXrs89veBipIEp/J
+ gJfzIHIwkutmBo6XH326+FAjuyPLuKaw3QZ35l7wPWd2HFswLj+N13H9aZCFy/3ybLAc4capWQS+H
+ taCO+lvw==;
 Received: from [2001:4bb8:198:6bf4:e052:196b:7e32:37d9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l5BpH-008o0J-5A; Thu, 28 Jan 2021 18:15:34 +0000
+ id 1l5Bp3-008nzF-SO; Thu, 28 Jan 2021 18:15:15 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,9 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 09/13] module: merge each_symbol_section into find_symbol
-Date: Thu, 28 Jan 2021 19:14:17 +0100
-Message-Id: <20210128181421.2279-10-hch@lst.de>
+Subject: [PATCH 07/13] module: mark module_mutex static
+Date: Thu, 28 Jan 2021 19:14:15 +0100
+Message-Id: <20210128181421.2279-8-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210128181421.2279-1-hch@lst.de>
 References: <20210128181421.2279-1-hch@lst.de>
@@ -88,186 +88,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-each_symbol_section is only called by find_symbol, so merge the two
-functions.
+Except for two lockdep asserts module_mutex is only used in module.c.
+Remove the two asserts given that the functions they are in are not
+exported and just called from the module code, and mark module_mutex
+static.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- kernel/module.c | 148 ++++++++++++++++++++++--------------------------
- 1 file changed, 69 insertions(+), 79 deletions(-)
+ include/linux/module.h | 2 --
+ kernel/module.c        | 2 +-
+ lib/bug.c              | 3 ---
+ 3 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 945fe94b81fd92..ff9045cc984b50 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -433,73 +433,6 @@ extern const s32 __start___kcrctab_unused_gpl[];
- #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 3ea4ffae608f97..0f360c48fe92a6 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -550,8 +550,6 @@ static inline unsigned long kallsyms_symbol_value(const Elf_Sym *sym)
+ }
  #endif
  
--/* Returns true as soon as fn returns true, otherwise false. */
--static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
--				    struct module *owner,
--				    void *data),
--			 void *data)
--{
--	unsigned int i;
--	struct module *mod;
--	static const struct symsearch arr[] = {
--		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
--		  NOT_GPL_ONLY, false },
--		{ __start___ksymtab_gpl, __stop___ksymtab_gpl,
--		  __start___kcrctab_gpl,
--		  GPL_ONLY, false },
--		{ __start___ksymtab_gpl_future, __stop___ksymtab_gpl_future,
--		  __start___kcrctab_gpl_future,
--		  WILL_BE_GPL_ONLY, false },
--#ifdef CONFIG_UNUSED_SYMBOLS
--		{ __start___ksymtab_unused, __stop___ksymtab_unused,
--		  __start___kcrctab_unused,
--		  NOT_GPL_ONLY, true },
--		{ __start___ksymtab_unused_gpl, __stop___ksymtab_unused_gpl,
--		  __start___kcrctab_unused_gpl,
--		  GPL_ONLY, true },
--#endif
--	};
+-extern struct mutex module_mutex;
 -
--	module_assert_mutex_or_preempt();
+ /* FIXME: It'd be nice to isolate modules during init, too, so they
+    aren't used before they (may) fail.  But presently too much code
+    (IDE & SCSI) require entry into the module during init.*/
+diff --git a/kernel/module.c b/kernel/module.c
+index 856df9e17ff3d0..5152fae1fc9406 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -87,7 +87,7 @@
+  * 3) module_addr_min/module_addr_max.
+  * (delete and add uses RCU list operations).
+  */
+-DEFINE_MUTEX(module_mutex);
++static DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ 
+ /* Work queue for freeing init sections in success case */
+diff --git a/lib/bug.c b/lib/bug.c
+index 7103440c0ee1af..8f9d537bfb2a59 100644
+--- a/lib/bug.c
++++ b/lib/bug.c
+@@ -91,8 +91,6 @@ void module_bug_finalize(const Elf_Ehdr *hdr, const Elf_Shdr *sechdrs,
+ 	char *secstrings;
+ 	unsigned int i;
+ 
+-	lockdep_assert_held(&module_mutex);
 -
--	for (i = 0; i < ARRAY_SIZE(arr); i++)
--		if (fn(&arr[i], NULL, data))
--			return true;
--
--	list_for_each_entry_rcu(mod, &modules, list,
--				lockdep_is_held(&module_mutex)) {
--		struct symsearch arr[] = {
--			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
--			  NOT_GPL_ONLY, false },
--			{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
--			  mod->gpl_crcs,
--			  GPL_ONLY, false },
--			{ mod->gpl_future_syms,
--			  mod->gpl_future_syms + mod->num_gpl_future_syms,
--			  mod->gpl_future_crcs,
--			  WILL_BE_GPL_ONLY, false },
--#ifdef CONFIG_UNUSED_SYMBOLS
--			{ mod->unused_syms,
--			  mod->unused_syms + mod->num_unused_syms,
--			  mod->unused_crcs,
--			  NOT_GPL_ONLY, true },
--			{ mod->unused_gpl_syms,
--			  mod->unused_gpl_syms + mod->num_unused_gpl_syms,
--			  mod->unused_gpl_crcs,
--			  GPL_ONLY, true },
--#endif
--		};
--
--		if (mod->state == MODULE_STATE_UNFORMED)
--			continue;
--
--		for (i = 0; i < ARRAY_SIZE(arr); i++)
--			if (fn(&arr[i], mod, data))
--				return true;
--	}
--	return false;
--}
--
- struct find_symbol_arg {
- 	/* Input */
- 	const char *name;
-@@ -610,24 +543,81 @@ static const struct kernel_symbol *find_symbol(const char *name,
- 					bool gplok,
- 					bool warn)
+ 	mod->bug_table = NULL;
+ 	mod->num_bugs = 0;
+ 
+@@ -118,7 +116,6 @@ void module_bug_finalize(const Elf_Ehdr *hdr, const Elf_Shdr *sechdrs,
+ 
+ void module_bug_cleanup(struct module *mod)
  {
--	struct find_symbol_arg fsa;
-+	static const struct symsearch arr[] = {
-+		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
-+		  NOT_GPL_ONLY, false },
-+		{ __start___ksymtab_gpl, __stop___ksymtab_gpl,
-+		  __start___kcrctab_gpl,
-+		  GPL_ONLY, false },
-+		{ __start___ksymtab_gpl_future, __stop___ksymtab_gpl_future,
-+		  __start___kcrctab_gpl_future,
-+		  WILL_BE_GPL_ONLY, false },
-+#ifdef CONFIG_UNUSED_SYMBOLS
-+		{ __start___ksymtab_unused, __stop___ksymtab_unused,
-+		  __start___kcrctab_unused,
-+		  NOT_GPL_ONLY, true },
-+		{ __start___ksymtab_unused_gpl, __stop___ksymtab_unused_gpl,
-+		  __start___kcrctab_unused_gpl,
-+		  GPL_ONLY, true },
-+#endif
-+	};
-+	struct find_symbol_arg fsa = {
-+		.name = name,
-+		.gplok = gplok,
-+		.warn = warn,
-+	};
-+	struct module *mod;
-+	unsigned int i;
-+
-+	module_assert_mutex_or_preempt();
-+
-+	for (i = 0; i < ARRAY_SIZE(arr); i++)
-+		if (find_exported_symbol_in_section(&arr[i], NULL, &fsa))
-+			goto found;
- 
--	fsa.name = name;
--	fsa.gplok = gplok;
--	fsa.warn = warn;
-+	list_for_each_entry_rcu(mod, &modules, list,
-+				lockdep_is_held(&module_mutex)) {
-+		struct symsearch arr[] = {
-+			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
-+			  NOT_GPL_ONLY, false },
-+			{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
-+			  mod->gpl_crcs,
-+			  GPL_ONLY, false },
-+			{ mod->gpl_future_syms,
-+			  mod->gpl_future_syms + mod->num_gpl_future_syms,
-+			  mod->gpl_future_crcs,
-+			  WILL_BE_GPL_ONLY, false },
-+#ifdef CONFIG_UNUSED_SYMBOLS
-+			{ mod->unused_syms,
-+			  mod->unused_syms + mod->num_unused_syms,
-+			  mod->unused_crcs,
-+			  NOT_GPL_ONLY, true },
-+			{ mod->unused_gpl_syms,
-+			  mod->unused_gpl_syms + mod->num_unused_gpl_syms,
-+			  mod->unused_gpl_crcs,
-+			  GPL_ONLY, true },
-+#endif
-+		};
- 
--	if (each_symbol_section(find_exported_symbol_in_section, &fsa)) {
--		if (owner)
--			*owner = fsa.owner;
--		if (crc)
--			*crc = fsa.crc;
--		if (license)
--			*license = fsa.license;
--		return fsa.sym;
-+		if (mod->state == MODULE_STATE_UNFORMED)
-+			continue;
-+
-+		for (i = 0; i < ARRAY_SIZE(arr); i++)
-+			if (find_exported_symbol_in_section(&arr[i], mod, &fsa))
-+				goto found;
- 	}
- 
- 	pr_debug("Failed to find symbol %s\n", name);
- 	return NULL;
-+
-+found:
-+	if (owner)
-+		*owner = fsa.owner;
-+	if (crc)
-+		*crc = fsa.crc;
-+	if (license)
-+		*license = fsa.license;
-+	return fsa.sym;
+-	lockdep_assert_held(&module_mutex);
+ 	list_del_rcu(&mod->bug_list);
  }
  
- /*
 -- 
 2.29.2
 
