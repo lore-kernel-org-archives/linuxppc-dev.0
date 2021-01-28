@@ -2,91 +2,76 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D1BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 08:55:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1E24C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 09:27:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57BDB64DBD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 08:55:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57BDB64DBD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BD4964DBD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 09:27:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD4964DBD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRDnX54NtzDrpC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 19:55:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRFW250jZzDrfc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 20:27:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::130;
- helo=mail-lf1-x130.google.com; envelope-from=sergei.shtylyov@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=iipPbsfx; dkim-atps=neutral
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com
- [IPv6:2a00:1450:4864:20::130])
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.43; helo=mail-ot1-f43.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com
+ [209.85.210.43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DRCjV0LZzzDrfc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 19:06:36 +1100 (AEDT)
-Received: by mail-lf1-x130.google.com with SMTP id a8so6409833lfi.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 00:06:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:organization:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=ZhLAAud3HvOatZc8bWa160+GGDrtwAXLfmrfPeaVYS8=;
- b=iipPbsfxZVCoeVKuars96HlwaPhNMoxff6kXibVhpITK1M6liR5Y9O7+S15Bs18l09
- qlUtM1wTfg9Ou6I6g23AZm7cVsi8afl9ywua8K9yMdO5bZr9nt5kjWGTXEGzGKuOa9/g
- 1XUmU2pb08XIkn2+EUpygz+rpS2BWuStq+kp1Z0L+RWjtUcubBnlDUTz5WKp9v7710os
- SLNWgHiJ3JIV+8IAHjWh/nhAgSk/YRdA5r5xJzX10KabfIVPeT0lFPft9QR1HE2XX97r
- YL6s2qMMPrVFtgVS0PASinY6oq3v5br43OEKFxy7K4ebWVUxXV6rGDy0rY0fMsVaCwye
- p0Aw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DRFSf0tC4zDrdk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 20:25:36 +1100 (AEDT)
+Received: by mail-ot1-f43.google.com with SMTP id f6so4538257ots.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 01:25:36 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:organization
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=ZhLAAud3HvOatZc8bWa160+GGDrtwAXLfmrfPeaVYS8=;
- b=rppEz2k2jPSDAlvtrDvt8oYKsjSYPuiTqNo5XloZEMI7jdamF9HGD7M8xLklYj8E9o
- 4OdihW9g1eJVOTl37+H/pg98TwrdMt8+oe27hRQE/GlC7ZvyF68S1cz+cP882B7ryD73
- DbMOpJ/fSU//kvnp28NC3hoIP28/UtyMurNNngt4J/b/hkStJCHgsi/a+F9aMaOR0j1x
- 1AnQJ0CmBIqLERBcBp3NFgu3MVbXAB0ifXwhqDw/LbrPrURrymgrP+E8jC5sBcsjV1tK
- 0IqC3g+NekrU9j4sZgrHUM2ID7sMlKXF+VHbEmyQ9P7Gt6g5TdZ7P8IKHA4Ppam3E6+r
- nDwg==
-X-Gm-Message-State: AOAM532WLR6kYdZURQypx6U5eKIqjClUsHCEbkp4ff44Tel+2Gzop0Gg
- lmanJ0ZA26b723CPD9PKmrE/3b4xSlTvow==
-X-Google-Smtp-Source: ABdhPJyNhfosDqTVmWD8kXJOJ9HDxIw2bv3pFQwo469kI3mpp/ZSh90Ay+X1biZCj8UPTr2AxhJ8ug==
-X-Received: by 2002:a2e:b6cc:: with SMTP id m12mr7769208ljo.401.1611820759903; 
- Wed, 27 Jan 2021 23:59:19 -0800 (PST)
-Received: from [192.168.1.100] ([178.176.79.159])
- by smtp.gmail.com with ESMTPSA id z23sm1635056ljj.25.2021.01.27.23.59.18
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 27 Jan 2021 23:59:19 -0800 (PST)
-Subject: Re: [PATCH 02/27] x86/syscalls: fix -Wmissing-prototypes warnings
- from COND_SYSCALL()
-To: Masahiro Yamada <masahiroy@kernel.org>, linux-arch@vger.kernel.org,
- x86@kernel.org
-References: <20210128005110.2613902-1-masahiroy@kernel.org>
- <20210128005110.2613902-3-masahiroy@kernel.org>
-From: Sergei Shtylyov <sergei.shtylyov@gmail.com>
-Organization: Brain-dead Software
-Message-ID: <dd37a7f2-55e1-2e96-0c93-4a40980b8ef2@gmail.com>
-Date: Thu, 28 Jan 2021 10:59:07 +0300
-User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=NxnDl2GrRpSMyEh3P5ogDr/y/Z8is37UEIaUl8bFtVI=;
+ b=lMj5LEmJa3dT0K+J5D80nUcisX6krHppmVGP8L74C/95gW0qrbCMkH0iiDyHB+9SOd
+ MLo5zI1mwYgzZSBs6wAkwO50CB5Sz+5MekCKApgxNv7N/dz3cIWpzWGaFd8XxYxFH7dY
+ 5dY9UDUXNcGxoY8UV+lKYJhFVeDUHJ9wp/LnrX7Vvu/i6KLx7eDMuvSqZIjV00IAeZoV
+ wTHJ68YE1RtjRMbImr0nhnAaMc9HL0Glq5hFtZGADZ+G6V85Gs3taYKOCSKps+FUaLKs
+ 1fbuGqymX5d5xnal35fnTQmojVaqs7grcBhJQsa/gm69CaYAP2Hrh0862iYwJrjbsRi7
+ w8Qg==
+X-Gm-Message-State: AOAM532Gf9N4nDOk5zBTlwEOYQVYTa/9OfrcuHlxwBxD9ipDUGKt/UjO
+ ZmBZIkg7L2+sWHU6otOKhAbAt2LMqb8Qzy4VPyo=
+X-Google-Smtp-Source: ABdhPJwIK/ebf1zOwoD5aMbXd7iqWR7pWcC/KS+N8M04xbTvxixhJs51oTBmGIastbl3pUtGaeoY22gVYXFn6StzkmQ=
+X-Received: by 2002:a05:6830:1489:: with SMTP id
+ s9mr10058455otq.250.1611825934080; 
+ Thu, 28 Jan 2021 01:25:34 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20210128005110.2613902-3-masahiroy@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 28 Jan 2021 19:51:42 +1100
+References: <20210120105246.23218-1-michael@walle.cc>
+ <CAL_JsqLSJCLtgPyAdKSqsy=JoHSLYef_0s-stTbiJ+VCq2qaSA@mail.gmail.com>
+ <CAGETcx86HMo=gaDdXFyJ4QQ-pGXWzw2G0J=SjC-eq4K7B1zQHg@mail.gmail.com>
+ <c3e35b90e173b15870a859fd7001a712@walle.cc>
+ <CAGETcx8eZRd1fJ3yuO_t2UXBFHObeNdv-c8oFH3mXw6zi=zOkQ@mail.gmail.com>
+ <f706c0e4b684e07635396fcf02f4c9a6@walle.cc>
+ <CAGETcx8_6Hp+MWFOhRohXwdWFSfCc7A=zpb5QYNHZE5zv0bDig@mail.gmail.com>
+ <CAMuHMdWvFej-6vkaLM44t7eX2LpkDSXu4_7VH-X-3XRueXTO=A@mail.gmail.com>
+ <a24391e62b107040435766fff52bdd31@walle.cc>
+ <CAGETcx8FO+YSM0jwCnDdnvE3NCdjZ=1FSmAZpyaOEOvCgd4SXw@mail.gmail.com>
+ <CAMuHMdX8__juNc-Lx8Tu9abMKq-pT=yA4s6D1w4ZeStKOasGpg@mail.gmail.com>
+ <CAGETcx-0G-Y8wT_+BfP5vbi0gW6KonwgoJ6DdqjaGbFkutTGag@mail.gmail.com>
+ <CAMuHMdXMaAtrbQibJh+Z2v5qhe_Tg0hQU9YqxuU0ow_iNO1atg@mail.gmail.com>
+ <CAGETcx8=woX_SVckG+gs68KMif-JGoy3a1PQGfonMNBH18Ak6A@mail.gmail.com>
+ <CAMuHMdUpzaRutO+jKffXtGDoy5g2QoXkbO+-tzbEzibNYbhCuA@mail.gmail.com>
+ <CAGETcx_81qOe2LvX-J_PBZWdouykPoPYdf5=yMVhnjgDxAkgaw@mail.gmail.com>
+In-Reply-To: <CAGETcx_81qOe2LvX-J_PBZWdouykPoPYdf5=yMVhnjgDxAkgaw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 28 Jan 2021 10:25:22 +0100
+Message-ID: <CAMuHMdVHouzMFiGcUz=0M0_RFL-OBvkRvQiF5h56XKDMZuC7Kg@mail.gmail.com>
+Subject: Re: [PATCH] PCI: dwc: layerscape: convert to builtin_platform_driver()
+To: Saravana Kannan <saravanak@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,80 +83,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Roy Zang <roy.zang@nxp.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Minghuan Lian <minghuan.Lian@nxp.com>, Michael Walle <michael@walle.cc>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mingkai Hu <mingkai.hu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello!
+Hi Saravana,
 
-On 28.01.2021 3:50, Masahiro Yamada wrote:
+On Wed, Jan 27, 2021 at 6:11 PM Saravana Kannan <saravanak@google.com> wrote:
+> On Wed, Jan 27, 2021 at 8:56 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Wed, Jan 27, 2021 at 5:42 PM Saravana Kannan <saravanak@google.com> wrote:
+> > > On Tue, Jan 26, 2021 at 11:43 PM Geert Uytterhoeven
+> > > <geert@linux-m68k.org> wrote:
+> > > > On Wed, Jan 27, 2021 at 1:44 AM Saravana Kannan <saravanak@google.com> wrote:
+> > > > > On Tue, Jan 26, 2021 at 12:50 AM Geert Uytterhoeven
+> > > > > <geert@linux-m68k.org> wrote:
+> > > > > > On Mon, Jan 25, 2021 at 11:42 PM Saravana Kannan <saravanak@google.com> wrote:
+> > > > > > > On Mon, Jan 25, 2021 at 11:49 AM Michael Walle <michael@walle.cc> wrote:
+> > > > > > > > Am 2021-01-21 12:01, schrieb Geert Uytterhoeven:
+> > > > > > > > > On Thu, Jan 21, 2021 at 1:05 AM Saravana Kannan <saravanak@google.com>
+> > > > > > > > > wrote:
+> > > > > > > > >> On Wed, Jan 20, 2021 at 3:53 PM Michael Walle <michael@walle.cc>
+> > > > > > > > >> wrote:
+> > > > > > > > >> > Am 2021-01-20 20:47, schrieb Saravana Kannan:
+> > > > > > > > >> > > On Wed, Jan 20, 2021 at 11:28 AM Michael Walle <michael@walle.cc>
+> > > > > > > > >> > > wrote:
+> > > > > > > > >> > >>
+> > > > > > > > >> > >> [RESEND, fat-fingered the buttons of my mail client and converted
+> > > > > > > > >> > >> all CCs to BCCs :(]
+> > > > > > > > >> > >>
+> > > > > > > > >> > >> Am 2021-01-20 20:02, schrieb Saravana Kannan:
+> > > > > > > > >> > >> > On Wed, Jan 20, 2021 at 6:24 AM Rob Herring <robh@kernel.org> wrote:
+> > > > > > > > >> > >> >>
+> > > > > > > > >> > >> >> On Wed, Jan 20, 2021 at 4:53 AM Michael Walle <michael@walle.cc>
+> > > > > > > > >> > >> >> wrote:
+> > > > > > > > >> > >> >> >
+> > > > > > > > >> > >> >> > fw_devlink will defer the probe until all suppliers are ready. We can't
+> > > > > > > > >> > >> >> > use builtin_platform_driver_probe() because it doesn't retry after probe
+> > > > > > > > >> > >> >> > deferral. Convert it to builtin_platform_driver().
+> > > > > > > > >> > >> >>
+> > > > > > > > >> > >> >> If builtin_platform_driver_probe() doesn't work with fw_devlink, then
+> > > > > > > > >> > >> >> shouldn't it be fixed or removed?
+> > > > > > > > >> > >> >
+> > > > > > > > >> > >> > I was actually thinking about this too. The problem with fixing
+> > > > > > > > >> > >> > builtin_platform_driver_probe() to behave like
+> > > > > > > > >> > >> > builtin_platform_driver() is that these probe functions could be
+> > > > > > > > >> > >> > marked with __init. But there are also only 20 instances of
+> > > > > > > > >> > >> > builtin_platform_driver_probe() in the kernel:
+> > > > > > > > >> > >> > $ git grep ^builtin_platform_driver_probe | wc -l
+> > > > > > > > >> > >> > 20
+> > > > > > > > >> > >> >
+> > > > > > > > >> > >> > So it might be easier to just fix them to not use
+> > > > > > > > >> > >> > builtin_platform_driver_probe().
+> > > > > > > > >> > >> >
+> > > > > > > > >> > >> > Michael,
+> > > > > > > > >> > >> >
+> > > > > > > > >> > >> > Any chance you'd be willing to help me by converting all these to
+> > > > > > > > >> > >> > builtin_platform_driver() and delete builtin_platform_driver_probe()?
+> > > > > > > > >> > >>
+> > > > > > > > >> > >> If it just moving the probe function to the _driver struct and
+> > > > > > > > >> > >> remove the __init annotations. I could look into that.
+> > > > > > > > >> > >
+> > > > > > > > >> > > Yup. That's pretty much it AFAICT.
+> > > > > > > > >> > >
+> > > > > > > > >> > > builtin_platform_driver_probe() also makes sure the driver doesn't ask
+> > > > > > > > >> > > for async probe, etc. But I doubt anyone is actually setting async
+> > > > > > > > >> > > flags and still using builtin_platform_driver_probe().
+> > > > > > > > >> >
+> > > > > > > > >> > Hasn't module_platform_driver_probe() the same problem? And there
+> > > > > > > > >> > are ~80 drivers which uses that.
+> > > > > > > > >>
+> > > > > > > > >> Yeah. The biggest problem with all of these is the __init markers.
+> > > > > > > > >> Maybe some familiar with coccinelle can help?
+> > > > > > > > >
+> > > > > > > > > And dropping them will increase memory usage.
+> > > > > > > >
+> > > > > > > > Although I do have the changes for the builtin_platform_driver_probe()
+> > > > > > > > ready, I don't think it makes much sense to send these unless we agree
+> > > > > > > > on the increased memory footprint. While there are just a few
+> > > > > > > > builtin_platform_driver_probe() and memory increase _might_ be
+> > > > > > > > negligible, there are many more module_platform_driver_probe().
+> > > > > > >
+> > > > > > > While it's good to drop code that'll not be used past kernel init, the
+> > > > > > > module_platform_driver_probe() is going even more extreme. It doesn't
+> > > > > > > even allow deferred probe (well before kernel init is done). I don't
+> > > > > > > think that behavior is right and that's why we should delete it. Also,
+> > > > > >
+> > > > > > This construct is typically used for builtin hardware for which the
+> > > > > > dependencies are registered very early, and thus known to probe at
+> > > > > > first try (if present).
+> > > > > >
+> > > > > > > I doubt if any of these probe functions even take up 4KB of memory.
+> > > > > >
+> > > > > > How many 4 KiB pages do you have in a system with 10 MiB of SRAM?
+> > > > > > How many can you afford to waste?
+> > > > >
+> > > > > There are only a few instances of this macro in the kernel. How many
+> > > >
+> > > > $ git grep -lw builtin_platform_driver_probe | wc -l
+> > > > 21
+> > > > $ git grep -lw module_platform_driver_probe | wc -l
+> > > > 86
+> > > >
+> > > > + the ones that haven't been converted to the above yet:
+> > > >
+> > > > $ git grep -lw platform_driver_probe | wc -l
+> > > > 58
+> > > >
+> > >
+> > > Yeah, this adds up in terms of the number of places we'd need to fix.
+> > > But thinking more about it, a couple of points:
+> > > 1. Not all builtin_platform_driver_probe() are problems for
+> > > fw_devlink. So we can just fix them as we go if we need to.
+> > >
+> > > 2. The problem with builtin_platform_driver_probe() isn't really with
+> > > the use of __init. It's the fact that it doesn't allow deferred
+> > > probes. builtin_platform_driver_probe()/platform_driver_probe() could
+> > > still be fixed up to allow deferred probe until we get to the point
+> > > where we free the __init section (so at least till late_initcall).
+> >
+> > That's intentional: it is used for cases that will (must) never be deferred.
+> > That's why it's safe to use __init.
+>
+> So was the usage of builtin_platform_driver_probe() wrong in the
+> driver Michael fixed? Because, deferring and probing again clearly
+> works?
 
-> Building kernel/sys_ni.c with W=1 omits tons of -Wmissing-prototypes
+It wasn't.  The regression is that the driver no longer probes at first
+try, because its dependencies are now probed later.  The question is:
+why are the dependencies now probed later?  How to fix that?
 
-    Emits?
+> Also, "must never be deferred" seems like a weird condition to
+> enforce. I think the real "rule" is that if it defers, the platform is
+> not expected to work. But disallowing a probe reattempt seems weird.
+> What is it going to hurt if it's attempted again? At worst it fails
+> one more time?
 
-> warnings.
-> 
-> $ make W=1 kernel/sys_ni.o
->    [ snip ]
->    CC      kernel/sys_ni.o
-> In file included from kernel/sys_ni.c:10:
-> ./arch/x86/include/asm/syscall_wrapper.h:83:14: warning: no previous prototype for '__x64_sys_io_setup' [-Wmissing-prototypes]
->     83 |  __weak long __##abi##_##name(const struct pt_regs *__unused) \
->        |              ^~
-> ./arch/x86/include/asm/syscall_wrapper.h:100:2: note: in expansion of macro '__COND_SYSCALL'
->    100 |  __COND_SYSCALL(x64, sys_##name)
->        |  ^~~~~~~~~~~~~~
-> ./arch/x86/include/asm/syscall_wrapper.h:256:2: note: in expansion of macro '__X64_COND_SYSCALL'
->    256 |  __X64_COND_SYSCALL(name)     \
->        |  ^~~~~~~~~~~~~~~~~~
-> kernel/sys_ni.c:39:1: note: in expansion of macro 'COND_SYSCALL'
->     39 | COND_SYSCALL(io_setup);
->        | ^~~~~~~~~~~~
-> ./arch/x86/include/asm/syscall_wrapper.h:83:14: warning: no previous prototype for '__ia32_sys_io_setup' [-Wmissing-prototypes]
->     83 |  __weak long __##abi##_##name(const struct pt_regs *__unused) \
->        |              ^~
-> ./arch/x86/include/asm/syscall_wrapper.h:120:2: note: in expansion of macro '__COND_SYSCALL'
->    120 |  __COND_SYSCALL(ia32, sys_##name)
->        |  ^~~~~~~~~~~~~~
-> ./arch/x86/include/asm/syscall_wrapper.h:257:2: note: in expansion of macro '__IA32_COND_SYSCALL'
->    257 |  __IA32_COND_SYSCALL(name)
->        |  ^~~~~~~~~~~~~~~~~~~
-> kernel/sys_ni.c:39:1: note: in expansion of macro 'COND_SYSCALL'
->     39 | COND_SYSCALL(io_setup);
->        | ^~~~~~~~~~~~
->    ...
-> 
-> __SYS_STUB0() and __SYS_STUBx() defined a few lines above have forward
-> declarations. Let's do likewise for __COND_SYSCALL() to fix the
-> warnings.
-> 
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
-> 
->   arch/x86/include/asm/syscall_wrapper.h | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/x86/include/asm/syscall_wrapper.h b/arch/x86/include/asm/syscall_wrapper.h
-> index a84333adeef2..80c08c7d5e72 100644
-> --- a/arch/x86/include/asm/syscall_wrapper.h
-> +++ b/arch/x86/include/asm/syscall_wrapper.h
-> @@ -80,6 +80,7 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
->   	}
->   
->   #define __COND_SYSCALL(abi, name)					\
-> +	__weak long __##abi##_##name(const struct pt_regs *__unused);	\
->   	__weak long __##abi##_##name(const struct pt_regs *__unused)	\
+"must never be deferred" is not the real condition, but "must not be
+probed after __init is freed" is (one of them, there may be other, cfr.
+the last paragraph below).  The simplest way to guarantee that is to
+probe the driver immediately, and only once.
 
-    Aren't these two lines identical?
+> Also, I'd argue that all/most of the "can't defer, but I'm still a
+> proper struct device" cases are all just patchwork to deal with the
+> fact we were playing initcall chicken when there was no fw_devlink.
+> I'm hoping we can move people away from that mindset. And the first
 
-[...]
+I agree, partially.  Still, how come the dependencies are no longer
+probed before their consumers when fw_devlinks are enabled?
+I thought fw_devlinks is supposed to avoid exactly that?
 
-MBR, Sergei
+> step towards that would be to allow *platform_probe() to allow
+> deferred probes until late_initcall().
+
+At which increase of complexity, to keep track of which drivers can and
+cannot be reprobed anymore after late_initcall?
+Still, many of these drivers use platform_driver_probe() early for a
+reason: because they need to initialize the hardware early. Probing them
+later may introduce subtle bugs.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
