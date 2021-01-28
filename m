@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CA2EC433E9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EF5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:18:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D7AE064D99
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:16:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7AE064D99
+	by mail.kernel.org (Postfix) with ESMTPS id 11C3B64DD0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:18:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11C3B64DD0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2cL6pGSzDrNX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:16:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2fz6r3jzDqRw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:18:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
@@ -27,34 +27,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=gaOy9Tgn; 
+ header.s=dec2015msa header.b=0mEMz0ET; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25C28gRzDqRt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25C1QCHzDqLr
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:02 +1100 (AEDT)
 Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
  [126.26.94.251]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 10S0pjId024172;
- Thu, 28 Jan 2021 09:51:55 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjId024172
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIw024172;
+ Thu, 28 Jan 2021 09:52:20 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIw024172
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611795116;
- bh=0wK9wMP5DA5hWrKVSjv1k6dHQdgZowMRN8OJeDAeIIQ=;
+ s=dec2015msa; t=1611795141;
+ bh=/X+a0eVCUwbWMu6duZ0EkFZtdpgfoDTltQ6BKB/OTxE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=gaOy9TgnBSVVLeD67bjyTNjPgVIu1DdQvjDeR4cwaGDkKZ1X54G7IzIxaRbTK/YE9
- aLCuPPmZK/EBSo8ssRKBjAV52LwzTKH5hMwlV9DeU+DRadSfn0l6H19mEWnjktclI9
- 4+fWOfGP94ZNf3J9/g+31swyuDgQN8bK2D/Pz9aFVFhqMlLsMzihALzcILEB5LaP7+
- rZK9YDnJw1rFntMmClijlVDzr2tnnz7U+uV8+ATtuKjLPLNpH244Mec1fQcwQWqD1z
- pSTTaJPQybOBJACP19AnWGE9IOgYDnirsdp03yySLZ1V401fEwHuzYNeaefilOdQco
- RDpqiX1srvwOQ==
+ b=0mEMz0ETOM3X4aEL+4S7svEefOdXWXc3PrggLxlLd3p0rpMkY8XKeNM1tRpBRWR0z
+ oAvhO5r6m8nTHRmfzovYcTME6kuBQLq5qRis8tQaGg7wphvOnJqeZfkubbqQSC1S0Y
+ /jtBhQ5JAjPXDBUB8hJS3zaDgRRCgwTWxMLSCqI/ktNHhmoWFkBO+9p54+c9rl6EGa
+ fkhwdmv7kmPUCxtmi9dMEG2rsLwmD39yakdbVBO8fjWf4jXSW0ztwXFYOMXoWvmHzD
+ WBHu0CT2Qqcw6mJqNk+sNfvzIKO3hJtwn9qqvweL/MQ4KHGG771GSa2g6RauXZI032
+ 1C460nitcoGVw==
 X-Nifty-SrcIP: [126.26.94.251]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 08/27] alpha: syscalls: switch to generic syscalltbl.sh
-Date: Thu, 28 Jan 2021 09:50:50 +0900
-Message-Id: <20210128005110.2613902-9-masahiroy@kernel.org>
+Subject: [PATCH 27/27] xtensa: syscalls: switch to generic syscalltbl.sh
+Date: Thu, 28 Jan 2021 09:51:09 +0900
+Message-Id: <20210128005110.2613902-28-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
 References: <20210128005110.2613902-1-masahiroy@kernel.org>
@@ -86,21 +86,36 @@ As of v5.11-rc1, 12 architectures duplicate similar shell scripts in
 order to generate syscall table headers. My goal is to unify them into
 the single scripts/syscalltbl.sh.
 
-This commit converts alpha to use scripts/syscalltbl.sh.
+This commit converts xtensa to use scripts/syscalltbl.sh.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/alpha/kernel/syscalls/Makefile      |  7 ++----
- arch/alpha/kernel/syscalls/syscalltbl.sh | 32 ------------------------
- arch/alpha/kernel/systbls.S              |  3 +--
+ arch/xtensa/kernel/syscall.c              |  3 +--
+ arch/xtensa/kernel/syscalls/Makefile      |  7 ++---
+ arch/xtensa/kernel/syscalls/syscalltbl.sh | 32 -----------------------
  3 files changed, 3 insertions(+), 39 deletions(-)
- delete mode 100644 arch/alpha/kernel/syscalls/syscalltbl.sh
+ delete mode 100644 arch/xtensa/kernel/syscalls/syscalltbl.sh
 
-diff --git a/arch/alpha/kernel/syscalls/Makefile b/arch/alpha/kernel/syscalls/Makefile
+diff --git a/arch/xtensa/kernel/syscall.c b/arch/xtensa/kernel/syscall.c
+index 2c415fce6801..a453d17f0da8 100644
+--- a/arch/xtensa/kernel/syscall.c
++++ b/arch/xtensa/kernel/syscall.c
+@@ -31,9 +31,8 @@
+ syscall_t sys_call_table[__NR_syscalls] /* FIXME __cacheline_aligned */= {
+ 	[0 ... __NR_syscalls - 1] = (syscall_t)&sys_ni_syscall,
+ 
+-#define __SYSCALL(nr, entry, nargs)[nr] = (syscall_t)entry,
++#define __SYSCALL(nr, entry)[nr] = (syscall_t)entry,
+ #include <asm/syscall_table.h>
+-#undef __SYSCALL
+ };
+ 
+ #define COLOUR_ALIGN(addr, pgoff) \
+diff --git a/arch/xtensa/kernel/syscalls/Makefile b/arch/xtensa/kernel/syscalls/Makefile
 index 1c42d2d2926d..6610130c67bc 100644
---- a/arch/alpha/kernel/syscalls/Makefile
-+++ b/arch/alpha/kernel/syscalls/Makefile
+--- a/arch/xtensa/kernel/syscalls/Makefile
++++ b/arch/xtensa/kernel/syscalls/Makefile
 @@ -7,7 +7,7 @@ _dummy := $(shell [ -d '$(uapi)' ] || mkdir -p '$(uapi)')	\
  
  syscall := $(srctree)/$(src)/syscall.tbl
@@ -122,10 +137,10 @@ index 1c42d2d2926d..6610130c67bc 100644
  
  $(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
  	$(call if_changed,syshdr)
-diff --git a/arch/alpha/kernel/syscalls/syscalltbl.sh b/arch/alpha/kernel/syscalls/syscalltbl.sh
+diff --git a/arch/xtensa/kernel/syscalls/syscalltbl.sh b/arch/xtensa/kernel/syscalls/syscalltbl.sh
 deleted file mode 100644
 index 85d78d9309ad..000000000000
---- a/arch/alpha/kernel/syscalls/syscalltbl.sh
+--- a/arch/xtensa/kernel/syscalls/syscalltbl.sh
 +++ /dev/null
 @@ -1,32 +0,0 @@
 -#!/bin/sh
@@ -160,22 +175,6 @@ index 85d78d9309ad..000000000000
 -		nxt=$((nr+1))
 -	done
 -) > "$out"
-diff --git a/arch/alpha/kernel/systbls.S b/arch/alpha/kernel/systbls.S
-index 9704f22ed5e3..68f3e4f329eb 100644
---- a/arch/alpha/kernel/systbls.S
-+++ b/arch/alpha/kernel/systbls.S
-@@ -7,10 +7,9 @@
- 
- #include <asm/unistd.h>
- 
--#define __SYSCALL(nr, entry, nargs) .quad entry
-+#define __SYSCALL(nr, entry) .quad entry
- 	.data
- 	.align 3
- 	.globl sys_call_table
- sys_call_table:
- #include <asm/syscall_table.h>
--#undef __SYSCALL
 -- 
 2.27.0
 
