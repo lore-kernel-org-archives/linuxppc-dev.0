@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DC8BC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F40CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:24:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF82764DD1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:22:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF82764DD1
+	by mail.kernel.org (Postfix) with ESMTPS id 68BE164DD1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:24:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68BE164DD1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6kz1BMczDrgN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:22:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6mp49C9zDsMm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:24:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
- helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.42;
+ helo=h1.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
- [131.153.2.45])
+Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
+ [131.153.2.42])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LG6yPczDrg7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LG6x1szDrdk
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:04:38 +1100 (AEDT)
 Received: from MTA-09-3.privateemail.com (mta-09.privateemail.com
  [198.54.127.58])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 474E480210
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 203EA8009F
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:35 -0500 (EST)
 Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
- by MTA-09.privateemail.com (Postfix) with ESMTP id 7985E600FE;
- Wed, 27 Jan 2021 23:04:32 -0500 (EST)
+ by MTA-09.privateemail.com (Postfix) with ESMTP id 248E0600E9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:31 -0500 (EST)
 Received: from oc8246131445.ibm.com (unknown [10.20.151.215])
- by MTA-09.privateemail.com (Postfix) with ESMTPA id 3B741600FF;
- Thu, 28 Jan 2021 04:04:32 +0000 (UTC)
+ by MTA-09.privateemail.com (Postfix) with ESMTPA id EAA48600EB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:04:30 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 08/10] powerpc/signal64: Rewrite handle_rt_signal64() to
- minimise uaccess switches
-Date: Wed, 27 Jan 2021 22:04:22 -0600
-Message-Id: <20210128040424.12720-9-cmr@codefail.de>
+Subject: [PATCH v4 03/10] powerpc/signal64: Move non-inline functions out of
+ setup_sigcontext()
+Date: Wed, 27 Jan 2021 22:04:17 -0600
+Message-Id: <20210128040424.12720-4-cmr@codefail.de>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210128040424.12720-1-cmr@codefail.de>
 References: <20210128040424.12720-1-cmr@codefail.de>
@@ -65,124 +65,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Daniel Axtens <dja@axtens.net>
+There are non-inline functions which get called in setup_sigcontext() to
+save register state to the thread struct. Move these functions into a
+separate prepare_setup_sigcontext() function so that
+setup_sigcontext() can be refactored later into an "unsafe" version
+which assumes an open uaccess window. Non-inline functions should be
+avoided when uaccess is open.
 
-Add uaccess blocks and use the 'unsafe' versions of functions doing user
-access where possible to reduce the number of times uaccess has to be
-opened/closed.
+The majority of setup_sigcontext() can be refactored to execute in an
+"unsafe" context (uaccess window is opened) except for some non-inline
+functions. Move these out into a separate prepare_setup_sigcontext()
+function which must be called first and before opening up a uaccess
+window. A follow-up commit converts setup_sigcontext() to be "unsafe".
 
-There is no 'unsafe' version of copy_siginfo_to_user, so move it
-slightly to allow for a "longer" uaccess block.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-Co-developed-by: Christopher M. Riedl <cmr@codefail.de>
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 ---
- arch/powerpc/kernel/signal_64.c | 54 +++++++++++++++++++++------------
- 1 file changed, 34 insertions(+), 20 deletions(-)
+ arch/powerpc/kernel/signal_64.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index d668f8af18fe..a471e97589a8 100644
+index f9e4a1ac440f..b211a8ea4f6e 100644
 --- a/arch/powerpc/kernel/signal_64.c
 +++ b/arch/powerpc/kernel/signal_64.c
-@@ -849,44 +849,51 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 	unsigned long msr = regs->msr;
- 
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 0);
--	if (!access_ok(frame, sizeof(*frame)))
--		goto badframe;
- 
--	err |= __put_user(&frame->info, &frame->pinfo);
--	err |= __put_user(&frame->uc, &frame->puc);
--	err |= copy_siginfo_to_user(&frame->info, &ksig->info);
--	if (err)
-+	/* This only applies when calling unsafe_setup_sigcontext() and must be
-+	 * called before opening the uaccess window.
-+	 */
-+	if (!MSR_TM_ACTIVE(msr))
-+		prepare_setup_sigcontext(tsk, 1);
-+
-+	if (!user_write_access_begin(frame, sizeof(*frame)))
- 		goto badframe;
- 
-+	unsafe_put_user(&frame->info, &frame->pinfo, badframe_block);
-+	unsafe_put_user(&frame->uc, &frame->puc, badframe_block);
-+
- 	/* Create the ucontext.  */
--	err |= __put_user(0, &frame->uc.uc_flags);
--	err |= __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
-+	unsafe_put_user(0, &frame->uc.uc_flags, badframe_block);
-+	unsafe_save_altstack(&frame->uc.uc_stack, regs->gpr[1], badframe_block);
- 
- 	if (MSR_TM_ACTIVE(msr)) {
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 		/* The ucontext_t passed to userland points to the second
- 		 * ucontext_t (for transactional state) with its uc_link ptr.
- 		 */
--		err |= __put_user(&frame->uc_transact, &frame->uc.uc_link);
-+		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link, badframe_block);
-+
-+		user_write_access_end();
-+
- 		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
- 					    &frame->uc_transact.uc_mcontext,
- 					    tsk, ksig->sig, NULL,
- 					    (unsigned long)ksig->ka.sa.sa_handler,
- 					    msr);
-+
-+		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
-+			goto badframe;
-+
+@@ -79,6 +79,24 @@ static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+ }
  #endif
- 	} else {
--		err |= __put_user(0, &frame->uc.uc_link);
--		prepare_setup_sigcontext(tsk, 1);
--		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
--			return -EFAULT;
--		err |= __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
--						ksig->sig, NULL,
--						(unsigned long)ksig->ka.sa.sa_handler, 1);
--		user_write_access_end();
-+		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
-+		unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
-+					NULL, (unsigned long)ksig->ka.sa.sa_handler,
-+					1, badframe_block);
- 	}
--	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
--	if (err)
--		goto badframe;
+ 
++static void prepare_setup_sigcontext(struct task_struct *tsk, int ctx_has_vsx_region)
++{
++#ifdef CONFIG_ALTIVEC
++	/* save altivec registers */
++	if (tsk->thread.used_vr)
++		flush_altivec_to_thread(tsk);
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		tsk->thread.vrsave = mfspr(SPRN_VRSAVE);
++#endif /* CONFIG_ALTIVEC */
 +
-+	unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), badframe_block);
-+	user_write_access_end();
- 
- 	/* Make sure signal handler doesn't get spurious FP exceptions */
- 	tsk->thread.fp_state.fpscr = 0;
-@@ -901,6 +908,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 		regs->nip = (unsigned long) &frame->tramp[0];
- 	}
- 
++	flush_fp_to_thread(tsk);
 +
-+	/* Save the siginfo outside of the unsafe block. */
-+	if (copy_siginfo_to_user(&frame->info, &ksig->info))
-+		goto badframe;
++#ifdef CONFIG_VSX
++	if (tsk->thread.used_vsr && ctx_has_vsx_region)
++		flush_vsx_to_thread(tsk);
++#endif /* CONFIG_VSX */
++}
 +
- 	/* Allocate a dummy caller frame for the signal handler. */
- 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
- 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
-@@ -940,6 +952,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ /*
+  * Set up the sigcontext for the signal frame.
+  */
+@@ -97,7 +115,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	 */
+ #ifdef CONFIG_ALTIVEC
+ 	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
+-	unsigned long vrsave;
+ #endif
+ 	struct pt_regs *regs = tsk->thread.regs;
+ 	unsigned long msr = regs->msr;
+@@ -112,7 +129,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
  
- 	return 0;
+ 	/* save altivec registers */
+ 	if (tsk->thread.used_vr) {
+-		flush_altivec_to_thread(tsk);
+ 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
+ 		err |= __copy_to_user(v_regs, &tsk->thread.vr_state,
+ 				      33 * sizeof(vector128));
+@@ -124,17 +140,10 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+ 	 * use altivec.
+ 	 */
+-	vrsave = 0;
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC)) {
+-		vrsave = mfspr(SPRN_VRSAVE);
+-		tsk->thread.vrsave = vrsave;
+-	}
+-
+-	err |= __put_user(vrsave, (u32 __user *)&v_regs[33]);
++	err |= __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
+ #else /* CONFIG_ALTIVEC */
+ 	err |= __put_user(0, &sc->v_regs);
+ #endif /* CONFIG_ALTIVEC */
+-	flush_fp_to_thread(tsk);
+ 	/* copy fpr regs and fpscr */
+ 	err |= copy_fpr_to_user(&sc->fp_regs, tsk);
  
-+badframe_block:
-+	user_write_access_end();
- badframe:
- 	signal_fault(current, regs, "handle_rt_signal64", frame);
+@@ -150,7 +159,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	 * VMX data.
+ 	 */
+ 	if (tsk->thread.used_vsr && ctx_has_vsx_region) {
+-		flush_vsx_to_thread(tsk);
+ 		v_regs += ELF_NVRREG;
+ 		err |= copy_vsx_to_user(v_regs, tsk);
+ 		/* set MSR_VSX in the MSR value in the frame to
+@@ -655,6 +663,7 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 		ctx_has_vsx_region = 1;
  
+ 	if (old_ctx != NULL) {
++		prepare_setup_sigcontext(current, ctx_has_vsx_region);
+ 		if (!access_ok(old_ctx, ctx_size)
+ 		    || setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL, 0,
+ 					ctx_has_vsx_region)
+@@ -842,6 +851,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ #endif
+ 	{
+ 		err |= __put_user(0, &frame->uc.uc_link);
++		prepare_setup_sigcontext(tsk, 1);
+ 		err |= setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
+ 					NULL, (unsigned long)ksig->ka.sa.sa_handler,
+ 					1);
 -- 
 2.26.1
 
