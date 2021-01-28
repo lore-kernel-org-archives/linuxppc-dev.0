@@ -2,24 +2,24 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10010C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:13:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E56F3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:15:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E75964DCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:13:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E75964DCD
+	by mail.kernel.org (Postfix) with ESMTPS id 3D3B464D9D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:15:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D3B464D9D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6Xk55sGzDrck
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:13:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6Zx3nTRzDqCK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:15:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
  helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
@@ -28,26 +28,25 @@ Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
  [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LG6zx1zDrgG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LG6vhMzDrdc
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:04:38 +1100 (AEDT)
 Received: from MTA-09-3.privateemail.com (mta-09.privateemail.com
  [198.54.127.58])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 063468008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:35 -0500 (EST)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id CC146800B4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:34 -0500 (EST)
 Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
- by MTA-09.privateemail.com (Postfix) with ESMTP id D9DC4600E4
+ by MTA-09.privateemail.com (Postfix) with ESMTP id 9ABA9600BC
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:30 -0500 (EST)
 Received: from oc8246131445.ibm.com (unknown [10.20.151.215])
- by MTA-09.privateemail.com (Postfix) with ESMTPA id AB128600E9
+ by MTA-09.privateemail.com (Postfix) with ESMTPA id 6BE04600E4
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:04:30 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 02/10] powerpc/signal: Add unsafe_copy_{vsx,
- fpr}_from_user()
-Date: Wed, 27 Jan 2021 22:04:16 -0600
-Message-Id: <20210128040424.12720-3-cmr@codefail.de>
+Subject: [PATCH v4 01/10] powerpc/uaccess: Add unsafe_copy_from_user
+Date: Wed, 27 Jan 2021 22:04:15 -0600
+Message-Id: <20210128040424.12720-2-cmr@codefail.de>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210128040424.12720-1-cmr@codefail.de>
 References: <20210128040424.12720-1-cmr@codefail.de>
@@ -69,72 +68,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reuse the "safe" implementation from signal.c except for calling
-unsafe_copy_from_user() to copy into a local buffer.
+Just wrap __copy_tofrom_user() for the usual 'unsafe' pattern which
+takes in a label to goto on error.
 
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 ---
- arch/powerpc/kernel/signal.h | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ arch/powerpc/include/asm/uaccess.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index 2559a681536e..c18402d625f1 100644
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -53,6 +53,33 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
- 				&buf[i], label);\
- } while (0)
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 501c9a79038c..036e82eefac9 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -542,6 +542,9 @@ user_write_access_begin(const void __user *ptr, size_t len)
+ #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
+ #define unsafe_put_user(x, p, e) __put_user_goto(x, p, e)
  
-+#define unsafe_copy_fpr_from_user(task, from, label)	do {		\
-+	struct task_struct *__t = task;					\
-+	u64 __user *__f = (u64 __user *)from;				\
-+	u64 buf[ELF_NFPREG];						\
-+	int i;								\
-+									\
-+	unsafe_copy_from_user(buf, __f, ELF_NFPREG * sizeof(double),	\
-+				label);					\
-+	for (i = 0; i < ELF_NFPREG - 1; i++)				\
-+		__t->thread.TS_FPR(i) = buf[i];				\
-+	__t->thread.fp_state.fpscr = buf[i];				\
-+} while (0)
++#define unsafe_copy_from_user(d, s, l, e) \
++	unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
 +
-+#define unsafe_copy_vsx_from_user(task, from, label)	do {		\
-+	struct task_struct *__t = task;					\
-+	u64 __user *__f = (u64 __user *)from;				\
-+	u64 buf[ELF_NVSRHALFREG];					\
-+	int i;								\
-+									\
-+	unsafe_copy_from_user(buf, __f,					\
-+				ELF_NVSRHALFREG * sizeof(double),	\
-+				label);					\
-+	for (i = 0; i < ELF_NVSRHALFREG ; i++)				\
-+		__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];	\
-+} while (0)
-+
-+
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- #define unsafe_copy_ckfpr_to_user(to, task, label)	do {		\
- 	struct task_struct *__t = task;					\
-@@ -80,6 +107,10 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
- 	unsafe_copy_to_user(to, (task)->thread.fp_state.fpr,	\
- 			    ELF_NFPREG * sizeof(double), label)
- 
-+#define unsafe_copy_fpr_from_user(task, from, label)			\
-+	unsafe_copy_from_user((task)->thread.fp_state.fpr, from,	\
-+			    ELF_NFPREG * sizeof(double), label)
-+
- static inline unsigned long
- copy_fpr_to_user(void __user *to, struct task_struct *task)
- {
-@@ -115,6 +146,8 @@ copy_ckfpr_from_user(struct task_struct *task, void __user *from)
- #else
- #define unsafe_copy_fpr_to_user(to, task, label) do { } while (0)
- 
-+#define unsafe_copy_fpr_from_user(task, from, label) do { } while (0)
-+
- static inline unsigned long
- copy_fpr_to_user(void __user *to, struct task_struct *task)
- {
+ #define unsafe_copy_to_user(d, s, l, e) \
+ do {									\
+ 	u8 __user *_dst = (u8 __user *)(d);				\
 -- 
 2.26.1
 
