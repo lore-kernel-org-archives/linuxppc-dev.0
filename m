@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8921DC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98DCAC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:35:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8643D64DD9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:33:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8643D64DD9
+	by mail.kernel.org (Postfix) with ESMTPS id 0CEFE64DC4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:35:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CEFE64DC4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR30F3hflzDrVb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:33:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR3273M8lzDrBH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:35:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
@@ -27,35 +27,35 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=htPDLFVT; 
+ header.s=dec2015msa header.b=GcbQa/gZ; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h5mdqzDqZX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h4VRczDqRg
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:28 +1100 (AEDT)
 Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
  [126.26.94.251]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 10S0pjIi024172;
- Thu, 28 Jan 2021 09:52:02 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIi024172
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIo024172;
+ Thu, 28 Jan 2021 09:52:09 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIo024172
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611795123;
- bh=8LKOeh8wDSb8BIof2AfD5uB6wjyW5KsgSaXh3UzQGfw=;
+ s=dec2015msa; t=1611795130;
+ bh=edevBHAxEzu6xl1QGcyiq00K/wGWzk2RE79/Nm9uSCk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=htPDLFVT7not9OIuRM8Kjohlj92lfUtnbdhEW6VzKx0VFC8HiM8Rq9o7l3aX0IEw+
- M7xgK2j911+JdwM6qhXKVoW0nNsXY+JOPUSzkC1MayyWjx84O8FOBbbtliysKYFdAz
- N0aoPM1TUzftvX0G3FbNm6c9YhkP9Fs4Hoegcz5iRyZP+5skPM9IK9BApMFTLYQ71x
- jxsA8v77jwtjW7v82lcmEClQ7TTz/gEzUDyrL1FJMzPtLBWN0MqR3TOGr5CSQpbKd9
- 4BT+aD+caamfV6skUJH96yjSo/GFairUwhYTqK91JYxXyZaDahld2KKqEd6owy2+mt
- P8X/wxmEaopmA==
+ b=GcbQa/gZGdyeTcoX0fmprTeNm9FdiiNR5G0s+N2bP8NmsJiASMuqzD9tL2q+Gmj8S
+ Uhqu8Mg4ylarW3iioQwp5LzwhmSOrGOkvZ5ceWa0tVafxsQDmF46iGC9xmLeExGaeK
+ ZNpvPL0fDNzaocwpOYWAY+jyJoy3RN+XsmT9EkNa90QEmafES6drwXSsnLgBbcKPtt
+ ZzqZ5uTDBDTjwY0Iaww6eiK/GTE/bKJIylZwrI9/OH2thONBnLJV5UOIUxFKyRVZ3H
+ FcqKGcpzptz2A9gNWTZcJQPV7APUeHKqMS23BZYvl/p3AxnZfV1S7r6OoBe2g0YC5X
+ Lb3Q0X2ukKftQ==
 X-Nifty-SrcIP: [126.26.94.251]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 13/27] microblaze: add missing FORCE and fix 'targets' to make
+Subject: [PATCH 19/27] sh: add missing FORCE and fix 'targets' to make
  if_changed work
-Date: Thu, 28 Jan 2021 09:50:55 +0900
-Message-Id: <20210128005110.2613902-14-masahiroy@kernel.org>
+Date: Thu, 28 Jan 2021 09:51:01 +0900
+Message-Id: <20210128005110.2613902-20-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
 References: <20210128005110.2613902-1-masahiroy@kernel.org>
@@ -95,13 +95,13 @@ Fix all of them so the if_changed rules work correctly.
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/microblaze/kernel/syscalls/Makefile | 11 ++++++-----
+ arch/sh/kernel/syscalls/Makefile | 11 ++++++-----
  1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/microblaze/kernel/syscalls/Makefile b/arch/microblaze/kernel/syscalls/Makefile
+diff --git a/arch/sh/kernel/syscalls/Makefile b/arch/sh/kernel/syscalls/Makefile
 index 659faefdcb1d..1c42d2d2926d 100644
---- a/arch/microblaze/kernel/syscalls/Makefile
-+++ b/arch/microblaze/kernel/syscalls/Makefile
+--- a/arch/sh/kernel/syscalls/Makefile
++++ b/arch/sh/kernel/syscalls/Makefile
 @@ -21,18 +21,19 @@ quiet_cmd_systbl = SYSTBL  $@
  		   '$(systbl_abi_$(basetarget))'		\
  		   '$(systbl_offset_$(basetarget))'
