@@ -5,21 +5,21 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB050C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29470C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:27:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBA2C64E21
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:25:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBA2C64E21
+	by mail.kernel.org (Postfix) with ESMTPS id 2AC4D64E21
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:27:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AC4D64E21
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTRL482fzDrqd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:25:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTV02KHCzDq8g
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:27:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=FbDbTpTK; 
+ header.s=casper.20170209 header.b=cqZuyvYR; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTCm72hpzDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTD723HgzDrdp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=0PLW/Fa3jZYHwDqK+8TeRrW7s0mvQirSQmldMFP6fgw=; b=FbDbTpTKwN2+U/znUzueFLSor/
- bZDiPljN5K0NDUtuVKgPFHeyvLjIy00tUE4nvWCq8eMo6bEkgYcXYFeKwPRgXPuDOnDEF1G1qSL32
- g9OnDsuenwVOm8ycy4dHMsCRLbmjoDFB6SpNFs/NhoXJI6Wh/NMSew47JWEJUazc1s/1KqMiFStMC
- I3eWj20LpLMmLLSo9Oi3glxmGRE6akSC7q12Fsk+6nRxMqFzlO4u+F8tanyQtXSiarl3htLqKas9m
- S+KYMo7/nAdHqfZO3nlv5zZjnTyfyj9vogwHRdQGBg4Z4/wr4XdhAUPDvST5NqY8jwAHlZbEu7SV2
- BKH3mhSw==;
+ bh=7XGAY7yvj4y7G092iC+u/MlLzi5B5Wf+JlZcTn93bqM=; b=cqZuyvYRD8sBU527A0A+piP4Wx
+ PoRrWGMshCEFWqgtDYa2pB4HpQJ2wNkmRTeQW/xKMcdnvfP5jrco7AO9Pb+okH5NKvIPsFOPDtbaT
+ wAL4ZYK39HWhI6DAHfKoY0lY3RA/BtGrN2xVjnN2t6NMhWI9tG/3Q/0vw+Q/w6fvfmxWDdbEDZokz
+ wQgNByrIaLETMBTYh482R32UM7fZBAvt5/cn27F7mF5uW+DZ2Jlfe8d41TMM8hBoxFiqScuAUK/Xz
+ QeFpS2JfaPKe1iYiv6GHJSrashFymPb+vbyU7ukcrbG3BjRUJD7c/psx31m89Pc7nhN5ol+jLAtTF
+ +PUIlClw==;
 Received: from [2001:4bb8:198:6bf4:e052:196b:7e32:37d9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l5Bob-008nrW-1e; Thu, 28 Jan 2021 18:14:47 +0000
+ id 1l5Boo-008ns7-D7; Thu, 28 Jan 2021 18:15:01 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,9 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 03/13] module: unexport find_module and module_mutex
-Date: Thu, 28 Jan 2021 19:14:11 +0100
-Message-Id: <20210128181421.2279-4-hch@lst.de>
+Subject: [PATCH 05/13] kallsyms: refactor {,module_}kallsyms_on_each_symbol
+Date: Thu, 28 Jan 2021 19:14:13 +0100
+Message-Id: <20210128181421.2279-6-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210128181421.2279-1-hch@lst.de>
 References: <20210128181421.2279-1-hch@lst.de>
@@ -88,33 +88,87 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-find_module is not used by modular code any more, and random driver code
-has no business calling it to start with.
+Require an explicit call to module_kallsyms_on_each_symbol to look
+for symbols in modules instead of the call from kallsyms_on_each_symbol,
+and acquire module_mutex inside of module_kallsyms_on_each_symbol instead
+of leaving that up to the caller.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- kernel/module.c | 2 --
- 1 file changed, 2 deletions(-)
+ kernel/kallsyms.c       | 6 +++++-
+ kernel/livepatch/core.c | 6 +-----
+ kernel/module.c         | 8 ++++----
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index fe9de067771c34..a0d3f0865916f9 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -177,6 +177,10 @@ unsigned long kallsyms_lookup_name(const char *name)
+ 	return module_kallsyms_lookup_name(name);
+ }
+ 
++/*
++ * Iterate over all symbols in vmlinux.  For symbols from modules use
++ * module_kallsyms_on_each_symbol instead.
++ */
+ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
+ 				      unsigned long),
+ 			    void *data)
+@@ -192,7 +196,7 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
+ 		if (ret != 0)
+ 			return ret;
+ 	}
+-	return module_kallsyms_on_each_symbol(fn, data);
++	return 0;
+ }
+ 
+ static unsigned long get_symbol_pos(unsigned long addr,
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index 262cd9b003b9f0..f591dac5e86ef4 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -164,12 +164,8 @@ static int klp_find_object_symbol(const char *objname, const char *name,
+ 		.pos = sympos,
+ 	};
+ 
+-	mutex_lock(&module_mutex);
+-	if (objname)
++	if (objname || !kallsyms_on_each_symbol(klp_find_callback, &args))
+ 		module_kallsyms_on_each_symbol(klp_find_callback, &args);
+-	else
+-		kallsyms_on_each_symbol(klp_find_callback, &args);
+-	mutex_unlock(&module_mutex);
+ 
+ 	/*
+ 	 * Ensure an address was found. If sympos is 0, ensure symbol is unique;
 diff --git a/kernel/module.c b/kernel/module.c
-index 4bf30e4b3eaaa1..981302f616b411 100644
+index 6772fb2680eb3e..ae9045c5292a78 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -88,7 +88,6 @@
-  * (delete and add uses RCU list operations).
-  */
- DEFINE_MUTEX(module_mutex);
--EXPORT_SYMBOL_GPL(module_mutex);
- static LIST_HEAD(modules);
+@@ -4379,8 +4379,7 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
+ 	unsigned int i;
+ 	int ret;
  
- /* Work queue for freeing init sections in success case */
-@@ -672,7 +671,6 @@ struct module *find_module(const char *name)
- 	module_assert_mutex();
- 	return find_module_all(name, strlen(name), false);
+-	module_assert_mutex();
+-
++	mutex_lock(&module_mutex);
+ 	list_for_each_entry(mod, &modules, list) {
+ 		/* We hold module_mutex: no need for rcu_dereference_sched */
+ 		struct mod_kallsyms *kallsyms = mod->kallsyms;
+@@ -4396,10 +4395,11 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
+ 			ret = fn(data, kallsyms_symbol_name(kallsyms, i),
+ 				 mod, kallsyms_symbol_value(sym));
+ 			if (ret != 0)
+-				return ret;
++				break;
+ 		}
+ 	}
+-	return 0;
++	mutex_unlock(&module_mutex);
++	return ret;
  }
--EXPORT_SYMBOL_GPL(find_module);
- 
- #ifdef CONFIG_SMP
+ #endif /* CONFIG_KALLSYMS */
  
 -- 
 2.29.2
