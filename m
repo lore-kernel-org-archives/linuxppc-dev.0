@@ -2,58 +2,68 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 072F2C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:25:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A19ACC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:28:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CC1F64DD8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:25:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CC1F64DD8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id ACAEE64DD8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:27:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACAEE64DD8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6pm2XvWzDqJ8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:25:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6s94cKqzDsGt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:27:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.42;
- helo=h1.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
-Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
- [131.153.2.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LH074pzDrfw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:04:38 +1100 (AEDT)
-Received: from MTA-09-3.privateemail.com (mta-09.privateemail.com
- [198.54.127.58])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 2FDDF800D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:35 -0500 (EST)
-Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
- by MTA-09.privateemail.com (Postfix) with ESMTP id 2A9F9600F3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:32 -0500 (EST)
-Received: from oc8246131445.ibm.com (unknown [10.20.151.215])
- by MTA-09.privateemail.com (Postfix) with ESMTPA id F1322600FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:04:31 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 07/10] powerpc/signal64: Replace restore_sigcontext() w/
- unsafe_restore_sigcontext()
-Date: Wed, 27 Jan 2021 22:04:21 -0600
-Message-Id: <20210128040424.12720-8-cmr@codefail.de>
-X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20210128040424.12720-1-cmr@codefail.de>
-References: <20210128040424.12720-1-cmr@codefail.de>
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.a=rsa-sha256 header.s=default header.b=EdovfA0I; 
+ dkim-atps=neutral
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DR6M87361zDrRs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:05:24 +1100 (AEDT)
+Received: from [192.168.0.104] (c-73-42-176-67.hsd1.wa.comcast.net
+ [73.42.176.67])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 7B19F20B7192;
+ Wed, 27 Jan 2021 20:05:22 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 7B19F20B7192
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1611806723;
+ bh=dzl2P44Yb+cNWgQrSsQPdvhI/zPDp51SLN+n5BsmTYw=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=EdovfA0Ie2vSW3q9X330ya4blxqJxmCNR8pb6jyTPfsAtUyZmv/J5Ert8cRTPsnjJ
+ xhJBn/olUclZEvwaYdy3filR9a9BL3xmmmuC47b6RgwFGBYY+1lryf2SdYcSU6o5Tf
+ +7NNRQWMwng/+UYSQ6g3DbAmnqbMMK2XACp6PUgo=
+Subject: Re: [PATCH v15 10/10] arm64: Add IMA log information in kimage used
+ for kexec
+To: Will Deacon <will@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>
+References: <20210115173017.30617-1-nramas@linux.microsoft.com>
+ <20210115173017.30617-11-nramas@linux.microsoft.com>
+ <20210127165424.GB358@willie-the-truck>
+ <dec23eb8-0b27-3227-d1ef-f759338a7f9f@linux.microsoft.com>
+ <20210127180230.GA593@willie-the-truck>
+ <8a573f84-732a-3591-8751-f7b08edaa01d@linux.microsoft.com>
+ <6343ab2eec390ab7582beea04f8006af095850c8.camel@linux.ibm.com>
+ <20210127231334.GB1016@willie-the-truck>
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Message-ID: <681a4410-8a96-bce1-fcd4-d45d56625b39@linux.microsoft.com>
+Date: Wed, 27 Jan 2021 20:05:21 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+In-Reply-To: <20210127231334.GB1016@willie-the-truck>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,174 +75,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: mark.rutland@arm.com, bhsharma@redhat.com, tao.li@vivo.com,
+ paulus@samba.org, vincenzo.frascino@arm.com, frowand.list@gmail.com,
+ sashal@kernel.org, robh@kernel.org, masahiroy@kernel.org, jmorris@namei.org,
+ takahiro.akashi@linaro.org, linux-arm-kernel@lists.infradead.org,
+ catalin.marinas@arm.com, serge@hallyn.com, devicetree@vger.kernel.org,
+ pasha.tatashin@soleen.com, prsriva@linux.microsoft.com, hsinyi@chromium.org,
+ allison@lohutok.net, christophe.leroy@c-s.fr, mbrugger@suse.com,
+ balajib@linux.microsoft.com, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, james.morse@arm.com, dmitry.kasatkin@gmail.com,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously restore_sigcontext() performed a costly KUAP switch on every
-uaccess operation. These repeated uaccess switches cause a significant
-drop in signal handling performance.
+On 1/27/21 3:13 PM, Will Deacon wrote:
+> On Wed, Jan 27, 2021 at 01:31:02PM -0500, Mimi Zohar wrote:
+>> On Wed, 2021-01-27 at 10:24 -0800, Lakshmi Ramasubramanian wrote:
+>>> On 1/27/21 10:02 AM, Will Deacon wrote:
+>>>> On Wed, Jan 27, 2021 at 09:56:53AM -0800, Lakshmi Ramasubramanian wrote:
+>>>>> On 1/27/21 8:54 AM, Will Deacon wrote:
+>>>>>> On Fri, Jan 15, 2021 at 09:30:17AM -0800, Lakshmi Ramasubramanian wrote:
+>>>>>>> Address and size of the buffer containing the IMA measurement log need
+>>>>>>> to be passed from the current kernel to the next kernel on kexec.
+>>>>>>>
+>>>>>>> Add address and size fields to "struct kimage_arch" for ARM64 platform
+>>>>>>> to hold the address and size of the IMA measurement log buffer.
+>>>>>>>
+>>>>>>> Update CONFIG_KEXEC_FILE to select CONFIG_HAVE_IMA_KEXEC, if CONFIG_IMA
+>>>>>>> is enabled, to indicate that the IMA measurement log information is
+>>>>>>> present in the device tree for ARM64.
+>>>>>>>
+>>>>>>> Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+>>>>>>> Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+>>>>>>> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+>>>>>>> Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+>>>>>>> ---
+>>>>>>>     arch/arm64/Kconfig             | 1 +
+>>>>>>>     arch/arm64/include/asm/kexec.h | 5 +++++
+>>>>>>>     2 files changed, 6 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>>>>>>> index 1d466addb078..ea7f7fe3dccd 100644
+>>>>>>> --- a/arch/arm64/Kconfig
+>>>>>>> +++ b/arch/arm64/Kconfig
+>>>>>>> @@ -1094,6 +1094,7 @@ config KEXEC
+>>>>>>>     config KEXEC_FILE
+>>>>>>>     	bool "kexec file based system call"
+>>>>>>>     	select KEXEC_CORE
+>>>>>>> +	select HAVE_IMA_KEXEC if IMA
+>>>>>>>     	help
+>>>>>>>     	  This is new version of kexec system call. This system call is
+>>>>>>>     	  file based and takes file descriptors as system call argument
+>>>>>>> diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
+>>>>>>> index d24b527e8c00..2bd19ccb6c43 100644
+>>>>>>> --- a/arch/arm64/include/asm/kexec.h
+>>>>>>> +++ b/arch/arm64/include/asm/kexec.h
+>>>>>>> @@ -100,6 +100,11 @@ struct kimage_arch {
+>>>>>>>     	void *elf_headers;
+>>>>>>>     	unsigned long elf_headers_mem;
+>>>>>>>     	unsigned long elf_headers_sz;
+>>>>>>> +
+>>>>>>> +#ifdef CONFIG_IMA_KEXEC
+>>>>>>> +	phys_addr_t ima_buffer_addr;
+>>>>>>> +	size_t ima_buffer_size;
+>>>>>>> +#endif
+>>>>>>
+>>>>>> Why do these need to be in the arch structure instead of 'struct kimage'?
+>>>>>>
+>>>>>
+>>>>> Currently, only powerpc and, with this patch set, arm64 have support for
+>>>>> carrying forward IMA measurement list across kexec system call. The above
+>>>>> fields are used for tracking IMA measurement list.
+>>>>>
+>>>>> Do you see a reason to move these fields to "struct kimage"?
+>>>>
+>>>> If they're gated on CONFIG_IMA_KEXEC, then it seems harmless for them to
+>>>> be added to the shared structure. Or are you saying that there are
+>>>> architectures which have CONFIG_IMA_KEXEC but do not want these fields?
+>>>>
+>>>
+>>> As far as I know, there are no other architectures that define
+>>> CONFIG_IMA_KEXEC, but do not use these fields.
+>>
+>> Yes, CONFIG_IMA_KEXEC enables "carrying the IMA measurement list across
+>> a soft boot".   The only arch that currently carries the IMA
+>> measurement across kexec is powerpc.
+> 
+> Ok, in which case this sounds like it should be in the shared structure, no?
+> 
 
-Rewrite restore_sigcontext() to assume that a userspace read access
-window is open. Replace all uaccess functions with their 'unsafe'
-versions which avoid the repeated uaccess switches.
+Ok - I'll move the IMA kexec buffer fields from "struct kimage_arch" to 
+"struct kimage" for both powerpc and arm64.
 
-Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
----
- arch/powerpc/kernel/signal_64.c | 68 ++++++++++++++++++++-------------
- 1 file changed, 41 insertions(+), 27 deletions(-)
+thanks,
+  -lakshmi
 
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 4248e4489ff1..d668f8af18fe 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -326,14 +326,14 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- /*
-  * Restore the sigcontext from the signal frame.
-  */
--
--static long restore_sigcontext(struct task_struct *tsk, sigset_t *set, int sig,
--			      struct sigcontext __user *sc)
-+#define unsafe_restore_sigcontext(tsk, set, sig, sc, e) \
-+	unsafe_op_wrap(__unsafe_restore_sigcontext(tsk, set, sig, sc), e)
-+static long notrace __unsafe_restore_sigcontext(struct task_struct *tsk, sigset_t *set,
-+						int sig, struct sigcontext __user *sc)
- {
- #ifdef CONFIG_ALTIVEC
- 	elf_vrreg_t __user *v_regs;
- #endif
--	unsigned long err = 0;
- 	unsigned long save_r13 = 0;
- 	unsigned long msr;
- 	struct pt_regs *regs = tsk->thread.regs;
-@@ -348,27 +348,28 @@ static long restore_sigcontext(struct task_struct *tsk, sigset_t *set, int sig,
- 		save_r13 = regs->gpr[13];
- 
- 	/* copy the GPRs */
--	err |= __copy_from_user(regs->gpr, sc->gp_regs, sizeof(regs->gpr));
--	err |= __get_user(regs->nip, &sc->gp_regs[PT_NIP]);
-+	unsafe_copy_from_user(regs->gpr, sc->gp_regs, sizeof(regs->gpr),
-+			      efault_out);
-+	unsafe_get_user(regs->nip, &sc->gp_regs[PT_NIP], efault_out);
- 	/* get MSR separately, transfer the LE bit if doing signal return */
--	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-+	unsafe_get_user(msr, &sc->gp_regs[PT_MSR], efault_out);
- 	if (sig)
- 		regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
--	err |= __get_user(regs->orig_gpr3, &sc->gp_regs[PT_ORIG_R3]);
--	err |= __get_user(regs->ctr, &sc->gp_regs[PT_CTR]);
--	err |= __get_user(regs->link, &sc->gp_regs[PT_LNK]);
--	err |= __get_user(regs->xer, &sc->gp_regs[PT_XER]);
--	err |= __get_user(regs->ccr, &sc->gp_regs[PT_CCR]);
-+	unsafe_get_user(regs->orig_gpr3, &sc->gp_regs[PT_ORIG_R3], efault_out);
-+	unsafe_get_user(regs->ctr, &sc->gp_regs[PT_CTR], efault_out);
-+	unsafe_get_user(regs->link, &sc->gp_regs[PT_LNK], efault_out);
-+	unsafe_get_user(regs->xer, &sc->gp_regs[PT_XER], efault_out);
-+	unsafe_get_user(regs->ccr, &sc->gp_regs[PT_CCR], efault_out);
- 	/* Don't allow userspace to set SOFTE */
- 	set_trap_norestart(regs);
--	err |= __get_user(regs->dar, &sc->gp_regs[PT_DAR]);
--	err |= __get_user(regs->dsisr, &sc->gp_regs[PT_DSISR]);
--	err |= __get_user(regs->result, &sc->gp_regs[PT_RESULT]);
-+	unsafe_get_user(regs->dar, &sc->gp_regs[PT_DAR], efault_out);
-+	unsafe_get_user(regs->dsisr, &sc->gp_regs[PT_DSISR], efault_out);
-+	unsafe_get_user(regs->result, &sc->gp_regs[PT_RESULT], efault_out);
- 
- 	if (!sig)
- 		regs->gpr[13] = save_r13;
- 	if (set != NULL)
--		err |=  __get_user(set->sig[0], &sc->oldmask);
-+		unsafe_get_user(set->sig[0], &sc->oldmask, efault_out);
- 
- 	/*
- 	 * Force reload of FP/VEC.
-@@ -378,29 +379,28 @@ static long restore_sigcontext(struct task_struct *tsk, sigset_t *set, int sig,
- 	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1 | MSR_VEC | MSR_VSX);
- 
- #ifdef CONFIG_ALTIVEC
--	err |= __get_user(v_regs, &sc->v_regs);
--	if (err)
--		return err;
-+	unsafe_get_user(v_regs, &sc->v_regs, efault_out);
- 	if (v_regs && !access_ok(v_regs, 34 * sizeof(vector128)))
- 		return -EFAULT;
- 	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
- 	if (v_regs != NULL && (msr & MSR_VEC) != 0) {
--		err |= __copy_from_user(&tsk->thread.vr_state, v_regs,
--					33 * sizeof(vector128));
-+		unsafe_copy_from_user(&tsk->thread.vr_state, v_regs,
-+				      33 * sizeof(vector128), efault_out);
- 		tsk->thread.used_vr = true;
- 	} else if (tsk->thread.used_vr) {
- 		memset(&tsk->thread.vr_state, 0, 33 * sizeof(vector128));
- 	}
- 	/* Always get VRSAVE back */
- 	if (v_regs != NULL)
--		err |= __get_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
-+		unsafe_get_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33],
-+				efault_out);
- 	else
- 		tsk->thread.vrsave = 0;
- 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
- 		mtspr(SPRN_VRSAVE, tsk->thread.vrsave);
- #endif /* CONFIG_ALTIVEC */
- 	/* restore floating point */
--	err |= copy_fpr_from_user(tsk, &sc->fp_regs);
-+	unsafe_copy_fpr_from_user(tsk, &sc->fp_regs, efault_out);
- #ifdef CONFIG_VSX
- 	/*
- 	 * Get additional VSX data. Update v_regs to point after the
-@@ -409,14 +409,17 @@ static long restore_sigcontext(struct task_struct *tsk, sigset_t *set, int sig,
- 	 */
- 	v_regs += ELF_NVRREG;
- 	if ((msr & MSR_VSX) != 0) {
--		err |= copy_vsx_from_user(tsk, v_regs);
-+		unsafe_copy_vsx_from_user(tsk, v_regs, efault_out);
- 		tsk->thread.used_vsr = true;
- 	} else {
- 		for (i = 0; i < 32 ; i++)
- 			tsk->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
- 	}
- #endif
--	return err;
-+	return 0;
-+
-+efault_out:
-+	return -EFAULT;
- }
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -701,8 +704,14 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	if (__copy_from_user(&set, &new_ctx->uc_sigmask, sizeof(set)))
- 		do_exit(SIGSEGV);
- 	set_current_blocked(&set);
--	if (restore_sigcontext(current, NULL, 0, &new_ctx->uc_mcontext))
-+
-+	if (!user_read_access_begin(new_ctx, ctx_size))
-+		return -EFAULT;
-+	if (__unsafe_restore_sigcontext(current, NULL, 0, &new_ctx->uc_mcontext)) {
-+		user_read_access_end();
- 		do_exit(SIGSEGV);
-+	}
-+	user_read_access_end();
- 
- 	/* This returns like rt_sigreturn */
- 	set_thread_flag(TIF_RESTOREALL);
-@@ -807,8 +816,13 @@ SYSCALL_DEFINE0(rt_sigreturn)
- 		 * causing a TM bad thing.
- 		 */
- 		current->thread.regs->msr &= ~MSR_TS_MASK;
--		if (restore_sigcontext(current, NULL, 1, &uc->uc_mcontext))
-+		if (!user_read_access_begin(uc, sizeof(*uc)))
-+			return -EFAULT;
-+		if (__unsafe_restore_sigcontext(current, NULL, 1, &uc->uc_mcontext)) {
-+			user_read_access_end();
- 			goto badframe;
-+		}
-+		user_read_access_end();
- 	}
- 
- 	if (restore_altstack(&uc->uc_stack))
--- 
-2.26.1
 
