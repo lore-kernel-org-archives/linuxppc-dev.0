@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84BE1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:29:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C97FDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:31:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBF5264E1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:29:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBF5264E1D
+	by mail.kernel.org (Postfix) with ESMTPS id 0184664E1D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 18:31:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0184664E1D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTX70xBrzDrqb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:29:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRTZf2CgZzDsMK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 05:31:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=CItYmU6r; 
+ header.s=casper.20170209 header.b=bsg3vF+g; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTDH4gp4zDrdg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DRTDP2TqHzDrdm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 05:15:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=ygZNXP/aSGO/YFyvv/Zgz/GzTz3OiodVTPFs34vfBtg=; b=CItYmU6rZWOvwK2sbGtbMHzg3G
- Ma8TrWWq36yLCxcplqKgNPe1YLArhJ7wy55D0zsydX6zUX1vclqWYERvITRiJJVFFEnNDdLPsxiI+
- NnsOrRPaCvK0ktfSTPcwymSfIGJ4gfSQjo07o5KM7+NV3QejxLYuWmJyp3QswZ0K+Lq+3N++l+y7e
- 18WKiNoWqK6mIjP9cjjL2UJQXufPYQyjUkDg/OydS+6LNmE9J8J5bWDgoXxF9b5KPja+hrPBjhxmE
- r+DDL8KSv9jNSGYsLZQvtof8ZO2Vg5FZB56VJs5Ca3PlWpKx9gS3dviCM7C3QiG31XatcTYuk2yOz
- tXnFWNbA==;
+ bh=1SPO7On9/3q3OlLsiBZF1nMglPSL9IlFQCIQgbMQwAM=; b=bsg3vF+gQkXL7X0/1AEJFn/dj1
+ mbpQt+ASTHbuz1V0E+/xVAdA6iJre1EdW5jppUcfrNRfFJebVJGQxsag82RsYRyqffWWWhg5sZlL1
+ CArNxeJmN/yayud5Yt/ACo4dSsG86hGu/fSahZ9R8GjquCyOuX8ZbuHHVpOOGZCi2VHN0ZEUc1BfB
+ iNpNnd7DzC6YFbVm783XSfUTvwd3FzEP2E+/usncyfr31+jSCwbCC+FjkDQTYieWrPKuDiH6KwEA/
+ ZNwGdMdMEU+PYfmU5rvsBKex6iU4nOTyVRChTD2xCRN3R/9nMSFio+dGhyTPJMVSdL5uflddXMm7N
+ IAcPNK1A==;
 Received: from [2001:4bb8:198:6bf4:e052:196b:7e32:37d9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l5Bov-008nxv-34; Thu, 28 Jan 2021 18:15:07 +0000
+ id 1l5BpB-008nzx-DC; Thu, 28 Jan 2021 18:15:23 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,10 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 06/13] kallsyms: only build {,
- module_}kallsyms_on_each_symbol when required
-Date: Thu, 28 Jan 2021 19:14:14 +0100
-Message-Id: <20210128181421.2279-7-hch@lst.de>
+Subject: [PATCH 08/13] module: remove each_symbol_in_section
+Date: Thu, 28 Jan 2021 19:14:16 +0100
+Message-Id: <20210128181421.2279-9-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210128181421.2279-1-hch@lst.de>
 References: <20210128181421.2279-1-hch@lst.de>
@@ -89,136 +88,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kallsyms_on_each_symbol and module_kallsyms_on_each_symbol are only used
-by the livepatching code, so don't build them if livepatching is not
-enabled.
+each_symbol_in_section just contains a trivial loop over its arguments.
+Just open code the loop in the two callers.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/linux/kallsyms.h | 17 ++++-------------
- include/linux/module.h   | 16 ++++------------
- kernel/kallsyms.c        |  2 ++
- kernel/module.c          |  2 ++
- 4 files changed, 12 insertions(+), 25 deletions(-)
+ kernel/module.c | 29 +++++++----------------------
+ 1 file changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 481273f0c72d42..465060acc9816f 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -71,15 +71,14 @@ static inline void *dereference_symbol_descriptor(void *ptr)
- 	return ptr;
- }
- 
--#ifdef CONFIG_KALLSYMS
--/* Lookup the address for a symbol. Returns 0 if not found. */
--unsigned long kallsyms_lookup_name(const char *name);
--
--/* Call a function on each kallsyms symbol in the core kernel */
- int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
- 				      unsigned long),
- 			    void *data);
- 
-+#ifdef CONFIG_KALLSYMS
-+/* Lookup the address for a symbol. Returns 0 if not found. */
-+unsigned long kallsyms_lookup_name(const char *name);
-+
- extern int kallsyms_lookup_size_offset(unsigned long addr,
- 				  unsigned long *symbolsize,
- 				  unsigned long *offset);
-@@ -108,14 +107,6 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
- 	return 0;
- }
- 
--static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
--						    struct module *,
--						    unsigned long),
--					  void *data)
--{
--	return 0;
--}
--
- static inline int kallsyms_lookup_size_offset(unsigned long addr,
- 					      unsigned long *symbolsize,
- 					      unsigned long *offset)
-diff --git a/include/linux/module.h b/include/linux/module.h
-index a64aa84d1b182c..3ea4ffae608f97 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -608,10 +608,6 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
- /* Look for this name: can be of form module:name. */
- unsigned long module_kallsyms_lookup_name(const char *name);
- 
--int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
--					     struct module *, unsigned long),
--				   void *data);
--
- extern void __noreturn __module_put_and_exit(struct module *mod,
- 			long code);
- #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code)
-@@ -795,14 +791,6 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
- 	return 0;
- }
- 
--static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
--							   struct module *,
--							   unsigned long),
--						 void *data)
--{
--	return 0;
--}
--
- static inline int register_module_notifier(struct notifier_block *nb)
- {
- 	/* no events will happen anyway, so this can always succeed */
-@@ -891,4 +879,8 @@ static inline bool module_sig_ok(struct module *module)
- }
- #endif	/* CONFIG_MODULE_SIG */
- 
-+int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+					     struct module *, unsigned long),
-+				   void *data);
-+
- #endif /* _LINUX_MODULE_H */
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index a0d3f0865916f9..8043a90aa50ed3 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -177,6 +177,7 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	return module_kallsyms_lookup_name(name);
- }
- 
-+#ifdef CONFIG_LIVEPATCH
- /*
-  * Iterate over all symbols in vmlinux.  For symbols from modules use
-  * module_kallsyms_on_each_symbol instead.
-@@ -198,6 +199,7 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
- 	}
- 	return 0;
- }
-+#endif /* CONFIG_LIVEPATCH */
- 
- static unsigned long get_symbol_pos(unsigned long addr,
- 				    unsigned long *symbolsize,
 diff --git a/kernel/module.c b/kernel/module.c
-index ae9045c5292a78..856df9e17ff3d0 100644
+index 5152fae1fc9406..945fe94b81fd92 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -4371,6 +4371,7 @@ unsigned long module_kallsyms_lookup_name(const char *name)
- 	return ret;
- }
+@@ -433,30 +433,13 @@ extern const s32 __start___kcrctab_unused_gpl[];
+ #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
+ #endif
  
-+#ifdef CONFIG_LIVEPATCH
- int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 					     struct module *, unsigned long),
- 				   void *data)
-@@ -4401,6 +4402,7 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 	mutex_unlock(&module_mutex);
- 	return ret;
- }
-+#endif /* CONFIG_LIVEPATCH */
- #endif /* CONFIG_KALLSYMS */
+-static bool each_symbol_in_section(const struct symsearch *arr,
+-				   unsigned int arrsize,
+-				   struct module *owner,
+-				   bool (*fn)(const struct symsearch *syms,
+-					      struct module *owner,
+-					      void *data),
+-				   void *data)
+-{
+-	unsigned int j;
+-
+-	for (j = 0; j < arrsize; j++) {
+-		if (fn(&arr[j], owner, data))
+-			return true;
+-	}
+-
+-	return false;
+-}
+-
+ /* Returns true as soon as fn returns true, otherwise false. */
+ static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
+ 				    struct module *owner,
+ 				    void *data),
+ 			 void *data)
+ {
++	unsigned int i;
+ 	struct module *mod;
+ 	static const struct symsearch arr[] = {
+ 		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
+@@ -479,8 +462,9 @@ static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
  
- /* Maximum number of characters written by module_flags() */
+ 	module_assert_mutex_or_preempt();
+ 
+-	if (each_symbol_in_section(arr, ARRAY_SIZE(arr), NULL, fn, data))
+-		return true;
++	for (i = 0; i < ARRAY_SIZE(arr); i++)
++		if (fn(&arr[i], NULL, data))
++			return true;
+ 
+ 	list_for_each_entry_rcu(mod, &modules, list,
+ 				lockdep_is_held(&module_mutex)) {
+@@ -509,8 +493,9 @@ static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
+ 		if (mod->state == MODULE_STATE_UNFORMED)
+ 			continue;
+ 
+-		if (each_symbol_in_section(arr, ARRAY_SIZE(arr), mod, fn, data))
+-			return true;
++		for (i = 0; i < ARRAY_SIZE(arr); i++)
++			if (fn(&arr[i], mod, data))
++				return true;
+ 	}
+ 	return false;
+ }
 -- 
 2.29.2
 
