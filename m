@@ -2,77 +2,57 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DBBBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E52C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:08:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 665D564D92
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:06:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 665D564D92
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E7DD964D92
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 04:08:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7DD964D92
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6NY2v1DzDrP0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:06:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=210.131.2.80;
- helo=conssluserg-01.nifty.com; envelope-from=masahiroy@kernel.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR6Qc5fKfzDrPs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 15:08:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=p1GoLVJt; 
- dkim-atps=neutral
-Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
- [210.131.2.80])
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6JD43vTzDrQ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:02:52 +1100 (AEDT)
-Received: from mail-pg1-f178.google.com (mail-pg1-f178.google.com
- [209.85.215.178]) (authenticated)
- by conssluserg-01.nifty.com with ESMTP id 10S42Y82030324
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 13:02:34 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-01.nifty.com 10S42Y82030324
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611806554;
- bh=UGFEFBZO6XyE53sikxcKH18p4Hi/bQ7cwfMaMlbekaw=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=p1GoLVJtc6WAUhXop6XjMbAfaAGuj2ucB7PePaZf8RjP7a/xAS7Y0Q+CtkCiiw7s7
- hxPk7DMFZWb4JJ01ukPwfaouXxFRBXrLnRtVwYuoVnRp42F4jlzYin/7+hywIvHCv5
- E20P7nNm5z69P3uklPsgHIteYVrsjyd88Z313r+myyhSyWKfo35ZBWDfg/rH0+Pdo1
- gSQRHzsQsLG55mXJ1KEm6kqQpekjOqlKJcP17kAwSrz2DOtN0hqvRz5Ontyzlb8rev
- SatdqeLJLJ/J01VfEwAFHIi9sLjdKGfXmVl7pkV949G+CGcaho3jkpXz4HbYpXx3Q4
- rBsamdaS6IfEg==
-X-Nifty-SrcIP: [209.85.215.178]
-Received: by mail-pg1-f178.google.com with SMTP id j2so1764979pgl.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 20:02:34 -0800 (PST)
-X-Gm-Message-State: AOAM533PFcTvhHAFD0xFItmpLDyYZUwLON4okFuNnFY81F1sN7EEwG1N
- V1hwIL1tTz+mOtz7qBeH0alpf34IUfnIHTDJOlI=
-X-Google-Smtp-Source: ABdhPJydqxki6OSEnMrqa1NZ5TxUJLm2/BivHYqaw1ccMRHfmLbg3Xxtl5/PfyePwq4wmVGWu1nRz4xdTcu7k/HCCD8=
-X-Received: by 2002:aa7:8602:0:b029:1bb:4dfd:92fc with SMTP id
- p2-20020aa786020000b02901bb4dfd92fcmr14034248pfn.63.1611806553757; Wed, 27
- Jan 2021 20:02:33 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR6LG6rlfzDrdN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 15:04:38 +1100 (AEDT)
+Received: from MTA-09-3.privateemail.com (mta-09.privateemail.com
+ [198.54.127.58])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 4797A8038F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:36 -0500 (EST)
+Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
+ by MTA-09.privateemail.com (Postfix) with ESMTP id 159F060101
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 23:04:33 -0500 (EST)
+Received: from oc8246131445.ibm.com (unknown [10.20.151.215])
+ by MTA-09.privateemail.com (Postfix) with ESMTPA id DB7EB60102
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:04:32 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 10/10] powerpc/signal64: Use __get_user() to copy sigset_t
+Date: Wed, 27 Jan 2021 22:04:24 -0600
+Message-Id: <20210128040424.12720-11-cmr@codefail.de>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20210128040424.12720-1-cmr@codefail.de>
+References: <20210128040424.12720-1-cmr@codefail.de>
 MIME-Version: 1.0
-References: <20201223171142.707053-1-masahiroy@kernel.org>
- <20201223171142.707053-2-masahiroy@kernel.org>
-In-Reply-To: <20201223171142.707053-2-masahiroy@kernel.org>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Thu, 28 Jan 2021 13:01:56 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAS_vvLwjBG=MSJv=-n-Y4-AgsiPsj2VpH7qO4KLkUA2dw@mail.gmail.com>
-Message-ID: <CAK7LNAS_vvLwjBG=MSJv=-n-Y4-AgsiPsj2VpH7qO4KLkUA2dw@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/vdso64: remove meaningless vgettimeofday.o
- build rule
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,50 +64,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Greentime Hu <green.hu@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 24, 2020 at 2:12 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
->
-> VDSO64 is only built for the 64-bit kernel, hence vgettimeofday.o is
-> built by the generic rule in scripts/Makefile.build.
->
-> This line does not provide anything useful.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+Usually sigset_t is exactly 8B which is a "trivial" size and does not
+warrant using __copy_from_user(). Use __get_user() directly in
+anticipation of future work to remove the trivial size optimizations
+from __copy_from_user(). Calling __get_user() also results in a small
+boost to signal handling throughput here.
 
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/powerpc/kernel/signal_64.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-Michael, please take a  look at this too.
-
-
-
-> ---
->
->  arch/powerpc/kernel/vdso64/Makefile | 2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-> index b50b39fedf74..422addf394c7 100644
-> --- a/arch/powerpc/kernel/vdso64/Makefile
-> +++ b/arch/powerpc/kernel/vdso64/Makefile
-> @@ -32,8 +32,6 @@ asflags-y := -D__VDSO64__ -s
->  targets += vdso64.lds
->  CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
->
-> -$(obj)/vgettimeofday.o: %.o: %.c FORCE
-> -
->  # link rule for the .so file, .lds has to be first
->  $(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday.o FORCE
->         $(call if_changed,vdso64ld_and_check)
-> --
-> 2.27.0
->
-
-
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 817b64e1e409..42fdc4a7ff72 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -97,6 +97,14 @@ static void prepare_setup_sigcontext(struct task_struct *tsk, int ctx_has_vsx_re
+ #endif /* CONFIG_VSX */
+ }
+ 
++static inline int get_user_sigset(sigset_t *dst, const sigset_t *src)
++{
++	if (sizeof(sigset_t) <= 8)
++		return __get_user(dst->sig[0], &src->sig[0]);
++	else
++		return __copy_from_user(dst, src, sizeof(sigset_t));
++}
++
+ /*
+  * Set up the sigcontext for the signal frame.
+  */
+@@ -701,8 +709,9 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 	 * We kill the task with a SIGSEGV in this situation.
+ 	 */
+ 
+-	if (__copy_from_user(&set, &new_ctx->uc_sigmask, sizeof(set)))
++	if (get_user_sigset(&set, &new_ctx->uc_sigmask))
+ 		do_exit(SIGSEGV);
++
+ 	set_current_blocked(&set);
+ 
+ 	if (!user_read_access_begin(new_ctx, ctx_size))
+@@ -740,8 +749,9 @@ SYSCALL_DEFINE0(rt_sigreturn)
+ 	if (!access_ok(uc, sizeof(*uc)))
+ 		goto badframe;
+ 
+-	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
++	if (get_user_sigset(&set, &uc->uc_sigmask))
+ 		goto badframe;
++
+ 	set_current_blocked(&set);
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
 -- 
-Best Regards
-Masahiro Yamada
+2.26.1
+
