@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A80CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEB7FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:30:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C15464DD1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:27:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C15464DD1
+	by mail.kernel.org (Postfix) with ESMTPS id 461A764DD9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:30:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 461A764DD9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2rp3YNZzDrSc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:27:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2vr2xx1zDqjW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:30:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
@@ -27,35 +27,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=o8t54K8b; 
+ header.s=dec2015msa header.b=c8mFf/qQ; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25F219NzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h0BzqzDqPS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:27 +1100 (AEDT)
 Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
  [126.26.94.251]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 10S0pjIg024172;
- Thu, 28 Jan 2021 09:51:59 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIg024172
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIj024172;
+ Thu, 28 Jan 2021 09:52:03 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIj024172
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611795120;
- bh=XJNJuhno9hAT3A1JjMh+5bcCus6LxY/fFlHwK/0rN8o=;
+ s=dec2015msa; t=1611795124;
+ bh=2zyNPTnAFi4kkEB7UNMI1yCT+tez+nhwp/UrxPpy52c=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=o8t54K8bjMUZ1YiPCOg1Zhg8Iy8nbJVUqpQKRgj9PKl9Z66UZ2oglg4Mr1EJ8hZ0b
- fqf3myOakclryZLYupXCDAZyZ1oBWLbn+BKoWjqN5ggkBUtwsum8ITFK1hgeJA5NsF
- OcOb+IcS8z3j7iheSOsJu79obFQVL04EtKev8wcFmxJ+l/EUP/CeC5gL23KgNgx7cJ
- tz/F1nbXVGkOmKba5TyTHtr8gTe9h3pLy0pW588S7ev1SayhuFdT2MkyXosIiWdgcI
- eDT3D3mi3oAzWwfcdaTAZhW8thR1nJ1ystk6VrmWC/rlK7k19rIPlKvQwZZ//I0FKi
- UhyiZ6UOs5hfw==
+ b=c8mFf/qQ5ak2PXxSrp15nS3R+hZ1gBgBrqQBxOEanxRmTQRbE+Uqkwh7VlAp1wYB8
+ AsZpBRErcybKG1oU27EtPgO7lDgaV7h61hYp9861VtBoSUa5/jTQ+7VwQIGvKBS0rR
+ 5TU9h9/U5r6wa/jFCpwpJJK/B3RrQ0bX/rdVhyvRz/DClko7P6KkEad02wolMAZxFh
+ rfx7LGBYSzJaBiBCgVmp7S/41O751Ykl27QjPIdSNJiKa4to67mawDVGffAGzVmRii
+ tV8VBAGCYCiIyyqg3GuekCc3CbIJ2HHKvt6idxPAzPzPlGGprUzvUjbQ6TLl3sXXK1
+ PvtlrMIwP34tQ==
 X-Nifty-SrcIP: [126.26.94.251]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 11/27] m68k: add missing FORCE and fix 'targets' to make
- if_changed work
-Date: Thu, 28 Jan 2021 09:50:53 +0900
-Message-Id: <20210128005110.2613902-12-masahiroy@kernel.org>
+Subject: [PATCH 14/27] microblaze: syscalls: switch to generic syscalltbl.sh
+Date: Thu, 28 Jan 2021 09:50:56 +0900
+Message-Id: <20210128005110.2613902-15-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
 References: <20210128005110.2613902-1-masahiroy@kernel.org>
@@ -83,50 +82,96 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The rules in this Makefile cannot detect the command line change because
-the prerequisite 'FORCE' is missing.
+As of v5.11-rc1, 12 architectures duplicate similar shell scripts in
+order to generate syscall table headers. My goal is to unify them into
+the single scripts/syscalltbl.sh.
 
-Adding 'FORCE' will result in the headers being rebuilt every time
-because the 'targets' addition is also wrong; the file paths in
-'targets' must be relative to the current Makefile.
-
-Fix all of them so the if_changed rules work correctly.
+This commit converts microblaze to use scripts/syscalltbl.sh.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/m68k/kernel/syscalls/Makefile | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/microblaze/kernel/syscall_table.S        |  3 +-
+ arch/microblaze/kernel/syscalls/Makefile      |  7 ++--
+ arch/microblaze/kernel/syscalls/syscalltbl.sh | 32 -------------------
+ 3 files changed, 3 insertions(+), 39 deletions(-)
+ delete mode 100644 arch/microblaze/kernel/syscalls/syscalltbl.sh
 
-diff --git a/arch/m68k/kernel/syscalls/Makefile b/arch/m68k/kernel/syscalls/Makefile
-index 659faefdcb1d..1c42d2d2926d 100644
---- a/arch/m68k/kernel/syscalls/Makefile
-+++ b/arch/m68k/kernel/syscalls/Makefile
-@@ -21,18 +21,19 @@ quiet_cmd_systbl = SYSTBL  $@
- 		   '$(systbl_abi_$(basetarget))'		\
- 		   '$(systbl_offset_$(basetarget))'
+diff --git a/arch/microblaze/kernel/syscall_table.S b/arch/microblaze/kernel/syscall_table.S
+index ce006646f741..3bc60a2b159e 100644
+--- a/arch/microblaze/kernel/syscall_table.S
++++ b/arch/microblaze/kernel/syscall_table.S
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
  
--$(uapi)/unistd_32.h: $(syscall) $(syshdr)
-+$(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
+-#define __SYSCALL(nr, entry, nargs) .long entry
++#define __SYSCALL(nr, entry) .long entry
+ ENTRY(sys_call_table)
+ #include <asm/syscall_table.h>
+-#undef __SYSCALL
+diff --git a/arch/microblaze/kernel/syscalls/Makefile b/arch/microblaze/kernel/syscalls/Makefile
+index 1c42d2d2926d..6610130c67bc 100644
+--- a/arch/microblaze/kernel/syscalls/Makefile
++++ b/arch/microblaze/kernel/syscalls/Makefile
+@@ -7,7 +7,7 @@ _dummy := $(shell [ -d '$(uapi)' ] || mkdir -p '$(uapi)')	\
+ 
+ syscall := $(srctree)/$(src)/syscall.tbl
+ syshdr := $(srctree)/$(src)/syscallhdr.sh
+-systbl := $(srctree)/$(src)/syscalltbl.sh
++systbl := $(srctree)/scripts/syscalltbl.sh
+ 
+ quiet_cmd_syshdr = SYSHDR  $@
+       cmd_syshdr = $(CONFIG_SHELL) '$(syshdr)' '$<' '$@'	\
+@@ -16,10 +16,7 @@ quiet_cmd_syshdr = SYSHDR  $@
+ 		   '$(syshdr_offset_$(basetarget))'
+ 
+ quiet_cmd_systbl = SYSTBL  $@
+-      cmd_systbl = $(CONFIG_SHELL) '$(systbl)' '$<' '$@'	\
+-		   '$(systbl_abis_$(basetarget))'		\
+-		   '$(systbl_abi_$(basetarget))'		\
+-		   '$(systbl_offset_$(basetarget))'
++      cmd_systbl = $(CONFIG_SHELL) $(systbl) $< $@
+ 
+ $(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
  	$(call if_changed,syshdr)
- 
--$(kapi)/syscall_table.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table.h: $(syscall) $(systbl) FORCE
- 	$(call if_changed,systbl)
- 
- uapisyshdr-y		+= unistd_32.h
- kapisyshdr-y		+= syscall_table.h
- 
--targets	+= $(uapisyshdr-y) $(kapisyshdr-y)
-+uapisyshdr-y	:= $(addprefix $(uapi)/, $(uapisyshdr-y))
-+kapisyshdr-y	:= $(addprefix $(kapi)/, $(kapisyshdr-y))
-+targets		+= $(addprefix ../../../../, $(uapisyshdr-y) $(kapisyshdr-y))
- 
- PHONY += all
--all: $(addprefix $(uapi)/,$(uapisyshdr-y))
--all: $(addprefix $(kapi)/,$(kapisyshdr-y))
-+all: $(uapisyshdr-y) $(kapisyshdr-y)
- 	@:
+diff --git a/arch/microblaze/kernel/syscalls/syscalltbl.sh b/arch/microblaze/kernel/syscalls/syscalltbl.sh
+deleted file mode 100644
+index 85d78d9309ad..000000000000
+--- a/arch/microblaze/kernel/syscalls/syscalltbl.sh
++++ /dev/null
+@@ -1,32 +0,0 @@
+-#!/bin/sh
+-# SPDX-License-Identifier: GPL-2.0
+-
+-in="$1"
+-out="$2"
+-my_abis=`echo "($3)" | tr ',' '|'`
+-my_abi="$4"
+-offset="$5"
+-
+-emit() {
+-	t_nxt="$1"
+-	t_nr="$2"
+-	t_entry="$3"
+-
+-	while [ $t_nxt -lt $t_nr ]; do
+-		printf "__SYSCALL(%s, sys_ni_syscall, )\n" "${t_nxt}"
+-		t_nxt=$((t_nxt+1))
+-	done
+-	printf "__SYSCALL(%s, %s, )\n" "${t_nxt}" "${t_entry}"
+-}
+-
+-grep -E "^[0-9A-Fa-fXx]+[[:space:]]+${my_abis}" "$in" | sort -n | (
+-	nxt=0
+-	if [ -z "$offset" ]; then
+-		offset=0
+-	fi
+-
+-	while read nr abi name entry ; do
+-		emit $((nxt+offset)) $((nr+offset)) $entry
+-		nxt=$((nr+1))
+-	done
+-) > "$out"
 -- 
 2.27.0
 
