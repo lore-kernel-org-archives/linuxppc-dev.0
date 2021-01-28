@@ -2,47 +2,44 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 630E8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 13:20:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27A77C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 13:24:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CF4364DDE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 13:20:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CF4364DDE
+	by mail.kernel.org (Postfix) with ESMTPS id 48BCD61492
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 13:24:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48BCD61492
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DRLgg1d8WzDq8t
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 00:20:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DRLlt5qmJzDrdC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jan 2021 00:24:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
  envelope-from=dietmar.eggemann@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DRLSj4dkRzDrVV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 00:10:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DRLSk5J9zzDrWk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2021 00:10:54 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C99B811FB;
- Thu, 28 Jan 2021 05:10:56 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 60D4231B;
+ Thu, 28 Jan 2021 05:10:51 -0800 (PST)
 Received: from e125579.fritz.box (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6E7013F719;
- Thu, 28 Jan 2021 05:10:54 -0800 (PST)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id F16853F719;
+ Thu, 28 Jan 2021 05:10:48 -0800 (PST)
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 To: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/3] sched: Remove USER_PRIO, TASK_USER_PRIO and MAX_USER_PRIO
-Date: Thu, 28 Jan 2021 14:10:39 +0100
-Message-Id: <20210128131040.296856-3-dietmar.eggemann@arm.com>
+Subject: [PATCH 0/3] sched: Task priority related cleanups
+Date: Thu, 28 Jan 2021 14:10:37 +0100
+Message-Id: <20210128131040.296856-1-dietmar.eggemann@arm.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210128131040.296856-1-dietmar.eggemann@arm.com>
-References: <20210128131040.296856-1-dietmar.eggemann@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -63,87 +60,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The only remaining use of MAX_USER_PRIO (and USER_PRIO) is the
-SCALE_PRIO() definition in the PowerPC Cell architecture's Synergistic
-Processor Unit (SPU) scheduler. TASK_USER_PRIO isn't used anymore.
+(1) Removing MAX_USER_RT_PRIO was already discussed here in April 2020:
 
-Commit fe443ef2ac42 ("[POWERPC] spusched: Dynamic timeslicing for
-SCHED_OTHER") copied SCALE_PRIO() from the task scheduler in v2.6.23.
+    https://lkml.kernel.org/r/20200423094403.6f1d2b8d@gandalf.local.home
 
-Commit a4ec24b48dde ("sched: tidy up SCHED_RR") removed it from the task
-scheduler in v2.6.24.
+(2) USER_PRIO() and related macros are not used anymore except in one
+    case for powerpc where MAX_USER_PRIO can be replaced by NICE_WIDTH.
+    Set_load_weight(), task_prio(), cpu_weight_nice_write_s64(),
+    __update_max_tr() don't use USER_PRIO() but priority - MAX_RT_PRIO.
 
-Commit 3ee237dddcd8 ("sched/prio: Add 3 macros of MAX_NICE, MIN_NICE and
-NICE_WIDTH in prio.h") introduced NICE_WIDTH much later.
+(3) The function header of task_prio() needs an update. It looks
+    ancient since it mentions a prio space [-16 ... 15] for mormal
+    tasks. I can't figure out why this range is mentioned here? Maybe
+    the influence of the 'sleep-bonus interactivity' feature which was
+    removed by commit f3479f10c5d6 ("sched: remove the sleep-bonus
+    interactivity code")? 
 
-With:
+Dietmar Eggemann (3):
+  sched: Remove MAX_USER_RT_PRIO
+  sched: Remove USER_PRIO, TASK_USER_PRIO and MAX_USER_PRIO
+  sched/core: Update task_prio() function header
 
-  MAX_USER_PRIO = USER_PRIO(MAX_PRIO)
+ arch/powerpc/platforms/cell/spufs/sched.c |  2 +-
+ include/linux/sched/prio.h                | 18 +-----------------
+ kernel/sched/core.c                       | 15 +++++++++------
+ kernel/sched/sched.h                      |  2 +-
+ 4 files changed, 12 insertions(+), 25 deletions(-)
 
-                = MAX_PRIO - MAX_RT_PRIO
-
-       MAX_PRIO = MAX_RT_PRIO + NICE_WIDTH
-
-  MAX_USER_PRIO = MAX_RT_PRIO + NICE_WIDTH - MAX_RT_PRIO
-
-  MAX_USER_PRIO = NICE_WIDTH
-
-MAX_USER_PRIO can be replaced by NICE_WIDTH to be able to remove all the
-{*_}USER_PRIO defines.
-
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
----
- arch/powerpc/platforms/cell/spufs/sched.c | 2 +-
- include/linux/sched/prio.h                | 9 ---------
- kernel/sched/sched.h                      | 2 +-
- 3 files changed, 2 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
-index f18d5067cd0f..aeb7f3922106 100644
---- a/arch/powerpc/platforms/cell/spufs/sched.c
-+++ b/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -72,7 +72,7 @@ static struct timer_list spuloadavg_timer;
- #define DEF_SPU_TIMESLICE	(100 * HZ / (1000 * SPUSCHED_TICK))
- 
- #define SCALE_PRIO(x, prio) \
--	max(x * (MAX_PRIO - prio) / (MAX_USER_PRIO / 2), MIN_SPU_TIMESLICE)
-+	max(x * (MAX_PRIO - prio) / (NICE_WIDTH / 2), MIN_SPU_TIMESLICE)
- 
- /*
-  * scale user-nice values [ -20 ... 0 ... 19 ] to time slice values:
-diff --git a/include/linux/sched/prio.h b/include/linux/sched/prio.h
-index d111f2fd77ea..ab83d85e1183 100644
---- a/include/linux/sched/prio.h
-+++ b/include/linux/sched/prio.h
-@@ -26,15 +26,6 @@
- #define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
- #define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
- 
--/*
-- * 'User priority' is the nice value converted to something we
-- * can work with better when scaling various scheduler parameters,
-- * it's a [ 0 ... 39 ] range.
-- */
--#define USER_PRIO(p)		((p)-MAX_RT_PRIO)
--#define TASK_USER_PRIO(p)	USER_PRIO((p)->static_prio)
--#define MAX_USER_PRIO		(USER_PRIO(MAX_PRIO))
--
- /*
-  * Convert nice value [19,-20] to rlimit style value [1,40].
-  */
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 045b01064c1e..6edc67df3554 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -140,7 +140,7 @@ extern void call_trace_sched_update_nr_running(struct rq *rq, int count);
-  * scale_load() and scale_load_down(w) to convert between them. The
-  * following must be true:
-  *
-- *  scale_load(sched_prio_to_weight[USER_PRIO(NICE_TO_PRIO(0))]) == NICE_0_LOAD
-+ *  scale_load(sched_prio_to_weight[NICE_TO_PRIO(0)-MAX_RT_PRIO]) == NICE_0_LOAD
-  *
-  */
- #define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
 -- 
 2.25.1
 
