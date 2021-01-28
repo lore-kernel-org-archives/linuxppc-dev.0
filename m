@@ -2,68 +2,87 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DCB7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3AF4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:40:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5396A64DC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:04:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5396A64DC4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1DFFB60C40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 05:40:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DFFB60C40
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR7gS74NSzDrgM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 16:04:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.161; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 336 seconds by postgrey-1.36 at bilbo;
- Thu, 28 Jan 2021 16:03:03 AEDT
-Received: from smtprelay.hostedemail.com (smtprelay0161.hostedemail.com
- [216.40.44.161])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR8TJ0nJjzDrhj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 16:40:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030;
+ helo=mail-pj1-x1030.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=G0SveYRO; dkim-atps=neutral
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR7dg571LzDrBl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 16:03:02 +1100 (AEDT)
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
- [10.5.19.251])
- by smtpgrave01.hostedemail.com (Postfix) with ESMTP id 924D21804DF77
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 04:57:30 +0000 (UTC)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay07.hostedemail.com (Postfix) with ESMTP id 54824181D341E;
- Thu, 28 Jan 2021 04:57:22 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: fan51_55072612759c
-X-Filterd-Recvd-Size: 2289
-Received: from [192.168.1.159] (unknown [47.151.137.21])
- (Authenticated sender: joe@perches.com)
- by omf20.hostedemail.com (Postfix) with ESMTPA;
- Thu, 28 Jan 2021 04:57:17 +0000 (UTC)
-Message-ID: <d6ddcab2f9db25f49e89f37e1cb4f59ad42651e6.camel@perches.com>
-Subject: Re: [PATCH v15 09/10] arm64: Call kmalloc() to allocate DTB buffer
-From: Joe Perches <joe@perches.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>, Will Deacon
- <will@kernel.org>
-Date: Wed, 27 Jan 2021 20:57:16 -0800
-In-Reply-To: <871re5soof.fsf@manicouagan.localdomain>
-References: <20210115173017.30617-1-nramas@linux.microsoft.com>
- <20210115173017.30617-10-nramas@linux.microsoft.com>
- <20210127165208.GA358@willie-the-truck>
- <d3330793-6054-6e59-b727-44bf8e5653cd@linux.microsoft.com>
- <20210127184319.GA676@willie-the-truck>
- <871re5soof.fsf@manicouagan.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.38.1-1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR8RJ3pbSzDrfR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 16:39:08 +1100 (AEDT)
+Received: by mail-pj1-x1030.google.com with SMTP id u4so3609550pjn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 21:39:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=CGOvg9Y+/H5yesvChwrrT6hJ2p1Sf0WMou+qdDOKwEA=;
+ b=G0SveYRO4ISRl7pcK9U3IISfXnt2iUD9UPD+Bmjzu7gX016YfaYqxwVxSre/0Wp9jn
+ PPMlHDztDCCtgOYbZidvVVc0FIw5G/1/z2tkncWDU1o0eqp0c2QoU8YbasLc1tHOmqDg
+ DUHUecGCl7YOmogtc0aevQ+jQ/oGVV7j05Xy7e6aPd47jio+8xqPd8DaONlGT8XdXYBa
+ 8OZ0tcFCqOi3V1rjE6JEmtvYDYA8Mj0wUfwCxwOvMyS35P8x/RcpDqHteiPPXAHDrhf2
+ XL6/umgc9QvUO40B0eacsqwBz6/HdBg1xvj6MmMM8/o4zM5xl0yeKZA/QptYP28RtSFR
+ JCqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=CGOvg9Y+/H5yesvChwrrT6hJ2p1Sf0WMou+qdDOKwEA=;
+ b=W35URgKni3c1VQUD8T2f/w5VsDyTd5xHmqYRpkRueai8TkIXBIyGxldgPrLflErASR
+ naJal1jclxC5TIM7MTw5J7nP8nYIdT2Jqqakt85O/fLgTBOrd9IJCr2oERXWP9UCg0K+
+ 4K5FyOZxNR+oWr/V17E8Dhiq3owFHPP6MfrY3nE8bWTZfOJ6MqmtPaIIBLl/ZKImvF5f
+ PMfDCXIPYtd4cxjsFjtmw3L9BkxPxU6hDtVMMzkG5mA19NOgGuReIxB8X35l4MVfKzPe
+ 2qEnsyCYgHb4+KFzxs5TbcKiHUUrkQ1X2LYw62oQiILlNxLdia2SYmdHSjDXyB+2Etl1
+ Q6+g==
+X-Gm-Message-State: AOAM532mE+W5AqLMpMWu1zAAsWXYWY/UvJawX2zQpz7FDv5r64XiAGoj
+ FUuMtQVN2cwxYj7EQJqFWTU=
+X-Google-Smtp-Source: ABdhPJxqts9oHAtc8VSeMZOqDX1wMQ8bxCV5sOxxbcafRczaZwIayBkNJ8qJCkifgM7OPMhtr1aQfw==
+X-Received: by 2002:a17:90a:bd0f:: with SMTP id
+ y15mr8324260pjr.141.1611812342072; 
+ Wed, 27 Jan 2021 21:39:02 -0800 (PST)
+Received: from localhost
+ (192.156.221.203.dial.dynamic.acc50-nort-cbr.comindico.com.au.
+ [203.221.156.192])
+ by smtp.gmail.com with ESMTPSA id l2sm4358676pga.65.2021.01.27.21.39.00
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 27 Jan 2021 21:39:01 -0800 (PST)
+Date: Thu, 28 Jan 2021 15:38:56 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc64: Workaround sigtramp vdso return call.
+To: Paul E Murphy <murphyp@linux.ibm.com>, Raoni Fassina Firmino
+ <raoni@linux.ibm.com>
+References: <20210126130515.jivsqeoyj5nu5znk@work-tp>
+ <8735ynbxe6.fsf@oldenburg.str.redhat.com>
+ <92b0ba5f-082c-5d4d-7998-075973fb32f6@linux.ibm.com>
+ <20210127162140.wtetd4ob2iynvvvt@work-tp>
+In-Reply-To: <20210127162140.wtetd4ob2iynvvvt@work-tp>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-Id: <1611809862.uje6q2b5ib.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,31 +94,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, bhsharma@redhat.com, tao.li@vivo.com,
- zohar@linux.ibm.com, paulus@samba.org, vincenzo.frascino@arm.com,
- frowand.list@gmail.com, sashal@kernel.org, robh@kernel.org,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>, masahiroy@kernel.org,
- jmorris@namei.org, takahiro.akashi@linaro.org,
- linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com,
- serge@hallyn.com, devicetree@vger.kernel.org, pasha.tatashin@soleen.com,
- prsriva@linux.microsoft.com, hsinyi@chromium.org, allison@lohutok.net,
- christophe.leroy@c-s.fr, mbrugger@suse.com, balajib@linux.microsoft.com,
- dmitry.kasatkin@gmail.com, linux-kernel@vger.kernel.org, james.morse@arm.com,
- gregkh@linuxfoundation.org, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ libc-alpha@sourceware.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2021-01-28 at 00:52 -0300, Thiago Jung Bauermann wrote:
-> The problem is that this patch implements only part of the suggestion,
-> which isn't useful in itself. So the patch series should either drop
-> this patch or consolidate the FDT allocation between the arches.
-> 
-> I just tested on powernv and pseries platforms and powerpc can use
-> vmalloc for the FDT buffer.
++linuxppc-dev
 
-Perhaps more sensible to use kvmalloc/kvfree.
+Excerpts from Raoni Fassina Firmino's message of January 28, 2021 2:21 am:
+> On Tue, Jan 26, 2021 at 08:45:00AM -0600, AL glibc-alpha wrote:
+>>=20
+>>=20
+>> On 1/26/21 8:12 AM, Florian Weimer via Libc-alpha wrote:
+>> > * Raoni Fassina Firmino:
+>> >=20
+>> > > A not so recent kernel change[1] changed how the trampoline
+>> > > `__kernel_sigtramp_rt64` is used to call signal handlers.
+>> > >=20
+>> > > This was exposed on the test misc/tst-sigcontext-get_pc
+>> > >=20
+>> > > Before kernel 5.9, the kernel set LR to the trampoline address and
+>> > > jumped directly to the signal handler, and at the end the signal
+>> > > handler, as any other function, would `blr` to the address set.  In
+>> > > other words, the trampoline was executed just at the end of the sign=
+al
+>> > > handler and the only thing it did was call sigreturn.  But since
+>> > > kernel 5.9 the kernel set CTRL to the signal handler and calls to th=
+e
+>> > > trampoline code, the trampoline then `bctrl` to the address in CTRL,
+>> > > setting the LR to the next instruction in the middle of the
+>> > > trampoline, when the signal handler returns, the rest of the
+>> > > trampoline code executes the same code as before.
+>> >=20
+>> > Thanks for the patch, byt:
+>> >=20
+>> > No one has explained so far why the original blr instruction couldn't =
+be
+>> > augmented with the appropriate branch predictor hint.  The 2.07 ISA
+>> > manual suggests that it's possible, but maybe I'm reading it wrong.
+>>=20
+>> bctrl is the preferred form of making indirect calls.  You can add hint =
+0b01
+>> to bclr (blr) to get similar behavior on power8/9, but as noted in the I=
+SA,
+>> it is optional.
+>=20
+> What branch prediction we are talking about? I think there is only one
+> blr that is relevant, the one returning from the signal handler to the
+> trampoline. In this case it if it is a simple blr is already hinted
+> correctly with 0b00 (I think it is the default BH for blr), that it is a
+> subroutine return. We don't have control over the blr from the signal
+> handler to change the hint to 0b01 anyway. So IIUC, the return address
+> predictor failed before because the signal handler don't go back from
+> the same place (+4) it was called, and it changes with the added bctrl.
+>=20
+> I am CC'ing Nicholas and maybe he has more insight.
 
+Prior to the kernel patch, if the signal handler code used blr BH=3D0b01
+for returns that would indeed prevent the unbalance on processors which
+implement it.
 
+But you are right, as explained in Linux commit 0138ba5783ae, the blr is=20
+in the signal handler function so we can't change that.
 
+> (I know that now this discussion is split in two places, the original
+> thread Florian started and this on for the patch. Not sure where best to
+> continue this)
+
+linuxppc-dev doesn't mind responsible cross posts to other lists,
+hopefully libc-alpha is too.
+
+Thanks,
+Nick
