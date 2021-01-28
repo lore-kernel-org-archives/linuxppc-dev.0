@@ -2,87 +2,64 @@ Return-Path: <SRS0=s+PL=G7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A5BCC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 00:24:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CD96C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 00:54:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F11D964DD5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 00:24:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F11D964DD5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 94B5A64DCC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 00:54:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94B5A64DCC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR1SC4kY5zDr4M
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 11:24:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634;
- helo=mail-pl1-x634.google.com; envelope-from=npiggin@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR2725lQbzDqxl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 11:54:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
+ helo=conuserg-12.nifty.com; envelope-from=masahiroy@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=RkQFqOEx; dkim-atps=neutral
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
- [IPv6:2607:f8b0:4864:20::634])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=gnVSo7Rt; 
+ dkim-atps=neutral
+Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR1K51BJDzDr5R
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:18:16 +1100 (AEDT)
-Received: by mail-pl1-x634.google.com with SMTP id g3so2208656plp.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2021 16:18:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
- :content-transfer-encoding;
- bh=quEFvlOMZJMXid0VyprFDIb4Lr8SL8a4/QNJfFNOYXY=;
- b=RkQFqOExQxPBqhGdIVIrNk2WJWTVxgfC7izHHYmrcKPrBFGKR0YbygRNj5YbYacwLd
- Aqxn++vNOxZ6aFOsJz1YFV0EQIoLjhhLnh4utQn9mUCFeNTidwn0p684F5/h7eB6WNom
- D6cc4bP+YKPegIcrJzZ0HqBVkcWiPv6LJH/76q9m0WMP/zTtOw+XSiZowcXmX3kpe51N
- TUR9UodAz8Q8p6bcNBfW8LhHx2oVFJVHzgf5JPmqvjiHvrY9v6lmSUtcQs3FSVF7EVOu
- 4y2mnvaoHYN8ipdXeMvwgWdkVaEFLLO+SJtXlOFnWMnL3nePULruyk39MTWldTJiawBj
- Djkw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=quEFvlOMZJMXid0VyprFDIb4Lr8SL8a4/QNJfFNOYXY=;
- b=Di2wnatfWdGciAXqaWDqpkEJbC7x8nQVl4y359SG4ubaLL+yz0UYcEec72KN031ptb
- pa8YklEqAljOELV3OAqC72jpMqw4mZFT4Ot8IPHxIN7HGjhyYQlVYOv4cd+lEBFta7rz
- qqeMDuuikawdE71HQFAMLi4Sop3GclyUARHJmjOp4AGlNhkgyjrOgzARrpTciScejw7V
- oETWRmIDrOGWqM3LnaMgmABkJ0frQcQ2VcRysemyfeTbkvoUR5/B6TODF0rkMsfhj3Fz
- JoOZnnUscoh0OsXn+nzR+TVIn59rRVFKaroHCJ8Kvsp9J3NaQ2VGpKKrFglaf7qrpRhf
- SxZw==
-X-Gm-Message-State: AOAM530SN17CtWlKpa/ucI3vV2SIZIaMouq5xPak9EnXBb5qyOM9TDYw
- CZp2nuGUVDXOBGERWQPfC44=
-X-Google-Smtp-Source: ABdhPJw+jKsyilqAeteTqNDXHjkpKSB8AIxIg5lPQo49UnU14rQQfUiEVUIGqCV8eDZgU94zLLwvVg==
-X-Received: by 2002:a17:902:9a93:b029:e0:e41:f088 with SMTP id
- w19-20020a1709029a93b02900e00e41f088mr5968584plp.55.1611793093176; 
- Wed, 27 Jan 2021 16:18:13 -0800 (PST)
-Received: from localhost
- (192.156.221.203.dial.dynamic.acc50-nort-cbr.comindico.com.au.
- [203.221.156.192])
- by smtp.gmail.com with ESMTPSA id kr9sm3044317pjb.0.2021.01.27.16.18.11
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Jan 2021 16:18:12 -0800 (PST)
-Date: Thu, 28 Jan 2021 10:18:07 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/fault: fix wrong KUAP fault for IO_URING
-To: Jens Axboe <axboe@kernel.dk>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Zorro Lang
- <zlang@redhat.com>
-References: <20210127145648.348135-1-zlang@redhat.com>
- <cce83328-d996-defc-6c87-97cd24ec7027@csgroup.eu>
- <a8013c71-433a-96b3-c657-66ac2ba5b838@kernel.dk>
-In-Reply-To: <a8013c71-433a-96b3-c657-66ac2ba5b838@kernel.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR24m4GH8zDqS4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:52:36 +1100 (AEDT)
+Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
+ [126.26.94.251]) (authenticated)
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIW024172;
+ Thu, 28 Jan 2021 09:51:46 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIW024172
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1611795107;
+ bh=+LHKocVMPkqNI8nA/KMwgoTAuLK2mYDwPDh+InjbTfo=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=gnVSo7RttKVpWy/OFRjtxlRUpAz4rpUuh8Hp14KLPFuz/PjuXDhEhOy3HtnaFIJsR
+ j5NBAZg+jrqrZrrlDgaAqwzVC7P2ScCE8ymBUm5U9CKdV5r0lCQ5of/51L3sMDvV7n
+ NjnJU6xx2uq4zSArMWwvxVXcZOJxxMz8AZ5EFGzQ//012J78lTFBFP1yIEqq0OKtsz
+ P1eWUzCTS5nh+DSg/DWCQdQ4LjUUKbuIvQClxoZ0e3BC6Bn9y3dGBPxlz2OL7J+a3V
+ 7VhZpfsut52FsOgAGN9aAM1apP54hrWYdjHv5xY7iwApZQgViBB9EFaJeZflmO8v+/
+ tNI7K+0w9KYrQ==
+X-Nifty-SrcIP: [126.26.94.251]
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: linux-arch@vger.kernel.org, x86@kernel.org
+Subject: [PATCH 01/27] scripts: add generic syscalltbl.sh
+Date: Thu, 28 Jan 2021 09:50:43 +0900
+Message-Id: <20210128005110.2613902-2-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
+References: <20210128005110.2613902-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-Message-Id: <1611792928.nw4g8h8kj4.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,60 +71,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-xtensa@linux-xtensa.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-sh@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Jens Axboe's message of January 28, 2021 5:29 am:
-> On 1/27/21 9:38 AM, Christophe Leroy wrote:
->>=20
->>=20
->> Le 27/01/2021 =C3=A0 15:56, Zorro Lang a =C3=A9crit :
->>> On powerpc, io_uring test hit below KUAP fault on __do_page_fault.
->>> The fail source line is:
->>>
->>>    if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address,=
- is_write)))
->>>        return SIGSEGV;
->>>
->>> The is_user() is based on user_mod(regs) only. This's not suit for
->>> io_uring, where the helper thread can assume the user app identity
->>> and could perform this fault just fine. So turn to use mm to decide
->>> if this is valid or not.
->>=20
->> I don't understand why testing is_user would be an issue. KUAP purpose
->> it to block any unallowed access from kernel to user memory
->> (Equivalent to SMAP on x86). So it really must be based on MSR_PR bit,
->> that is what is_user provides.
->>=20
->> If the kernel access is legitimate, kernel should have opened
->> userspace access then you shouldn't get this "Bug: Read fault blocked
->> by KUAP!".
->>=20
->> As far as I understand, the fault occurs in
->> iov_iter_fault_in_readable() which calls fault_in_pages_readable() And
->> fault_in_pages_readable() uses __get_user() so it is a legitimate
->> access and you really should get a KUAP fault.
->>=20
->> So the problem is somewhere else, I think you proposed patch just
->> hides the problem, it doesn't fix it.
->=20
-> If we do kthread_use_mm(), can we agree that the user access is valid?
+Most of architectures generate syscall headers at the compile time
+in the almost same way.
 
-Yeah the io uring code is fine, provided it uses the uaccess primitives=20
-like any other kernel code. It's looking more like a an arch/powerpc bug.
+The syscall table has the same format for all architectures. Each line
+has 3, 4 or 5 fields; syscall number, ABI, syscall name, native entry
+point, and compat entry point. The syscall table is processed by
+syscalltbl.sh script into header files.
 
-> We should be able to copy to/from user space, and including faults, if
-> that's been done and the new mm assigned. Because it really should be.
-> If SMAP was a problem on x86, we would have seen it long ago.
->=20
-> I'm assuming this may be breakage related to the recent uaccess changes
-> related to set_fs and friends? Or maybe recent changes on the powerpc
-> side?
->=20
-> Zorro, did 5.10 work?
+Despite the same pattern, scripts are maintained per architecture,
+which results in code duplication and bad maintainability.
 
-Would be interesting to know.
+As of v5.11-rc1, 12 architectures duplicate similar shell scripts:
 
-Thanks,
-Nick
+  $ find arch -name syscalltbl.sh | sort
+  arch/alpha/kernel/syscalls/syscalltbl.sh
+  arch/arm/tools/syscalltbl.sh
+  arch/ia64/kernel/syscalls/syscalltbl.sh
+  arch/m68k/kernel/syscalls/syscalltbl.sh
+  arch/microblaze/kernel/syscalls/syscalltbl.sh
+  arch/mips/kernel/syscalls/syscalltbl.sh
+  arch/parisc/kernel/syscalls/syscalltbl.sh
+  arch/powerpc/kernel/syscalls/syscalltbl.sh
+  arch/sh/kernel/syscalls/syscalltbl.sh
+  arch/sparc/kernel/syscalls/syscalltbl.sh
+  arch/x86/entry/syscalls/syscalltbl.sh
+  arch/xtensa/kernel/syscalls/syscalltbl.sh
+
+My goal is to unify them into a single file, scripts/syscalltbl.sh.
+
+For example, the i386 syscall table looks like this:
+
+  0  i386  restart_syscall  sys_restart_syscall
+  1  i386  exit             sys_exit
+  2  i386  fork             sys_fork
+  3  i386  read             sys_read
+  4  i386  write            sys_write
+  5  i386  open             sys_open              compat_sys_open
+  ...
+
+scripts/syscalltbl.sh generates the following code:
+
+  __SYSCALL(0, sys_restart_syscall)
+  __SYSCALL(1, sys_exit)
+  __SYSCALL(2, sys_fork)
+  __SYSCALL(3, sys_read)
+  __SYSCALL(4, sys_write)
+  __SYSCALL_WITH_COMPAT(5, sys_open, compat_sys_open)
+  ...
+
+Then, the i386 kernel will do:
+
+  #define __SYSCALL_WITH_COMPAT(nr, native, compat) __SYSCALL(nr, native)
+
+and the x86_64 kernel will do:
+
+  #define __SYSCALL_WITH_COMPAT(nr, native, compat) __SYSCALL(nr, compat)
+
+I noticed all 32/64 bit architectures can be covered by the same
+pattern. Having an arch-specific script is fine if there is a good
+reason to do so, but a single generic script should work for this case.
+
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
+
+ scripts/syscalltbl.sh | 52 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+ create mode 100644 scripts/syscalltbl.sh
+
+diff --git a/scripts/syscalltbl.sh b/scripts/syscalltbl.sh
+new file mode 100644
+index 000000000000..15bf4e09f88c
+--- /dev/null
++++ b/scripts/syscalltbl.sh
+@@ -0,0 +1,52 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# Usage:
++#  scripts/syscalltbl.sh INFILE OUTFILE [ABIS] [OFFSET]
++#
++# INFILE: input syscall table
++# OUTFILE: output file
++# ABIS (optional): specify the ABIs to handle.
++#                  If omitted, all lines are handled.
++# OFFSET (optinal): spefify the offset of the syscall numbers.
++#                   If omitted, the offset is zero.
++#
++# The syscall table format:
++# nr abi name native [compat]
++#
++# nr: syscall number
++# abi: ABI name
++# name: syscall name
++# native: native entry point
++# compat (optional): compat entry point
++
++set -e
++
++in="$1"
++out="$2"
++abis=$(echo "($3)" | tr ',' '|')
++offset="${4:-0}"
++
++nxt=$offset
++
++grep -E "^[0-9]+[[:space:]]+${abis}" "$in" | sort -n | {
++
++	while read nr abi name native compat ; do
++
++		nr=$((nr + $offset))
++
++		while [ $nxt -lt $nr ]; do
++			echo "__SYSCALL($nxt, sys_ni_syscall)"
++			nxt=$((nxt + 1))
++		done
++
++		if [ -n "$compat" ]; then
++			echo "__SYSCALL_WITH_COMPAT($nr, $native, $compat)"
++		elif [ -n "$native" ]; then
++			echo "__SYSCALL($nr, $native)"
++		else
++			echo "__SYSCALL($nr, sys_ni_syscall)"
++		fi
++		nxt=$((nr + 1))
++	done
++} > "$out"
+-- 
+2.27.0
+
