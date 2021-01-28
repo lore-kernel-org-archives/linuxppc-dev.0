@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98DCAC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:35:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3E0DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:37:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CEFE64DC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:35:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CEFE64DC4
+	by mail.kernel.org (Postfix) with ESMTPS id ECB5864D99
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 01:37:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECB5864D99
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DR3273M8lzDrBH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:35:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DR34Q1XXSzDqcg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jan 2021 12:37:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=210.131.2.79;
@@ -27,35 +27,35 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=GcbQa/gZ; 
+ header.s=dec2015msa header.b=SKqf4laQ; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h4VRczDqRg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DR25h6trTzDqBZ
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2021 11:53:28 +1100 (AEDT)
 Received: from oscar.flets-west.jp (softbank126026094251.bbtec.net
  [126.26.94.251]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 10S0pjIo024172;
- Thu, 28 Jan 2021 09:52:09 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIo024172
+ by conuserg-12.nifty.com with ESMTP id 10S0pjIq024172;
+ Thu, 28 Jan 2021 09:52:12 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 10S0pjIq024172
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1611795130;
- bh=edevBHAxEzu6xl1QGcyiq00K/wGWzk2RE79/Nm9uSCk=;
+ s=dec2015msa; t=1611795133;
+ bh=TL0Lxb9L6uqgAXQZTpsgGcALdDAyn1jCaueREMxl1Kg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GcbQa/gZGdyeTcoX0fmprTeNm9FdiiNR5G0s+N2bP8NmsJiASMuqzD9tL2q+Gmj8S
- Uhqu8Mg4ylarW3iioQwp5LzwhmSOrGOkvZ5ceWa0tVafxsQDmF46iGC9xmLeExGaeK
- ZNpvPL0fDNzaocwpOYWAY+jyJoy3RN+XsmT9EkNa90QEmafES6drwXSsnLgBbcKPtt
- ZzqZ5uTDBDTjwY0Iaww6eiK/GTE/bKJIylZwrI9/OH2thONBnLJV5UOIUxFKyRVZ3H
- FcqKGcpzptz2A9gNWTZcJQPV7APUeHKqMS23BZYvl/p3AxnZfV1S7r6OoBe2g0YC5X
- Lb3Q0X2ukKftQ==
+ b=SKqf4laQkEgG2A9Aw5UsQqXZinwC9J9Gm3WRBgfmjOWQz0/OPrcQTzerEIRWXb900
+ crV0MR/MYC0tozgk1iQJicaBB8lVHTnGxHapxTjxfQGqHYUO+QmQvr/sKvWSPitYg3
+ JIwyUCkstFhIsvnWgwrhk8zMqdGsRKClkxBaLjn0y7pSNycRuNwkg3O/35faBmdnst
+ EOvBJkx2YG1dkYKC/ThKJtFH23A+QAH5LzgKjkm0GD5irTaFM4l5YAdZKBkvZxS644
+ p+IPCamWe22698XKTniyirF6H7KEwPLPbxFtAfTGUi5Yw/fOozA32oNIYPKk8SA2XJ
+ +VFKf39ko9xUA==
 X-Nifty-SrcIP: [126.26.94.251]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 19/27] sh: add missing FORCE and fix 'targets' to make
- if_changed work
-Date: Thu, 28 Jan 2021 09:51:01 +0900
-Message-Id: <20210128005110.2613902-20-masahiroy@kernel.org>
+Subject: [PATCH 21/27] sparc: remove wrong comment from
+ arch/sparc/include/asm/Kbuild
+Date: Thu, 28 Jan 2021 09:51:03 +0900
+Message-Id: <20210128005110.2613902-22-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210128005110.2613902-1-masahiroy@kernel.org>
 References: <20210128005110.2613902-1-masahiroy@kernel.org>
@@ -83,50 +83,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The rules in this Makefile cannot detect the command line change because
-the prerequisite 'FORCE' is missing.
+These are NOT exported to userspace.
 
-Adding 'FORCE' will result in the headers being rebuilt every time
-because the 'targets' addition is also wrong; the file paths in
-'targets' must be relative to the current Makefile.
-
-Fix all of them so the if_changed rules work correctly.
+The headers listed in arch/sparc/include/uapi/asm/Kbuild are exported.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/sh/kernel/syscalls/Makefile | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/sparc/include/asm/Kbuild | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/sh/kernel/syscalls/Makefile b/arch/sh/kernel/syscalls/Makefile
-index 659faefdcb1d..1c42d2d2926d 100644
---- a/arch/sh/kernel/syscalls/Makefile
-+++ b/arch/sh/kernel/syscalls/Makefile
-@@ -21,18 +21,19 @@ quiet_cmd_systbl = SYSTBL  $@
- 		   '$(systbl_abi_$(basetarget))'		\
- 		   '$(systbl_offset_$(basetarget))'
- 
--$(uapi)/unistd_32.h: $(syscall) $(syshdr)
-+$(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
- 	$(call if_changed,syshdr)
- 
--$(kapi)/syscall_table.h: $(syscall) $(systbl)
-+$(kapi)/syscall_table.h: $(syscall) $(systbl) FORCE
- 	$(call if_changed,systbl)
- 
- uapisyshdr-y		+= unistd_32.h
- kapisyshdr-y		+= syscall_table.h
- 
--targets	+= $(uapisyshdr-y) $(kapisyshdr-y)
-+uapisyshdr-y	:= $(addprefix $(uapi)/, $(uapisyshdr-y))
-+kapisyshdr-y	:= $(addprefix $(kapi)/, $(kapisyshdr-y))
-+targets		+= $(addprefix ../../../../, $(uapisyshdr-y) $(kapisyshdr-y))
- 
- PHONY += all
--all: $(addprefix $(uapi)/,$(uapisyshdr-y))
--all: $(addprefix $(kapi)/,$(kapisyshdr-y))
-+all: $(uapisyshdr-y) $(kapisyshdr-y)
- 	@:
+diff --git a/arch/sparc/include/asm/Kbuild b/arch/sparc/include/asm/Kbuild
+index 3688fdae50e4..aec20406145e 100644
+--- a/arch/sparc/include/asm/Kbuild
++++ b/arch/sparc/include/asm/Kbuild
+@@ -1,6 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+-# User exported sparc header files
+-
+ generated-y += syscall_table_32.h
+ generated-y += syscall_table_64.h
+ generated-y += syscall_table_c32.h
 -- 
 2.27.0
 
