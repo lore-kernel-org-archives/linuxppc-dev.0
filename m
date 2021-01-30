@@ -8,74 +8,72 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60756C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Jan 2021 13:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C8EFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Jan 2021 14:01:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3F9364E04
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Jan 2021 13:58:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3F9364E04
+	by mail.kernel.org (Postfix) with ESMTPS id CE03861481
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Jan 2021 14:01:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE03861481
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DSbR26tsrzDrQj
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Jan 2021 00:58:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DSbV14phYzDsGD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Jan 2021 01:01:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634;
- helo=mail-pl1-x634.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=B/gaf9ZJ; dkim-atps=neutral
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
- [IPv6:2607:f8b0:4864:20::634])
+ header.s=20161025 header.b=rHEn3O09; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DSZLc5Tq6zDrTg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2021 00:10:00 +1100 (AEDT)
-Received: by mail-pl1-x634.google.com with SMTP id h15so7084349pli.8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2021 05:10:00 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DSZLh5CLFzDrVP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2021 00:10:04 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id o20so8040292pfu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2021 05:10:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=1WNfGjxSfl6+DWbtEHnP5pYvU5ocON/GTjNbxGrwiXQ=;
- b=B/gaf9ZJaCMEVUoKEfscnCNFpPLc0MLEQM05gVmKnzbyCnEy2GGkpP9VAR3BsK8WIg
- KTKGN/wDMgfP0x7WIPWF/o2sF4zUcpSuoDcEeKGsze3R0Fc2aF73eQn5xfLaWnt8VfQb
- t01/GPPip4Kq1Q+9/f+KyHZ/bXL/xJwBWgmPYmUkBE7zi0dTpsblnfsFUXR8yzWqNi0/
- H2s4gOZpo3yt7YRFhYyBR7rcaZ9NAxXaiXOoH2ZCyrNEzjHCW1IIgjRzL60jANRimFo0
- sm5eZEswOYuBb0e2HaGgfhdx9I7CvcmPiMCHMygtHFhXfubt9hX+IXG88CBsrUiPnfEI
- +Meg==
+ bh=z7BR0zvwJO7bVat/aEvyQpEj7sPpuAlkQ/ruo5bglt8=;
+ b=rHEn3O09MnqGwglNzbigpiZyyc1Rsq4IA4K/ySgRv8t0mYQhuW4MSqj65Oe/i4CF2N
+ TsTuWp9/xfO7YDTIT3L01lZsfWucmpSM9eXQYw07BVbpSI+hz4qnLw9eSFjqtJm/pMpr
+ 4UvMXmYIcD3kmvjPb5R9bs2DMUOEXCwv3ZnyQrbsDe8u3zhZQVGiT3JjSdZyIsJ2Dk3x
+ xmbRdNp+nHq4xmh8sESUMp3q4OGcmTAqTPL47JCWybByt+8nLXMaTSmdP/NkNotwFGcc
+ ZDu9XEN/pNKRieLM83jl58RruQ1W95xkeeGU78GiZmBrb+sx7UoSzAaYX7kX/xwzvoW/
+ sHaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=1WNfGjxSfl6+DWbtEHnP5pYvU5ocON/GTjNbxGrwiXQ=;
- b=NqyAZ+T731jt0KH5wZoqbwcVvjNyJQIXTX9tmJYhC/+MdeBUaoxWcEdhBN4dAYgy90
- AHepfDpLC5swi6wr2q8MXwbyWg0RiPCgX5mVCJhIWj0GcCc4m8VVy0xIwRW6K6DsDoN/
- Oi2L0Gv9AjKjW58eSJH3omoCloB+0w3lx/LCMTSXgw00u3bH6r6FY7EZ1ceCbbmyihko
- i+At09QMNIr3qh0ydSOtsAC7iFIypBOsWdZh22/EtawadEEdfDmKCxsOuv5893fuXN4u
- gkuDj+MKjoF6no/Yaj3h7X3JiTPzPZhIFwSuGJ3CRjOvMnU7seGv16oDVBWLRALblBS3
- 9e2Q==
-X-Gm-Message-State: AOAM532c7HDGPp06TbU/5k17s8Wa7ElNumMZqek9wY1dUOnV/pAqdiso
- 2H+FskFp06uQfzPngbVmYO3+9lgQ6qQ=
-X-Google-Smtp-Source: ABdhPJzJaQ/N/HkyDKNephCKjSypfEOiXSMiy412ciokWm3Huqo9hQmlsHUNFQEt/JOBBuz7ENogLg==
-X-Received: by 2002:a17:90a:7887:: with SMTP id
- x7mr9156189pjk.69.1612012198657; 
- Sat, 30 Jan 2021 05:09:58 -0800 (PST)
+ bh=z7BR0zvwJO7bVat/aEvyQpEj7sPpuAlkQ/ruo5bglt8=;
+ b=hYne6NC0fh6tkbZKM4plUDzck2O7QG50oYdGwP7znVLeEHIeNVnm2wn0A5t7XFhF0U
+ uTxKPDdyS1Izg+J7Z56RJ/FFadM2La01qEZaQMdgeHvSiRVDtDuC0P67SIHKbFKIhRN/
+ kFl6E+QWYu9ge0IpsA0dkTT/o7Hg7btL5X4h5fEIBCdmuw55KZtIkSER76EqSXETBHxX
+ uimSliIAYcBegjMhynTp33oL8z2PIFMtPvwjQld+MN4PH1cOeEJZ7r4pNTOkrFjQpsoh
+ RcqYR7Tv8SNqh0LW8DjGeTb3+egRkj2DhHzKbNkrptDbMauHnlqJQq4xREUXFyU+ziGT
+ 30Yg==
+X-Gm-Message-State: AOAM530CxF6OkkjL6+GEjpSNWa0+Z6Ma+grghynNwWqVYRwyy6qDgvuV
+ G80qBCDXPoQY7srBwcSLMM0Lc1Ub5HA=
+X-Google-Smtp-Source: ABdhPJzSJEgQBCyHASaITG3kjTgBRY/awtJJ8lzRm5jzKtu1/KERiTTtKiNVapt/uXrUioQ5Ijot4g==
+X-Received: by 2002:a63:c44d:: with SMTP id m13mr9149534pgg.64.1612012201607; 
+ Sat, 30 Jan 2021 05:10:01 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com
  (192.156.221.203.dial.dynamic.acc50-nort-cbr.comindico.com.au.
  [203.221.156.192])
- by smtp.gmail.com with ESMTPSA id y16sm12102240pgg.20.2021.01.30.05.09.56
+ by smtp.gmail.com with ESMTPSA id y16sm12102240pgg.20.2021.01.30.05.09.59
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 30 Jan 2021 05:09:58 -0800 (PST)
+ Sat, 30 Jan 2021 05:10:01 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 16/42] powerpc/mm: Remove stale do_page_fault comment
- referring to SLB faults
-Date: Sat, 30 Jan 2021 23:08:26 +1000
-Message-Id: <20210130130852.2952424-17-npiggin@gmail.com>
+Subject: [PATCH v7 17/42] powerpc/64s: slb comment update
+Date: Sat, 30 Jan 2021 23:08:27 +1000
+Message-Id: <20210130130852.2952424-18-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210130130852.2952424-1-npiggin@gmail.com>
 References: <20210130130852.2952424-1-npiggin@gmail.com>
@@ -98,37 +96,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SLB faults no longer call do_page_fault, this was removed somewhere
-between 2.6.0 and 2.6.12.
+This makes a small improvement to the description of the SLB interrupt
+environment. Move the memory access restrictions into one paragraph,
+and the interrupt restrictions into the next rather than mix them.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/fault.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/mm/book3s64/slb.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index fc2d9a27c649..fef92efad733 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -377,13 +377,11 @@ static void sanity_check_fault(bool is_write, bool is_user,
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index c581548b533f..14c62b685f0c 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -825,19 +825,21 @@ long do_slb_fault(struct pt_regs *regs)
+ 		return -EINVAL;
  
- /*
-  * For 600- and 800-family processors, the error_code parameter is DSISR
-- * for a data fault, SRR1 for an instruction fault. For 400-family processors
-- * the error_code parameter is ESR for a data fault, 0 for an instruction
-- * fault.
-- * For 64-bit processors, the error_code parameter is
-- *  - DSISR for a non-SLB data access fault,
-- *  - SRR1 & 0x08000000 for a non-SLB instruction access fault
-- *  - 0 any SLB fault.
-+ * for a data fault, SRR1 for an instruction fault.
-+ * For 400-family processors the error_code parameter is ESR for a data fault,
-+ * 0 for an instruction fault.
-+ * For 64-bit processors, the error_code parameter is DSISR for a data access
-+ * fault, SRR1 & 0x08000000 for an instruction access fault.
-  *
-  * The return value is 0 if the fault was handled, or the signal
-  * number if this is a kernel fault that can't be handled here.
+ 	/*
+-	 * SLB kernel faults must be very careful not to touch anything
+-	 * that is not bolted. E.g., PACA and global variables are okay,
+-	 * mm->context stuff is not.
+-	 *
+-	 * SLB user faults can access all of kernel memory, but must be
+-	 * careful not to touch things like IRQ state because it is not
+-	 * "reconciled" here. The difficulty is that we must use
+-	 * fast_exception_return to return from kernel SLB faults without
+-	 * looking at possible non-bolted memory. We could test user vs
+-	 * kernel faults in the interrupt handler asm and do a full fault,
+-	 * reconcile, ret_from_except for user faults which would make them
+-	 * first class kernel code. But for performance it's probably nicer
+-	 * if they go via fast_exception_return too.
++	 * SLB kernel faults must be very careful not to touch anything that is
++	 * not bolted. E.g., PACA and global variables are okay, mm->context
++	 * stuff is not. SLB user faults may access all of memory (and induce
++	 * one recursive SLB kernel fault), so the kernel fault must not
++	 * trample on the user fault state at those points.
++	 */
++
++	/*
++	 * The interrupt state is not reconciled, for performance, so that
++	 * fast_interrupt_return can be used. The handler must not touch local
++	 * irq state, or schedule. We could test for usermode and upgrade to a
++	 * normal process context (synchronous) interrupt for those, which
++	 * would make them first-class kernel code and able to be traced and
++	 * instrumented, although performance would suffer a bit, it would
++	 * probably be a good tradeoff.
+ 	 */
+ 	if (id >= LINEAR_MAP_REGION_ID) {
+ 		long err;
 -- 
 2.23.0
 
