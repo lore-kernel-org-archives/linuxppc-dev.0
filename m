@@ -2,83 +2,69 @@ Return-Path: <SRS0=IXH7=HD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EE91C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 17:08:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B309AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 17:39:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C26D464EA2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 17:08:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C26D464EA2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id D3DF464DD9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 17:39:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3DF464DD9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DTvXG54SszDrgl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Feb 2021 04:07:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
- (client-ip=130.206.19.142; helo=mx01.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
- header.s=DKIM header.b=obUC0PXt; dkim-atps=neutral
-X-Greylist: delayed 643 seconds by postgrey-1.36 at bilbo;
- Tue, 02 Feb 2021 04:06:04 AEDT
-Received: from mx01.puc.rediris.es (outbound3mad.lav.puc.rediris.es
- [130.206.19.142])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DTwF15cZzzDrgS
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Feb 2021 04:39:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=207.82.80.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DTvV46GSpzDr37
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 04:06:04 +1100 (AEDT)
-Received: from mta-out02.sim.rediris.es (mta-out02.sim.rediris.es
- [130.206.24.44])
- by mx01.puc.rediris.es  with ESMTP id 111GslsD020546-111GslsF020546
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Mon, 1 Feb 2021 17:54:51 +0100
-Received: from mta-out02.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out02.sim.rediris.es (Postfix) with ESMTPS id 76F53C198DD;
- Mon,  1 Feb 2021 17:54:47 +0100 (CET)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by mta-out02.sim.rediris.es (Postfix) with ESMTP id 3E003C198FD;
- Mon,  1 Feb 2021 17:54:47 +0100 (CET)
-X-Amavis-Modified: Mail body modified (using disclaimer) -
- mta-out02.sim.rediris.es
-Received: from mta-out02.sim.rediris.es ([127.0.0.1])
- by localhost (mta-out02.sim.rediris.es [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id LUN52aY3j52m; Mon,  1 Feb 2021 17:54:47 +0100 (CET)
-Received: from lt-gp.iram.es (150.148.223.87.dynamic.jazztel.es
- [87.223.148.150])
- by mta-out02.sim.rediris.es (Postfix) with ESMTPA id DF8F9C198DD;
- Mon,  1 Feb 2021 17:54:45 +0100 (CET)
-Date: Mon, 1 Feb 2021 17:54:40 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: "Christopher M. Riedl" <cmr@codefail.de>
-Subject: Re: [PATCH v4 02/10] powerpc/signal: Add unsafe_copy_{vsx,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DTwC22JjQzDr3p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 04:38:03 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-270-YLUUenDnNpGfVo7ZRnS7KQ-1; Mon, 01 Feb 2021 17:37:57 +0000
+X-MC-Unique: YLUUenDnNpGfVo7ZRnS7KQ-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Mon, 1 Feb 2021 17:37:56 +0000
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Mon, 1 Feb 2021 17:37:56 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'Christopher M. Riedl'" <cmr@codefail.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v4 02/10] powerpc/signal: Add unsafe_copy_{vsx,
  fpr}_from_user()
-Message-ID: <20210201165440.GA8929@lt-gp.iram.es>
-References: <6a6ce1a53fcf4669a9848114d3460fef@AcuMS.aculab.com>
- <C8YBET4IGYGF.3QYANVRRHMV0R@geist>
+Thread-Topic: [PATCH v4 02/10] powerpc/signal: Add unsafe_copy_{vsx,
+ fpr}_from_user()
+Thread-Index: AQHW9SvhJlSFmYQ9tkmGvwf2LRQAGqo811MwgAajugCAAARBUIAADGqAgAALRtA=
+Date: Mon, 1 Feb 2021 17:37:56 +0000
+Message-ID: <f6234b06ccb54cffb3583f40635636d3@AcuMS.aculab.com>
+References: <0433d40adacc47a3a27bc8bc35e076e3@AcuMS.aculab.com>
+ <C8YCOH19N9EX.3LXG80WZT1N37@geist>
+In-Reply-To: <C8YCOH19N9EX.3LXG80WZT1N37@geist>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C8YBET4IGYGF.3QYANVRRHMV0R@geist>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-FE-Policy-ID: 2:8:0:SYSTEM
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
- c=relaxed/relaxed; 
- h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
- bh=wnB4FYtg2ofDcmCKB7DjkrZl5i0BtFcc1/fSXfFGh4Q=;
- b=obUC0PXt/VNJD0wcEXYPQzlZhgBgwH1OUmtsfXKtBvcuRHBtrMuWBkMW9/NJLbvVRveH/UlqNkzi
- 43uxdMcYRT3YZp600NMrPBC6Yy0hDmoRCjlhnnBVi5bjckpqu3yZCEedhu5SpgrGJ4dy63ZHf2nr
- CZIHM6DjSfPVAN63qQOD1hi/G6bDRV5HgaPVUymd6il/VsyeqZ6Vv42M7uRf0nh+RclwDG5Gzy/c
- jx9CbuYDpk7gwnyt7m7OQPiTgCPNIyPS3ONOv5HMySVrHSbMMaHXHwcf/PWVwPkPQIpJvVPQjdac
- pw9pEMb6jM9OVfP15tGCZYaVcXoZuqeuPEgFXg==
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,124 +76,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Laight <David.Laight@ACULAB.COM>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 01, 2021 at 09:55:44AM -0600, Christopher M. Riedl wrote:
-> On Thu Jan 28, 2021 at 4:38 AM CST, David Laight wrote:
-> > From: Christopher M. Riedl
-> > > Sent: 28 January 2021 04:04
-> > > 
-> > > Reuse the "safe" implementation from signal.c except for calling
-> > > unsafe_copy_from_user() to copy into a local buffer.
-> > > 
-> > > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
-> > > ---
-> > >  arch/powerpc/kernel/signal.h | 33 +++++++++++++++++++++++++++++++++
-> > >  1 file changed, 33 insertions(+)
-> > > 
-> > > diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-> > > index 2559a681536e..c18402d625f1 100644
-> > > --- a/arch/powerpc/kernel/signal.h
-> > > +++ b/arch/powerpc/kernel/signal.h
-> > > @@ -53,6 +53,33 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
-> > >  				&buf[i], label);\
-> > >  } while (0)
-> > > 
-> > > +#define unsafe_copy_fpr_from_user(task, from, label)	do {		\
-> > > +	struct task_struct *__t = task;					\
-> > > +	u64 __user *__f = (u64 __user *)from;				\
-> > > +	u64 buf[ELF_NFPREG];						\
-> >
-> > How big is that buffer?
-> > Isn't is likely to be reasonably large compared to a reasonable
-> > kernel stack frame.
-> > Especially since this isn't even a leaf function.
-> >
-> 
-> I think Christophe answered this - I don't really have an opinion either
-> way. What would be a 'reasonable' kernel stack frame for reference?
-
-See include/linux/poll.h, where the limit is of the order of 800 bytes
-and the number of entries in an on stack array is chosen at compile time
-(different between 32 and 64 bit for example).
-
-The values are used in do_sys_poll, which, with almost 1000 bytes of
-stack footprint, appears close to the top of "make checkstack". In
-addition do_sys_poll has to call the ->poll function of every file
-descriptor in its table, so it is not a tail function.
-
-This 264 bytes array looks reasonable, but please use 'make checkstack'
-to verify that the function's total stack usage stays within reason.
-
-	Gabriel
-
-> 
-> > > +	int i;								\
-> > > +									\
-> > > +	unsafe_copy_from_user(buf, __f, ELF_NFPREG * sizeof(double),	\
-> >
-> > That really ought to be sizeof(buf).
-> >
-> 
-> Agreed, I will fix this. Thanks!
-> 
-> > David
-> >
-> >
-> > > +				label);					\
-> > > +	for (i = 0; i < ELF_NFPREG - 1; i++)				\
-> > > +		__t->thread.TS_FPR(i) = buf[i];				\
-> > > +	__t->thread.fp_state.fpscr = buf[i];				\
-> > > +} while (0)
-> > > +
-> > > +#define unsafe_copy_vsx_from_user(task, from, label)	do {		\
-> > > +	struct task_struct *__t = task;					\
-> > > +	u64 __user *__f = (u64 __user *)from;				\
-> > > +	u64 buf[ELF_NVSRHALFREG];					\
-> > > +	int i;								\
-> > > +									\
-> > > +	unsafe_copy_from_user(buf, __f,					\
-> > > +				ELF_NVSRHALFREG * sizeof(double),	\
-> > > +				label);					\
-> > > +	for (i = 0; i < ELF_NVSRHALFREG ; i++)				\
-> > > +		__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];	\
-> > > +} while (0)
-> > > +
-> > > +
-> > >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> > >  #define unsafe_copy_ckfpr_to_user(to, task, label)	do {		\
-> > >  	struct task_struct *__t = task;					\
-> > > @@ -80,6 +107,10 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
-> > >  	unsafe_copy_to_user(to, (task)->thread.fp_state.fpr,	\
-> > >  			    ELF_NFPREG * sizeof(double), label)
-> > > 
-> > > +#define unsafe_copy_fpr_from_user(task, from, label)			\
-> > > +	unsafe_copy_from_user((task)->thread.fp_state.fpr, from,	\
-> > > +			    ELF_NFPREG * sizeof(double), label)
-> > > +
-> > >  static inline unsigned long
-> > >  copy_fpr_to_user(void __user *to, struct task_struct *task)
-> > >  {
-> > > @@ -115,6 +146,8 @@ copy_ckfpr_from_user(struct task_struct *task, void __user *from)
-> > >  #else
-> > >  #define unsafe_copy_fpr_to_user(to, task, label) do { } while (0)
-> > > 
-> > > +#define unsafe_copy_fpr_from_user(task, from, label) do { } while (0)
-> > > +
-> > >  static inline unsigned long
-> > >  copy_fpr_to_user(void __user *to, struct task_struct *task)
-> > >  {
-> > > --
-> > > 2.26.1
-> >
-> > -
-> > Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes,
-> > MK1 1PT, UK
-> > Registration No: 1397386 (Wales)
-> 
- 
+RnJvbTogQ2hyaXN0b3BoZXIgTS4gUmllZGwNCj4gU2VudDogMDEgRmVicnVhcnkgMjAyMSAxNjo1
+NQ0KLi4uDQo+ID4gPiA+ID4gKwlpbnQgaTsJCQkJCQkJCVwNCj4gPiA+ID4gPiArCQkJCQkJCQkJ
+XA0KPiA+ID4gPiA+ICsJdW5zYWZlX2NvcHlfZnJvbV91c2VyKGJ1ZiwgX19mLCBFTEZfTkZQUkVH
+ICogc2l6ZW9mKGRvdWJsZSksCVwNCj4gPiA+ID4gPiArCQkJCWxhYmVsKTsJCQkJCVwNCj4gPiA+
+ID4gPiArCWZvciAoaSA9IDA7IGkgPCBFTEZfTkZQUkVHIC0gMTsgaSsrKQkJCQlcDQo+ID4gPiA+
+ID4gKwkJX190LT50aHJlYWQuVFNfRlBSKGkpID0gYnVmW2ldOwkJCQlcDQo+ID4gPiA+ID4gKwlf
+X3QtPnRocmVhZC5mcF9zdGF0ZS5mcHNjciA9IGJ1ZltpXTsJCQkJXA0KPiA+ID4gPiA+ICt9IHdo
+aWxlICgwKQ0KPiA+DQo+ID4gT24gZnVydGhlciByZWZsZWN0aW9uLCBzaW5jZSB5b3UgaW1tZWRp
+YXRlbHkgbG9vcCB0aHJvdWdoIHRoZSBidWZmZXINCj4gPiB3aHkgbm90IGp1c3QgdXNlIHVzZXJf
+YWNjZXNzX2JlZ2luKCkgYW5kIHVuc2FmZV9nZXRfdXNlcigpIGluIHRoZSBsb29wLg0KPiANCj4g
+Q2hyaXN0b3BoZSBoYWQgc3VnZ2VzdGVkIHRoaXMgYSBmZXcgcmV2aXNpb25zIGFnbyBhcyB3ZWxs
+LiBXaGVuIEkgdHJpZWQNCj4gdGhpcyBhcHByb2FjaCwgdGhlIHNpZ25hbCBoYW5kbGluZyBwZXJm
+b3JtYW5jZSB0b29rIGEgcHJldHR5IGJpZyBoaXQ6DQo+IGh0dHBzOi8vbGlzdHMub3psYWJzLm9y
+Zy9waXBlcm1haWwvbGludXhwcGMtZGV2LzIwMjAtT2N0b2Jlci8yMTkzNTEuaHRtbA0KPiANCj4g
+SSBpbmNsdWRlZCBzb21lIG51bWJlcnMgb24gdjMgYXMgd2VsbCBidXQgZGVjaWRlZCB0byBkcm9w
+IHRoZSBhcHByb2FjaA0KPiBhbHRvZ2V0aGVyIGZvciB0aGlzIG9uZSBzaW5jZSBpdCBqdXN0IGRp
+ZG4ndCBzZWVtIHdvcnRoIHRoZSBoaXQuDQoNCldhcyB0aGF0IHVzaW5nIHVuc2FmZV9nZXRfdXNl
+ciAod2hpY2ggcmVsaWVzIG9uIHVzZXJfYWNjZXNzX2JlZ2luKCkNCmhhdmluZyAnb3BlbmVkIHVw
+JyB1c2VyIGFjY2Vzc2VzKSBvciBqdXN0IGdldF91c2VyKCkgdGhhdCBkb2VzDQppdCBmb3IgZXZl
+cnkgYWNjZXNzPw0KDQpUaGUgZm9ybWVyIHNob3VsZCBiZSBvaywgdGhlIGxhdHRlciB3aWxsIGJl
+IGhvcnJpZC4NCg0KCURhdmlkDQoNCi0NClJlZ2lzdGVyZWQgQWRkcmVzcyBMYWtlc2lkZSwgQnJh
+bWxleSBSb2FkLCBNb3VudCBGYXJtLCBNaWx0b24gS2V5bmVzLCBNSzEgMVBULCBVSw0KUmVnaXN0
+cmF0aW9uIE5vOiAxMzk3Mzg2IChXYWxlcykNCg==
 
