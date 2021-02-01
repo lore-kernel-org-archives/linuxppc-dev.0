@@ -2,49 +2,52 @@ Return-Path: <SRS0=IXH7=HD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B28DAC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 16:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CADDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 16:58:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA5C664DCC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 16:31:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA5C664DCC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 0CAD464EA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Feb 2021 16:58:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CAD464EA1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DTtk55mgfzDrgS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Feb 2021 03:31:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DTvKp6TwdzDrWk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Feb 2021 03:58:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=codefail.de (client-ip=68.65.122.19;
+ helo=mta-09-3.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+Received: from MTA-09-3.privateemail.com (mta-09-3.privateemail.com
+ [68.65.122.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DTtg82tJKzDrNZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 03:28:49 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id A28F56736F; Mon,  1 Feb 2021 17:28:42 +0100 (CET)
-Date: Mon, 1 Feb 2021 17:28:42 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Miroslav Benes <mbenes@suse.cz>
-Subject: Re: [PATCH 05/13] kallsyms: refactor {,module_}kallsyms_on_each_symbol
-Message-ID: <20210201162842.GB7276@lst.de>
-References: <20210128181421.2279-1-hch@lst.de>
- <20210128181421.2279-6-hch@lst.de> <YBPYyEvesLMrRtZM@alley>
- <20210201114749.GB19696@lst.de>
- <alpine.LSU.2.21.2102011436320.21637@pobox.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.21.2102011436320.21637@pobox.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DTvHd0G59zDrRW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 03:57:00 +1100 (AEDT)
+Received: from MTA-09.privateemail.com (localhost [127.0.0.1])
+ by MTA-09.privateemail.com (Postfix) with ESMTP id 634E5600A0;
+ Mon,  1 Feb 2021 11:56:57 -0500 (EST)
+Received: from localhost (unknown [10.20.151.204])
+ by MTA-09.privateemail.com (Postfix) with ESMTPA id 2963360091;
+ Mon,  1 Feb 2021 16:56:57 +0000 (UTC)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+To: "David Laight" <David.Laight@ACULAB.COM>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v4 02/10] powerpc/signal: Add unsafe_copy_{vsx,
+ fpr}_from_user()
+From: "Christopher M. Riedl" <cmr@codefail.de>
+Date: Mon, 01 Feb 2021 10:55:23 -0600
+Message-Id: <C8YCOH19N9EX.3LXG80WZT1N37@geist>
+In-Reply-To: <0433d40adacc47a3a27bc8bc35e076e3@AcuMS.aculab.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,137 +59,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Jiri Kosina <jikos@kernel.org>,
- Andrew Donnellan <ajd@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Masahiro Yamada <masahiroy@kernel.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- linux-kernel@vger.kernel.org, Maxime Ripard <mripard@kernel.org>,
- live-patching@vger.kernel.org, Michal Marek <michal.lkml@markovi.net>,
- Joe Lawrence <joe.lawrence@redhat.com>, dri-devel@lists.freedesktop.org,
- Thomas Zimmermann <tzimmermann@suse.de>, Jessica Yu <jeyu@kernel.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Daniel Vetter <daniel@ffwll.ch>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 01, 2021 at 02:37:12PM +0100, Miroslav Benes wrote:
-> > > This change is not needed. (objname == NULL) means that we are
-> > > interested only in symbols in "vmlinux".
-> > > 
-> > > module_kallsyms_on_each_symbol(klp_find_callback, &args)
-> > > will always fail when objname == NULL.
-> > 
-> > I just tried to keep the old behavior.  I can respin it with your
-> > recommended change noting the change in behavior, though.
-> 
-> Yes, please. It would be cleaner that way.
+On Mon Feb 1, 2021 at 10:15 AM CST, David Laight wrote:
+> From: Christopher M. Riedl
+> > Sent: 01 February 2021 15:56
+> >=20
+> > On Thu Jan 28, 2021 at 4:38 AM CST, David Laight wrote:
+> > > From: Christopher M. Riedl
+> > > > Sent: 28 January 2021 04:04
+> > > >
+> > > > Reuse the "safe" implementation from signal.c except for calling
+> > > > unsafe_copy_from_user() to copy into a local buffer.
+> > > >
+> > > > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+> > > > ---
+> > > >  arch/powerpc/kernel/signal.h | 33 ++++++++++++++++++++++++++++++++=
++
+> > > >  1 file changed, 33 insertions(+)
+> > > >
+> > > > diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/sig=
+nal.h
+> > > > index 2559a681536e..c18402d625f1 100644
+> > > > --- a/arch/powerpc/kernel/signal.h
+> > > > +++ b/arch/powerpc/kernel/signal.h
+> > > > @@ -53,6 +53,33 @@ unsigned long copy_ckfpr_from_user(struct task_s=
+truct *task, void __user *from);
+> > > >  				&buf[i], label);\
+> > > >  } while (0)
+> > > >
+> > > > +#define unsafe_copy_fpr_from_user(task, from, label)	do {		\
+> > > > +	struct task_struct *__t =3D task;					\
+> > > > +	u64 __user *__f =3D (u64 __user *)from;				\
+> > > > +	u64 buf[ELF_NFPREG];						\
+> > >
+> > > How big is that buffer?
+> > > Isn't is likely to be reasonably large compared to a reasonable
+> > > kernel stack frame.
+> > > Especially since this isn't even a leaf function.
+> > >
+> >=20
+> > I think Christophe answered this - I don't really have an opinion eithe=
+r
+> > way. What would be a 'reasonable' kernel stack frame for reference?
+>
+> Zero :-)
+>
 
-Let me know if this works for you:
+Hehe good point!
 
----
-From 18af41e88d088cfb8680d1669fcae2bc2ede5328 Mon Sep 17 00:00:00 2001
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 Jan 2021 16:23:16 +0100
-Subject: kallsyms: refactor {,module_}kallsyms_on_each_symbol
+> >=20
+> > > > +	int i;								\
+> > > > +									\
+> > > > +	unsafe_copy_from_user(buf, __f, ELF_NFPREG * sizeof(double),	\
+> > > > +				label);					\
+> > > > +	for (i =3D 0; i < ELF_NFPREG - 1; i++)				\
+> > > > +		__t->thread.TS_FPR(i) =3D buf[i];				\
+> > > > +	__t->thread.fp_state.fpscr =3D buf[i];				\
+> > > > +} while (0)
+>
+> On further reflection, since you immediately loop through the buffer
+> why not just use user_access_begin() and unsafe_get_user() in the loop.
 
-Require an explicit call to module_kallsyms_on_each_symbol to look
-for symbols in modules instead of the call from kallsyms_on_each_symbol,
-and acquire module_mutex inside of module_kallsyms_on_each_symbol instead
-of leaving that up to the caller.  Note that this slightly changes the
-behavior for the livepatch code in that the symbols from vmlinux are not
-iterated anymore if objname is set, but that actually is the desired
-behavior in this case.
+Christophe had suggested this a few revisions ago as well. When I tried
+this approach, the signal handling performance took a pretty big hit:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-October/219351.html
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- kernel/kallsyms.c       |  6 +++++-
- kernel/livepatch/core.c |  2 --
- kernel/module.c         | 13 ++++---------
- 3 files changed, 9 insertions(+), 12 deletions(-)
+I included some numbers on v3 as well but decided to drop the approach
+altogether for this one since it just didn't seem worth the hit.
 
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index fe9de067771c34..a0d3f0865916f9 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -177,6 +177,10 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	return module_kallsyms_lookup_name(name);
- }
- 
-+/*
-+ * Iterate over all symbols in vmlinux.  For symbols from modules use
-+ * module_kallsyms_on_each_symbol instead.
-+ */
- int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
- 				      unsigned long),
- 			    void *data)
-@@ -192,7 +196,7 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
- 		if (ret != 0)
- 			return ret;
- 	}
--	return module_kallsyms_on_each_symbol(fn, data);
-+	return 0;
- }
- 
- static unsigned long get_symbol_pos(unsigned long addr,
-diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index 262cd9b003b9f0..335d988bd81117 100644
---- a/kernel/livepatch/core.c
-+++ b/kernel/livepatch/core.c
-@@ -164,12 +164,10 @@ static int klp_find_object_symbol(const char *objname, const char *name,
- 		.pos = sympos,
- 	};
- 
--	mutex_lock(&module_mutex);
- 	if (objname)
- 		module_kallsyms_on_each_symbol(klp_find_callback, &args);
- 	else
- 		kallsyms_on_each_symbol(klp_find_callback, &args);
--	mutex_unlock(&module_mutex);
- 
- 	/*
- 	 * Ensure an address was found. If sympos is 0, ensure symbol is unique;
-diff --git a/kernel/module.c b/kernel/module.c
-index 6772fb2680eb3e..25345792c770d1 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -255,11 +255,6 @@ static void mod_update_bounds(struct module *mod)
- struct list_head *kdb_modules = &modules; /* kdb needs the list of modules */
- #endif /* CONFIG_KGDB_KDB */
- 
--static void module_assert_mutex(void)
--{
--	lockdep_assert_held(&module_mutex);
--}
--
- static void module_assert_mutex_or_preempt(void)
- {
- #ifdef CONFIG_LOCKDEP
-@@ -4379,8 +4374,7 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 	unsigned int i;
- 	int ret;
- 
--	module_assert_mutex();
--
-+	mutex_lock(&module_mutex);
- 	list_for_each_entry(mod, &modules, list) {
- 		/* We hold module_mutex: no need for rcu_dereference_sched */
- 		struct mod_kallsyms *kallsyms = mod->kallsyms;
-@@ -4396,10 +4390,11 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 			ret = fn(data, kallsyms_symbol_name(kallsyms, i),
- 				 mod, kallsyms_symbol_value(sym));
- 			if (ret != 0)
--				return ret;
-+				break;
- 		}
- 	}
--	return 0;
-+	mutex_unlock(&module_mutex);
-+	return ret;
- }
- #endif /* CONFIG_KALLSYMS */
- 
--- 
-2.29.2
+>
+> David
+>
+> -
+> Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes,
+> MK1 1PT, UK
+> Registration No: 1397386 (Wales)
 
