@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFDBBC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:21:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2AE9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:22:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00F1364F4D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:21:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00F1364F4D
+	by mail.kernel.org (Postfix) with ESMTPS id 149C064F68
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:22:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 149C064F68
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVlm96nSbzDrdC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:21:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVlp66nRnzDwkb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:22:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
  (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=mbenes@suse.cz;
@@ -27,20 +27,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVRbN3y4RzDqwl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 01:12:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVRnY6KvCzDr2w
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 01:21:21 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 651E4B11D;
- Tue,  2 Feb 2021 14:12:29 +0000 (UTC)
-Date: Tue, 2 Feb 2021 15:12:28 +0100 (CET)
+ by mx2.suse.de (Postfix) with ESMTP id DF0A6AC41;
+ Tue,  2 Feb 2021 14:21:17 +0000 (UTC)
+Date: Tue, 2 Feb 2021 15:21:17 +0100 (CET)
 From: Miroslav Benes <mbenes@suse.cz>
 To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 12/13] module: remove EXPORT_SYMBOL_GPL_FUTURE
-In-Reply-To: <20210202121334.1361503-13-hch@lst.de>
-Message-ID: <alpine.LSU.2.21.2102021511380.570@pobox.suse.cz>
+Subject: Re: [PATCH 13/13] module: remove EXPORT_UNUSED_SYMBOL*
+In-Reply-To: <20210202121334.1361503-14-hch@lst.de>
+Message-ID: <alpine.LSU.2.21.2102021517400.570@pobox.suse.cz>
 References: <20210202121334.1361503-1-hch@lst.de>
- <20210202121334.1361503-13-hch@lst.de>
+ <20210202121334.1361503-14-hch@lst.de>
 User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -72,11 +72,9 @@ Sender: "Linuxppc-dev"
 
 On Tue, 2 Feb 2021, Christoph Hellwig wrote:
 
-> As far as I can tell this has never been used at all, and certainly
-> not any time recently.
-
-Right, I've always wondered about this one.
- 
+> EXPORT_UNUSED_SYMBOL* is not actually used anywhere.  Remove the
+> unused functionality as we generally just remove unused code anyway.
+> 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
 Reviewed-by: Miroslav Benes <mbenes@suse.cz>
