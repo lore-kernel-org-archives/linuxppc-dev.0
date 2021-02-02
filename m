@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94FD3C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C41FEC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:37:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6D0064DF8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:35:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6D0064DF8
+	by mail.kernel.org (Postfix) with ESMTPS id 0E6D764E39
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:37:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E6D764E39
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVkkr646YzDwhf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:35:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVkn60DPdzDwlY
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:36:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=meSQP3l8; 
+ header.s=casper.20170209 header.b=S3XLWVvO; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNyf6NZCzDqdW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:14:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNyh6P3CzDr9S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:14:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=Dfm4t6IzWCBDJPMpGdSuNSi4QcgFqA2qDwRcbyxPWlk=; b=meSQP3l8vTyTYW+K+VqSw+ahTJ
- IgWgZijK/yzJk+GJkTA1nnmzS+VgIxBWgpGF1YpmRy5ZRkFJTCVVlrje4myb0Nd7UgF2mEAPeycFc
- 1XhdAx9rNr0wuo6uzBO9Ydlw1fy0QDTIqDGFe1iXqFlsuKzM/8REf5puUEA7+M3qT5hz+mlgJAmtV
- 4uNpmSWQiYBLp0coCUlLgVMQ+4jC9LZ073kECuGnQugmsbcU+zlqqtxjmb00xjUUbO7RDKROjnk7c
- uQieKR5ydi9tOJkVQvC50ixgGsYJQ8WupFRldzFldko0RcYXevgpYHcqiHIZ6dNhiHAocZgN37tTq
- ZNx/iELw==;
+ bh=XZTC5SIMvJdOEqgDU+iIbCSxaEGoFe1SHGfByrwd00g=; b=S3XLWVvOyKvKUYYqHqqt+ziNGW
+ yJYK/kqQMGT1QCR9/vos9RUmeKJPxeHpkcazip+Yknz0VlFHQAFL8LW43Q49lmNcN7Ew5AgKEsqTY
+ DW36OZVvxv8Mp+UJpRx+eVcgZo4eXZ9UA2dKuKGYj9b9a3m/gS+Xg6ETWat5E7Y6AjUj21wztjsf7
+ ez1Xef7D21kx0aCFnYCwMi7D+2PBLd8iQdKg7Osu6/TkXJhl5Lt394F5YZqRVxek29x+V6lr3LFYz
+ ovUQ1mEvxvJ2zZEQMcjIbUpCXkzLL7KzBVOpU+KSsY4pmesHVlECQFxfhk0PZMz+WLjSGyDCVw+Zf
+ R5s+Snwg==;
 Received: from [2001:4bb8:198:6bf4:7f38:755e:a6e0:73e9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l6uYs-00FAKd-RF; Tue, 02 Feb 2021 12:13:39 +0000
+ id 1l6uYz-00FALZ-GH; Tue, 02 Feb 2021 12:13:46 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,9 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 01/13] powerpc/powernv: remove get_cxl_module
-Date: Tue,  2 Feb 2021 13:13:22 +0100
-Message-Id: <20210202121334.1361503-2-hch@lst.de>
+Subject: [PATCH 04/13] module: use RCU to synchronize find_module
+Date: Tue,  2 Feb 2021 13:13:25 +0100
+Message-Id: <20210202121334.1361503-5-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210202121334.1361503-1-hch@lst.de>
 References: <20210202121334.1361503-1-hch@lst.de>
@@ -88,46 +88,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The static inline get_cxl_module function is entirely unused since commit
-8bf6b91a5125a ("Revert "powerpc/powernv: Add support for the cxl kernel
-api on the real phb"), so remove it.
+Allow for a RCU-sched critical section around find_module, following
+the lower level find_module_all helper, and switch the two callers
+outside of module.c to use such a RCU-sched critical section instead
+of module_mutex.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+Acked-by: Miroslav Benes <mbenes@suse.cz>
 ---
- arch/powerpc/platforms/powernv/pci-cxl.c | 22 ----------------------
- 1 file changed, 22 deletions(-)
+ include/linux/module.h      | 2 +-
+ kernel/livepatch/core.c     | 5 +++--
+ kernel/module.c             | 1 -
+ kernel/trace/trace_kprobe.c | 4 ++--
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
-index 8c739c94ed28d6..53172862d23bd3 100644
---- a/arch/powerpc/platforms/powernv/pci-cxl.c
-+++ b/arch/powerpc/platforms/powernv/pci-cxl.c
-@@ -150,25 +150,3 @@ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
- 	return 0;
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 7a0bcb5b1ffccd..a64aa84d1b182c 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -586,7 +586,7 @@ static inline bool within_module(unsigned long addr, const struct module *mod)
+ 	return within_module_init(addr, mod) || within_module_core(addr, mod);
  }
- EXPORT_SYMBOL(pnv_cxl_ioda_msi_setup);
--
--#if IS_MODULE(CONFIG_CXL)
--static inline int get_cxl_module(void)
--{
--	struct module *cxl_module;
--
+ 
+-/* Search for module by name: must hold module_mutex. */
++/* Search for module by name: must be in a RCU-sched critical section. */
+ struct module *find_module(const char *name);
+ 
+ struct symsearch {
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index f76fdb9255323d..262cd9b003b9f0 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -19,6 +19,7 @@
+ #include <linux/moduleloader.h>
+ #include <linux/completion.h>
+ #include <linux/memory.h>
++#include <linux/rcupdate.h>
+ #include <asm/cacheflush.h>
+ #include "core.h"
+ #include "patch.h"
+@@ -57,7 +58,7 @@ static void klp_find_object_module(struct klp_object *obj)
+ 	if (!klp_is_module(obj))
+ 		return;
+ 
 -	mutex_lock(&module_mutex);
--
--	cxl_module = find_module("cxl");
--	if (cxl_module)
--		__module_get(cxl_module);
--
++	rcu_read_lock_sched();
+ 	/*
+ 	 * We do not want to block removal of patched modules and therefore
+ 	 * we do not take a reference here. The patches are removed by
+@@ -74,7 +75,7 @@ static void klp_find_object_module(struct klp_object *obj)
+ 	if (mod && mod->klp_alive)
+ 		obj->mod = mod;
+ 
 -	mutex_unlock(&module_mutex);
--
--	if (!cxl_module)
--		return -ENODEV;
--
--	return 0;
--}
--#else
--static inline int get_cxl_module(void) { return 0; }
--#endif
++	rcu_read_unlock_sched();
+ }
+ 
+ static bool klp_initialized(void)
+diff --git a/kernel/module.c b/kernel/module.c
+index 981302f616b411..6772fb2680eb3e 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -668,7 +668,6 @@ static struct module *find_module_all(const char *name, size_t len,
+ 
+ struct module *find_module(const char *name)
+ {
+-	module_assert_mutex();
+ 	return find_module_all(name, strlen(name), false);
+ }
+ 
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index e6fba1798771b4..3137992baa5e7a 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -124,9 +124,9 @@ static nokprobe_inline bool trace_kprobe_module_exist(struct trace_kprobe *tk)
+ 	if (!p)
+ 		return true;
+ 	*p = '\0';
+-	mutex_lock(&module_mutex);
++	rcu_read_lock_sched();
+ 	ret = !!find_module(tk->symbol);
+-	mutex_unlock(&module_mutex);
++	rcu_read_unlock_sched();
+ 	*p = ':';
+ 
+ 	return ret;
 -- 
 2.29.2
 
