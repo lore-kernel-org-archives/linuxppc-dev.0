@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CFA7C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:45:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D7EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:47:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7004764F75
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:45:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7004764F75
+	by mail.kernel.org (Postfix) with ESMTPS id A5FBE64F78
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:47:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5FBE64F78
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVkzJ19dnzDqWR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:45:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVl1d47YfzDwjb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:47:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,28 +27,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=JR+JJbOn; 
+ header.s=casper.20170209 header.b=Px22+N3Z; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNz70Y0tzDqSR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:14:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNz969sCzDqdW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:14:29 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=97OftF2Q/HTMw50tJtcQtMkdcMcdgN4HYCC7YO73f2o=; b=JR+JJbOnPAb52s3u2TRaOEdl+Y
- xT62sEBt5frAsIycVwYrc92pbb9jkwo58GsbOTW1y8q04G+pBHsFSJFL5ylH3rjqGo4q1koDoBdGB
- sDft4EIDcKHMIcrcbt9gDYKKBM45K5Acbjk4gn7npynD6w/XO6ZXO9ueikA4ZOx17ZgrXi1sIL6lT
- Ia1WyiUaQUmoF6NvrukLR2SraJHTV91dHCTz1A/RwQChqNSAmTmTaDBSKQvCqA9Kftb+chgkHqOso
- q6NDta5ZdXmvjspshDQJKpWh9m3qm11n9s7H7prc60TXItOsF5b1XcNYvEPxGPGYgYZ7UfERzk8ZJ
- smULbzug==;
+ bh=xtOBHx8u/yIi0h5QA3AKNqpliwP+YVemoVRuq3Ek/8o=; b=Px22+N3ZKzyz9x77FQBhRCZGqX
+ S1YwbXLHPbMYYe8n3loAymRJDpw49O8TCW77f12htkWSE1WgJZi+MDZaQjlrAm4Xfp0ayrdgLfYY3
+ udyLpJTNWDUYtWOMgEtNoeBhlFVkwHRdP9f7J8hVQ/bpvtrlKyd8zCinCDri4udXTlFRfnuYDUkP+
+ wI08k43KEKZ71rMkqGxPwIDjt2g5OQFmpgaW1GCrHwnAWPzPEdSWGYrJMA40P51yUBGpRP3mv+jvH
+ AcF4HUQLtuz47iCxAao9JbUf42q14lxqkTnA3C5woO8wIgh8MpfUAglt4o8LeYAs5tO0+cRYGYcOx
+ hj22v0iQ==;
 Received: from [2001:4bb8:198:6bf4:7f38:755e:a6e0:73e9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l6uZE-00FAMy-8A; Tue, 02 Feb 2021 12:14:00 +0000
+ id 1l6uZI-00FANT-Fx; Tue, 02 Feb 2021 12:14:05 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>,
@@ -59,9 +59,9 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH 09/13] module: merge each_symbol_section into find_symbol
-Date: Tue,  2 Feb 2021 13:13:30 +0100
-Message-Id: <20210202121334.1361503-10-hch@lst.de>
+Subject: [PATCH 11/13] module: move struct symsearch to module.c
+Date: Tue,  2 Feb 2021 13:13:32 +0100
+Message-Id: <20210202121334.1361503-12-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210202121334.1361503-1-hch@lst.de>
 References: <20210202121334.1361503-1-hch@lst.de>
@@ -88,186 +88,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-each_symbol_section is only called by find_symbol, so merge the two
-functions.
+struct symsearch is only used inside of module.h, so move the definition
+out of module.h.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- kernel/module.c | 148 ++++++++++++++++++++++--------------------------
- 1 file changed, 69 insertions(+), 79 deletions(-)
+ include/linux/module.h | 11 -----------
+ kernel/module.c        | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 0f360c48fe92a6..da0f5966ee80c9 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -587,17 +587,6 @@ static inline bool within_module(unsigned long addr, const struct module *mod)
+ /* Search for module by name: must be in a RCU-sched critical section. */
+ struct module *find_module(const char *name);
+ 
+-struct symsearch {
+-	const struct kernel_symbol *start, *stop;
+-	const s32 *crcs;
+-	enum mod_license {
+-		NOT_GPL_ONLY,
+-		GPL_ONLY,
+-		WILL_BE_GPL_ONLY,
+-	} license;
+-	bool unused;
+-};
+-
+ /* Returns 0 and fills in value, defined and namebuf, or -ERANGE if
+    symnum out of range. */
+ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
 diff --git a/kernel/module.c b/kernel/module.c
-index b050c836a0061f..ab219a16f35068 100644
+index 02d1dd9bfc0a90..7a4bce8507b96f 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -428,73 +428,6 @@ extern const s32 __start___kcrctab_unused_gpl[];
+@@ -428,6 +428,17 @@ extern const s32 __start___kcrctab_unused_gpl[];
  #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
  #endif
  
--/* Returns true as soon as fn returns true, otherwise false. */
--static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
--				    struct module *owner,
--				    void *data),
--			 void *data)
--{
--	unsigned int i;
--	struct module *mod;
--	static const struct symsearch arr[] = {
--		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
--		  NOT_GPL_ONLY, false },
--		{ __start___ksymtab_gpl, __stop___ksymtab_gpl,
--		  __start___kcrctab_gpl,
--		  GPL_ONLY, false },
--		{ __start___ksymtab_gpl_future, __stop___ksymtab_gpl_future,
--		  __start___kcrctab_gpl_future,
--		  WILL_BE_GPL_ONLY, false },
--#ifdef CONFIG_UNUSED_SYMBOLS
--		{ __start___ksymtab_unused, __stop___ksymtab_unused,
--		  __start___kcrctab_unused,
--		  NOT_GPL_ONLY, true },
--		{ __start___ksymtab_unused_gpl, __stop___ksymtab_unused_gpl,
--		  __start___kcrctab_unused_gpl,
--		  GPL_ONLY, true },
--#endif
--	};
--
--	module_assert_mutex_or_preempt();
--
--	for (i = 0; i < ARRAY_SIZE(arr); i++)
--		if (fn(&arr[i], NULL, data))
--			return true;
--
--	list_for_each_entry_rcu(mod, &modules, list,
--				lockdep_is_held(&module_mutex)) {
--		struct symsearch arr[] = {
--			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
--			  NOT_GPL_ONLY, false },
--			{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
--			  mod->gpl_crcs,
--			  GPL_ONLY, false },
--			{ mod->gpl_future_syms,
--			  mod->gpl_future_syms + mod->num_gpl_future_syms,
--			  mod->gpl_future_crcs,
--			  WILL_BE_GPL_ONLY, false },
--#ifdef CONFIG_UNUSED_SYMBOLS
--			{ mod->unused_syms,
--			  mod->unused_syms + mod->num_unused_syms,
--			  mod->unused_crcs,
--			  NOT_GPL_ONLY, true },
--			{ mod->unused_gpl_syms,
--			  mod->unused_gpl_syms + mod->num_unused_gpl_syms,
--			  mod->unused_gpl_crcs,
--			  GPL_ONLY, true },
--#endif
--		};
--
--		if (mod->state == MODULE_STATE_UNFORMED)
--			continue;
--
--		for (i = 0; i < ARRAY_SIZE(arr); i++)
--			if (fn(&arr[i], mod, data))
--				return true;
--	}
--	return false;
--}
--
++struct symsearch {
++	const struct kernel_symbol *start, *stop;
++	const s32 *crcs;
++	enum mod_license {
++		NOT_GPL_ONLY,
++		GPL_ONLY,
++		WILL_BE_GPL_ONLY,
++	} license;
++	bool unused;
++};
++
  struct find_symbol_arg {
  	/* Input */
  	const char *name;
-@@ -605,24 +538,81 @@ static const struct kernel_symbol *find_symbol(const char *name,
- 					bool gplok,
- 					bool warn)
- {
--	struct find_symbol_arg fsa;
-+	static const struct symsearch arr[] = {
-+		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
-+		  NOT_GPL_ONLY, false },
-+		{ __start___ksymtab_gpl, __stop___ksymtab_gpl,
-+		  __start___kcrctab_gpl,
-+		  GPL_ONLY, false },
-+		{ __start___ksymtab_gpl_future, __stop___ksymtab_gpl_future,
-+		  __start___kcrctab_gpl_future,
-+		  WILL_BE_GPL_ONLY, false },
-+#ifdef CONFIG_UNUSED_SYMBOLS
-+		{ __start___ksymtab_unused, __stop___ksymtab_unused,
-+		  __start___kcrctab_unused,
-+		  NOT_GPL_ONLY, true },
-+		{ __start___ksymtab_unused_gpl, __stop___ksymtab_unused_gpl,
-+		  __start___kcrctab_unused_gpl,
-+		  GPL_ONLY, true },
-+#endif
-+	};
-+	struct find_symbol_arg fsa = {
-+		.name = name,
-+		.gplok = gplok,
-+		.warn = warn,
-+	};
-+	struct module *mod;
-+	unsigned int i;
-+
-+	module_assert_mutex_or_preempt();
-+
-+	for (i = 0; i < ARRAY_SIZE(arr); i++)
-+		if (find_exported_symbol_in_section(&arr[i], NULL, &fsa))
-+			goto found;
- 
--	fsa.name = name;
--	fsa.gplok = gplok;
--	fsa.warn = warn;
-+	list_for_each_entry_rcu(mod, &modules, list,
-+				lockdep_is_held(&module_mutex)) {
-+		struct symsearch arr[] = {
-+			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
-+			  NOT_GPL_ONLY, false },
-+			{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
-+			  mod->gpl_crcs,
-+			  GPL_ONLY, false },
-+			{ mod->gpl_future_syms,
-+			  mod->gpl_future_syms + mod->num_gpl_future_syms,
-+			  mod->gpl_future_crcs,
-+			  WILL_BE_GPL_ONLY, false },
-+#ifdef CONFIG_UNUSED_SYMBOLS
-+			{ mod->unused_syms,
-+			  mod->unused_syms + mod->num_unused_syms,
-+			  mod->unused_crcs,
-+			  NOT_GPL_ONLY, true },
-+			{ mod->unused_gpl_syms,
-+			  mod->unused_gpl_syms + mod->num_unused_gpl_syms,
-+			  mod->unused_gpl_crcs,
-+			  GPL_ONLY, true },
-+#endif
-+		};
- 
--	if (each_symbol_section(find_exported_symbol_in_section, &fsa)) {
--		if (owner)
--			*owner = fsa.owner;
--		if (crc)
--			*crc = fsa.crc;
--		if (license)
--			*license = fsa.license;
--		return fsa.sym;
-+		if (mod->state == MODULE_STATE_UNFORMED)
-+			continue;
-+
-+		for (i = 0; i < ARRAY_SIZE(arr); i++)
-+			if (find_exported_symbol_in_section(&arr[i], mod, &fsa))
-+				goto found;
- 	}
- 
- 	pr_debug("Failed to find symbol %s\n", name);
- 	return NULL;
-+
-+found:
-+	if (owner)
-+		*owner = fsa.owner;
-+	if (crc)
-+		*crc = fsa.crc;
-+	if (license)
-+		*license = fsa.license;
-+	return fsa.sym;
- }
- 
- /*
 -- 
 2.29.2
 
