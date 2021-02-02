@@ -2,75 +2,68 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 633E9C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:43:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B1C0C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:44:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE5EA64E41
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:43:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE5EA64E41
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4F2E864E41
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 02:44:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F2E864E41
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVmFH0MWYzDwk4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:42:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e34;
- helo=mail-vs1-xe34.google.com; envelope-from=emil.l.velikov@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVmHV0ywrzDwjh
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:44:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=P5+gYqPz; dkim-atps=neutral
-Received: from mail-vs1-xe34.google.com (mail-vs1-xe34.google.com
- [IPv6:2607:f8b0:4864:20::e34])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=bxDYixQi; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVX9d1tSRzDqt3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 04:38:56 +1100 (AEDT)
-Received: by mail-vs1-xe34.google.com with SMTP id u127so849103vsc.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Feb 2021 09:38:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=eHAW1mrB7zvHhh97f0tcropb/e113NgWFEAjP6gLbCQ=;
- b=P5+gYqPz5l2mFlVKQREHmz6Kr0fA/RiH9maBRKb+UIPpLrmJCqO0uZtlprkvOcVC7R
- zfLNlUQD86NkP+ifjcEWmIBbuauC+qpY41TpCmhwHtmog0l7nn9JmHrn+u+THmtLIdRH
- 0KnCTzdZzCy8vq0biUzKHV1wh4EBiZ9oAhpnAVrPJLt++k/V0XTB8bMDbd3Qdhisf4xn
- zldT4XKEDyVCBwD/nZj1eNAdMGt3Bg7tXjS8x0Jxcv2kvkr0eEq97P/HBzukApwh349g
- hMt5JK//cZJtHt8GTmxsjoMa4oHwEaTmQsEBjy8RLtIA7UYf87pdqgL7wYkBBpfw2voR
- 5vXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=eHAW1mrB7zvHhh97f0tcropb/e113NgWFEAjP6gLbCQ=;
- b=WgBfcs5oUG6jEzZNSHjjkhGHidmEyFxDe2CL21vTBA0RCNtcX+oihdkMaaUbzK0G7n
- Cr0e5074GDL6uRPJQEDHorugQ7ElR+eNqsh0a1FL/lZB1cyGymK+6c6oX8WXzvwMZ3n5
- vwt7sn9+oeQ4D8RNJij+8SF09AgExbihqmmbY7Hwzb1sP5+PVC0YdI3pp1O8B7PFOpGK
- 23kaIJGvkGZEQB8jaQIVA/8HQIBgr8VPKnYLXV3e+uEkfBnM1w4lP85pvtP0ty9ySJd5
- lWWweX6lq0B0I+0JTxYX15777J4Tk2zNBWmyNl2h8n9+ybjSuBcujtN+WH86j0aLNEXU
- PDvw==
-X-Gm-Message-State: AOAM533+p8vMF7+wb+rKgKlmFNV+c6UlkMat6b7hnDlVmWO8+gfhE/jA
- bQw8irxb25meRv5LDZ9jixgpH6N7NIiVDtSLNFc=
-X-Google-Smtp-Source: ABdhPJxr6UuPLfiTQWU0PtI4KjGAd7lT5wP47Eg2A5ysqKhDWcwimMgCtP8JDHk8rXFO/C2SX4AsHulH76L2ZXyS3BI=
-X-Received: by 2002:a05:6102:96:: with SMTP id
- t22mr13599418vsp.22.1612287530852; 
- Tue, 02 Feb 2021 09:38:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVXt83NVrzDqf7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 05:10:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:From:References:To:Subject:Sender:
+ Reply-To:Cc:Content-ID:Content-Description;
+ bh=7DYkva/bTpl9W1P3QcVm3lnW/O6szR6PkUt261/VRgI=; b=bxDYixQiBL37HFgc53gq0M0d6V
+ qw1vKdclZ4Qe8hgOtjLJj+tXeK7XAmzXEFi5V3chX8pWGT8oWuRij6t65UD+L3Enp2Uxo80LFbRmj
+ tHRrPlvPgBpb38sSGYi55GJ4+Cs9C6bsbD4Bx5kSiuvT/PMF+WsPTcyv1hn3y9leGPi6sL6PVNKkQ
+ RShAdgFoGdE5tdjNm8FGmMHUXmWKdSQnIIm9DRXRV4pxvX3UTclNObFs5Gdg92MNiE3B78DueFueB
+ L7qhSj9hQMHVoexplLmrPz2a0cZDcPbA9uaWlovmZ503mR0TThneQNgJqJXOgxB3YhZRfbvBaDL0d
+ 5NBHHb+g==;
+Received: from [2601:1c0:6280:3f0::2a53]
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1l708D-0003Mi-Ge; Tue, 02 Feb 2021 18:10:29 +0000
+Subject: Re: [PATCH] arch: powerpc: kernel: Fix the spelling mismach to
+ mismatch in head.44x.S
+To: Bhaskar Chowdhury <unixbhaskar@gmail.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, akpm@linux-foundation.org,
+ rppt@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20210202093746.5198-1-unixbhaskar@gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <e50d1c19-9d38-b15e-6b58-905315af7d4c@infradead.org>
+Date: Tue, 2 Feb 2021 10:10:24 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-References: <20210202121334.1361503-1-hch@lst.de> <YBljkDgMFcqKcH8H@gunter>
-In-Reply-To: <YBljkDgMFcqKcH8H@gunter>
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Date: Tue, 2 Feb 2021 17:38:39 +0000
-Message-ID: <CACvgo50f0d9fYZ+n4nSBOCgaGpe=x6_tfXPPGB2FiDVwGgaAJA@mail.gmail.com>
-Subject: Re: module loader dead code removal and cleanups v3
-To: Jessica Yu <jeyu@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210202093746.5198-1-unixbhaskar@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,58 +75,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Joe Lawrence <joe.lawrence@redhat.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Masahiro Yamada <masahiroy@kernel.org>,
- Jiri Kosina <jikos@kernel.org>,
- "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
- ML dri-devel <dri-devel@lists.freedesktop.org>,
- Michal Marek <michal.lkml@markovi.net>,
- Thomas Zimmermann <tzimmermann@suse.de>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, live-patching@vger.kernel.org,
- Miroslav Benes <mbenes@suse.cz>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jessica,
+On 2/2/21 1:37 AM, Bhaskar Chowdhury wrote:
+> 
+> s/mismach/mismatch/
+> 
+> Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+> ---
+>  arch/powerpc/kernel/head_44x.S | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-On Tue, 2 Feb 2021 at 14:37, Jessica Yu <jeyu@kernel.org> wrote:
->
-> +++ Christoph Hellwig [02/02/21 13:13 +0100]:
-> >Hi all,
-> >
-> >this series removes support for long term unused export types and
-> >cleans up various loose ends in the module loader.
-> >
-> >Changes since v2:
-> > - clean up klp_find_object_symbol a bit
-> > - remove the now unused module_assert_mutex helper
-> >
-> >Changes since v1:
-> > - move struct symsearch to module.c
-> > - rework drm to not call find_module at all
-> > - allow RCU-sched locking for find_module
-> > - keep find_module as a public API instead of module_loaded
-> > - update a few comments and commit logs
->
-> Thanks Christoph for cleaning up all that aged cruft, and thanks everyone
-> for the reviews.
->
-> I was curious about EXPORT_SYMBOL_GPL_FUTURE and EXPORT_UNUSED_SYMBOL
-> variants, and found that most of that stuff was introduced between
-> 2006 - 2008. All the of the unused symbols were removed and gpl future
-> symbols were converted to gpl quite a long time ago, and I don't
-> believe these export types have been used ever since. So I
-> think it's safe to retire those export types now.
->
-I believe you're spot on - based on reading through git log and
-checking the ML archives.
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
 
-Shame I didn't get to finish a similar series I had locally. Patches
-11-13 match what I have here so:
-Reviewed-by: Emil Velikov <emil.l.velikov@gmail.com>
+thanks.
 
-HTH
--Emil
+-- 
+~Randy
+
