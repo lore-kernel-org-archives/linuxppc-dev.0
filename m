@@ -2,58 +2,105 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E2D0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6277C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:21:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8D1F64E11
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:17:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D1F64E11
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1CAE564E39
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:21:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CAE564E39
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVj1N3VTJzDwh6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:17:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVj6C2wJGzDqqq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:21:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Ak8itAmS; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVHJ92gkdzDwh6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 18:58:48 +1100 (AEDT)
-IronPort-SDR: iBvGyVuajiDzGJACUBDRKCcBJfEPvrhM99x5e/medc1ff2AFrhKQDPc9LvTt+ndpzcjkhB+y2y
- hKQGiWyGtVZQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9882"; a="199728603"
-X-IronPort-AV: E=Sophos;i="5.79,394,1602572400"; d="scan'208";a="199728603"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Feb 2021 23:58:46 -0800
-IronPort-SDR: RgYBbecUr94dmY/nhf4ebUz4/DKAa7mpeBszppsvOdJMSYsjEI6YUzKBCzHTQo5+6i+HwE9Y8s
- 8dfb46LdJrkA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,394,1602572400"; d="scan'208";a="581850240"
-Received: from lkp-server02.sh.intel.com (HELO 625d3a354f04) ([10.239.97.151])
- by fmsmga005.fm.intel.com with ESMTP; 01 Feb 2021 23:58:37 -0800
-Received: from kbuild by 625d3a354f04 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1l6qa4-0009Ch-LL; Tue, 02 Feb 2021 07:58:36 +0000
-Date: Tue, 02 Feb 2021 15:58:11 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS WITH WARNING
- 30133c32d19c678dbd9da28ace3aac35eb5dd4c9
-Message-ID: <60190613.EjDY/uD9LFPZU3Y1%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVJwK4dBFzDqWx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 20:11:45 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 11292dj9147839; Tue, 2 Feb 2021 04:11:33 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=clbk9LrtmjzgBhUr7YHBRlNU8u6KT1VDc1fN2XKzbLM=;
+ b=Ak8itAmS5OXTPzMK9jElEqz9pT2URZauH1QrUiySrQ6SSHwZF1dBOmqHbRGVjHuarCxH
+ Y4gurJ1O1p3i8myyYBgGXcLG3lzqQNYiys1+Gkx2Ka6sExQN57k5zu8ouq+CBvkWC7UF
+ 36kR/+r7c5F/VUP1WBXgjrc1rbVYJZsEiG7Gef6caM7da7YBGMFLseyPPySiMxncqOPV
+ KG2N1MhARCnB1G3jqll7rHBUgpGPYfhFofnKYUizMxrzY2lUsXgsLkkqxb76bObX23UB
+ PZkSQiEUhgvqMABtAJhOtVoLgyaBZwGQeTG6km4GutKOjR42vjy9ZDD01qOgVDcwjUXc MQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36f3h30r34-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 02 Feb 2021 04:11:33 -0500
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 11294Aut155372;
+ Tue, 2 Feb 2021 04:11:33 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36f3h30r2p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 02 Feb 2021 04:11:33 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11297sDM004908;
+ Tue, 2 Feb 2021 09:11:32 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma02dal.us.ibm.com with ESMTP id 36f1sp8xfs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 02 Feb 2021 09:11:32 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1129BVEG16646466
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 2 Feb 2021 09:11:31 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AF6FB28058;
+ Tue,  2 Feb 2021 09:11:31 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CDB2428059;
+ Tue,  2 Feb 2021 09:11:28 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.35.92])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  2 Feb 2021 09:11:28 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: [RFC PATCH 3/6] mm/mremap: Use pmd/pud_poplulate to update page table
+ entries
+Date: Tue,  2 Feb 2021 14:41:13 +0530
+Message-Id: <20210202091116.196134-3-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210202091116.196134-1-aneesh.kumar@linux.ibm.com>
+References: <20210202091116.196134-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
+ definitions=2021-02-02_04:2021-01-29,
+ 2021-02-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 phishscore=0
+ lowpriorityscore=0 mlxscore=0 bulkscore=0 spamscore=0 mlxlogscore=999
+ impostorscore=0 malwarescore=0 adultscore=0 priorityscore=1501
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102020059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,189 +112,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: peterz@infradead.org, kaleshsingh@google.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, joel@joelfernandes.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 30133c32d19c678dbd9da28ace3aac35eb5dd4c9  Fixup powermac PCI
+pmd/pud_populate is the right interface to be used to set the respective
+page table entries. Some architectures do assume that set_pmd/pud_at
+can only be used to set a hugepage PTE. Since we are not setting up a hugepage
+PTE here, use the pmd/pud_populate interface.
 
-Warning in current branch:
-
-arch/powerpc/kernel/pci-common.c:1704:12: warning: no previous prototype for 'discover_phbs' [-Wmissing-prototypes]
-arch/powerpc/kernel/pci-common.c:1704:12: warning: no previous prototype for function 'discover_phbs' [-Wmissing-prototypes]
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- powerpc-allyesconfig
-    `-- arch-powerpc-kernel-pci-common.c:warning:no-previous-prototype-for-discover_phbs
-
-clang_recent_errors
-`-- powerpc-randconfig-r033-20210131
-    `-- arch-powerpc-kernel-pci-common.c:warning:no-previous-prototype-for-function-discover_phbs
-
-elapsed time: 2644m
-
-configs tested: 151
-configs skipped: 2
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                    vt8500_v6_v7_defconfig
-powerpc                      tqm8xx_defconfig
-sh                          r7785rp_defconfig
-arm                        mvebu_v5_defconfig
-sh                   rts7751r2dplus_defconfig
-mips                        workpad_defconfig
-powerpc                   bluestone_defconfig
-powerpc                      walnut_defconfig
-sh                           se7721_defconfig
-sh                           sh2007_defconfig
-ia64                             alldefconfig
-c6x                        evmc6457_defconfig
-sh                          rsk7203_defconfig
-powerpc                      arches_defconfig
-m68k                        mvme147_defconfig
-powerpc                     tqm8548_defconfig
-sh                           se7780_defconfig
-powerpc                   motionpro_defconfig
-arm                          ep93xx_defconfig
-arm                        multi_v5_defconfig
-mips                         cobalt_defconfig
-arm                            pleb_defconfig
-arm                           stm32_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                     taishan_defconfig
-arm                              alldefconfig
-powerpc                       maple_defconfig
-arm                         at91_dt_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc                      ppc64e_defconfig
-arc                      axs103_smp_defconfig
-sh                             sh03_defconfig
-mips                           mtx1_defconfig
-mips                          malta_defconfig
-powerpc                 mpc8272_ads_defconfig
-sh                           se7751_defconfig
-arc                            hsdk_defconfig
-arm                        mini2440_defconfig
-arm                         assabet_defconfig
-s390                       zfcpdump_defconfig
-arm                          gemini_defconfig
-alpha                            alldefconfig
-mips                        omega2p_defconfig
-mips                      bmips_stb_defconfig
-xtensa                  audio_kc705_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210201
-i386                 randconfig-a005-20210201
-i386                 randconfig-a003-20210201
-i386                 randconfig-a006-20210201
-i386                 randconfig-a002-20210201
-i386                 randconfig-a004-20210201
-i386                 randconfig-a005-20210131
-i386                 randconfig-a003-20210131
-i386                 randconfig-a002-20210131
-i386                 randconfig-a001-20210131
-i386                 randconfig-a004-20210131
-i386                 randconfig-a006-20210131
-x86_64               randconfig-a015-20210131
-x86_64               randconfig-a011-20210131
-x86_64               randconfig-a014-20210131
-x86_64               randconfig-a016-20210131
-x86_64               randconfig-a012-20210131
-x86_64               randconfig-a013-20210131
-x86_64               randconfig-a013-20210202
-x86_64               randconfig-a014-20210202
-x86_64               randconfig-a015-20210202
-x86_64               randconfig-a016-20210202
-x86_64               randconfig-a011-20210202
-x86_64               randconfig-a012-20210202
-i386                 randconfig-a013-20210131
-i386                 randconfig-a011-20210131
-i386                 randconfig-a015-20210131
-i386                 randconfig-a012-20210131
-i386                 randconfig-a014-20210131
-i386                 randconfig-a016-20210131
-i386                 randconfig-a013-20210201
-i386                 randconfig-a016-20210201
-i386                 randconfig-a014-20210201
-i386                 randconfig-a012-20210201
-i386                 randconfig-a015-20210201
-i386                 randconfig-a011-20210201
-x86_64               randconfig-a006-20210201
-x86_64               randconfig-a001-20210201
-x86_64               randconfig-a005-20210201
-x86_64               randconfig-a002-20210201
-x86_64               randconfig-a004-20210201
-x86_64               randconfig-a003-20210201
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a004-20210131
-x86_64               randconfig-a002-20210131
-x86_64               randconfig-a001-20210131
-x86_64               randconfig-a005-20210131
-x86_64               randconfig-a006-20210131
-x86_64               randconfig-a003-20210131
-x86_64               randconfig-a013-20210201
-x86_64               randconfig-a014-20210201
-x86_64               randconfig-a015-20210201
-x86_64               randconfig-a016-20210201
-x86_64               randconfig-a011-20210201
-x86_64               randconfig-a012-20210201
-
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ mm/mremap.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/mm/mremap.c b/mm/mremap.c
+index f554320281cc..54fd2302b99d 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -27,6 +27,7 @@
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
++#include <asm/pgalloc.h>
+ 
+ #include "internal.h"
+ 
+@@ -258,9 +259,8 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+ 	pmd_clear(old_pmd);
+ 
+ 	VM_BUG_ON(!pmd_none(*new_pmd));
++	pmd_populate(mm, new_pmd, (pgtable_t)pmd_page_vaddr(pmd));
+ 
+-	/* Set the new pmd */
+-	set_pmd_at(mm, new_addr, new_pmd, pmd);
+ 	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
+ 	if (new_ptl != old_ptl)
+ 		spin_unlock(new_ptl);
+@@ -307,8 +307,7 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
+ 
+ 	VM_BUG_ON(!pud_none(*new_pud));
+ 
+-	/* Set the new pud */
+-	set_pud_at(mm, new_addr, new_pud, pud);
++	pud_populate(mm, new_pud, (pmd_t *)pud_page_vaddr(pud));
+ 	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
+ 	if (new_ptl != old_ptl)
+ 		spin_unlock(new_ptl);
+-- 
+2.29.2
+
