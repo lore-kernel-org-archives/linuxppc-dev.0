@@ -7,34 +7,34 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42CFAC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:32:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1844DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:33:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF87D64F6A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:32:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF87D64F6A
+	by mail.kernel.org (Postfix) with ESMTPS id 2344E64F49
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 00:33:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2344E64F49
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVjLF5sg2zDqL5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:32:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVjN40PF7zDwlM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:33:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DVK0d60vszDrcG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 20:15:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DVK0z4bZpzDrcG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 20:15:47 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 3E61DAE80014;
- Tue,  2 Feb 2021 04:14:49 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id EDC35AE80239;
+ Tue,  2 Feb 2021 04:15:43 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/uaccess: Skip might_fault() when user access
- is enabled
-Date: Tue,  2 Feb 2021 20:14:47 +1100
-Message-Id: <20210202091447.36234-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] powerpc/kuap: Restore AMR after replaying soft
+ interrupts
+Date: Tue,  2 Feb 2021 20:15:41 +1100
+Message-Id: <20210202091541.36499-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -52,46 +52,171 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The amount of code executed with enabled user space access (unlocked KUAP)
-should be minimal. However with CONFIG_PROVE_LOCKING or
-CONFIG_DEBUG_ATOMIC_SLEEP enabled, might_fault() may end up replaying
-interrupts which in turn may access the user space and forget to restore
-the KUAP state.
+Since de78a9c "powerpc: Add a framework for Kernel Userspace Access
+Protection", user access helpers call user_{read|write}_access_{begin|end}
+when user space access is allowed.
 
-The problem places are strncpy_from_user (and similar) which unlock KUAP
-and call unsafe_get_user -> __get_user_allowed -> __get_user_nocheck()
-with do_allow=false to skip KUAP as the caller took care of it.
+890274c "powerpc/64s: Implement KUAP for Radix MMU" made the mentioned
+helpers program a AMR special register to allow such access for a short
+period of time, most of the time AMR is expected to block user memory
+access by the kernel.
 
-This changes __get_user_nocheck() to look at @do_allow to decide whether
-to skip might_fault(). Since strncpy_from_user/etc call might_fault()
-anyway before unlocking KUAP, there should be no visible change.
+Since the code accesses the user space memory, unsafe_get_user()
+calls might_fault() which calls arch_local_irq_restore() if either
+CONFIG_PROVE_LOCKING or CONFIG_DEBUG_ATOMIC_SLEEP is enabled.
+arch_local_irq_restore() then attempts to replay pending soft interrupts
+as KUAP regions have hardware interrupts enabled.
+If a pending interrupt happens to do user access (performance interrupts
+do that), it enables access for a short period of time so after returning
+from the replay, the user access state remains blocked and if a user page
+fault happens - "Bug: Read fault blocked by AMR!" appears and SIGSEGV is
+sent.
+
+This saves/restores AMR when replaying interrupts.
+
+This adds a check if AMR was not blocked when before replaying interrupts.
+
+Found by syzkaller. The call stack for the bug is:
+
+copy_from_user_nofault+0xf8/0x250
+perf_callchain_user_64+0x3d8/0x8d0
+perf_callchain_user+0x38/0x50
+get_perf_callchain+0x28c/0x300
+perf_callchain+0xb0/0x130
+perf_prepare_sample+0x364/0xbf0
+perf_event_output_forward+0xe0/0x280
+__perf_event_overflow+0xa4/0x240
+perf_swevent_hrtimer+0x1d4/0x1f0
+__hrtimer_run_queues+0x328/0x900
+hrtimer_interrupt+0x128/0x350
+timer_interrupt+0x180/0x600
+replay_soft_interrupts+0x21c/0x4f0
+arch_local_irq_restore+0x94/0x150
+lock_is_held_type+0x140/0x200
+___might_sleep+0x220/0x330
+__might_fault+0x88/0x120
+do_strncpy_from_user+0x108/0x2b0
+strncpy_from_user+0x1d0/0x2a0
+getname_flags+0x88/0x2c0
+do_sys_openat2+0x2d4/0x5f0
+do_sys_open+0xcc/0x140
+system_call_exception+0x160/0x240
+system_call_common+0xf0/0x27c
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+Changes:
+v3:
+* do not block/unblock if AMR was blocked
+* reverted move of AMR_KUAP_***
+* added pr_warn
+
+v2:
+* fixed compile on hash
+* moved get/set to arch_local_irq_restore
+* block KUAP before replaying
+
 ---
 
+This is an example:
 
-This an attempt to fix that KUAP restore problem from
-"powerpc/kuap: Restore AMR after replaying soft interrupts".
+------------[ cut here ]------------
+Bug: Read fault blocked by AMR!
+WARNING: CPU: 0 PID: 1603 at /home/aik/p/kernel/arch/powerpc/include/asm/book3s/64/kup-radix.h:145 __do_page_fau
 
-
-
+Modules linked in:
+CPU: 0 PID: 1603 Comm: amr Not tainted 5.10.0-rc6_v5.10-rc6_a+fstn1 #24
+NIP:  c00000000009ece8 LR: c00000000009ece4 CTR: 0000000000000000
+REGS: c00000000dc63560 TRAP: 0700   Not tainted  (5.10.0-rc6_v5.10-rc6_a+fstn1)
+MSR:  8000000000021033 <SF,ME,IR,DR,RI,LE>  CR: 28002888  XER: 20040000
+CFAR: c0000000001fa928 IRQMASK: 1
+GPR00: c00000000009ece4 c00000000dc637f0 c000000002397600 000000000000001f
+GPR04: c0000000020eb318 0000000000000000 c00000000dc63494 0000000000000027
+GPR08: c00000007fe4de68 c00000000dfe9180 0000000000000000 0000000000000001
+GPR12: 0000000000002000 c0000000030a0000 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 bfffffffffffffff
+GPR20: 0000000000000000 c0000000134a4020 c0000000019c2218 0000000000000fe0
+GPR24: 0000000000000000 0000000000000000 c00000000d106200 0000000040000000
+GPR28: 0000000000000000 0000000000000300 c00000000dc63910 c000000001946730
+NIP [c00000000009ece8] __do_page_fault+0xb38/0xde0
+LR [c00000000009ece4] __do_page_fault+0xb34/0xde0
+Call Trace:
+[c00000000dc637f0] [c00000000009ece4] __do_page_fault+0xb34/0xde0 (unreliable)
+[c00000000dc638a0] [c00000000000c968] handle_page_fault+0x10/0x2c
+--- interrupt: 300 at strncpy_from_user+0x290/0x440
+    LR = strncpy_from_user+0x284/0x440
+[c00000000dc63ba0] [c000000000c3dcb0] strncpy_from_user+0x2f0/0x440 (unreliable)
+[c00000000dc63c30] [c00000000068b888] getname_flags+0x88/0x2c0
+[c00000000dc63c90] [c000000000662a44] do_sys_openat2+0x2d4/0x5f0
+[c00000000dc63d30] [c00000000066560c] do_sys_open+0xcc/0x140
+[c00000000dc63dc0] [c000000000045e10] system_call_exception+0x160/0x240
+[c00000000dc63e20] [c00000000000da60] system_call_common+0xf0/0x27c
+Instruction dump:
+409c0048 3fe2ff5b 3bfff128 fac10060 fae10068 482f7a85 60000000 3c62ff5b
+7fe4fb78 3863f250 4815bbd9 60000000 <0fe00000> 3c62ff5b 3863f2b8 4815c8b5
+irq event stamp: 254
+hardirqs last  enabled at (253): [<c000000000019550>] arch_local_irq_restore+0xa0/0x150
+hardirqs last disabled at (254): [<c000000000008a10>] data_access_common_virt+0x1b0/0x1d0
+softirqs last  enabled at (0): [<c0000000001f6d5c>] copy_process+0x78c/0x2120
+softirqs last disabled at (0): [<0000000000000000>] 0x0
+---[ end trace ba98aec5151f3aeb ]---
 ---
- arch/powerpc/include/asm/uaccess.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/irq.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 501c9a79038c..cd6c0427a9e2 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -313,7 +313,7 @@ do {								\
- 	__typeof__(size) __gu_size = (size);			\
- 								\
- 	__chk_user_ptr(__gu_addr);				\
--	if (!is_kernel_addr((unsigned long)__gu_addr))		\
-+	if (!do_allow && !is_kernel_addr((unsigned long)__gu_addr)) \
- 		might_fault();					\
- 	barrier_nospec();					\
- 	if (do_allow)								\
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index cc7a6271b6b4..592abc798826 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -269,6 +269,23 @@ void replay_soft_interrupts(void)
+ 	}
+ }
+ 
++#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_KUAP)
++static inline void replay_soft_interrupts_irqrestore(void)
++{
++	unsigned long kuap_state = get_kuap();
++
++	if (kuap_state != AMR_KUAP_BLOCKED)
++		set_kuap(AMR_KUAP_BLOCKED);
++
++	replay_soft_interrupts();
++
++	if (kuap_state != AMR_KUAP_BLOCKED)
++		set_kuap(kuap_state);
++}
++#else
++#define replay_soft_interrupts_irqrestore() replay_soft_interrupts()
++#endif
++
+ notrace void arch_local_irq_restore(unsigned long mask)
+ {
+ 	unsigned char irq_happened;
+@@ -278,6 +295,14 @@ notrace void arch_local_irq_restore(unsigned long mask)
+ 	if (mask)
+ 		return;
+ 
++	/*
++	 * It fires if anything calls local_irq_enable or restore when
++	 * KUAP is enabled, and the code handles that just fine by saving
++	 * and re-locking AMR but we would like to remove those calls,
++	 * hence the warning.
++	 */
++	kuap_check_amr();
++
+ 	/*
+ 	 * From this point onward, we can take interrupts, preempt,
+ 	 * etc... unless we got hard-disabled. We check if an event
+@@ -332,7 +357,7 @@ notrace void arch_local_irq_restore(unsigned long mask)
+ 	irq_soft_mask_set(IRQS_ALL_DISABLED);
+ 	trace_hardirqs_off();
+ 
+-	replay_soft_interrupts();
++	replay_soft_interrupts_irqrestore();
+ 	local_paca->irq_happened = 0;
+ 
+ 	trace_hardirqs_on();
 -- 
 2.17.1
 
