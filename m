@@ -2,76 +2,73 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14966C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E325C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:28:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24D2464F4C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:27:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24D2464F4C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 3F1C064F67
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 01:28:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1C064F67
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVkYt5fsqzDqVr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:27:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
- (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk;
- envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVkbn3L2lzDwpq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:28:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+78410b086ab5a19d433c+6372+infradead.org+hch@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256
- header.s=pandora-2019 header.b=g+zlPNAW; 
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=UFXUzoMn; 
  dkim-atps=neutral
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNpw0cx2zDr9C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:07:18 +1100 (AEDT)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVNyg4JYBzDr9C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2021 23:14:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ff/wpjr28khgZASsQau1yxjR8C0J+5ugrzPgigwTWJ0=; b=g+zlPNAWAiJW5GOWEjHNIVmqA
- 0i1nsvoEBElLib6NPI+ewFmTSmVP7JGSQ7ZLly3jTDpFtnIDio9CEcaBiQSFwcgmPHoMvRYCbwGWt
- PkjTmE1MYLjA2QUDOjN2Mn234zZSJtnzMrVt+Kc4GD8aK1RdS6EgeyWWIM9ttIO1LsqlzqeuKm1bX
- hC3JYtKbNMb2qpSdXuDo/qCblleoKhE5dft21RMev3iDIm67Fs0AiDx4do2YnTx+1m42FvFdXA9/n
- hFly2dtJBy7Hrr+SaHO+q+VcPF9VPjlgiUyfr22h++1gaon0GMT8fIpHV/Ua3BRHpputjXSfiebb7
- f+YrLjvrA==;
-Received: from shell.armlinux.org.uk
- ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:38196)
- by pandora.armlinux.org.uk with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <linux@armlinux.org.uk>)
- id 1l6uSd-0004KH-MO; Tue, 02 Feb 2021 12:07:11 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
- (envelope-from <linux@shell.armlinux.org.uk>)
- id 1l6uSa-00030y-Hf; Tue, 02 Feb 2021 12:07:08 +0000
-Date: Tue, 2 Feb 2021 12:07:08 +0000
-From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-To: Ding Tianhong <dingtianhong@huawei.com>
-Subject: Re: [PATCH v12 01/14] ARM: mm: add missing pud_page define to
- 2-level page tables
-Message-ID: <20210202120708.GM1463@shell.armlinux.org.uk>
-References: <20210202110515.3575274-1-npiggin@gmail.com>
- <20210202110515.3575274-2-npiggin@gmail.com>
- <20210202111319.GL1463@shell.armlinux.org.uk>
- <d1f661f2-f473-1dd8-94cc-fe76714249b5@huawei.com>
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=d+RvHHepaZ/BO9t/Sofhl4osQy8aQseeLaFTeY79feo=; b=UFXUzoMnrYHFApA5h87LexqFa+
+ foEjWfevlTzvzvNgdyFxOccwQp0QsfXh1HVg4rgqUZGFWeJSIhjwkFWEVhM0FCCZUXeIAYuHWr9zA
+ J7pRt39JkHnnVGcFHYMVVjK+52uHeEsz0pI66KxpI0gFcCYiAM27eP/eLJ4qYP8OjXimXk72tNlD2
+ hw78Ru5anrj28RpFxnxnko3+tKbRRM3SSeyJWt+2XvboA6/5CX+NYy9ps7aGaK5YkuB7Ysgj3LIdM
+ w1v6Ron/0Xdoe/76EETL/k99oX6YNolyXOVsjguthSUa1+5VxPZiGacwSECy6Fl8XOl5YWcjkwCg+
+ sEnFOl9Q==;
+Received: from [2001:4bb8:198:6bf4:7f38:755e:a6e0:73e9] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1l6uYx-00FALP-M3; Tue, 02 Feb 2021 12:13:44 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Frederic Barrat <fbarrat@linux.ibm.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@linux.ie>,
+ Daniel Vetter <daniel@ffwll.ch>, Jessica Yu <jeyu@kernel.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ Joe Lawrence <joe.lawrence@redhat.com>
+Subject: [PATCH 03/13] module: unexport find_module and module_mutex
+Date: Tue,  2 Feb 2021 13:13:24 +0100
+Message-Id: <20210202121334.1361503-4-hch@lst.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210202121334.1361503-1-hch@lst.de>
+References: <20210202121334.1361503-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d1f661f2-f473-1dd8-94cc-fe76714249b5@huawei.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,46 +80,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Christoph Hellwig <hch@infradead.org>,
- linux-mm@kvack.org, Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 02, 2021 at 07:47:04PM +0800, Ding Tianhong wrote:
-> On 2021/2/2 19:13, Russell King - ARM Linux admin wrote:
-> > On Tue, Feb 02, 2021 at 09:05:02PM +1000, Nicholas Piggin wrote:
-> >> diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
-> >> index c02f24400369..d63a5bb6bd0c 100644
-> >> --- a/arch/arm/include/asm/pgtable.h
-> >> +++ b/arch/arm/include/asm/pgtable.h
-> >> @@ -166,6 +166,9 @@ extern struct page *empty_zero_page;
-> >>  
-> >>  extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
-> >>  
-> >> +#define pud_page(pud)		pmd_page(__pmd(pud_val(pud)))
-> >> +#define pud_write(pud)		pmd_write(__pmd(pud_val(pud)))
-> > 
-> > As there is no PUD, does it really make sense to return a valid
-> > struct page (which will be the PTE page) for pud_page(), which is
-> > several tables above?
-> > 
-> --- a/arch/arm/include/asm/pgtable-2level.h
-> +++ b/arch/arm/include/asm/pgtable-2level.h
-> 
-> +static inline int pud_none(pud_t pud)
-> +{
-> +          return 0;
-> +}
-> 
-> I think it could be fix like this.
+find_module is not used by modular code any more, and random driver code
+has no business calling it to start with.
 
-We already have that.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Miroslav Benes <mbenes@suse.cz>
+---
+ kernel/module.c | 2 --
+ 1 file changed, 2 deletions(-)
 
+diff --git a/kernel/module.c b/kernel/module.c
+index 4bf30e4b3eaaa1..981302f616b411 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -88,7 +88,6 @@
+  * (delete and add uses RCU list operations).
+  */
+ DEFINE_MUTEX(module_mutex);
+-EXPORT_SYMBOL_GPL(module_mutex);
+ static LIST_HEAD(modules);
+ 
+ /* Work queue for freeing init sections in success case */
+@@ -672,7 +671,6 @@ struct module *find_module(const char *name)
+ 	module_assert_mutex();
+ 	return find_module_all(name, strlen(name), false);
+ }
+-EXPORT_SYMBOL_GPL(find_module);
+ 
+ #ifdef CONFIG_SMP
+ 
 -- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+2.29.2
+
