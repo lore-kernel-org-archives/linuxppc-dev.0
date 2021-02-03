@@ -2,61 +2,52 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 997D4C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 17:49:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55BEFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 18:45:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C595664F8C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 17:49:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C595664F8C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2BCA864F7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 18:45:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BCA864F7C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW8M75Vk9zDywl
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 04:49:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW9bc2JlNzDxT9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 05:45:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ smtp.mailfrom=codefail.de (client-ip=68.65.122.27;
+ helo=mta-07-4.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=ajqWrUw9; 
- dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DW8KR6GmDzDwyL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 04:47:55 +1100 (AEDT)
-Received: from [192.168.0.104] (c-73-42-176-67.hsd1.wa.comcast.net
- [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 60A2620B7192;
- Wed,  3 Feb 2021 09:47:54 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 60A2620B7192
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1612374474;
- bh=ccdnldXd7ffStD/bkTdf0JjvxcE1PixsU1LgmFGE+AQ=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=ajqWrUw9CR8dAwPmXY6LCKNUEia6bR5EjopHsReroJkEk/G8oj/LNYo6yVlhZHRPT
- gifIXM2rLnviz18/bU47RYoODn6g6eAz/ehhd+XdLDkL4/Db9ETaET7WsCMd4Jm0IR
- qbpqJGZRQppoEWCB6hHj8+tqyW4Ca58BYHrUL/GM=
-Subject: Re: [PATCH 1/2] ima: Free IMA measurement buffer on error
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <20210121173003.18324-1-nramas@linux.microsoft.com>
- <87eeic1u6b.fsf@manicouagan.localdomain>
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <918ff442-2a0d-0e5b-4e95-c47dafc11382@linux.microsoft.com>
-Date: Wed, 3 Feb 2021 09:47:53 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+Received: from MTA-07-4.privateemail.com (mta-07-4.privateemail.com
+ [68.65.122.27])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW9Yg0hw1zDwts
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 05:43:33 +1100 (AEDT)
+Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
+ by MTA-07.privateemail.com (Postfix) with ESMTP id 71FCA6004E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 13:43:30 -0500 (EST)
+Received: from oc8246131445.ibm.com (unknown [10.20.151.227])
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id 4261C6005B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 18:43:30 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 02/10] powerpc/signal: Add unsafe_copy_{vsx,
+ fpr}_from_user()
+Date: Wed,  3 Feb 2021 12:43:15 -0600
+Message-Id: <20210203184323.20792-3-cmr@codefail.de>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20210203184323.20792-1-cmr@codefail.de>
+References: <20210203184323.20792-1-cmr@codefail.de>
 MIME-Version: 1.0
-In-Reply-To: <87eeic1u6b.fsf@manicouagan.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,71 +59,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sashal@kernel.org, dmitry.kasatkin@gmail.com, linux-kernel@vger.kernel.org,
- zohar@linux.ibm.com, tyhicks@linux.microsoft.com, ebiederm@xmission.com,
- gregkh@linuxfoundation.org, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/22/21 2:30 PM, Thiago Jung Bauermann wrote:
-> 
-> Hi Lakshmi,
-> 
-> Lakshmi Ramasubramanian <nramas@linux.microsoft.com> writes:
-> 
->> IMA allocates kernel virtual memory to carry forward the measurement
->> list, from the current kernel to the next kernel on kexec system call,
->> in ima_add_kexec_buffer() function.  In error code paths this memory
->> is not freed resulting in memory leak.
->>
->> Free the memory allocated for the IMA measurement list in
->> the error code paths in ima_add_kexec_buffer() function.
->>
->> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
->> Suggested-by: Tyler Hicks <tyhicks@linux.microsoft.com>
->> Fixes: 7b8589cc29e7 ("ima: on soft reboot, save the measurement list")
->> ---
->>   security/integrity/ima/ima_kexec.c | 2 ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
->> index 121de3e04af2..212145008a01 100644
->> --- a/security/integrity/ima/ima_kexec.c
->> +++ b/security/integrity/ima/ima_kexec.c
->> @@ -119,12 +119,14 @@ void ima_add_kexec_buffer(struct kimage *image)
->>   	ret = kexec_add_buffer(&kbuf);
->>   	if (ret) {
->>   		pr_err("Error passing over kexec measurement buffer.\n");
->> +		vfree(kexec_buffer);
->>   		return;
->>   	}
-> 
-> This is a good catch.
+Reuse the "safe" implementation from signal.c except for calling
+unsafe_copy_from_user() to copy into a local buffer.
 
-Thanks.
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/powerpc/kernel/signal.h | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-> 
->>   
->>   	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
->>   	if (ret) {
->>   		pr_err("Error passing over kexec measurement buffer.\n");
->> +		vfree(kexec_buffer);
->>   		return;
->>   	}
-> 
-> But this would cause problems, because the buffer is still there in the
-> kimage and would cause kimage_load_segment() to access invalid memory.
-> 
-> There's no function to undo a kexec_add_buffer() to avoid this problem,
-> so I'd suggest just accepting the leak in this case. Fortunately, the
-> current implementations of arch_ima_add_kexec_buffer() are very simple
-> and cannot fail, so this is a theoretical problem.
-> 
-
-Agreed. I'll post a new patch with the above change removed.
-
-thanks,
-  -lakshmi
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index 2559a681536e..7dfc536c78ef 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -53,6 +53,30 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
+ 				&buf[i], label);\
+ } while (0)
+ 
++#define unsafe_copy_fpr_from_user(task, from, label)	do {		\
++	struct task_struct *__t = task;					\
++	u64 __user *__f = (u64 __user *)from;				\
++	u64 buf[ELF_NFPREG];						\
++	int i;								\
++									\
++	unsafe_copy_from_user(buf, __f, sizeof(buf), label);		\
++	for (i = 0; i < ELF_NFPREG - 1; i++)				\
++		__t->thread.TS_FPR(i) = buf[i];				\
++	__t->thread.fp_state.fpscr = buf[i];				\
++} while (0)
++
++#define unsafe_copy_vsx_from_user(task, from, label)	do {		\
++	struct task_struct *__t = task;					\
++	u64 __user *__f = (u64 __user *)from;				\
++	u64 buf[ELF_NVSRHALFREG];					\
++	int i;								\
++									\
++	unsafe_copy_from_user(buf, __f, sizeof(buf), label);		\
++	for (i = 0; i < ELF_NVSRHALFREG ; i++)				\
++		__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];	\
++} while (0)
++
++
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ #define unsafe_copy_ckfpr_to_user(to, task, label)	do {		\
+ 	struct task_struct *__t = task;					\
+@@ -80,6 +104,10 @@ unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
+ 	unsafe_copy_to_user(to, (task)->thread.fp_state.fpr,	\
+ 			    ELF_NFPREG * sizeof(double), label)
+ 
++#define unsafe_copy_fpr_from_user(task, from, label)			\
++	unsafe_copy_from_user((task)->thread.fp_state.fpr, from,	\
++			    ELF_NFPREG * sizeof(double), label)
++
+ static inline unsigned long
+ copy_fpr_to_user(void __user *to, struct task_struct *task)
+ {
+@@ -115,6 +143,8 @@ copy_ckfpr_from_user(struct task_struct *task, void __user *from)
+ #else
+ #define unsafe_copy_fpr_to_user(to, task, label) do { } while (0)
+ 
++#define unsafe_copy_fpr_from_user(task, from, label) do { } while (0)
++
+ static inline unsigned long
+ copy_fpr_to_user(void __user *to, struct task_struct *task)
+ {
+-- 
+2.26.1
 
