@@ -6,34 +6,34 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28377C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:52:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8097C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:54:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5CE4464E29
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:52:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CE4464E29
+	by mail.kernel.org (Postfix) with ESMTPS id 98B7F64F6A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 11:54:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98B7F64F6A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW0RF1jJ8zDxWG
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 22:52:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW0Tk3F2HzDwtj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 22:54:34 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW0916ngzzDwtn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 22:40:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW09312z4zDwvC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 22:40:07 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DW08y6TrGz9sX5; Wed,  3 Feb 2021 22:40:02 +1100 (AEDT)
+ id 4DW0903CHVz9tkZ; Wed,  3 Feb 2021 22:40:03 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: mpe@ellerman.id.au, Qian Cai <cai@lca.pw>
-In-Reply-To: <20200510051559.1959-1-cai@lca.pw>
-References: <20200510051559.1959-1-cai@lca.pw>
-Subject: Re: [PATCH] powerpc/mm/book3s64/iommu: fix some RCU-list locks
-Message-Id: <161235200882.1516112.5579154052220245435.b4-ty@ellerman.id.au>
-Date: Wed,  3 Feb 2021 22:40:02 +1100 (AEDT)
+In-Reply-To: <20200510051347.1906-1-cai@lca.pw>
+References: <20200510051347.1906-1-cai@lca.pw>
+Subject: Re: [PATCH] powerpc/powernv/pci: fix a RCU-list lock
+Message-Id: <161235200863.1516112.12206707948646314806.b4-ty@ellerman.id.au>
+Date: Wed,  3 Feb 2021 22:40:03 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,20 +51,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 10 May 2020 01:15:59 -0400, Qian Cai wrote:
-> It is safe to traverse mm->context.iommu_group_mem_list with either
-> mem_list_mutex or the RCU read lock held. Silence a few RCU-list false
-> positive warnings and fix a few missing RCU read locks.
+On Sun, 10 May 2020 01:13:47 -0400, Qian Cai wrote:
+> It is unsafe to traverse tbl->it_group_list without the RCU read lock.
 > 
->  arch/powerpc/mm/book3s64/iommu_api.c:330 RCU-list traversed in non-reader section!!
-> 
->  other info that might help us debug this:
+>  WARNING: suspicious RCU usage
+>  5.7.0-rc4-next-20200508 #1 Not tainted
+>  -----------------------------
+>  arch/powerpc/platforms/powernv/pci-ioda-tce.c:355 RCU-list traversed in non-reader section!!
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm/book3s64/iommu: fix some RCU-list locks
-      https://git.kernel.org/powerpc/c/b5952f8125ae512420d5fc569adce591bea73bf5
+[1/1] powerpc/powernv/pci: fix a RCU-list lock
+      https://git.kernel.org/powerpc/c/c9790fb5df461c91d3fff1d864c1acb8baf5ad5c
 
 cheers
