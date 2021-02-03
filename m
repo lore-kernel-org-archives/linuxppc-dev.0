@@ -7,74 +7,73 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 896E8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:55:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88E52C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:58:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8677C64E49
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:55:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8677C64E49
+	by mail.kernel.org (Postfix) with ESMTPS id 6884C64E4B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:58:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6884C64E4B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW39F1KCYzF4DX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 00:55:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW3Dj6fMMzF4Hb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 00:58:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::431;
- helo=mail-pf1-x431.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::436;
+ helo=mail-pf1-x436.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=VmzeA/6j; dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
+ header.s=google header.b=NU7X5sik; dkim-atps=neutral
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
+ [IPv6:2607:f8b0:4864:20::436])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW0c51NFwzF02Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 23:00:04 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id o20so16517516pfu.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Feb 2021 04:00:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW0cB163mzDxTb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 23:00:09 +1100 (AEDT)
+Received: by mail-pf1-x436.google.com with SMTP id q20so16499381pfu.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Feb 2021 04:00:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=FaxU8G6b68GEdEbXS6bZDEyMoHhbuYhFSTBo6L7+8wc=;
- b=VmzeA/6jTeJHl92Ui+bW8jMnWfBJzOz2tWH7ZG/ltLwUUaY3jql12q4I/LUKW84XrX
- SPm285KUxoURFjo+ZFPZtM2ObLr6nzqErBg4pInHV8eJKHAdqJtRup8+irCG03feIu97
- pmByKUqzPo0Z1/NZpO9hGbdKuv156j4xyd0Ng=
+ bh=4yeRRS+YoQcAmvPlaj8okeosVtMgEWoUxf3CV/ngv8E=;
+ b=NU7X5sikSrpePvQWWlAOjtah9E4+4ONvCH12/t/ANyREsmFC1U6slYAHQ0zmeSFXtS
+ y5kYCxRVl3oLIBHZNpGopaRd9vFwDTIvfCNi6ytdk87MQmRVEeuvILkrk4umt/zvnzIT
+ Ax/WvhUpYH0eEv9Xg5VK6Jjjn+pw057DRyRVw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=FaxU8G6b68GEdEbXS6bZDEyMoHhbuYhFSTBo6L7+8wc=;
- b=au2smjduGubUU2k8Yc18gHJNlhyOZ6qPNY8aEI7DZYccMeOedpkdnw6dT8hW1WWEq7
- UO1+9GWeYchh4W61ti9UI/yVFRSOVF9gOx6Ly05b/Ex/YobY5JButw4PJNPqlhnvF7Nr
- NdaPFjMwgiraQAfbx3H6qDIEHymuuiqRBRLunvkjFBCfJ74a9a4NUNS9yxCX5RkoUPqB
- 8sdoHhf4zSKjTM0sbSzV9hFEjGBuDFE9K0uZSvYsLoduAeHSsetabrZY3R+Qtoy63mRP
- C5PlCLYceQkkUnVSXSS42UM51SwjaCWlKIGHKzCiCrfj5LPleRgv7JumBL8RwsxctKyc
- Dj3Q==
-X-Gm-Message-State: AOAM531kZ4x1bCQxzth+JzmhhgoXI+NvcAZCGwGqza5OYxwaXvIAEIaH
- Nc/F34pkqOhGgMTWeNUlvoI54Q==
-X-Google-Smtp-Source: ABdhPJzJQ+HrkRqBl3GdIZ8HA1RDMTKlHsN8nxwZJJ2++D58biICNAHrnytqbZjJk0+WJgDowTrAZQ==
-X-Received: by 2002:a62:a204:0:b029:1c3:fb27:16f3 with SMTP id
- m4-20020a62a2040000b02901c3fb2716f3mr2777075pff.61.1612353599093; 
- Wed, 03 Feb 2021 03:59:59 -0800 (PST)
+ bh=4yeRRS+YoQcAmvPlaj8okeosVtMgEWoUxf3CV/ngv8E=;
+ b=fB4246VyK1nGJ+sdPNPywcI0PRCAR40IwFOmO6GKBWCs4IyfCrQPDCVvhfyfsBaggN
+ YEpjNAix81dQ1KJyG/CpL+gqncgt5/z+ni0I4kpAOWXPmQgShvupa2YXBKPQGXtWvTFY
+ KXqAu9aaVVxAZOVJtPT5PFNrUGAY+Ed8sSiMdBP13uJtbG3qsDD4w0DgfVTRDKCsr8lN
+ rnfNcAH75UFhT+HfQj1hGdHKLnzZDkvR8Xf4YZ92ybyztFWZWHEr+2V5YDU0ZfXctfTy
+ yncXp69l2s93kAwVeBSywPqjFTFm9WfNAfZ/U6fJpOEy1RTqZXR+8hI/aRG5YfTzqlA8
+ RS2A==
+X-Gm-Message-State: AOAM530dXLAftNkjOkABB8sycZdX3U+t9lGoX87vpU/qlos8vhw5XtLP
+ z4X4hqSDAc3qD0QuBM4oVQnq/Q==
+X-Google-Smtp-Source: ABdhPJzzK5YvOyMfvgQ+AuWV/qojdK9qpJUT9pEzaRWUltgKk0EicgeZzjiaUG5uB5i/jb8YlXG4ZA==
+X-Received: by 2002:a65:648c:: with SMTP id e12mr3246745pgv.123.1612353606752; 
+ Wed, 03 Feb 2021 04:00:06 -0800 (PST)
 Received: from localhost
  (2001-44b8-1113-6700-1c59-4eca-f876-fd51.static.ipv6.internode.on.net.
  [2001:44b8:1113:6700:1c59:4eca:f876:fd51])
- by smtp.gmail.com with ESMTPSA id p2sm2491813pgl.19.2021.02.03.03.59.57
+ by smtp.gmail.com with ESMTPSA id 32sm2747368pgq.80.2021.02.03.04.00.05
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 03 Feb 2021 03:59:58 -0800 (PST)
+ Wed, 03 Feb 2021 04:00:06 -0800 (PST)
 From: Daniel Axtens <dja@axtens.net>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
  christophe.leroy@csgroup.eu, aneesh.kumar@linux.ibm.com,
  bsingharora@gmail.com
-Subject: [PATCH v10 1/6] kasan: allow an architecture to disable inline
- instrumentation
-Date: Wed,  3 Feb 2021 22:59:41 +1100
-Message-Id: <20210203115946.663273-2-dja@axtens.net>
+Subject: [PATCH v10 3/6] kasan: define and use MAX_PTRS_PER_* for early shadow
+ tables
+Date: Wed,  3 Feb 2021 22:59:43 +1100
+Message-Id: <20210203115946.663273-4-dja@axtens.net>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210203115946.663273-1-dja@axtens.net>
 References: <20210203115946.663273-1-dja@axtens.net>
@@ -96,62 +95,88 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For annoying architectural reasons, it's very difficult to support inline
-instrumentation on powerpc64.
+powerpc has a variable number of PTRS_PER_*, set at runtime based
+on the MMU that the kernel is booted under.
 
-Add a Kconfig flag to allow an arch to disable inline. (It's a bit
-annoying to be 'backwards', but I'm not aware of any way to have
-an arch force a symbol to be 'n', rather than 'y'.)
+This means the PTRS_PER_* are no longer constants, and therefore
+breaks the build.
 
-We also disable stack instrumentation in this case as it does things that
-are functionally equivalent to inline instrumentation, namely adding
-code that touches the shadow directly without going through a C helper.
+Define default MAX_PTRS_PER_*s in the same style as MAX_PTRS_PER_P4D.
+As KASAN is the only user at the moment, just define them in the kasan
+header, and have them default to PTRS_PER_* unless overridden in arch
+code.
 
+Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Suggested-by: Balbir Singh <bsingharora@gmail.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- lib/Kconfig.kasan | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/linux/kasan.h | 18 +++++++++++++++---
+ mm/kasan/init.c       |  6 +++---
+ 2 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/lib/Kconfig.kasan b/lib/Kconfig.kasan
-index cffc2ebbf185..4f4d3fb8733d 100644
---- a/lib/Kconfig.kasan
-+++ b/lib/Kconfig.kasan
-@@ -12,6 +12,9 @@ config HAVE_ARCH_KASAN_HW_TAGS
- config HAVE_ARCH_KASAN_VMALLOC
- 	bool
+diff --git a/include/linux/kasan.h b/include/linux/kasan.h
+index d314c0fa5804..84bea59d01b3 100644
+--- a/include/linux/kasan.h
++++ b/include/linux/kasan.h
+@@ -43,10 +43,22 @@ static inline bool kasan_arch_is_ready(void)	{ return true; }
+ #define PTE_HWTABLE_PTRS 0
+ #endif
  
-+config ARCH_DISABLE_KASAN_INLINE
-+	def_bool n
++#ifndef MAX_PTRS_PER_PTE
++#define MAX_PTRS_PER_PTE PTRS_PER_PTE
++#endif
 +
- config CC_HAS_KASAN_GENERIC
- 	def_bool $(cc-option, -fsanitize=kernel-address)
++#ifndef MAX_PTRS_PER_PMD
++#define MAX_PTRS_PER_PMD PTRS_PER_PMD
++#endif
++
++#ifndef MAX_PTRS_PER_PUD
++#define MAX_PTRS_PER_PUD PTRS_PER_PUD
++#endif
++
+ extern unsigned char kasan_early_shadow_page[PAGE_SIZE];
+-extern pte_t kasan_early_shadow_pte[PTRS_PER_PTE + PTE_HWTABLE_PTRS];
+-extern pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD];
+-extern pud_t kasan_early_shadow_pud[PTRS_PER_PUD];
++extern pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE + PTE_HWTABLE_PTRS];
++extern pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD];
++extern pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD];
+ extern p4d_t kasan_early_shadow_p4d[MAX_PTRS_PER_P4D];
  
-@@ -130,6 +133,7 @@ config KASAN_OUTLINE
+ int kasan_populate_early_shadow(const void *shadow_start,
+diff --git a/mm/kasan/init.c b/mm/kasan/init.c
+index c4605ac9837b..b4d822dff1fb 100644
+--- a/mm/kasan/init.c
++++ b/mm/kasan/init.c
+@@ -41,7 +41,7 @@ static inline bool kasan_p4d_table(pgd_t pgd)
+ }
+ #endif
+ #if CONFIG_PGTABLE_LEVELS > 3
+-pud_t kasan_early_shadow_pud[PTRS_PER_PUD] __page_aligned_bss;
++pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD] __page_aligned_bss;
+ static inline bool kasan_pud_table(p4d_t p4d)
+ {
+ 	return p4d_page(p4d) == virt_to_page(lm_alias(kasan_early_shadow_pud));
+@@ -53,7 +53,7 @@ static inline bool kasan_pud_table(p4d_t p4d)
+ }
+ #endif
+ #if CONFIG_PGTABLE_LEVELS > 2
+-pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD] __page_aligned_bss;
++pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD] __page_aligned_bss;
+ static inline bool kasan_pmd_table(pud_t pud)
+ {
+ 	return pud_page(pud) == virt_to_page(lm_alias(kasan_early_shadow_pmd));
+@@ -64,7 +64,7 @@ static inline bool kasan_pmd_table(pud_t pud)
+ 	return false;
+ }
+ #endif
+-pte_t kasan_early_shadow_pte[PTRS_PER_PTE + PTE_HWTABLE_PTRS]
++pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE + PTE_HWTABLE_PTRS]
+ 	__page_aligned_bss;
  
- config KASAN_INLINE
- 	bool "Inline instrumentation"
-+	depends on !ARCH_DISABLE_KASAN_INLINE
- 	help
- 	  Compiler directly inserts code checking shadow memory before
- 	  memory accesses. This is faster than outline (in some workloads
-@@ -141,6 +145,7 @@ endchoice
- config KASAN_STACK
- 	bool "Enable stack instrumentation (unsafe)" if CC_IS_CLANG && !COMPILE_TEST
- 	depends on KASAN_GENERIC || KASAN_SW_TAGS
-+	depends on !ARCH_DISABLE_KASAN_INLINE
- 	default y if CC_IS_GCC
- 	help
- 	  The LLVM stack address sanitizer has a know problem that
-@@ -154,6 +159,9 @@ config KASAN_STACK
- 	  but clang users can still enable it for builds without
- 	  CONFIG_COMPILE_TEST.	On gcc it is assumed to always be safe
- 	  to use and enabled by default.
-+	  If the architecture disables inline instrumentation, this is
-+	  also disabled as it adds inline-style instrumentation that
-+	  is run unconditionally.
- 
- config KASAN_SW_TAGS_IDENTIFY
- 	bool "Enable memory corruption identification"
+ static inline bool kasan_pte_table(pmd_t pmd)
 -- 
 2.27.0
 
