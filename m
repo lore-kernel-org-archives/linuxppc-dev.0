@@ -2,49 +2,51 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E53C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 18:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85EB5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 21:22:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0C7E64F61
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 18:56:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0C7E64F61
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id 82E1D64F5F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 21:22:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82E1D64F5F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW9rz612dzDxXx
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 05:56:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=68.65.122.27;
- helo=mta-07-4.privateemail.com; envelope-from=cmr@codefail.de;
- receiver=<UNKNOWN>)
-Received: from MTA-07-4.privateemail.com (mta-07-4.privateemail.com
- [68.65.122.27])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW9Yg4r66zDwts
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 05:43:33 +1100 (AEDT)
-Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
- by MTA-07.privateemail.com (Postfix) with ESMTP id E5AD360056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 13:43:29 -0500 (EST)
-Received: from oc8246131445.ibm.com (unknown [10.20.151.227])
- by MTA-07.privateemail.com (Postfix) with ESMTPA id B5FEA60054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 18:43:29 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 00/10] Improve signal performance on PPC64 with KUAP
-Date: Wed,  3 Feb 2021 12:43:13 -0600
-Message-Id: <20210203184323.20792-1-cmr@codefail.de>
-X-Mailer: git-send-email 2.26.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DWF4c3lc5zDxTp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 08:22:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DWF2z5S4XzDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 08:20:40 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 113LHYGb014316;
+ Wed, 3 Feb 2021 15:17:34 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 113LHXCH014310;
+ Wed, 3 Feb 2021 15:17:33 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 3 Feb 2021 15:17:33 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/3] powerpc: sstep: Fix load and update emulation
+Message-ID: <20210203211732.GD30983@gate.crashing.org>
+References: <20210203063841.431063-1-sandipan@linux.ibm.com>
+ <20210203094909.GD210@DESKTOP-TDPLP67.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210203094909.GD210@DESKTOP-TDPLP67.localdomain>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,101 +58,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: ravi.bangoria@linux.ibm.com, ananth@linux.ibm.com, jniethe5@gmail.com,
+ paulus@samba.org, Sandipan Das <sandipan@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As reported by Anton, there is a large penalty to signal handling
-performance on radix systems using KUAP. The signal handling code
-performs many user access operations, each of which needs to switch the
-KUAP permissions bit to open and then close user access. This involves a
-costly 'mtspr' operation [0].
+On Wed, Feb 03, 2021 at 03:19:09PM +0530, Naveen N. Rao wrote:
+> On 2021/02/03 12:08PM, Sandipan Das wrote:
+> > The Power ISA says that the fixed-point load and update
+> > instructions must neither use R0 for the base address (RA)
+> > nor have the destination (RT) and the base address (RA) as
+> > the same register. In these cases, the instruction is
+> > invalid.
 
-There is existing work done on x86 and by Christophe Leroy for PPC32 to
-instead open up user access in "blocks" using user_*_access_{begin,end}.
-We can do the same in PPC64 to bring performance back up on KUAP-enabled
-radix and now also hash MMU systems [1].
+> > However, the following behaviour is observed using some
+> > invalid opcodes where RA = RT.
+> > 
+> > An userspace program using an invalid instruction word like
+> > 0xe9ce0001, i.e. "ldu r14, 0(r14)", runs and exits without
+> > getting terminated abruptly. The instruction performs the
+> > load operation but does not write the effective address to
+> > the base address register. 
+> 
+> While the processor (p8 in my test) doesn't seem to be throwing an 
+> exception, I don't think it is necessarily loading the value. Qemu 
+> throws an exception though. It's probably best to term the behavior as 
+> being undefined.
 
-Hash MMU KUAP support along with uaccess flush has landed in linuxppc/next
-since the last revision. This series also provides a large benefit on hash
-with KUAP. However, in the hash implementation of KUAP the user AMR is
-always restored during system_call_exception() which cannot be avoided.
-Fewer user access switches naturally also result in less uaccess flushing.
+Power8 does:
 
-The first two patches add some needed 'unsafe' versions of copy-from
-functions. While these do not make use of asm-goto they still allow for
-avoiding the repeated uaccess switches.
+  Load with Update Instructions (RA = 0)
+    EA is placed into R0.
+  Load with Update Instructions (RA = RT)
+    EA is placed into RT. The storage operand addressed by EA is
+    accessed, but the data returned by the load is discarded.
 
-The third patch moves functions called by setup_sigcontext() into a new
-prepare_setup_sigcontext() to simplify converting setup_sigcontext()
-into an 'unsafe' version which assumes an open uaccess window later.
+Power9 does:
 
-The fourth and fifths patches clean-up some of the Transactional Memory
-ifdef stuff to simplify using uaccess blocks later.
+  Load with Update Instructions (RA = 0)
+    EA is placed into R0.
+  Load with Update Instructions (RA = RT)
+    The storage operand addressed by EA is accessed. The displacement
+    field is added to the data returned by the load and placed into RT.
 
-The next two patches rewrite some of the signal64 helper functions to
-be 'unsafe'. Finally, the last three patches update the main signal
-handling functions to make use of the new 'unsafe' helpers and eliminate
-some additional uaccess switching.
+Both UMs also say
 
-I used the will-it-scale signal1 benchmark to measure and compare
-performance [2]. The below results are from running a minimal
-kernel+initramfs QEMU/KVM guest on a POWER9 Blackbird:
+  Invalid Forms
+    In general, the POWER9 core handles invalid forms of instructions in
+    the manner that is most convenient for the particular case (within
+    the scope of meeting the boundedly-undefined definition described in
+    the Power ISA). This document specifies the behavior for these
+    cases.  However, it is not recommended that software or other system
+    facilities make use of the POWER9 behavior in these cases because
+    such behavior might be different in another processor that
+    implements the Power ISA.
 
-	signal1_threads -t1 -s10
+(or POWER8 instead of POWER9 of course).  Always complaining about most
+invalid forms seems wise, certainly if not all recent CPUs behave the
+same :-)
 
-	|                              | hash   | radix  |
-	| ---------------------------- | ------ | ------ |
-	| linuxppc/next                | 117667 | 135752 |
-	| linuxppc/next w/o KUAP+KUEP  | 225273 | 227567 |
-	| unsafe-signal64              | 193402 | 230983 |
 
-[0]: https://github.com/linuxppc/issues/issues/277
-[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278
-[2]: https://github.com/antonblanchard/will-it-scale/blob/master/tests/signal1.c
-
-v5:	* Use sizeof(buf) in copy_{vsx,fpr}_from_user() (Thanks David Laight)
-	* Rebase on latest linuxppc/next
-
-v4:	* Fix issues identified by Christophe Leroy (Thanks for review)
-	* Use __get_user() directly to copy the 8B sigset_t
-
-v3:	* Rebase on latest linuxppc/next
-	* Reword confusing commit messages
-	* Add missing comma in macro in signal.h which broke compiles without
-	  CONFIG_ALTIVEC
-	* Validate hash KUAP signal performance improvements
-
-v2:	* Rebase on latest linuxppc/next + Christophe Leroy's PPC32
-	  signal series
-	* Simplify/remove TM ifdefery similar to PPC32 series and clean
-	  up the uaccess begin/end calls
-	* Isolate non-inline functions so they are not called when
-	  uaccess window is open
-
-Christopher M. Riedl (8):
-  powerpc/uaccess: Add unsafe_copy_from_user
-  powerpc/signal: Add unsafe_copy_{vsx,fpr}_from_user()
-  powerpc/signal64: Move non-inline functions out of setup_sigcontext()
-  powerpc: Reference param in MSR_TM_ACTIVE() macro
-  powerpc/signal64: Remove TM ifdefery in middle of if/else block
-  powerpc/signal64: Replace setup_sigcontext() w/
-    unsafe_setup_sigcontext()
-  powerpc/signal64: Replace restore_sigcontext() w/
-    unsafe_restore_sigcontext()
-  powerpc/signal64: Use __get_user() to copy sigset_t
-
-Daniel Axtens (2):
-  powerpc/signal64: Rewrite handle_rt_signal64() to minimise uaccess
-    switches
-  powerpc/signal64: Rewrite rt_sigreturn() to minimise uaccess switches
-
- arch/powerpc/include/asm/reg.h     |   2 +-
- arch/powerpc/include/asm/uaccess.h |   3 +
- arch/powerpc/kernel/signal.h       |  30 ++++
- arch/powerpc/kernel/signal_64.c    | 251 ++++++++++++++++++-----------
- 4 files changed, 193 insertions(+), 93 deletions(-)
-
--- 
-2.26.1
-
+Segher
