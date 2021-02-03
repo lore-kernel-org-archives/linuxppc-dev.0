@@ -6,36 +6,35 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37F84C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06285C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:58:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43BFA64F4E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:54:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43BFA64F4E
+	by mail.kernel.org (Postfix) with ESMTPS id 64E5464E4F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 12:58:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64E5464E4F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW1q71jw3zDwvL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 23:54:43 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW1v124T4zF3Z4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 23:58:05 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW09m3M5ZzDwsr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 22:40:44 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4DW09l0Hwmz9vG7; Wed,  3 Feb 2021 22:40:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW09n6PxTzDqBp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 22:40:45 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DW09j6yJqz9vG6; Wed,  3 Feb 2021 22:40:40 +1100 (AEDT)
+ id 4DW09m2mnzz9vG3; Wed,  3 Feb 2021 22:40:43 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-In-Reply-To: <20201217005306.895685-1-mpe@ellerman.id.au>
-References: <20201217005306.895685-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s/kuap: Use mmu_has_feature()
-Message-Id: <161235200005.1516112.5569812810079543982.b4-ty@ellerman.id.au>
-Date: Wed,  3 Feb 2021 22:40:40 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20210118123451.1452206-1-npiggin@gmail.com>
+References: <20210118123451.1452206-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc: always enable queued spinlocks for 64s,
+ disable for others
+Message-Id: <161235200567.1516112.14719261642261670927.b4-ty@ellerman.id.au>
+Date: Wed,  3 Feb 2021 22:40:43 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,21 +50,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Dec 2020 11:53:06 +1100, Michael Ellerman wrote:
-> In commit 8150a153c013 ("powerpc/64s: Use early_mmu_has_feature() in
-> set_kuap()") we switched the KUAP code to use early_mmu_has_feature(),
-> to avoid a bug where we called set_kuap() before feature patching had
-> been done, leading to recursion and crashes.
+On Mon, 18 Jan 2021 22:34:51 +1000, Nicholas Piggin wrote:
+> Queued spinlocks have shown to have good performance and fairness
+> properties even on smaller (2 socket) POWER systems. This selects
+> them automatically for 64s. For other platforms they are de-selected,
+> the standard spinlock is far simpler and smaller code, and single
+> chips with a handful of cores is unlikely to show any improvement.
 > 
-> That path, which called probe_kernel_read() from printk(), has since
-> been removed, see commit 2ac5a3bf7042 ("vsprintf: Do not break early
-> boot with probing addresses").
-> 
-> [...]
+> CONFIG_EXPERT still allows this to be changed, e.g., to help debug
+> performance or correctness issues.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s/kuap: Use mmu_has_feature()
-      https://git.kernel.org/powerpc/c/7613f5a66becfd0e43a0f34de8518695888f5458
+[1/1] powerpc: Always enable queued spinlocks for 64s, disable for others
+      https://git.kernel.org/powerpc/c/c9f3401313a5089f100d7d1ef4b75cd7b49b2190
 
 cheers
