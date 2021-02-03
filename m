@@ -2,52 +2,93 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 468ABC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 06:44:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3731AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 06:57:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4067364F69
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 06:44:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4067364F69
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4AD4464F61
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 06:57:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AD4464F61
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DVsbL2MVnzDqBc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 17:43:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.43;
- helo=out30-43.freemail.mail.aliyun.com;
- envelope-from=jiapeng.chong@linux.alibaba.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 313 seconds by postgrey-1.36 at bilbo;
- Wed, 03 Feb 2021 17:33:33 AEDT
-Received: from out30-43.freemail.mail.aliyun.com
- (out30-43.freemail.mail.aliyun.com [115.124.30.43])
+Received: from bilbo.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DVstf3JvlzDx1h
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 17:57:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Qwg2B1oQ; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DVsMK5rGFzDws0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 17:33:33 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R171e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04420;
- MF=jiapeng.chong@linux.alibaba.com; NM=1; PH=DS; RN=10; SR=0;
- TI=SMTPD_---0UNkCTfN_1612333671; 
-Received: from
- j63c13417.sqa.eu95.tbsite.net(mailfrom:jiapeng.chong@linux.alibaba.com
- fp:SMTPD_---0UNkCTfN_1612333671) by smtp.aliyun-inc.com(127.0.0.1);
- Wed, 03 Feb 2021 14:28:04 +0800
-From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-To: tyreld@linux.ibm.com
-Subject: [PATCH] scsi: ibmvfc: convert sysfs sprintf/snprintf family to
- sysfs_emit
-Date: Wed,  3 Feb 2021 14:27:49 +0800
-Message-Id: <1612333669-103403-1-git-send-email-jiapeng.chong@linux.alibaba.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DVss53DcqzDqYD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 17:55:53 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 1136kuY3150519; Wed, 3 Feb 2021 01:55:45 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject : date : message-id; s=pp1;
+ bh=X8S29gXM9iqB4Ln0S5W0bTVX1HjVKZvBRCq3lepACoM=;
+ b=Qwg2B1oQcMdQhaBKaeHacdvItnIVILi+b/6CEgoCl5NlQaZn+Tq52yBcGOf9+QZu5MYO
+ +lXNRtGua0odb1LklhmZULuL/Y38NIPwBf9gY/oJIOq8yjuwNIrkqIU+7g+GBn1ZqlrA
+ +h+n2lTHu1ZoTKFhz8s34jpzqA2f069qT3Xu+wr3krlzPFLwnE5hpEkEuhfbM2gO9ELN
+ K+KVz6OKE29571f3O8ruPV9o88VA2vEft03tL0uKaj6yahtFPq9fSX7b8SIlagclgS4H
+ PVMhfImnKlqof4O43ZlXUg9svauNrpo7hWmoK/lVXqKmGnXz+92fcdlp9iouWaTGKaFJ +g== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 36fpv704a2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 03 Feb 2021 01:55:44 -0500
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 1136qGU3015767;
+ Wed, 3 Feb 2021 06:55:43 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03ams.nl.ibm.com with ESMTP id 36er8y9dat-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 03 Feb 2021 06:55:43 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1136tesF33161582
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 3 Feb 2021 06:55:40 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 388474C044;
+ Wed,  3 Feb 2021 06:55:40 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DE6B64C04E;
+ Wed,  3 Feb 2021 06:55:38 +0000 (GMT)
+Received: from localhost.localdomain.localdomain (unknown [9.79.224.72])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  3 Feb 2021 06:55:38 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, acme@kernel.org, jolsa@kernel.org
+Subject: [PATCH 0/3] powerpc/perf: Add Performance Monitor Counters to
+ extended regs
+Date: Wed,  3 Feb 2021 01:55:34 -0500
+Message-Id: <1612335337-1888-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
-X-Mailman-Approved-At: Wed, 03 Feb 2021 17:42:02 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
+ definitions=2021-02-03_01:2021-02-02,
+ 2021-02-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ clxscore=1015 mlxlogscore=841 priorityscore=1501 bulkscore=0
+ suspectscore=0 malwarescore=0 impostorscore=0 phishscore=0 spamscore=0
+ mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102030035
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,95 +100,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, jejb@linux.ibm.com, linux-kernel@vger.kernel.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: kjain@linux.ibm.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the following coccicheck warning:
+Patch set to add Performance Monitor Counter SPR's as
+part of extended regs in powerpc.
 
-./drivers/scsi/ibmvscsi/ibmvfc.c: WARNING: use scnprintf or
-sprintf.
+Patch 1/3 saves the PMC values in the perf interrupt
+handler as part of per-cpu array.
+Patch 2/3 adds PMC1 to PMC6 as part of the extended
+regs mask.
+Patch 3/3 includes perf tools side changes to add
+PMC1 to PMC6 to sample_reg_mask to use with -I? option.
 
-Reported-by: Abaci Robot<abaci@linux.alibaba.com>
-Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+Athira Rajeev (3):
+  powerpc/perf: Include PMCs as part of per-cpu cpuhw_events struct
+  powerpc/perf: Expose Performance Monitor Counter SPR's as part of
+    extended regs
+  tools/perf: Add perf tools support to expose Performance Monitor
+    Counter SPRs as part of extended regs
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 65f168c..99f5575 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3038,8 +3038,7 @@ static ssize_t ibmvfc_show_host_partition_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			vhost->login_buf->resp.partition_name);
-+	return sysfs_emit(buf, "%s\n", vhost->login_buf->resp.partition_name);
- }
- 
- static ssize_t ibmvfc_show_host_device_name(struct device *dev,
-@@ -3048,8 +3047,7 @@ static ssize_t ibmvfc_show_host_device_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			vhost->login_buf->resp.device_name);
-+	return sysfs_emit(buf, "%s\n", vhost->login_buf->resp.device_name);
- }
- 
- static ssize_t ibmvfc_show_host_loc_code(struct device *dev,
-@@ -3058,8 +3056,7 @@ static ssize_t ibmvfc_show_host_loc_code(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			vhost->login_buf->resp.port_loc_code);
-+	return sysfs_emit(buf, "%s\n", vhost->login_buf->resp.port_loc_code);
- }
- 
- static ssize_t ibmvfc_show_host_drc_name(struct device *dev,
-@@ -3068,8 +3065,7 @@ static ssize_t ibmvfc_show_host_drc_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			vhost->login_buf->resp.drc_name);
-+	return sysfs_emit(buf, "%s\n", vhost->login_buf->resp.drc_name);
- }
- 
- static ssize_t ibmvfc_show_host_npiv_version(struct device *dev,
-@@ -3077,7 +3073,7 @@ static ssize_t ibmvfc_show_host_npiv_version(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%d\n", be32_to_cpu(vhost->login_buf->resp.version));
-+	return sysfs_emit(buf, "%d\n", be32_to_cpu(vhost->login_buf->resp.version));
- }
- 
- static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
-@@ -3085,7 +3081,7 @@ static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%llx\n", be64_to_cpu(vhost->login_buf->resp.capabilities));
-+	return sysfs_emit(buf, "%llx\n", be64_to_cpu(vhost->login_buf->resp.capabilities));
- }
- 
- /**
-@@ -3105,7 +3101,7 @@ static ssize_t ibmvfc_show_log_level(struct device *dev,
- 	int len;
- 
- 	spin_lock_irqsave(shost->host_lock, flags);
--	len = snprintf(buf, PAGE_SIZE, "%d\n", vhost->log_level);
-+	len = sysfs_emit(buf, "%d\n", vhost->log_level);
- 	spin_unlock_irqrestore(shost->host_lock, flags);
- 	return len;
- }
+ arch/powerpc/include/asm/perf_event.h           |  2 ++
+ arch/powerpc/include/uapi/asm/perf_regs.h       | 28 +++++++++++++++++++------
+ arch/powerpc/perf/core-book3s.c                 | 28 +++++++++++++++++++------
+ arch/powerpc/perf/perf_regs.c                   | 13 ++++--------
+ tools/arch/powerpc/include/uapi/asm/perf_regs.h | 28 +++++++++++++++++++------
+ tools/perf/arch/powerpc/include/perf_regs.h     |  6 ++++++
+ tools/perf/arch/powerpc/util/perf_regs.c        |  6 ++++++
+ 7 files changed, 84 insertions(+), 27 deletions(-)
+
 -- 
 1.8.3.1
 
