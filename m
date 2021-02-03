@@ -2,79 +2,77 @@ Return-Path: <SRS0=8mZb=HF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0F3BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 14:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B42ECC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 14:08:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB30E64DDA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 14:03:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB30E64DDA
+	by mail.kernel.org (Postfix) with ESMTPS id 01F6564E4E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 14:07:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01F6564E4E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW3LB1kz6zF4Ml
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 01:03:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW3Rd4DD7zF3Mf
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 01:07:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1034;
- helo=mail-pj1-x1034.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=HdaU2Ykx; dkim-atps=neutral
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com
- [IPv6:2607:f8b0:4864:20::1034])
+ header.s=google header.b=HGv0pMdL; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW0cB3PKkzF02c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 23:00:10 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id a20so4254351pjs.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Feb 2021 04:00:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW0cF6lmbzDxTP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 23:00:13 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id f63so16485092pfa.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Feb 2021 04:00:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=zyIIbH1s6hkgFOvACSv5XJQgDv/VgHDX59KWA+Xvn8M=;
- b=HdaU2YkxBUv1ZQR72BHZhNkDi9aMeisLhesX6nItVNhnXwXnpSlW8tjDBNGyV9f3OE
- sH6r/X/3vzUef/ZF5pej/AWK61WfBFSyZULpvCKysllaA4ZSobhfIFeKiW10Lma8b5k+
- rnIrhYQM+0aORW7YgvIpqsBbEDSLMKyOkXMuI=
+ bh=qiaBVEZpA8Xo3CJyOAtaUaP2kzBvWdhYRuLo/mSWVKU=;
+ b=HGv0pMdLzfcs9yqvkpK455qLVU8no2RvlmsDHwHuIvCfo5lqmg0y+tjFQR1wreuHHz
+ BH+ZoqGxgZ3jJ82CX0cgyLetkWii90iNoED1V5dLaXxaQgTOLKqdeQjUNUC0q8T5DlWx
+ lP6Do60cMbZ+X7p/O4Zbeh5ABfjzvqaNzH8z4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=zyIIbH1s6hkgFOvACSv5XJQgDv/VgHDX59KWA+Xvn8M=;
- b=rr+8NI3Dsq2cm2i0srkuko58hrROCY+q4Rw3F9VMGzTL9FLhK5PbXTY+CfjwOUCo18
- ZYW6phy9fLyzaO8ttLObljmvkazpy1v6M+tr7k/fee3NTyMorxuiEmYMu+FPh0VkEqoj
- D+9qxwq8wFSbObLOgxTLYNIDYIVRJLsh75Pff9/w5gtQ4z+sZ6OqMPM9TuXDDI7+J+yg
- aPyVIpEi72Jd6vfeB7DtSA5XfrxZLY/NGQ77MoQLV0zMYF8tDhviO0sbdhc8QoyBImRD
- tyYyf1IM4hNs1r+S4flIB4sViTiD1BNXEO0DpVWsGaJcLdVEr3WREQmdrnqG1kKsPMnH
- 95Fg==
-X-Gm-Message-State: AOAM531HW6gH+oboakRQ9wNKyG/2nT5eT0PHwee83jbTj5nFFYgkIYsz
- RIu6WvpYnHfpzXtaW0AU1KDvla3a7yKtIg==
-X-Google-Smtp-Source: ABdhPJyjM8vsAjheEdTSAR8cEAxQiCmcXh8BHUMRbBe0TFX01V8qpKG9NVluj//d9mOMzxXjK3QhpA==
-X-Received: by 2002:a17:90b:198d:: with SMTP id
- mv13mr2893257pjb.68.1612353602855; 
- Wed, 03 Feb 2021 04:00:02 -0800 (PST)
+ bh=qiaBVEZpA8Xo3CJyOAtaUaP2kzBvWdhYRuLo/mSWVKU=;
+ b=azRiO1HGliNG6EoUkZcjvt3pjdPaI8IOrAWt0GlR73GztXXAbJ6uluSwXHULqyB29p
+ qVB+myPZ4lQVO0ZFADOBKUsMaJXyZYKtOcqLk312gYWLk7T/gdZQYwrS3kiI5iiszpW5
+ GTSlOIVr/6cErOntk7W41la7SuEilfw1Rhvuu901KC8RzN26uYwwugmDJr9lVRjHGM9l
+ Z+kaG/kiA1RoUaJz6IEZO0glEpYommG+N2uk75ZUWaHIxoaJSxv4S6lcrfsB3wF/K7CN
+ 4E8J4V4HGk/6COb4GtDQmwa2s+UWAQ+MaH0ve48CL57b0uQfK93n+QLcszXiPBrFOQ6l
+ Vc5g==
+X-Gm-Message-State: AOAM533qFfDCiSz1N6roMNBqf6mJdYi57Qrg8Xvx2a3hhE1JWpggLIGd
+ 4VxNdBLXRX1wmV36Pb4N0xdYXg==
+X-Google-Smtp-Source: ABdhPJxFJ1tYSDB+nz4ocsXdc7DktJwVnAnbesODItHndkApfUngNGp46fA2hgEkXUBdkDxJapmh6w==
+X-Received: by 2002:a65:408c:: with SMTP id t12mr3287866pgp.157.1612353610461; 
+ Wed, 03 Feb 2021 04:00:10 -0800 (PST)
 Received: from localhost
  (2001-44b8-1113-6700-1c59-4eca-f876-fd51.static.ipv6.internode.on.net.
  [2001:44b8:1113:6700:1c59:4eca:f876:fd51])
- by smtp.gmail.com with ESMTPSA id b65sm2750037pga.54.2021.02.03.04.00.01
+ by smtp.gmail.com with ESMTPSA id a19sm2226291pfg.75.2021.02.03.04.00.09
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 03 Feb 2021 04:00:02 -0800 (PST)
+ Wed, 03 Feb 2021 04:00:10 -0800 (PST)
 From: Daniel Axtens <dja@axtens.net>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
  christophe.leroy@csgroup.eu, aneesh.kumar@linux.ibm.com,
  bsingharora@gmail.com
-Subject: [PATCH v10 2/6] kasan: allow architectures to provide an outline
- readiness check
-Date: Wed,  3 Feb 2021 22:59:42 +1100
-Message-Id: <20210203115946.663273-3-dja@axtens.net>
+Subject: [PATCH v10 4/6] kasan: Document support on 32-bit powerpc
+Date: Wed,  3 Feb 2021 22:59:44 +1100
+Message-Id: <20210203115946.663273-5-dja@axtens.net>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210203115946.663273-1-dja@axtens.net>
 References: <20210203115946.663273-1-dja@axtens.net>
@@ -91,98 +89,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Allow architectures to define a kasan_arch_is_ready() hook that bails
-out of any function that's about to touch the shadow unless the arch
-says that it is ready for the memory to be accessed. This is fairly
-uninvasive and should have a negligible performance penalty.
+KASAN is supported on 32-bit powerpc and the docs should reflect this.
 
-This will only work in outline mode, so an arch must specify
-ARCH_DISABLE_KASAN_INLINE if it requires this.
+Document s390 support while we're at it.
 
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Daniel Axtens <dja@axtens.net>
-
---
-
-I discuss the justfication for this later in the series. Also,
-both previous RFCs for ppc64 - by 2 different people - have
-needed this trick! See:
- - https://lore.kernel.org/patchwork/patch/592820/ # ppc64 hash series
- - https://patchwork.ozlabs.org/patch/795211/      # ppc radix series
 ---
- include/linux/kasan.h | 4 ++++
- mm/kasan/common.c     | 4 ++++
- mm/kasan/generic.c    | 3 +++
- mm/kasan/shadow.c     | 4 ++++
- 4 files changed, 15 insertions(+)
+ Documentation/dev-tools/kasan.rst |  7 +++++--
+ Documentation/powerpc/kasan.txt   | 12 ++++++++++++
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/powerpc/kasan.txt
 
-diff --git a/include/linux/kasan.h b/include/linux/kasan.h
-index bb862d1f0e15..d314c0fa5804 100644
---- a/include/linux/kasan.h
-+++ b/include/linux/kasan.h
-@@ -23,6 +23,10 @@ struct kunit_kasan_expectation {
+diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
+index e022b7506e37..9cfc116cc6bf 100644
+--- a/Documentation/dev-tools/kasan.rst
++++ b/Documentation/dev-tools/kasan.rst
+@@ -22,7 +22,8 @@ out-of-bounds accesses for global variables is only supported since Clang 11.
+ Tag-based KASAN is only supported in Clang.
  
- #endif
+ Currently generic KASAN is supported for the x86_64, arm, arm64, xtensa, s390
+-and riscv architectures, and tag-based KASAN modes are supported only for arm64.
++and riscv architectures. It is also supported on 32-bit powerpc kernels.
++Tag-based KASAN modes are supported only for arm64.
  
-+#ifndef kasan_arch_is_ready
-+static inline bool kasan_arch_is_ready(void)	{ return true; }
-+#endif
+ Usage
+ -----
+@@ -332,7 +333,9 @@ CONFIG_KASAN_VMALLOC
+ ~~~~~~~~~~~~~~~~~~~~
+ 
+ With ``CONFIG_KASAN_VMALLOC``, KASAN can cover vmalloc space at the
+-cost of greater memory usage. Currently this is only supported on x86.
++cost of greater memory usage. Currently this supported on x86, s390
++and 32-bit powerpc. It is optional, except on 32-bit powerpc kernels
++with module support, where it is required.
+ 
+ This works by hooking into vmalloc and vmap, and dynamically
+ allocating real shadow memory to back the mappings.
+diff --git a/Documentation/powerpc/kasan.txt b/Documentation/powerpc/kasan.txt
+new file mode 100644
+index 000000000000..26bb0e8bb18c
+--- /dev/null
++++ b/Documentation/powerpc/kasan.txt
+@@ -0,0 +1,12 @@
++KASAN is supported on powerpc on 32-bit only.
 +
- #if defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)
- 
- #include <linux/pgtable.h>
-diff --git a/mm/kasan/common.c b/mm/kasan/common.c
-index a390fae9d64b..871ceefd723d 100644
---- a/mm/kasan/common.c
-+++ b/mm/kasan/common.c
-@@ -348,6 +348,10 @@ static bool ____kasan_slab_free(struct kmem_cache *cache, void *object,
- 	if (unlikely(cache->flags & SLAB_TYPESAFE_BY_RCU))
- 		return false;
- 
-+	/* We can't read the shadow byte if the arch isn't ready */
-+	if (!kasan_arch_is_ready())
-+		return false;
++32 bit support
++==============
 +
- 	if (!kasan_byte_accessible(tagged_object)) {
- 		kasan_report_invalid_free(tagged_object, ip);
- 		return true;
-diff --git a/mm/kasan/generic.c b/mm/kasan/generic.c
-index 2e55e0f82f39..718c171584e3 100644
---- a/mm/kasan/generic.c
-+++ b/mm/kasan/generic.c
-@@ -163,6 +163,9 @@ static __always_inline bool check_region_inline(unsigned long addr,
- 						size_t size, bool write,
- 						unsigned long ret_ip)
- {
-+	if (!kasan_arch_is_ready())
-+		return true;
++KASAN is supported on both hash and nohash MMUs on 32-bit.
 +
- 	if (unlikely(size == 0))
- 		return true;
- 
-diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
-index de6b3f074742..0aafc2d5138f 100644
---- a/mm/kasan/shadow.c
-+++ b/mm/kasan/shadow.c
-@@ -85,6 +85,10 @@ void kasan_poison(const void *address, size_t size, u8 value)
- 	address = kasan_reset_tag(address);
- 	size = round_up(size, KASAN_GRANULE_SIZE);
- 
-+	/* Don't touch the shadow memory if arch isn't ready */
-+	if (!kasan_arch_is_ready())
-+		return;
++The shadow area sits at the top of the kernel virtual memory space above the
++fixmap area and occupies one eighth of the total kernel virtual memory space.
 +
- 	/* Skip KFENCE memory if called explicitly outside of sl*b. */
- 	if (is_kfence_address(address))
- 		return;
++Instrumentation of the vmalloc area is optional, unless built with modules,
++in which case it is required.
 -- 
 2.27.0
 
