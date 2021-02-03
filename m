@@ -4,36 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1640DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:08:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 853CCC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:12:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F183864E38
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:08:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F183864E38
+	by mail.kernel.org (Postfix) with ESMTPS id D85BF64F9A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Feb 2021 13:12:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D85BF64F9A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DW26j6jn5zF3hG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 00:08:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DW2C42Zn3zF3lM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 00:12:00 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DW09w674pzDwv6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DW09w670hzDwtW
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2021 22:40:52 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DW09s09yJz9vGD; Wed,  3 Feb 2021 22:40:47 +1100 (AEDT)
+ id 4DW09q0rbfz9vG9; Wed,  3 Feb 2021 22:40:46 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>
-In-Reply-To: <20200902035121.1762475-1-oohall@gmail.com>
-References: <20200902035121.1762475-1-oohall@gmail.com>
-Subject: Re: [PATCH] powerpc/pci: Delete traverse_pci_dn()
-Message-Id: <161235200740.1516112.3698966744991084628.b4-ty@ellerman.id.au>
-Date: Wed,  3 Feb 2021 22:40:47 +1100 (AEDT)
+In-Reply-To: <20201103044503.917128-1-oohall@gmail.com>
+References: <20201103044503.917128-1-oohall@gmail.com>
+Subject: Re: [PATCH 1/3] selftests/powerpc: Hoist helper code out of eeh-basic
+Message-Id: <161235200685.1516112.2023402360126739651.b4-ty@ellerman.id.au>
+Date: Wed,  3 Feb 2021 22:40:46 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,12 +50,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2 Sep 2020 13:51:21 +1000, Oliver O'Halloran wrote:
-> Nothing uses it.
+On Tue, 3 Nov 2020 15:45:01 +1100, Oliver O'Halloran wrote:
+> Hoist some of the useful test environment checking and prep code into
+> eeh-functions.sh so they can be reused in other tests.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pci: Delete traverse_pci_dn()
-      https://git.kernel.org/powerpc/c/7bd2b120f3fdf8e5c6d9a343517a33c2a5108794
+[1/3] selftests/powerpc: Hoist helper code out of eeh-basic
+      https://git.kernel.org/powerpc/c/db82f7097c265776c22ad866511074836f17665e
+[2/3] selftests/powerpc: Use stderr for debug messages in eeh-functions
+      https://git.kernel.org/powerpc/c/d6749ccba7ff86f99b4672e50db871487ba69f19
+[3/3] selftests/powerpc: Add VF recovery tests
+      https://git.kernel.org/powerpc/c/38132cc0e5a6b22b04fac2e4df25c59435fcd6de
 
 cheers
