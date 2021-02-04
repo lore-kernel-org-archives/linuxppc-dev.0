@@ -2,105 +2,59 @@ Return-Path: <SRS0=TUcR=HG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85779C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A439C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:44:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DB4864DD6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:14:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DB4864DD6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AA54064F53
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:44:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA54064F53
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DWkCF6MY1zDwsK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 03:14:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DWksQ71DnzDwtP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 03:44:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=fRM0ko5S; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DWk9J4yB4zDwpC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2021 03:12:52 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 114GBsOo050304; Thu, 4 Feb 2021 11:12:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=kVnwx0F5jwDSpsz5yPUrCTU+5mHXUotFBG3arnVKbac=;
- b=fRM0ko5StgyMzKExDMXOMWFvGVu6am2Di+uorVXLjzCK95xMhtJX964ldcu/WzLyd/0S
- 9vFTxlE36MCQH3uoxn3bDY0SZ9dWvXkeXmeL+s+LS1ZHy1peonA52s8cDxAINCocTofn
- yaLGDjcT6X8rcY1kJVf4ZH7jJ7sUF6HarWf7+RKMK+wx+D79vf9GyHP6CuXTcKxpZgdW
- zALYNvs9cuKUgkE4h4yj+SCS+hdg3xsMmR1LLjDAiBdZWvb5o4zZukpTpYhB/7+IeLdp
- gJb2w2RHXIXiylRfNQ0BEwPxCECNRkknNKL64fi3CSDqhVvnNTCi6BcIjgMVL8+YI14A +g== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 36gm7wr0rn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Feb 2021 11:12:19 -0500
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 114GC3NX051080;
- Thu, 4 Feb 2021 11:12:19 -0500
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 36gm7wr0q7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Feb 2021 11:12:18 -0500
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 114FXmEd020212;
- Thu, 4 Feb 2021 16:12:17 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04fra.de.ibm.com with ESMTP id 36g8kerb05-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Feb 2021 16:12:17 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 114GC5TA27394498
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 4 Feb 2021 16:12:05 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0C4AAA4053;
- Thu,  4 Feb 2021 16:12:14 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95E64A4051;
- Thu,  4 Feb 2021 16:12:13 +0000 (GMT)
-Received: from localhost (unknown [9.85.87.37])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  4 Feb 2021 16:12:13 +0000 (GMT)
-Date: Thu, 4 Feb 2021 21:42:11 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/uprobes: Validation for prefixed instruction
-Message-ID: <20210204161211.GM210@DESKTOP-TDPLP67.localdomain>
-References: <20210204104703.273429-1-ravi.bangoria@linux.ibm.com>
- <20210204130821.GK210@DESKTOP-TDPLP67.localdomain>
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.a=rsa-sha256 header.s=default header.b=ZHR7Fz+H; 
+ dkim-atps=neutral
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DWkpx5QTJzDrhY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2021 03:42:01 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
+ [73.42.176.67])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 15F3920B6C42;
+ Thu,  4 Feb 2021 08:42:00 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 15F3920B6C42
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1612456920;
+ bh=QqJjoAw6r5UdJOMDZZK/2/XH05Zha+acJ0i6Z4rZgHU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=ZHR7Fz+H6Ng3KFhuRGLrkKJ8G26Elkxl0S51PdTtotTn0sTeEb7N3/Dy5d7uwCFGd
+ dknC9FIYVineJXD6TG1bRVkOFi+hACsehxkw3kRmLhbJrOHFG6vqtt/fIzlGwpoYse
+ QjoDHHw4TXijJ8Rzb+f15jJ1Hsi7VhuBS+h9Upuo=
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
+ takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
+ joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au
+Subject: [PATCH v16 02/12] of: Add a common kexec FDT setup function
+Date: Thu,  4 Feb 2021 08:41:25 -0800
+Message-Id: <20210204164135.29856-3-nramas@linux.microsoft.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210204164135.29856-1-nramas@linux.microsoft.com>
+References: <20210204164135.29856-1-nramas@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210204130821.GK210@DESKTOP-TDPLP67.localdomain>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
- definitions=2021-02-04_08:2021-02-04,
- 2021-02-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 phishscore=0
- lowpriorityscore=0 bulkscore=0 adultscore=0 mlxscore=0 malwarescore=0
- priorityscore=1501 suspectscore=0 impostorscore=0 spamscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102040100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,110 +66,319 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oleg@redhat.com, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, sandipan@linux.ibm.com, jniethe5@gmail.com,
- naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, bhsharma@redhat.com, tao.li@vivo.com,
+ paulus@samba.org, vincenzo.frascino@arm.com, frowand.list@gmail.com,
+ sashal@kernel.org, masahiroy@kernel.org, jmorris@namei.org,
+ linux-arm-kernel@lists.infradead.org, serge@hallyn.com,
+ devicetree@vger.kernel.org, pasha.tatashin@soleen.com,
+ prsriva@linux.microsoft.com, hsinyi@chromium.org, allison@lohutok.net,
+ christophe.leroy@c-s.fr, mbrugger@suse.com, balajib@linux.microsoft.com,
+ dmitry.kasatkin@gmail.com, linux-kernel@vger.kernel.org, james.morse@arm.com,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021/02/04 06:38PM, Naveen N. Rao wrote:
-> On 2021/02/04 04:17PM, Ravi Bangoria wrote:
-> > Don't allow Uprobe on 2nd word of a prefixed instruction. As per
-> > ISA 3.1, prefixed instruction should not cross 64-byte boundary.
-> > So don't allow Uprobe on such prefixed instruction as well.
-> > 
-> > There are two ways probed instruction is changed in mapped pages.
-> > First, when Uprobe is activated, it searches for all the relevant
-> > pages and replace instruction in them. In this case, if we notice
-> > that probe is on the 2nd word of prefixed instruction, error out
-> > directly. Second, when Uprobe is already active and user maps a
-> > relevant page via mmap(), instruction is replaced via mmap() code
-> > path. But because Uprobe is invalid, entire mmap() operation can
-> > not be stopped. In this case just print an error and continue.
-> > 
-> > Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-> > ---
-> > v1: http://lore.kernel.org/r/20210119091234.76317-1-ravi.bangoria@linux.ibm.com
-> > v1->v2:
-> >   - Instead of introducing new arch hook from verify_opcode(), use
-> >     existing hook arch_uprobe_analyze_insn().
-> >   - Add explicit check for prefixed instruction crossing 64-byte
-> >     boundary. If probe is on such instruction, throw an error.
-> > 
-> >  arch/powerpc/kernel/uprobes.c | 66 ++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 65 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/uprobes.c b/arch/powerpc/kernel/uprobes.c
-> > index e8a63713e655..485d19a2a31f 100644
-> > --- a/arch/powerpc/kernel/uprobes.c
-> > +++ b/arch/powerpc/kernel/uprobes.c
-> > @@ -7,6 +7,7 @@
-> >   * Adapted from the x86 port by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> >   */
-> >  #include <linux/kernel.h>
-> > +#include <linux/highmem.h>
-> >  #include <linux/sched.h>
-> >  #include <linux/ptrace.h>
-> >  #include <linux/uprobes.h>
-> > @@ -28,6 +29,69 @@ bool is_trap_insn(uprobe_opcode_t *insn)
-> >  	return (is_trap(*insn));
-> >  }
-> >  
-> > +#ifdef CONFIG_PPC64
-> > +static int get_instr(struct mm_struct *mm, unsigned long addr, u32 *instr)
-> > +{
-> > +	struct page *page;
-> > +	struct vm_area_struct *vma;
-> > +	void *kaddr;
-> > +	unsigned int gup_flags = FOLL_FORCE | FOLL_SPLIT_PMD;
-> > +
-> > +	if (get_user_pages_remote(mm, addr, 1, gup_flags, &page, &vma, NULL) <= 0)
-> > +		return -EINVAL;
-> > +
-> > +	kaddr = kmap_atomic(page);
-> > +	*instr = *((u32 *)(kaddr + (addr & ~PAGE_MASK)));
-> > +	kunmap_atomic(kaddr);
-> > +	put_page(page);
-> > +	return 0;
-> > +}
-> > +
-> > +static int validate_prefixed_instr(struct mm_struct *mm, unsigned long addr)
-> > +{
-> > +	struct ppc_inst inst;
-> > +	u32 prefix, suffix;
-> > +
-> > +	/*
-> > +	 * No need to check if addr is pointing to beginning of the
-> > +	 * page. Even if probe is on a suffix of page-unaligned
-> > +	 * prefixed instruction, hw will raise exception and kernel
-> > +	 * will send SIGBUS.
-> > +	 */
-> > +	if (!(addr & ~PAGE_MASK))
-> > +		return 0;
-> > +
-> > +	if (get_instr(mm, addr, &prefix) < 0)
-> > +		return -EINVAL;
-> > +	if (get_instr(mm, addr + 4, &suffix) < 0)
-> > +		return -EINVAL;
-> > +
-> > +	inst = ppc_inst_prefix(prefix, suffix);
-> > +	if (ppc_inst_prefixed(inst) && (addr & 0x3F) == 0x3C) {
-> > +		printk_ratelimited("Cannot register a uprobe on 64 byte "
-> 		^^^^^^^^^^^^^^^^^^ pr_info_ratelimited()
-> 
-> It should be sufficient to check the primary opcode to determine if it 
-> is a prefixed instruction. You don't have to read the suffix. I see that 
-> we don't have a helper to do this currently, so you could do:
-> 
-> 	if (ppc_inst_primary_opcode(ppc_inst(prefix)) == 1)
+From: Rob Herring <robh@kernel.org>
 
-Seeing the kprobes code, I realized that we have to check for another 
-scenario (Thanks, Jordan!). If this is the suffix of a prefix 
-instruction for which a uprobe has already been installed, then the 
-previous word will be a 'trap' instruction. You need to check if there 
-is a uprobe at the previous word, and if the original instruction there 
-was a prefix instruction.
+Both arm64 and powerpc do essentially the same FDT /chosen setup for
+kexec.  The differences are either omissions that arm64 should have
+or additional properties that will be ignored.  The setup code can be
+combined and shared by both powerpc and arm64.
 
-- Naveen
+The differences relative to the arm64 version:
+ - If /chosen doesn't exist, it will be created (should never happen).
+ - Any old dtb and initrd reserved memory will be released.
+ - The new initrd and elfcorehdr are marked reserved.
+ - "linux,booted-from-kexec" is set.
+
+The differences relative to the powerpc version:
+ - "kaslr-seed" and "rng-seed" may be set.
+ - "linux,elfcorehdr" is set.
+ - Any existing "linux,usable-memory-range" is removed.
+
+Combine the code for setting up the /chosen node in the FDT and updating
+the memory reservation for kexec, for powerpc and arm64, in
+of_kexec_setup_new_fdt() and move it to "drivers/of/kexec.c".
+
+Signed-off-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Reviewed-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+---
+ drivers/of/Makefile |   1 +
+ drivers/of/kexec.c  | 236 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of.h  |   4 +
+ 3 files changed, 241 insertions(+)
+ create mode 100644 drivers/of/kexec.c
+
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 6e1e5212f058..8ce11955afde 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -13,5 +13,6 @@ obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
+ obj-$(CONFIG_OF_RESOLVE)  += resolver.o
+ obj-$(CONFIG_OF_OVERLAY) += overlay.o
+ obj-$(CONFIG_OF_NUMA) += of_numa.o
++obj-$(CONFIG_KEXEC_FILE) += kexec.o
+ 
+ obj-$(CONFIG_OF_UNITTEST) += unittest-data/
+diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+new file mode 100644
+index 000000000000..4afd3cc1c04a
+--- /dev/null
++++ b/drivers/of/kexec.c
+@@ -0,0 +1,236 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2020 Arm Limited
++ *
++ * Based on arch/arm64/kernel/machine_kexec_file.c:
++ *  Copyright (C) 2018 Linaro Limited
++ *
++ * And arch/powerpc/kexec/file_load.c:
++ *  Copyright (C) 2016  IBM Corporation
++ */
++
++#include <linux/kernel.h>
++#include <linux/kexec.h>
++#include <linux/libfdt.h>
++#include <linux/of.h>
++#include <linux/of_fdt.h>
++#include <linux/random.h>
++#include <linux/types.h>
++
++/* relevant device tree properties */
++#define FDT_PROP_KEXEC_ELFHDR	"linux,elfcorehdr"
++#define FDT_PROP_MEM_RANGE	"linux,usable-memory-range"
++#define FDT_PROP_INITRD_START	"linux,initrd-start"
++#define FDT_PROP_INITRD_END	"linux,initrd-end"
++#define FDT_PROP_BOOTARGS	"bootargs"
++#define FDT_PROP_KASLR_SEED	"kaslr-seed"
++#define FDT_PROP_RNG_SEED	"rng-seed"
++#define RNG_SEED_SIZE		128
++
++/**
++ * fdt_find_and_del_mem_rsv - delete memory reservation with given address and size
++ *
++ * @fdt:	Flattened device tree for the current kernel.
++ * @start:	Starting address of the reserved memory.
++ * @size:	Size of the reserved memory.
++ *
++ * Return: 0 on success, or negative errno on error.
++ */
++static int fdt_find_and_del_mem_rsv(void *fdt, unsigned long start, unsigned long size)
++{
++	int i, ret, num_rsvs = fdt_num_mem_rsv(fdt);
++
++	for (i = 0; i < num_rsvs; i++) {
++		u64 rsv_start, rsv_size;
++
++		ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
++		if (ret) {
++			pr_err("Malformed device tree.\n");
++			return -EINVAL;
++		}
++
++		if (rsv_start == start && rsv_size == size) {
++			ret = fdt_del_mem_rsv(fdt, i);
++			if (ret) {
++				pr_err("Error deleting device tree reservation.\n");
++				return -EINVAL;
++			}
++
++			return 0;
++		}
++	}
++
++	return -ENOENT;
++}
++
++/*
++ * of_kexec_setup_new_fdt - modify /chosen and memory reservation for the next kernel
++ *
++ * @image:		kexec image being loaded.
++ * @fdt:		Flattened device tree for the next kernel.
++ * @initrd_load_addr:	Address where the next initrd will be loaded.
++ * @initrd_len:		Size of the next initrd, or 0 if there will be none.
++ * @cmdline:		Command line for the next kernel, or NULL if there will
++ *			be none.
++ *
++ * Return: 0 on success, or negative errno on error.
++ */
++int of_kexec_setup_new_fdt(const struct kimage *image, void *fdt,
++			   unsigned long initrd_load_addr, unsigned long initrd_len,
++			   const char *cmdline)
++{
++	int ret, chosen_node;
++	const void *prop;
++
++	/* Remove memory reservation for the current device tree. */
++	ret = fdt_find_and_del_mem_rsv(fdt, __pa(initial_boot_params),
++				       fdt_totalsize(initial_boot_params));
++	if (ret == -EINVAL)
++		return ret;
++
++	chosen_node = fdt_path_offset(fdt, "/chosen");
++	if (chosen_node == -FDT_ERR_NOTFOUND)
++		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
++					      "chosen");
++	if (chosen_node < 0) {
++		ret = chosen_node;
++		goto out;
++	}
++
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_KEXEC_ELFHDR);
++	if (ret && ret != -FDT_ERR_NOTFOUND)
++		goto out;
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_MEM_RANGE);
++	if (ret && ret != -FDT_ERR_NOTFOUND)
++		goto out;
++
++	/* Did we boot using an initrd? */
++	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
++	if (prop) {
++		u64 tmp_start, tmp_end, tmp_size;
++
++		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
++		if (!prop)
++			return -EINVAL;
++
++		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		/*
++		 * kexec reserves exact initrd size, while firmware may
++		 * reserve a multiple of PAGE_SIZE, so check for both.
++		 */
++		tmp_size = tmp_end - tmp_start;
++		ret = fdt_find_and_del_mem_rsv(fdt, tmp_start, tmp_size);
++		if (ret == -ENOENT)
++			ret = fdt_find_and_del_mem_rsv(fdt, tmp_start,
++						       round_up(tmp_size, PAGE_SIZE));
++		if (ret == -EINVAL)
++			return ret;
++	}
++
++	/* add initrd-* */
++	if (initrd_load_addr) {
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_START,
++				      initrd_load_addr);
++		if (ret)
++			goto out;
++
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_END,
++				      initrd_load_addr + initrd_len);
++		if (ret)
++			goto out;
++
++		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
++		if (ret)
++			goto out;
++
++	} else {
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_START);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_END);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++	}
++
++	if (image->type == KEXEC_TYPE_CRASH) {
++		/* add linux,elfcorehdr */
++		ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
++				FDT_PROP_KEXEC_ELFHDR,
++				image->arch.elf_headers_mem,
++				image->arch.elf_headers_sz);
++		if (ret)
++			goto out;
++
++		/*
++		 * Avoid elfcorehdr from being stomped on in kdump kernel by
++		 * setting up memory reserve map.
++		 */
++		ret = fdt_add_mem_rsv(fdt, image->arch.elf_headers_mem,
++				      image->arch.elf_headers_sz);
++		if (ret)
++			goto out;
++
++		/* add linux,usable-memory-range */
++		ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
++				FDT_PROP_MEM_RANGE,
++				crashk_res.start,
++				crashk_res.end - crashk_res.start + 1);
++		if (ret)
++			goto out;
++	}
++
++	/* add bootargs */
++	if (cmdline) {
++		ret = fdt_setprop_string(fdt, chosen_node, FDT_PROP_BOOTARGS, cmdline);
++		if (ret)
++			goto out;
++	} else {
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_BOOTARGS);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++	}
++
++	/* add kaslr-seed */
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_KASLR_SEED);
++	if (ret == -FDT_ERR_NOTFOUND)
++		ret = 0;
++	else if (ret)
++		goto out;
++
++	if (rng_is_initialized()) {
++		u64 seed = get_random_u64();
++
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_KASLR_SEED, seed);
++		if (ret)
++			goto out;
++	} else {
++		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
++				FDT_PROP_KASLR_SEED);
++	}
++
++	/* add rng-seed */
++	if (rng_is_initialized()) {
++		void *rng_seed;
++
++		ret = fdt_setprop_placeholder(fdt, chosen_node, FDT_PROP_RNG_SEED,
++				RNG_SEED_SIZE, &rng_seed);
++		if (ret)
++			goto out;
++		get_random_bytes(rng_seed, RNG_SEED_SIZE);
++	} else {
++		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
++				FDT_PROP_RNG_SEED);
++	}
++
++	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
++
++out:
++	if (ret)
++		return (ret == -FDT_ERR_NOSPACE) ? -ENOMEM : -EINVAL;
++
++	return 0;
++}
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 4b27c9a27df3..41e256adf758 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -559,6 +559,10 @@ int of_map_id(struct device_node *np, u32 id,
+ 	       struct device_node **target, u32 *id_out);
+ 
+ phys_addr_t of_dma_get_max_cpu_address(struct device_node *np);
++struct kimage;
++int of_kexec_setup_new_fdt(const struct kimage *image, void *fdt,
++			   unsigned long initrd_load_addr, unsigned long initrd_len,
++			   const char *cmdline);
+ 
+ #else /* CONFIG_OF */
+ 
+-- 
+2.30.0
 
