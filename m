@@ -7,71 +7,71 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5927C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 11:23:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CEDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 11:27:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C06C64DE1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 11:23:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C06C64DE1
+	by mail.kernel.org (Postfix) with ESMTPS id F0A7564F41
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 11:27:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0A7564F41
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DWblc1FQXzDws3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 22:23:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DWbrQ1dJ0zDws6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 22:27:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32d;
- helo=mail-wm1-x32d.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42d;
+ helo=mail-wr1-x42d.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=t5B27kse; dkim-atps=neutral
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com
- [IPv6:2a00:1450:4864:20::32d])
+ header.s=google header.b=Fwbq732n; dkim-atps=neutral
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com
+ [IPv6:2a00:1450:4864:20::42d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DWbST424RzDwhW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 22:10:33 +1100 (AEDT)
-Received: by mail-wm1-x32d.google.com with SMTP id t142so586741wmt.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2021 03:10:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DWbSN5pGGzDwhF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2021 22:10:28 +1100 (AEDT)
+Received: by mail-wr1-x42d.google.com with SMTP id u14so3031624wri.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2021 03:10:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=qhRaK7PEb1+VQbMXp2izacC8TWHkvWpyOp/JFxz8PSk=;
- b=t5B27kseFaSQ07V34VI0+HtMHwzq/iu5wofl4aAA12lmp4bvmT9K7iM/vMiDXIvfmp
- 5gVTdvI880u0uezN8PA5uIEwySqb7up76wrmGmKbG1myjs2VLsWE41EmwhWLr4HqTC1N
- dSWu8oC3jxsrIUtMphZ3UnYweS/gT1cGYPQro/LAqTh8PfiMVie9VOuiCMMw/FCWcRVp
- KYrsbsjbMBWMfB4KzcX4FNY+xNmfKOi2vhUA9bUpdllUDvj/CfDlineW9XKQ3Y3VG35l
- XWS4BgTzWKinSO0ZTFANwZbF6Ha33pKPf9YaE8v6ow6eiLsU6AlkdjcQfU9JeHTSEMv0
- eGgQ==
+ bh=WH1ZkfxgQ3lo4eJG51Uh12VlkOp1jMaFfnNoEjI139M=;
+ b=Fwbq732n3XUVYiF70e2xZk4Vv0WePzbXGtV9K9CQP0xq5MmYe2c1lY5kO8By5tRjBe
+ h/KA0K8rJ45UbLKMQLzOekJPUNVk5R0Om5p11Ff0vp99wZakGBPCBj8dWsHSAvV/t1Jy
+ Em53nt90VnSrtADHul75DC0T1PvBiYW6mxchyjXt+UDaBOqcW3io+1cHBqMULe5ZSN9k
+ 9VaxajxrSgxEtiTW6jkWSFCATt4sKdT1RhryJqH+6qBX9rzO/9FE9T8WR7IlAugxKF4f
+ AKRQOxG56UXsyGqq9pkdFUnBuY5dZU6VpUrZCTdsDpJvbLR08WYPESgjONFzBpadKw1x
+ 3MPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=qhRaK7PEb1+VQbMXp2izacC8TWHkvWpyOp/JFxz8PSk=;
- b=lNR2EO26mtUTJv2nmQubvOKkUzEDy1+PWyuar/wAk2ahkz5OCCGH4JS6q6X4F3vgE3
- OcIOCvoiPZlzH5v0mrqI/OLQj+fLdDNFt7awlcsmRprjNjoPuV9pnoP1WlNQ/e8KHsMP
- +OXs0wlX6K29ZzgJ1wuEDnjTAGg5XOOzsWUq0T2dgRNvnPXa4F1uiLPjF3IOv2IVVVeO
- IWMpJkuIlUBnjWk4ePWNYs9XS6WwfbZ311w2q1wybjMD8HuYuHUeyVgy+xovaBJuuAjg
- lLARXvUcev2mKtYtTyuRqj0xrAqfHcF2+o9pJjabKI9hZvDDAvyHiiumTs91iRMesIvF
- 9ihw==
-X-Gm-Message-State: AOAM532bzferfY+bABkPTepiLvVNQBi3cFJo2KPa8YATz/cqTJYuYcJO
- JZ7HjPhSfVl9FUfBa1fJ+W+KNw==
-X-Google-Smtp-Source: ABdhPJy3ovJmVWJwfdQ/ifr6A3rN/+QEp57dStSFcBGixXRzwdnUgrj5/e3P+zqOCrmcKmI+TdyFRA==
-X-Received: by 2002:a1c:6688:: with SMTP id a130mr6944242wmc.1.1612437025976; 
- Thu, 04 Feb 2021 03:10:25 -0800 (PST)
+ bh=WH1ZkfxgQ3lo4eJG51Uh12VlkOp1jMaFfnNoEjI139M=;
+ b=bvX9GQD79Fdp1Gr5ibYcnYHbo3uxOOE7BjaqqF7jefksgzMspBAAPMKidZ1qp0zfwp
+ CadEn24sC6K/nnwIsHhMXIfs628+OYEZA8sdGErVQPqLoFICCMiFlrf/vJCUVaClSUYj
+ 3jL9S+QJLTNr2ZY/qDfNH5MkGKegJnnP2e3eC0sY0uWf5z5einL6ouwolP+hiNywZd52
+ uRL/tAl0Rk2ScVLsU0itE1B44+uXqzJ1gYGViHh59NUk3KasPQt65eISl2jck92Dh0I8
+ MsBH961yNKlnA0T8Nl3m3UWmFgafidcfRA4ELoXg8mvKnY+H6EZqO3ITwfL2IfAqaMRe
+ 0N5g==
+X-Gm-Message-State: AOAM533V5L0Qa+f7VOj+W6Jv5MeDppELZqUIkis2CgEzvzRZpaqgy4h0
+ BYqCxkdA+2q+6LSaxJPUhw8wvQ==
+X-Google-Smtp-Source: ABdhPJzjUp9+e7p/dg0UnaZ0rUY3UY0nKqEvrLN6uQoqxKKkifC3adrh0/+QNGokJy751vuZFU+CFw==
+X-Received: by 2002:a5d:420d:: with SMTP id n13mr8658453wrq.320.1612437023472; 
+ Thu, 04 Feb 2021 03:10:23 -0800 (PST)
 Received: from dell.default ([91.110.221.188])
- by smtp.gmail.com with ESMTPSA id y18sm7696218wrt.19.2021.02.04.03.10.24
+ by smtp.gmail.com with ESMTPSA id y18sm7696218wrt.19.2021.02.04.03.10.22
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 04 Feb 2021 03:10:25 -0800 (PST)
+ Thu, 04 Feb 2021 03:10:22 -0800 (PST)
 From: Lee Jones <lee.jones@linaro.org>
 To: lee.jones@linaro.org
-Subject: [PATCH 19/20] crypto: nx: Demote header comment and add description
- for 'nbytes'
-Date: Thu,  4 Feb 2021 11:09:59 +0000
-Message-Id: <20210204111000.2800436-20-lee.jones@linaro.org>
+Subject: [PATCH 17/20] crypto: nx: nx-aes-cbc: Headers comments should not be
+ kernel-doc
+Date: Thu,  4 Feb 2021 11:09:57 +0000
+Message-Id: <20210204111000.2800436-18-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210204111000.2800436-1-lee.jones@linaro.org>
 References: <20210204111000.2800436-1-lee.jones@linaro.org>
@@ -101,12 +101,10 @@ Sender: "Linuxppc-dev"
 
 Fixes the following W=1 kernel build warning(s):
 
- drivers/crypto/nx/nx.c:31: warning: Incorrect use of kernel-doc format:  * nx_hcall_sync - make an H_COP_OP hcall for the passed in op structure
- drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'nx_ctx' not described in 'nx_hcall_sync'
- drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'op' not described in 'nx_hcall_sync'
- drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'may_sleep' not described in 'nx_hcall_sync'
- drivers/crypto/nx/nx.c:43: warning: expecting prototype for Nest Accelerators driver(). Prototype was for nx_hcall_sync() instead
- drivers/crypto/nx/nx.c:209: warning: Function parameter or member 'nbytes' not described in 'trim_sg_list'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'tfm' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'in_key' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'key_len' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: expecting prototype for Nest Accelerators driver(). Prototype was for cbc_aes_nx_set_key() instead
 
 Cc: "Breno Leitão" <leitao@debian.org>
 Cc: Nayna Jain <nayna@linux.ibm.com>
@@ -121,30 +119,20 @@ Cc: linux-crypto@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/crypto/nx/nx.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/crypto/nx/nx-aes-cbc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
-index 0d2dc5be7f192..010be6793c9fc 100644
---- a/drivers/crypto/nx/nx.c
-+++ b/drivers/crypto/nx/nx.c
+diff --git a/drivers/crypto/nx/nx-aes-cbc.c b/drivers/crypto/nx/nx-aes-cbc.c
+index 92e921eceed75..d6314ea9ae896 100644
+--- a/drivers/crypto/nx/nx-aes-cbc.c
++++ b/drivers/crypto/nx/nx-aes-cbc.c
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: GPL-2.0-only
 -/**
 +/*
-  * Routines supporting the Power 7+ Nest Accelerators driver
+  * AES CBC routines supporting the Power 7+ Nest Accelerators driver
   *
   * Copyright (C) 2011-2012 International Business Machines Inc.
-@@ -200,7 +200,8 @@ struct nx_sg *nx_walk_and_build(struct nx_sg       *nx_dst,
-  * @sg: sg list head
-  * @end: sg lisg end
-  * @delta:  is the amount we need to crop in order to bound the list.
-- *
-+ * @nbytes: length of data in the scatterlists or data length - whichever
-+ *          is greater.
-  */
- static long int trim_sg_list(struct nx_sg *sg,
- 			     struct nx_sg *end,
 -- 
 2.25.1
 
