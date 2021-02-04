@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EA3EC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 17:01:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5732C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 17:03:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85D0464F6A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 17:01:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85D0464F6A
+	by mail.kernel.org (Postfix) with ESMTPS id 2382164F3C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 17:03:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2382164F3C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DWlDp2zr9zDwy2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 04:00:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DWlHF3DvzzDx1c
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 04:03:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
  helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=NRqWjZEp; 
+ header.a=rsa-sha256 header.s=default header.b=lCYMWduI; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DWkq13vfyzDwmf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2021 03:42:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DWkq32Fs6zDwqF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2021 03:42:07 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 6125B20B6C48;
- Thu,  4 Feb 2021 08:42:04 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 6125B20B6C48
+ by linux.microsoft.com (Postfix) with ESMTPSA id C73E620B6C4A;
+ Thu,  4 Feb 2021 08:42:05 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com C73E620B6C4A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1612456925;
- bh=61Bl1Bspp/A0IcjOr2S/CLTYoF5+ZzBW8uhStMmH8Po=;
+ s=default; t=1612456926;
+ bh=eteQoM8TsJLZTpLH4UcJUMfvK8vuu3EMwdBLJt4y9+8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=NRqWjZEpqzUHFUtJEobG6rEoNosx9KZ6INjyMZRZcu0rqlZUJywWOF8Jp1XhafVZk
- 8tx1K5fpb/2Vi8+nonrM8KfFUpyWW8shi2KXcRkb4VNxSuSx2Q7XrXjzoqkENw4bnb
- xmB8vlD5JT3bPepYqeSdFkYtdjeSYvRMpShFvnAY=
+ b=lCYMWduI56a6WnVybP/MH51bcFWObfPHsX3LqZ74EnxNMZrULXgh05QMEZYrNkcS5
+ FwpXUdTmapdyezPwl1/M0kJpgnLz6juQecFOl7RdGUJ19OHiUL3z3XfeV+2RCTqjU2
+ 06x0mMRFKkbicN4XYXDoU0l5PspNBtA0z5lT+KGA=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au
-Subject: [PATCH v16 08/12] powerpc: Delete unused function delete_fdt_mem_rsv()
-Date: Thu,  4 Feb 2021 08:41:31 -0800
-Message-Id: <20210204164135.29856-9-nramas@linux.microsoft.com>
+Subject: [PATCH v16 10/12] arm64: Use OF alloc and free functions for FDT
+Date: Thu,  4 Feb 2021 08:41:33 -0800
+Message-Id: <20210204164135.29856-11-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210204164135.29856-1-nramas@linux.microsoft.com>
 References: <20210204164135.29856-1-nramas@linux.microsoft.com>
@@ -79,72 +79,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-delete_fdt_mem_rsv() defined in "arch/powerpc/kexec/file_load.c"
-has been renamed to fdt_find_and_del_mem_rsv(), and moved to
-"drivers/of/kexec.c".
+of_alloc_and_init_fdt() and of_free_fdt() have been defined in
+drivers/of/kexec.c to allocate and free memory for FDT.
 
-Remove delete_fdt_mem_rsv() in "arch/powerpc/kexec/file_load.c".
+Use of_alloc_and_init_fdt() and of_free_fdt() to allocate and
+initialize the FDT, and to free the FDT respectively.
 
-Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
-Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
 Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Rob Herring <robh@kernel.org>
 ---
- arch/powerpc/include/asm/kexec.h |  1 -
- arch/powerpc/kexec/file_load.c   | 32 --------------------------------
- 2 files changed, 33 deletions(-)
+ arch/arm64/kernel/machine_kexec_file.c | 37 +++++++-------------------
+ 1 file changed, 10 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 939bc40dfa62..2c0be93d239a 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -118,7 +118,6 @@ char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
- int setup_purgatory(struct kimage *image, const void *slave_code,
- 		    const void *fdt, unsigned long kernel_load_addr,
- 		    unsigned long fdt_load_addr);
--int delete_fdt_mem_rsv(void *fdt, unsigned long start, unsigned long size);
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index 7da22bb7b9d5..7d6cc478f73c 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -29,7 +29,7 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
  
- #ifdef CONFIG_PPC64
- struct kexec_buf;
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index 5dd3a9c45a2d..036c8fb48fc3 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -108,35 +108,3 @@ int setup_purgatory(struct kimage *image, const void *slave_code,
+ int arch_kimage_file_post_load_cleanup(struct kimage *image)
+ {
+-	vfree(image->arch.dtb);
++	of_free_fdt(image->arch.dtb);
+ 	image->arch.dtb = NULL;
  
- 	return 0;
- }
+ 	vfree(image->arch.elf_headers);
+@@ -57,36 +57,19 @@ static int create_dtb(struct kimage *image,
+ 	cmdline_len = cmdline ? strlen(cmdline) : 0;
+ 	buf_size = fdt_totalsize(initial_boot_params)
+ 			+ cmdline_len + DTB_EXTRA_SPACE;
 -
--/**
-- * delete_fdt_mem_rsv - delete memory reservation with given address and size
-- *
-- * Return: 0 on success, or negative errno on error.
-- */
--int delete_fdt_mem_rsv(void *fdt, unsigned long start, unsigned long size)
--{
--	int i, ret, num_rsvs = fdt_num_mem_rsv(fdt);
+-	for (;;) {
+-		buf = vmalloc(buf_size);
+-		if (!buf)
+-			return -ENOMEM;
 -
--	for (i = 0; i < num_rsvs; i++) {
--		uint64_t rsv_start, rsv_size;
--
--		ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
--		if (ret) {
--			pr_err("Malformed device tree.\n");
+-		/* duplicate a device tree blob */
+-		ret = fdt_open_into(initial_boot_params, buf, buf_size);
+-		if (ret)
 -			return -EINVAL;
--		}
 -
--		if (rsv_start == start && rsv_size == size) {
--			ret = fdt_del_mem_rsv(fdt, i);
--			if (ret) {
--				pr_err("Error deleting device tree reservation.\n");
--				return -EINVAL;
+-		ret = of_kexec_setup_new_fdt(image, buf, initrd_load_addr,
++	buf = of_alloc_and_init_fdt(buf_size);
++	if (!buf)
++		return -ENOMEM;
++	ret = of_kexec_setup_new_fdt(image, buf, initrd_load_addr,
+ 					     initrd_len, cmdline);
+-		if (ret) {
+-			vfree(buf);
+-			if (ret == -ENOMEM) {
+-				/* unlikely, but just in case */
+-				buf_size += DTB_EXTRA_SPACE;
+-				continue;
+-			} else {
+-				return ret;
 -			}
--
--			return 0;
 -		}
--	}
 -
--	return -ENOENT;
--}
++	if (!ret) {
+ 		/* trim it */
+ 		fdt_pack(buf);
+ 		*dtb = buf;
++	} else
++		of_free_fdt(buf);
+ 
+-		return 0;
+-	}
++	return ret;
+ }
+ 
+ static int prepare_elf_headers(void **addr, unsigned long *sz)
+@@ -224,6 +207,6 @@ int load_other_segments(struct kimage *image,
+ 
+ out_err:
+ 	image->nr_segments = orig_segments;
+-	vfree(dtb);
++	of_free_fdt(dtb);
+ 	return ret;
+ }
 -- 
 2.30.0
 
