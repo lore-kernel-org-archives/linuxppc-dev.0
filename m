@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E85C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C6FCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:53:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94C8860202
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:52:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94C8860202
+	by mail.kernel.org (Postfix) with ESMTPS id 1CC5364F44
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Feb 2021 16:53:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CC5364F44
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DWl2Y4NshzDws6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 03:52:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DWl4N6ksQzDwwr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Feb 2021 03:53:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
  helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=DsNd3cTc; 
+ header.a=rsa-sha256 header.s=default header.b=GZrnXwmh; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DWkpz13FszDrcP
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DWkpz5f7xzDrWN
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2021 03:42:03 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 7CB6C20B6C44;
- Thu,  4 Feb 2021 08:42:01 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 7CB6C20B6C44
+ by linux.microsoft.com (Postfix) with ESMTPSA id 3B15E20B6C45;
+ Thu,  4 Feb 2021 08:42:02 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3B15E20B6C45
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
  s=default; t=1612456922;
- bh=Sd8T0e6P8u+loATpNeokWfqgEz2Z/zfdEmJ6vGkoVO0=;
+ bh=eJCewX2kuy/Ci7h74j7U2uEddQ2kEBMs0JaHvUJithw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=DsNd3cTcPPuBR1KMib6S01rchtQemZ1WZn4tYKp9V+Gp0sh7NPle1NM6PixWwpGR/
- xPeo4JFoCubdB2vB9Q46OtsYsnRyVZ0Iv4TiKadk6l/Al1ApVZ1RB8cQazbSviYwwR
- wuvs3+ZrjZqJYyJsIiTevlfhBdoEqoy1f80bmPos=
+ b=GZrnXwmhSQeSx2CxxSzeihzLlnTM8dcIEv6JeCbCSzyXmLUVn6pGaaAJDsheCcTdC
+ 5xY82vw+Z7ra+y4KWA/GFvGLssZ+tTpaLTm2+el1wAmGtA4aLqO50ziQV9QyCogK2v
+ H3wob2fvvhHej3Md/7eXLQAhMRvfew4DsIzMODVk=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au
-Subject: [PATCH v16 04/12] powerpc: Use common of_kexec_setup_new_fdt()
-Date: Thu,  4 Feb 2021 08:41:27 -0800
-Message-Id: <20210204164135.29856-5-nramas@linux.microsoft.com>
+Subject: [PATCH v16 05/12] powerpc: Move ima buffer fields to struct kimage
+Date: Thu,  4 Feb 2021 08:41:28 -0800
+Message-Id: <20210204164135.29856-6-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210204164135.29856-1-nramas@linux.microsoft.com>
 References: <20210204164135.29856-1-nramas@linux.microsoft.com>
@@ -79,172 +79,219 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rob Herring <robh@kernel.org>
+The fields ima_buffer_addr and ima_buffer_size in "struct kimage_arch"
+for powerpc are used to carry forward the IMA measurement list across
+kexec system call.  These fields are not architecture specific, but are
+currently limited to powerpc.
 
-The code for setting up the /chosen node in the device tree
-and updating the memory reservation for the next kernel has been
-moved to of_kexec_setup_new_fdt() defined in "drivers/of/kexec.c".
+arch_ima_add_kexec_buffer() defined in "arch/powerpc/kexec/ima.c"
+sets ima_buffer_addr and ima_buffer_size for the kexec system call.
+This function does not have architecture specific code, but is
+currently limited to powerpc.
 
-Use the common of_kexec_setup_new_fdt() to setup the device tree
-and update the memory reservation for kexec for powerpc.
+Move ima_buffer_addr and ima_buffer_size to "struct kimage".
+Rename arch_ima_add_kexec_buffer() to of_ima_add_kexec_buffer()
+and move it in drivers/of/kexec.c.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Reviewed-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Will Deacon <will@kernel.org>
 ---
- arch/powerpc/kexec/file_load.c | 125 ++-------------------------------
- 1 file changed, 6 insertions(+), 119 deletions(-)
+ arch/powerpc/include/asm/ima.h     |  3 ---
+ arch/powerpc/include/asm/kexec.h   |  5 -----
+ arch/powerpc/kexec/ima.c           | 29 ++++++-----------------------
+ drivers/of/kexec.c                 | 23 +++++++++++++++++++++++
+ include/linux/kexec.h              |  5 +++++
+ include/linux/of.h                 |  5 +++++
+ security/integrity/ima/ima_kexec.c |  3 ++-
+ 7 files changed, 41 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index e452b11df631..956bcb2d1ec2 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -16,6 +16,7 @@
+diff --git a/arch/powerpc/include/asm/ima.h b/arch/powerpc/include/asm/ima.h
+index ead488cf3981..51f64fd06c19 100644
+--- a/arch/powerpc/include/asm/ima.h
++++ b/arch/powerpc/include/asm/ima.h
+@@ -14,9 +14,6 @@ static inline void remove_ima_buffer(void *fdt, int chosen_node) {}
+ #endif
  
- #include <linux/slab.h>
+ #ifdef CONFIG_IMA_KEXEC
+-int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
+-			      size_t size);
+-
+ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node);
+ #else
+ static inline int setup_ima_buffer(const struct kimage *image, void *fdt,
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index dbf09d2f36d0..2248dc27080b 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -111,11 +111,6 @@ struct kimage_arch {
+ 	unsigned long elf_headers_mem;
+ 	unsigned long elf_headers_sz;
+ 	void *elf_headers;
+-
+-#ifdef CONFIG_IMA_KEXEC
+-	phys_addr_t ima_buffer_addr;
+-	size_t ima_buffer_size;
+-#endif
+ };
+ 
+ char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
+diff --git a/arch/powerpc/kexec/ima.c b/arch/powerpc/kexec/ima.c
+index 720e50e490b6..ed38125e2f87 100644
+--- a/arch/powerpc/kexec/ima.c
++++ b/arch/powerpc/kexec/ima.c
+@@ -128,23 +128,6 @@ void remove_ima_buffer(void *fdt, int chosen_node)
+ }
+ 
+ #ifdef CONFIG_IMA_KEXEC
+-/**
+- * arch_ima_add_kexec_buffer - do arch-specific steps to add the IMA buffer
+- *
+- * Architectures should use this function to pass on the IMA buffer
+- * information to the next kernel.
+- *
+- * Return: 0 on success, negative errno on error.
+- */
+-int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
+-			      size_t size)
+-{
+-	image->arch.ima_buffer_addr = load_addr;
+-	image->arch.ima_buffer_size = size;
+-
+-	return 0;
+-}
+-
+ static int write_number(void *p, u64 value, int cells)
+ {
+ 	if (cells == 1) {
+@@ -180,7 +163,7 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	u8 value[16];
+ 
+ 	remove_ima_buffer(fdt, chosen_node);
+-	if (!image->arch.ima_buffer_size)
++	if (!image->ima_buffer_size)
+ 		return 0;
+ 
+ 	ret = get_addr_size_cells(&addr_cells, &size_cells);
+@@ -192,11 +175,11 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	if (entry_size > sizeof(value))
+ 		return -EINVAL;
+ 
+-	ret = write_number(value, image->arch.ima_buffer_addr, addr_cells);
++	ret = write_number(value, image->ima_buffer_addr, addr_cells);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = write_number(value + 4 * addr_cells, image->arch.ima_buffer_size,
++	ret = write_number(value + 4 * addr_cells, image->ima_buffer_size,
+ 			   size_cells);
+ 	if (ret)
+ 		return ret;
+@@ -206,13 +189,13 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	if (ret < 0)
+ 		return -EINVAL;
+ 
+-	ret = fdt_add_mem_rsv(fdt, image->arch.ima_buffer_addr,
+-			      image->arch.ima_buffer_size);
++	ret = fdt_add_mem_rsv(fdt, image->ima_buffer_addr,
++			      image->ima_buffer_size);
+ 	if (ret)
+ 		return -EINVAL;
+ 
+ 	pr_debug("IMA buffer at 0x%llx, size = 0x%zx\n",
+-		 image->arch.ima_buffer_addr, image->arch.ima_buffer_size);
++		 image->ima_buffer_addr, image->ima_buffer_size);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+index 4afd3cc1c04a..efbf54f164fd 100644
+--- a/drivers/of/kexec.c
++++ b/drivers/of/kexec.c
+@@ -63,6 +63,29 @@ static int fdt_find_and_del_mem_rsv(void *fdt, unsigned long start, unsigned lon
+ 	return -ENOENT;
+ }
+ 
++#ifdef CONFIG_IMA_KEXEC
++/**
++ * of_ima_add_kexec_buffer - Add IMA buffer for next kernel
++ *
++ * @image: kimage struct to set IMA buffer data
++ * @load_addr: Starting address where IMA buffer is loaded at
++ * @size: Number of bytes in the IMA buffer
++ *
++ * Use this function to pass on the IMA buffer information to
++ * the next kernel across kexec system call.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int of_ima_add_kexec_buffer(struct kimage *image,
++			    unsigned long load_addr, size_t size)
++{
++	image->ima_buffer_addr = load_addr;
++	image->ima_buffer_size = size;
++
++	return 0;
++}
++#endif /* CONFIG_IMA_KEXEC */
++
+ /*
+  * of_kexec_setup_new_fdt - modify /chosen and memory reservation for the next kernel
+  *
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 9e93bef52968..c142a1e5568d 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -300,6 +300,11 @@ struct kimage {
+ 	/* Information for loading purgatory */
+ 	struct purgatory_info purgatory_info;
+ #endif
++
++#ifdef CONFIG_IMA_KEXEC
++	phys_addr_t ima_buffer_addr;
++	size_t ima_buffer_size;
++#endif
+ };
+ 
+ /* kexec interface functions */
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 41e256adf758..551117c32773 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -564,6 +564,11 @@ int of_kexec_setup_new_fdt(const struct kimage *image, void *fdt,
+ 			   unsigned long initrd_load_addr, unsigned long initrd_len,
+ 			   const char *cmdline);
+ 
++#ifdef CONFIG_IMA_KEXEC
++int of_ima_add_kexec_buffer(struct kimage *image,
++			    unsigned long load_addr, size_t size);
++#endif /* CONFIG_IMA_KEXEC */
++
+ #else /* CONFIG_OF */
+ 
+ static inline void of_core_init(void)
+diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
+index 121de3e04af2..345b78515774 100644
+--- a/security/integrity/ima/ima_kexec.c
++++ b/security/integrity/ima/ima_kexec.c
+@@ -10,6 +10,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/vmalloc.h>
  #include <linux/kexec.h>
 +#include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
- #include <asm/setup.h>
-@@ -156,132 +157,18 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 		  unsigned long initrd_load_addr, unsigned long initrd_len,
- 		  const char *cmdline)
- {
--	int ret, chosen_node;
--	const void *prop;
--
--	/* Remove memory reservation for the current device tree. */
--	ret = delete_fdt_mem_rsv(fdt, __pa(initial_boot_params),
--				 fdt_totalsize(initial_boot_params));
--	if (ret == 0)
--		pr_debug("Removed old device tree reservation.\n");
--	else if (ret != -ENOENT)
--		return ret;
--
--	chosen_node = fdt_path_offset(fdt, "/chosen");
--	if (chosen_node == -FDT_ERR_NOTFOUND) {
--		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
--					      "chosen");
--		if (chosen_node < 0) {
--			pr_err("Error creating /chosen.\n");
--			return -EINVAL;
--		}
--	} else if (chosen_node < 0) {
--		pr_err("Malformed device tree: error reading /chosen.\n");
--		return -EINVAL;
--	}
--
--	/* Did we boot using an initrd? */
--	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
--	if (prop) {
--		uint64_t tmp_start, tmp_end, tmp_size;
--
--		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
--
--		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
--		if (!prop) {
--			pr_err("Malformed device tree.\n");
--			return -EINVAL;
--		}
--		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
--
--		/*
--		 * kexec reserves exact initrd size, while firmware may
--		 * reserve a multiple of PAGE_SIZE, so check for both.
--		 */
--		tmp_size = tmp_end - tmp_start;
--		ret = delete_fdt_mem_rsv(fdt, tmp_start, tmp_size);
--		if (ret == -ENOENT)
--			ret = delete_fdt_mem_rsv(fdt, tmp_start,
--						 round_up(tmp_size, PAGE_SIZE));
--		if (ret == 0)
--			pr_debug("Removed old initrd reservation.\n");
--		else if (ret != -ENOENT)
--			return ret;
--
--		/* If there's no new initrd, delete the old initrd's info. */
--		if (initrd_len == 0) {
--			ret = fdt_delprop(fdt, chosen_node,
--					  "linux,initrd-start");
--			if (ret) {
--				pr_err("Error deleting linux,initrd-start.\n");
--				return -EINVAL;
--			}
--
--			ret = fdt_delprop(fdt, chosen_node, "linux,initrd-end");
--			if (ret) {
--				pr_err("Error deleting linux,initrd-end.\n");
--				return -EINVAL;
--			}
--		}
--	}
--
--	if (initrd_len) {
--		ret = fdt_setprop_u64(fdt, chosen_node,
--				      "linux,initrd-start",
--				      initrd_load_addr);
--		if (ret < 0)
--			goto err;
--
--		/* initrd-end is the first address after the initrd image. */
--		ret = fdt_setprop_u64(fdt, chosen_node, "linux,initrd-end",
--				      initrd_load_addr + initrd_len);
--		if (ret < 0)
--			goto err;
--
--		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
--		if (ret) {
--			pr_err("Error reserving initrd memory: %s\n",
--			       fdt_strerror(ret));
--			return -EINVAL;
--		}
--	}
--
--	if (cmdline != NULL) {
--		ret = fdt_setprop_string(fdt, chosen_node, "bootargs", cmdline);
--		if (ret < 0)
--			goto err;
--	} else {
--		ret = fdt_delprop(fdt, chosen_node, "bootargs");
--		if (ret && ret != -FDT_ERR_NOTFOUND) {
--			pr_err("Error deleting bootargs.\n");
--			return -EINVAL;
--		}
--	}
-+	int ret;
+ #include "ima.h"
  
--	if (image->type == KEXEC_TYPE_CRASH) {
--		/*
--		 * Avoid elfcorehdr from being stomped on in kdump kernel by
--		 * setting up memory reserve map.
--		 */
--		ret = fdt_add_mem_rsv(fdt, image->arch.elf_headers_mem,
--				      image->arch.elf_headers_sz);
--		if (ret) {
--			pr_err("Error reserving elfcorehdr memory: %s\n",
--			       fdt_strerror(ret));
--			goto err;
--		}
--	}
-+	ret = of_kexec_setup_new_fdt(image, fdt, initrd_load_addr, initrd_len, cmdline);
-+	if (ret)
-+		goto err;
- 
--	ret = setup_ima_buffer(image, fdt, chosen_node);
-+	ret = setup_ima_buffer(image, fdt, fdt_path_offset(fdt, "/chosen"));
- 	if (ret) {
- 		pr_err("Error setting up the new device tree.\n");
- 		return ret;
+ #ifdef CONFIG_IMA_KEXEC
+@@ -122,7 +123,7 @@ void ima_add_kexec_buffer(struct kimage *image)
+ 		return;
  	}
  
--	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
--	if (ret)
--		goto err;
--
- 	return 0;
- 
- err:
+-	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
++	ret = of_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
+ 	if (ret) {
+ 		pr_err("Error passing over kexec measurement buffer.\n");
+ 		return;
 -- 
 2.30.0
 
