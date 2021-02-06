@@ -2,62 +2,57 @@ Return-Path: <SRS0=8QQH=HI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42A14C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 11:58:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89D08C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 12:54:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A2E864EB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 11:58:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A2E864EB9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id EEC7B64E51
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 12:54:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEC7B64E51
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DXrQX2NnwzDrWX
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 22:58:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DXsfw0P2JzDvX9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Feb 2021 23:54:00 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DXrBK4kH1zDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2021 22:47:32 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DXrB7103hz9v3fN;
- Sat,  6 Feb 2021 12:47:27 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id pFCQbtLswfts; Sat,  6 Feb 2021 12:47:27 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DXrB66yWrz9v3fL;
- Sat,  6 Feb 2021 12:47:26 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 30B2B8B784;
- Sat,  6 Feb 2021 12:47:28 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id djLX3raxKaRs; Sat,  6 Feb 2021 12:47:28 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D40368B766;
- Sat,  6 Feb 2021 12:47:27 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A8DD8672EC; Sat,  6 Feb 2021 11:47:27 +0000 (UTC)
-Message-Id: <f92d99f4349391b77766745900231aa880a0efb5.1612612022.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <72c7b9879e2e2e6f5c27dadda6486386c2b50f23.1612612022.git.christophe.leroy@csgroup.eu>
-References: <72c7b9879e2e2e6f5c27dadda6486386c2b50f23.1612612022.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 2/3] powerpc/32s: mfsrin()/mtsrin() become mfsr()/mtsr()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  6 Feb 2021 11:47:27 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DXsbL15p0zDvZ6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2021 23:50:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=gz3xEXqc; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DXsbJ43GRz9sVv;
+ Sat,  6 Feb 2021 23:50:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1612615853;
+ bh=oiKiD/snw/9+bkBo/LrWBA2HU0txJEZ2rYW7sTcHLnU=;
+ h=From:To:Cc:Subject:Date:From;
+ b=gz3xEXqcloGHdPByV7w3kxO/HXCqjwTOLAJEE6IwZV+gQnfU5u1jYNLW96+vDhICh
+ jxRp1PucICHrrk0ueWw5twDVbt7IfrvJgxoDX1vODvbKEIMJHaG+gkhwulpWw4Y49r
+ TkoqI41+FOGfAhk2WxfIqCa2gc3gZRhhQ3/JN9VCbF+kw1h1vVJwRwY9iF/yF+zmCd
+ uTIG325iaUQwXWXfixg0HqZXx8tk58GjbwV1YO1trKUZttogHJJGipL66iP239Z4eM
+ TeWe8xQZQ6NjQJ8XLHPMezKmHBsLCYEVM0c6BR/QIxEC+2MVWGe8hIEuOlzXBKKgAe
+ UYRCcKGgD4tPw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.11-7 tag
+Date: Sat, 06 Feb 2021 23:50:45 +1100
+Message-ID: <8735y9pdga.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,129 +64,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ravi.bangoria@linux.ibm.com, masahiroy@kernel.org,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ raoni@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Function names should tell what the function does, not how.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-mfsrin() and mtsrin() are read/writing segment registers.
+Hi Linus,
 
-They are called that way because they are using mfsrin and mtsrin
-instructions, but it doesn't matter for the caller.
+Please pull some more powerpc fixes for 5.11:
 
-In preparation of following patch, change their name to mfsr() and mtsr()
-in order to make it obvious they manipulate segment registers without
-messing up with how they do it.
+The following changes since commit 4025c784c573cab7e3f84746cc82b8033923ec62:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/book3s/32/kup.h | 8 ++++----
- arch/powerpc/include/asm/reg.h           | 4 ++--
- arch/powerpc/mm/book3s32/mmu.c           | 2 +-
- arch/powerpc/mm/ptdump/segment_regs.c    | 2 +-
- arch/powerpc/xmon/xmon.c                 | 2 +-
- 5 files changed, 9 insertions(+), 9 deletions(-)
+  powerpc/64s: prevent recursive replay_soft_interrupts causing superfluous interrupt (2021-01-24 22:27:24 +1100)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
-index e8ea6ac809a9..d5e45eedf581 100644
---- a/arch/powerpc/include/asm/book3s/32/kup.h
-+++ b/arch/powerpc/include/asm/book3s/32/kup.h
-@@ -95,12 +95,12 @@ static inline void kuap_update_sr(u32 sr, u32 addr, u32 end)
- 	addr &= 0xf0000000;	/* align addr to start of segment */
- 	barrier();	/* make sure thread.kuap is updated before playing with SRs */
- 	while (addr < end) {
--		mtsrin(sr, addr);
-+		mtsr(sr, addr);
- 		sr += 0x111;		/* next VSID */
- 		sr &= 0xf0ffffff;	/* clear VSID overflow */
- 		addr += 0x10000000;	/* address of next segment */
- 	}
--	isync();	/* Context sync required after mtsrin() */
-+	isync();	/* Context sync required after mtsr() */
- }
- 
- static __always_inline void allow_user_access(void __user *to, const void __user *from,
-@@ -122,7 +122,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
- 	end = min(addr + size, TASK_SIZE);
- 
- 	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
--	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
-+	kuap_update_sr(mfsr(addr) & ~SR_KS, addr, end);	/* Clear Ks */
- }
- 
- static __always_inline void prevent_user_access(void __user *to, const void __user *from,
-@@ -151,7 +151,7 @@ static __always_inline void prevent_user_access(void __user *to, const void __us
- 	}
- 
- 	current->thread.kuap = 0;
--	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
-+	kuap_update_sr(mfsr(addr) | SR_KS, addr, end);	/* set Ks */
- }
- 
- static inline unsigned long prevent_user_access_return(void)
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f0fb03c9f289..eeab7e7dc699 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1414,7 +1414,7 @@ static inline void msr_check_and_clear(unsigned long bits)
- }
- 
- #ifdef CONFIG_PPC32
--static inline u32 mfsrin(u32 idx)
-+static inline u32 mfsr(u32 idx)
- {
- 	u32 val;
- 
-@@ -1423,7 +1423,7 @@ static inline u32 mfsrin(u32 idx)
- 	return val;
- }
- 
--static inline void mtsrin(u32 val, u32 idx)
-+static inline void mtsr(u32 val, u32 idx)
- {
- 	asm volatile("mtsrin %0, %1" : : "r" (val), "r" (idx));
- }
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 859e5bd603ac..d7eb266a3f7a 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -234,7 +234,7 @@ void mmu_mark_initmem_nx(void)
- 		if (is_module_segment(i << 28))
- 			continue;
- 
--		mtsrin(mfsrin(i << 28) | 0x10000000, i << 28);
-+		mtsr(mfsr(i << 28) | 0x10000000, i << 28);
- 	}
- }
- 
-diff --git a/arch/powerpc/mm/ptdump/segment_regs.c b/arch/powerpc/mm/ptdump/segment_regs.c
-index dde2fe8de4b2..565048a0c9be 100644
---- a/arch/powerpc/mm/ptdump/segment_regs.c
-+++ b/arch/powerpc/mm/ptdump/segment_regs.c
-@@ -10,7 +10,7 @@
- 
- static void seg_show(struct seq_file *m, int i)
- {
--	u32 val = mfsrin(i << 28);
-+	u32 val = mfsr(i << 28);
- 
- 	seq_printf(m, "0x%01x0000000-0x%01xfffffff ", i, i);
- 	seq_printf(m, "Kern key %d ", (val >> 30) & 1);
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index cec432eb9189..3fe37495f63d 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3719,7 +3719,7 @@ void dump_segments(void)
- 
- 	printf("sr0-15 =");
- 	for (i = 0; i < 16; ++i)
--		printf(" %x", mfsrin(i << 28));
-+		printf(" %x", mfsr(i << 28));
- 	printf("\n");
- }
- #endif
--- 
-2.25.0
+are available in the git repository at:
 
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.11-7
+
+for you to fetch changes up to 24321ac668e452a4942598533d267805f291fdc9:
+
+  powerpc/64/signal: Fix regression in __kernel_sigtramp_rt64() semantics (2021-02-02 22:14:41 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.11 #7
+
+A fix for a change we made to __kernel_sigtramp_rt64() which confused glibc's
+backtrace logic, and also changed the semantics of that symbol, which was
+arguably an ABI break.
+
+A fix for a stack overwrite in our VSX instruction emulation.
+
+A couple of fixes for the Makefile logic in the new C VDSO.
+
+Thanks to: Masahiro Yamada, Naveen N. Rao, Raoni Fassina Firmino, Ravi Bangoria.
+
+- ------------------------------------------------------------------
+Masahiro Yamada (2):
+      powerpc/vdso: fix unnecessary rebuilds of vgettimeofday.o
+      powerpc/vdso64: remove meaningless vgettimeofday.o build rule
+
+Raoni Fassina Firmino (1):
+      powerpc/64/signal: Fix regression in __kernel_sigtramp_rt64() semantics
+
+Ravi Bangoria (1):
+      powerpc/sstep: Fix array out of bound warning
+
+
+ arch/powerpc/kernel/Makefile                      |  4 ++--
+ arch/powerpc/kernel/vdso32/Makefile               |  5 +----
+ arch/powerpc/kernel/{vdso32 => }/vdso32_wrapper.S |  0
+ arch/powerpc/kernel/vdso64/Makefile               |  8 +-------
+ arch/powerpc/kernel/vdso64/sigtramp.S             | 11 ++++++++++-
+ arch/powerpc/kernel/vdso64/vdso64.lds.S           |  2 +-
+ arch/powerpc/kernel/{vdso64 => }/vdso64_wrapper.S |  0
+ arch/powerpc/lib/sstep.c                          | 14 ++++++++------
+ 8 files changed, 23 insertions(+), 21 deletions(-)
+ rename arch/powerpc/kernel/{vdso32 => }/vdso32_wrapper.S (100%)
+ rename arch/powerpc/kernel/{vdso64 => }/vdso64_wrapper.S (100%)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmAekG8ACgkQUevqPMjh
+pYAHKw/+JNrzuw4P67ZqPcOMKayKAmUzBvd1ED/NBQtvtZpJS78tUVfps8DIr01g
+i+UnlOohaavtGT0ARPTp7wEGL2c7vyzoNyxPdVru0x3UWq8xvnpdKfiHut7LjLot
+32/aS9/rChr++JE7UeVVabYxvZJy9RSQg1DjcEi08X+LOwe2yJorME/4hVD3qjEV
+FOIPbdsOOFyI3RWMsp3UFG3rwdJreHImSfZIlHUBCGHbLs5bVLC2CyoXN2UYTToS
+DrD4C1R8a9wBTYcHOEJHAPCoeYHlELROeyEWbTapGGFlpMERUyhWxoEJNrkPt7Ym
+3wQjlfI2g1oTu1ewi4D4QUHsnZHfwXvVAMzY84LvPRFXZrzJuvh17Dx9VD65ALfc
+zyzasuecdEXlbGYilJHAA1m8Qlgm4utxzA+5BDv4UgegBVCopWjo2I1Ai+7vFo6S
+58joA+G0m1E2QfbCQeEderBqe34kGMGcbzQFb8CQq7UnIG88U4JclCFbogOxDCdW
+Ogu93sJpMRT2pNorBOk//clNBgdzm+PLE1uywZ7t2rLUN58SehBWM8SLDJgVWVfY
+iPpN5hRJmEKhkT5Zq+l8Muvn2XsCc9jW0wZJW5k4jcEnwFfIsKBej2Qgiqm1y0D6
+oFk9Wsp0K2YTo7G4ViL45r6RjlXVVfGzkK0t9LzTFV9znYaI5NE=
+=dwna
+-----END PGP SIGNATURE-----
