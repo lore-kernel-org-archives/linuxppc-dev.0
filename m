@@ -2,58 +2,74 @@ Return-Path: <SRS0=EWdz=HJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34B64C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:50:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BD8CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:52:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3BB964E2A
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:50:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3BB964E2A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6EE7E64DBD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:52:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EE7E64DBD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DYQst4yY3zDqKC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 21:50:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DYQvw48x1zDqC6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 21:52:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
+ helo=mail-qk1-x735.google.com; envelope-from=shengjiu.wang@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=noTNyG5d; dkim-atps=neutral
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
+ [IPv6:2607:f8b0:4864:20::735])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DYQXt5HjCzDvYs
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Feb 2021 21:35:42 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 087AD1A03DA;
- Sun,  7 Feb 2021 11:35:39 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BE7151A01D7;
- Sun,  7 Feb 2021 11:35:33 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id EF4F14031F;
- Sun,  7 Feb 2021 11:35:23 +0100 (CET)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 6/7] ASoC: imx-rpmsg: Add machine driver for audio base on
- rpmsg
-Date: Sun,  7 Feb 2021 18:23:54 +0800
-Message-Id: <1612693435-31418-7-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DYQbZ1NrHzDvb3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Feb 2021 21:37:59 +1100 (AEDT)
+Received: by mail-qk1-x735.google.com with SMTP id a19so11658274qka.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Feb 2021 02:37:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ap599Dj3UpmjlEExN+HPHzrzAs5oC97knPOjfcxhqlY=;
+ b=noTNyG5dIpQ78mlmDpVRKXocG/8cU9E2dPSLHCT5u/6AM93GxMkWseSTmtZluCtC1u
+ yE5ODBsUkFhPI+cAMajSBteIYEvsPPYS2ZOtmyoTeKzwGhR7jp9fcNyFARH6i5nGTgpM
+ dXIUcSDU2sqxPlveeuN7AeubyOYqy1+xDMckILo7G5EztOQHSa2bumrX7mmH8ejtOICW
+ XS95baFArQRo5qKEytXkao+wg+G9gdoie0IJ0DfySUx7NitTkJDB6K8qIQmqJgQy9EoB
+ obvTdTIw4DgJAEPX0FRe4xg6xXY8KwR5bXv2W6RpikxELGJHmk5gHyO3qR8Ly8FQACVJ
+ ns7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ap599Dj3UpmjlEExN+HPHzrzAs5oC97knPOjfcxhqlY=;
+ b=C9g6vn3RfMfxSY9EXTgWxjaSfg8hDR3JL9ZKk1d7utKVJuD7F2oMdnfpYZfIgXTakT
+ nlduHCupFTNjrS5KtkA7SGMW/V8Z6/kG3pG4MZW3Ml3SXTNm9EPwUrdz4rB0/NoNBhVc
+ +zxuyQy+2EadKZ3S+qybqpeoRuYzIZ5o/gHAhN5Ay9j7MyBIW9F2SLvqIzAKm168FxFv
+ nyoJokQvzryMYEHd0WkAiJvambrtpWa58/BszHi8UyRZ+irWcFBqLEUr/nOVHJPI0ciP
+ 0YgHDh5Q3Xxyf7W8CIJOo5JzJr/Vwg5t+sZ2F+9qb78jYYBfIwM95ZYncWWzUYq1drCW
+ 6+Eg==
+X-Gm-Message-State: AOAM53019SIikhz71FujmQ2jYQniluFmy4xdE5NXUR5aPWMjpXJhXwDc
+ 5tMJiH0/dgNq2zY9F7Ox7XgzYkWtlkoeak1gFwE=
+X-Google-Smtp-Source: ABdhPJwOiqCntMvtBeLH6QTT4MVjMi7lbWFN3oPd96+54QjdFnCmwrjWuqmBTwR2S2IpLCGHI53PWyxqwimbdTER1/I=
+X-Received: by 2002:a37:a955:: with SMTP id s82mr12230755qke.121.1612694274969; 
+ Sun, 07 Feb 2021 02:37:54 -0800 (PST)
+MIME-Version: 1.0
+References: <20210206225849.51071-1-rikard.falkeborn@gmail.com>
+In-Reply-To: <20210206225849.51071-1-rikard.falkeborn@gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Sun, 7 Feb 2021 18:37:44 +0800
+Message-ID: <CAA+D8AP4gfZ2FzTH2LOB7H0SRCYR0TBrAKLZPgpTUYq=bp0M9Q@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl: constify static snd_soc_dai_ops structs
+To: Rikard Falkeborn <rikard.falkeborn@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,216 +81,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The platform device is not registered by device tree or
-cpu dai driver, it is registered by the rpmsg channel,
-So add a dedicated machine driver to handle this case.
+On Sun, Feb 7, 2021 at 6:58 AM Rikard Falkeborn
+<rikard.falkeborn@gmail.com> wrote:
+>
+> The only usage of these is to assign their address to the 'ops' field in
+> the snd_soc_dai_driver struct, which is a pointer to const. Make them
+> const to allow the compiler to put them in read-only memory.
+>
+> Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/Kconfig     |  12 ++++
- sound/soc/fsl/Makefile    |   2 +
- sound/soc/fsl/imx-rpmsg.c | 148 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 162 insertions(+)
- create mode 100644 sound/soc/fsl/imx-rpmsg.c
-
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 749c44fc0759..3557866d3fa2 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -334,6 +334,18 @@ config SND_SOC_IMX_HDMI
- 	  Say Y if you want to add support for SoC audio on an i.MX board with
- 	  IMX HDMI.
- 
-+config SND_SOC_IMX_RPMSG
-+	tristate "SoC Audio support for i.MX boards with rpmsg"
-+	depends on RPMSG
-+	select SND_SOC_IMX_PCM_RPMSG
-+	select SND_SOC_IMX_AUDIO_RPMSG
-+	select SND_SOC_FSL_RPMSG
-+	help
-+	  SoC Audio support for i.MX boards with rpmsg.
-+	  There should be rpmsg devices defined in other core (M core)
-+	  Say Y if you want to add support for SoC audio on an i.MX board with
-+	  a rpmsg devices.
-+
- endif # SND_IMX_SOC
- 
- endmenu
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index ce4f4324c3a2..f146ce464acd 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -70,6 +70,7 @@ snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
- snd-soc-imx-spdif-objs := imx-spdif.o
- snd-soc-imx-audmix-objs := imx-audmix.o
- snd-soc-imx-hdmi-objs := imx-hdmi.o
-+snd-soc-imx-rpmsg-objs := imx-rpmsg.o
- 
- obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
- obj-$(CONFIG_SND_SOC_IMX_ES8328) += snd-soc-imx-es8328.o
-@@ -77,3 +78,4 @@ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
- obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
- obj-$(CONFIG_SND_SOC_IMX_AUDMIX) += snd-soc-imx-audmix.o
- obj-$(CONFIG_SND_SOC_IMX_HDMI) += snd-soc-imx-hdmi.o
-+obj-$(CONFIG_SND_SOC_IMX_RPMSG) += snd-soc-imx-rpmsg.o
-diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
-new file mode 100644
-index 000000000000..a87dcbce4f36
---- /dev/null
-+++ b/sound/soc/fsl/imx-rpmsg.c
-@@ -0,0 +1,148 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright 2017-2020 NXP
-+
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_reserved_mem.h>
-+#include <linux/i2c.h>
-+#include <linux/of_gpio.h>
-+#include <linux/slab.h>
-+#include <linux/gpio.h>
-+#include <linux/clk.h>
-+#include <sound/soc.h>
-+#include <sound/jack.h>
-+#include <sound/control.h>
-+#include <sound/pcm_params.h>
-+#include <sound/soc-dapm.h>
-+#include "imx-pcm-rpmsg.h"
-+
-+struct imx_rpmsg {
-+	struct snd_soc_dai_link dai;
-+	struct snd_soc_card card;
-+};
-+
-+static int imx_rpmsg_probe(struct platform_device *pdev)
-+{
-+	struct snd_soc_dai_link_component *dlc;
-+	struct platform_device *cpu_pdev;
-+	struct of_phandle_args args;
-+	struct device_node *cpu_np;
-+	struct imx_rpmsg *data;
-+	int ret;
-+
-+	dlc = devm_kzalloc(&pdev->dev, 3 * sizeof(*dlc), GFP_KERNEL);
-+	if (!dlc)
-+		return -ENOMEM;
-+
-+	cpu_np = of_parse_phandle(pdev->dev.of_node, "audio-cpu", 0);
-+	if (!cpu_np) {
-+		dev_err(&pdev->dev, "cpu dai phandle missing or invalid\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		ret = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	cpu_pdev = of_find_device_by_node(cpu_np);
-+	if (!cpu_pdev) {
-+		dev_err(&pdev->dev, "failed to find rpmsg platform device\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	ret = of_reserved_mem_device_init_by_idx(&pdev->dev, pdev->dev.of_node, 0);
-+	if (ret)
-+		dev_warn(&pdev->dev, "no reserved DMA memory\n");
-+
-+	data->dai.cpus = &dlc[0];
-+	data->dai.num_cpus = 1;
-+	data->dai.platforms = &dlc[1];
-+	data->dai.num_platforms = 1;
-+	data->dai.codecs = &dlc[2];
-+	data->dai.num_codecs = 1;
-+
-+	data->dai.name = "rpmsg hifi";
-+	data->dai.stream_name = "rpmsg hifi";
-+	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S |
-+			    SND_SOC_DAIFMT_NB_NF |
-+			    SND_SOC_DAIFMT_CBS_CFS;
-+
-+	/* Optional codec node */
-+	ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
-+					       "audio-codec", 0, 0, &args);
-+	if (ret) {
-+		data->dai.codecs->dai_name = "snd-soc-dummy-dai";
-+		data->dai.codecs->name = "snd-soc-dummy";
-+	} else {
-+		data->dai.codecs->of_node = args.np;
-+		ret = snd_soc_get_dai_name(&args, &data->dai.codecs->dai_name);
-+		if (ret) {
-+			dev_err(&pdev->dev, "Unable to get codec_dai_name\n");
-+			goto fail;
-+		}
-+	}
-+
-+	data->dai.cpus->dai_name = dev_name(&cpu_pdev->dev);
-+	data->dai.platforms->name = IMX_PCM_DRV_NAME;
-+	data->dai.playback_only = true;
-+	data->dai.capture_only = true;
-+	data->card.num_links = 1;
-+	data->card.dai_link = &data->dai;
-+
-+	if (of_property_read_bool(pdev->dev.of_node, "rpmsg-out"))
-+		data->dai.capture_only = false;
-+
-+	if (of_property_read_bool(pdev->dev.of_node, "rpmsg-in"))
-+		data->dai.playback_only = false;
-+
-+	if (data->dai.playback_only && data->dai.capture_only) {
-+		dev_err(&pdev->dev, "no enabled rpmsg DAI link\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	data->card.dev = &pdev->dev;
-+	data->card.owner = THIS_MODULE;
-+	ret = snd_soc_of_parse_card_name(&data->card, "model");
-+	if (ret)
-+		goto fail;
-+
-+	platform_set_drvdata(pdev, &data->card);
-+	snd_soc_card_set_drvdata(&data->card, data);
-+	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
-+	if (ret) {
-+		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-+		goto fail;
-+	}
-+
-+fail:
-+	if (cpu_np)
-+		of_node_put(cpu_np);
-+	return ret;
-+}
-+
-+static const struct of_device_id imx_rpmsg_dt_ids[] = {
-+	{ .compatible = "fsl,imx-audio-rpmsg", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, imx_rpmsg_dt_ids);
-+
-+static struct platform_driver imx_rpmsg_driver = {
-+	.driver = {
-+		.name = "imx-audio-rpmsg",
-+		.owner = THIS_MODULE,
-+		.pm = &snd_soc_pm_ops,
-+		.of_match_table = imx_rpmsg_dt_ids,
-+	},
-+	.probe = imx_rpmsg_probe,
-+};
-+module_platform_driver(imx_rpmsg_driver);
-+
-+MODULE_DESCRIPTION("Freescale SoC Audio RPMSG Machine Driver");
-+MODULE_AUTHOR("Shengjiu Wang <shengjiu.wang@nxp.com>");
-+MODULE_ALIAS("platform:imx-rpmsg");
-+MODULE_LICENSE("GPL v2");
--- 
-2.27.0
-
+Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
