@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 249EBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:16:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0512CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:18:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F25264E3E
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:16:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F25264E3E
+	by mail.kernel.org (Postfix) with ESMTPS id 27A2064DF6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:18:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27A2064DF6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DYZ682sJlzDwkJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 03:16:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DYZ7w3GJTzDsTQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 03:18:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,33 +27,33 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=CqX4vXqb; 
+ header.s=casper.20170209 header.b=YqZ4QnN1; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYyT55vKzDsVh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYyT2J98zDsRH
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 03:09:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=ud3Ea8LmZI8vUpOxMZKE5jSGVPMWnEsLwfRS0dNFbE0=; b=CqX4vXqbmh6QXJAg3YewZtxxcH
- a2xzhphD8VLBCm3tOSIRvmJqwHwT1+K8P/oc1ldXlA56muOJ0R30QDUGLXMU1HJMX2h3xNCEKCkPP
- 7qqxpgtnv2BkqiGDNANYGx4IELardjX+PUkA0qNFFBY1MW/3JChiJHBxfp/YWzQ0E5F3Mdp2/OVh/
- 9g6CysD+IM/6jxu/nwmnHPlUGiXtrFDZqSz6+yq/nbOb+l23UwU03aaZmuiZR4BRT9NtcFg9QyoSB
- THL9WiHFfyXyVjQSg87GaF+1IBS1WU5j2owUfxHwogo5pylPoK7SW5yRVtUK+9TksokO0o2L+sabB
- bODKCAsQ==;
+ bh=T8t1FwG6dE6zlEC3wLjW3JLNNjj/ykTR2lwFCEWQrxw=; b=YqZ4QnN1AVP9n/XFE9fsSrvWCF
+ 8EEyVnum1O4pgtOIHD11S+iAWfm6laLkacn4Z2eWxuAyluOFTvlaedJznz/qrn3jE5wUHhthpubHU
+ Apn4BjiI+OFuhTOzZH+VzHVviNaDF4pAfarvhdBIVt8KWXZ43vISJu96/HCVVesdgCAxz3eawu2lg
+ 2xjUd2GoHUF+9GKve/GSvZ20KB2IuFHtrylOK3+Wn3al61Xht1ZQhvrv95mynOS4veIx/MiL2So2G
+ SmG5re6h//fchVk1f1XgUNgw6TBeVkKwuHQVxG2BIwR4ROuxSMOFuG56ulMVKHCEGHViqPxAFdMAg
+ CFXHUMMQ==;
 Received: from [2001:4bb8:184:7d04:4590:5583:6cb7:77c7] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l8mcz-004tm4-Bg; Sun, 07 Feb 2021 16:09:38 +0000
+ id 1l8md3-004tmH-BE; Sun, 07 Feb 2021 16:09:41 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 1/8] powerpc/svm: stop using io_tlb_start
-Date: Sun,  7 Feb 2021 17:09:27 +0100
-Message-Id: <20210207160934.2955931-2-hch@lst.de>
+Subject: [PATCH 3/8] xen-swiotlb: use io_tlb_end in xen_swiotlb_dma_supported
+Date: Sun,  7 Feb 2021 17:09:29 +0100
+Message-Id: <20210207160934.2955931-4-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210207160934.2955931-1-hch@lst.de>
 References: <20210207160934.2955931-1-hch@lst.de>
@@ -79,28 +79,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the local variable that is passed to swiotlb_init_with_tbl for
-freeing the memory in the failure case to isolate the code a little
-better from swiotlb internals.
+Use the existing variable that holds the physical address for
+xen_io_tlb_end to simplify xen_swiotlb_dma_supported a bit, and remove
+the otherwise unused xen_io_tlb_end variable and the xen_virt_to_bus
+helper.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/platforms/pseries/svm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/xen/swiotlb-xen.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
-index 7b739cc7a8a93e..b9968ac7cc0789 100644
---- a/arch/powerpc/platforms/pseries/svm.c
-+++ b/arch/powerpc/platforms/pseries/svm.c
-@@ -56,7 +56,7 @@ void __init svm_swiotlb_init(void)
- 		return;
+diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
+index a4026822a889f7..4298f74a083985 100644
+--- a/drivers/xen/swiotlb-xen.c
++++ b/drivers/xen/swiotlb-xen.c
+@@ -46,7 +46,7 @@
+  * API.
+  */
  
- 	if (io_tlb_start)
--		memblock_free_early(io_tlb_start,
-+		memblock_free_early(__pa(vstart),
- 				    PAGE_ALIGN(io_tlb_nslabs << IO_TLB_SHIFT));
- 	panic("SVM: Cannot allocate SWIOTLB buffer");
+-static char *xen_io_tlb_start, *xen_io_tlb_end;
++static char *xen_io_tlb_start;
+ static unsigned long xen_io_tlb_nslabs;
+ /*
+  * Quick lookup value of the bus address of the IOTLB.
+@@ -82,11 +82,6 @@ static inline phys_addr_t xen_dma_to_phys(struct device *dev,
+ 	return xen_bus_to_phys(dev, dma_to_phys(dev, dma_addr));
  }
+ 
+-static inline dma_addr_t xen_virt_to_bus(struct device *dev, void *address)
+-{
+-	return xen_phys_to_dma(dev, virt_to_phys(address));
+-}
+-
+ static inline int range_straddles_page_boundary(phys_addr_t p, size_t size)
+ {
+ 	unsigned long next_bfn, xen_pfn = XEN_PFN_DOWN(p);
+@@ -250,7 +245,6 @@ int __ref xen_swiotlb_init(int verbose, bool early)
+ 		rc = swiotlb_late_init_with_tbl(xen_io_tlb_start, xen_io_tlb_nslabs);
+ 
+ end:
+-	xen_io_tlb_end = xen_io_tlb_start + bytes;
+ 	if (!rc)
+ 		swiotlb_set_max_segment(PAGE_SIZE);
+ 
+@@ -558,7 +552,7 @@ xen_swiotlb_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
+ static int
+ xen_swiotlb_dma_supported(struct device *hwdev, u64 mask)
+ {
+-	return xen_virt_to_bus(hwdev, xen_io_tlb_end - 1) <= mask;
++	return xen_phys_to_dma(hwdev, io_tlb_end - 1) <= mask;
+ }
+ 
+ const struct dma_map_ops xen_swiotlb_dma_ops = {
 -- 
 2.29.2
 
