@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF328C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 114C8C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:21:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71FAD64DF6
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:19:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71FAD64DF6
+	by mail.kernel.org (Postfix) with ESMTPS id 242DF64DF8
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:21:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 242DF64DF8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DYZ9c6MTSzDqKf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 03:19:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DYZCg34sNzDsNq
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 03:21:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -27,34 +27,34 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=fmNr0Ugb; 
+ header.s=casper.20170209 header.b=PzcY4sAI; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYyW3GkKzDvVZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 03:09:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYyT33StzDsSm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 03:09:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=9exQlU2bM+z89vz4InpfIN+OgEoSYW+vKDhpQvUzWEc=; b=fmNr0UgbkUNuM/6xYoYIl1Rrvu
- NjXGGNO7rb6ADI6vT40u/zONLvuSngV72/jHsqgPSgPdAN+wEUDyiIdoRTVpEZmLqJSlRXchWUKGA
- eluKXm1mFdJJn++1DfZvR2YO+X0JUshTE3gzwf6gjtlHNPTzbVGePGmIGFxgBXOxNKJfI1KkyC2Pb
- nMwmcXMNzuG2JOFRxdZzeeKNS4HQwVd/0Q/gujMYFOHIZXrOk3w8PuAmWcqmAE1DUqnlU6d7QuM6s
- o+Kwv+YAPHNTcLEXNvfSe7Cnz+d04XyeVlR7knzJwEz+D3x/VVO20+JVl3mfPkAXYtMUG2hKTNqpL
- Zvtma1Pw==;
+ bh=jFI2mi7dyRl0KQwCReup9amZMDdC7KVLA5/jiqTUJgc=; b=PzcY4sAIeTkV30mNeSR7f4zhev
+ 1l86naI/SQcUf0zOFqJq4KJw5/8N1oMJjS8yNc/Z8ehT98TCXfbqC0yQIJkU5+vzsX2EJcA7lqXnD
+ inxtjszyQ9sK7lZOffjVlwnAIPOGvXzlMpup2gQRm/SVMpF6REFiaCeA3V36wmiPskUOOwbKs2f2/
+ Bh9N0vS73XhuuqKUlQtGemY4mIiM6twaFuU0N84w1IvGRIOriBPhiyre+OW/45YumEnkat66MuvVP
+ iZjwGsedAM5O6qFZcTy0pBe4gMYLXotX3BJJucUjweYhEXiYYk6TIHHM3R2KLkGXZDkHwdJsP3F08
+ DtFINz5Q==;
 Received: from [2001:4bb8:184:7d04:4590:5583:6cb7:77c7] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1l8md9-004tnJ-Fd; Sun, 07 Feb 2021 16:09:48 +0000
+ id 1l8md1-004tmA-Lk; Sun, 07 Feb 2021 16:09:40 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 6/8] swiotlb: lift the double initialization protection from
- xen-swiotlb
-Date: Sun,  7 Feb 2021 17:09:32 +0100
-Message-Id: <20210207160934.2955931-7-hch@lst.de>
+Subject: [PATCH 2/8] xen-swiotlb: use is_swiotlb_buffer in
+ is_xen_swiotlb_buffer
+Date: Sun,  7 Feb 2021 17:09:28 +0100
+Message-Id: <20210207160934.2955931-3-hch@lst.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210207160934.2955931-1-hch@lst.de>
 References: <20210207160934.2955931-1-hch@lst.de>
@@ -80,67 +80,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Lift the double initialization protection from xen-swiotlb to the core
-code to avoid exposing too many swiotlb internals.  Also upgrade the
-check to a warning as it should not happen.
+Use the is_swiotlb_buffer to check if a physical address is
+a swiotlb buffer.  This works because xen-swiotlb does use the
+same buffer as the main swiotlb code, and xen_io_tlb_{start,end}
+are just the addresses for it that went through phys_to_virt.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/xen/swiotlb-xen.c | 7 -------
- kernel/dma/swiotlb.c      | 8 ++++++++
- 2 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/xen/swiotlb-xen.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index 6e0f2c5ecd1a2f..e6c8556e879ee6 100644
+index 2b385c1b4a99cb..a4026822a889f7 100644
 --- a/drivers/xen/swiotlb-xen.c
 +++ b/drivers/xen/swiotlb-xen.c
-@@ -172,12 +172,6 @@ int __ref xen_swiotlb_init(int verbose, bool early)
- 	bytes = nslabs << IO_TLB_SHIFT;
- 	order = get_order(bytes);
- 
--	/*
--	 * IO TLB memory already allocated. Just use it.
--	 */
--	if (io_tlb_start != 0)
--		goto end;
--
- 	/*
- 	 * Get IO TLB memory from any location.
+@@ -111,10 +111,8 @@ static int is_xen_swiotlb_buffer(struct device *dev, dma_addr_t dma_addr)
+ 	 * have the same virtual address as another address
+ 	 * in our domain. Therefore _only_ check address within our domain.
  	 */
-@@ -232,7 +226,6 @@ int __ref xen_swiotlb_init(int verbose, bool early)
- 	} else
- 		rc = swiotlb_late_init_with_tbl(start, nslabs);
+-	if (pfn_valid(PFN_DOWN(paddr))) {
+-		return paddr >= virt_to_phys(xen_io_tlb_start) &&
+-		       paddr < virt_to_phys(xen_io_tlb_end);
+-	}
++	if (pfn_valid(PFN_DOWN(paddr)))
++		return is_swiotlb_buffer(paddr);
+ 	return 0;
+ }
  
--end:
- 	if (!rc)
- 		swiotlb_set_max_segment(PAGE_SIZE);
- 
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index adcc3c87e10078..a3737961ae5769 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -224,6 +224,10 @@ int __init swiotlb_init_with_tbl(char *tlb, unsigned long nslabs, int verbose)
- 	unsigned long i, bytes;
- 	size_t alloc_size;
- 
-+	/* protect against double initialization */
-+	if (WARN_ON_ONCE(io_tlb_start))
-+		return -ENOMEM;
-+
- 	bytes = nslabs << IO_TLB_SHIFT;
- 
- 	io_tlb_nslabs = nslabs;
-@@ -355,6 +359,10 @@ swiotlb_late_init_with_tbl(char *tlb, unsigned long nslabs)
- {
- 	unsigned long i, bytes;
- 
-+	/* protect against double initialization */
-+	if (WARN_ON_ONCE(io_tlb_start))
-+		return -ENOMEM;
-+
- 	bytes = nslabs << IO_TLB_SHIFT;
- 
- 	io_tlb_nslabs = nslabs;
 -- 
 2.29.2
 
