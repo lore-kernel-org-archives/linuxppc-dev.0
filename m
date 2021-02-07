@@ -2,47 +2,65 @@ Return-Path: <SRS0=EWdz=HJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09036C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 15:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6009C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:11:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B11464DE1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 15:57:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B11464DE1
+	by mail.kernel.org (Postfix) with ESMTPS id 0011864DF6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 16:11:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0011864DF6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DYYhd3TvNzDrdp
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 02:57:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DYZ0Y68G1zDwjF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 03:11:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+661ee30cee4f8a507613+6377+infradead.org+hch@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=UVaqF+zx; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYfh12THzDvrL
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 02:56:10 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 3732F68B02; Sun,  7 Feb 2021 16:56:02 +0100 (CET)
-Date: Sun, 7 Feb 2021 16:56:01 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DYYyV2vfPzDsqL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 03:09:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=rEuv14TWvGuv4AUXj7YefRFQ9Xyg6sjJXdKXUy0YdBM=; b=UVaqF+zxpqx611WOIaQ9KZyzB2
+ re821/ddYXmPPjC9ugy3GaeRlBLWplBRXsujMtZd1vW0IfK3iPfhxgkhWlj2pOCPKDk/Z64FWg9qG
+ dHIZsb/VOpLlw9FxnFS3s24XnncV7ayWGvtT/dbQBX6YTxwlS6vcHhsA7xy7YtsaYbgBAhJZqy23B
+ /IzKWcYn+2++207f++acZ9XrPm1qBYQ85sJ/oBgoVFBCDx4vKxYxRdkp0Tg1TUUSit0t2UDqHUBk9
+ Ow1JcHjpXfjK8ybhbOQEqngr1mR8y92BfM/Wbg7c+DwzEOanYt56k0DlKSTDYvqhkRe3aLgg08Pvo
+ tf8I8czw==;
+Received: from [2001:4bb8:184:7d04:4590:5583:6cb7:77c7] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1l8md7-004tmh-DD; Sun, 07 Feb 2021 16:09:45 +0000
 From: Christoph Hellwig <hch@lst.de>
-To: Dongli Zhang <dongli.zhang@oracle.com>
-Subject: Re: [PATCH RFC v1 5/6] xen-swiotlb: convert variables to arrays
-Message-ID: <20210207155601.GA25111@lst.de>
-References: <20210203233709.19819-1-dongli.zhang@oracle.com>
- <20210203233709.19819-6-dongli.zhang@oracle.com>
- <20210204084023.GA32328@lst.de>
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 5/8] xen-swiotlb: remove xen_io_tlb_start and xen_io_tlb_nslabs
+Date: Sun,  7 Feb 2021 17:09:31 +0100
+Message-Id: <20210207160934.2955931-6-hch@lst.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210207160934.2955931-1-hch@lst.de>
+References: <20210207160934.2955931-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210204084023.GA32328@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,62 +72,159 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ulf.hansson@linaro.org, airlied@linux.ie, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- bhelgaas@google.com, paulus@samba.org, hpa@zytor.com, hch@lst.de,
- m.szyprowski@samsung.com, sstabellini@kernel.org, adrian.hunter@intel.com,
- x86@kernel.org, joe.jin@oracle.com, mingo@kernel.org, peterz@infradead.org,
- mingo@redhat.com, bskeggs@redhat.com, linux-pci@vger.kernel.org,
- xen-devel@lists.xenproject.org, matthew.auld@intel.com,
- thomas.lendacky@amd.com, konrad.wilk@oracle.com,
- intel-gfx@lists.freedesktop.org, jani.nikula@linux.intel.com, bp@alien8.de,
- rodrigo.vivi@intel.com, nouveau@lists.freedesktop.org,
- boris.ostrovsky@oracle.com, chris@chris-wilson.co.uk, jgross@suse.com,
- tsbogend@alpha.franken.de, robin.murphy@arm.com, linux-mmc@vger.kernel.org,
- linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org,
- tglx@linutronix.de, bauerman@linux.ibm.com, daniel@ffwll.ch,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, rppt@kernel.org
+Cc: iommu@lists.linux-foundation.org, xen-devel@lists.xenproject.org,
+ Claire Chang <tientzu@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+ Dongli Zhang <dongli.zhang@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 04, 2021 at 09:40:23AM +0100, Christoph Hellwig wrote:
-> So one thing that has been on my mind for a while:  I'd really like
-> to kill the separate dma ops in Xen swiotlb.  If we compare xen-swiotlb
-> to swiotlb the main difference seems to be:
-> 
->  - additional reasons to bounce I/O vs the plain DMA capable
->  - the possibility to do a hypercall on arm/arm64
->  - an extra translation layer before doing the phys_to_dma and vice
->    versa
->  - an special memory allocator
-> 
-> I wonder if inbetween a few jump labels or other no overhead enablement
-> options and possibly better use of the dma_range_map we could kill
-> off most of swiotlb-xen instead of maintaining all this code duplication?
+The xen_io_tlb_start and xen_io_tlb_nslabs variables ar now only used in
+xen_swiotlb_init, so replace them with local variables.
 
-So I looked at this a bit more.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/xen/swiotlb-xen.c | 57 +++++++++++++++++----------------------
+ 1 file changed, 25 insertions(+), 32 deletions(-)
 
-For x86 with XENFEAT_auto_translated_physmap (how common is that?)
-pfn_to_gfn is a nop, so plain phys_to_dma/dma_to_phys do work as-is.
-
-xen_arch_need_swiotlb always returns true for x86, and
-range_straddles_page_boundary should never be true for the
-XENFEAT_auto_translated_physmap case.
-
-So as far as I can tell the mapping fast path for the
-XENFEAT_auto_translated_physmap can be trivially reused from swiotlb.
-
-That leaves us with the next more complicated case, x86 or fully cache
-coherent arm{,64} without XENFEAT_auto_translated_physmap.  In that case
-we need to patch in a phys_to_dma/dma_to_phys that performs the MFN
-lookup, which could be done using alternatives or jump labels.
-I think if that is done right we should also be able to let that cover
-the foreign pages in is_xen_swiotlb_buffer/is_swiotlb_buffer, but
-in that worst case that would need another alternative / jump label.
-
-For non-coherent arm{,64} we'd also need to use alternatives or jump
-labels to for the cache maintainance ops, but that isn't a hard problem
-either.
-
+diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
+index 57f8d5fadc1fcd..6e0f2c5ecd1a2f 100644
+--- a/drivers/xen/swiotlb-xen.c
++++ b/drivers/xen/swiotlb-xen.c
+@@ -40,14 +40,7 @@
+ 
+ #include <trace/events/swiotlb.h>
+ #define MAX_DMA_BITS 32
+-/*
+- * Used to do a quick range check in swiotlb_tbl_unmap_single and
+- * swiotlb_tbl_sync_single_*, to see if the memory was in fact allocated by this
+- * API.
+- */
+ 
+-static char *xen_io_tlb_start;
+-static unsigned long xen_io_tlb_nslabs;
+ /*
+  * Quick lookup value of the bus address of the IOTLB.
+  */
+@@ -169,75 +162,75 @@ int __ref xen_swiotlb_init(int verbose, bool early)
+ 	int rc = -ENOMEM;
+ 	enum xen_swiotlb_err m_ret = XEN_SWIOTLB_UNKNOWN;
+ 	unsigned int repeat = 3;
++	char *start;
++	unsigned long nslabs;
+ 
+-	xen_io_tlb_nslabs = swiotlb_nr_tbl();
++	nslabs = swiotlb_nr_tbl();
+ retry:
+-	if (!xen_io_tlb_nslabs)
+-		xen_io_tlb_nslabs = DEFAULT_NSLABS;
+-	bytes = xen_io_tlb_nslabs << IO_TLB_SHIFT;
++	if (!nslabs)
++		nslabs = DEFAULT_NSLABS;
++	bytes = nslabs << IO_TLB_SHIFT;
+ 	order = get_order(bytes);
+ 
+ 	/*
+ 	 * IO TLB memory already allocated. Just use it.
+ 	 */
+-	if (io_tlb_start != 0) {
+-		xen_io_tlb_start = phys_to_virt(io_tlb_start);
++	if (io_tlb_start != 0)
+ 		goto end;
+-	}
+ 
+ 	/*
+ 	 * Get IO TLB memory from any location.
+ 	 */
+ 	if (early) {
+-		xen_io_tlb_start = memblock_alloc(PAGE_ALIGN(bytes),
++		start = memblock_alloc(PAGE_ALIGN(bytes),
+ 						  PAGE_SIZE);
+-		if (!xen_io_tlb_start)
++		if (!start)
+ 			panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
+ 			      __func__, PAGE_ALIGN(bytes), PAGE_SIZE);
+ 	} else {
+ #define SLABS_PER_PAGE (1 << (PAGE_SHIFT - IO_TLB_SHIFT))
+ #define IO_TLB_MIN_SLABS ((1<<20) >> IO_TLB_SHIFT)
+ 		while ((SLABS_PER_PAGE << order) > IO_TLB_MIN_SLABS) {
+-			xen_io_tlb_start = (void *)xen_get_swiotlb_free_pages(order);
+-			if (xen_io_tlb_start)
++			start = (void *)xen_get_swiotlb_free_pages(order);
++			if (start)
+ 				break;
+ 			order--;
+ 		}
+ 		if (order != get_order(bytes)) {
+ 			pr_warn("Warning: only able to allocate %ld MB for software IO TLB\n",
+ 				(PAGE_SIZE << order) >> 20);
+-			xen_io_tlb_nslabs = SLABS_PER_PAGE << order;
+-			bytes = xen_io_tlb_nslabs << IO_TLB_SHIFT;
++			nslabs = SLABS_PER_PAGE << order;
++			bytes = nslabs << IO_TLB_SHIFT;
+ 		}
+ 	}
+-	if (!xen_io_tlb_start) {
++	if (!start) {
+ 		m_ret = XEN_SWIOTLB_ENOMEM;
+ 		goto error;
+ 	}
+ 	/*
+ 	 * And replace that memory with pages under 4GB.
+ 	 */
+-	rc = xen_swiotlb_fixup(xen_io_tlb_start,
++	rc = xen_swiotlb_fixup(start,
+ 			       bytes,
+-			       xen_io_tlb_nslabs);
++			       nslabs);
+ 	if (rc) {
+ 		if (early)
+-			memblock_free(__pa(xen_io_tlb_start),
++			memblock_free(__pa(start),
+ 				      PAGE_ALIGN(bytes));
+ 		else {
+-			free_pages((unsigned long)xen_io_tlb_start, order);
+-			xen_io_tlb_start = NULL;
++			free_pages((unsigned long)start, order);
++			start = NULL;
+ 		}
+ 		m_ret = XEN_SWIOTLB_EFIXUP;
+ 		goto error;
+ 	}
+ 	if (early) {
+-		if (swiotlb_init_with_tbl(xen_io_tlb_start, xen_io_tlb_nslabs,
++		if (swiotlb_init_with_tbl(start, nslabs,
+ 			 verbose))
+ 			panic("Cannot allocate SWIOTLB buffer");
+ 		rc = 0;
+ 	} else
+-		rc = swiotlb_late_init_with_tbl(xen_io_tlb_start, xen_io_tlb_nslabs);
++		rc = swiotlb_late_init_with_tbl(start, nslabs);
+ 
+ end:
+ 	if (!rc)
+@@ -246,17 +239,17 @@ int __ref xen_swiotlb_init(int verbose, bool early)
+ 	return rc;
+ error:
+ 	if (repeat--) {
+-		xen_io_tlb_nslabs = max(1024UL, /* Min is 2MB */
+-					(xen_io_tlb_nslabs >> 1));
++		nslabs = max(1024UL, /* Min is 2MB */
++					(nslabs >> 1));
+ 		pr_info("Lowering to %luMB\n",
+-			(xen_io_tlb_nslabs << IO_TLB_SHIFT) >> 20);
++			(nslabs << IO_TLB_SHIFT) >> 20);
+ 		goto retry;
+ 	}
+ 	pr_err("%s (rc:%d)\n", xen_swiotlb_error(m_ret), rc);
+ 	if (early)
+ 		panic("%s (rc:%d)", xen_swiotlb_error(m_ret), rc);
+ 	else
+-		free_pages((unsigned long)xen_io_tlb_start, order);
++		free_pages((unsigned long)start, order);
+ 	return rc;
+ }
+ 
+-- 
+2.29.2
 
