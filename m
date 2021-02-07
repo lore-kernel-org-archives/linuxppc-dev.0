@@ -2,64 +2,57 @@ Return-Path: <SRS0=EWdz=HJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31FDEC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:13:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34A9CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:37:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3166164E05
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:13:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3166164E05
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 6732664E44
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 10:37:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6732664E44
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DYQ3H6rV1zDvYD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 21:13:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DYQZy0l6czDqZB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Feb 2021 21:37:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DYQ1d32RfzDvXJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Feb 2021 21:12:04 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DYQ1V5PgPz9txrW;
- Sun,  7 Feb 2021 11:11:58 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Dxu8rU2VTwHB; Sun,  7 Feb 2021 11:11:58 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DYQ1V3JsTz9txrV;
- Sun,  7 Feb 2021 11:11:58 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C7B48B788;
- Sun,  7 Feb 2021 11:12:01 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ceQZmop64mtj; Sun,  7 Feb 2021 11:12:01 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 15DE38B766;
- Sun,  7 Feb 2021 11:12:01 +0100 (CET)
-Subject: Re: [PATCH 2/8] powerpc/signal: Add unsafe_copy_{vsx, fpr}_from_user()
-To: "Christopher M. Riedl" <cmr@codefail.de>, linuxppc-dev@lists.ozlabs.org
-References: <C92MQRHFCFEA.37OV051PFFY6@geist>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <1caa3c1e-bf4e-700e-efea-28964005bb12@csgroup.eu>
-Date: Sun, 7 Feb 2021 11:12:01 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
-MIME-Version: 1.0
-In-Reply-To: <C92MQRHFCFEA.37OV051PFFY6@geist>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DYQXk1sWkzDvYJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Feb 2021 21:35:32 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7CFA82019B7;
+ Sun,  7 Feb 2021 11:35:29 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E058200E46;
+ Sun,  7 Feb 2021 11:35:24 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id D67C4402AD;
+ Sun,  7 Feb 2021 11:35:17 +0100 (CET)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
+ devicetree@vger.kernel.org
+Subject: [PATCH v2 1/7] ASoC: soc-component: Add snd_soc_pcm_component_ack
+Date: Sun,  7 Feb 2021 18:23:49 +0800
+Message-Id: <1612693435-31418-2-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,82 +68,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Add snd_soc_pcm_component_ack back, which can be used to get updated
+buffer pointer in platform driver.
+On Asymmetric multiprocessor, this pointer can be sent to Cortex-M
+core for audio processing.
 
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ include/sound/soc-component.h |  3 +++
+ sound/soc/soc-component.c     | 14 ++++++++++++++
+ sound/soc/soc-pcm.c           |  2 ++
+ 3 files changed, 19 insertions(+)
 
-Le 06/02/2021 à 18:39, Christopher M. Riedl a écrit :
-> On Sat Feb 6, 2021 at 10:32 AM CST, Christophe Leroy wrote:
->>
->>
->> Le 20/10/2020 à 04:01, Christopher M. Riedl a écrit :
->>> On Fri Oct 16, 2020 at 10:48 AM CDT, Christophe Leroy wrote:
->>>>
->>>>
->>>> Le 15/10/2020 à 17:01, Christopher M. Riedl a écrit :
->>>>> Reuse the "safe" implementation from signal.c except for calling
->>>>> unsafe_copy_from_user() to copy into a local buffer. Unlike the
->>>>> unsafe_copy_{vsx,fpr}_to_user() functions the "copy from" functions
->>>>> cannot use unsafe_get_user() directly to bypass the local buffer since
->>>>> doing so significantly reduces signal handling performance.
->>>>
->>>> Why can't the functions use unsafe_get_user(), why does it significantly
->>>> reduces signal handling
->>>> performance ? How much significant ? I would expect that not going
->>>> through an intermediate memory
->>>> area would be more efficient
->>>>
->>>
->>> Here is a comparison, 'unsafe-signal64-regs' avoids the intermediate buffer:
->>>
->>> 	|                      | hash   | radix  |
->>> 	| -------------------- | ------ | ------ |
->>> 	| linuxppc/next        | 289014 | 158408 |
->>> 	| unsafe-signal64      | 298506 | 253053 |
->>> 	| unsafe-signal64-regs | 254898 | 220831 |
->>>
->>> I have not figured out the 'why' yet. As you mentioned in your series,
->>> technically calling __copy_tofrom_user() is overkill for these
->>> operations. The only obvious difference between unsafe_put_user() and
->>> unsafe_get_user() is that we don't have asm-goto for the 'get' variant.
->>> Instead we wrap with unsafe_op_wrap() which inserts a conditional and
->>> then goto to the label.
->>>
->>> Implemenations:
->>>
->>> 	#define unsafe_copy_fpr_from_user(task, from, label)   do {            \
->>> 	       struct task_struct *__t = task;                                 \
->>> 	       u64 __user *buf = (u64 __user *)from;                           \
->>> 	       int i;                                                          \
->>> 									       \
->>> 	       for (i = 0; i < ELF_NFPREG - 1; i++)                            \
->>> 		       unsafe_get_user(__t->thread.TS_FPR(i), &buf[i], label); \
->>> 	       unsafe_get_user(__t->thread.fp_state.fpscr, &buf[i], label);    \
->>> 	} while (0)
->>>
->>> 	#define unsafe_copy_vsx_from_user(task, from, label)   do {            \
->>> 	       struct task_struct *__t = task;                                 \
->>> 	       u64 __user *buf = (u64 __user *)from;                           \
->>> 	       int i;                                                          \
->>> 									       \
->>> 	       for (i = 0; i < ELF_NVSRHALFREG ; i++)                          \
->>> 		       unsafe_get_user(__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET], \
->>> 				       &buf[i], label);                        \
->>> 	} while (0)
->>>
->>
->> Do you have CONFIG_PROVE_LOCKING or CONFIG_DEBUG_ATOMIC_SLEEP enabled in
->> your config ?
-> 
-> I don't have these set in my config (ppc64le_defconfig). I think I
-> figured this out - the reason for the lower signal throughput is the
-> barrier_nospec() in __get_user_nocheck(). When looping we incur that
-> cost on every iteration. Commenting it out results in signal performance
-> of ~316K w/ hash on the unsafe-signal64-regs branch. Obviously the
-> barrier is there for a reason but it is quite costly.
+diff --git a/include/sound/soc-component.h b/include/sound/soc-component.h
+index 5b47768222b7..2dc8c7e3d1a6 100644
+--- a/include/sound/soc-component.h
++++ b/include/sound/soc-component.h
+@@ -146,6 +146,8 @@ struct snd_soc_component_driver {
+ 	int (*mmap)(struct snd_soc_component *component,
+ 		    struct snd_pcm_substream *substream,
+ 		    struct vm_area_struct *vma);
++	int (*ack)(struct snd_soc_component *component,
++		   struct snd_pcm_substream *substream);
+ 
+ 	const struct snd_compress_ops *compress_ops;
+ 
+@@ -498,5 +500,6 @@ int snd_soc_pcm_component_pm_runtime_get(struct snd_soc_pcm_runtime *rtd,
+ 					 void *stream);
+ void snd_soc_pcm_component_pm_runtime_put(struct snd_soc_pcm_runtime *rtd,
+ 					  void *stream, int rollback);
++int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream);
+ 
+ #endif /* __SOC_COMPONENT_H */
+diff --git a/sound/soc/soc-component.c b/sound/soc/soc-component.c
+index 159bf88b9f8c..a9fbb2d26412 100644
+--- a/sound/soc/soc-component.c
++++ b/sound/soc/soc-component.c
+@@ -1212,3 +1212,17 @@ void snd_soc_pcm_component_pm_runtime_put(struct snd_soc_pcm_runtime *rtd,
+ 		soc_component_mark_pop(component, stream, pm);
+ 	}
+ }
++
++int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = asoc_substream_to_rtd(substream);
++	struct snd_soc_component *component;
++	int i;
++
++	/* FIXME: use 1st pointer */
++	for_each_rtd_components(rtd, i, component)
++		if (component->driver->ack)
++			return component->driver->ack(component, substream);
++
++	return 0;
++}
+diff --git a/sound/soc/soc-pcm.c b/sound/soc/soc-pcm.c
+index b79f064887d4..605acec48971 100644
+--- a/sound/soc/soc-pcm.c
++++ b/sound/soc/soc-pcm.c
+@@ -2830,6 +2830,8 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd, int num)
+ 			rtd->ops.page		= snd_soc_pcm_component_page;
+ 		if (drv->mmap)
+ 			rtd->ops.mmap		= snd_soc_pcm_component_mmap;
++		if (drv->ack)
++			rtd->ops.ack            = snd_soc_pcm_component_ack;
+ 	}
+ 
+ 	if (playback)
+-- 
+2.27.0
 
-Interesting.
-
-Can you try with the patch I just sent out 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/c72f014730823b413528e90ab6c4d3bcb79f8497.1612692067.git.christophe.leroy@csgroup.eu/
-
-Thanks
-Christophe
