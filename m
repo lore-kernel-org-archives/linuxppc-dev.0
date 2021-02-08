@@ -2,69 +2,58 @@ Return-Path: <SRS0=fNlO=HK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 631F6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 17:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC271C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 18:41:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D48964E85
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 17:51:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D48964E85
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id DA6DF64E6D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 18:41:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA6DF64E6D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZD9g4Hb4zDsrW
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 04:51:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZFGm4HslzDvYN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 05:41:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Ce9O3Y4e; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZD4s28FWzDvWH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 04:47:39 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZD4f5pD4zB09Zg;
- Mon,  8 Feb 2021 18:47:30 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 98utEWZnOp6Q; Mon,  8 Feb 2021 18:47:30 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZD4f4ktfzB09Zc;
- Mon,  8 Feb 2021 18:47:30 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F24F8B7B3;
- Mon,  8 Feb 2021 18:47:36 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7udkGwZC5Tcc; Mon,  8 Feb 2021 18:47:36 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C82888B7B2;
- Mon,  8 Feb 2021 18:47:35 +0100 (CET)
-Subject: Re: [PATCH v4 11/23] powerpc/syscall: Rename syscall_64.c into
- syscall.c
-To: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, msuchanek@suse.de,
- Paul Mackerras <paulus@samba.org>
-References: <cover.1611585031.git.christophe.leroy@csgroup.eu>
- <ff9dd4accdc897013594768833d54444e4823bf9.1611585031.git.christophe.leroy@csgroup.eu>
- <1611656343.yaxha7r2q4.astroid@bobo.none>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <fcf185e1-7c76-aa1c-1773-ac71c191189a@csgroup.eu>
-Date: Mon, 8 Feb 2021 18:47:33 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZFDR11PlzDvW1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 05:39:18 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4D49964E6B;
+ Mon,  8 Feb 2021 18:39:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1612809556;
+ bh=xgfXFXjxKi9MNGtKtz9Ymxo6K71+ooCHg7rZVVUShK8=;
+ h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+ b=Ce9O3Y4eN/3AFIMoDMSQNp5IJmirdGXjxOzxsX8HI2R2EEuFZZwh4EYeudaHrOt5J
+ tgLvLfbYs9wjnsiO3hAqCEp2tnc4U2Q5/DlgQjPigUSo4KUOr0VU4TMqGWXaDJi4sj
+ 26THtsD/Qh/paOPbYPAEfXyETlzac6jt/8YicP84D35XRiBODs/Wqa7ms7l3npNnMH
+ a6DD9fAbtSeaFybrCGb3UW1Ql/dt9dZf250MFOXqIZHo3UjPmpSl7pNxOnfJSwZqQB
+ e9Reqimn24mtQ+DVIqsS3JPB9R8nlVvryK5ZRwR9bLJfkbP9JThCcW8JoXsVn7/1D+
+ gOkG1WyhyP+Lw==
+From: Mark Brown <broonie@kernel.org>
+To: Timur Tabi <timur@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Rikard Falkeborn <rikard.falkeborn@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>
+In-Reply-To: <20210206225849.51071-1-rikard.falkeborn@gmail.com>
+References: <20210206225849.51071-1-rikard.falkeborn@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl: constify static snd_soc_dai_ops structs
+Message-Id: <161280948304.10741.2031202191928010331.b4-ty@kernel.org>
+Date: Mon, 08 Feb 2021 18:38:03 +0000
 MIME-Version: 1.0
-In-Reply-To: <1611656343.yaxha7r2q4.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,25 +66,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Shengjiu Wang <shengjiu.wang@gmail.com>,
+ linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, 6 Feb 2021 23:58:49 +0100, Rikard Falkeborn wrote:
+> The only usage of these is to assign their address to the 'ops' field in
+> the snd_soc_dai_driver struct, which is a pointer to const. Make them
+> const to allow the compiler to put them in read-only memory.
 
+Applied to
 
-Le 26/01/2021 à 11:21, Nicholas Piggin a écrit :
-> Excerpts from Christophe Leroy's message of January 26, 2021 12:48 am:
->> syscall_64.c will be reused almost as is for PPC32.
->>
->> Rename it syscall.c
-> 
-> Could you rename it to interrupt.c instead? A system call is an
-> interrupt, and the file now also has code to return from other
-> interrupts as well, and it matches the new asm/interrupt.h from
-> the interrupts series.
-> 
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Done in v5
+Thanks!
 
-Christophe
+[1/1] ASoC: fsl: constify static snd_soc_dai_ops structs
+      commit: 38d89a564847048c0f6fe53a829d15edb4f21da3
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
