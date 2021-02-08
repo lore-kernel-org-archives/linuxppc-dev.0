@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF85C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04F9BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:26:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7947464E88
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:23:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7947464E88
+	by mail.kernel.org (Postfix) with ESMTPS id 2D38364DDB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:26:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D38364DDB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ8ty39bZzDqqn
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:23:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ8xS3ZylzDqdm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:26:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bR5c1CzDr3l
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bW6JzHzDrhj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:31 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZ8bF14pZz9vBn5;
- Mon,  8 Feb 2021 16:10:17 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DZ8bJ6LVcz9tx8b;
+ Mon,  8 Feb 2021 16:10:20 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id HfEIVBfFLv08; Mon,  8 Feb 2021 16:10:17 +0100 (CET)
+ with ESMTP id MZEqW3ISDnPO; Mon,  8 Feb 2021 16:10:20 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bF0Jwhz9vBn3;
- Mon,  8 Feb 2021 16:10:17 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bJ4lbmz9ttF8;
+ Mon,  8 Feb 2021 16:10:20 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5F07D8B7B3;
- Mon,  8 Feb 2021 16:10:22 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 13E0D8B7B3;
+ Mon,  8 Feb 2021 16:10:26 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2RvJnD33wamo; Mon,  8 Feb 2021 16:10:21 +0100 (CET)
+ with ESMTP id kJ7uvk_1k7Rg; Mon,  8 Feb 2021 16:10:25 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 79A928B7B2;
- Mon,  8 Feb 2021 16:10:21 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D9BF8B7B2;
+ Mon,  8 Feb 2021 16:10:25 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 70FA96733E; Mon,  8 Feb 2021 15:10:21 +0000 (UTC)
-Message-Id: <412c6c1786922d991bbb89c2ad2e82cffe8ab112.1612796617.git.christophe.leroy@csgroup.eu>
+ id 93BDC6733E; Mon,  8 Feb 2021 15:10:25 +0000 (UTC)
+Message-Id: <0e290372a0e7dc2ae657b4a01aec85f8de7fdf77.1612796617.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1612796617.git.christophe.leroy@csgroup.eu>
 References: <cover.1612796617.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v5 02/22] powerpc/32: Always enable data translation on
- syscall entry
+Subject: [PATCH v5 06/22] powerpc/irq: Rework helpers that manipulate
+ MSR[EE/RI]
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon,  8 Feb 2021 15:10:21 +0000 (UTC)
+Date: Mon,  8 Feb 2021 15:10:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,112 +77,139 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If the code can use a stack in vm area, it can also use a
-stack in linear space.
+In preparation of porting PPC32 to C syscall entry/exit,
+rewrite the following helpers as static inline functions and
+add support for PPC32 in them:
+	__hard_irq_enable()
+	__hard_irq_disable()
+	__hard_EE_RI_disable()
+	__hard_RI_enable()
 
-Simplify code by removing old non VMAP stack code on PPC32 in syscall.
-
-That means the data translation is now re-enabled early in
-syscall entry in all cases, not only when using VMAP stacks.
+Then use them in PPC32 version of arch_local_irq_disable()
+and arch_local_irq_enable() to avoid code duplication.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_32.h    | 23 +----------------------
- arch/powerpc/kernel/head_booke.h |  2 --
- 2 files changed, 1 insertion(+), 24 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h | 75 +++++++++++++++++++++----------
+ arch/powerpc/include/asm/reg.h    |  1 +
+ 2 files changed, 52 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index a2f72c966baf..fdc07beab844 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -118,7 +118,6 @@
- .macro SYSCALL_ENTRY trapno
- 	mfspr	r12,SPRN_SPRG_THREAD
- 	mfspr	r9, SPRN_SRR1
--#ifdef CONFIG_VMAP_STACK
- 	mfspr	r11, SPRN_SRR0
- 	mtctr	r11
- 	andi.	r11, r9, MSR_PR
-@@ -126,30 +125,16 @@
- 	lwz	r1,TASK_STACK-THREAD(r12)
- 	beq-	99f
- 	addi	r1, r1, THREAD_SIZE - INT_FRAME_SIZE
--	li	r10, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
-+	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
- 	mtmsr	r10
- 	isync
- 	tovirt(r12, r12)
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
- 	mr	r11, r1
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index ed0c3b049dfd..4739f61e632c 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -50,6 +50,55 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++static inline void __hard_irq_enable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(MSR_EE);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EIE);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_EE | MSR_RI, 1);
++	else
++		mtmsr(mfmsr() | MSR_EE);
++}
++
++static inline void __hard_irq_disable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(0);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EID);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_RI, 1);
++	else
++		mtmsr(mfmsr() & ~MSR_EE);
++}
++
++static inline void __hard_EE_RI_disable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		wrtee(0);
++	else if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_NRI);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(0, 1);
++	else
++		mtmsr(mfmsr() & ~(MSR_EE | MSR_RI));
++}
++
++static inline void __hard_RI_enable(void)
++{
++	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
++		return;
++
++	if (IS_ENABLED(CONFIG_PPC_8xx))
++		wrtspr(SPRN_EID);
++	else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
++		__mtmsrd(MSR_RI, 1);
++	else
++		mtmsr(mfmsr() | MSR_RI);
++}
++
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ 
+@@ -212,18 +261,6 @@ static inline bool arch_irqs_disabled(void)
+ 
+ #endif /* CONFIG_PPC_BOOK3S */
+ 
+-#ifdef CONFIG_PPC_BOOK3E
+-#define __hard_irq_enable()	wrtee(MSR_EE)
+-#define __hard_irq_disable()	wrtee(0)
+-#define __hard_EE_RI_disable()	wrtee(0)
+-#define __hard_RI_enable()	do { } while (0)
 -#else
--	andi.	r11, r9, MSR_PR
--	lwz	r11,TASK_STACK-THREAD(r12)
--	beq-	99f
--	addi	r11, r11, THREAD_SIZE - INT_FRAME_SIZE
--	tophys(r11, r11)
--	stw	r1,GPR1(r11)
--	stw	r1,0(r11)
--	tovirt(r1, r11)		/* set new kernel sp */
+-#define __hard_irq_enable()	__mtmsrd(MSR_EE|MSR_RI, 1)
+-#define __hard_irq_disable()	__mtmsrd(MSR_RI, 1)
+-#define __hard_EE_RI_disable()	__mtmsrd(0, 1)
+-#define __hard_RI_enable()	__mtmsrd(MSR_RI, 1)
 -#endif
- 	mflr	r10
- 	stw	r10, _LINK(r11)
--#ifdef CONFIG_VMAP_STACK
- 	mfctr	r10
--#else
--	mfspr	r10,SPRN_SRR0
--#endif
- 	stw	r10,_NIP(r11)
- 	mfcr	r10
- 	rlwinm	r10,r10,0,4,2	/* Clear SO bit in CR */
-@@ -157,11 +142,7 @@
- #ifdef CONFIG_40x
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
--#ifdef CONFIG_VMAP_STACK
- 	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~MSR_IR) /* can take exceptions */
--#else
--	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR|MSR_DR)) /* can take exceptions */
--#endif
- 	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-@@ -190,7 +171,6 @@
- 	li	r12,-1			/* clear all pending debug events */
- 	mtspr	SPRN_DBSR,r12
- 	lis	r11,global_dbcr0@ha
--	tophys(r11,r11)
- 	addi	r11,r11,global_dbcr0@l
- 	lwz	r12,0(r11)
- 	mtspr	SPRN_DBCR0,r12
-@@ -200,7 +180,6 @@
+-
+ #define hard_irq_disable()	do {					\
+ 	unsigned long flags;						\
+ 	__hard_irq_disable();						\
+@@ -322,22 +359,12 @@ static inline unsigned long arch_local_irq_save(void)
+ 
+ static inline void arch_local_irq_disable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE))
+-		wrtee(0);
+-	else if (IS_ENABLED(CONFIG_PPC_8xx))
+-		wrtspr(SPRN_EID);
+-	else
+-		mtmsr(mfmsr() & ~MSR_EE);
++	__hard_irq_disable();
+ }
+ 
+ static inline void arch_local_irq_enable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE))
+-		wrtee(MSR_EE);
+-	else if (IS_ENABLED(CONFIG_PPC_8xx))
+-		wrtspr(SPRN_EIE);
+-	else
+-		mtmsr(mfmsr() | MSR_EE);
++	__hard_irq_enable();
+ }
+ 
+ static inline bool arch_irqs_disabled_flags(unsigned long flags)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index c5a3e856191c..bc4305ba00d0 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1375,6 +1375,7 @@
+ #define mtmsr(v)	asm volatile("mtmsr %0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#define __mtmsrd(v, l)	BUILD_BUG()
+ #define __MTMSR		"mtmsr"
  #endif
  
- 3:
--	tovirt_novmstack r2, r2 	/* set r2 to current */
- 	lis	r11, transfer_to_syscall@h
- 	ori	r11, r11, transfer_to_syscall@l
- #ifdef CONFIG_TRACE_IRQFLAGS
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index bf33af714d11..706cd9368992 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -144,7 +144,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	li	r12,-1			/* clear all pending debug events */
- 	mtspr	SPRN_DBSR,r12
- 	lis	r11,global_dbcr0@ha
--	tophys(r11,r11)
- 	addi	r11,r11,global_dbcr0@l
- #ifdef CONFIG_SMP
- 	lwz	r10, TASK_CPU(r2)
-@@ -158,7 +157,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	stw	r12,4(r11)
- 
- 3:
--	tovirt(r2, r2)			/* set r2 to current */
- 	lis	r11, transfer_to_syscall@h
- 	ori	r11, r11, transfer_to_syscall@l
- #ifdef CONFIG_TRACE_IRQFLAGS
 -- 
 2.25.0
 
