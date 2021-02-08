@@ -2,62 +2,62 @@ Return-Path: <SRS0=fNlO=HK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D3FEC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 11:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD3E4C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 12:00:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F12D64DF6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 11:56:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F12D64DF6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 962EA64E79
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 12:00:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 962EA64E79
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ4H80Pr9zDsrd
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 22:56:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=VvzvTa2C; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ4ND6QxPzDsrY
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 23:00:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ4Bc2cqHzDqSQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 22:52:08 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 0D08864E56;
- Mon,  8 Feb 2021 11:52:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1612785124;
- bh=khj0Ksstxc70pqDkTZPUJ+hyC/Zp9C28p+//y1Izqto=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=VvzvTa2CGSU8UkdTZrHmjfVeGkhd0XP7bI1HvBXw/V8QYFT1n9oPXWw3P4dCeh9dp
- tCULJOL68X5Z3jNqhPLL5AEiqe+lcpuCh0agkKYK3FJT0wybkh7Bp19yf91R8Pflak
- HOI0rKKPO3vrtR1vrzPjMbolzWlDN4nZj8thr4+cuqzyBbIs1RGwzEjP4Be9M8emAP
- Lv5vFes0K36m8a+xQE4YITlivDNLMTIHb99O1Ra1Gvlg2qvfXNE4Q+P5X0jlVlz4JX
- TmJYjy+CZiQ0J+AaWkwPO36/DYtDMUkkEQ3cIPSo+79MspG7YMmnOTet1h+C9B91o3
- AwBHSmtUNL3kA==
-Date: Mon, 8 Feb 2021 11:51:12 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 2/7] ASoC: fsl_rpmsg: Add CPU DAI driver for audio
- base on rpmsg
-Message-ID: <20210208115112.GD8645@sirena.org.uk>
-References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
- <1612693435-31418-3-git-send-email-shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ4Fc0PVJzDsrV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2021 22:54:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=bIMZ31HY; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DZ4FZ0J3Bz9sS8;
+ Mon,  8 Feb 2021 22:54:41 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1612785282;
+ bh=ayupSz9F0ZQz5eK88yF/jEd94wAQjskdwnO/gm4cL5A=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=bIMZ31HYe8O2kJFjXzDXy8zzUnY1Wox065waNTrQZl+aU9j4s9wIkA93ax9uTRn+H
+ ZUAU4yPniGzZ8WcTstmTx6qCUZNz71f6N1DO+YHzI/KYFJXvADUCVSubTd3iF4+TvC
+ fyNuQ7u4zkXGpEf481LfbQxPcd/TkPiBddaIDX9RAfSXGPevaVRFIhIZY8M6npExdX
+ aHnMPXux3QAxrim5nHt4GHyXewQU3VBum7q9hwsviUho8ij+sP4MFn9FdoxvBQhTXz
+ /ILku6Ya1Ai3ZJGGm+YoNOd5lVzReDZGXzL7QEefnWEHAP+61KLvZsIUSWp6bohb3L
+ 4fw7fhRxd9RkQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: ego@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v7 07/42] powerpc/fsl_booke/32: CacheLockingException
+ remove args
+In-Reply-To: <20210208100411.GA18820@in.ibm.com>
+References: <20210130130852.2952424-1-npiggin@gmail.com>
+ <20210130130852.2952424-8-npiggin@gmail.com>
+ <20210208100411.GA18820@in.ibm.com>
+Date: Mon, 08 Feb 2021 22:54:40 +1100
+Message-ID: <87wnviojun.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="P+33d92oIH25kiaB"
-Content-Disposition: inline
-In-Reply-To: <1612693435-31418-3-git-send-email-shengjiu.wang@nxp.com>
-X-Cookie: You will triumph over your enemy.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,59 +69,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, timur@kernel.org,
- lgirdwood@gmail.com, linuxppc-dev@lists.ozlabs.org, Xiubo.Lee@gmail.com,
- linux-kernel@vger.kernel.org, tiwai@suse.com, nicoleotsuka@gmail.com,
- robh+dt@kernel.org, perex@perex.cz, festevam@gmail.com
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> On Sat, Jan 30, 2021 at 11:08:17PM +1000, Nicholas Piggin wrote:
+>> Like other interrupt handler conversions, switch to getting registers
+>> from the pt_regs argument.
+>> 
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  arch/powerpc/kernel/head_fsl_booke.S | 6 +++---
+>>  arch/powerpc/kernel/traps.c          | 5 +++--
+>>  2 files changed, 6 insertions(+), 5 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+>> index fdd4d274c245..0d4d9a6fcca1 100644
+>> --- a/arch/powerpc/kernel/head_fsl_booke.S
+>> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+>> @@ -364,12 +364,12 @@ interrupt_base:
+>>  	/* Data Storage Interrupt */
+>>  	START_EXCEPTION(DataStorage)
+>>  	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE)
+>> -	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+>> +	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it3 */
+>                                                          ^^^^^^^^^^
+> Sorry for the nitpick.. Should be "/* Grab the ESR, save it */"
 
---P+33d92oIH25kiaB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks, I fixed it up.
 
-On Sun, Feb 07, 2021 at 06:23:50PM +0800, Shengjiu Wang wrote:
-
-> +static int fsl_rpmsg_hw_params(struct snd_pcm_substream *substream,
-> +			       struct snd_pcm_hw_params *params,
-> +			       struct snd_soc_dai *dai)
-> +{
-
-...
-
-> +	ret = clk_prepare_enable(rpmsg->mclk);
-> +	if (ret)
-> +		dev_err(dai->dev, "failed to enable mclk: %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int fsl_rpmsg_hw_free(struct snd_pcm_substream *substream,
-> +			     struct snd_soc_dai *dai)
-> +{
-> +	struct fsl_rpmsg *rpmsg = snd_soc_dai_get_drvdata(dai);
-> +
-> +	clk_disable_unprepare(rpmsg->mclk);
-
-hw_params() can be called multiple times and there's no need for it to
-be balanced with hw_free(), I'd move this to a different callback (DAPM
-should work well).
-
---P+33d92oIH25kiaB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmAhJbAACgkQJNaLcl1U
-h9AJqwf/X2Soo9XPi4+IXcHpXJMeYJEz2SrnSt4si8m1Bri4Ow7pyiSeFmffguOV
-s768sMvqLorPsUHuRjMXB9NHG9hAkV/avnPqptxPH722QegXhi7ej0+kxrhrtyhf
-ZefpKevO5qjvYMagXCqbRUBTHZMY0aACqCvWfLqsmC0LtSA4OHCiSHJFQKvsdxIA
-MJmUyvPr9KP5z4mwD+yRO6jdTztZw4693lVUyYcRLDuCHelBhDZ0Gs4R3QGPTuI6
-PKLJlxZ2P6R95mLc4ygvk4AUbsm8z5yzFoMzF3zyifwrD2PLe3X/0x/TGeUniLPZ
-xAu7MVI9SOtCn+IlfAcoHK43UmMJgg==
-=LRAl
------END PGP SIGNATURE-----
-
---P+33d92oIH25kiaB--
+cheers
