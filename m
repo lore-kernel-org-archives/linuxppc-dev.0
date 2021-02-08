@@ -2,61 +2,64 @@ Return-Path: <SRS0=fNlO=HK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56F74C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:20:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D2B6C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:22:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67DDF60238
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:20:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67DDF60238
+	by mail.kernel.org (Postfix) with ESMTPS id 66BFC64DDB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:22:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66BFC64DDB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ8pm02t9zDqS6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:20:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ8s72YbKzDqkj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:22:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bR4p73zDr2l
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bW4KhPzDrhY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:31 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZ8bB2BKTz9vBnB;
- Mon,  8 Feb 2021 16:10:14 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DZ8bH5B6Dz9vBnF;
+ Mon,  8 Feb 2021 16:10:19 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id lr6rAJO9bx12; Mon,  8 Feb 2021 16:10:14 +0100 (CET)
+ with ESMTP id 4SQswJilCcxd; Mon,  8 Feb 2021 16:10:19 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bB1NFPz9vBn7;
- Mon,  8 Feb 2021 16:10:14 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 979238B7B3;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bH43khz9vBn3;
  Mon,  8 Feb 2021 16:10:19 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CCABC8B7BA;
+ Mon,  8 Feb 2021 16:10:24 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9b4hOr69BAZV; Mon,  8 Feb 2021 16:10:19 +0100 (CET)
+ with ESMTP id PwB26Wm6285C; Mon,  8 Feb 2021 16:10:24 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E4358B7B2;
- Mon,  8 Feb 2021 16:10:19 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F98F8B7B2;
+ Mon,  8 Feb 2021 16:10:24 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4551A6733E; Mon,  8 Feb 2021 15:10:19 +0000 (UTC)
-Message-Id: <cover.1612796617.git.christophe.leroy@csgroup.eu>
+ id 8641B6733E; Mon,  8 Feb 2021 15:10:24 +0000 (UTC)
+Message-Id: <5f37d1177a751fdbca79df461d283850ca3a34a2.1612796617.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1612796617.git.christophe.leroy@csgroup.eu>
+References: <cover.1612796617.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v5 00/22] powerpc/32: Implement C syscall entry/exit
+Subject: [PATCH v5 05/22] powerpc/irq: Add helper to set regs->softe
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon,  8 Feb 2021 15:10:19 +0000 (UTC)
+Date: Mon,  8 Feb 2021 15:10:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,73 +76,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series implements C syscall entry/exit for PPC32. It reuses
-the work already done for PPC64.
+regs->softe doesn't exist on PPC32.
 
-This series is based on today's merge-test (b6f72fc05389e3fc694bf5a5fa1bbd33f61879e0)
+Add irq_soft_mask_regs_set_state() helper to set regs->softe.
+This helper will void on PPC32.
 
-In terms on performance we have the following number of cycles on an
-8xx running null_syscall benchmark:
-- mainline: 296 cycles
-- after patch 4: 283 cycles
-- after patch 16: 304 cycles
-- after patch 17: 348 cycles
-- at the end of the series: 320 cycles
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/hw_irq.h | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-So in summary, we have a degradation of performance of 8% on null_syscall.
-
-I think it is not a big degradation, it is worth it.
-
-v4 was the first mature version.
-
-v5:
-- Comments from Nick
-- Converted booke DBCR0 handling in C
-- Removed convertion of KUAP restore in C (will be done as part of interrupt entry/exit porting to C)
-- Added a few more changes in preparatory patches to prepare for interrupt entry/exit in C which will follow
-
-Christophe Leroy (22):
-  powerpc/32s: Add missing call to kuep_lock on syscall entry
-  powerpc/32: Always enable data translation on syscall entry
-  powerpc/32: On syscall entry, enable instruction translation at the
-    same time as data
-  powerpc/32: Reorder instructions to avoid using CTR in syscall entry
-  powerpc/irq: Add helper to set regs->softe
-  powerpc/irq: Rework helpers that manipulate MSR[EE/RI]
-  powerpc/irq: Add stub irq_soft_mask_return() for PPC32
-  powerpc/syscall: Rename syscall_64.c into interrupt.c
-  powerpc/syscall: Make interrupt.c buildable on PPC32
-  powerpc/syscall: Use is_compat_task()
-  powerpc/syscall: Save r3 in regs->orig_r3
-  powerpc/syscall: Change condition to check MSR_RI
-  powerpc/32: Always save non volatile GPRs at syscall entry
-  powerpc/syscall: implement system call entry/exit logic in C for PPC32
-  powerpc/32: Remove verification of MSR_PR on syscall in the ASM entry
-  powerpc/syscall: Avoid stack frame in likely part of
-    system_call_exception()
-  powerpc/syscall: Do not check unsupported scv vector on PPC32
-  powerpc/syscall: Remove FULL_REGS verification in
-    system_call_exception
-  powerpc/syscall: Optimise checks in beginning of
-    system_call_exception()
-  powerpc/syscall: Avoid storing 'current' in another pointer
-  powerpc/32: Remove the counter in global_dbcr0
-  powerpc/32: Handle bookE debugging in C in syscall entry/exit
-
- arch/powerpc/include/asm/hw_irq.h             |  91 +++--
- arch/powerpc/include/asm/ptrace.h             |   5 +
- arch/powerpc/include/asm/reg.h                |   1 +
- arch/powerpc/include/asm/reg_booke.h          |   3 +
- arch/powerpc/kernel/Makefile                  |   4 +-
- arch/powerpc/kernel/entry_32.S                | 321 ++----------------
- arch/powerpc/kernel/entry_64.S                |   2 -
- arch/powerpc/kernel/head_32.h                 |  96 +-----
- arch/powerpc/kernel/head_booke.h              |  51 +--
- .../kernel/{syscall_64.c => interrupt.c}      | 120 +++++--
- arch/powerpc/kernel/syscalls/syscall.tbl      |  20 +-
- 11 files changed, 218 insertions(+), 496 deletions(-)
- rename arch/powerpc/kernel/{syscall_64.c => interrupt.c} (80%)
-
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 614957f74cee..ed0c3b049dfd 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -38,6 +38,8 @@
+ #define PACA_IRQ_MUST_HARD_MASK	(PACA_IRQ_EE)
+ #endif
+ 
++#endif /* CONFIG_PPC64 */
++
+ /*
+  * flags for paca->irq_soft_mask
+  */
+@@ -46,8 +48,6 @@
+ #define IRQS_PMI_DISABLED	2
+ #define IRQS_ALL_DISABLED	(IRQS_DISABLED | IRQS_PMI_DISABLED)
+ 
+-#endif /* CONFIG_PPC64 */
+-
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_PPC64
+@@ -287,6 +287,10 @@ extern void irq_set_pending_from_srr1(unsigned long srr1);
+ 
+ extern void force_external_irq_replay(void);
+ 
++static inline void irq_soft_mask_regs_set_state(struct pt_regs *regs, unsigned long val)
++{
++	regs->softe = val;
++}
+ #else /* CONFIG_PPC64 */
+ 
+ static inline unsigned long arch_local_save_flags(void)
+@@ -355,6 +359,9 @@ static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
+ 
+ static inline void may_hard_irq_enable(void) { }
+ 
++static inline void irq_soft_mask_regs_set_state(struct pt_regs *regs, unsigned long val)
++{
++}
+ #endif /* CONFIG_PPC64 */
+ 
+ #define ARCH_IRQ_INIT_FLAGS	IRQ_NOREQUEST
 -- 
 2.25.0
 
