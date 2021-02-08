@@ -1,50 +1,101 @@
-Return-Path: <SRS0=fNlO=HK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=hK36=HL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3A49C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 18:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 789A7C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 00:00:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0500564E84
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 18:45:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0500564E84
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 6355864E9A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 00:00:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6355864E9A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZFMF4lh9zDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 05:45:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZNM91KnJzDvY3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 11:00:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
- helo=mail.baikalelectronics.ru;
- envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
-Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
- [87.245.175.226])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DZFGM4jdFzDvXt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 05:40:58 +1100 (AEDT)
-From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-To: Felipe Balbi <balbi@kernel.org>, Bjorn Andersson
- <bjorn.andersson@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Florian
- Fainelli <f.fainelli@gmail.com>, Rob Herring <robh+dt@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
- Mackerras <paulus@samba.org>
-Subject: [PATCH v5 05/10] powerpc: dts: akebono: Harmonize EHCI/OHCI DT nodes
- name
-Date: Mon, 8 Feb 2021 16:51:49 +0300
-Message-ID: <20210208135154.6645-6-Sergey.Semin@baikalelectronics.ru>
-In-Reply-To: <20210208135154.6645-1-Sergey.Semin@baikalelectronics.ru>
-References: <20210208135154.6645-1-Sergey.Semin@baikalelectronics.ru>
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bauerman@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Eb4XMyvh; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZNJt4CBlzDvWP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 10:58:37 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 118NXEvH155636; Mon, 8 Feb 2021 18:58:14 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=references : from : to :
+ cc : subject : in-reply-to : date : message-id : mime-version :
+ content-type; s=pp1; bh=mxn87d4AQHZAkLlT2xU24ah/PVAVDm4ATnnmcY7rvko=;
+ b=Eb4XMyvhwDH3HB0LvVSlJxJWsdw9GHkBaxCr2nPW/9jV2Fm01Eaf3AGx6Rtp1yC4Pf6f
+ n9A7ZDuUPm08lhlItSkDdQNr1WQEv+AgkLcq9Q3JQglTnPsBrMt8WXTSIt4UVm+hYvtr
+ xOZ9d689FLZ/VXL6whLzNecynW4pGNIRtIgYrXHTBn8vY70jHAcu4V3GJUS2orh1wTy7
+ M/yqKkkH78ChyWyq9yWEd1xGztKS91ci6KdcdjmNOAkmw0p8bXGEeYihphsQ6D2U3ugw
+ CmdhO707cb4pB19U11/sqr/DulUr20pdE3g6IseLZo7PRmktytwRspD2XyEbmT+6Vg51 0w== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36kbsmwe4d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Feb 2021 18:58:13 -0500
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 118NmKDr021090;
+ Mon, 8 Feb 2021 23:58:13 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma03wdc.us.ibm.com with ESMTP id 36hjr92f6b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Feb 2021 23:58:13 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 118NwCQS26149262
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Feb 2021 23:58:12 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B721DAE063;
+ Mon,  8 Feb 2021 23:58:12 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 685ADAE05F;
+ Mon,  8 Feb 2021 23:58:09 +0000 (GMT)
+Received: from manicouagan.localdomain (unknown [9.80.224.222])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Mon,  8 Feb 2021 23:58:09 +0000 (GMT)
+References: <20201220064959.GB392325@kernel.org>
+ <20210122043714.266075-1-bauerman@linux.ibm.com>
+ <20210123180911.aafa8404a3a7a30779713456@linux-foundation.org>
+ <20210124073421.GG6332@kernel.org>
+User-agent: mu4e 1.4.10; emacs 27.1
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v2 2/2] memblock: do not start bottom-up allocations
+ with kernel_end
+In-reply-to: <20210124073421.GG6332@kernel.org>
+Date: Mon, 08 Feb 2021 20:58:07 -0300
+Message-ID: <87ft26yuwg.fsf@manicouagan.localdomain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
+ definitions=2021-02-08_16:2021-02-08,
+ 2021-02-08 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ suspectscore=0 adultscore=0 mlxscore=0 impostorscore=0 phishscore=0
+ clxscore=1015 malwarescore=0 bulkscore=0 spamscore=0 priorityscore=1501
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102080130
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,55 +107,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Serge Semin <Sergey.Semin@baikalelectronics.ru>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Serge Semin <fancer.lancer@gmail.com>
+Cc: riel@surriel.com, iamjoonsoo.kim@lge.com, Ram Pai <linuxram@us.ibm.com>,
+ linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>, guro@fb.com,
+ Konrad Rzeszutek Wilk <konrad@darnok.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ kernel-team@fb.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In accordance with the Generic EHCI/OHCI bindings the corresponding node
-name is suppose to comply with the Generic USB HCD DT schema, which
-requires the USB nodes to have the name acceptable by the regexp:
-"^usb(@.*)?" . Make sure the "generic-ehci" and "generic-ohci"-compatible
-nodes are correctly named.
 
-Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- arch/powerpc/boot/dts/akebono.dts | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Mike Rapoport <rppt@kernel.org> writes:
 
-diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
-index df18f8dc4642..343326c30380 100644
---- a/arch/powerpc/boot/dts/akebono.dts
-+++ b/arch/powerpc/boot/dts/akebono.dts
-@@ -126,7 +126,7 @@ SATA0: sata@30000010000 {
- 			interrupts = <93 2>;
- 		};
- 
--		EHCI0: ehci@30010000000 {
-+		EHCI0: usb@30010000000 {
- 			compatible = "ibm,476gtr-ehci", "generic-ehci";
- 			reg = <0x300 0x10000000 0x0 0x10000>;
- 			interrupt-parent = <&MPIC>;
-@@ -140,14 +140,14 @@ SD0: sd@30000000000 {
- 			interrupt-parent = <&MPIC>;
- 		};
- 
--		OHCI0: ohci@30010010000 {
-+		OHCI0: usb@30010010000 {
- 			compatible = "ibm,476gtr-ohci", "generic-ohci";
- 			reg = <0x300 0x10010000 0x0 0x10000>;
- 			interrupt-parent = <&MPIC>;
- 			interrupts = <89 1>;
- 			};
- 
--		OHCI1: ohci@30010020000 {
-+		OHCI1: usb@30010020000 {
- 			compatible = "ibm,476gtr-ohci", "generic-ohci";
- 			reg = <0x300 0x10020000 0x0 0x10000>;
- 			interrupt-parent = <&MPIC>;
+> On Sat, Jan 23, 2021 at 06:09:11PM -0800, Andrew Morton wrote:
+>> On Fri, 22 Jan 2021 01:37:14 -0300 Thiago Jung Bauermann <bauerman@linux.ibm.com> wrote:
+>> 
+>> > Mike Rapoport <rppt@kernel.org> writes:
+>> > 
+>> > > > Signed-off-by: Roman Gushchin <guro@fb.com>
+>> > > 
+>> > > Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
+>> > 
+>> > I've seen a couple of spurious triggers of the WARN_ONCE() removed by this
+>> > patch. This happens on some ppc64le bare metal (powernv) server machines with
+>> > CONFIG_SWIOTLB=y and crashkernel=4G, as described in a candidate patch I posted
+>> > to solve this issue in a different way:
+>> > 
+>> > https://lore.kernel.org/linuxppc-dev/20201218062103.76102-1-bauerman@linux.ibm.com/
+>> > 
+>> > Since this patch solves that problem, is it possible to include it in the next
+>> > feasible v5.11-rcX, with the following tag?
+>> 
+>> We could do this, if we're confident that this patch doesn't depend on
+>> [1/2] "mm: cma: allocate cma areas bottom-up"?  I think it is...
+>
+> A think it does not depend on cma bottom-up allocation, it's rather the other
+> way around: without this CMA bottom-up allocation could fail with KASLR
+> enabled.
+
+I noticed that this patch is now upstream as:
+
+2dcb39645441 memblock: do not start bottom-up allocations with kernel_end
+
+> Still, this patch may need updates to the way x86 does early reservations:
+>
+> https://lore.kernel.org/lkml/20210115083255.12744-1-rppt@kernel.org
+
+... but the patches from this link still aren't. Isn't this a potential
+problem for x86?
+
+The patch series on the link above is now superseded by v2:
+
+https://lore.kernel.org/linux-mm/20210128105711.10428-1-rppt@kernel.org/
+
 -- 
-2.29.2
-
+Thiago Jung Bauermann
+IBM Linux Technology Center
