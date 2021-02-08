@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53D87C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:44:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7AC0C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:46:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6496E64DAE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:44:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6496E64DAE
+	by mail.kernel.org (Postfix) with ESMTPS id 167CC64DAE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:46:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 167CC64DAE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ9L90YM8zDqS6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:44:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ9Nc0c7nzDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:46:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bc6cHDzDr2l
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bf2r2CzDrh9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:38 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZ8bS1fDNzB09ZF;
- Mon,  8 Feb 2021 16:10:28 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DZ8bT6fWNzB09ZH;
+ Mon,  8 Feb 2021 16:10:29 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ScbuFSsXEKn2; Mon,  8 Feb 2021 16:10:28 +0100 (CET)
+ with ESMTP id k_jGyOKY9R3r; Mon,  8 Feb 2021 16:10:29 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bS0sL5zB09ZC;
- Mon,  8 Feb 2021 16:10:28 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bT5t4dzB09ZC;
+ Mon,  8 Feb 2021 16:10:29 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 58A5C8B7B3;
- Mon,  8 Feb 2021 16:10:33 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A0878B7B2;
+ Mon,  8 Feb 2021 16:10:35 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id T9HVj5KSd7DE; Mon,  8 Feb 2021 16:10:33 +0100 (CET)
+ with ESMTP id p3AFaVxZowSO; Mon,  8 Feb 2021 16:10:35 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CEFB08B7BA;
- Mon,  8 Feb 2021 16:10:32 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E426E8B7BA;
+ Mon,  8 Feb 2021 16:10:34 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C4E7D6733E; Mon,  8 Feb 2021 15:10:32 +0000 (UTC)
-Message-Id: <21c08162b83655195fe9ead78ff2cfd28508d023.1612796617.git.christophe.leroy@csgroup.eu>
+ id D9F8E6733E; Mon,  8 Feb 2021 15:10:34 +0000 (UTC)
+Message-Id: <1eddb42cb12092b1e3d72608d182c365db3da41d.1612796617.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1612796617.git.christophe.leroy@csgroup.eu>
 References: <cover.1612796617.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v5 13/22] powerpc/32: Always save non volatile GPRs at syscall
- entry
+Subject: [PATCH v5 15/22] powerpc/32: Remove verification of MSR_PR on syscall
+ in the ASM entry
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon,  8 Feb 2021 15:10:32 +0000 (UTC)
+Date: Mon,  8 Feb 2021 15:10:34 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,172 +77,105 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for porting syscall entry/exit to C, inconditionally
-save non volatile general purpose registers.
+system_call_exception() checks MSR_PR and BUGs if a syscall
+is issued from kernel mode.
 
-Commit 965dd3ad3076 ("powerpc/64/syscall: Remove non-volatile GPR save
-optimisation") provides detailed explanation.
+No need to handle it anymore from the ASM entry code.
 
-This increases the number of cycles by 24 cycles on 8xx with
-null_syscall benchmark (280 => 304 cycles)
+null_syscall reduction 2 cycles (348 => 346 cycles)
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/entry_32.S           | 46 +-----------------------
- arch/powerpc/kernel/head_32.h            |  2 +-
- arch/powerpc/kernel/head_booke.h         |  2 +-
- arch/powerpc/kernel/syscalls/syscall.tbl | 20 +++--------
- 4 files changed, 8 insertions(+), 62 deletions(-)
+ arch/powerpc/kernel/entry_32.S   | 30 ------------------------------
+ arch/powerpc/kernel/head_32.h    |  3 ---
+ arch/powerpc/kernel/head_booke.h |  3 ---
+ 3 files changed, 36 deletions(-)
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index b1e36602c013..97dc28a68465 100644
+index bbf7ecea6fe0..cffe58e63356 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -351,6 +351,7 @@ trace_syscall_entry_irq_off:
+@@ -421,36 +421,6 @@ ret_from_kernel_thread:
+ 	li	r3,0
+ 	b	ret_from_syscall
  
- 	.globl	transfer_to_syscall
- transfer_to_syscall:
-+	SAVE_NVGPRS(r1)
- #ifdef CONFIG_PPC_BOOK3S_32
- 	kuep_lock r11, r12
- #endif
-@@ -614,51 +615,6 @@ ret_from_kernel_syscall:
- #endif
- _ASM_NOKPROBE_SYMBOL(ret_from_kernel_syscall)
- 
--/*
-- * The fork/clone functions need to copy the full register set into
-- * the child process. Therefore we need to save all the nonvolatile
-- * registers (r13 - r31) before calling the C code.
-- */
--	.globl	ppc_fork
--ppc_fork:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_fork
+-	/*
+-	 * System call was called from kernel. We get here with SRR1 in r9.
+-	 * Mark the exception as recoverable once we have retrieved SRR0,
+-	 * trap a warning and return ENOSYS with CR[SO] set.
+-	 */
+-	.globl	ret_from_kernel_syscall
+-ret_from_kernel_syscall:
+-	mfspr	r9, SPRN_SRR0
+-	mfspr	r10, SPRN_SRR1
+-#if !defined(CONFIG_4xx) && !defined(CONFIG_BOOKE)
+-	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR|MSR_DR))
+-	mtmsr	r11
+-#endif
 -
--	.globl	ppc_vfork
--ppc_vfork:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_vfork
+-0:	trap
+-	EMIT_BUG_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
 -
--	.globl	ppc_clone
--ppc_clone:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_clone
--
--	.globl	ppc_clone3
--ppc_clone3:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_clone3
--
--	.globl	ppc_swapcontext
--ppc_swapcontext:
--	SAVE_NVGPRS(r1)
--	lwz	r0,_TRAP(r1)
--	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
--	stw	r0,_TRAP(r1)		/* register set saved */
--	b	sys_swapcontext
+-	li	r3, ENOSYS
+-	crset	so
+-#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
+-	mtspr	SPRN_NRI, r0
+-#endif
+-	mtspr	SPRN_SRR0, r9
+-	mtspr	SPRN_SRR1, r10
+-	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
+-_ASM_NOKPROBE_SYMBOL(ret_from_kernel_syscall)
 -
  /*
   * Top-level page fault handling.
   * This is in assembler because if do_page_fault tells us that
 diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 24dc326e0d56..7b12736ec546 100644
+index fea7fe00a690..282d8fd443a9 100644
 --- a/arch/powerpc/kernel/head_32.h
 +++ b/arch/powerpc/kernel/head_32.h
-@@ -148,7 +148,7 @@
- 	stw	r2,GPR2(r11)
- 	addi	r10,r10,STACK_FRAME_REGS_MARKER@l
- 	stw	r9,_MSR(r11)
--	li	r2, \trapno + 1
-+	li	r2, \trapno
- 	stw	r10,8(r11)
- 	stw	r2,_TRAP(r11)
- 	SAVE_GPR(0, r11)
+@@ -118,8 +118,6 @@
+ .macro SYSCALL_ENTRY trapno
+ 	mfspr	r9, SPRN_SRR1
+ 	mfspr	r10, SPRN_SRR0
+-	andi.	r11, r9, MSR_PR
+-	beq-	99f
+ 	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL)		/* can take exceptions */
+ 	lis	r12, 1f@h
+ 	ori	r12, r12, 1f@l
+@@ -174,7 +172,6 @@
+ 3:
+ #endif
+ 	b	transfer_to_syscall		/* jump to handler */
+-99:	b	ret_from_kernel_syscall
+ .endm
+ 
+ .macro save_dar_dsisr_on_stack reg1, reg2, sp
 diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index b3c502c503a0..626e716576ce 100644
+index db931f1167aa..bfbd240cc8a2 100644
 --- a/arch/powerpc/kernel/head_booke.h
 +++ b/arch/powerpc/kernel/head_booke.h
-@@ -124,7 +124,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	stw	r2,GPR2(r11)
- 	addi	r12, r12, STACK_FRAME_REGS_MARKER@l
- 	stw	r9,_MSR(r11)
--	li	r2, \trapno + 1
-+	li	r2, \trapno
- 	stw	r12, 8(r11)
- 	stw	r2,_TRAP(r11)
- 	SAVE_GPR(0, r11)
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index f744eb5cba88..96b2157f0371 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -9,9 +9,7 @@
- #
- 0	nospu	restart_syscall			sys_restart_syscall
- 1	nospu	exit				sys_exit
--2	32	fork				ppc_fork			sys_fork
--2	64	fork				sys_fork
--2	spu	fork				sys_ni_syscall
-+2	nospu	fork				sys_fork
- 3	common	read				sys_read
- 4	common	write				sys_write
- 5	common	open				sys_open			compat_sys_open
-@@ -160,9 +158,7 @@
- 119	32	sigreturn			sys_sigreturn			compat_sys_sigreturn
- 119	64	sigreturn			sys_ni_syscall
- 119	spu	sigreturn			sys_ni_syscall
--120	32	clone				ppc_clone			sys_clone
--120	64	clone				sys_clone
--120	spu	clone				sys_ni_syscall
-+120	nospu	clone				sys_clone
- 121	common	setdomainname			sys_setdomainname
- 122	common	uname				sys_newuname
- 123	common	modify_ldt			sys_ni_syscall
-@@ -244,9 +240,7 @@
- 186	spu	sendfile			sys_sendfile64
- 187	common	getpmsg				sys_ni_syscall
- 188	common 	putpmsg				sys_ni_syscall
--189	32	vfork				ppc_vfork			sys_vfork
--189	64	vfork				sys_vfork
--189	spu	vfork				sys_ni_syscall
-+189	nospu	vfork				sys_vfork
- 190	common	ugetrlimit			sys_getrlimit			compat_sys_getrlimit
- 191	common	readahead			sys_readahead			compat_sys_readahead
- 192	32	mmap2				sys_mmap2			compat_sys_mmap2
-@@ -322,9 +316,7 @@
- 248	32	clock_nanosleep			sys_clock_nanosleep_time32
- 248	64	clock_nanosleep			sys_clock_nanosleep
- 248	spu	clock_nanosleep			sys_clock_nanosleep
--249	32	swapcontext			ppc_swapcontext			compat_sys_swapcontext
--249	64	swapcontext			sys_swapcontext
--249	spu	swapcontext			sys_ni_syscall
-+249	nospu	swapcontext			sys_swapcontext			compat_sys_swapcontext
- 250	common	tgkill				sys_tgkill
- 251	32	utimes				sys_utimes_time32
- 251	64	utimes				sys_utimes
-@@ -522,9 +514,7 @@
- 432	common	fsmount				sys_fsmount
- 433	common	fspick				sys_fspick
- 434	common	pidfd_open			sys_pidfd_open
--435	32	clone3				ppc_clone3			sys_clone3
--435	64	clone3				sys_clone3
--435	spu	clone3				sys_ni_syscall
-+435	nospu	clone3				sys_clone3
- 436	common	close_range			sys_close_range
- 437	common	openat2				sys_openat2
- 438	common	pidfd_getfd			sys_pidfd_getfd
+@@ -106,10 +106,8 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ #endif
+ 	mfspr	r9, SPRN_SRR1
+ 	BOOKE_CLEAR_BTB(r11)
+-	andi.	r11, r9, MSR_PR
+ 	lwz	r11, TASK_STACK - THREAD(r10)
+ 	rlwinm	r12,r12,0,4,2	/* Clear SO bit in CR */
+-	beq-	99f
+ 	ALLOC_STACK_FRAME(r11, THREAD_SIZE - INT_FRAME_SIZE)
+ 	stw	r12, _CCR(r11)		/* save various registers */
+ 	mflr	r12
+@@ -155,7 +153,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ 
+ 3:
+ 	b	transfer_to_syscall	/* jump to handler */
+-99:	b	ret_from_kernel_syscall
+ .endm
+ 
+ /* To handle the additional exception priority levels on 40x and Book-E
 -- 
 2.25.0
 
