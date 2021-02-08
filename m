@@ -2,57 +2,65 @@ Return-Path: <SRS0=fNlO=HK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA87C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 14:08:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E52EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:13:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC26564E2E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 14:08:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC26564E2E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E9E2964F07
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Feb 2021 15:13:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9E2964F07
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ7Cj6JJzzDqW6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 01:08:17 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZ8gM65z6zDsVd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 02:13:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ6zM6NPMzDqNy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 00:57:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=ZYI8/1gy; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DZ6zL64vkz9sSC; Tue,  9 Feb 2021 00:57:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1612792654;
- bh=2VZptngGBPuTkFxDmYp0XxrovPwgzCToo4rDK2DhbRY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZYI8/1gy0eJNx6VVl0045W3Lt6xDcM6gxeNh1DKuzMf0q4iTGx3FcMoDniN7OxrgH
- YPlwtm2qyfTEBN/bKxWBJvtxx263N1tgGJyfU9SnluorOrPlBLRg9GvrTrj+LUQXLd
- UBtk9IdsMnPMcnkTqL85rJa8dXri9vJl5TBbTTIYttl8+IATMNYFT5L2RZzIxRIT3F
- 6DgoP2Xd+JYBxuBpsoHnjs7fSFGRfJbSEa2HG3mEQ3PcT3MwebmXo7RhG0X58RC/aX
- AjxcP0ADq9HtKMtpe32gRt8gUcnk2A40Y9C9vat64bW15EV6+zlCQ1cwiLlFsehVdg
- 7qlWiNH8XGIZA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/uaccess: Move might_fault() into
- user_access_begin()
-Date: Tue,  9 Feb 2021 00:57:17 +1100
-Message-Id: <20210208135717.2618798-2-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210208135717.2618798-1-mpe@ellerman.id.au>
-References: <20210208135717.2618798-1-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZ8bS2ZYkzDrhK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 02:10:24 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DZ8bC4Zpnz9vBn7;
+ Mon,  8 Feb 2021 16:10:15 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id gKTZq4CerUPD; Mon,  8 Feb 2021 16:10:15 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DZ8bC3Vk5z9vBn3;
+ Mon,  8 Feb 2021 16:10:15 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D31988B7B3;
+ Mon,  8 Feb 2021 16:10:20 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 8YNh5aPoktjj; Mon,  8 Feb 2021 16:10:20 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 72EFC8B7B2;
+ Mon,  8 Feb 2021 16:10:20 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 690CC6733E; Mon,  8 Feb 2021 15:10:20 +0000 (UTC)
+Message-Id: <c65e105b63aaf74f91a14f845bc77192350b84a6.1612796617.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1612796617.git.christophe.leroy@csgroup.eu>
+References: <cover.1612796617.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 01/22] powerpc/32s: Add missing call to kuep_lock on
+ syscall entry
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, msuchanek@suse.de
+Date: Mon,  8 Feb 2021 15:10:20 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,68 +72,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have a might_fault() check in __unsafe_put_user_goto(), but that is
-dangerous as it potentially calls lots of code while user access is
-enabled.
+Userspace Execution protection and fast syscall entry were implemented
+independently from each other and were both merged in kernel 5.2,
+leading to syscall entry missing userspace execution protection.
 
-It also triggers the check Alexey added to the irq restore path to
-catch cases like that:
+On syscall entry, execution of user space memory must be
+locked in the same way as on exception entry.
 
-  WARNING: CPU: 30 PID: 1 at arch/powerpc/include/asm/book3s/64/kup.h:324 arch_local_irq_restore+0x160/0x190
-  NIP arch_local_irq_restore+0x160/0x190
-  LR  lock_is_held_type+0x140/0x200
-  Call Trace:
-    0xc00000007f392ff8 (unreliable)
-    ___might_sleep+0x180/0x320
-    __might_fault+0x50/0xe0
-    filldir64+0x2d0/0x5d0
-    call_filldir+0xc8/0x180
-    ext4_readdir+0x948/0xb40
-    iterate_dir+0x1ec/0x240
-    sys_getdents64+0x80/0x290
-    system_call_exception+0x160/0x280
-    system_call_common+0xf0/0x27c
-
-So remove the might fault check from unsafe_put_user().
-
-Any call to unsafe_put_user() must be inside a region that's had user
-access enabled with user_access_begin(), so move the might_fault() in
-there. That also allows us to drop the is_kernel_addr() test, because
-there should be no code using user_access_begin() in order to access a
-kernel address.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: b86fb88855ea ("powerpc/32: implement fast entry for syscalls on non BOOKE")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/uaccess.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 70347ee34c94..71640eca7341 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -214,8 +214,6 @@ do {								\
- #define __unsafe_put_user_goto(x, ptr, size, label)		\
- do {								\
- 	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
--	if (!is_kernel_addr((unsigned long)__pu_addr))		\
--		might_fault();					\
- 	__chk_user_ptr(ptr);					\
- 	__put_user_size_goto((x), __pu_addr, (size), label);	\
- } while (0)
-@@ -494,6 +492,8 @@ extern void memcpy_page_flushcache(char *to, struct page *page, size_t offset,
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index b102b40c4988..b1e36602c013 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -351,6 +351,9 @@ trace_syscall_entry_irq_off:
  
- static __must_check inline bool user_access_begin(const void __user *ptr, size_t len)
- {
-+	might_fault();
-+
- 	if (unlikely(!access_ok(ptr, len)))
- 		return false;
- 	allow_read_write_user((void __user *)ptr, ptr, len);
+ 	.globl	transfer_to_syscall
+ transfer_to_syscall:
++#ifdef CONFIG_PPC_BOOK3S_32
++	kuep_lock r11, r12
++#endif
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ 	andi.	r12,r9,MSR_EE
+ 	beq-	trace_syscall_entry_irq_off
 -- 
-2.25.1
+2.25.0
 
