@@ -2,61 +2,67 @@ Return-Path: <SRS0=hK36=HL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB911C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 14:14:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A0BAC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 14:17:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA63564E0D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 14:14:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA63564E0D
+	by mail.kernel.org (Postfix) with ESMTPS id BB4DB64E66
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 14:17:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB4DB64E66
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZlJ06byFzDqnn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 01:14:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZlMz5H1gzDsm9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 01:17:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZl2W5YMtzDrcP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2021 01:02:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZlC30NkHzDrgC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2021 01:09:48 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZl2D0xCNz9v0KD;
- Tue,  9 Feb 2021 15:02:12 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DZlBt52xCz9v0KF;
+ Tue,  9 Feb 2021 15:09:42 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id vzzvUCSzVgen; Tue,  9 Feb 2021 15:02:12 +0100 (CET)
+ with ESMTP id LhI_BRQAm7WU; Tue,  9 Feb 2021 15:09:42 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZl2D050pz9v0KB;
- Tue,  9 Feb 2021 15:02:12 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DZlBt4CbJz9v0KD;
+ Tue,  9 Feb 2021 15:09:42 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2E4838B7EA;
- Tue,  9 Feb 2021 15:02:13 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D96688B764;
+ Tue,  9 Feb 2021 15:09:43 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wvj3lYxnwGWG; Tue,  9 Feb 2021 15:02:13 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E0A908B7E9;
- Tue,  9 Feb 2021 15:02:12 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 84DEE67359; Tue,  9 Feb 2021 14:02:12 +0000 (UTC)
-Message-Id: <99d4ccb58a20d8408d0e19874393655ad5b40822.1612879284.git.christophe.leroy@csgroup.eu>
+ with ESMTP id snK0o61C7HEv; Tue,  9 Feb 2021 15:09:43 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7957A8B7EA;
+ Tue,  9 Feb 2021 15:09:43 +0100 (CET)
+Subject: Re: [PATCH v3 1/8] powerpc/uaccess: Add unsafe_copy_from_user
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "Christopher M. Riedl" <cmr@codefail.de>, linuxppc-dev@lists.ozlabs.org
+References: <C8LLSM3UC598.L4E2VMGJOI06@geist>
+ <87pn21r7yr.fsf@mpe.ellerman.id.au>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 1/3] powerpc/uaccess: get rid of small constant size cases
- in raw_copy_{to,from}_user()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue,  9 Feb 2021 14:02:12 +0000 (UTC)
+Message-ID: <102b658b-11e2-0619-e75f-245d55c32c76@csgroup.eu>
+Date: Tue, 9 Feb 2021 15:09:41 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.0
+MIME-Version: 1.0
+In-Reply-To: <87pn21r7yr.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,81 +74,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Copied from commit 4b842e4e25b1 ("x86: get rid of small
-constant size cases in raw_copy_{to,from}_user()")
 
-Very few call sites where that would be triggered remain, and none
-of those is anywhere near hot enough to bother.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/uaccess.h | 41 ------------------------------
- 1 file changed, 41 deletions(-)
+Le 19/01/2021 à 03:11, Michael Ellerman a écrit :
+> "Christopher M. Riedl" <cmr@codefail.de> writes:
+>> On Mon Jan 11, 2021 at 7:22 AM CST, Christophe Leroy wrote:
+>>> Le 09/01/2021 à 04:25, Christopher M. Riedl a écrit :
+>>>> Implement raw_copy_from_user_allowed() which assumes that userspace read
+>>>> access is open. Use this new function to implement raw_copy_from_user().
+>>>> Finally, wrap the new function to follow the usual "unsafe_" convention
+>>>> of taking a label argument.
+>>>
+>>> I think there is no point implementing raw_copy_from_user_allowed(), see
+>>> https://github.com/linuxppc/linux/commit/4b842e4e25b1 and
+>>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/8c74fc9ce8131cabb10b3e95dc0e430f396ee83e.1610369143.git.christophe.leroy@csgroup.eu/
+>>>
+>>> You should simply do:
+>>>
+>>> #define unsafe_copy_from_user(d, s, l, e) \
+>>> unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
+>>>
+>>
+>> I gave this a try and the signal ops decreased by ~8K. Now, to be
+>> honest, I am not sure what an "acceptable" benchmark number here
+>> actually is - so maybe this is ok? Same loss with both radix and hash:
+>>
+>> 	|                                      | hash   | radix  |
+>> 	| ------------------------------------ | ------ | ------ |
+>> 	| linuxppc/next                        | 118693 | 133296 |
+>> 	| linuxppc/next w/o KUAP+KUEP          | 228911 | 228654 |
+>> 	| unsafe-signal64                      | 200480 | 234067 |
+>> 	| unsafe-signal64 (__copy_tofrom_user) | 192467 | 225119 |
+>>
+>> To put this into perspective, prior to KUAP and uaccess flush, signal
+>> performance in this benchmark was ~290K on hash.
+> 
+> If I'm doing the math right 8K is ~4% of the best number.
+> 
+> It seems like 4% is worth a few lines of code to handle these constant
+> sizes. It's not like we have performance to throw away.
+> 
+> Or, we should chase down where the call sites are that are doing small
+> constant copies with copy_to/from_user() and change them to use
+> get/put_user().
+> 
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 93d33f7e8b53..a4d2569173ac 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -398,26 +398,6 @@ static inline unsigned long raw_copy_from_user(void *to,
- 		const void __user *from, unsigned long n)
- {
- 	unsigned long ret;
--	if (__builtin_constant_p(n) && (n <= 8)) {
--		ret = 1;
--
--		switch (n) {
--		case 1:
--			__get_user_size(*(u8 *)to, from, 1, ret);
--			break;
--		case 2:
--			__get_user_size(*(u16 *)to, from, 2, ret);
--			break;
--		case 4:
--			__get_user_size(*(u32 *)to, from, 4, ret);
--			break;
--		case 8:
--			__get_user_size(*(u64 *)to, from, 8, ret);
--			break;
--		}
--		if (ret == 0)
--			return 0;
--	}
- 
- 	allow_read_from_user(from, n);
- 	ret = __copy_tofrom_user((__force void __user *)to, from, n);
-@@ -428,27 +408,6 @@ static inline unsigned long raw_copy_from_user(void *to,
- static inline unsigned long
- raw_copy_to_user_allowed(void __user *to, const void *from, unsigned long n)
- {
--	if (__builtin_constant_p(n) && (n <= 8)) {
--		unsigned long ret = 1;
--
--		switch (n) {
--		case 1:
--			__put_user_size_allowed(*(u8 *)from, (u8 __user *)to, 1, ret);
--			break;
--		case 2:
--			__put_user_size_allowed(*(u16 *)from, (u16 __user *)to, 2, ret);
--			break;
--		case 4:
--			__put_user_size_allowed(*(u32 *)from, (u32 __user *)to, 4, ret);
--			break;
--		case 8:
--			__put_user_size_allowed(*(u64 *)from, (u64 __user *)to, 8, ret);
--			break;
--		}
--		if (ret == 0)
--			return 0;
--	}
--
- 	return __copy_tofrom_user(to, (__force const void __user *)from, n);
- }
- 
--- 
-2.25.0
+I have built pmac32_defconfig and ppc64_defconfig with a BUILD_BUG_ON(__builtin_constant_p(n) && (n 
+== 1 || n == 2 || n == 4 || n == 8) in raw_copy_from_user() and raw_copy_to_user():
 
+On pmac32_defconfig, no hit.
+
+On ppc64_defconfig, two hits:
+- copies of sigset_t in signal64. This problem is only on linux/next. On next-test we don't have 
+this problem anymore thanks to the series from Christopher.
+- in pkey_set() in arch/powerpc/kernel/ptrace/ptrace-view.c, in the copy of new_amr. This is not a 
+hot path I think so we can live with it.
+
+Christophe
