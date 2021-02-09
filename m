@@ -2,64 +2,58 @@ Return-Path: <SRS0=hK36=HL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13152C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 11:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77DD2C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 11:51:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0014264E10
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 11:44:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0014264E10
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id C7F7A64E3B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 11:51:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7F7A64E3B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DZgzT49NnzDrRX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 22:44:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DZh7j50tZzDr5s
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Feb 2021 22:51:45 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DZdbV5t8dzDqqy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 20:57:10 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DZdbP2qB2z9txgl;
- Tue,  9 Feb 2021 10:57:05 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id aL-FAucA4rGx; Tue,  9 Feb 2021 10:57:05 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DZdbP1xJQz9txg8;
- Tue,  9 Feb 2021 10:57:05 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 248A08B7D4;
- Tue,  9 Feb 2021 10:57:06 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SCZDCi1Zdfgv; Tue,  9 Feb 2021 10:57:06 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9BFD08B7D8;
- Tue,  9 Feb 2021 10:57:05 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 74F6A67342; Tue,  9 Feb 2021 09:57:05 +0000 (UTC)
-Message-Id: <2e69646ef9db1892d8b9655f2e58f7c93f9d5199.1612864004.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1612864003.git.christophe.leroy@csgroup.eu>
-References: <cover.1612864003.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 40/41] powerpc/8xx: Create C version of kuap
- save/restore/check helpers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com
-Date: Tue,  9 Feb 2021 09:57:05 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DZf572q29zDshL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2021 21:19:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=TS+Xn5Hr; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DZf562rbmz9rx8;
+ Tue,  9 Feb 2021 21:19:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1612865962;
+ bh=O151gfDDdxSnbws+w5Gl/2M/gAxACw1PS+d+7Fwc/dg=;
+ h=Date:From:To:Cc:Subject:From;
+ b=TS+Xn5HrWhjfN+wQ1BlEtDfB6vTMI4J9eJkOpjIVbggn366im563T1EfJjN+BLlzf
+ 2gi+jo3ambUWRff+PajW9Tu4iCHa6Gjp7a2FTH51eiZwdeJ2nJuqd8kPBHoW+eQTKK
+ nCgM/FcYBbsYIspZr3dowD9Z1Z+STEKCWdq6np3f3GszDzPdDnjOXeS3TCtQUCAJyb
+ BLbdLezSOXIEfysnDERHDHLeuL+5ddOgXE06SKSC7gIgSRd/GfNi+CeYMwZQzRmP7Y
+ XgHhsPrdfVARDTg8GtaAbepekXHpNSFPTLPCfUFgjpFxkcehPIt5xR0GhbpyH79IVX
+ rTnO0GVP1M8Aw==
+Date: Tue, 9 Feb 2021 21:19:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the powerpc tree
+Message-ID: <20210209211921.777e3053@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/qgUhga/cX7TmqXbGpC=4w=A";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,64 +65,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation of porting PPC32 to C syscall entry/exit,
-create C version of kuap_save_and_lock() and kuap_user_restore() and
-kuap_kernel_restore() and kuap_check() and kuap_get_and_check() on 8xx.
+--Sig_/qgUhga/cX7TmqXbGpC=4w=A
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/nohash/32/kup-8xx.h | 33 ++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+Hi all,
 
-diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-index 17a4a616436f..6f191fe08a2e 100644
---- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-@@ -34,6 +34,39 @@
- 
- #include <asm/reg.h>
- 
-+static inline void kuap_save_and_lock(struct pt_regs *regs)
-+{
-+	regs->kuap = mfspr(SPRN_MD_AP);
-+	mtspr(SPRN_MD_AP, MD_APG_KUAP);
-+}
-+
-+static inline void kuap_user_restore(struct pt_regs *regs)
-+{
-+}
-+
-+static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
-+{
-+	mtspr(SPRN_MD_AP, regs->kuap);
-+}
-+
-+static inline void kuap_check(void)
-+{
-+	if (!IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
-+		return;
-+
-+	WARN_ON_ONCE(mfspr(SPRN_MD_AP) >> 16 != MD_APG_KUAP >> 16);
-+}
-+
-+static inline unsigned long kuap_get_and_check(void)
-+{
-+	unsigned long kuap = mfspr(SPRN_MD_AP);
-+
-+	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
-+		WARN_ON_ONCE(kuap >> 16 != MD_APG_KUAP >> 16);
-+
-+	return kuap;
-+}
-+
- static inline void allow_user_access(void __user *to, const void __user *from,
- 				     unsigned long size, unsigned long dir)
- {
--- 
-2.25.0
+After merging the powerpc tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
+arch/powerpc/kernel/head_64.o:(__ftr_alt_97+0x0): relocation truncated to f=
+it: R_PPC64_REL24 (OPD) against symbol `do_page_fault' defined in .opd sect=
+ion in arch/powerpc/mm/fault.o
+arch/powerpc/kernel/head_64.o:(__ftr_alt_97+0x8): relocation truncated to f=
+it: R_PPC64_REL24 (OPD) against symbol `do_page_fault' defined in .opd sect=
+ion in arch/powerpc/mm/fault.o
+arch/powerpc/kernel/head_64.o:(__ftr_alt_97+0x28): relocation truncated to =
+fit: R_PPC64_REL24 (OPD) against symbol `unknown_exception' defined in .opd=
+ section in arch/powerpc/kernel/traps.o
+
+Not sure exactly which commit caused this, but it is most likkely part
+of a series in the powerpc tree.
+
+I have left the allyesconfig build broken for today.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/qgUhga/cX7TmqXbGpC=4w=A
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmAiYakACgkQAVBC80lX
+0GzODgf6Av3auGL+x8wwz7etJ4YrThQzj3Q3WnEYs/01uB6rUjwanMOKk26gwIbd
+vJIaFavzViS6MSyTci0bm/VY1kDNGkZHpeluF78dnMbUVAeHxKA+NLw3/Ha0TEjs
+y3a8JB5UoavVSga0eB2d5Dlqfzbncxcah22eChlC1D0yUKqbU0h/6NtwuAATp1xU
+WUGTEROUjigx7yO+Rb/me+41hHfpNTmDucIFT6jeFXeLAi4322W+WFemBIKQiIdf
+Vh/NPzs5HkhvW5hvOn9Pn3t1kJzMCGMO7yNExMFY1vc8IOj/g+g9b53FM7DZdcRt
+yuLEAHl3cvVmDfJu4kll/cnG742KwQ==
+=mhS3
+-----END PGP SIGNATURE-----
+
+--Sig_/qgUhga/cX7TmqXbGpC=4w=A--
