@@ -2,60 +2,49 @@ Return-Path: <SRS0=uerg=HM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95FBCC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 17:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB9C8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 17:32:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC0F064E7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 17:29:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC0F064E7C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3D1DE64EC9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 17:32:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D1DE64EC9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DbRZf6LHFzDwjJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 04:29:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DbRf23C77zDwjJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 04:32:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=PYxXK7GD; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DbRWt6rBHzDsYd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 04:26:50 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 75CF064E05;
- Wed, 10 Feb 2021 17:26:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1612978007;
- bh=L+9ZY6K3T2erGZBQk5+t7RI7BYJvkEJbar4mTVy5H0U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=PYxXK7GDNBqNxrfsDcFg0krA6Xt4Z+erkFS7v3V7XiOxi5ybzH73uGmPfgz0KgzGV
- rYVPv2YB0pV8PGQnVJDaECb58s8GPGHBB1IiiU2QfmIMkmrt/HUQKdx49BOzdWGqqK
- ZOb1/dAJnElc+yDzDkvYGXVnu5zGnyPuSpzO6wsakYFMQzZWpUV5ftndbWZ+HwSdhO
- 3/Ba9fYhBMru5owRfcT3fK4u4/TNUdgbHrsyHHiuP+4dOmA78huCa4/v87+JFG0FKn
- d+mpcP5/OBABfK6ng6UpK+7/MvRQifQjt1Bysohv2GIBVhgLKgriM8l6blDbGj/Vlh
- P/szDaZsUQ0mA==
-Date: Wed, 10 Feb 2021 17:26:39 +0000
-From: Will Deacon <will@kernel.org>
-To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Subject: Re: [PATCH v17 03/10] arm64: Use common of_kexec_alloc_and_setup_fdt()
-Message-ID: <20210210172638.GA29087@willie-the-truck>
-References: <20210209182200.30606-1-nramas@linux.microsoft.com>
- <20210209182200.30606-4-nramas@linux.microsoft.com>
+ smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
+ helo=mail.baikalelectronics.ru;
+ envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
+Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
+ [87.245.175.226])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DbRZX04QRzDwjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 04:29:06 +1100 (AEDT)
+From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To: Felipe Balbi <balbi@kernel.org>, Bjorn Andersson
+ <bjorn.andersson@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Florian
+ Fainelli <f.fainelli@gmail.com>, Rob Herring <robh+dt@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
+ Mackerras <paulus@samba.org>
+Subject: [PATCH v6 05/10] powerpc: dts: akebono: Harmonize EHCI/OHCI DT nodes
+ name
+Date: Wed, 10 Feb 2021 20:28:45 +0300
+Message-ID: <20210210172850.20849-6-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <20210210172850.20849-1-Sergey.Semin@baikalelectronics.ru>
+References: <20210210172850.20849-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210209182200.30606-4-nramas@linux.microsoft.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,39 +56,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, tao.li@vivo.com, zohar@linux.ibm.com,
- paulus@samba.org, vincenzo.frascino@arm.com, frowand.list@gmail.com,
- sashal@kernel.org, robh@kernel.org, masahiroy@kernel.org, jmorris@namei.org,
- takahiro.akashi@linaro.org, linux-arm-kernel@lists.infradead.org,
- catalin.marinas@arm.com, serge@hallyn.com, devicetree@vger.kernel.org,
- pasha.tatashin@soleen.com, prsriva@linux.microsoft.com, hsinyi@chromium.org,
- allison@lohutok.net, christophe.leroy@c-s.fr, mbrugger@suse.com,
- balajib@linux.microsoft.com, dmitry.kasatkin@gmail.com,
- linux-kernel@vger.kernel.org, james.morse@arm.com, gregkh@linuxfoundation.org,
- joe@perches.com, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 09, 2021 at 10:21:53AM -0800, Lakshmi Ramasubramanian wrote:
-> From: Rob Herring <robh@kernel.org>
-> 
-> The code for setting up the /chosen node in the device tree
-> and updating the memory reservation for the next kernel has been
-> moved to of_kexec_alloc_and_setup_fdt() defined in "drivers/of/kexec.c".
-> 
-> Use the common of_kexec_alloc_and_setup_fdt() to setup the device tree
-> and update the memory reservation for kexec for arm64.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-> ---
->  arch/arm64/kernel/machine_kexec_file.c | 180 ++-----------------------
->  1 file changed, 8 insertions(+), 172 deletions(-)
+In accordance with the Generic EHCI/OHCI bindings the corresponding node
+name is suppose to comply with the Generic USB HCD DT schema, which
+requires the USB nodes to have the name acceptable by the regexp:
+"^usb(@.*)?" . Make sure the "generic-ehci" and "generic-ohci"-compatible
+nodes are correctly named.
 
-I mean, of course I'm going to Ack that!
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ arch/powerpc/boot/dts/akebono.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Acked-by: Will Deacon <will@kernel.org>
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index df18f8dc4642..343326c30380 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -126,7 +126,7 @@ SATA0: sata@30000010000 {
+ 			interrupts = <93 2>;
+ 		};
+ 
+-		EHCI0: ehci@30010000000 {
++		EHCI0: usb@30010000000 {
+ 			compatible = "ibm,476gtr-ehci", "generic-ehci";
+ 			reg = <0x300 0x10000000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+@@ -140,14 +140,14 @@ SD0: sd@30000000000 {
+ 			interrupt-parent = <&MPIC>;
+ 		};
+ 
+-		OHCI0: ohci@30010010000 {
++		OHCI0: usb@30010010000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10010000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+ 			interrupts = <89 1>;
+ 			};
+ 
+-		OHCI1: ohci@30010020000 {
++		OHCI1: usb@30010020000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10020000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+-- 
+2.30.0
 
-Will
