@@ -6,66 +6,67 @@ X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 076DCC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 22:14:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA4D7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 22:19:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2488C64E02
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 22:14:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2488C64E02
+	by mail.kernel.org (Postfix) with ESMTPS id 049D264E02
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 22:19:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 049D264E02
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DbYw72cXGzDwlP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 09:14:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DbZ1408gpzDwkk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 09:19:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.41; helo=mail-ot1-f41.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com
- [209.85.210.41])
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.177;
+ helo=mail-oi1-f177.google.com; envelope-from=robherring2@gmail.com;
+ receiver=<UNKNOWN>)
+Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com
+ [209.85.167.177])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DbYt75MLXzDwj8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 09:13:00 +1100 (AEDT)
-Received: by mail-ot1-f41.google.com with SMTP id r21so3327134otk.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2021 14:13:00 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DbYys3nnXzDvbt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 09:17:09 +1100 (AEDT)
+Received: by mail-oi1-f177.google.com with SMTP id l19so3886679oih.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2021 14:17:09 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to;
- bh=DTXg6CwDth7i/nqcv+euFr50pt7fVzpIfVZ9mbO1Zq0=;
- b=LBTAE9CznU3EbIw4UmnR9jUYf+kqlpTj0aKkFrh9EqKTHVVHZ6YF+cRCJFSo/2ZAA/
- uZU1VzHPntBjkJZDEaY33DVnxx16ZzlWrwc9NT2bp09qQ6dpYNjALkcw0yGlB26mKAD6
- zdLNkZRMKq1UZUF8d4D/HoP/w7T/sKH9jeYUY93vBGO6m3qCo+9BqBHnd6eZkFJYM6Ik
- i6UWHvy6/OWHBxOjCkr1i5FQvFballvMtkhkETu7B7UHFbArJxiZhpJRYdIdhAdVKqp3
- zo54c/Jy4QC2SnM3ViOpZGXNB4RZOzI7xG8FwICrFNtx8I+Du4/Z6YHHazNlqfNyaJk9
- D3dw==
-X-Gm-Message-State: AOAM532FvrPnuQuSUF73zVLgiVC7CTQcjlp4Z3pcsKRwWbKVgSDTnOc/
- 8tbmaFn20Qy+0iUHKUNQTQ==
-X-Google-Smtp-Source: ABdhPJzi/+7SeOHhZnHUBL4PJ6P0lIk8i2F6Ep3p3sFUaaO0qUGBJ/J5giqeNfq2byHxecLoX+o25A==
-X-Received: by 2002:a9d:6b1a:: with SMTP id g26mr3792095otp.49.1612995174877; 
- Wed, 10 Feb 2021 14:12:54 -0800 (PST)
+ bh=X/+AS1PnO/pIi25zgPnySrTJigYkK7rUzHnIa2wA10c=;
+ b=hwos2Egri+l30jp9qCvLdipdGGt1wVd/x8f+9aAMoPYr2WyDLWcboQ7IS3fKlDf6Dj
+ HDofCxazpnypKWXrdkmG/2wnLNfPQShItYMMBYzPklF7+2i5VeK5Pm/EeAbvA+BH4YcZ
+ kyENPAWFhLgx3DWQbSCu3m7ma2qB2BzWZXNVB1NbbViJSAnLsJl7fwVDTTxcCpZk1VW1
+ kYJuFJJ4x9UqmfD3+RNFntEUfJVyEKrkhl6gPmP8Og7AVe32wHTmPShHRqARzdDvbVLA
+ We2QnIetqu9y0A84IVYl1Dy7H8eZGyRtBOZgN7wEXhj19tNUbVQ4Tztd827zbhEt4E/Z
+ UZxQ==
+X-Gm-Message-State: AOAM533GIrjk50xNMmIUG4Mc6W12CjX8LmeJhNItmo1cExHKHZAj36f7
+ 8qaUO2sklqrfA/l44U7iBQ==
+X-Google-Smtp-Source: ABdhPJwBaK5/uRRp67UJ2r6hTbPKpERNoPUPShLujM3MmLo48Htw1DUx13FzI0PYRRUmqbkp9mKjSg==
+X-Received: by 2002:aca:ab89:: with SMTP id u131mr818003oie.170.1612995426687; 
+ Wed, 10 Feb 2021 14:17:06 -0800 (PST)
 Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id z8sm613408oon.10.2021.02.10.14.12.53
+ by smtp.gmail.com with ESMTPSA id a20sm155592oid.47.2021.02.10.14.17.05
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 10 Feb 2021 14:12:54 -0800 (PST)
-Received: (nullmailer pid 2893717 invoked by uid 1000);
- Wed, 10 Feb 2021 22:12:52 -0000
-Date: Wed, 10 Feb 2021 16:12:52 -0600
+ Wed, 10 Feb 2021 14:17:05 -0800 (PST)
+Received: (nullmailer pid 2901206 invoked by uid 1000);
+ Wed, 10 Feb 2021 22:17:04 -0000
+Date: Wed, 10 Feb 2021 16:17:04 -0600
 From: Rob Herring <robh@kernel.org>
 To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 3/7] ASoC: dt-bindings: fsl_rpmsg: Add binding doc for
- rpmsg cpu dai driver
-Message-ID: <20210210221252.GA2885308@robh.at.kernel.org>
+Subject: Re: [PATCH v2 7/7] ASoC: dt-bindings: imx-rpmsg: Add binding doc for
+ rpmsg machine driver
+Message-ID: <20210210221704.GA2894134@robh.at.kernel.org>
 References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
- <1612693435-31418-4-git-send-email-shengjiu.wang@nxp.com>
+ <1612693435-31418-8-git-send-email-shengjiu.wang@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1612693435-31418-4-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <1612693435-31418-8-git-send-email-shengjiu.wang@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,31 +86,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Feb 07, 2021 at 06:23:51PM +0800, Shengjiu Wang wrote:
-> fsl_rpmsg cpu dai driver is driver for rpmsg audio, which is mainly used
-> for getting the user's configuration from device tree and configure the
-> clocks which is used by Cortex-M core. So in this document define the
-> needed property.
+On Sun, Feb 07, 2021 at 06:23:55PM +0800, Shengjiu Wang wrote:
+> Imx-rpmsg is a new added machine driver for supporting audio on Cortex-M
+> core. The Cortex-M core will control the audio interface, DMA and audio
+> codec, setup the pipeline, the audio driver on Cortex-A core side is just
+> to communitcate with M core, it is a virtual sound card and don't touch
+> the hardware.
+
+I don't understand why there are 2 nodes for this other than you happen 
+to want to split this into 2 Linux drivers. It's 1 h/w thing. 
+
 > 
 > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 > ---
->  .../devicetree/bindings/sound/fsl,rpmsg.yaml  | 80 +++++++++++++++++++
->  1 file changed, 80 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
+>  .../bindings/sound/imx-audio-rpmsg.yaml       | 48 +++++++++++++++++++
+>  1 file changed, 48 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-rpmsg.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml b/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
+> diff --git a/Documentation/devicetree/bindings/sound/imx-audio-rpmsg.yaml b/Documentation/devicetree/bindings/sound/imx-audio-rpmsg.yaml
 > new file mode 100644
-> index 000000000000..2d3ce10d42fc
+> index 000000000000..b941aeb80678
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/sound/fsl,rpmsg.yaml
-> @@ -0,0 +1,80 @@
+> +++ b/Documentation/devicetree/bindings/sound/imx-audio-rpmsg.yaml
+> @@ -0,0 +1,48 @@
 > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/sound/fsl,rpmsg.yaml#
+> +$id: http://devicetree.org/schemas/sound/imx-audio-rpmsg.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: NXP Audio RPMSG CPU DAI Controller
+> +title: NXP i.MX audio complex with rpmsg
 > +
 > +maintainers:
 > +  - Shengjiu Wang <shengjiu.wang@nxp.com>
@@ -117,83 +123,39 @@ On Sun, Feb 07, 2021 at 06:23:51PM +0800, Shengjiu Wang wrote:
 > +properties:
 > +  compatible:
 > +    enum:
-> +      - fsl,imx7ulp-rpmsg
-> +      - fsl,imx8mn-rpmsg
-> +      - fsl,imx8mm-rpmsg
-> +      - fsl,imx8mp-rpmsg
-
-rpmsg is a protocol. What's the h/w block?
-
+> +      - fsl,imx-audio-rpmsg
 > +
-> +  clocks:
-> +    items:
-> +      - description: Peripheral clock for register access
-> +      - description: Master clock
-> +      - description: DMA clock for DMA register access
-> +      - description: Parent clock for multiple of 8kHz sample rates
-> +      - description: Parent clock for multiple of 11kHz sample rates
-> +    minItems: 5
+> +  model:
+> +    $ref: /schemas/types.yaml#/definitions/string
+> +    description: User specified audio sound card name
 > +
-> +  clock-names:
-> +    items:
-> +      - const: ipg
-> +      - const: mclk
-> +      - const: dma
-> +      - const: pll8k
-> +      - const: pll11k
-> +    minItems: 5
+> +  audio-cpu:
+> +    description: The phandle of an CPU DAI controller
 > +
-> +  power-domains:
-> +    maxItems: 1
+> +  rpmsg-out:
+> +    description: |
+> +      This is a boolean property. If present, the transmitting function
+> +      will be enabled,
 > +
-> +  fsl,audioindex:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: instance index for rpmsg image
-> +
-> +  fsl,version:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: rpmsg image version index
-
-What are these 2 used for?
-
-> +
-> +  fsl,buffer-size:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: pre allocate dma buffer size
-> +
-> +  fsl,enable-lpa:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: enable low power audio path.
-> +
-> +  fsl,codec-type:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: Sometimes the codec is registered by
-> +                 driver not the device tree, this items
-> +                 can be used to distinguish codecs
-
-0-2^32 are valid values?
-
+> +  rpmsg-in:
+> +    description: |
+> +      This is a boolean property. If present, the receiving function
+> +      will be enabled.
 > +
 > +required:
 > +  - compatible
-> +  - fsl,audioindex
-> +  - fsl,version
-> +  - fsl,buffer-size
+> +  - model
+> +  - audio-cpu
 > +
 > +additionalProperties: false
 > +
 > +examples:
 > +  - |
-> +    rpmsg_audio: rpmsg_audio {
-> +        compatible = "fsl,imx8mn-rpmsg";
-> +        fsl,audioindex = <0> ;
-> +        fsl,version = <2>;
-> +        fsl,buffer-size = <0x6000000>;
-> +        fsl,enable-lpa;
-> +        status = "okay";
-
-Don't show status in examples.
-
+> +    sound-rpmsg {
+> +        compatible = "fsl,imx-audio-rpmsg";
+> +        model = "ak4497-audio";
+> +        audio-cpu = <&rpmsg_audio>;
+> +        rpmsg-out;
 > +    };
 > -- 
 > 2.27.0
