@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53B18C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 18:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7179BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 18:06:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77B6464ED7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 18:02:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77B6464ED7
+	by mail.kernel.org (Postfix) with ESMTPS id DC74764DB1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 18:06:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC74764DB1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DbSKQ3Y1jzDwkZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 05:02:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DbSP44MPnzDscy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 05:06:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
  helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=rXKegh2/; 
+ header.a=rsa-sha256 header.s=default header.b=iLPpwBjL; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DbSFw3Hh3zDsd0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 04:59:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DbSH80mJ8zDspc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 05:00:52 +1100 (AEDT)
 Received: from [192.168.0.104] (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id E1A6C20B6C40;
- Wed, 10 Feb 2021 09:59:45 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com E1A6C20B6C40
+ by linux.microsoft.com (Postfix) with ESMTPSA id A95AE2078945;
+ Wed, 10 Feb 2021 10:00:49 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com A95AE2078945
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1612979986;
- bh=RxMU+6LvrmWqnc2DIvDKSobw3xIYfkJxDlkl4WJG9pA=;
+ s=default; t=1612980050;
+ bh=R9xpAEULLlRloLEZ3aDp0NwjBNcG/EJw+NYFrjbxovk=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=rXKegh2/YA91tBR+aWotNVHPxyoiZ82CI7iw5lH0BizvhUionT/gtjxrVFB+WbgfU
- /46GfI1+XXkGMKqtIoTDNJAqgO/+8RJErnwcCffAfUIdMKltR0eb8elSvTpKPn89Qn
- 7IjMliBK0tfTmURhDQ4q8qNf9EkEv1qqQVKvwopw=
-Subject: Re: [PATCH v17 02/10] of: Add a common kexec FDT setup function
+ b=iLPpwBjLdWwIRAhzbc9LVKfkXHca9jl+5BYxYtIL/Nw2utUjaWoz3J/q4Khaingxp
+ 9g+ioSTJJfSpxELua3hENK89gsOkGTSQniJuV52oPiEB0xSN23m+EYsm2a7+KTq4dr
+ 1Fl6I+Swrn54OePYZFnQpIO72FEz7BkMY+hiVBu0=
+Subject: Re: [PATCH v17 05/10] powerpc: Move ima buffer fields to struct kimage
 To: Rob Herring <robh@kernel.org>
 References: <20210209182200.30606-1-nramas@linux.microsoft.com>
- <20210209182200.30606-3-nramas@linux.microsoft.com>
- <20210210172307.GB2361245@robh.at.kernel.org>
+ <20210209182200.30606-6-nramas@linux.microsoft.com>
+ <20210210172018.GA2361245@robh.at.kernel.org>
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <f464508d-fcbe-f3a2-07d5-88fd0f6e4c04@linux.microsoft.com>
-Date: Wed, 10 Feb 2021 09:59:45 -0800
+Message-ID: <a508a7b9-ce90-a68a-8b07-7fc65052d98a@linux.microsoft.com>
+Date: Wed, 10 Feb 2021 10:00:49 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210210172307.GB2361245@robh.at.kernel.org>
+In-Reply-To: <20210210172018.GA2361245@robh.at.kernel.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -84,57 +84,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/10/21 9:23 AM, Rob Herring wrote:
-> On Tue, Feb 09, 2021 at 10:21:52AM -0800, Lakshmi Ramasubramanian wrote:
->> From: Rob Herring <robh@kernel.org>
+On 2/10/21 9:20 AM, Rob Herring wrote:
+> On Tue, Feb 09, 2021 at 10:21:55AM -0800, Lakshmi Ramasubramanian wrote:
+>> The fields ima_buffer_addr and ima_buffer_size in "struct kimage_arch"
+>> for powerpc are used to carry forward the IMA measurement list across
+>> kexec system call.  These fields are not architecture specific, but are
+>> currently limited to powerpc.
 >>
->> Both arm64 and powerpc do essentially the same FDT /chosen setup for
->> kexec.  The differences are either omissions that arm64 should have
->> or additional properties that will be ignored.  The setup code can be
->> combined and shared by both powerpc and arm64.
+>> arch_ima_add_kexec_buffer() defined in "arch/powerpc/kexec/ima.c"
+>> sets ima_buffer_addr and ima_buffer_size for the kexec system call.
+>> This function does not have architecture specific code, but is
+>> currently limited to powerpc.
 >>
->> The differences relative to the arm64 version:
->>   - If /chosen doesn't exist, it will be created (should never happen).
->>   - Any old dtb and initrd reserved memory will be released.
->>   - The new initrd and elfcorehdr are marked reserved.
->>   - "linux,booted-from-kexec" is set.
+>> Move ima_buffer_addr and ima_buffer_size to "struct kimage".
+>> Rename arch_ima_add_kexec_buffer() to of_ima_add_kexec_buffer()
+>> and move it in drivers/of/kexec.c.
 >>
->> The differences relative to the powerpc version:
->>   - "kaslr-seed" and "rng-seed" may be set.
->>   - "linux,elfcorehdr" is set.
->>   - Any existing "linux,usable-memory-range" is removed.
->>
->> Combine the code for setting up the /chosen node in the FDT and updating
->> the memory reservation for kexec, for powerpc and arm64, in
->> of_kexec_alloc_and_setup_fdt() and move it to "drivers/of/kexec.c".
->>
->> Signed-off-by: Rob Herring <robh@kernel.org>
+>> Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+>> Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
 >> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+>> Suggested-by: Will Deacon <will@kernel.org>
 >> ---
->>   drivers/of/Makefile |   6 ++
->>   drivers/of/kexec.c  | 258 ++++++++++++++++++++++++++++++++++++++++++++
->>   include/linux/of.h  |  13 +++
->>   3 files changed, 277 insertions(+)
->>   create mode 100644 drivers/of/kexec.c
+>>   arch/powerpc/include/asm/ima.h     |  3 ---
+>>   arch/powerpc/include/asm/kexec.h   |  5 -----
+>>   arch/powerpc/kexec/ima.c           | 29 ++++++-----------------------
+>>   drivers/of/kexec.c                 | 23 +++++++++++++++++++++++
+>>   include/linux/kexec.h              |  3 +++
+>>   include/linux/of.h                 |  5 +++++
+>>   security/integrity/ima/ima_kexec.c |  3 ++-
+>>   7 files changed, 39 insertions(+), 32 deletions(-)
 
-
->> diff --git a/include/linux/of.h b/include/linux/of.h
->> index 4b27c9a27df3..f0eff5e84353 100644
->> --- a/include/linux/of.h
->> +++ b/include/linux/of.h
->> @@ -560,6 +560,19 @@ int of_map_id(struct device_node *np, u32 id,
+>> diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+>> index 469e09613cdd..9f33d215b9f2 100644
+>> --- a/drivers/of/kexec.c
+>> +++ b/drivers/of/kexec.c
+>> @@ -63,6 +63,29 @@ static int fdt_find_and_del_mem_rsv(void *fdt, unsigned long start, unsigned lon
+>>   	return -ENOENT;
+>>   }
 >>   
->>   phys_addr_t of_dma_get_max_cpu_address(struct device_node *np);
->>   
->> +/*
->> + * Additional space needed for the buffer to build the new FDT
->> + * so that we can add initrd, bootargs, kaslr-seed, rng-seed,
->> + * userable-memory-range and elfcorehdr.
+>> +#ifdef CONFIG_IMA_KEXEC
+>> +/**
+>> + * of_ima_add_kexec_buffer - Add IMA buffer for next kernel
+>> + *
+>> + * @image: kimage struct to set IMA buffer data
+>> + * @load_addr: Starting address where IMA buffer is loaded at
+>> + * @size: Number of bytes in the IMA buffer
+>> + *
+>> + * Use this function to pass on the IMA buffer information to
+>> + * the next kernel across kexec system call.
+>> + *
+>> + * Return: 0 on success, negative errno on error.
 >> + */
->> +#define FDT_EXTRA_SPACE 0x1000
+>> +int of_ima_add_kexec_buffer(struct kimage *image,
+>> +			    unsigned long load_addr, size_t size)
+>> +{
+>> +	image->ima_buffer_addr = load_addr;
+>> +	image->ima_buffer_size = size;
+>> +
 > 
-> No need for this to be public now. Move it to of/kexec.c.
-> 
+> There's nothing DT specific about this function, so this is the wrong
+> place for it. I would just remove it and directly set the members.
 
 Will do.
 
