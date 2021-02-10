@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B52C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 15:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEC96C433E9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 15:08:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1039D64E74
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 15:04:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1039D64E74
+	by mail.kernel.org (Postfix) with ESMTPS id E83EC61481
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Feb 2021 15:08:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E83EC61481
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DbNMh2lRQzDwhs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 02:04:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DbNSN01R5zDwft
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 02:08:36 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DbKnX18zbzDqdW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 00:08:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DbKnZ3lqzzDrBg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 00:08:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=l09mmHxo; 
+ header.a=rsa-sha256 header.s=201909 header.b=OFTHXoil; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DbKnW4BCjz9sXG; Thu, 11 Feb 2021 00:08:15 +1100 (AEDT)
+ id 4DbKnY1Hzyz9sXb; Thu, 11 Feb 2021 00:08:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1612962495;
- bh=KkHY21xW+ZLDkVTQ72e1sZ78lW2nusmylSB/+Q1g9r4=;
+ s=201909; t=1612962497;
+ bh=fjdkr3cU1F0ePjeN3WeSRjNqNCsn6uIjm79EeabjIcc=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=l09mmHxotgqAUfWAqr7G1B0TeJ5uyANvjuigP2oOp7JKmnV0ARG1kVC0xTb19ovwF
- 7mD761XaCPvYHeFEQ6Yw5Jj+9wpXKvpKnt7oLPmLWfF+qE+IMnGR50kFnpilz9Jtro
- I/IFcc9tCqBivKwv4gjA7CqGX6WIoIU6noF8A6jZVJ9r2ysopgLV9lVbjgbvwPVAjd
- vSs/Hp3TKdJn/MgPZlx3wENJZA7nN+wXQquy92Ydqv3Z5MQUMwYtyjzA2yN5cI6dQR
- Go3oNzva7jOESkgqMHKFVk6aiDFnqWxD0LqOR4xJIgKcPeOLpuGXiQbkekT9bH+9O3
- kpaI9yqjkx/2Q==
+ b=OFTHXoilAjb2oO+fZT+//8s0aCOn0/V2qq9mZKqzdqU3qHzUSvxwh9b+1Hx1iR6W5
+ WVs0j0kYRrdOPCWrcWB63sF/t/J+Y2xOVDHdv0X/B7HQVsSHdEW1H8ivYNtEhw0Q04
+ GjD4SsVuG95kNJHLrDCU0R7nLCFjZPh/FiCiGCVBaORHjn1BU9S2iGdz9OdGJFAgRF
+ SPQ5T+ZFNqOLE4R9N1bNfQLlhXwJ/7muAFo8Gj5RQRjiv4b1E0ryIeSvjI77dFgw94
+ cvpmPpB/Ff69qGb2ydIzPoTUPrGipVvaKukExkSLipqxmL0ShKe57ORInLM2en5+4Q
+ 6Qnj8tWwNWxIw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc/mm/64s: Fix no previous prototype warning
-Date: Thu, 11 Feb 2021 00:08:03 +1100
-Message-Id: <20210210130804.3190952-2-mpe@ellerman.id.au>
+Subject: [PATCH 3/3] powerpc/amigaone: Make amigaone_discover_phbs() static
+Date: Thu, 11 Feb 2021 00:08:04 +1100
+Message-Id: <20210210130804.3190952-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210210130804.3190952-1-mpe@ellerman.id.au>
 References: <20210210130804.3190952-1-mpe@ellerman.id.au>
@@ -67,68 +67,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As reported by lkp:
+It's only used in setup.c, so make it static.
 
-  arch/powerpc/mm/book3s64/radix_tlb.c:646:6: warning: no previous
-  prototype for function 'exit_lazy_flush_tlb'
-
-Fix it by moving the prototype into the existing header.
-
-Fixes: 032b7f08932c ("powerpc/64s/radix: serialize_against_pte_lookup IPIs trim mm_cpumask")
 Reported-by: kernel test robot <lkp@intel.com>
+Fixes: 053d58c87029 ("powerpc/amigaone: Move PHB discovery")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/book3s64/internal.h  | 2 ++
- arch/powerpc/mm/book3s64/pgtable.c   | 4 ++--
- arch/powerpc/mm/book3s64/radix_tlb.c | 2 ++
- 3 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/amigaone/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/book3s64/internal.h b/arch/powerpc/mm/book3s64/internal.h
-index c12d78ee42f5..5045048ce244 100644
---- a/arch/powerpc/mm/book3s64/internal.h
-+++ b/arch/powerpc/mm/book3s64/internal.h
-@@ -15,4 +15,6 @@ static inline bool stress_slb(void)
- 
- void slb_setup_new_exec(void);
- 
-+void exit_lazy_flush_tlb(struct mm_struct *mm, bool always_flush);
-+
- #endif /* ARCH_POWERPC_MM_BOOK3S64_INTERNAL_H */
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 78c492e86752..9ffa65074cb0 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -20,6 +20,8 @@
- #include <mm/mmu_decl.h>
- #include <trace/events/thp.h>
- 
-+#include "internal.h"
-+
- unsigned long __pmd_frag_nr;
- EXPORT_SYMBOL(__pmd_frag_nr);
- unsigned long __pmd_frag_size_shift;
-@@ -79,8 +81,6 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+diff --git a/arch/powerpc/platforms/amigaone/setup.c b/arch/powerpc/platforms/amigaone/setup.c
+index b25ddf39dd43..9d252c554f7f 100644
+--- a/arch/powerpc/platforms/amigaone/setup.c
++++ b/arch/powerpc/platforms/amigaone/setup.c
+@@ -70,7 +70,7 @@ void __init amigaone_setup_arch(void)
+ 		ppc_md.progress("Linux/PPC "UTS_RELEASE"\n", 0);
  }
  
--void exit_lazy_flush_tlb(struct mm_struct *mm, bool always_flush);
--
- static void do_serialize(void *arg)
+-void __init amigaone_discover_phbs(void)
++static void __init amigaone_discover_phbs(void)
  {
- 	/* We've taken the IPI, so try to trim the mask while here */
-diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-index d7f1a6bd08ef..409e61210789 100644
---- a/arch/powerpc/mm/book3s64/radix_tlb.c
-+++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -18,6 +18,8 @@
- #include <asm/cputhreads.h>
- #include <asm/plpar_wrappers.h>
- 
-+#include "internal.h"
-+
- #define RIC_FLUSH_TLB 0
- #define RIC_FLUSH_PWC 1
- #define RIC_FLUSH_ALL 2
+ 	struct device_node *np;
+ 	int phb = -ENODEV;
 -- 
 2.25.1
 
