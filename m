@@ -2,99 +2,69 @@ Return-Path: <SRS0=2rmQ=HN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B377DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 19:06:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27FD7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 22:27:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B23A64DCE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 19:06:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B23A64DCE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7A71F64E3C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 22:27:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A71F64E3C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dc5h415jMzDwqD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 06:06:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DcB845MkzzDwsV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 09:27:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=srD9dPBA; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.53; helo=mail-ot1-f53.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com
+ [209.85.210.53])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dc5VV72llzDwp2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 05:57:54 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 11BIhAO0078117; Thu, 11 Feb 2021 13:57:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=8kTbrLGlf8MA3D7L6G0QxsDD//LZvEzGEWGY/qYcNIM=;
- b=srD9dPBAIrm4jLM8WP2mO9eDRUXm8KGH06Oy+4iHcoBK9ZAUbS4++xNBHP05x/0MSXCH
- GRToiPAxngepQ2+WfEel9BP987nrvb2IZCD+HujY1g+0FO/cKCtpLKvNw6LJfe0x+B1d
- 6/wbf0qxh7NuhoQBbDn41vpTtF6MaUx5LFay8TbFvzl1pFM/W+f+pS9zIozy0CP755an
- ybfWD2QvN6LK1nsY3wlDFfUHgKki1cNqI9IvcRzJvzIZRsYi9JvxYM8AC1HYo7Ajy3l2
- a/E3fM7dPjTZsENGrelGkFnG3iAi8zLHLQ9PkSayJpYxy7ZGTFH1Auht3K7j8DlTis72 pg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36na3wgak3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 13:57:53 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11BIvpCi014204;
- Thu, 11 Feb 2021 18:57:51 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01wdc.us.ibm.com with ESMTP id 36hjr9qskp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 18:57:49 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11BIvktX22348076
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Feb 2021 18:57:46 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34330136055;
- Thu, 11 Feb 2021 18:57:46 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DC72C136053;
- Thu, 11 Feb 2021 18:57:45 +0000 (GMT)
-Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 11 Feb 2021 18:57:45 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Subject: [PATCH 3/4] ibmvfc: treat H_CLOSED as success during sub-CRQ
- registration
-Date: Thu, 11 Feb 2021 12:57:41 -0600
-Message-Id: <20210211185742.50143-4-tyreld@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DcB651WXwzDwqD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 09:25:32 +1100 (AEDT)
+Received: by mail-ot1-f53.google.com with SMTP id y11so6726088otq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2021 14:25:32 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=NLvw9f5cSXlPho1shNG7Jdg19r2wGEA2nCu/eGns0Js=;
+ b=EmkTatJJS5ok7vBpWK/YbHGQNperC5RYYvqCkMMuWtHb8EC5Fu6UFG3vHrPsdcY4Dd
+ 8xMhwLbXJfyhTUhQk9P8PcC12CtroUzlKAelRtyDLt6gE+HozRcArjW2leLwzep88gbR
+ nyPuPjE5HGxmkDl0ivaCcaN1I0xdS7WHDX1A+A8I7/EYJijws80MP8Qi0PM9J92Ni9NF
+ BfF2ULE/vqbym7jI+vbDfS6wX9hzCbetse1NXCE0m6hCrGFBbd19pyFEZqGZa1vBh1uo
+ vLAKLvJX3EhXPyNAL7pCwFqiqDj6LJs994wjWP1fSICL8011cuLSGHUJOqShGuAhQPtk
+ hDCA==
+X-Gm-Message-State: AOAM533pU/O0XvgYrJmvdbPcngREYdBvzG/K6CAcGnjqgUltB23Voqyv
+ OLkqFdGfL7HvwxpSzS3oow==
+X-Google-Smtp-Source: ABdhPJyQGFVfAP7PXxKkza/IfsEKHXTE/7yuVrEhheTI5TULfoj3OVppCi9bnJLCVmoT3f6DX3uh6g==
+X-Received: by 2002:a9d:6b10:: with SMTP id g16mr166243otp.154.1613082331122; 
+ Thu, 11 Feb 2021 14:25:31 -0800 (PST)
+Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.googlemail.com with ESMTPSA id j25sm978030otn.55.2021.02.11.14.25.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 11 Feb 2021 14:25:30 -0800 (PST)
+From: Rob Herring <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
+Subject: [PATCH 1/2] of: Remove of_dev_{get,put}()
+Date: Thu, 11 Feb 2021 16:25:25 -0600
+Message-Id: <20210211222526.1318236-2-robh@kernel.org>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210211185742.50143-1-tyreld@linux.ibm.com>
-References: <20210211185742.50143-1-tyreld@linux.ibm.com>
+In-Reply-To: <20210211222526.1318236-1-robh@kernel.org>
+References: <20210211222526.1318236-1-robh@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
- definitions=2021-02-11_07:2021-02-11,
- 2021-02-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- impostorscore=0 lowpriorityscore=0 mlxlogscore=999 phishscore=0
- bulkscore=0 mlxscore=0 spamscore=0 malwarescore=0 clxscore=1015
- adultscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2102110146
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,44 +76,224 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Felipe Balbi <balbi@kernel.org>, Michal Marek <michal.lkml@markovi.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, netdev@vger.kernel.org,
+ linux-usb@vger.kernel.org, Nicolas Palix <nicolas.palix@imag.fr>,
+ Patrice Chotard <patrice.chotard@st.com>, linux-kernel@vger.kernel.org,
+ Julia Lawall <Julia.Lawall@inria.fr>, Gilles Muller <Gilles.Muller@inria.fr>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ cocci@systeme.lip6.fr, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A non-zero return code for H_REG_SUB_CRQ is currently treated as a
-failure resulting in failing sub-CRQ setup. The case of H_CLOSED should
-not be treated as a failure. This return code translates to a successful
-sub-CRQ registration by the hypervisor, and is meant to communicate back
-that there is currently no partner VIOS CRQ connection established as of
-yet. This is a common occurrence during a disconnect where the client
-adapter can possibly come back up prior to the partner adapter.
+of_dev_get() and of_dev_put are just wrappers for get_device()/put_device()
+on a platform_device. There's also already platform_device_{get,put}()
+wrappers for this purpose. Let's update the few users and remove
+of_dev_{get,put}().
 
-For non-zero return code from H_REG_SUB_CRQ treat a H_CLOSED as success
-so that sub-CRQs are successfully setup.
-
-Fixes: faacf8c5f1d5 ("ibmvfc: add alloc/dealloc routines for SCSI Sub-CRQ Channels")
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>
+Cc: Patrice Chotard <patrice.chotard@st.com>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <Julia.Lawall@inria.fr>
+Cc: Gilles Muller <Gilles.Muller@inria.fr>
+Cc: Nicolas Palix <nicolas.palix@imag.fr>
+Cc: Michal Marek <michal.lkml@markovi.net>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-usb@vger.kernel.org
+Cc: cocci@systeme.lip6.fr
+Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/ibmebus.c |  4 ++--
+ drivers/net/ethernet/ibm/emac/core.c     | 15 ++++++++-------
+ drivers/of/device.c                      | 21 ---------------------
+ drivers/of/platform.c                    |  4 ++--
+ drivers/of/unittest.c                    |  2 +-
+ drivers/usb/dwc3/dwc3-st.c               |  2 +-
+ include/linux/of_device.h                |  3 ---
+ scripts/coccinelle/free/put_device.cocci |  1 -
+ 8 files changed, 14 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 3dd20f383453..ba6fcf9cbc57 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -5636,7 +5636,8 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
- 	rc = h_reg_sub_crq(vdev->unit_address, scrq->msg_token, PAGE_SIZE,
- 			   &scrq->cookie, &scrq->hw_irq);
+diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
+index 8c6e509f6967..c29328fe94e8 100644
+--- a/arch/powerpc/platforms/pseries/ibmebus.c
++++ b/arch/powerpc/platforms/pseries/ibmebus.c
+@@ -355,12 +355,12 @@ static int ibmebus_bus_device_probe(struct device *dev)
+ 	if (!drv->probe)
+ 		return error;
  
--	if (rc) {
-+	/* H_CLOSED indicates successful register, but no CRQ partner */
-+	if (rc && rc != H_CLOSED) {
- 		dev_warn(dev, "Error registering sub-crq: %d\n", rc);
- 		if (rc == H_PARAMETER)
- 			dev_warn_once(dev, "Firmware may not support MQ\n");
+-	of_dev_get(of_dev);
++	get_device(dev);
+ 
+ 	if (of_driver_match_device(dev, dev->driver))
+ 		error = drv->probe(of_dev);
+ 	if (error)
+-		of_dev_put(of_dev);
++		put_device(of_dev);
+ 
+ 	return error;
+ }
+diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
+index c00b9097eeea..471be6ec7e8a 100644
+--- a/drivers/net/ethernet/ibm/emac/core.c
++++ b/drivers/net/ethernet/ibm/emac/core.c
+@@ -38,6 +38,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_net.h>
+ #include <linux/of_mdio.h>
++#include <linux/platform_device.h>
+ #include <linux/slab.h>
+ 
+ #include <asm/processor.h>
+@@ -2390,11 +2391,11 @@ static int emac_check_deps(struct emac_instance *dev,
+ 
+ static void emac_put_deps(struct emac_instance *dev)
+ {
+-	of_dev_put(dev->mal_dev);
+-	of_dev_put(dev->zmii_dev);
+-	of_dev_put(dev->rgmii_dev);
+-	of_dev_put(dev->mdio_dev);
+-	of_dev_put(dev->tah_dev);
++	platform_device_put(dev->mal_dev);
++	platform_device_put(dev->zmii_dev);
++	platform_device_put(dev->rgmii_dev);
++	platform_device_put(dev->mdio_dev);
++	platform_device_put(dev->tah_dev);
+ }
+ 
+ static int emac_of_bus_notify(struct notifier_block *nb, unsigned long action,
+@@ -2435,7 +2436,7 @@ static int emac_wait_deps(struct emac_instance *dev)
+ 	for (i = 0; i < EMAC_DEP_COUNT; i++) {
+ 		of_node_put(deps[i].node);
+ 		if (err)
+-			of_dev_put(deps[i].ofdev);
++			platform_device_put(deps[i].ofdev);
+ 	}
+ 	if (err == 0) {
+ 		dev->mal_dev = deps[EMAC_DEP_MAL_IDX].ofdev;
+@@ -2444,7 +2445,7 @@ static int emac_wait_deps(struct emac_instance *dev)
+ 		dev->tah_dev = deps[EMAC_DEP_TAH_IDX].ofdev;
+ 		dev->mdio_dev = deps[EMAC_DEP_MDIO_IDX].ofdev;
+ 	}
+-	of_dev_put(deps[EMAC_DEP_PREV_IDX].ofdev);
++	platform_device_put(deps[EMAC_DEP_PREV_IDX].ofdev);
+ 	return err;
+ }
+ 
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index aedfaaafd3e7..9a748855b39d 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -33,27 +33,6 @@ const struct of_device_id *of_match_device(const struct of_device_id *matches,
+ }
+ EXPORT_SYMBOL(of_match_device);
+ 
+-struct platform_device *of_dev_get(struct platform_device *dev)
+-{
+-	struct device *tmp;
+-
+-	if (!dev)
+-		return NULL;
+-	tmp = get_device(&dev->dev);
+-	if (tmp)
+-		return to_platform_device(tmp);
+-	else
+-		return NULL;
+-}
+-EXPORT_SYMBOL(of_dev_get);
+-
+-void of_dev_put(struct platform_device *dev)
+-{
+-	if (dev)
+-		put_device(&dev->dev);
+-}
+-EXPORT_SYMBOL(of_dev_put);
+-
+ int of_device_add(struct platform_device *ofdev)
+ {
+ 	BUG_ON(ofdev->dev.of_node == NULL);
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 79bd5f5a1bf1..020bf860c72c 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -687,7 +687,7 @@ static int of_platform_notify(struct notifier_block *nb,
+ 		pdev_parent = of_find_device_by_node(rd->dn->parent);
+ 		pdev = of_platform_device_create(rd->dn, NULL,
+ 				pdev_parent ? &pdev_parent->dev : NULL);
+-		of_dev_put(pdev_parent);
++		platform_device_put(pdev_parent);
+ 
+ 		if (pdev == NULL) {
+ 			pr_err("%s: failed to create for '%pOF'\n",
+@@ -712,7 +712,7 @@ static int of_platform_notify(struct notifier_block *nb,
+ 		of_platform_device_destroy(&pdev->dev, &children_left);
+ 
+ 		/* and put the reference of the find */
+-		of_dev_put(pdev);
++		platform_device_put(pdev);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index eb51bc147440..eb100627c186 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -1286,7 +1286,7 @@ static void __init of_unittest_platform_populate(void)
+ 			unittest(pdev,
+ 				 "Could not create device for node '%pOFn'\n",
+ 				 grandchild);
+-			of_dev_put(pdev);
++			platform_device_put(pdev);
+ 		}
+ 	}
+ 
+diff --git a/drivers/usb/dwc3/dwc3-st.c b/drivers/usb/dwc3/dwc3-st.c
+index e733be840545..b06b7092b1a2 100644
+--- a/drivers/usb/dwc3/dwc3-st.c
++++ b/drivers/usb/dwc3/dwc3-st.c
+@@ -274,7 +274,7 @@ static int st_dwc3_probe(struct platform_device *pdev)
+ 
+ 	dwc3_data->dr_mode = usb_get_dr_mode(&child_pdev->dev);
+ 	of_node_put(child);
+-	of_dev_put(child_pdev);
++	platform_device_put(child_pdev);
+ 
+ 	/*
+ 	 * Configure the USB port as device or host according to the static
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index 937f32f6aecb..d7a407dfeecb 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -26,9 +26,6 @@ static inline int of_driver_match_device(struct device *dev,
+ 	return of_match_device(drv->of_match_table, dev) != NULL;
+ }
+ 
+-extern struct platform_device *of_dev_get(struct platform_device *dev);
+-extern void of_dev_put(struct platform_device *dev);
+-
+ extern int of_device_add(struct platform_device *pdev);
+ extern int of_device_register(struct platform_device *ofdev);
+ extern void of_device_unregister(struct platform_device *ofdev);
+diff --git a/scripts/coccinelle/free/put_device.cocci b/scripts/coccinelle/free/put_device.cocci
+index 120921366e84..f09f1e79bfa6 100644
+--- a/scripts/coccinelle/free/put_device.cocci
++++ b/scripts/coccinelle/free/put_device.cocci
+@@ -21,7 +21,6 @@ id = of_find_device_by_node@p1(x)
+ if (id == NULL || ...) { ... return ...; }
+ ... when != put_device(&id->dev)
+     when != platform_device_put(id)
+-    when != of_dev_put(id)
+     when != if (id) { ... put_device(&id->dev) ... }
+     when != e1 = (T)id
+     when != e1 = (T)(&id->dev)
 -- 
 2.27.0
 
