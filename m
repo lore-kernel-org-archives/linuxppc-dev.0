@@ -2,55 +2,65 @@ Return-Path: <SRS0=2rmQ=HN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A20C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 14:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 128EFC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 14:25:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D80264E38
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 14:19:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D80264E38
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 240D864EDC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 14:25:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 240D864EDC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DbzKc4QrwzDwpl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 01:19:48 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DbzS05RJRzDrdh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 01:25:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dbyjg5hd4zDwhW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 00:52:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Id9DP67a; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Dbyjg2JKcz9sSC; Fri, 12 Feb 2021 00:52:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1613051527;
- bh=4qjzymK/2LwowFvCwiMNyozTw7FJgvyxejKQsKY45d4=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Id9DP67aifYfNbPPhkXFdeTytqnqxSRd9vOKoi1zK9hzcjzApCs00vrw74jIh0wT2
- Eu+UELjkj/BD01B+ZOKkxwndlbredYttPs2ouJg8IKKQGQeme7rssBCm8QH0gj0w6K
- 2kYDyw3C64cryeqABgbvyrtrBUY5OE269ecXbcL7597MqszR8dAD+nIKfTA4Xsv+q6
- Z3JCzLzBI+NcwSboq2csy1HBX8kJpuVPB+3i7KCRfryB8hGu0eXyN5chUNLsJ8dD/c
- bMMFXxScBgDfibaADoLhfFQ2cWOGOsUxsLlQpI6f5MXOfyS9+WpkzrQevuNJcVgPEw
- hUT6Q0AFb3qWw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/6] powerpc/mm/64s: Allow STRICT_KERNEL_RWX again
-Date: Fri, 12 Feb 2021 00:51:30 +1100
-Message-Id: <20210211135130.3474832-6-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210211135130.3474832-1-mpe@ellerman.id.au>
-References: <20210211135130.3474832-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dbz6q2mcmzDsgx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 01:10:24 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Dbz6f4KBVz9tyQC;
+ Thu, 11 Feb 2021 15:10:18 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id PsQGge3usOHe; Thu, 11 Feb 2021 15:10:18 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dbz6f2yB0z9tyQB;
+ Thu, 11 Feb 2021 15:10:18 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E084D8B816;
+ Thu, 11 Feb 2021 15:10:19 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 50VYnN-JyZrK; Thu, 11 Feb 2021 15:10:19 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A3588B832;
+ Thu, 11 Feb 2021 15:10:19 +0100 (CET)
+Subject: Re: [PATCH] powerpc/bug: Remove specific powerpc BUG_ON()
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <694c7195c81d1bcc781b3c14f452886683d6c524.1613029237.git.christophe.leroy@csgroup.eu>
+ <20210211114910.GA28121@gate.crashing.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <6126ca14-419a-9e15-7ffa-b295f26a552e@csgroup.eu>
+Date: Thu, 11 Feb 2021 15:09:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
+In-Reply-To: <20210211114910.GA28121@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,33 +73,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have now fixed the known bugs in STRICT_KERNEL_RWX for Book3S
-64-bit Hash and Radix MMUs, see preceding commits, so allow the
-option to be selected again.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 107bb4319e0e..7d6080afbad6 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -135,7 +135,7 @@ config PPC
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
--	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC32 && !HIBERNATION)
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !HIBERNATION)
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
- 	select ARCH_HAS_COPY_MC			if PPC64
--- 
-2.25.1
+Le 11/02/2021 à 12:49, Segher Boessenkool a écrit :
+> On Thu, Feb 11, 2021 at 07:41:52AM +0000, Christophe Leroy wrote:
+>> powerpc BUG_ON() is based on using twnei or tdnei instruction,
+>> which obliges gcc to format the condition into a 0 or 1 value
+>> in a register.
+> 
+> Huh?  Why is that?
+> 
+> Will it work better if this used __builtin_trap?  Or does the kernel only
+> detect very specific forms of trap instructions?
 
+We already made a try with __builtin_trap() 1,5 year ago, see 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20510ce03cc9463f1c9e743c1d93b939de501b53.1566219503.git.christophe.leroy@c-s.fr/
+
+The main problems encountered are:
+- It is only possible to use it for BUG_ON, not for WARN_ON because GCC considers it as noreturn. Is 
+there any workaround ?
+- The kernel (With CONFIG_DEBUG_BUGVERBOSE) needs to be able to identify the source file and line 
+corresponding to the trap. How can that be done with __builtin_trap() ?
+
+Christophe
