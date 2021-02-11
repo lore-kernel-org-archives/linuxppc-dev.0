@@ -7,79 +7,81 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59BF5C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 18:26:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB604C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 18:59:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9207A64E15
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 18:26:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9207A64E15
+	by mail.kernel.org (Postfix) with ESMTPS id C79F664D9C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Feb 2021 18:59:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C79F664D9C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dc4pL6QcdzDwrZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 05:26:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dc5XG723RzDwrK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 05:59:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hDwf0NXB; dkim-atps=neutral
+ header.s=pp1 header.b=UveRk1ua; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dc4mJ6MZMzDwld
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 05:24:48 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dc5VR4lJ2zDwpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 05:57:51 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 11BIOF9S006112; Thu, 11 Feb 2021 13:24:39 -0500
+ 11BIXS2p012550; Thu, 11 Feb 2021 13:57:49 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=oIZ+lPlDFHFlYt3NSZHQHMGhlRDULbD9iz67e98jvbE=;
- b=hDwf0NXByq4HoOCn78MNsTl3h2gn2z7MdczP374aL1X3vRJw5dymCIt0S5sNw8u9jUBx
- dFr+cS1pFmGZVWjAqR5aVATRzX/3QNxT0UT1HcegkgJ8LJnMsaYWr9gMwU+GsDH0SkH9
- jLQ97JvsVZgf06oOqsHBZNjf83RYpnWJ8nAqIswCAPxYHl+XbF2q6PKYCaUJKDcDudHj
- nPGZ8u4OIXDndcVxh/xSQttZzZiNhIKFkdURMI1sOHM/EMswH06ekU3bXLqRNwm3GEBd
- GcSBIuCERSWeXjvq4z1j+py5g28MhnmakKAu8muR2nfiAm4P4/NORbWFGxv5J1Gjm8jE Sw== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=FoOed3gbJNkCHcMmZvPwVEtCy29QqfwRk6OBDnuXjIk=;
+ b=UveRk1uaYDJN8KWHs5sKAUhCL/lH60v7MWh+lwILFjxNAfjVCVS1Gsb/vQT5A73DNt0U
+ sl1XozTaqnC8vm1z4Jv+Oj0fmwG4sElx7WsIrTAmOGsn0C3VnbCWsVlQeIALUo8Noexr
+ 37A5ZqOJOubbKEgDMA/kISDXarUGH12y9lWk/DF3syH+umgvymcidaNfJgdtO9bvWFQM
+ cpwh44bvxZQGJvKetS2voss01H5cbPetTQsrrFpEszPUE0aIljeB072L4cQA0/XJzrvS
+ hfwTVtVrbHtR4DRmkTWBKPEDBcPrDAfmgZ5l68Y6mUogyADaRKOubTkSfWNYf5aaDs0C Iw== 
 Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
  [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36n9u20077-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 36n9vq13ey-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 13:24:39 -0500
+ Thu, 11 Feb 2021 13:57:49 -0500
 Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11BIBULr020565;
- Thu, 11 Feb 2021 18:24:39 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma04dal.us.ibm.com with ESMTP id 36hjra1gp6-1
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11BIvW1C020828;
+ Thu, 11 Feb 2021 18:57:48 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04dal.us.ibm.com with ESMTP id 36hjra1pxe-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 18:24:39 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11BIOb4m26870194
+ Thu, 11 Feb 2021 18:57:48 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 11BIvkYn28508508
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Feb 2021 18:24:37 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9CF196E04C;
- Thu, 11 Feb 2021 18:24:37 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 58F626E04E;
- Thu, 11 Feb 2021 18:24:37 +0000 (GMT)
+ Thu, 11 Feb 2021 18:57:46 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 98DDC136053;
+ Thu, 11 Feb 2021 18:57:46 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 42FB813604F;
+ Thu, 11 Feb 2021 18:57:46 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 11 Feb 2021 18:24:37 +0000 (GMT)
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 11 Feb 2021 18:57:46 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/pseries: extract host bridge from pci_bus prior to
- bus removal
-Date: Thu, 11 Feb 2021 12:24:35 -0600
-Message-Id: <20210211182435.47968-1-tyreld@linux.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Subject: [PATCH 4/4] ibmvfc: store return code of H_FREE_SUB_CRQ during cleanup
+Date: Thu, 11 Feb 2021 12:57:42 -0600
+Message-Id: <20210211185742.50143-5-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210211185742.50143-1-tyreld@linux.ibm.com>
+References: <20210211185742.50143-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -87,11 +89,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
  definitions=2021-02-11_07:2021-02-11,
  2021-02-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0
- lowpriorityscore=0 suspectscore=0 phishscore=0 mlxlogscore=997
- clxscore=1015 priorityscore=1501 impostorscore=0 malwarescore=0 mlxscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102110144
+ bulkscore=0 phishscore=0
+ lowpriorityscore=0 suspectscore=0 clxscore=1015 priorityscore=1501
+ impostorscore=0 adultscore=0 malwarescore=0 mlxlogscore=999 spamscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102110148
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,47 +105,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pci_bus->bridge reference may no longer be valid after
-pci_bus_remove() resulting in passing a bad value to device_unregister()
-for the associated bridge device.
+The H_FREE_SUB_CRQ hypercall can return a retry delay return code that
+indicates the call needs to be retried after a specific amount of time
+delay. The error path to free a sub-CRQ in case of a failure during
+channel registration fails to capture the return code of H_FREE_SUB_CRQ
+which will result in the delay loop being skipped in the case of a retry
+delay return code.
 
-Store the host_bridge reference in a separate variable prior to
-pci_bus_remove().
+Store the return code result of the H_FREE_SUB_CRQ call such that the
+return code check in the delay loop evaluates a meaningful value.
 
-Fixes: 7340056567e3 ("powerpc/pci: Reorder pci bus/bridge unregistration during PHB removal")
+Fixes: 9288d35d70b5 ("ibmvfc: map/request irq and register Sub-CRQ interrupt handler")
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/pci_dlpar.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index f9ae17e8a0f4..a8f9140a24fa 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -50,6 +50,7 @@ EXPORT_SYMBOL_GPL(init_phb_dynamic);
- int remove_phb_dynamic(struct pci_controller *phb)
- {
- 	struct pci_bus *b = phb->bus;
-+	struct pci_host_bridge *host_bridge = to_pci_host_bridge(b->bridge);
- 	struct resource *res;
- 	int rc, i;
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index ba6fcf9cbc57..23b803ac4a13 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -5670,7 +5670,7 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
  
-@@ -76,7 +77,8 @@ int remove_phb_dynamic(struct pci_controller *phb)
- 	/* Remove the PCI bus and unregister the bridge device from sysfs */
- 	phb->bus = NULL;
- 	pci_remove_bus(b);
--	device_unregister(b->bridge);
-+	host_bridge->bus = NULL;
-+	device_unregister(&host_bridge->dev);
- 
- 	/* Now release the IO resource */
- 	if (res->flags & IORESOURCE_IO)
+ irq_failed:
+ 	do {
+-		plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
++		rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+ reg_failed:
+ 	ibmvfc_free_queue(vhost, scrq);
 -- 
 2.27.0
 
