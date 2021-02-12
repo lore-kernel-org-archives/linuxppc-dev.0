@@ -2,60 +2,60 @@ Return-Path: <SRS0=Xeze=HO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AE80C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 08:58:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2618EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 12:32:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7031964DEC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 08:58:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7031964DEC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 471BA6024A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 12:32:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 471BA6024A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DcS8k6lTTzDx0p
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 19:58:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DcXvS10vwzDwpb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 23:32:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=M7EGHqyO; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DcS7F6cgHzDskF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 19:57:21 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DcS6y19thzB09b7;
- Fri, 12 Feb 2021 09:57:14 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id oKM2_lEypWxp; Fri, 12 Feb 2021 09:57:14 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DcS6y0Pf7zB09b5;
- Fri, 12 Feb 2021 09:57:14 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 059198B84B;
- Fri, 12 Feb 2021 09:57:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SN8BfrB5wnyV; Fri, 12 Feb 2021 09:57:14 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C6DB78B842;
- Fri, 12 Feb 2021 09:57:14 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8606F672F8; Fri, 12 Feb 2021 08:57:14 +0000 (UTC)
-Message-Id: <f6d16f3321f1dc89b77ada1c7d961fae4089766e.1613120077.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH for 5.10] powerpc/32: Preserve cr1 in exception prolog stack
- check to fix build error
-To: fedora.dm0@gmail.com, stable@vger.kernel.org
-Date: Fri, 12 Feb 2021 08:57:14 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DcXqD2Ll7zDwsC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 23:28:56 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 7794D64E08;
+ Fri, 12 Feb 2021 12:28:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1613132933;
+ bh=7tqF59VK/MOleoT3o88Z4FkujGQhWAzCoyIWc6mbyhI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=M7EGHqyOKGD6o0WkCqhPsradNoxRLYSIuk2xKG5JYT1SYIXWNR2GJioSn72b5JYKD
+ K8JHkfYTvmXYp7YC4e6Tvq8ofwTKrrHtwGHIw2tKYiJo7UjUiQ6ZqsEarHY1OOovvW
+ FhR+XLxRrb3U4vVfwfp/yvD8VkFDltWBJhl8+PlakjdvkDyAC3L/BaYpQu+UwBPeog
+ nDXnHjdhSIvXaVdXFTxSv/F91/7zxGFU9A+g0GvIN4l3Y/2grZFn3Woqv07svuTdTr
+ UBN/zEgax6YB8KP0zRnXS1s9H+4pmHNlsPj3LVuxLZdyCWi7iAQvkt6fi8VT9mIksY
+ DIrF/JJ49nxrw==
+Date: Fri, 12 Feb 2021 12:27:59 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the spi tree with the powerpc tree
+Message-ID: <20210212122759.GA6057@sirena.org.uk>
+References: <20210212152755.5c82563a@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
+Content-Disposition: inline
+In-Reply-To: <20210212152755.5c82563a@canb.auug.org.au>
+X-Cookie: One size fits all.
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,76 +67,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is backport of 3642eb21256a ("powerpc/32: Preserve cr1 in
-exception prolog stack check to fix build error") for kernel 5.10
 
-It fixes the build failure on v5.10 reported by kernel test robot
-and by David Michael.
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This fix is not in Linux tree yet, it is in next branch in powerpc tree.
+On Fri, Feb 12, 2021 at 03:31:42PM +1100, Stephen Rothwell wrote:
 
-(cherry picked from commit 3642eb21256a317ac14e9ed560242c6d20cf06d9)
+> BTW Mark: the author's address in 258ea99fe25a uses a non existent domain :-(
 
-THREAD_ALIGN_SHIFT = THREAD_SHIFT + 1 = PAGE_SHIFT + 1
-Maximum PAGE_SHIFT is 18 for 256k pages so
-THREAD_ALIGN_SHIFT is 19 at the maximum.
+Ugh, I think that's something gone wrong with b4 :(  A bit late now to
+try to fix it up.
 
-No need to clobber cr1, it can be preserved when moving r1
-into CR when we check stack overflow.
+--/9DWx/yDrRhgMJTb
+Content-Type: application/pgp-signature; name="signature.asc"
 
-This reduces the number of instructions in Machine Check Exception
-prolog and fixes a build failure reported by the kernel test robot
-on v5.10 stable when building with RTAS + VMAP_STACK + KVM. That
-build failure is due to too many instructions in the prolog hence
-not fitting between 0x200 and 0x300. Allthough the problem doesn't
-show up in mainline, it is still worth the change.
+-----BEGIN PGP SIGNATURE-----
 
-Fixes: 98bf2d3f4970 ("powerpc/32s: Fix RTAS machine check with VMAP stack")
-Cc: stable@vger.kernel.org
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/5ae4d545e3ac58e133d2599e0deb88843cb494fc.1612768623.git.christophe.leroy@csgroup.eu
----
- arch/powerpc/kernel/head_32.h        | 2 +-
- arch/powerpc/kernel/head_book3s_32.S | 6 ------
- 2 files changed, 1 insertion(+), 7 deletions(-)
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmAmdE8ACgkQJNaLcl1U
+h9AjDQf+N2bAZaqz5G/XdAJGKyWKyXerf6onO/FoIWLtdkMwDDwPUpU5noOtfMYX
+QeT7C+lw15DX2TTOJlft213BwwddfyhK05OoHKaEsnu5GXa4J5ozBXEwn562ZQTO
+9vEUnu+eXCmUEGs+ibtz6WDmvRpztBMukxWQ/A3SxRa8ozB+uYIX6G66EZIxKcjb
+H2AMHJoPv9qe6rGtW8cLxJ5Wqfl4z7zJzVGIv+wsiqqdrMv8D5zQo9Al1jRW/Jyw
+F55kR9wH/p1WlO3/IyK6+SaGPDM977ZaTKykEU8ZbGOj0MXbDUS9xCvLlR2M1MFT
+QkvPZWrHu6diUUvAQ2DQymM0yX3xmg==
+=OQ9e
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index c88e66adecb5..fef0b34a77c9 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -56,7 +56,7 @@
- 1:
- 	tophys_novmstack r11, r11
- #ifdef CONFIG_VMAP_STACK
--	mtcrf	0x7f, r1
-+	mtcrf	0x3f, r1
- 	bt	32 - THREAD_ALIGN_SHIFT, stack_overflow
- #endif
- .endm
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index d66da35f2e8d..2729d8fa6e77 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -280,12 +280,6 @@ MachineCheck:
- 7:	EXCEPTION_PROLOG_2
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- #ifdef CONFIG_PPC_CHRP
--#ifdef CONFIG_VMAP_STACK
--	mfspr	r4, SPRN_SPRG_THREAD
--	tovirt(r4, r4)
--	lwz	r4, RTAS_SP(r4)
--	cmpwi	cr1, r4, 0
--#endif
- 	beq	cr1, machine_check_tramp
- 	twi	31, 0, 0
- #else
--- 
-2.25.0
-
+--/9DWx/yDrRhgMJTb--
