@@ -6,35 +6,35 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F663C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:46:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEEC1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:48:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE43764DB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:46:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE43764DB2
+	by mail.kernel.org (Postfix) with ESMTPS id 37C2464DB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:48:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C2464DB2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DcFFB1DcrzDwm5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 11:46:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DcFH35BcjzDwqn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 11:48:31 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DcDfC5dkMzDwnc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 11:20:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DcDfD66dSzDwnc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 11:20:04 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DcDfC3s2Dz9sS8; Fri, 12 Feb 2021 11:20:03 +1100 (AEDT)
+ id 4DcDfD30B9z9sW1; Fri, 12 Feb 2021 11:20:04 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210208063326.331502-1-npiggin@gmail.com>
-References: <20210208063326.331502-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: syscall real mode entry use mtmsrd rather
- than rfid
-Message-Id: <161308903962.3606979.7125366570571003647.b4-ty@ellerman.id.au>
-Date: Fri, 12 Feb 2021 11:20:03 +1100 (AEDT)
+In-Reply-To: <20210211063636.236420-1-npiggin@gmail.com>
+References: <20210211063636.236420-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: remove interrupt handler functions from the
+ noinstr section
+Message-Id: <161308904967.3606979.10652090643333787581.b4-ty@ellerman.id.au>
+Date: Fri, 12 Feb 2021 11:20:04 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,25 +46,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 8 Feb 2021 16:33:26 +1000, Nicholas Piggin wrote:
-> Have the real mode system call entry handler branch to the kernel
-> 0xc000... address and then use mtmsrd to enable the MMU, rather than use
-> SRRs and rfid.
-> 
-> Commit 8729c26e675c ("powerpc/64s/exception: Move real to virt switch
-> into the common handler") implemented this style of real mode entry for
-> other interrupt handlers, so this brings system calls into line with
-> them, which is the main motivcation for the change.
+On Thu, 11 Feb 2021 16:36:36 +1000, Nicholas Piggin wrote:
+> The allyesconfig ppc64 kernel fails to link with relocations unable to
+> fit after commit 3a96570ffceb ("powerpc: convert interrupt handlers to
+> use wrappers"), which is due to the interrupt handler functions being
+> put into the .noinstr.text section, which the linker script places on
+> the opposite side of the main .text section from the interrupt entry
+> asm code which calls the handlers.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: syscall real mode entry use mtmsrd rather than rfid
-      https://git.kernel.org/powerpc/c/14ad0e7d04f46865775fb010ccd96fb1cc83433a
+[1/1] powerpc: remove interrupt handler functions from the noinstr section
+      https://git.kernel.org/powerpc/c/e4bb64c7a42e61bcb6f8b70279fc1f7805eaad3f
 
 cheers
