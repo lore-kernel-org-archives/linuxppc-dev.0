@@ -2,99 +2,39 @@ Return-Path: <SRS0=Xeze=HO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F198C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:01:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1152DC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:22:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB93564D8F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:01:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB93564D8F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 01E2A64DDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 00:22:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01E2A64DDA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DcDDV37VCzDwpr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 11:01:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bauerman@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Bop3BphW; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DcDhp1vNBzDwtV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Feb 2021 11:22:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DcDBL1SxQzDwpg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 10:59:21 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 11BNtv5I061406; Thu, 11 Feb 2021 18:59:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=references : from : to :
- cc : subject : in-reply-to : date : message-id : mime-version :
- content-type; s=pp1; bh=6tuxnpSv368pdOo0WjwpdsaB791gBkRKI6kVA07oHWU=;
- b=Bop3BphWAkbIWVK/HYGTx96aeJJV3FcTW4+92F2Afr5wsR6cALLm7jXCS7y1WJubeLRW
- WFDY4zA0ISjV0MQcmjjIPXfAX/fsEFrYgtU7uj9Ix9oZk+75cOE3TyMNf+amwqNTM+oO
- 4udZ9v0sksJ+rYql6jEBVIKxpKbqV58Odo5NjyBZDullujR5ZYxEjRKGiHibRq0pOJ4A
- dm0TLBviLoF6xfSKsDCwfErsTNhA+q1TcQb8Dow3n25Gedvh7Fez54vND70G7QZGR8Uu
- CQT1kOv/dGPOhGOOmIwQRdFAX21zuqLjk1QaZ8NlCoSlJ9rIrnWg/T5efhdwNQWKKkb3 8A== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36nepfr1as-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 18:59:14 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11BNvZiV017261;
- Thu, 11 Feb 2021 23:59:13 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma04dal.us.ibm.com with ESMTP id 36hjra3m2n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 11 Feb 2021 23:59:13 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11BNxC9v24707454
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 11 Feb 2021 23:59:12 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8463DBE04F;
- Thu, 11 Feb 2021 23:59:12 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C05E3BE056;
- Thu, 11 Feb 2021 23:59:10 +0000 (GMT)
-Received: from manicouagan.localdomain (unknown [9.85.204.73])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu, 11 Feb 2021 23:59:10 +0000 (GMT)
-References: <202102120032.Bv0MoYv7-lkp@intel.com>
- <40fd1869-dcb4-36ae-e997-b8486dd4846c@linux.microsoft.com>
- <b534117e-333d-097c-a3c0-2a80985bd37f@linux.microsoft.com>
-User-agent: mu4e 1.4.10; emacs 27.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Subject: Re: Fwd: Re: [PATCH v17 02/10] of: Add a common kexec FDT setup
- function
-In-reply-to: <b534117e-333d-097c-a3c0-2a80985bd37f@linux.microsoft.com>
-Date: Thu, 11 Feb 2021 20:59:08 -0300
-Message-ID: <87mtwap35f.fsf@manicouagan.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.737
- definitions=2021-02-11_07:2021-02-11,
- 2021-02-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0
- suspectscore=0 mlxlogscore=999 lowpriorityscore=0 impostorscore=0
- spamscore=0 phishscore=0 clxscore=1015 mlxscore=0 adultscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102110182
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DcDf00RvtzDvZ2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2021 11:19:52 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4DcDdz4ktxz9sS8; Fri, 12 Feb 2021 11:19:51 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210202091541.36499-1-aik@ozlabs.ru>
+References: <20210202091541.36499-1-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel] powerpc/kuap: Restore AMR after replaying soft
+ interrupts
+Message-Id: <161308903938.3606979.4844568618517108372.b4-ty@ellerman.id.au>
+Date: Fri, 12 Feb 2021 11:19:51 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,56 +46,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, linux-integrity@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Mimi Zohar <zohar@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 2 Feb 2021 20:15:41 +1100, Alexey Kardashevskiy wrote:
+> Since de78a9c "powerpc: Add a framework for Kernel Userspace Access
+> Protection", user access helpers call user_{read|write}_access_{begin|end}
+> when user space access is allowed.
+> 
+> 890274c "powerpc/64s: Implement KUAP for Radix MMU" made the mentioned
+> helpers program a AMR special register to allow such access for a short
+> period of time, most of the time AMR is expected to block user memory
+> access by the kernel.
+> 
+> [...]
 
-Lakshmi Ramasubramanian <nramas@linux.microsoft.com> writes:
+Applied to powerpc/next.
 
-> On 2/11/21 9:42 AM, Lakshmi Ramasubramanian wrote:
->> Hi Rob,
->> [PATCH] powerpc: Rename kexec elfcorehdr_addr to elf_headers_mem
->> This change causes build problem for x86_64 architecture (please see the 
->> mail from kernel test bot below) since arch/x86/include/asm/kexec.h uses
->> "elf_load_addr" for the ELF header buffer address and not 
->> "elf_headers_mem".
->> struct kimage_arch {
->>      ...
->>      /* Core ELF header buffer */
->>      void *elf_headers;
->>      unsigned long elf_headers_sz;
->>      unsigned long elf_load_addr;
->> };
->> I am thinking of limiting of_kexec_alloc_and_setup_fdt() to ARM64 and 
->> PPC64 since they are the only ones using this function now.
->> #if defined(CONFIG_ARM64) && defined(CONFIG_PPC64)
-> Sorry - I meant to say
-> #if defined(CONFIG_ARM64) || defined(CONFIG_PPC64)
->
+[1/1] powerpc/kuap: Restore AMR after replaying soft interrupts
+      https://git.kernel.org/powerpc/c/60a707d0c99aff4eadb7fd334c5fd21df386723e
 
-Does it build correctly if you rename elf_headers_mem to elf_load_addr?
-Or the other way around, renaming x86's elf_load_addr to
-elf_headers_mem. I don't really have a preference.
-
-That would be better than adding an #if condition.
-
->> void *of_kexec_alloc_and_setup_fdt(const struct kimage *image,
->>                     unsigned long initrd_load_addr,
->>                     unsigned long initrd_len,
->>                     const char *cmdline)
->> {
->>      ...
->> }
->> #endif /* defined(CONFIG_ARM64) && defined(CONFIG_PPC64) */
->> Please let me know if you have any concerns.
->> thanks,
->>   -lakshmi
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+cheers
