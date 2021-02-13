@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3D10C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:16:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B860C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:17:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D323664DB1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:16:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D323664DB1
+	by mail.kernel.org (Postfix) with ESMTPS id 980F864DD9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:17:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 980F864DD9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DdFqH0bzPzDwp9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Feb 2021 03:16:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DdFry5rb1zDvWt
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Feb 2021 03:17:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
  helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=RQRwzsjH; 
+ header.a=rsa-sha256 header.s=default header.b=BGczkjJC; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DdFhz02WFzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2021 03:10:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DdFhx4JlWzDqDL
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2021 03:10:57 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id 30C9720B57A2;
- Sat, 13 Feb 2021 08:10:57 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 30C9720B57A2
+ by linux.microsoft.com (Postfix) with ESMTPSA id CA34520B57A0;
+ Sat, 13 Feb 2021 08:10:55 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com CA34520B57A0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1613232657;
- bh=PxZ9Fin2XXkLXjxE2va1lmog2eOlHd60RFX6Nu7IxZg=;
+ s=default; t=1613232656;
+ bh=W4nfk42A7xcjjuWVwXZ5p95MM79jT4rO0IEgmmAlhU0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=RQRwzsjH1dnXC4IRzgFbp++Qt8de+UzSWlYXIHvL5LLakCdv3NERlBqnZBJ9FtWPl
- pugmElVXPkYy197Ah1LrhX6YXrp2kkfGsjQW+o/TZsB/IuyFueFKgV2jOIy8CT9z5h
- l0SbHx6M4Knb6Lf6/KYNIXtWdCIEdnCUUVfG+Azw=
+ b=BGczkjJC/2YMNuqpzttE2Qqwl+1QakY0vI1+r9FBaAJOFWRUBDn5k9bHUrYsDW1+b
+ EXJpL/izfEKvAlG5p1BKsdy8/GtrviadcVSSZKVdv7QLM0+Iq3iUIALWWzJLBvI58d
+ ebaoNgfVPlTxppC2ESNeMWJP6c9iocgx32dBAR9s=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au
-Subject: [PATCH v18 04/11] arm64: Use common of_kexec_alloc_and_setup_fdt()
-Date: Sat, 13 Feb 2021 08:10:42 -0800
-Message-Id: <20210213161049.6190-5-nramas@linux.microsoft.com>
+Subject: [PATCH v18 02/11] arm64: Rename kexec elf_headers_mem to elf_load_addr
+Date: Sat, 13 Feb 2021 08:10:40 -0800
+Message-Id: <20210213161049.6190-3-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210213161049.6190-1-nramas@linux.microsoft.com>
 References: <20210213161049.6190-1-nramas@linux.microsoft.com>
@@ -79,248 +79,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rob Herring <robh@kernel.org>
+The architecture specific field, elf_headers_mem in struct kimage_arch,
+that holds the address of the buffer in memory for ELF core header for
+arm64 has a different name than the one used for powerpc.  This makes
+it hard to have a common code for setting up the device tree for
+kexec system call.
 
-The code for setting up the /chosen node in the device tree
-and updating the memory reservation for the next kernel has been
-moved to of_kexec_alloc_and_setup_fdt() defined in "drivers/of/kexec.c".
+Rename elf_headers_mem to elf_load_addr to align with powerpc name so
+common code can use it.
 
-Use the common of_kexec_alloc_and_setup_fdt() to setup the device tree
-and update the memory reservation for kexec for arm64.
-
-Signed-off-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
- arch/arm64/kernel/machine_kexec_file.c | 180 ++-----------------------
- 1 file changed, 8 insertions(+), 172 deletions(-)
+ arch/arm64/include/asm/kexec.h         | 2 +-
+ arch/arm64/kernel/machine_kexec_file.c | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
+index d24b527e8c00..e6a99dfdffb8 100644
+--- a/arch/arm64/include/asm/kexec.h
++++ b/arch/arm64/include/asm/kexec.h
+@@ -98,7 +98,7 @@ struct kimage_arch {
+ 	unsigned long dtb_mem;
+ 	/* Core ELF header buffer */
+ 	void *elf_headers;
+-	unsigned long elf_headers_mem;
++	unsigned long elf_load_addr;
+ 	unsigned long elf_headers_sz;
+ };
+ 
 diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index d98bacec9426..c9f112455a4d 100644
+index 03210f644790..d98bacec9426 100644
 --- a/arch/arm64/kernel/machine_kexec_file.c
 +++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -15,23 +15,12 @@
- #include <linux/kexec.h>
- #include <linux/libfdt.h>
- #include <linux/memblock.h>
-+#include <linux/of.h>
- #include <linux/of_fdt.h>
--#include <linux/random.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
- #include <linux/vmalloc.h>
--#include <asm/byteorder.h>
--
--/* relevant device tree properties */
--#define FDT_PROP_KEXEC_ELFHDR	"linux,elfcorehdr"
--#define FDT_PROP_MEM_RANGE	"linux,usable-memory-range"
--#define FDT_PROP_INITRD_START	"linux,initrd-start"
--#define FDT_PROP_INITRD_END	"linux,initrd-end"
--#define FDT_PROP_BOOTARGS	"bootargs"
--#define FDT_PROP_KASLR_SEED	"kaslr-seed"
--#define FDT_PROP_RNG_SEED	"rng-seed"
--#define RNG_SEED_SIZE		128
+@@ -73,7 +73,7 @@ static int setup_dtb(struct kimage *image,
+ 		/* add linux,elfcorehdr */
+ 		ret = fdt_appendprop_addrrange(dtb, 0, off,
+ 				FDT_PROP_KEXEC_ELFHDR,
+-				image->arch.elf_headers_mem,
++				image->arch.elf_load_addr,
+ 				image->arch.elf_headers_sz);
+ 		if (ret)
+ 			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
+@@ -283,11 +283,11 @@ int load_other_segments(struct kimage *image,
+ 			goto out_err;
+ 		}
+ 		image->arch.elf_headers = headers;
+-		image->arch.elf_headers_mem = kbuf.mem;
++		image->arch.elf_load_addr = kbuf.mem;
+ 		image->arch.elf_headers_sz = headers_sz;
  
- const struct kexec_file_ops * const kexec_file_loaders[] = {
- 	&kexec_image_ops,
-@@ -40,7 +29,7 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
- 
- int arch_kimage_file_post_load_cleanup(struct kimage *image)
- {
--	vfree(image->arch.dtb);
-+	kvfree(image->arch.dtb);
- 	image->arch.dtb = NULL;
- 
- 	vfree(image->arch.elf_headers);
-@@ -50,162 +39,6 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
- 	return kexec_image_post_load_cleanup_default(image);
- }
- 
--static int setup_dtb(struct kimage *image,
--		     unsigned long initrd_load_addr, unsigned long initrd_len,
--		     char *cmdline, void *dtb)
--{
--	int off, ret;
--
--	ret = fdt_path_offset(dtb, "/chosen");
--	if (ret < 0)
--		goto out;
--
--	off = ret;
--
--	ret = fdt_delprop(dtb, off, FDT_PROP_KEXEC_ELFHDR);
--	if (ret && ret != -FDT_ERR_NOTFOUND)
--		goto out;
--	ret = fdt_delprop(dtb, off, FDT_PROP_MEM_RANGE);
--	if (ret && ret != -FDT_ERR_NOTFOUND)
--		goto out;
--
--	if (image->type == KEXEC_TYPE_CRASH) {
--		/* add linux,elfcorehdr */
--		ret = fdt_appendprop_addrrange(dtb, 0, off,
--				FDT_PROP_KEXEC_ELFHDR,
--				image->arch.elf_load_addr,
--				image->arch.elf_headers_sz);
--		if (ret)
--			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
--
--		/* add linux,usable-memory-range */
--		ret = fdt_appendprop_addrrange(dtb, 0, off,
--				FDT_PROP_MEM_RANGE,
--				crashk_res.start,
--				crashk_res.end - crashk_res.start + 1);
--		if (ret)
--			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
--	}
--
--	/* add bootargs */
--	if (cmdline) {
--		ret = fdt_setprop_string(dtb, off, FDT_PROP_BOOTARGS, cmdline);
--		if (ret)
--			goto out;
--	} else {
--		ret = fdt_delprop(dtb, off, FDT_PROP_BOOTARGS);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--	}
--
--	/* add initrd-* */
--	if (initrd_load_addr) {
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_INITRD_START,
--				      initrd_load_addr);
--		if (ret)
--			goto out;
--
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_INITRD_END,
--				      initrd_load_addr + initrd_len);
--		if (ret)
--			goto out;
--	} else {
--		ret = fdt_delprop(dtb, off, FDT_PROP_INITRD_START);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--
--		ret = fdt_delprop(dtb, off, FDT_PROP_INITRD_END);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--	}
--
--	/* add kaslr-seed */
--	ret = fdt_delprop(dtb, off, FDT_PROP_KASLR_SEED);
--	if (ret == -FDT_ERR_NOTFOUND)
--		ret = 0;
--	else if (ret)
--		goto out;
--
--	if (rng_is_initialized()) {
--		u64 seed = get_random_u64();
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_KASLR_SEED, seed);
--		if (ret)
--			goto out;
--	} else {
--		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
--				FDT_PROP_KASLR_SEED);
--	}
--
--	/* add rng-seed */
--	if (rng_is_initialized()) {
--		void *rng_seed;
--		ret = fdt_setprop_placeholder(dtb, off, FDT_PROP_RNG_SEED,
--				RNG_SEED_SIZE, &rng_seed);
--		if (ret)
--			goto out;
--		get_random_bytes(rng_seed, RNG_SEED_SIZE);
--	} else {
--		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
--				FDT_PROP_RNG_SEED);
--	}
--
--out:
--	if (ret)
--		return (ret == -FDT_ERR_NOSPACE) ? -ENOMEM : -EINVAL;
--
--	return 0;
--}
--
--/*
-- * More space needed so that we can add initrd, bootargs, kaslr-seed,
-- * rng-seed, userable-memory-range and elfcorehdr.
-- */
--#define DTB_EXTRA_SPACE 0x1000
--
--static int create_dtb(struct kimage *image,
--		      unsigned long initrd_load_addr, unsigned long initrd_len,
--		      char *cmdline, void **dtb)
--{
--	void *buf;
--	size_t buf_size;
--	size_t cmdline_len;
--	int ret;
--
--	cmdline_len = cmdline ? strlen(cmdline) : 0;
--	buf_size = fdt_totalsize(initial_boot_params)
--			+ cmdline_len + DTB_EXTRA_SPACE;
--
--	for (;;) {
--		buf = vmalloc(buf_size);
--		if (!buf)
--			return -ENOMEM;
--
--		/* duplicate a device tree blob */
--		ret = fdt_open_into(initial_boot_params, buf, buf_size);
--		if (ret)
--			return -EINVAL;
--
--		ret = setup_dtb(image, initrd_load_addr, initrd_len,
--				cmdline, buf);
--		if (ret) {
--			vfree(buf);
--			if (ret == -ENOMEM) {
--				/* unlikely, but just in case */
--				buf_size += DTB_EXTRA_SPACE;
--				continue;
--			} else {
--				return ret;
--			}
--		}
--
--		/* trim it */
--		fdt_pack(buf);
--		*dtb = buf;
--
--		return 0;
--	}
--}
--
- static int prepare_elf_headers(void **addr, unsigned long *sz)
- {
- 	struct crash_mem *cmem;
-@@ -312,12 +145,15 @@ int load_other_segments(struct kimage *image,
+ 		pr_debug("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+-			 image->arch.elf_headers_mem, kbuf.bufsz, kbuf.memsz);
++			 image->arch.elf_load_addr, kbuf.bufsz, kbuf.memsz);
  	}
  
- 	/* load dtb */
--	ret = create_dtb(image, initrd_load_addr, initrd_len, cmdline, &dtb);
--	if (ret) {
-+	dtb = of_kexec_alloc_and_setup_fdt(image, initrd_load_addr,
-+					   initrd_len, cmdline, 0);
-+	if (!dtb) {
- 		pr_err("Preparing for new dtb failed\n");
- 		goto out_err;
- 	}
- 
-+	/* trim it */
-+	fdt_pack(dtb);
- 	dtb_len = fdt_totalsize(dtb);
- 	kbuf.buffer = dtb;
- 	kbuf.bufsz = dtb_len;
-@@ -341,6 +177,6 @@ int load_other_segments(struct kimage *image,
- 
- out_err:
- 	image->nr_segments = orig_segments;
--	vfree(dtb);
-+	kvfree(dtb);
- 	return ret;
- }
+ 	/* load initrd */
 -- 
 2.30.0
 
