@@ -2,57 +2,59 @@ Return-Path: <SRS0=q7yE=HP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05AF1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 13:58:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6788C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:12:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 224DA64DB2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 13:58:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 224DA64DB2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4063064E29
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Feb 2021 16:12:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4063064E29
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DdBm40KV0zDwrn
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Feb 2021 00:58:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DdFl33f8dzDvbd
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Feb 2021 03:12:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DdBhv4C8czDwqY
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2021 00:55:43 +1100 (AEDT)
-IronPort-SDR: 9bptvVRUm59rOM1BrVpneQYZ+jIxETh+8wy2IHRSdzEJFZncNneikBHe+ZsfhP432DpW5AVt0X
- cfOwebQkmbpg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9893"; a="181749176"
-X-IronPort-AV: E=Sophos;i="5.81,176,1610438400"; d="scan'208";a="181749176"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2021 05:55:41 -0800
-IronPort-SDR: DjobJbLB5ZVi/LxjgDBtVCiT4NIhlEvGRVP6gAU7D+OPOIiJARSJTyUC05V4i0zT5HRskJKPvO
- ugVOrekf+ung==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,176,1610438400"; d="scan'208";a="382591236"
-Received: from lkp-server02.sh.intel.com (HELO cd560a204411) ([10.239.97.151])
- by fmsmga008.fm.intel.com with ESMTP; 13 Feb 2021 05:55:39 -0800
-Received: from kbuild by cd560a204411 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lAvOc-0005Tt-PK; Sat, 13 Feb 2021 13:55:38 +0000
-Date: Sat, 13 Feb 2021 21:55:33 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- ce7218f40a32592aeba98e957cdf1f61387df16a
-Message-ID: <6027da55.21ZKNe1kHdnFzzJB%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.a=rsa-sha256 header.s=default header.b=P2GDivla; 
+ dkim-atps=neutral
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DdFhy28BhzDqFD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2021 03:10:58 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
+ [73.42.176.67])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 790F920B57A1;
+ Sat, 13 Feb 2021 08:10:56 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 790F920B57A1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1613232657;
+ bh=gCSXMABH1ZAm58V0VPugp0Osj/bcVGxUAEzLtNxQSbA=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=P2GDivlaTpzlUMasmYVNZ5dD2/K0/zY3nyBZE/OBOstn7HeUNv7didBZrKVG9iRLd
+ T4ORtxhticEesWNHSQyjKR7Bi+D2rMJhKKVL6+PLRFpmopB469wWNGIa746N5zWV99
+ vYpPMB5b0EAO+Zhiem3wMNMDGCoXCnsXDLySLnJE=
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
+ takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
+ joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au
+Subject: [PATCH v18 03/11] of: Add a common kexec FDT setup function
+Date: Sat, 13 Feb 2021 08:10:41 -0800
+Message-Id: <20210213161049.6190-4-nramas@linux.microsoft.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210213161049.6190-1-nramas@linux.microsoft.com>
+References: <20210213161049.6190-1-nramas@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,228 +66,352 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, tao.li@vivo.com, paulus@samba.org,
+ vincenzo.frascino@arm.com, frowand.list@gmail.com, sashal@kernel.org,
+ masahiroy@kernel.org, jmorris@namei.org, allison@lohutok.net, serge@hallyn.com,
+ devicetree@vger.kernel.org, pasha.tatashin@soleen.com,
+ prsriva@linux.microsoft.com, hsinyi@chromium.org,
+ linux-arm-kernel@lists.infradead.org, christophe.leroy@c-s.fr,
+ mbrugger@suse.com, balajib@linux.microsoft.com, dmitry.kasatkin@gmail.com,
+ linux-kernel@vger.kernel.org, james.morse@arm.com,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: ce7218f40a32592aeba98e957cdf1f61387df16a  powerpc/mm/64s: Allow STRICT_KERNEL_RWX again
+From: Rob Herring <robh@kernel.org>
 
-elapsed time: 2228m
+Both arm64 and powerpc do essentially the same FDT /chosen setup for
+kexec.  The differences are either omissions that arm64 should have
+or additional properties that will be ignored.  The setup code can be
+combined and shared by both powerpc and arm64.
 
-configs tested: 202
-configs skipped: 2
+The differences relative to the arm64 version:
+ - If /chosen doesn't exist, it will be created (should never happen).
+ - Any old dtb and initrd reserved memory will be released.
+ - The new initrd and elfcorehdr are marked reserved.
+ - "linux,booted-from-kexec" is set.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The differences relative to the powerpc version:
+ - "kaslr-seed" and "rng-seed" may be set.
+ - "linux,elfcorehdr" is set.
+ - Any existing "linux,usable-memory-range" is removed.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-riscv                    nommu_k210_defconfig
-alpha                            alldefconfig
-arc                     haps_hs_smp_defconfig
-sh                               j2_defconfig
-powerpc                      ppc64e_defconfig
-arm                       netwinder_defconfig
-arm                         shannon_defconfig
-arm                     davinci_all_defconfig
-arc                        vdk_hs38_defconfig
-sh                        sh7763rdp_defconfig
-c6x                        evmc6474_defconfig
-sh                      rts7751r2d1_defconfig
-m68k                            q40_defconfig
-arm                            lart_defconfig
-arm                            pleb_defconfig
-arm                   milbeaut_m10v_defconfig
-h8300                            alldefconfig
-powerpc                         ps3_defconfig
-h8300                     edosk2674_defconfig
-arm                          moxart_defconfig
-arm                             rpc_defconfig
-mips                         mpc30x_defconfig
-arm                  colibri_pxa300_defconfig
-powerpc                    ge_imp3a_defconfig
-m68k                          atari_defconfig
-mips                      bmips_stb_defconfig
-powerpc                     stx_gp3_defconfig
-arm                           sunxi_defconfig
-arm                         axm55xx_defconfig
-arm                        clps711x_defconfig
-sh                          landisk_defconfig
-sh                        edosk7760_defconfig
-arm                        realview_defconfig
-arm                      integrator_defconfig
-openrisc                         alldefconfig
-sh                           se7712_defconfig
-h8300                               defconfig
-sh                            hp6xx_defconfig
-arm                          simpad_defconfig
-powerpc                 mpc8315_rdb_defconfig
-mips                     cu1830-neo_defconfig
-mips                         tb0219_defconfig
-sh                          rsk7264_defconfig
-arm                            u300_defconfig
-openrisc                            defconfig
-arm                          pxa3xx_defconfig
-sh                           se7206_defconfig
-sh                         ap325rxa_defconfig
-powerpc                       eiger_defconfig
-xtensa                  cadence_csp_defconfig
-arm                      tct_hammer_defconfig
-arm                       aspeed_g5_defconfig
-arm                         vf610m4_defconfig
-arm                          lpd270_defconfig
-powerpc                 linkstation_defconfig
-mips                           jazz_defconfig
-powerpc                 mpc832x_mds_defconfig
-mips                       capcella_defconfig
-powerpc                     redwood_defconfig
-arm                          exynos_defconfig
-nds32                            alldefconfig
-arm                       aspeed_g4_defconfig
-mips                        workpad_defconfig
-sh                            migor_defconfig
-arm                           corgi_defconfig
-um                             i386_defconfig
-powerpc                   bluestone_defconfig
-sh                          rsk7203_defconfig
-nds32                               defconfig
-powerpc                    gamecube_defconfig
-mips                          ath79_defconfig
-powerpc64                        alldefconfig
-s390                          debug_defconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                       holly_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                    amigaone_defconfig
-mips                        omega2p_defconfig
-arm                         s5pv210_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                     mpc5200_defconfig
-arc                        nsim_700_defconfig
-powerpc                      pmac32_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                        icon_defconfig
-powerpc                 mpc836x_rdk_defconfig
-mips                           ip28_defconfig
-sh                                  defconfig
-powerpc                mpc7448_hpc2_defconfig
-arm                         lpc32xx_defconfig
-arm                          badge4_defconfig
-mips                      maltaaprp_defconfig
-powerpc                      chrp32_defconfig
-sparc                       sparc32_defconfig
-mips                            e55_defconfig
-parisc                              defconfig
-parisc                generic-32bit_defconfig
-powerpc                      ep88xc_defconfig
-sh                          kfr2r09_defconfig
-arm                              zx_defconfig
-mips                           ip32_defconfig
-mips                  cavium_octeon_defconfig
-m68k                       m5208evb_defconfig
-mips                     decstation_defconfig
-mips                        nlm_xlp_defconfig
-mips                malta_kvm_guest_defconfig
-sh                ecovec24-romimage_defconfig
-arm                           spitz_defconfig
-ia64                      gensparse_defconfig
-arm                              alldefconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210209
-x86_64               randconfig-a001-20210209
-x86_64               randconfig-a005-20210209
-x86_64               randconfig-a004-20210209
-x86_64               randconfig-a002-20210209
-x86_64               randconfig-a003-20210209
-x86_64               randconfig-a003-20210212
-x86_64               randconfig-a002-20210212
-x86_64               randconfig-a004-20210212
-x86_64               randconfig-a001-20210212
-x86_64               randconfig-a005-20210212
-x86_64               randconfig-a006-20210212
-i386                 randconfig-a001-20210209
-i386                 randconfig-a005-20210209
-i386                 randconfig-a003-20210209
-i386                 randconfig-a002-20210209
-i386                 randconfig-a006-20210209
-i386                 randconfig-a004-20210209
-i386                 randconfig-a003-20210212
-i386                 randconfig-a005-20210212
-i386                 randconfig-a002-20210212
-i386                 randconfig-a001-20210212
-i386                 randconfig-a004-20210212
-i386                 randconfig-a006-20210212
-i386                 randconfig-a016-20210209
-i386                 randconfig-a013-20210209
-i386                 randconfig-a012-20210209
-i386                 randconfig-a014-20210209
-i386                 randconfig-a011-20210209
-i386                 randconfig-a015-20210209
-i386                 randconfig-a016-20210211
-i386                 randconfig-a014-20210211
-i386                 randconfig-a012-20210211
-i386                 randconfig-a013-20210211
-i386                 randconfig-a011-20210211
-i386                 randconfig-a015-20210211
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Combine the code for setting up the /chosen node in the FDT and updating
+the memory reservation for kexec, for powerpc and arm64, in
+of_kexec_alloc_and_setup_fdt() and move it to "drivers/of/kexec.c".
 
-clang tested configs:
-x86_64               randconfig-a013-20210209
-x86_64               randconfig-a014-20210209
-x86_64               randconfig-a015-20210209
-x86_64               randconfig-a012-20210209
-x86_64               randconfig-a016-20210209
-x86_64               randconfig-a011-20210209
-
+Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/of/Makefile |   6 +
+ drivers/of/kexec.c  | 265 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of.h  |   5 +
+ 3 files changed, 276 insertions(+)
+ create mode 100644 drivers/of/kexec.c
+
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 6e1e5212f058..c13b982084a3 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -14,4 +14,10 @@ obj-$(CONFIG_OF_RESOLVE)  += resolver.o
+ obj-$(CONFIG_OF_OVERLAY) += overlay.o
+ obj-$(CONFIG_OF_NUMA) += of_numa.o
+ 
++ifdef CONFIG_KEXEC_FILE
++ifdef CONFIG_OF_FLATTREE
++obj-y	+= kexec.o
++endif
++endif
++
+ obj-$(CONFIG_OF_UNITTEST) += unittest-data/
+diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+new file mode 100644
+index 000000000000..264cac0fd4cd
+--- /dev/null
++++ b/drivers/of/kexec.c
+@@ -0,0 +1,265 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2020 Arm Limited
++ *
++ * Based on arch/arm64/kernel/machine_kexec_file.c:
++ *  Copyright (C) 2018 Linaro Limited
++ *
++ * And arch/powerpc/kexec/file_load.c:
++ *  Copyright (C) 2016  IBM Corporation
++ */
++
++#include <linux/kernel.h>
++#include <linux/kexec.h>
++#include <linux/libfdt.h>
++#include <linux/of.h>
++#include <linux/of_fdt.h>
++#include <linux/random.h>
++#include <linux/types.h>
++
++/* relevant device tree properties */
++#define FDT_PROP_KEXEC_ELFHDR	"linux,elfcorehdr"
++#define FDT_PROP_MEM_RANGE	"linux,usable-memory-range"
++#define FDT_PROP_INITRD_START	"linux,initrd-start"
++#define FDT_PROP_INITRD_END	"linux,initrd-end"
++#define FDT_PROP_BOOTARGS	"bootargs"
++#define FDT_PROP_KASLR_SEED	"kaslr-seed"
++#define FDT_PROP_RNG_SEED	"rng-seed"
++#define RNG_SEED_SIZE		128
++
++/*
++ * Additional space needed for the FDT buffer so that we can add initrd,
++ * bootargs, kaslr-seed, rng-seed, useable-memory-range and elfcorehdr.
++ */
++#define FDT_EXTRA_SPACE 0x1000
++
++/**
++ * fdt_find_and_del_mem_rsv - delete memory reservation with given address and size
++ *
++ * @fdt:	Flattened device tree for the current kernel.
++ * @start:	Starting address of the reserved memory.
++ * @size:	Size of the reserved memory.
++ *
++ * Return: 0 on success, or negative errno on error.
++ */
++static int fdt_find_and_del_mem_rsv(void *fdt, unsigned long start, unsigned long size)
++{
++	int i, ret, num_rsvs = fdt_num_mem_rsv(fdt);
++
++	for (i = 0; i < num_rsvs; i++) {
++		u64 rsv_start, rsv_size;
++
++		ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
++		if (ret) {
++			pr_err("Malformed device tree.\n");
++			return -EINVAL;
++		}
++
++		if (rsv_start == start && rsv_size == size) {
++			ret = fdt_del_mem_rsv(fdt, i);
++			if (ret) {
++				pr_err("Error deleting device tree reservation.\n");
++				return -EINVAL;
++			}
++
++			return 0;
++		}
++	}
++
++	return -ENOENT;
++}
++
++/*
++ * of_kexec_alloc_and_setup_fdt - Alloc and setup a new Flattened Device Tree
++ *
++ * @image:		kexec image being loaded.
++ * @initrd_load_addr:	Address where the next initrd will be loaded.
++ * @initrd_len:		Size of the next initrd, or 0 if there will be none.
++ * @cmdline:		Command line for the next kernel, or NULL if there will
++ *			be none.
++ * @extra_fdt_size:	Additional size for the new FDT buffer.
++ *
++ * Return: fdt on success, or NULL errno on error.
++ */
++void *of_kexec_alloc_and_setup_fdt(const struct kimage *image,
++				   unsigned long initrd_load_addr,
++				   unsigned long initrd_len,
++				   const char *cmdline, size_t extra_fdt_size)
++{
++	void *fdt;
++	int ret, chosen_node;
++	const void *prop;
++	size_t fdt_size;
++
++	fdt_size = fdt_totalsize(initial_boot_params) +
++		   (cmdline ? strlen(cmdline) : 0) +
++		   FDT_EXTRA_SPACE +
++		   extra_fdt_size;
++	fdt = kvmalloc(fdt_size, GFP_KERNEL);
++	if (!fdt)
++		return NULL;
++
++	ret = fdt_open_into(initial_boot_params, fdt, fdt_size);
++	if (ret < 0) {
++		pr_err("Error %d setting up the new device tree.\n", ret);
++		goto out;
++	}
++
++	/* Remove memory reservation for the current device tree. */
++	ret = fdt_find_and_del_mem_rsv(fdt, __pa(initial_boot_params),
++				       fdt_totalsize(initial_boot_params));
++	if (ret == -EINVAL) {
++		pr_err("Error removing memory reservation.\n");
++		goto out;
++	}
++
++	chosen_node = fdt_path_offset(fdt, "/chosen");
++	if (chosen_node == -FDT_ERR_NOTFOUND)
++		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
++					      "chosen");
++	if (chosen_node < 0) {
++		ret = chosen_node;
++		goto out;
++	}
++
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_KEXEC_ELFHDR);
++	if (ret && ret != -FDT_ERR_NOTFOUND)
++		goto out;
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_MEM_RANGE);
++	if (ret && ret != -FDT_ERR_NOTFOUND)
++		goto out;
++
++	/* Did we boot using an initrd? */
++	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
++	if (prop) {
++		u64 tmp_start, tmp_end, tmp_size;
++
++		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
++		if (!prop) {
++			ret = -EINVAL;
++			goto out;
++		}
++
++		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		/*
++		 * kexec reserves exact initrd size, while firmware may
++		 * reserve a multiple of PAGE_SIZE, so check for both.
++		 */
++		tmp_size = tmp_end - tmp_start;
++		ret = fdt_find_and_del_mem_rsv(fdt, tmp_start, tmp_size);
++		if (ret == -ENOENT)
++			ret = fdt_find_and_del_mem_rsv(fdt, tmp_start,
++						       round_up(tmp_size, PAGE_SIZE));
++		if (ret == -EINVAL)
++			goto out;
++	}
++
++	/* add initrd-* */
++	if (initrd_load_addr) {
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_START,
++				      initrd_load_addr);
++		if (ret)
++			goto out;
++
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_END,
++				      initrd_load_addr + initrd_len);
++		if (ret)
++			goto out;
++
++		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
++		if (ret)
++			goto out;
++
++	} else {
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_START);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_END);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++	}
++
++	if (image->type == KEXEC_TYPE_CRASH) {
++		/* add linux,elfcorehdr */
++		ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
++				FDT_PROP_KEXEC_ELFHDR,
++				image->arch.elf_load_addr,
++				image->arch.elf_headers_sz);
++		if (ret)
++			goto out;
++
++		/*
++		 * Avoid elfcorehdr from being stomped on in kdump kernel by
++		 * setting up memory reserve map.
++		 */
++		ret = fdt_add_mem_rsv(fdt, image->arch.elf_load_addr,
++				      image->arch.elf_headers_sz);
++		if (ret)
++			goto out;
++
++		/* add linux,usable-memory-range */
++		ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
++				FDT_PROP_MEM_RANGE,
++				crashk_res.start,
++				crashk_res.end - crashk_res.start + 1);
++		if (ret)
++			goto out;
++	}
++
++	/* add bootargs */
++	if (cmdline) {
++		ret = fdt_setprop_string(fdt, chosen_node, FDT_PROP_BOOTARGS, cmdline);
++		if (ret)
++			goto out;
++	} else {
++		ret = fdt_delprop(fdt, chosen_node, FDT_PROP_BOOTARGS);
++		if (ret && (ret != -FDT_ERR_NOTFOUND))
++			goto out;
++	}
++
++	/* add kaslr-seed */
++	ret = fdt_delprop(fdt, chosen_node, FDT_PROP_KASLR_SEED);
++	if (ret == -FDT_ERR_NOTFOUND)
++		ret = 0;
++	else if (ret)
++		goto out;
++
++	if (rng_is_initialized()) {
++		u64 seed = get_random_u64();
++
++		ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_KASLR_SEED, seed);
++		if (ret)
++			goto out;
++	} else {
++		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
++				FDT_PROP_KASLR_SEED);
++	}
++
++	/* add rng-seed */
++	if (rng_is_initialized()) {
++		void *rng_seed;
++
++		ret = fdt_setprop_placeholder(fdt, chosen_node, FDT_PROP_RNG_SEED,
++				RNG_SEED_SIZE, &rng_seed);
++		if (ret)
++			goto out;
++		get_random_bytes(rng_seed, RNG_SEED_SIZE);
++	} else {
++		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
++				FDT_PROP_RNG_SEED);
++	}
++
++	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
++
++out:
++	if (ret) {
++		kvfree(fdt);
++		fdt = NULL;
++	}
++
++	return fdt;
++}
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 4b27c9a27df3..d66c915df910 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -560,6 +560,11 @@ int of_map_id(struct device_node *np, u32 id,
+ 
+ phys_addr_t of_dma_get_max_cpu_address(struct device_node *np);
+ 
++struct kimage;
++void *of_kexec_alloc_and_setup_fdt(const struct kimage *image,
++				   unsigned long initrd_load_addr,
++				   unsigned long initrd_len,
++				   const char *cmdline, size_t extra_fdt_size);
+ #else /* CONFIG_OF */
+ 
+ static inline void of_core_init(void)
+-- 
+2.30.0
+
