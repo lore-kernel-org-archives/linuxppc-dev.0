@@ -2,94 +2,111 @@ Return-Path: <SRS0=Krh9=HR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDDFDC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Feb 2021 21:06:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E25C7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Feb 2021 21:35:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B215264DE0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Feb 2021 21:06:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B215264DE0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gimpelevich.san-francisco.ca.us
+	by mail.kernel.org (Postfix) with ESMTPS id DA6FC64DEB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Feb 2021 21:34:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA6FC64DEB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dfc8S1WqZz3cGF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 08:06:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dfcnt2X5Cz30L7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 08:34:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com header.i=@gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=rlpr9Y17;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNfaT+ix;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Void lookup limit
- of 2 exceeded) smtp.mailfrom=gimpelevich.san-francisco.ca.us
- (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com;
- envelope-from=daniel@gimpelevich.san-francisco.ca.us; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bauerman@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com
- header.i=@gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com
- header.a=rsa-sha256 header.s=20150623 header.b=rlpr9Y17; 
- dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=sNfaT+ix; dkim-atps=neutral
+X-Greylist: delayed 177 seconds by postgrey-1.36 at boromir;
+ Tue, 16 Feb 2021 08:34:32 AEDT
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DfZ4J30CLz30Ky
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 06:32:11 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id k13so4726314pfh.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2021 11:32:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com; s=20150623;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=L3nj9/R/NkkK99k6HujqpUsnIKZSJ7ODAWop9jG8uEo=;
- b=rlpr9Y17GqcS3VcCW+l+bS1nW3xiXbddJLqCQV49EqcSpGV+KSbl8a+FrYFs9PvSYs
- it8iWSpJw1gsM6AGOhmH5Acw2KmSdULF0CtLUbpv1I2R6STtXs02IIl8hkKiuQrTcClp
- gnpNivl1Mi0M80qg3y9K82mqykBBymTRSXTNI+7NyuKpk2tirw6/VycnssOaap/hbbRM
- aoyntdpV8PSwl9fmqwLS6X81BO88m0k21D/riSbB2g+a2Jud+lXOz+nB4Ew3UND3WIr2
- OpusKjkcH5p5Sf2vfYR7Obk5HSn1xhQe1A1Xn5XMmt5nQ6eZnXSjlWHxq4HTxliPGZwx
- aMBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=L3nj9/R/NkkK99k6HujqpUsnIKZSJ7ODAWop9jG8uEo=;
- b=S98GH7deIxISfuPKMpl76BwDA3kQLVrr18Vh7RjV4B6YPdblrKIkE37oAr731KW5QP
- CRGCZWNnsOLO2ewpjJ8azcXydni7T7O7csCQCXJzUeyEKL32xu0ufw18aGCgkIKfXvGw
- 8VQRBimj5h9meufjeIWHV11bmGj2p+yGRas0+JXv+PgyAefDE63cNj5zVmKxKTMH2Z/0
- oo1JQuZzd1K8r/r8sGtCaPUMWOMtBNsST+22XU+IsEWMTBHd9LKrjNUVT7FgWdn7Zzgy
- m/UyuCBMickxE4UgNB0b6xhggEAvmUl1n1bKB/xuIiMaxei0CRcdQpfviQOtxIbXqBFJ
- Hk+g==
-X-Gm-Message-State: AOAM531iHwf452niZu0gozaAaDpIZFWA+Kr3biNWYX/tQ7feLCxMpWrf
- tsuSbGkuF7+P4Fc4/1ZPME+0xQ==
-X-Google-Smtp-Source: ABdhPJwYGpgEV2/GV9/dgnc2/rEWjl2dK3GYAnKQrXXgndNQF0w/cYvidbBIhC5ZupXR2KlChWCpFA==
-X-Received: by 2002:a63:181e:: with SMTP id y30mr15574858pgl.324.1613417527139; 
- Mon, 15 Feb 2021 11:32:07 -0800 (PST)
-Received: from [192.168.72.184] (157-131-244-194.fiber.dynamic.sonic.net.
- [157.131.244.194])
- by smtp.gmail.com with ESMTPSA id y1sm196040pjt.37.2021.02.15.11.32.05
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Feb 2021 11:32:06 -0800 (PST)
-Message-ID: <1613417521.3853.5.camel@chimera>
-Subject: Re: [PATCH 1/4] add generic builtin command line
-From: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 15 Feb 2021 11:32:01 -0800
-In-Reply-To: <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
-References: <20190319232448.45964-2-danielwa@cisco.com>
- <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
- <20190320232328.3bijcxek2yg43a25@zorba>
- <20190320201433.6c5c4782f4432d280c0e8361@linux-foundation.org>
- <20190321151308.yt6uc3mxgppm5zko@zorba>
- <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.10.4-0ubuntu2 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 16 Feb 2021 08:05:33 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DfcnN18xqz30J2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 08:34:31 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 11FLWkgC151283; Mon, 15 Feb 2021 16:34:15 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=references : from : to :
+ cc : subject : in-reply-to : date : message-id : mime-version :
+ content-type; s=pp1; bh=EtYhEByWEWQgIibHhbeegrXgRIy0mefOYeZ80CEwiyw=;
+ b=sNfaT+ix3tDtWIhUzm0Tm755PpnGjYI/OyYxaEDvDG2xHE16lXSr9e1I3mDBlud9/CMz
+ pr7tAP2obY8qfz2JEO3Lx6sszx5zsYUr8pdX9NzV4gAOedzhioMJghzeOJ4Sw+ML/qIk
+ a34dWPQp1CYLdksdWgHeqzCBAP+gTJDpai9xSp9X52oF8LKtHfREgnJ+tduUlQdeaKD4
+ AYet3n1DgxjQH7zIR4wEvSGar3DUyi77f//SdHTdAcA1x2mgnHQ8FIfqQsuT79NxWLHS
+ 52FosH6Zjm3tGFqXO+Yz0x2Gr0vtZE/8iMIVnYarLrUAlA8Iy59MLE20UHmXgOsYYhCT qg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36r0p9gd5f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 15 Feb 2021 16:34:15 -0500
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 11FLWrqm151495;
+ Mon, 15 Feb 2021 16:34:14 -0500
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36r0p9gd53-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 15 Feb 2021 16:34:14 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11FLXimA029202;
+ Mon, 15 Feb 2021 21:34:13 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma04wdc.us.ibm.com with ESMTP id 36p6d8sung-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 15 Feb 2021 21:34:13 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 11FLYCrx16122186
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 15 Feb 2021 21:34:12 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 74A4EC6059;
+ Mon, 15 Feb 2021 21:34:12 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CAEB1C6057;
+ Mon, 15 Feb 2021 21:34:04 +0000 (GMT)
+Received: from manicouagan.localdomain (unknown [9.85.173.121])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Mon, 15 Feb 2021 21:34:04 +0000 (GMT)
+References: <20210213161049.6190-1-nramas@linux.microsoft.com>
+ <20210213161049.6190-3-nramas@linux.microsoft.com>
+User-agent: mu4e 1.4.10; emacs 27.1
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Subject: Re: [PATCH v18 02/11] arm64: Rename kexec elf_headers_mem to
+ elf_load_addr
+In-reply-to: <20210213161049.6190-3-nramas@linux.microsoft.com>
+Date: Mon, 15 Feb 2021 18:34:02 -0300
+Message-ID: <8735xxrp6d.fsf@manicouagan.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-02-15_16:2021-02-12,
+ 2021-02-15 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0
+ impostorscore=0 lowpriorityscore=0 priorityscore=1501 mlxscore=0
+ mlxlogscore=999 bulkscore=0 phishscore=0 spamscore=0 malwarescore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102150160
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,26 +118,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- xe-linux-external@cisco.com, Daniel Walker <dwalker@fifo99.com>,
- linuxppc-dev@lists.ozlabs.org, Daniel Walker <danielwa@cisco.com>
+Cc: mark.rutland@arm.com, tao.li@vivo.com, zohar@linux.ibm.com,
+ paulus@samba.org, vincenzo.frascino@arm.com, frowand.list@gmail.com,
+ sashal@kernel.org, robh@kernel.org, masahiroy@kernel.org, jmorris@namei.org,
+ takahiro.akashi@linaro.org, linux-arm-kernel@lists.infradead.org,
+ catalin.marinas@arm.com, serge@hallyn.com, devicetree@vger.kernel.org,
+ pasha.tatashin@soleen.com, will@kernel.org, prsriva@linux.microsoft.com,
+ hsinyi@chromium.org, allison@lohutok.net, christophe.leroy@c-s.fr,
+ mbrugger@suse.com, balajib@linux.microsoft.com, dmitry.kasatkin@gmail.com,
+ linux-kernel@vger.kernel.org, james.morse@arm.com, gregkh@linuxfoundation.org,
+ joe@perches.com, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-03-21 at 15:15 -0700, Andrew Morton wrote:
-> On Thu, 21 Mar 2019 08:13:08 -0700 Daniel Walker <danielwa@cisco.com> wrote:
-> > On Wed, Mar 20, 2019 at 08:14:33PM -0700, Andrew Morton wrote:
-> > > The patches (or some version of them) are already in linux-next,
-> > > which messes me up.  I'll disable them for now.
-> >  
-> > Those are from my tree, but I remove them when you picked up the series. The
-> > next linux-next should not have them.
-> 
-> Yup, thanks, all looks good now.
 
-This patchset is currently neither in mainline nor in -next. May I ask
-what happened to it? Thanks.
+Lakshmi Ramasubramanian <nramas@linux.microsoft.com> writes:
 
+> The architecture specific field, elf_headers_mem in struct kimage_arch,
+> that holds the address of the buffer in memory for ELF core header for
+> arm64 has a different name than the one used for powerpc.  This makes
+> it hard to have a common code for setting up the device tree for
+> kexec system call.
+>
+> Rename elf_headers_mem to elf_load_addr to align with powerpc name so
+> common code can use it.
+>
+> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+> Suggested-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> ---
+>  arch/arm64/include/asm/kexec.h         | 2 +-
+>  arch/arm64/kernel/machine_kexec_file.c | 6 +++---
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
