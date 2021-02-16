@@ -2,53 +2,41 @@ Return-Path: <SRS0=jy/z=HS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92284C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 17:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93F10C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 19:11:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CA7A64E04
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 17:50:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CA7A64E04
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id E1B5564E65
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 19:11:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1B5564E65
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fifo99.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dg7mg4mHKz3cGF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 04:50:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-X-Greylist: delayed 626 seconds by postgrey-1.36 at boromir;
- Wed, 17 Feb 2021 04:50:24 AEDT
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dg7mJ0qxLz30KJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 04:50:21 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dg7X256vfzB09ZP;
- Tue, 16 Feb 2021 18:39:46 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id obuZMT7z7GUL; Tue, 16 Feb 2021 18:39:46 +0100 (CET)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dg7X24HVlzB09ZM;
- Tue, 16 Feb 2021 18:39:46 +0100 (CET)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id 769CB1EC; Tue, 16 Feb 2021 18:42:47 +0100 (CET)
-Received: from 37-171-22-224.coucou-networks.fr
- (37-171-22-224.coucou-networks.fr [37.171.22.224]) by messagerie.c-s.fr
- (Horde Framework) with HTTP; Tue, 16 Feb 2021 18:42:47 +0100
-Date: Tue, 16 Feb 2021 18:42:47 +0100
-Message-ID: <20210216184247.Horde.If3nEUb5zLh4eU_4qXZCAw1@messagerie.c-s.fr>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dg9ZJ1JyWz3cW1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 06:11:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=fifo99.com
+ (client-ip=34.208.57.251; helo=ip-172-31-12-36.us-west-2.compute.internal;
+ envelope-from=dwalker@fifo99.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 543 seconds by postgrey-1.36 at boromir;
+ Wed, 17 Feb 2021 06:11:33 AEDT
+Received: from ip-172-31-12-36.us-west-2.compute.internal
+ (ec2-34-208-57-251.us-west-2.compute.amazonaws.com [34.208.57.251])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Dg9Yx5LhPz3cG6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 06:11:33 +1100 (AEDT)
+Received: by ip-172-31-12-36.us-west-2.compute.internal (Postfix,
+ from userid 1001)
+ id 744C640638; Tue, 16 Feb 2021 11:02:26 -0800 (PST)
+Date: Tue, 16 Feb 2021 11:02:26 -0800
+From: Daniel Walker <dwalker@fifo99.com>
 To: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
 Subject: Re: [PATCH 1/4] add generic builtin command line
+Message-ID: <20210216190226.GY22125@fifo99.com>
 References: <20190319232448.45964-2-danielwa@cisco.com>
  <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
  <20190320232328.3bijcxek2yg43a25@zorba>
@@ -56,12 +44,11 @@ References: <20190319232448.45964-2-danielwa@cisco.com>
  <20190321151308.yt6uc3mxgppm5zko@zorba>
  <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
  <1613417521.3853.5.camel@chimera>
-In-Reply-To: <1613417521.3853.5.camel@chimera>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1613417521.3853.5.camel@chimera>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,53 +60,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, xe-linux-external@cisco.com,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- Maksym Kokhan <maksym.kokhan@globallogic.com>,
- Daniel Walker <dwalker@fifo99.com>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ xe-linux-external@cisco.com, Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev@lists.ozlabs.org, Daniel Walker <danielwa@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us> a =C3=A9crit=C2=
-=A0:
-
+On Mon, Feb 15, 2021 at 11:32:01AM -0800, Daniel Gimpelevich wrote:
 > On Thu, 2019-03-21 at 15:15 -0700, Andrew Morton wrote:
->> On Thu, 21 Mar 2019 08:13:08 -0700 Daniel Walker <danielwa@cisco.com> wr=
-ote:
->> > On Wed, Mar 20, 2019 at 08:14:33PM -0700, Andrew Morton wrote:
->> > > The patches (or some version of them) are already in linux-next,
->> > > which messes me up.  I'll disable them for now.
->> >
->> > Those are from my tree, but I remove them when you picked up the=20=20
->>=20series. The
->> > next linux-next should not have them.
->>
->> Yup, thanks, all looks good now.
->
+> > On Thu, 21 Mar 2019 08:13:08 -0700 Daniel Walker <danielwa@cisco.com> wrote:
+> > > On Wed, Mar 20, 2019 at 08:14:33PM -0700, Andrew Morton wrote:
+> > > > The patches (or some version of them) are already in linux-next,
+> > > > which messes me up.  I'll disable them for now.
+> > >  
+> > > Those are from my tree, but I remove them when you picked up the series. The
+> > > next linux-next should not have them.
+> > 
+> > Yup, thanks, all looks good now.
+> 
 > This patchset is currently neither in mainline nor in -next. May I ask
 > what happened to it? Thanks.
+> 
 
-As far as I remember, there has been a lot of discussion around this series=
-.
+It was dropped silently by Andrew at some point. I wasn't watching -next closely
+to know when. I have no idea why he dropped it.
 
-As of today, it doesn't apply cleanly anymore and would require rebasing.
+We still use this series extensively in Cisco, and have extended it beyond this
+current series.
 
-I'd suggest also to find the good arguments to convince us that this=20=20
-series=20has a real added value, not just "cisco use it in its kernels=20=
-=20
-so=20it is good".
+We can re-submit.
 
-I proposed an alternative at=20=20
-https://patchwork.ozlabs.org/project/linuxppc-dev/cover/cover.1554195798.gi=
-t.christophe.leroy@c-s.fr/=20but never got any feedback so I gave=20=20
-up.
-
-If=20you submit a new series, don't forget to copy ppclinux-dev and=20=20
-linux-arch=20lists.
-
-Christophe
-
-
+Daniel
