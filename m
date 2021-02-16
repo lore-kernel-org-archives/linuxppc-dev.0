@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42F36C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 03:29:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B314DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 03:33:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C67F564DB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 03:29:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C67F564DB1
+	by mail.kernel.org (Postfix) with ESMTPS id 009F064DB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 03:33:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 009F064DB1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dfmfk1dwGz3cHT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 14:29:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dfmlh2myRz3cJ6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 14:33:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-X-Greylist: delayed 524 seconds by postgrey-1.36 at boromir;
- Tue, 16 Feb 2021 14:28:58 AEDT
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DfmfL6rSfz30Gs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 14:28:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DfmlK3cTLz30Gv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 14:33:17 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 84C9FAE8020D;
- Mon, 15 Feb 2021 22:20:04 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id DF05DAE80225;
+ Mon, 15 Feb 2021 22:33:13 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/iommu: Annotate nested lock for lockdep
-Date: Tue, 16 Feb 2021 14:20:00 +1100
-Message-Id: <20210216032000.21642-1-aik@ozlabs.ru>
+Subject: [PATCH kernel 1/2] powerpc/iommu: Allocate it_map by vmalloc
+Date: Tue, 16 Feb 2021 14:33:06 +1100
+Message-Id: <20210216033307.69863-2-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210216033307.69863-1-aik@ozlabs.ru>
+References: <20210216033307.69863-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,55 +48,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The IOMMU table is divided into pools for concurrent mappings and each
-pool has a separate spinlock. When taking the ownership of an IOMMU group
-to pass through a device to a VM, we lock these spinlocks which triggers
-a false negative warning in lockdep (below).
+The IOMMU table uses the it_map bitmap to keep track of allocated DMA
+pages. This has always been a contiguous array allocated at either
+the boot time or when a passed through device is returned to the host OS.
+The it_map memory is allocated by alloc_pages() which allocates
+contiguous physical memory.
 
-This fixes it by annotating the large pool's spinlock as a nest lock.
+Such allocation method occasionally creates a problem when there is
+no big chunk of memory available (no free memory or too fragmented).
+On powernv/ioda2 the default DMA window requires 16MB for it_map.
 
-===
-WARNING: possible recursive locking detected
-5.11.0-le_syzkaller_a+fstn1 #100 Not tainted
---------------------------------------------
-qemu-system-ppc/4129 is trying to acquire lock:
-c0000000119bddb0 (&(p->lock)/1){....}-{2:2}, at: iommu_take_ownership+0xac/0x1e0
-
-but task is already holding lock:
-c0000000119bdd30 (&(p->lock)/1){....}-{2:2}, at: iommu_take_ownership+0xac/0x1e0
-
-other info that might help us debug this:
- Possible unsafe locking scenario:
-
-       CPU0
-       ----
-  lock(&(p->lock)/1);
-  lock(&(p->lock)/1);
-===
+This replaces alloc_pages_node() with vzalloc_node() which allocates
+contiguous block but in virtual memory. This should reduce changes of
+failure but should not cause other behavioral changes as it_map is only
+used by the kernel's DMA hooks/api when MMU is on.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kernel/iommu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/iommu.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 557a09dd5b2f..2ee642a6731a 100644
+index c00214a4355c..8eb6eb0afa97 100644
 --- a/arch/powerpc/kernel/iommu.c
 +++ b/arch/powerpc/kernel/iommu.c
-@@ -1089,7 +1089,7 @@ int iommu_take_ownership(struct iommu_table *tbl)
+@@ -719,7 +719,6 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
+ {
+ 	unsigned long sz;
+ 	static int welcomed = 0;
+-	struct page *page;
+ 	unsigned int i;
+ 	struct iommu_pool *p;
  
- 	spin_lock_irqsave(&tbl->large_pool.lock, flags);
- 	for (i = 0; i < tbl->nr_pools; i++)
--		spin_lock(&tbl->pools[i].lock);
-+		spin_lock_nest_lock(&tbl->pools[i].lock, &tbl->large_pool.lock);
+@@ -728,11 +727,9 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
+ 	/* number of bytes needed for the bitmap */
+ 	sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
  
- 	iommu_table_release_pages(tbl);
+-	page = alloc_pages_node(nid, GFP_KERNEL, get_order(sz));
+-	if (!page)
++	tbl->it_map = vzalloc_node(sz, nid);
++	if (!tbl->it_map)
+ 		panic("iommu_init_table: Can't allocate %ld bytes\n", sz);
+-	tbl->it_map = page_address(page);
+-	memset(tbl->it_map, 0, sz);
  
+ 	iommu_table_reserve_pages(tbl, res_start, res_end);
+ 
+@@ -774,8 +771,6 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
+ 
+ static void iommu_table_free(struct kref *kref)
+ {
+-	unsigned long bitmap_sz;
+-	unsigned int order;
+ 	struct iommu_table *tbl;
+ 
+ 	tbl = container_of(kref, struct iommu_table, it_kref);
+@@ -796,12 +791,8 @@ static void iommu_table_free(struct kref *kref)
+ 	if (!bitmap_empty(tbl->it_map, tbl->it_size))
+ 		pr_warn("%s: Unexpected TCEs\n", __func__);
+ 
+-	/* calculate bitmap size in bytes */
+-	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
+-
+ 	/* free bitmap */
+-	order = get_order(bitmap_sz);
+-	free_pages((unsigned long) tbl->it_map, order);
++	vfree(tbl->it_map);
+ 
+ 	/* free table */
+ 	kfree(tbl);
 -- 
 2.17.1
 
