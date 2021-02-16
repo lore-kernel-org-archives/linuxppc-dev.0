@@ -2,109 +2,96 @@ Return-Path: <SRS0=jy/z=HS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F78AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 19:30:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDA14C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 21:23:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D841C64ED0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 19:30:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D841C64ED0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D109E64E42
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 21:23:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D109E64E42
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gimpelevich.san-francisco.ca.us
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dg9zp34Jlz3cW7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 06:30:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DgDTl1MJkz3cPF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 08:23:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VSUZDZmu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com header.i=@gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=wYjqab4z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Void lookup limit
+ of 2 exceeded) smtp.mailfrom=gimpelevich.san-francisco.ca.us
+ (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com;
+ envelope-from=daniel@gimpelevich.san-francisco.ca.us; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VSUZDZmu; dkim-atps=neutral
-X-Greylist: delayed 2788 seconds by postgrey-1.36 at boromir;
- Wed, 17 Feb 2021 06:30:02 AEDT
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com
+ header.i=@gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com
+ header.a=rsa-sha256 header.s=20150623 header.b=wYjqab4z; 
+ dkim-atps=neutral
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com
+ [IPv6:2607:f8b0:4864:20::532])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dg9zG1NG6z3cGq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 06:30:00 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 11GIWDlZ173635; Tue, 16 Feb 2021 13:43:30 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=V1xU+saz9w4xiE659/nYzU7asqdKegzxMTqU8mFL/EU=;
- b=VSUZDZmuDejsM9+YVG+Q1nR+xPVfbS3+TRCWqLYBb0Um4A8GTLO5Co0D50p6VCTYqOGW
- BJl4Be8LnfIrCV6UuxzWNtPnRN6dtr5Nkz9Ha2otr88hWwZR7OL1irT8x1MSlpX+nzsw
- foSyBHz45yR3Sz0+++/C6/VdQVdNzKz6mYCAPrTTSotpYUIJ1NlbOHq4x9C2BAl5MoFk
- /ITuT3b3B58mXwvsDMJfG+nkHQ3fFWyH3L37p9l8lWPI1KHLOh93ndfcGkhMyssdqncD
- 2i4sAfoWysZIZu9qZMIfxLMpja9wgOPeJ62bM1DLeb2++pZTPy5mCvIgL67m7RxvxnNX LQ== 
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36rhtdusc2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 16 Feb 2021 13:43:30 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11GIaX6F016141;
- Tue, 16 Feb 2021 18:43:29 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma02dal.us.ibm.com with ESMTP id 36p6d9pf0q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 16 Feb 2021 18:43:29 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11GIhTAJ7799706
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 16 Feb 2021 18:43:29 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02B7328066;
- Tue, 16 Feb 2021 18:43:29 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4D7D428058;
- Tue, 16 Feb 2021 18:43:26 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.160.70.200])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 16 Feb 2021 18:43:25 +0000 (GMT)
-Subject: Re: [PATCH 4/4] ibmvfc: store return code of H_FREE_SUB_CRQ during
- cleanup
-To: Brian King <brking@linux.vnet.ibm.com>,
- james.bottomley@hansenpartnership.com
-References: <20210211185742.50143-1-tyreld@linux.ibm.com>
- <20210211185742.50143-5-tyreld@linux.ibm.com>
- <94321ded-7970-258c-cee9-222f7b2b511f@linux.vnet.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <f5821413-f390-f759-a8a4-764c7f69537c@linux.ibm.com>
-Date: Tue, 16 Feb 2021 10:43:24 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
-MIME-Version: 1.0
-In-Reply-To: <94321ded-7970-258c-cee9-222f7b2b511f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DgDTD46P7z30Hy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 08:22:35 +1100 (AEDT)
+Received: by mail-pg1-x532.google.com with SMTP id t11so7082480pgu.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 13:22:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gimpelevich-san-francisco-ca-us.20150623.gappssmtp.com; s=20150623;
+ h=message-id:subject:from:to:cc:in-reply-to:references:date
+ :mime-version:content-transfer-encoding;
+ bh=jaSQPIArooOmOh1NjkVrVfJQ89EqRvkI0359nRutXv4=;
+ b=wYjqab4zwpFSBl7MN0fvi0pc/uOQVyYlEmcVoccc8ME7573HvwcVA04uVzAeQ6RI7F
+ dmtLneYUq3stkkCiih2y0Fj1J0B3rQyUHQpuFrW/JWC/hqYwTuJxlwuJVr6HqGewVMeg
+ NyiUYMYNhywr8fl1r0Zm5kk5a4Be7BqtIUNgP87h5ihJKyb73W++wYg+zWoO7gdGBn0j
+ bldsYGcfM8Le1GJqyuAMB+EysFrPEwQ1VzYwM6S+mfRw90ARrnNROJI0ZXeT1mGiRblx
+ 3mZxjyQUnhaMe/HyE58T7mBF0NwN38CZzu8p0RnsD4wkh6oUQRYi+poo4IgpjwkyQbei
+ 5pVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:in-reply-to
+ :references:date:mime-version:content-transfer-encoding;
+ bh=jaSQPIArooOmOh1NjkVrVfJQ89EqRvkI0359nRutXv4=;
+ b=tlx1091xKNLDzejNrdXhvKjYx+IXI5e5n+k3mKdkxNDL6PRtM/VeSoMnfLDGFkIoRa
+ LnzYT6ZAN8NfD+fagnRBXBujqAQ3qwLLdMth8Qa3a+Yvg3Y4+7kkhepq7IoWNGnqJ495
+ wai6VZe+VgTS2H0FfiHTr96HlWH6vZZczTB8X/bK3MFeSFHp9s+xitkr2u84sUtUyBjF
+ HVD+oxA6LObCRqQX2CG0opZ90IeViSNwy+MjIXfgS+PFc3G677hJmsbOAv3o4qNZuUiz
+ KoGk6VWTzUABcSB+GCR+AIaMPt4qPHR2/gMdD87ecCiVNKvhyFG9N7G8At1fGCcVdOGP
+ yJkg==
+X-Gm-Message-State: AOAM533icWcR3gWZyXXLfpd/ayBM0cakCPk4n+7s+rGFcnEZ6iO89doN
+ KvVqdHIBqcCH5hJQNhapbN6ymQ==
+X-Google-Smtp-Source: ABdhPJwjWcun9DmBgXoxCpYswxoygWwO660hz1l3ojEXGPDha454r1PDh1I/nufSz82GV13WdgYZ3g==
+X-Received: by 2002:a65:6207:: with SMTP id d7mr21629630pgv.92.1613510551328; 
+ Tue, 16 Feb 2021 13:22:31 -0800 (PST)
+Received: from [192.168.72.184] (157-131-244-194.fiber.dynamic.sonic.net.
+ [157.131.244.194])
+ by smtp.gmail.com with ESMTPSA id b18sm23024720pfi.173.2021.02.16.13.22.29
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 16 Feb 2021 13:22:30 -0800 (PST)
+Message-ID: <1613510437.3853.20.camel@chimera>
+Subject: Re: [PATCH 1/4] add generic builtin command line
+From: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20210216184247.Horde.If3nEUb5zLh4eU_4qXZCAw1@messagerie.c-s.fr>
+References: <20190319232448.45964-2-danielwa@cisco.com>
+ <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
+ <20190320232328.3bijcxek2yg43a25@zorba>
+ <20190320201433.6c5c4782f4432d280c0e8361@linux-foundation.org>
+ <20190321151308.yt6uc3mxgppm5zko@zorba>
+ <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
+ <1613417521.3853.5.camel@chimera>
+ <20210216184247.Horde.If3nEUb5zLh4eU_4qXZCAw1@messagerie.c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2021 13:20:37 -0800
+Mime-Version: 1.0
+X-Mailer: Evolution 3.10.4-0ubuntu2 
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-02-16_08:2021-02-16,
- 2021-02-16 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 mlxscore=0
- malwarescore=0 phishscore=0 spamscore=0 clxscore=1015 suspectscore=0
- impostorscore=0 adultscore=0 bulkscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102160153
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,39 +103,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
- linux-kernel@vger.kernel.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, xe-linux-external@cisco.com,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Maksym Kokhan <maksym.kokhan@globallogic.com>,
+ Daniel Walker <dwalker@fifo99.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Daniel Walker <danielwa@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/16/21 6:58 AM, Brian King wrote:
-> On 2/11/21 12:57 PM, Tyrel Datwyler wrote:
->> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
->> index ba6fcf9cbc57..23b803ac4a13 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
->> @@ -5670,7 +5670,7 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
->>  
->>  irq_failed:
->>  	do {
->> -		plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
->> +		rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
->>  	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
-> 
-> Other places in the driver where we get a busy return code back we have an msleep(100).
-> Should we be doing that here as well?
+On Tue, 2021-02-16 at 18:42 +0100, Christophe Leroy wrote:
+> I'd suggest also to find the good arguments to convince us that this  
+> series has a real added value, not just "cisco use it in its kernels  
+> so it is good".
 
-Indeed, and actually even better would be to use rtas_busy_delay() which will
-perform the sleep with the correct ms delay, and marks itself with the
-might_sleep() macro.
+Well, IIRC, this series was endorsed by the device tree maintainers as
+the preferred alternative to this:
 
--Tyrel
+https://lore.kernel.org/linux-devicetree/1565020400-25679-1-git-send-email-daniel@gimpelevich.san-francisco.ca.us/T/#u
 
-> 
-> Thanks,
-> 
-> Brian
-> 
+The now-defunct patchwork.linux-mips.org link in that thread pointed to:
+
+https://lore.kernel.org/linux-mips/1510796793.16864.25.camel@chimera/T/#u
+
+When running modern kernels from ancient vendor bootloaders, it is
+sometimes necessary to pick and choose bits and pieces of the info they
+pass without taking it verbatim.
 
