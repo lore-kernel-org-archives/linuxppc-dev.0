@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBA2EC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 05:40:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04840C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 05:51:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E026364DAF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 05:40:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E026364DAF
+	by mail.kernel.org (Postfix) with ESMTPS id 332D064DDA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 05:51:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 332D064DDA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DfqZ11q3Zz3cGC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 16:40:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dfqpg3Tqdz3cGZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Feb 2021 16:51:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=FIFkH4tI;
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=UKi9cKVT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::432;
- helo=mail-pf1-x432.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::433;
+ helo=mail-pf1-x433.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=FIFkH4tI; dkim-atps=neutral
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
- [IPv6:2607:f8b0:4864:20::432])
+ header.s=google header.b=UKi9cKVT; dkim-atps=neutral
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com
+ [IPv6:2607:f8b0:4864:20::433])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DfqYS55N0z30Gd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 16:39:53 +1100 (AEDT)
-Received: by mail-pf1-x432.google.com with SMTP id y25so2198979pfp.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2021 21:39:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DfqpB6BBPz30H5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2021 16:50:55 +1100 (AEDT)
+Received: by mail-pf1-x433.google.com with SMTP id 189so5496521pfy.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2021 21:50:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
  h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=jr+gyTBDN4GpRjLzY8XDxkrfLwIUwO/4+yo6uYSRMXM=;
- b=FIFkH4tIM0oXd/wgZB0MpbuxLgF78eUeo248QeQ247/HeX8YnsKZYv2iN4+d+FpMVR
- 2aemT0w1RtMVMFRkQlx6S0uymf+t8+DXIH/dBXlT+VRv4hiWZj/kFOTV+6LU2T8clT1B
- cTx3kBtJYxV6zBdY4E9MIXncjm81OP1jBuUPA=
+ :mime-version; bh=L20tLHb0cR8fWG8MPX2utwLyUyRJcSh0clErwGsHLTs=;
+ b=UKi9cKVTXB5q0ZI0OjpLHqj4tKjYtJjyygKVw33wzYt4YoHHU9FqxVktMGHgFerOph
+ 6Hugchw31oiOm5F8f3aR3ZyGi/bT/2/sY588zk5A/CXdSIruzmmX12FYDasSa+ZykrSR
+ BB9W9iJWUud9TdRhHv8cBTK57CcQxr5jb4xtM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
  :message-id:mime-version;
- bh=jr+gyTBDN4GpRjLzY8XDxkrfLwIUwO/4+yo6uYSRMXM=;
- b=pZUU5+2v2WpevviFRVYxg/KD3XQnx0O+LNp34IBk18DIRdUjPguDWfRsKBrUdVvh2w
- nP1AcTOWc7Xg2xyZ8VMCOL3CHF71qujYH9PfGteOkxvi4NitODHEHSb0owLUl5eOoMev
- b5ty3mWcQ/k6Onby3uAlHqo9NvB/UGbTwiwj5zpGiZbH3+C/0E1UsSesDzQf3Zetk5yx
- 2x8fgH+rtkYEIFTE8Ici7/SmXTWp1CEXhCYfze3FP76ebi1pG/vwHqDjspzia1ThTAls
- GSrYaVAkZKu0j1/gXwU1lga5lAFNPn350u4f+JuQhs4NCNaPTtejjCdSxXumztLUjCZS
- V1+g==
-X-Gm-Message-State: AOAM5321DXPrdNj+zdng39+oIhAHphAOK2/hYWOfkB9ybWX9bhPGyTVZ
- Rri0sECyWwlbIwC8itjy8MX5cgqDtCXeypNu
-X-Google-Smtp-Source: ABdhPJzmDwwaFvcoeIQoBHQ78dVnyJcv2ezrZEkwYpklVEKLs8WHv2ZFAQz3QS/+zK1ovMQgSVX6jw==
-X-Received: by 2002:a65:6a48:: with SMTP id o8mr17653103pgu.424.1613453989375; 
- Mon, 15 Feb 2021 21:39:49 -0800 (PST)
+ bh=L20tLHb0cR8fWG8MPX2utwLyUyRJcSh0clErwGsHLTs=;
+ b=dGg92imQecmxvG4oHpyLvde55aJ1WdkWGRIhPxcI9OPtzXfOPyzSeyI4zztYqCgO/W
+ eGs0HPlFzEaH+eBlN+ZTggIRq3y9yFqJOOwKmdRh3gFEmUO/9lpZ1+xj5oAW45CnhgD3
+ C5+EhUJMpCp1rckOC6lAEu/dpmnHgEAaM75xeKbLoeJCq3SoQtbWCGdY8YJBmJbSfEuN
+ uQtv2PLb/NBaRwsOioCqMWezSuHHjSTcOD8xxy/vY1qcyLKHe/iA1sz6XG46GZHsmBDA
+ M+zEQs7eDDGo3mpZZmCTT/6XO/UW3wxZS+NVoqX3L4pM/MUPk8oNlpTvdUfdXn1z7wDK
+ tZMQ==
+X-Gm-Message-State: AOAM533lavsI86/dG2DiL/lEFAGWh/luEKgpXK/LG9Me/w+JreGAL5uu
+ SCplSK6BULQHeZfh/Ynm6bxccaXw5j4+62Gl
+X-Google-Smtp-Source: ABdhPJyRVZeTr9E0QcV+4De9d/fDQJB62LLpajIrH0qLZ+sI/5M+lSEUTOE82QXCgRcCL8ueW+1HNA==
+X-Received: by 2002:a63:d710:: with SMTP id d16mr10850488pgg.123.1613454652794; 
+ Mon, 15 Feb 2021 21:50:52 -0800 (PST)
 Received: from localhost
  (2001-44b8-1113-6700-7ad2-5bb3-4fd4-d737.static.ipv6.internode.on.net.
  [2001:44b8:1113:6700:7ad2:5bb3:4fd4:d737])
- by smtp.gmail.com with ESMTPSA id y23sm17802224pfo.50.2021.02.15.21.39.48
+ by smtp.gmail.com with ESMTPSA id s184sm20441525pfs.112.2021.02.15.21.50.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Feb 2021 21:39:48 -0800 (PST)
+ Mon, 15 Feb 2021 21:50:52 -0800 (PST)
 From: Daniel Axtens <dja@axtens.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/6] powerpc/pseries: Add key to flags in
- pSeries_lpar_hpte_updateboltedpp()
-In-Reply-To: <20210211135130.3474832-2-mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/6] powerpc/64s: Use htab_convert_pte_flags() in
+ hash__mark_rodata_ro()
+In-Reply-To: <20210211135130.3474832-3-mpe@ellerman.id.au>
 References: <20210211135130.3474832-1-mpe@ellerman.id.au>
- <20210211135130.3474832-2-mpe@ellerman.id.au>
-Date: Tue, 16 Feb 2021 16:39:45 +1100
-Message-ID: <87tuqca7vi.fsf@linkitivity.dja.id.au>
+ <20210211135130.3474832-3-mpe@ellerman.id.au>
+Date: Tue, 16 Feb 2021 16:50:49 +1100
+Message-ID: <87r1lga7d2.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,61 +94,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Hi Michael,
 
-> The flags argument to plpar_pte_protect() (aka. H_PROTECT), includes
-> the key in bits 9-13, but currently we always set those bits to zero.
+> In hash__mark_rodata_ro() we pass the raw PP_RXXX value to
+> hash__change_memory_range(). That has the effect of setting the key to
+> zero, because PP_RXXX contains no key value.
 >
-> In the past that hasn't been a problem because we always used key 0
-> for the kernel, and updateboltedpp() is only used for kernel mappings.
->
-> However since commit d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3
-> for kernel mapping with hash translation") we are now inadvertently
-> changing the key (to zero) when we call plpar_pte_protect().
->
-> That hasn't broken anything because updateboltedpp() is only used for
-> STRICT_KERNEL_RWX, which is currently disabled on 64s due to other
-> bugs.
->
-> But we want to fix that, so first we need to pass the key correctly to
-> plpar_pte_protect(). In the `newpp` value the low 3 bits of the key
-> are already in the correct spot, but the high 2 bits of the key need
-> to be shifted down.
->
-> Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/platforms/pseries/lpar.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index 764170fdb0f7..8bbbddff7226 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -976,11 +976,13 @@ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
->  	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
->  	BUG_ON(slot == -1);
->  
-> -	flags = newpp & 7;
-> +	flags = newpp & (HPTE_R_PP | HPTE_R_N);
->  	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
->  		/* Move pp0 into bit 8 (IBM 55) */
->  		flags |= (newpp & HPTE_R_PP0) >> 55;
->  
-> +	flags |= ((newpp & HPTE_R_KEY_HI) >> 48) | (newpp & HPTE_R_KEY_LO);
-> +
+> Fix it by using htab_convert_pte_flags(), which knows how to convert a
+> pgprot into a pp value, including the key.
 
-I'm really confused about how these bits are getting packed into the
-flags parameter. It seems to match how they are unpacked in
-kvmppc_h_pr_protect, but I cannot figure out why they are packed in that
-order, and the LoPAR doesn't seem especially illuminating on this topic
-- although I may have missed the relevant section.
+So far as I can tell by chasing the definitions around, this appears
+to do what it claims to do.
+
+So, for what it's worth:
+Reviewed-by: Daniel Axtens <dja@axtens.net>
 
 Kind regards,
 Daniel
 
->  	lpar_rc = plpar_pte_protect(flags, slot, 0);
+>
+> Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/mm/book3s64/hash_pgtable.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
+> index 567e0c6b3978..03819c259f0a 100644
+> --- a/arch/powerpc/mm/book3s64/hash_pgtable.c
+> +++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
+> @@ -428,12 +428,14 @@ static bool hash__change_memory_range(unsigned long start, unsigned long end,
 >  
->  	BUG_ON(lpar_rc != H_SUCCESS);
+>  void hash__mark_rodata_ro(void)
+>  {
+> -	unsigned long start, end;
+> +	unsigned long start, end, pp;
+>  
+>  	start = (unsigned long)_stext;
+>  	end = (unsigned long)__init_begin;
+>  
+> -	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
+> +	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL_ROX), HPTE_USE_KERNEL_KEY);
+> +
+> +	WARN_ON(!hash__change_memory_range(start, end, pp));
+>  }
+>  
+>  void hash__mark_initmem_nx(void)
 > -- 
 > 2.25.1
