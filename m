@@ -2,62 +2,70 @@ Return-Path: <SRS0=ktNZ=HT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,T_FUZZY_APPLE,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70316C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:40:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F43C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 01:59:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E567B64E28
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:40:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E567B64E28
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8E15964E63
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 01:59:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E15964E63
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DgJsP3STpz3d3r
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 11:40:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DgLcg64qXz3cTS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 12:59:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=TF5M0SzF;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nmNC2lji;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=TF5M0SzF; 
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=nmNC2lji; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DgJqW4cN5z30hy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 11:38:47 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4DgJqV0mNyz9sTD; Wed, 17 Feb 2021 11:38:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1613522326;
- bh=wGQ++iT7JUFjfkLLwJnS3Xl8X/IbXFBjYwfE6sAJFD4=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=TF5M0SzFmZ7uZTtMjcZcqhHlT1eXhGpw1ad5dv+n2UlgF1YnuMZ1vlITcheXNU8E1
- aVsM2Z7mbB9ETeD6sMJoerNIomQ6PNVp7nlp1kIcj5RYa42FaUO/qwFu73yIE+jZ+o
- NOtBYKcfxBkCUx8vZTpWMCHWLICZYKMafTMtfcUQ=
-Date: Wed, 17 Feb 2021 11:24:48 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v4 1/3] powerpc/book3s64/radix/tlb: tlbie primitives for
- process-scoped invalidations from guests
-Message-ID: <YCxiUCm/UCJJGOJD@yekko.fritz.box>
-References: <20210215063542.3642366-1-bharata@linux.ibm.com>
- <20210215063542.3642366-2-bharata@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DgLcF2p7Wz3cJl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 12:59:08 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4DgLc44NGqz9sBy;
+ Wed, 17 Feb 2021 12:58:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1613527143;
+ bh=Zbim9azTDIK4pNSgxrb2aQNpqwOHWiQRq04kQXMlToA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=nmNC2lji1Yc/3bXweVE4HitWJ5d7QTRGZLeLE5lcfvtV8I+75sD6xYdw0NaF32X/w
+ GTdmY8WBV3uPAOzF2drGjgbQjtA9M4oukNKmTwKb/8X3vf+0HIhYKChpqp9Xqmc9Ok
+ Q3wzxXOkiId/LZhySF/Q++mWTJBc2xebedAymHRdW5FmdP69QIav6fEySj4+tC/S3R
+ fXXJGuNz8zDJAFNOpqklh/5mFZ1pzNThWhqVhtlOJE2LcfBAXIVa4TSW1ucQHj6U2F
+ H1YjNa2ZawpSMo4daRkbhBx0IimWEUyh+r+odfqx6JaFXSCHIqEQNNL88/JhxcQQgB
+ NXdDjMY2efulQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/uaccess: Move might_fault() into
+ user_access_begin()
+In-Reply-To: <b1d3af99-2d38-0794-0694-95a735fccbe3@csgroup.eu>
+References: <20210208135717.2618798-1-mpe@ellerman.id.au>
+ <20210208135717.2618798-2-mpe@ellerman.id.au>
+ <b1d3af99-2d38-0794-0694-95a735fccbe3@csgroup.eu>
+Date: Wed, 17 Feb 2021 12:58:55 +1100
+Message-ID: <87czwzv4io.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="7d2ekL/4QIyl31a9"
-Content-Disposition: inline
-In-Reply-To: <20210215063542.3642366-2-bharata@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,300 +77,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 08/02/2021 =C3=A0 14:57, Michael Ellerman a =C3=A9crit=C2=A0:
+>> We have a might_fault() check in __unsafe_put_user_goto(), but that is
+>> dangerous as it potentially calls lots of code while user access is
+>> enabled.
+>>=20
+>> It also triggers the check Alexey added to the irq restore path to
+>> catch cases like that:
+>>=20
+>>    WARNING: CPU: 30 PID: 1 at arch/powerpc/include/asm/book3s/64/kup.h:3=
+24 arch_local_irq_restore+0x160/0x190
+>>    NIP arch_local_irq_restore+0x160/0x190
+>>    LR  lock_is_held_type+0x140/0x200
+>>    Call Trace:
+>>      0xc00000007f392ff8 (unreliable)
+>>      ___might_sleep+0x180/0x320
+>>      __might_fault+0x50/0xe0
+>>      filldir64+0x2d0/0x5d0
+>>      call_filldir+0xc8/0x180
+>>      ext4_readdir+0x948/0xb40
+>>      iterate_dir+0x1ec/0x240
+>>      sys_getdents64+0x80/0x290
+>>      system_call_exception+0x160/0x280
+>>      system_call_common+0xf0/0x27c
+>>=20
+>> So remove the might fault check from unsafe_put_user().
+>>=20
+>> Any call to unsafe_put_user() must be inside a region that's had user
+>> access enabled with user_access_begin(), so move the might_fault() in
+>> there. That also allows us to drop the is_kernel_addr() test, because
+>> there should be no code using user_access_begin() in order to access a
+>> kernel address.
+>
+> x86 and mips only have might_fault() on get_user() and put_user(),
+> neither on __get_user() nor on __put_user() nor on the unsafe
+> alternative.
 
---7d2ekL/4QIyl31a9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah, that's their choice, or perhaps it's by accident.
 
-On Mon, Feb 15, 2021 at 12:05:40PM +0530, Bharata B Rao wrote:
-> H_RPT_INVALIDATE hcall needs to perform process scoped tlbie
-> invalidations of L1 and nested guests from L0. This needs RS register
-> for TLBIE instruction to contain both PID and LPID. Introduce
-> primitives that execute tlbie instruction with both PID
-> and LPID set in prepartion for H_RPT_INVALIDATE hcall.
->=20
-> While we are here, move RIC_FLUSH definitions to header file
-> and introduce helper rpti_pgsize_to_psize() that will be needed
-> by the upcoming hcall.
->=20
-> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
-> ---
->  .../include/asm/book3s/64/tlbflush-radix.h    |  18 +++
->  arch/powerpc/mm/book3s64/radix_tlb.c          | 122 +++++++++++++++++-
->  2 files changed, 136 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/p=
-owerpc/include/asm/book3s/64/tlbflush-radix.h
-> index 94439e0cefc9..aace7e9b2397 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> @@ -4,6 +4,10 @@
-> =20
->  #include <asm/hvcall.h>
-> =20
-> +#define RIC_FLUSH_TLB 0
-> +#define RIC_FLUSH_PWC 1
-> +#define RIC_FLUSH_ALL 2
-> +
->  struct vm_area_struct;
->  struct mm_struct;
->  struct mmu_gather;
-> @@ -21,6 +25,20 @@ static inline u64 psize_to_rpti_pgsize(unsigned long p=
-size)
->  	return H_RPTI_PAGE_ALL;
->  }
-> =20
-> +static inline int rpti_pgsize_to_psize(unsigned long page_size)
-> +{
-> +	if (page_size =3D=3D H_RPTI_PAGE_4K)
-> +		return MMU_PAGE_4K;
-> +	if (page_size =3D=3D H_RPTI_PAGE_64K)
-> +		return MMU_PAGE_64K;
-> +	if (page_size =3D=3D H_RPTI_PAGE_2M)
-> +		return MMU_PAGE_2M;
-> +	if (page_size =3D=3D H_RPTI_PAGE_1G)
-> +		return MMU_PAGE_1G;
-> +	else
-> +		return MMU_PAGE_64K; /* Default */
-> +}
+arm64 on the other hand has might_fault() in all variants.
 
-Would it make sense to put the H_RPT_PAGE_ tags into the
-mmu_psize_defs table and scan that here, rather than open coding the
-conversion?
+A __get_user() can fault just as much as a get_user(), so there's no
+reason the check should be omitted from __get_user(), other than perhaps
+some historical argument about __get_user() being the "fast" case.
 
-> +
->  static inline int mmu_get_ap(int psize)
->  {
->  	return mmu_psize_defs[psize].ap;
-> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3=
-s64/radix_tlb.c
-> index fb66d154b26c..097402435303 100644
-> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
-> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-> @@ -18,10 +18,6 @@
->  #include <asm/cputhreads.h>
->  #include <asm/plpar_wrappers.h>
-> =20
-> -#define RIC_FLUSH_TLB 0
-> -#define RIC_FLUSH_PWC 1
-> -#define RIC_FLUSH_ALL 2
-> -
->  /*
->   * tlbiel instruction for radix, set invalidation
->   * i.e., r=3D1 and is=3D01 or is=3D10 or is=3D11
-> @@ -128,6 +124,21 @@ static __always_inline void __tlbie_pid(unsigned lon=
-g pid, unsigned long ric)
->  	trace_tlbie(0, 0, rb, rs, ric, prs, r);
->  }
-> =20
-> +static __always_inline void __tlbie_pid_lpid(unsigned long pid,
-> +					     unsigned long lpid,
-> +					     unsigned long ric)
-> +{
-> +	unsigned long rb, rs, prs, r;
-> +
-> +	rb =3D PPC_BIT(53); /* IS =3D 1 */
-> +	rs =3D (pid << PPC_BITLSHIFT(31)) | (lpid & ~(PPC_BITMASK(0, 31)));
-> +	prs =3D 1; /* process scoped */
-> +	r =3D 1;   /* radix format */
-> +
-> +	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> +	trace_tlbie(0, 0, rb, rs, ric, prs, r);
-> +}
->  static __always_inline void __tlbie_lpid(unsigned long lpid, unsigned lo=
-ng ric)
->  {
->  	unsigned long rb,rs,prs,r;
-> @@ -188,6 +199,23 @@ static __always_inline void __tlbie_va(unsigned long=
- va, unsigned long pid,
->  	trace_tlbie(0, 0, rb, rs, ric, prs, r);
->  }
-> =20
-> +static __always_inline void __tlbie_va_lpid(unsigned long va, unsigned l=
-ong pid,
-> +					    unsigned long lpid,
-> +					    unsigned long ap, unsigned long ric)
-> +{
-> +	unsigned long rb, rs, prs, r;
-> +
-> +	rb =3D va & ~(PPC_BITMASK(52, 63));
-> +	rb |=3D ap << PPC_BITLSHIFT(58);
-> +	rs =3D (pid << PPC_BITLSHIFT(31)) | (lpid & ~(PPC_BITMASK(0, 31)));
-> +	prs =3D 1; /* process scoped */
-> +	r =3D 1;   /* radix format */
-> +
-> +	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> +	trace_tlbie(0, 0, rb, rs, ric, prs, r);
-> +}
-> +
->  static __always_inline void __tlbie_lpid_va(unsigned long va, unsigned l=
-ong lpid,
->  					    unsigned long ap, unsigned long ric)
->  {
-> @@ -233,6 +261,22 @@ static inline void fixup_tlbie_va_range(unsigned lon=
-g va, unsigned long pid,
->  	}
->  }
-> =20
-> +static inline void fixup_tlbie_va_range_lpid(unsigned long va,
-> +					     unsigned long pid,
-> +					     unsigned long lpid,
-> +					     unsigned long ap)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_P9_TLBIE_ERAT_BUG)) {
-> +		asm volatile("ptesync" : : : "memory");
-> +		__tlbie_pid_lpid(0, lpid, RIC_FLUSH_TLB);
-> +	}
-> +
-> +	if (cpu_has_feature(CPU_FTR_P9_TLBIE_STQ_BUG)) {
-> +		asm volatile("ptesync" : : : "memory");
-> +		__tlbie_va_lpid(va, pid, lpid, ap, RIC_FLUSH_TLB);
-> +	}
-> +}
-> +
->  static inline void fixup_tlbie_pid(unsigned long pid)
->  {
->  	/*
-> @@ -252,6 +296,25 @@ static inline void fixup_tlbie_pid(unsigned long pid)
->  	}
->  }
-> =20
-> +static inline void fixup_tlbie_pid_lpid(unsigned long pid, unsigned long=
- lpid)
-> +{
-> +	/*
-> +	 * We can use any address for the invalidation, pick one which is
-> +	 * probably unused as an optimisation.
-> +	 */
-> +	unsigned long va =3D ((1UL << 52) - 1);
-> +
-> +	if (cpu_has_feature(CPU_FTR_P9_TLBIE_ERAT_BUG)) {
-> +		asm volatile("ptesync" : : : "memory");
-> +		__tlbie_pid_lpid(0, lpid, RIC_FLUSH_TLB);
-> +	}
-> +
-> +	if (cpu_has_feature(CPU_FTR_P9_TLBIE_STQ_BUG)) {
-> +		asm volatile("ptesync" : : : "memory");
-> +		__tlbie_va_lpid(va, pid, lpid, mmu_get_ap(MMU_PAGE_64K),
-> +				RIC_FLUSH_TLB);
-> +	}
-> +}
-> =20
->  static inline void fixup_tlbie_lpid_va(unsigned long va, unsigned long l=
-pid,
->  				       unsigned long ap)
-> @@ -342,6 +405,31 @@ static inline void _tlbie_pid(unsigned long pid, uns=
-igned long ric)
->  	asm volatile("eieio; tlbsync; ptesync": : :"memory");
->  }
-> =20
-> +static inline void _tlbie_pid_lpid(unsigned long pid, unsigned long lpid,
-> +				   unsigned long ric)
-> +{
-> +	asm volatile("ptesync" : : : "memory");
-> +
-> +	/*
-> +	 * Workaround the fact that the "ric" argument to __tlbie_pid
-> +	 * must be a compile-time contraint to match the "i" constraint
-> +	 * in the asm statement.
-> +	 */
-> +	switch (ric) {
-> +	case RIC_FLUSH_TLB:
-> +		__tlbie_pid_lpid(pid, lpid, RIC_FLUSH_TLB);
-> +		fixup_tlbie_pid_lpid(pid, lpid);
-> +		break;
-> +	case RIC_FLUSH_PWC:
-> +		__tlbie_pid_lpid(pid, lpid, RIC_FLUSH_PWC);
-> +		break;
-> +	case RIC_FLUSH_ALL:
-> +	default:
-> +		__tlbie_pid_lpid(pid, lpid, RIC_FLUSH_ALL);
-> +		fixup_tlbie_pid_lpid(pid, lpid);
-> +	}
-> +	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
-> +}
->  struct tlbiel_pid {
->  	unsigned long pid;
->  	unsigned long ric;
-> @@ -467,6 +555,20 @@ static inline void __tlbie_va_range(unsigned long st=
-art, unsigned long end,
->  	fixup_tlbie_va_range(addr - page_size, pid, ap);
->  }
-> =20
-> +static inline void __tlbie_va_range_lpid(unsigned long start, unsigned l=
-ong end,
-> +					 unsigned long pid, unsigned long lpid,
-> +					 unsigned long page_size,
-> +					 unsigned long psize)
-> +{
-> +	unsigned long addr;
-> +	unsigned long ap =3D mmu_get_ap(psize);
-> +
-> +	for (addr =3D start; addr < end; addr +=3D page_size)
-> +		__tlbie_va_lpid(addr, pid, lpid, ap, RIC_FLUSH_TLB);
-> +
-> +	fixup_tlbie_va_range_lpid(addr - page_size, pid, lpid, ap);
-> +}
-> +
->  static __always_inline void _tlbie_va(unsigned long va, unsigned long pi=
-d,
->  				      unsigned long psize, unsigned long ric)
->  {
-> @@ -547,6 +649,18 @@ static inline void _tlbie_va_range(unsigned long sta=
-rt, unsigned long end,
->  	asm volatile("eieio; tlbsync; ptesync": : :"memory");
->  }
-> =20
-> +static inline void _tlbie_va_range_lpid(unsigned long start, unsigned lo=
-ng end,
-> +					unsigned long pid, unsigned long lpid,
-> +					unsigned long page_size,
-> +					unsigned long psize, bool also_pwc)
-> +{
-> +	asm volatile("ptesync" : : : "memory");
-> +	if (also_pwc)
-> +		__tlbie_pid_lpid(pid, lpid, RIC_FLUSH_PWC);
-> +	__tlbie_va_range_lpid(start, end, pid, lpid, page_size, psize);
-> +	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
-> +}
-> +
->  static inline void _tlbiel_va_range_multicast(struct mm_struct *mm,
->  				unsigned long start, unsigned long end,
->  				unsigned long pid, unsigned long page_size,
+> When have might_fault() in __get_user_nocheck() that is used by
+> __get_user() and __get_user_allowed() ie by unsafe_get_user().
+>
+> Shoudln't those be dropped as well ?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+That was handled by Alexey's patch, which I ended up merging with this
+one:
 
---7d2ekL/4QIyl31a9
-Content-Type: application/pgp-signature; name="signature.asc"
+  https://git.kernel.org/torvalds/c/7d506ca97b665b95e698a53697dad99fae813c1a
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmAsYlAACgkQbDjKyiDZ
-s5IMfxAA1USMoHd8r34NuHAbd1oRZFLmPeF0F6/1qqv4nsNOBU0rrt0kLCC6iPTP
-EjzTpBBFuxSg+gr6C+I3YAYU/pROISDKXM0t2CwDw+VlARhSWXArP7Al8fmTiEjJ
-nLkHaoR7kHaOa4TIglk0eV9b2Wp0VcD2EC8nZ8SbJ4joQkdsMhjgpLIs8WKiwYOx
-cd2eTnJBOBDeSvdQk01Yxg8xku699esd/Vi96Afb3WDORWh+WC52L99GM+2sGnEs
-9lREcHoT2WNLJIalkJp9fgnGQlr+iNuG6pVr5mfDUXQm1HWoDPRv3qFBrF3ZO1ED
-dfzrp+mLJo2dl7Ft4rvZPVOrar9Xp686U9t1eaBZF5F/Xh+LFZRscwejhcScMt9k
-xq26ktzTLhwquV9hGEiCPWnhD+d0aMnnavtgU5e9WjuOKciIfxm8b5rxpUadHHcl
-avXvIOHphEZKCQXXm3y9nWha0rKvvweg4VM6hBBUHISPMiXBHxStyiCSyP4wTjuS
-79cVoSfJ8Uj7Rz78jgIbt4epzaggCK45RbxS6eRcZ8nQ4uZi4BdBPXvtfo3WZ2/0
-k1/NxCIcXON3drARiZSCDpMQyf1MnL6WvhWXhAXVHCcT2XX3lztGC5Gd+1ypBYgQ
-J2B1ksnNIayMcDnHE+WQcrjbv9c3Q5shFgLQpeHLRCDCWjU1EgA=
-=rpxL
------END PGP SIGNATURE-----
+ie. we still have might_fault() in __get_user_nocheck(), but it's
+guarded by a check of do_allow, so we won't call it for
+__get_user_allowed().
 
---7d2ekL/4QIyl31a9--
+So I think the code (in my next branch) is correct, we don't have any
+might_fault() calls in unsafe regions.
+
+But I'd still be happier if we could simplify our uaccess.h more, it's a
+bit of a rats nest. We could start by making __get/put_user() =3D=3D
+get/put_user() the same way arm64 did.
+
+cheers
