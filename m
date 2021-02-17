@@ -2,89 +2,62 @@ Return-Path: <SRS0=ktNZ=HT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FF41C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:12:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2218CC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:31:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5CCF964E15
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:12:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CCF964E15
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3D2B064E4D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:31:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D2B064E4D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DgnXQ5JyGz3cXt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:12:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=GOByrHDK;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DgnyX2h5Sz3cRJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:31:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2a;
- helo=mail-qv1-xf2a.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.43;
+ helo=h2.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=GOByrHDK; dkim-atps=neutral
-Received: from mail-qv1-xf2a.google.com (mail-qv1-xf2a.google.com
- [IPv6:2607:f8b0:4864:20::f2a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 217 seconds by postgrey-1.36 at boromir;
+ Thu, 18 Feb 2021 06:31:13 AEDT
+Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
+ [131.153.2.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DgnWx6Qthz3cGN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:11:56 +1100 (AEDT)
-Received: by mail-qv1-xf2a.google.com with SMTP id 2so6833444qvd.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 11:11:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=u4lbCYpxz+ZW5VAXp7OqgJphBLt/2DDRqGDYxIl7pCc=;
- b=GOByrHDKbf0jo9325LAy11eGu9UdGoSHB9Zh3C2GU4OV/B8tgkmYuHvwtkbTuvmyyY
- U0iWJrYrbndtqw4mZNoFuuSH+XfX+AxOt60BsjIpkbFcGN1EfT5XIUtYgZViurCXoHPt
- uxsld3bU42RukC+lugT01ll25f246GpKu4SK+ccgEWbbWxEGCzc5sRGUieFMkKmmOe09
- PfBzvCeykj3h1u7qDabvXa33UAR53LQXQjk5POzozIK21xxmwHqKclqdX0vK1GyUxVLH
- 5LbF+osfrOegLt2XKCfyAb5XAbbfC/JzSjfwN/M6AnHdbZy/PDXfN2AB8yxBJCO5KF0f
- lIhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=u4lbCYpxz+ZW5VAXp7OqgJphBLt/2DDRqGDYxIl7pCc=;
- b=ABPx0UBiwBehXA6MIhd6A9ONaIYWJiSuXJRqbmhRvFi02FYOj2AztRwqH90zGuypdp
- r8g1jcVGf6tCOyxM9SsscWY2V61arMpN7bC3h4NFKxHHz9y8p9CjIF2nw2bDXrHvYxk5
- K7ubOSJDT3PmYJJwdiCDanHon5V5rB3Bev4NjSPRDJQU5zKHE/vxaBy3Pc0PU8kei9m9
- Y/Ls72tcEmD2jshgmAQ9gcAcEEu7f08NE/rIbr4YBuGjLRRTa101G7H/HJ2Rwxrtv1oG
- x8/GeIL5dod7pRWHDUxeORJhcG+n/Zhes3qzj0yIn5uhqwgyLVnC11IddNCeXLe/q7pO
- FQqA==
-X-Gm-Message-State: AOAM5326sajaD0zkWLmpVbwROx1urZ/vDowU9G8kuN5wUwBTabUnq/Av
- b00FEuB3yFQVWrg9/kBN3Sw=
-X-Google-Smtp-Source: ABdhPJwDTvge1o7b1Uh8lOtIDvJQAvRXNImlZe19CNHjy6g6sOnFGEudFsgHsOfPSYgA80H+olQJlA==
-X-Received: by 2002:a0c:e085:: with SMTP id l5mr769758qvk.38.1613589113366;
- Wed, 17 Feb 2021 11:11:53 -0800 (PST)
-Received: from li-908e0a4c-2250-11b2-a85c-f027e903211b.ibm.com
- (177-131-90-207.dynamic.desktop.com.br. [177.131.90.207])
- by smtp.gmail.com with ESMTPSA id s14sm1782694qtq.97.2021.02.17.11.11.50
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 17 Feb 2021 11:11:52 -0800 (PST)
-Message-ID: <05859751d16e39500cf16641f5578ec5e294afb5.camel@gmail.com>
-Subject: Re: [PATCH kernel 1/2] powerpc/iommu: Allocate it_map by vmalloc
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2021 16:11:48 -0300
-In-Reply-To: <20210216033307.69863-2-aik@ozlabs.ru>
-References: <20210216033307.69863-1-aik@ozlabs.ru>
- <20210216033307.69863-2-aik@ozlabs.ru>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3 (3.38.3-1.fc33) 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dgny93lGBz3cGf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:31:13 +1100 (AEDT)
+Received: from MTA-10-1.privateemail.com (mta-10.privateemail.com
+ [68.65.122.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id CBB7D80C2B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 14:31:10 -0500 (EST)
+Received: from MTA-10.privateemail.com (localhost [127.0.0.1])
+ by MTA-10.privateemail.com (Postfix) with ESMTP id 8960B60083;
+ Wed, 17 Feb 2021 14:31:06 -0500 (EST)
+Received: from localhost (unknown [10.20.151.209])
+ by MTA-10.privateemail.com (Postfix) with ESMTPA id 5374460081;
+ Wed, 17 Feb 2021 19:31:06 +0000 (UTC)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 17 Feb 2021 13:31:05 -0600
+Message-Id: <C9C20ESIUOD7.1KTQN13WUTA9B@oc8246131445.ibm.com>
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: "Daniel Axtens" <dja@axtens.net>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v5 06/10] powerpc/signal64: Replace setup_sigcontext()
+ w/ unsafe_setup_sigcontext()
+References: <20210203184323.20792-1-cmr@codefail.de>
+ <20210203184323.20792-7-cmr@codefail.de>
+ <871rdletbo.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <871rdletbo.fsf@dja-thinkpad.axtens.net>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,111 +69,223 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2021-02-16 at 14:33 +1100, Alexey Kardashevskiy wrote:
-> The IOMMU table uses the it_map bitmap to keep track of allocated DMA
-> pages. This has always been a contiguous array allocated at either
-> the boot time or when a passed through device is returned to the host OS.
-> The it_map memory is allocated by alloc_pages() which allocates
-> contiguous physical memory.
-> 
-> Such allocation method occasionally creates a problem when there is
-> no big chunk of memory available (no free memory or too fragmented).
-> On powernv/ioda2 the default DMA window requires 16MB for it_map.
-> 
-> This replaces alloc_pages_node() with vzalloc_node() which allocates
-> contiguous block but in virtual memory. This should reduce changes of
-> failure but should not cause other behavioral changes as it_map is only
-> used by the kernel's DMA hooks/api when MMU is on.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+On Thu Feb 11, 2021 at 11:41 PM CST, Daniel Axtens wrote:
+> Hi Chris,
+>
+> > Previously setup_sigcontext() performed a costly KUAP switch on every
+> > uaccess operation. These repeated uaccess switches cause a significant
+> > drop in signal handling performance.
+> >
+> > Rewrite setup_sigcontext() to assume that a userspace write access wind=
+ow
+> > is open. Replace all uaccess functions with their 'unsafe' versions
+> > which avoid the repeated uaccess switches.
+>
+> Just to clarify the commit message a bit: you're also changing the
+> callers of the old safe versions to first open the window, then call the
+> unsafe variants, then close the window again.
 
-It looks a very good change, and also makes code much simpler to read.
+Noted!
 
-FWIW:
+>
+> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+> > ---
+> >  arch/powerpc/kernel/signal_64.c | 70 ++++++++++++++++++++-------------
+> >  1 file changed, 43 insertions(+), 27 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/sign=
+al_64.c
+> > index 8e1d804ce552..4248e4489ff1 100644
+> > --- a/arch/powerpc/kernel/signal_64.c
+> > +++ b/arch/powerpc/kernel/signal_64.c
+> > @@ -101,9 +101,13 @@ static void prepare_setup_sigcontext(struct task_s=
+truct *tsk, int ctx_has_vsx_re
+> >   * Set up the sigcontext for the signal frame.
+> >   */
+> > =20
+> > -static long setup_sigcontext(struct sigcontext __user *sc,
+> > -		struct task_struct *tsk, int signr, sigset_t *set,
+> > -		unsigned long handler, int ctx_has_vsx_region)
+> > +#define unsafe_setup_sigcontext(sc, tsk, signr, set, handler,		\
+> > +				ctx_has_vsx_region, e)			\
+> > +	unsafe_op_wrap(__unsafe_setup_sigcontext(sc, tsk, signr, set,	\
+> > +			handler, ctx_has_vsx_region), e)
+> > +static long notrace __unsafe_setup_sigcontext(struct sigcontext __user=
+ *sc,
+> > +					struct task_struct *tsk, int signr, sigset_t *set,
+> > +					unsigned long handler, int ctx_has_vsx_region)
+> >  {
+> >  	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
+> >  	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
+> > @@ -118,20 +122,19 @@ static long setup_sigcontext(struct sigcontext __=
+user *sc,
+> >  #endif
+> >  	struct pt_regs *regs =3D tsk->thread.regs;
+> >  	unsigned long msr =3D regs->msr;
+> > -	long err =3D 0;
+> >  	/* Force usr to alway see softe as 1 (interrupts enabled) */
+> >  	unsigned long softe =3D 0x1;
+> > =20
+> >  	BUG_ON(tsk !=3D current);
+> > =20
+> >  #ifdef CONFIG_ALTIVEC
+> > -	err |=3D __put_user(v_regs, &sc->v_regs);
+> > +	unsafe_put_user(v_regs, &sc->v_regs, efault_out);
+> > =20
+> >  	/* save altivec registers */
+> >  	if (tsk->thread.used_vr) {
+> >  		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
+> > -		err |=3D __copy_to_user(v_regs, &tsk->thread.vr_state,
+> > -				      33 * sizeof(vector128));
+> > +		unsafe_copy_to_user(v_regs, &tsk->thread.vr_state,
+> > +				    33 * sizeof(vector128), efault_out);
+> >  		/* set MSR_VEC in the MSR value in the frame to indicate that sc->v_=
+reg)
+> >  		 * contains valid data.
+> >  		 */
+> > @@ -140,12 +143,12 @@ static long setup_sigcontext(struct sigcontext __=
+user *sc,
+> >  	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+> >  	 * use altivec.
+> >  	 */
+> > -	err |=3D __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
+> > +	unsafe_put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33], efault=
+_out);
+> >  #else /* CONFIG_ALTIVEC */
+> > -	err |=3D __put_user(0, &sc->v_regs);
+> > +	unsafe_put_user(0, &sc->v_regs, efault_out);
+> >  #endif /* CONFIG_ALTIVEC */
+> >  	/* copy fpr regs and fpscr */
+> > -	err |=3D copy_fpr_to_user(&sc->fp_regs, tsk);
+> > +	unsafe_copy_fpr_to_user(&sc->fp_regs, tsk, efault_out);
+> > =20
+> >  	/*
+> >  	 * Clear the MSR VSX bit to indicate there is no valid state attached
+> > @@ -160,24 +163,27 @@ static long setup_sigcontext(struct sigcontext __=
+user *sc,
+> >  	 */
+> >  	if (tsk->thread.used_vsr && ctx_has_vsx_region) {
+> >  		v_regs +=3D ELF_NVRREG;
+> > -		err |=3D copy_vsx_to_user(v_regs, tsk);
+> > +		unsafe_copy_vsx_to_user(v_regs, tsk, efault_out);
+> >  		/* set MSR_VSX in the MSR value in the frame to
+> >  		 * indicate that sc->vs_reg) contains valid data.
+> >  		 */
+> >  		msr |=3D MSR_VSX;
+> >  	}
+> >  #endif /* CONFIG_VSX */
+> > -	err |=3D __put_user(&sc->gp_regs, &sc->regs);
+> > +	unsafe_put_user(&sc->gp_regs, &sc->regs, efault_out);
+> >  	WARN_ON(!FULL_REGS(regs));
+> > -	err |=3D __copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE);
+> > -	err |=3D __put_user(msr, &sc->gp_regs[PT_MSR]);
+> > -	err |=3D __put_user(softe, &sc->gp_regs[PT_SOFTE]);
+> > -	err |=3D __put_user(signr, &sc->signal);
+> > -	err |=3D __put_user(handler, &sc->handler);
+> > +	unsafe_copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE, efault_out);
+> > +	unsafe_put_user(msr, &sc->gp_regs[PT_MSR], efault_out);
+> > +	unsafe_put_user(softe, &sc->gp_regs[PT_SOFTE], efault_out);
+> > +	unsafe_put_user(signr, &sc->signal, efault_out);
+> > +	unsafe_put_user(handler, &sc->handler, efault_out);
+> >  	if (set !=3D NULL)
+> > -		err |=3D  __put_user(set->sig[0], &sc->oldmask);
+> > +		unsafe_put_user(set->sig[0], &sc->oldmask, efault_out);
+> > =20
+> > -	return err;
+> > +	return 0;
+> > +
+> > +efault_out:
+> > +	return -EFAULT;
+> >  }
+> > =20
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > @@ -664,12 +670,15 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __us=
+er *, old_ctx,
+> > =20
+> >  	if (old_ctx !=3D NULL) {
+> >  		prepare_setup_sigcontext(current, ctx_has_vsx_region);
+> > -		if (!access_ok(old_ctx, ctx_size)
+> > -		    || setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL, 0,
+> > -					ctx_has_vsx_region)
+> > -		    || __copy_to_user(&old_ctx->uc_sigmask,
+> > -				      &current->blocked, sizeof(sigset_t)))
+> > +		if (!user_write_access_begin(old_ctx, ctx_size))
+> >  			return -EFAULT;
+>
+> I notice we get rid of access_ok, but that's fine because
+> user_write_access_begin includes access_ok since Linus decided that was
+> a good idea.
+>
+> > +
+> > +		unsafe_setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL,
+> > +					0, ctx_has_vsx_region, efault_out);
+> > +		unsafe_copy_to_user(&old_ctx->uc_sigmask, &current->blocked,
+> > +				    sizeof(sigset_t), efault_out);
+> > +
+> > +		user_write_access_end();
+> >  	}
+> >  	if (new_ctx =3D=3D NULL)
+> >  		return 0;
+> > @@ -698,6 +707,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __use=
+r *, old_ctx,
+> >  	/* This returns like rt_sigreturn */
+> >  	set_thread_flag(TIF_RESTOREALL);
+> >  	return 0;
+> > +
+> > +efault_out:
+> > +	user_write_access_end();
+> > +	return -EFAULT;
+> >  }
+> > =20
+> > =20
+> > @@ -850,9 +863,12 @@ int handle_rt_signal64(struct ksignal *ksig, sigse=
+t_t *set,
+> >  	} else {
+> >  		err |=3D __put_user(0, &frame->uc.uc_link);
+> >  		prepare_setup_sigcontext(tsk, 1);
+> > -		err |=3D setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
+> > -					NULL, (unsigned long)ksig->ka.sa.sa_handler,
+> > -					1);
+> > +		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
+> > +			return -EFAULT;
+>
+> Here you're opening a window for all of `frame`...
+>
+> > +		err |=3D __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
+> ... but here you're only passing in frame->uc.uc_mcontext for writing.
+>
+> ISTR that the underlying AMR switch is fully on / fully off so I don't
+> think it really matters, but in this case should you be calling
+> user_write_access_begin() with &frame->uc.uc_mcontext and the size of
+> that?
 
-Reviewed-by: Leonardo Bras <leobras.c@gmail,com>
+You are correct that it doesn't _really_ matter w/ the current
+implementation of KUAP/AMR. It's still inconsistent and could cause
+problems in the future so I will fix this to pass the proper size.
 
-> ---
->  arch/powerpc/kernel/iommu.c | 15 +++------------
->  1 file changed, 3 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index c00214a4355c..8eb6eb0afa97 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -719,7 +719,6 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
->  {
->  	unsigned long sz;
->  	static int welcomed = 0;
-> -	struct page *page;
->  	unsigned int i;
->  	struct iommu_pool *p;
->  
-> 
-> 
-> 
-> @@ -728,11 +727,9 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
->  	/* number of bytes needed for the bitmap */
->  	sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
->  
-> 
-> 
-> 
-> -	page = alloc_pages_node(nid, GFP_KERNEL, get_order(sz));
-> -	if (!page)
-> +	tbl->it_map = vzalloc_node(sz, nid);
-> +	if (!tbl->it_map)
->  		panic("iommu_init_table: Can't allocate %ld bytes\n", sz);
-> -	tbl->it_map = page_address(page);
-> -	memset(tbl->it_map, 0, sz);
->  
-> 
-> 
-> 
->  	iommu_table_reserve_pages(tbl, res_start, res_end);
->  
-> 
-> 
-> 
-> @@ -774,8 +771,6 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
->  
-> 
-> 
-> 
->  static void iommu_table_free(struct kref *kref)
->  {
-> -	unsigned long bitmap_sz;
-> -	unsigned int order;
->  	struct iommu_table *tbl;
->  
-> 
-> 
-> 
->  	tbl = container_of(kref, struct iommu_table, it_kref);
-> @@ -796,12 +791,8 @@ static void iommu_table_free(struct kref *kref)
->  	if (!bitmap_empty(tbl->it_map, tbl->it_size))
->  		pr_warn("%s: Unexpected TCEs\n", __func__);
->  
-> 
-> 
-> 
-> -	/* calculate bitmap size in bytes */
-> -	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-> -
->  	/* free bitmap */
-> -	order = get_order(bitmap_sz);
-> -	free_pages((unsigned long) tbl->it_map, order);
-> +	vfree(tbl->it_map);
->  
-> 
-> 
-> 
->  	/* free table */
->  	kfree(tbl);
+>
+> > +						ksig->sig, NULL,
+> > +						(unsigned long)ksig->ka.sa.sa_handler, 1);
+> > +		user_write_access_end();
+> >  	}
+> >  	err |=3D __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+> >  	if (err)
+>
+>
+> Apart from the size thing, everything looks good to me. I checked that
+> all the things you've changed from safe to unsafe pass the same
+> parameters, and they all looked good to me.
 
+Thanks!
+
+>
+> With those caveats,
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
+> Kind regards,
+> Daniel
 
