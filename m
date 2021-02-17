@@ -2,90 +2,60 @@ Return-Path: <SRS0=ktNZ=HT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33B80C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3176C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:34:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6530164E45
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:33:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6530164E45
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8524364E45
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:34:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8524364E45
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dgp0f0l79z3cxc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:33:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=kRNTVaud;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dgp2B1wWcz3cmJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:34:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::736;
- helo=mail-qk1-x736.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.43;
+ helo=h2.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=kRNTVaud; dkim-atps=neutral
-Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com
- [IPv6:2607:f8b0:4864:20::736])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
+ [131.153.2.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dgp0759q1z3cHl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:32:54 +1100 (AEDT)
-Received: by mail-qk1-x736.google.com with SMTP id w19so13913217qki.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 11:32:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=TRLf1G8f2Go1VE645xdlH8BG2DStOsSzPhXA0pRDJR4=;
- b=kRNTVaudWjexbvvommo9ZCKBIqaSKiymVPnn7WIbKB7wtdSdXFkRmnOk5llZOoym5H
- poqHg2pyNXl07F6LJTgvspwqzS8uFVcvxFumlosxKZmIngh5l6Ik5TC5U1SYq0KhOCR8
- 43+cGVU+ZkH3pdyDaVjSkGydOtve2FLlX03pjBrqIeonhg3tVGWhG0h6kESokx0+Ggnb
- SvGTmWEpmrClGZj89P5kWK4/4FiOspRDyZcq7gzfmEqEjo9kYCwBd7ZRRonuCCmSHuAZ
- iInnIbyxgSg6j7fs2RArx5iZvt6IDyt/WXP3NOc9O26UaS4UTchYt/kZ1BmZXriYyWYq
- TwDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=TRLf1G8f2Go1VE645xdlH8BG2DStOsSzPhXA0pRDJR4=;
- b=qntVKnYATHIAyC2jSNyQvqK6CKb2e2qxwSaW3lDSF5j/SKjRliwQZtYPerqic3Tzba
- c7kRRRZu5iGOwCWAsexNNKDU0dm827XITJ1bEaD9d6g9Nde98YEe208JSlGrUyhTYKgD
- +F2vLiH2sJ+5AOrnW2Txxl2++YvzDfgrUiDPu7dkON6DqGyuVwXRgupNhkcNlWZu3PtA
- EFotD4VhhTZ5uxlvIUCQOgX6oyeeHndM/UpzcLgwVQpA2/XYcem42SFxcYzThRgqtZMa
- 0fJ9j2trnuuvXt0uEGEwb+VNc95aPbfbzWZNJWv/T7kIK/wAKUqxX7nkO2UrI9m1YdhA
- NOWw==
-X-Gm-Message-State: AOAM532nB0ZPo8SfDMXoKIOXvvMeoastYvRoopb1242VEtTT6pimOZg/
- zcwDSs9yASx5MHQ7Al75l18=
-X-Google-Smtp-Source: ABdhPJzkR0AEx/9kpX4bJfW097t4PrjwjMgeaNwZpP8gKyBd/1UPcooKJA9XkH/8zFt8KFxkCEWTIA==
-X-Received: by 2002:a37:a395:: with SMTP id m143mr739218qke.439.1613590370927; 
- Wed, 17 Feb 2021 11:32:50 -0800 (PST)
-Received: from li-908e0a4c-2250-11b2-a85c-f027e903211b.ibm.com
- (177-131-90-207.dynamic.desktop.com.br. [177.131.90.207])
- by smtp.gmail.com with ESMTPSA id u20sm1914972qtb.63.2021.02.17.11.32.48
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 17 Feb 2021 11:32:50 -0800 (PST)
-Message-ID: <433396d9ef216aa090e32bb344d42f60de1fb9aa.camel@gmail.com>
-Subject: Re: [PATCH kernel 2/2] powerpc/iommu: Do not immediately panic when
- failed IOMMU table allocation
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2021 16:32:45 -0300
-In-Reply-To: <20210216033307.69863-3-aik@ozlabs.ru>
-References: <20210216033307.69863-1-aik@ozlabs.ru>
- <20210216033307.69863-3-aik@ozlabs.ru>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3 (3.38.3-1.fc33) 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dgp1q3vdTz3cGf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:34:23 +1100 (AEDT)
+Received: from MTA-13-3.privateemail.com (mta-13.privateemail.com
+ [198.54.118.203])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id C7D3F80A9A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 14:27:29 -0500 (EST)
+Received: from mta-13.privateemail.com (localhost [127.0.0.1])
+ by mta-13.privateemail.com (Postfix) with ESMTP id 3890E800A4;
+ Wed, 17 Feb 2021 14:27:24 -0500 (EST)
+Received: from localhost (unknown [10.20.151.236])
+ by mta-13.privateemail.com (Postfix) with ESMTPA id 0445C800A3;
+ Wed, 17 Feb 2021 19:27:23 +0000 (UTC)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 17 Feb 2021 13:27:23 -0600
+Message-Id: <C9C1XKNVRQC4.LHKIIQAIC3L7@oc8246131445.ibm.com>
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: "Daniel Axtens" <dja@axtens.net>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v5 05/10] powerpc/signal64: Remove TM ifdefery in middle
+ of if/else block
+References: <20210203184323.20792-1-cmr@codefail.de>
+ <20210203184323.20792-6-cmr@codefail.de>
+ <874kiheu93.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <874kiheu93.fsf@dja-thinkpad.axtens.net>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,72 +67,194 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2021-02-16 at 14:33 +1100, Alexey Kardashevskiy wrote:
-> Most platforms allocate IOMMU table structures (specifically it_map)
-> at the boot time and when this fails - it is a valid reason for panic().
-> 
-> However the powernv platform allocates it_map after a device is returned
-> to the host OS after being passed through and this happens long after
-> the host OS booted. It is quite possible to trigger the it_map allocation
-> panic() and kill the host even though it is not necessary - the host OS
-> can still use the DMA bypass mode (requires a tiny fraction of it_map's
-> memory) and even if that fails, the host OS is runnnable as it was without
-> the device for which allocating it_map causes the panic.
-> 
-> Instead of immediately crashing in a powernv/ioda2 system, this prints
-> an error and continues. All other platforms still call panic().
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+On Thu Feb 11, 2021 at 11:21 PM CST, Daniel Axtens wrote:
+> Hi Chris,
+>
+> > Rework the messy ifdef breaking up the if-else for TM similar to
+> > commit f1cf4f93de2f ("powerpc/signal32: Remove ifdefery in middle of if=
+/else").
+>
+> I'm not sure what 'the messy ifdef' and 'the if-else for TM' is (yet):
+> perhaps you could start the commit message with a tiny bit of
+> background.
 
-Hello Alexey,
+Yup good point - I will reword this for the next spin.
 
-This looks like a good change, that passes panic() decision to platform
-code. Everything looks pretty straightforward, but I have a question
-regarding this:
+>
+> > Unlike that commit for ppc32, the ifdef can't be removed entirely since
+> > uc_transact in sigframe depends on CONFIG_PPC_TRANSACTIONAL_MEM.
+> >
+> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+> > ---
+> >  arch/powerpc/kernel/signal_64.c | 16 +++++++---------
+> >  1 file changed, 7 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/sign=
+al_64.c
+> > index b211a8ea4f6e..8e1d804ce552 100644
+> > --- a/arch/powerpc/kernel/signal_64.c
+> > +++ b/arch/powerpc/kernel/signal_64.c
+> > @@ -710,9 +710,7 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> >  	struct pt_regs *regs =3D current_pt_regs();
+> >  	struct ucontext __user *uc =3D (struct ucontext __user *)regs->gpr[1]=
+;
+> >  	sigset_t set;
+> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  	unsigned long msr;
+> > -#endif
+> > =20
+> >  	/* Always make any pending restarted system calls return -EINTR */
+> >  	current->restart_block.fn =3D do_no_restart_syscall;
+> > @@ -765,7 +763,10 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> > =20
+> >  	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
+> >  		goto badframe;
+> > +#endif
+> > +
+> >  	if (MSR_TM_ACTIVE(msr)) {
+> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  		/* We recheckpoint on return. */
+> >  		struct ucontext __user *uc_transact;
+> > =20
+> > @@ -778,9 +779,8 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> >  		if (restore_tm_sigcontexts(current, &uc->uc_mcontext,
+> >  					   &uc_transact->uc_mcontext))
+> >  			goto badframe;
+> > -	} else
+> >  #endif
+> > -	{
+> > +	} else {
+> >  		/*
+> >  		 * Fall through, for non-TM restore
+> >  		 *
+>
+> I think you can get rid of all the ifdefs in _this function_ by
+> providing a couple of stubs:
+>
+> diff --git a/arch/powerpc/kernel/process.c
+> b/arch/powerpc/kernel/process.c
+> index a66f435dabbf..19059a4b798f 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1120,6 +1120,7 @@ void restore_tm_state(struct pt_regs *regs)
+> #else
+> #define tm_recheckpoint_new_task(new)
+> #define __switch_to_tm(prev, new)
+> +void tm_reclaim_current(uint8_t cause) {}
+> #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> =20
+> static inline void save_sprs(struct thread_struct *t)
+> diff --git a/arch/powerpc/kernel/signal_64.c
+> b/arch/powerpc/kernel/signal_64.c
+> index 8e1d804ce552..ed58ca019ad9 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -594,6 +594,13 @@ static long restore_tm_sigcontexts(struct
+> task_struct *tsk,
+> =20
+> return err;
+> }
+> +#else
+> +static long restore_tm_sigcontexts(struct task_struct *tsk,
+> + struct sigcontext __user *sc,
+> + struct sigcontext __user *tm_sc)
+> +{
+> + return -EINVAL;
+> +}
+> #endif
+> =20
+> /*
+> @@ -722,7 +729,6 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> goto badframe;
+> set_current_blocked(&set);
+> =20
+> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> /*
+> * If there is a transactional state then throw it away.
+> * The purpose of a sigreturn is to destroy all traces of the
+> @@ -763,10 +769,8 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> =20
+> if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
+> goto badframe;
+> -#endif
+> =20
+> if (MSR_TM_ACTIVE(msr)) {
+> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> /* We recheckpoint on return. */
+> struct ucontext __user *uc_transact;
+> =20
+> @@ -779,7 +783,6 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> if (restore_tm_sigcontexts(current, &uc->uc_mcontext,
+> &uc_transact->uc_mcontext))
+> goto badframe;
+> -#endif
+> } else {
+> /*
+> * Fall through, for non-TM restore
+>
+> My only concern here was whether it was valid to access
+> if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
+> if CONFIG_PPC_TRANSACTIONAL_MEM was not defined, but I didn't think of
+> any obvious reason why it wouldn't be...
 
-> @@ -1930,16 +1931,16 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
->  		res_start = pe->phb->ioda.m32_pci_base >> tbl->it_page_shift;
->  		res_end = min(window_size, SZ_4G) >> tbl->it_page_shift;
->  	}
-> -	iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end);
-> -	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
-> 
-> +	if (iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end))
-> +		rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
-> +	else
-> +		rc = -ENOMEM;
->  	if (rc) {
-> -		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
-> -				rc);
-> +		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n", rc);
->  		iommu_tce_table_put(tbl);
-> -		return rc;
-> +		tbl = NULL; /* This clears iommu_table_base below */
->  	}
-> -
->  	if (!pnv_iommu_bypass_disabled)
->  		pnv_pci_ioda2_set_bypass(pe, true);
->  
-> 
+Hmm, we don't really need it for the non-TM case and it is another extra
+uaccess. I will take your suggestion to remove the need for the other
+ifdefs but might keep this one. Keeping it also makes it very clear this
+call is only here for TM and possible to remove in a potentially TM-less
+future :)
 
-If I could understand correctly, previously if iommu_init_table() did
-not panic(), and pnv_pci_ioda2_set_window() returned something other
-than 0, it would return rc in the if (rc) clause, but now it does not
-happen anymore, going through if (!pnv_iommu_bypass_disabled) onwards.
+>
+> > @@ -818,10 +818,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigse=
+t_t *set,
+> >  	unsigned long newsp =3D 0;
+> >  	long err =3D 0;
+> >  	struct pt_regs *regs =3D tsk->thread.regs;
+> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  	/* Save the thread's msr before get_tm_stackpointer() changes it */
+> >  	unsigned long msr =3D regs->msr;
+> > -#endif
+>
+> I wondered if that comment still makes sense in the absence of the
+> ifdef. It is preserved in commit f1cf4f93de2f ("powerpc/signal32: Remove
+> ifdefery in middle of if/else"), and I can't figure out how you would
+> improve it, so I guess it's probably good as it is.
+>
+> >  	frame =3D get_sigframe(ksig, tsk, sizeof(*frame), 0);
+> >  	if (!access_ok(frame, sizeof(*frame)))
+> > @@ -836,8 +834,9 @@ int handle_rt_signal64(struct ksignal *ksig, sigset=
+_t *set,
+> >  	/* Create the ucontext.  */
+> >  	err |=3D __put_user(0, &frame->uc.uc_flags);
+> >  	err |=3D __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
+> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > +
+> >  	if (MSR_TM_ACTIVE(msr)) {
+> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  		/* The ucontext_t passed to userland points to the second
+> >  		 * ucontext_t (for transactional state) with its uc_link ptr.
+> >  		 */
+> > @@ -847,9 +846,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset=
+_t *set,
+> >  					    tsk, ksig->sig, NULL,
+> >  					    (unsigned long)ksig->ka.sa.sa_handler,
+> >  					    msr);
+> > -	} else
+> >  #endif
+> > -	{
+> > +	} else {
+> >  		err |=3D __put_user(0, &frame->uc.uc_link);
+> >  		prepare_setup_sigcontext(tsk, 1);
+> >  		err |=3D setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
+>
+> That seems reasonable to me.
 
-Is that desired?
+Thanks for the feedback!
 
-As far as I could see, returning rc there seems a good procedure after
-iommu_init_table returning -ENOMEM.
-
-Best regards, 
-Leonardo Bras  
-
-
-
+>
+> Kind regards,
+> Daniel
 
