@@ -2,62 +2,62 @@ Return-Path: <SRS0=ktNZ=HT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B832C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3090C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:40:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BF1A64E2B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:39:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BF1A64E2B
+	by mail.kernel.org (Postfix) with ESMTPS id C5A5464E2B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 00:39:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5A5464E2B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DgJrQ6pw0z3cbL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 11:39:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DgJrt2ppQz3cmb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 11:39:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=WGNk6k5K;
+	dkim=pass (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=orX+cYTF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=WGNk6k5K; 
+ header.a=rsa-sha256 header.s=201602 header.b=orX+cYTF; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DgJqV4Jc3z30hy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DgJqV4mM6z3bNd
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 11:38:46 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4DgJqV1S6tz9sVF; Wed, 17 Feb 2021 11:38:46 +1100 (AEDT)
+ id 4DgJqT6xFBz9sSC; Wed, 17 Feb 2021 11:38:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1613522326;
- bh=e6e72J43BbBFKa4anYat7mwH8WFwvQF97+Gzai1Lye0=;
+ d=gibson.dropbear.id.au; s=201602; t=1613522325;
+ bh=SytjlTtvQe3KI3rxB1W/YDnqdGpSQfmDFun03y0tPWc=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=WGNk6k5K+6+deSeJsGn7Q5zv6u3dWjXXMqi2KxUEoy2iGfx+H+ebUv6T2NfKA7aOj
- cA/Hse/w35Gh9i7yulJMkXxjx+As3dgCjHGxN/YzjchqhEvnZ25yEpVnSrG+qJJiSJ
- fnN2y7dIgJFN4MvV+iy6sws+ni3hidHRxMgSrKJs=
-Date: Wed, 17 Feb 2021 11:38:07 +1100
+ b=orX+cYTFI4C34RmUe/rNIHu/b6MRfvZ8nbcmT3+R1y9HPeU8uZNjhvUmAnC7AgaBe
+ ltiT7DiEG1IGUI9cW5/BDk6TmPBQakFEVUPZsxjgGWuGNfC6ydc4494iQhjXxERo8b
+ e7Ozc0IPTlU0ixGJV8rB4Z1wUPvcwFFM331mwMqg=
+Date: Wed, 17 Feb 2021 11:16:22 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v4 2/3] KVM: PPC: Book3S HV: Add support for
- H_RPT_INVALIDATE
-Message-ID: <YCxlb133Hf6hLjuD@yekko.fritz.box>
-References: <20210215063542.3642366-1-bharata@linux.ibm.com>
- <20210215063542.3642366-3-bharata@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel 2/2] powerpc/iommu: Do not immediately panic when
+ failed IOMMU table allocation
+Message-ID: <YCxgViVCK08S7BtV@yekko.fritz.box>
+References: <20210216033307.69863-1-aik@ozlabs.ru>
+ <20210216033307.69863-3-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="mf0YK2Ltrr6Rjl9/"
+ protocol="application/pgp-signature"; boundary="E/6FMYZ2DXmP95Q9"
 Content-Disposition: inline
-In-Reply-To: <20210215063542.3642366-3-bharata@linux.ibm.com>
+In-Reply-To: <20210216033307.69863-3-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,448 +69,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---mf0YK2Ltrr6Rjl9/
+--E/6FMYZ2DXmP95Q9
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 15, 2021 at 12:05:41PM +0530, Bharata B Rao wrote:
-> Implement H_RPT_INVALIDATE hcall and add KVM capability
-> KVM_CAP_PPC_RPT_INVALIDATE to indicate the support for the same.
+On Tue, Feb 16, 2021 at 02:33:07PM +1100, Alexey Kardashevskiy wrote:
+> Most platforms allocate IOMMU table structures (specifically it_map)
+> at the boot time and when this fails - it is a valid reason for panic().
 >=20
-> This hcall does two types of TLB invalidations:
+> However the powernv platform allocates it_map after a device is returned
+> to the host OS after being passed through and this happens long after
+> the host OS booted. It is quite possible to trigger the it_map allocation
+> panic() and kill the host even though it is not necessary - the host OS
+> can still use the DMA bypass mode (requires a tiny fraction of it_map's
+> memory) and even if that fails, the host OS is runnnable as it was without
+> the device for which allocating it_map causes the panic.
 >=20
-> 1. Process-scoped invalidations for guests with LPCR[GTSE]=3D0.
->    This is currently not used in KVM as GTSE is not usually
->    disabled in KVM.
-> 2. Partition-scoped invalidations that an L1 hypervisor does on
->    behalf of an L2 guest. This replaces the uses of the existing
->    hcall H_TLB_INVALIDATE.
+> Instead of immediately crashing in a powernv/ioda2 system, this prints
+> an error and continues. All other platforms still call panic().
 >=20
-> In order to handle process scoped invalidations of L2, we
-> intercept the nested exit handling code in L0 only to handle
-> H_TLB_INVALIDATE hcall.
->=20
-> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
 > ---
->  Documentation/virt/kvm/api.rst         | 17 +++++
->  arch/powerpc/include/asm/kvm_book3s.h  |  3 +
->  arch/powerpc/include/asm/mmu_context.h | 11 +++
->  arch/powerpc/kvm/book3s_hv.c           | 91 ++++++++++++++++++++++++
->  arch/powerpc/kvm/book3s_hv_nested.c    | 96 ++++++++++++++++++++++++++
->  arch/powerpc/kvm/powerpc.c             |  3 +
->  arch/powerpc/mm/book3s64/radix_tlb.c   | 25 +++++++
->  include/uapi/linux/kvm.h               |  1 +
->  8 files changed, 247 insertions(+)
+>  arch/powerpc/kernel/iommu.c               |  6 ++++--
+>  arch/powerpc/platforms/cell/iommu.c       |  3 ++-
+>  arch/powerpc/platforms/pasemi/iommu.c     |  4 +++-
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 15 ++++++++-------
+>  arch/powerpc/platforms/pseries/iommu.c    | 10 +++++++---
+>  arch/powerpc/sysdev/dart_iommu.c          |  3 ++-
+>  6 files changed, 26 insertions(+), 15 deletions(-)
 >=20
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.=
-rst
-> index 99ceb978c8b0..416c36aa35d4 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6038,6 +6038,23 @@ KVM_EXIT_X86_RDMSR and KVM_EXIT_X86_WRMSR exit not=
-ifications which user space
->  can then handle to implement model specific MSR handling and/or user not=
-ifications
->  to inform a user that an MSR was not handled.
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 8eb6eb0afa97..c1a5c366a664 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -728,8 +728,10 @@ struct iommu_table *iommu_init_table(struct iommu_ta=
+ble *tbl, int nid,
+>  	sz =3D BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
 > =20
-> +7.22 KVM_CAP_PPC_RPT_INVALIDATE
-> +------------------------------
-> +
-> +:Capability: KVM_CAP_PPC_RPT_INVALIDATE
-> +:Architectures: ppc
-> +:Type: vm
-> +
-> +This capability indicates that the kernel is capable of handling
-> +H_RPT_INVALIDATE hcall.
-> +
-> +In order to enable the use of H_RPT_INVALIDATE in the guest,
-> +user space might have to advertise it for the guest. For example,
-> +IBM pSeries (sPAPR) guest starts using it if "hcall-rpt-invalidate" is
-> +present in the "ibm,hypertas-functions" device-tree property.
-> +
-> +This capability is always enabled.
-
-I guess that means it's always enabled when it's available - I'm
-pretty sure it won't be enabled on POWER8 or on PR KVM.
-
-> +
->  8. Other capabilities.
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>  	tbl->it_map =3D vzalloc_node(sz, nid);
+> -	if (!tbl->it_map)
+> -		panic("iommu_init_table: Can't allocate %ld bytes\n", sz);
+> +	if (!tbl->it_map) {
+> +		pr_err("%s: Can't allocate %ld bytes\n", __func__, sz);
+> +		return NULL;
+> +	}
 > =20
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
-/asm/kvm_book3s.h
-> index d32ec9ae73bd..0f1c5fa6e8ce 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -298,6 +298,9 @@ void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0,=
- u64 dw1);
->  void kvmhv_release_all_nested(struct kvm *kvm);
->  long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu);
->  long kvmhv_do_nested_tlbie(struct kvm_vcpu *vcpu);
-> +long kvmhv_h_rpti_nested(struct kvm_vcpu *vcpu, unsigned long lpid,
-> +			 unsigned long type, unsigned long pg_sizes,
-> +			 unsigned long start, unsigned long end);
->  int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu,
->  			  u64 time_limit, unsigned long lpcr);
->  void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr=
-);
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/includ=
-e/asm/mmu_context.h
-> index d5821834dba9..fbf3b5b45fe9 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -124,8 +124,19 @@ static inline bool need_extra_context(struct mm_stru=
-ct *mm, unsigned long ea)
+>  	iommu_table_reserve_pages(tbl, res_start, res_end);
 > =20
->  #if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RADIX_M=
-MU)
->  extern void radix_kvm_prefetch_workaround(struct mm_struct *mm);
-> +void do_h_rpt_invalidate(unsigned long pid, unsigned long lpid,
-> +			 unsigned long type, unsigned long page_size,
-> +			 unsigned long psize, unsigned long start,
-> +			 unsigned long end);
->  #else
->  static inline void radix_kvm_prefetch_workaround(struct mm_struct *mm) {=
- }
-> +static inline void do_h_rpt_invalidate(unsigned long pid,
-> +				       unsigned long lpid,
-> +				       unsigned long type,
-> +				       unsigned long page_size,
-> +				       unsigned long psize,
-> +				       unsigned long start,
-> +				       unsigned long end) { }
->  #endif
+> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms=
+/cell/iommu.c
+> index 2124831cf57c..fa08699aedeb 100644
+> --- a/arch/powerpc/platforms/cell/iommu.c
+> +++ b/arch/powerpc/platforms/cell/iommu.c
+> @@ -486,7 +486,8 @@ cell_iommu_setup_window(struct cbe_iommu *iommu, stru=
+ct device_node *np,
+>  	window->table.it_size =3D size >> window->table.it_page_shift;
+>  	window->table.it_ops =3D &cell_iommu_ops;
 > =20
->  extern void switch_cop(struct mm_struct *next);
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 6f612d240392..802cb77c39cc 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -904,6 +904,64 @@ static int kvmppc_get_yield_count(struct kvm_vcpu *v=
-cpu)
->  	return yield_count;
+> -	iommu_init_table(&window->table, iommu->nid, 0, 0);
+> +	if (!iommu_init_table(&window->table, iommu->nid, 0, 0))
+> +		panic("Failed to initialize iommu table");
+> =20
+>  	pr_debug("\tioid      %d\n", window->ioid);
+>  	pr_debug("\tblocksize %ld\n", window->table.it_blocksize);
+> diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platfor=
+ms/pasemi/iommu.c
+> index b500a6e47e6b..5be7242fbd86 100644
+> --- a/arch/powerpc/platforms/pasemi/iommu.c
+> +++ b/arch/powerpc/platforms/pasemi/iommu.c
+> @@ -146,7 +146,9 @@ static void iommu_table_iobmap_setup(void)
+>  	 */
+>  	iommu_table_iobmap.it_blocksize =3D 4;
+>  	iommu_table_iobmap.it_ops =3D &iommu_table_iobmap_ops;
+> -	iommu_init_table(&iommu_table_iobmap, 0, 0, 0);
+> +	if (!iommu_init_table(&iommu_table_iobmap, 0, 0, 0))
+> +		panic("Failed to initialize iommu table");
+> +
+>  	pr_debug(" <- %s\n", __func__);
 >  }
 > =20
-> +static void do_h_rpt_invalidate_prs(unsigned long pid, unsigned long lpi=
-d,
-> +				    unsigned long type, unsigned long pg_sizes,
-> +				    unsigned long start, unsigned long end)
-> +{
-> +	unsigned long psize;
-> +
-> +	if (pg_sizes & H_RPTI_PAGE_64K) {
-> +		psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_64K);
-> +		do_h_rpt_invalidate(pid, lpid, type, (1UL << 16), psize,
-> +				    start, end);
-> +	}
-> +
-> +	if (pg_sizes & H_RPTI_PAGE_2M) {
-> +		psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_2M);
-> +		do_h_rpt_invalidate(pid, lpid, type, (1UL << 21), psize,
-> +				    start, end);
-> +	}
-> +
-> +	if (pg_sizes & H_RPTI_PAGE_1G) {
-> +		psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_1G);
-> +		do_h_rpt_invalidate(pid, lpid, type, (1UL << 30), psize,
-> +				    start, end);
-> +	}
-
-Hrm.  Here you're stepping through the hcall defined pagesizes, then
-mapping each one to the Linux internal page size defs.
-
-It might be more elegant to step through mmu_psize_defs table, and
-conditionally performan an invalidate on that pagesize if the
-corresponding bit in pg_sizes is set (as noted earlier you could
-easily add the H_RPTI_PAGE bit to the table).  That way it's a direct
-table lookup rather than a bunch of ifs or switches.
-
-> +}
-> +
-> +static long kvmppc_h_rpt_invalidate(struct kvm_vcpu *vcpu,
-> +				    unsigned long pid, unsigned long target,
-> +				    unsigned long type, unsigned long pg_sizes,
-> +				    unsigned long start, unsigned long end)
-> +{
-> +	if (!kvm_is_radix(vcpu->kvm))
-> +		return H_UNSUPPORTED;
-> +
-> +	if (kvmhv_on_pseries())
-> +		return H_UNSUPPORTED;
-
-This doesn't seem quite right.  If you have multiply nested guests,
-won't the L2 be issueing H_RPT_INVALIDATE hcalls to the L1 on behalf
-of the L3?  The L1 would have to implement them by calling the L0, but
-the L1 can't just reject them, no?
-
-Likewise for the !H_RPTI_TYPE_NESTED case, but on what happens to be a
-nested guest in any case, couldn't this case legitimately arise and
-need to be handled?
-
-> +
-> +	if (end < start)
-> +		return H_P5;
-> +
-> +	if (type & H_RPTI_TYPE_NESTED) {
-> +		if (!nesting_enabled(vcpu->kvm))
-> +			return H_FUNCTION;
-> +
-> +		/* Support only cores as target */
-> +		if (target !=3D H_RPTI_TARGET_CMMU)
-> +			return H_P2;
-> +
-> +		return kvmhv_h_rpti_nested(vcpu, pid,
-> +					   (type & ~H_RPTI_TYPE_NESTED),
-> +					    pg_sizes, start, end);
-> +	}
-> +
-> +	do_h_rpt_invalidate_prs(pid, vcpu->kvm->arch.lpid, type, pg_sizes,
-> +				start, end);
-> +	return H_SUCCESS;
-> +}
-> +
->  int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  {
->  	unsigned long req =3D kvmppc_get_gpr(vcpu, 3);
-> @@ -1112,6 +1170,14 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  		 */
->  		ret =3D kvmppc_h_svm_init_abort(vcpu->kvm);
->  		break;
-> +	case H_RPT_INVALIDATE:
-> +		ret =3D kvmppc_h_rpt_invalidate(vcpu, kvmppc_get_gpr(vcpu, 4),
-> +					      kvmppc_get_gpr(vcpu, 5),
-> +					      kvmppc_get_gpr(vcpu, 6),
-> +					      kvmppc_get_gpr(vcpu, 7),
-> +					      kvmppc_get_gpr(vcpu, 8),
-> +					      kvmppc_get_gpr(vcpu, 9));
-> +		break;
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index f0f901683a2f..66c3c3337334 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1762,7 +1762,8 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_p=
+hb *phb,
+>  	tbl->it_ops =3D &pnv_ioda1_iommu_ops;
+>  	pe->table_group.tce32_start =3D tbl->it_offset << tbl->it_page_shift;
+>  	pe->table_group.tce32_size =3D tbl->it_size << tbl->it_page_shift;
+> -	iommu_init_table(tbl, phb->hose->node, 0, 0);
+> +	if (!iommu_init_table(tbl, phb->hose->node, 0, 0))
+> +		panic("Failed to initialize iommu table");
 > =20
->  	default:
->  		return RESUME_HOST;
-> @@ -1158,6 +1224,7 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
->  	case H_XIRR_X:
->  #endif
->  	case H_PAGE_INIT:
-> +	case H_RPT_INVALIDATE:
->  		return 1;
+>  	pe->dma_setup_done =3D true;
+>  	return;
+> @@ -1930,16 +1931,16 @@ static long pnv_pci_ioda2_setup_default_config(st=
+ruct pnv_ioda_pe *pe)
+>  		res_start =3D pe->phb->ioda.m32_pci_base >> tbl->it_page_shift;
+>  		res_end =3D min(window_size, SZ_4G) >> tbl->it_page_shift;
 >  	}
+> -	iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end);
 > =20
-> @@ -1573,6 +1640,30 @@ static int kvmppc_handle_nested_exit(struct kvm_vc=
-pu *vcpu)
->  		if (!xics_on_xive())
->  			kvmppc_xics_rm_complete(vcpu, 0);
->  		break;
-> +	case BOOK3S_INTERRUPT_SYSCALL:
-> +	{
-> +		unsigned long req =3D kvmppc_get_gpr(vcpu, 3);
-> +
-> +		if (req !=3D H_RPT_INVALIDATE) {
-> +			r =3D RESUME_HOST;
-> +			break;
-> +		}
-> +
-> +		/*
-> +		 * The H_RPT_INVALIDATE hcalls issued by nested
-> +		 * guest for process scoped invalidations when
-> +		 * GTSE=3D0 are handled here.
-> +		 */
-> +		do_h_rpt_invalidate_prs(kvmppc_get_gpr(vcpu, 4),
-> +					vcpu->arch.nested->shadow_lpid,
-> +					kvmppc_get_gpr(vcpu, 5),
-> +					kvmppc_get_gpr(vcpu, 6),
-> +					kvmppc_get_gpr(vcpu, 7),
-> +					kvmppc_get_gpr(vcpu, 8));
-> +		kvmppc_set_gpr(vcpu, 3, H_SUCCESS);
-> +		r =3D RESUME_GUEST;
-> +		break;
-> +	}
->  	default:
->  		r =3D RESUME_HOST;
->  		break;
-> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
-s_hv_nested.c
-> index 33b58549a9aa..40ed4eb80adb 100644
-> --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -1149,6 +1149,102 @@ long kvmhv_do_nested_tlbie(struct kvm_vcpu *vcpu)
->  	return H_SUCCESS;
->  }
-> =20
-> +static long do_tlb_invalidate_nested_tlb(struct kvm_vcpu *vcpu,
-> +					 unsigned long lpid,
-> +					 unsigned long page_size,
-> +					 unsigned long ap,
-> +					 unsigned long start,
-> +					 unsigned long end)
-> +{
-> +	unsigned long addr =3D start;
-> +	int ret;
-> +
-> +	do {
-> +		ret =3D kvmhv_emulate_tlbie_tlb_addr(vcpu, lpid, ap,
-> +						   get_epn(addr));
-> +		if (ret)
-> +			return ret;
-> +		addr +=3D page_size;
-> +	} while (addr < end);
-> +
-> +	return ret;
-> +}
-> +
-> +static long do_tlb_invalidate_nested_all(struct kvm_vcpu *vcpu,
-> +					 unsigned long lpid)
-> +{
-> +	struct kvm *kvm =3D vcpu->kvm;
-> +	struct kvm_nested_guest *gp;
-> +
-> +	gp =3D kvmhv_get_nested(kvm, lpid, false);
-> +	if (gp) {
-> +		kvmhv_emulate_tlbie_lpid(vcpu, gp, RIC_FLUSH_ALL);
-> +		kvmhv_put_nested(gp);
-> +	}
-> +	return H_SUCCESS;
-> +}
-> +
-> +long kvmhv_h_rpti_nested(struct kvm_vcpu *vcpu, unsigned long lpid,
-> +			 unsigned long type, unsigned long pg_sizes,
-> +			 unsigned long start, unsigned long end)
-> +{
-> +	struct kvm_nested_guest *gp;
-> +	long ret;
-> +	unsigned long psize, ap;
-> +
-> +	/*
-> +	 * If L2 lpid isn't valid, we need to return H_PARAMETER.
-> +	 *
-> +	 * However, nested KVM issues a L2 lpid flush call when creating
-> +	 * partition table entries for L2. This happens even before the
-> +	 * corresponding shadow lpid is created in HV which happens in
-> +	 * H_ENTER_NESTED call. Since we can't differentiate this case from
-> +	 * the invalid case, we ignore such flush requests and return success.
-> +	 */
-> +	gp =3D kvmhv_find_nested(vcpu->kvm, lpid);
-> +	if (!gp)
-> +		return H_SUCCESS;
-> +
-> +	if ((type & H_RPTI_TYPE_NESTED_ALL) =3D=3D H_RPTI_TYPE_NESTED_ALL)
-> +		return do_tlb_invalidate_nested_all(vcpu, lpid);
-> +
-> +	if ((type & H_RPTI_TYPE_TLB) =3D=3D H_RPTI_TYPE_TLB) {
-> +		if (pg_sizes & H_RPTI_PAGE_64K) {
-> +			psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_64K);
-> +			ap =3D mmu_get_ap(psize);
-> +
-> +			ret =3D do_tlb_invalidate_nested_tlb(vcpu, lpid,
-> +							   (1UL << 16),
-> +							   ap, start, end);
-> +			if (ret)
-> +				return H_P4;
-> +		}
-> +
-> +		if (pg_sizes & H_RPTI_PAGE_2M) {
-> +			psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_2M);
-> +			ap =3D mmu_get_ap(psize);
-> +
-> +			ret =3D do_tlb_invalidate_nested_tlb(vcpu, lpid,
-> +							   (1UL << 21),
-> +							   ap, start, end);
-> +			if (ret)
-> +				return H_P4;
-> +		}
-> +
-> +		if (pg_sizes & H_RPTI_PAGE_1G) {
-> +			psize =3D rpti_pgsize_to_psize(pg_sizes & H_RPTI_PAGE_1G);
-> +			ap =3D mmu_get_ap(psize);
-> +
-> +			ret =3D do_tlb_invalidate_nested_tlb(vcpu, lpid,
-> +							   (1UL << 30),
-> +							   ap, start, end);
-> +			if (ret)
-> +				return H_P4;
-> +		}
-
-Again it might be more elegant to step through the pagesizes from the
-mmu_psize_defs side, rather than from the pg_sizes side.
-
-> +	}
-> +	return H_SUCCESS;
-> +}
-> +
->  /* Used to convert a nested guest real address to a L1 guest real addres=
-s */
->  static int kvmhv_translate_addr_nested(struct kvm_vcpu *vcpu,
->  				       struct kvm_nested_guest *gp,
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index cf52d26f49cd..5388cd4a206a 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -678,6 +678,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lon=
-g ext)
->  		r =3D hv_enabled && kvmppc_hv_ops->enable_svm &&
->  			!kvmppc_hv_ops->enable_svm(NULL);
->  		break;
-> +	case KVM_CAP_PPC_RPT_INVALIDATE:
-> +		r =3D 1;
-> +		break;
->  #endif
->  	default:
->  		r =3D 0;
-> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3=
-s64/radix_tlb.c
-> index 097402435303..4f746d34b420 100644
-> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
-> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-> @@ -1400,4 +1400,29 @@ extern void radix_kvm_prefetch_workaround(struct m=
-m_struct *mm)
+> -	rc =3D pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+> +	if (iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end))
+> +		rc =3D pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+> +	else
+> +		rc =3D -ENOMEM;
+>  	if (rc) {
+> -		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
+> -				rc);
+> +		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n", rc);
+>  		iommu_tce_table_put(tbl);
+> -		return rc;
+> +		tbl =3D NULL; /* This clears iommu_table_base below */
 >  	}
->  }
->  EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
-> +
-> +/*
-> + * Process-scoped invalidations for a given LPID.
-> + */
-> +void do_h_rpt_invalidate(unsigned long pid, unsigned long lpid,
-> +			 unsigned long type, unsigned long page_size,
-> +			 unsigned long psize, unsigned long start,
-> +			 unsigned long end)
-> +{
-> +	if ((type & H_RPTI_TYPE_ALL) =3D=3D H_RPTI_TYPE_ALL) {
-> +		_tlbie_pid_lpid(pid, lpid, RIC_FLUSH_ALL);
-> +		return;
-> +	}
-> +
-> +	if (type & H_RPTI_TYPE_PWC)
-> +		_tlbie_pid_lpid(pid, lpid, RIC_FLUSH_PWC);
-> +
-> +	if (!start && end =3D=3D -1) /* PID */
-> +		_tlbie_pid_lpid(pid, lpid, RIC_FLUSH_TLB);
-> +	else /* EA */
-> +		_tlbie_va_range_lpid(start, end, pid, lpid, page_size,
-> +				     psize, false);
-> +}
-> +EXPORT_SYMBOL_GPL(do_h_rpt_invalidate);
-> +
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 374c67875cdb..6fd530fae452 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -1058,6 +1058,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_ENFORCE_PV_FEATURE_CPUID 190
->  #define KVM_CAP_SYS_HYPERV_CPUID 191
->  #define KVM_CAP_DIRTY_LOG_RING 192
-> +#define KVM_CAP_PPC_RPT_INVALIDATE 193
+> -
+>  	if (!pnv_iommu_bypass_disabled)
+>  		pnv_pci_ioda2_set_bypass(pe, true);
 > =20
->  #ifdef KVM_CAP_IRQ_ROUTING
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platfo=
+rms/pseries/iommu.c
+> index 9fc5217f0c8e..4d9ac1f181c2 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -638,7 +638,8 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus =
+*bus)
 > =20
+>  	iommu_table_setparms(pci->phb, dn, tbl);
+>  	tbl->it_ops =3D &iommu_table_pseries_ops;
+> -	iommu_init_table(tbl, pci->phb->node, 0, 0);
+> +	if (!iommu_init_table(tbl, pci->phb->node, 0, 0))
+> +		panic("Failed to initialize iommu table");
+> =20
+>  	/* Divide the rest (1.75GB) among the children */
+>  	pci->phb->dma_window_size =3D 0x80000000ul;
+> @@ -720,7 +721,8 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bu=
+s *bus)
+>  		iommu_table_setparms_lpar(ppci->phb, pdn, tbl,
+>  				ppci->table_group, dma_window);
+>  		tbl->it_ops =3D &iommu_table_lpar_multi_ops;
+> -		iommu_init_table(tbl, ppci->phb->node, 0, 0);
+> +		if (!iommu_init_table(tbl, ppci->phb->node, 0, 0))
+> +			panic("Failed to initialize iommu table");
+>  		iommu_register_group(ppci->table_group,
+>  				pci_domain_nr(bus), 0);
+>  		pr_debug("  created table: %p\n", ppci->table_group);
+> @@ -749,7 +751,9 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev =
+*dev)
+>  		tbl =3D PCI_DN(dn)->table_group->tables[0];
+>  		iommu_table_setparms(phb, dn, tbl);
+>  		tbl->it_ops =3D &iommu_table_pseries_ops;
+> -		iommu_init_table(tbl, phb->node, 0, 0);
+> +		if (!iommu_init_table(tbl, phb->node, 0, 0))
+> +			panic("Failed to initialize iommu table");
+> +
+>  		set_iommu_table_base(&dev->dev, tbl);
+>  		return;
+>  	}
+> diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_=
+iommu.c
+> index 6b4a34b36d98..1d33b7a5ea83 100644
+> --- a/arch/powerpc/sysdev/dart_iommu.c
+> +++ b/arch/powerpc/sysdev/dart_iommu.c
+> @@ -344,7 +344,8 @@ static void iommu_table_dart_setup(void)
+>  	iommu_table_dart.it_index =3D 0;
+>  	iommu_table_dart.it_blocksize =3D 1;
+>  	iommu_table_dart.it_ops =3D &iommu_dart_ops;
+> -	iommu_init_table(&iommu_table_dart, -1, 0, 0);
+> +	if (!iommu_init_table(&iommu_table_dart, -1, 0, 0))
+> +		panic("Failed to initialize iommu table");
+> =20
+>  	/* Reserve the last page of the DART to avoid possible prefetch
+>  	 * past the DART mapped area
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -518,24 +259,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---mf0YK2Ltrr6Rjl9/
+--E/6FMYZ2DXmP95Q9
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmAsZW0ACgkQbDjKyiDZ
-s5KPAA//X0R/LsJLqKI0+qn1XLnnWyNdbQCYS9MxLmLWd5E2OxvbHOz+wi1tY8BN
-7jUIjzXCmT+92B5xTRS5fc2uBKPU7V2v3oNqdT3HsQLeMYNlRXw0SR/dF9+kle9t
-wL12xLV9TL9w44IGE4j54k+6a0+gMEXQYPMdamv18kLpY72+r0emnrWV51HFfby9
-+3dIedyUapYw9TCjBdZ2fw2VsLzlzkigbMVNcRq2xB4Win+hHJryCZaL//5MbXR3
-5hDzKtwHXkwptK4IkLl/K2VZVeKICEDP+y1TaAZ3kRdwW+wxSGn7cfASBHgIaykX
-A6LRKLNTIYbDzD265AFFyRekbb2He+04MVttDLAHv5nZDJOhotM6RIjbs2XG1ntm
-QvxQUTazEFfNXP7GAtvk/iBQMaZvunfgpp+cmWz44hpM63cNXJhD8XqpQ5H303Ee
-Uoc5cElpHjDQp1V2651N7CPD0vhczLE89jSt9qimd5Fn0EqPRGC1FThydFBCAt3o
-8PQkGHrF6l4Fw3Qn/eLsleuvW70WNj6LS47vC1leqCIUdqT97hufKTJIhqO+MXbv
-IlQZjaWK6z4R3uuIKwo+7dD0H/XAj7Ej6DJ9G0g2aOlrdqIuDHXhjwz5T2Tk86cq
-CAlmgiVH7N9tiWLi1164JEMMdPz86Xx9rQ0x1l7ZDearS0Ugwv0=
-=WVl6
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmAsYFYACgkQbDjKyiDZ
+s5J80g/+Oq19AnsI6a7CCUiVrhPJlwDr/1s0SpXyJ5W09ifnsc0cMdGs30rGZt4Z
+Niz3s0A+e9NbRf8IaWQUNMqMTeBWefRwB3stmKoh8MbvyCr/KQEJcqK98Te6Xj5E
+TJnYoM9f8bZ5lsldaq5DKp0H23BeqvwBDLUEJaILP+XEAOFwSGLvhIEbmQhkf1Dm
+N+Z6sJ68iuhq+5y1ozye7AO50KYKPYAc6RKqEgu6vFhfny+o7c77h77s5CanEXk5
+pIqstPKLsPiUTrzooZi2qNr18MsOQALx4x9boiyMJ9kTmj1Jhs5PrxCT9Xghkblz
+wenkPtcDEUDLthm8DOlMplKm/0I6wg00WzWkj5IfFbssMfY0NT6m5w7zfwyzP50D
+rHLI5E82HM/C87r8JpROIubBsH4xh/FhADUIh5iMHhrcB/kzwiYnoggozyXymfup
+ZH59Mgv9dtunEldZEvc74fMEXY2M+rfXhuR0jyGkbB51zDWFgeJLUs07udPWXDlW
+7cBYv+zmXWj7RRdQ/kcJ24E9sQAk+W4up/VDoW3S9bJZwpz4KzMobHD1ZAm61RnL
+rLSwhORLP6sgxvBuFOQhj3vRccncglGq2zi4yYmq5Di4u2Dj+8Qxuy7XvbJVmNri
+yFV1HVCD7I1KvfmA5T4W++fHcUw65qs0HlwwhcPo1JvQCt3G9Hk=
+=IrzQ
 -----END PGP SIGNATURE-----
 
---mf0YK2Ltrr6Rjl9/--
+--E/6FMYZ2DXmP95Q9--
