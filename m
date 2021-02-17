@@ -7,54 +7,48 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3176C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 311FEC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:54:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8524364E45
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:34:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8524364E45
+	by mail.kernel.org (Postfix) with ESMTPS id 7BA1864E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Feb 2021 19:54:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BA1864E58
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dgp2B1wWcz3cmJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:34:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DgpSW5kNhz3cc5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 06:54:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.43;
- helo=h2.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=codefail.de (client-ip=68.65.122.30;
+ helo=mta-10-1.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
- [131.153.2.43])
+Received: from MTA-10-1.privateemail.com (mta-10-1.privateemail.com
+ [68.65.122.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dgp1q3vdTz3cGf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:34:23 +1100 (AEDT)
-Received: from MTA-13-3.privateemail.com (mta-13.privateemail.com
- [198.54.118.203])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id C7D3F80A9A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2021 14:27:29 -0500 (EST)
-Received: from mta-13.privateemail.com (localhost [127.0.0.1])
- by mta-13.privateemail.com (Postfix) with ESMTP id 3890E800A4;
- Wed, 17 Feb 2021 14:27:24 -0500 (EST)
-Received: from localhost (unknown [10.20.151.236])
- by mta-13.privateemail.com (Postfix) with ESMTPA id 0445C800A3;
- Wed, 17 Feb 2021 19:27:23 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DgpS65995z3cHl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 06:53:41 +1100 (AEDT)
+Received: from MTA-10.privateemail.com (localhost [127.0.0.1])
+ by MTA-10.privateemail.com (Postfix) with ESMTP id 8AFF86007F;
+ Wed, 17 Feb 2021 14:53:39 -0500 (EST)
+Received: from localhost (unknown [10.20.151.207])
+ by MTA-10.privateemail.com (Postfix) with ESMTPA id 5372D600FA;
+ Wed, 17 Feb 2021 19:53:39 +0000 (UTC)
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Wed, 17 Feb 2021 13:27:23 -0600
-Message-Id: <C9C1XKNVRQC4.LHKIIQAIC3L7@oc8246131445.ibm.com>
+Date: Wed, 17 Feb 2021 13:53:38 -0600
+Message-Id: <C9C2HOCOHQZW.10KGT1IRO1GOL@oc8246131445.ibm.com>
+Subject: Re: [PATCH v5 10/10] powerpc/signal64: Use __get_user() to copy
+ sigset_t
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: "Daniel Axtens" <dja@axtens.net>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v5 05/10] powerpc/signal64: Remove TM ifdefery in middle
- of if/else block
 References: <20210203184323.20792-1-cmr@codefail.de>
- <20210203184323.20792-6-cmr@codefail.de>
- <874kiheu93.fsf@dja-thinkpad.axtens.net>
-In-Reply-To: <874kiheu93.fsf@dja-thinkpad.axtens.net>
+ <20210203184323.20792-11-cmr@codefail.de>
+ <87v9axc78z.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <87v9axc78z.fsf@dja-thinkpad.axtens.net>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,190 +65,96 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu Feb 11, 2021 at 11:21 PM CST, Daniel Axtens wrote:
-> Hi Chris,
+On Fri Feb 12, 2021 at 3:21 PM CST, Daniel Axtens wrote:
+> "Christopher M. Riedl" <cmr@codefail.de> writes:
 >
-> > Rework the messy ifdef breaking up the if-else for TM similar to
-> > commit f1cf4f93de2f ("powerpc/signal32: Remove ifdefery in middle of if=
-/else").
+> > Usually sigset_t is exactly 8B which is a "trivial" size and does not
+> > warrant using __copy_from_user(). Use __get_user() directly in
+> > anticipation of future work to remove the trivial size optimizations
+> > from __copy_from_user(). Calling __get_user() also results in a small
+> > boost to signal handling throughput here.
 >
-> I'm not sure what 'the messy ifdef' and 'the if-else for TM' is (yet):
-> perhaps you could start the commit message with a tiny bit of
-> background.
+> Modulo the comments from Christophe, this looks good to me. It seems to
+> do what it says on the tin.
+>
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
+> Do you know if this patch is responsible for the slightly increase in
+> radix performance you observed in your cover letter? The rest of the
+> series shouldn't really make things faster than the no-KUAP case...
 
-Yup good point - I will reword this for the next spin.
+No, this patch just results in a really small improvement overall.
 
->
-> > Unlike that commit for ppc32, the ifdef can't be removed entirely since
-> > uc_transact in sigframe depends on CONFIG_PPC_TRANSACTIONAL_MEM.
-> >
-> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
-> > ---
-> >  arch/powerpc/kernel/signal_64.c | 16 +++++++---------
-> >  1 file changed, 7 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/sign=
-al_64.c
-> > index b211a8ea4f6e..8e1d804ce552 100644
-> > --- a/arch/powerpc/kernel/signal_64.c
-> > +++ b/arch/powerpc/kernel/signal_64.c
-> > @@ -710,9 +710,7 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> >  	struct pt_regs *regs =3D current_pt_regs();
-> >  	struct ucontext __user *uc =3D (struct ucontext __user *)regs->gpr[1]=
-;
-> >  	sigset_t set;
-> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  	unsigned long msr;
-> > -#endif
-> > =20
-> >  	/* Always make any pending restarted system calls return -EINTR */
-> >  	current->restart_block.fn =3D do_no_restart_syscall;
-> > @@ -765,7 +763,10 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> > =20
-> >  	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
-> >  		goto badframe;
-> > +#endif
-> > +
-> >  	if (MSR_TM_ACTIVE(msr)) {
-> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  		/* We recheckpoint on return. */
-> >  		struct ucontext __user *uc_transact;
-> > =20
-> > @@ -778,9 +779,8 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> >  		if (restore_tm_sigcontexts(current, &uc->uc_mcontext,
-> >  					   &uc_transact->uc_mcontext))
-> >  			goto badframe;
-> > -	} else
-> >  #endif
-> > -	{
-> > +	} else {
-> >  		/*
-> >  		 * Fall through, for non-TM restore
-> >  		 *
->
-> I think you can get rid of all the ifdefs in _this function_ by
-> providing a couple of stubs:
->
-> diff --git a/arch/powerpc/kernel/process.c
-> b/arch/powerpc/kernel/process.c
-> index a66f435dabbf..19059a4b798f 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1120,6 +1120,7 @@ void restore_tm_state(struct pt_regs *regs)
-> #else
-> #define tm_recheckpoint_new_task(new)
-> #define __switch_to_tm(prev, new)
-> +void tm_reclaim_current(uint8_t cause) {}
-> #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-> =20
-> static inline void save_sprs(struct thread_struct *t)
-> diff --git a/arch/powerpc/kernel/signal_64.c
-> b/arch/powerpc/kernel/signal_64.c
-> index 8e1d804ce552..ed58ca019ad9 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -594,6 +594,13 @@ static long restore_tm_sigcontexts(struct
-> task_struct *tsk,
-> =20
-> return err;
-> }
-> +#else
-> +static long restore_tm_sigcontexts(struct task_struct *tsk,
-> + struct sigcontext __user *sc,
-> + struct sigcontext __user *tm_sc)
-> +{
-> + return -EINVAL;
-> +}
-> #endif
-> =20
-> /*
-> @@ -722,7 +729,6 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> goto badframe;
-> set_current_blocked(&set);
-> =20
-> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> /*
-> * If there is a transactional state then throw it away.
-> * The purpose of a sigreturn is to destroy all traces of the
-> @@ -763,10 +769,8 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> =20
-> if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
-> goto badframe;
-> -#endif
-> =20
-> if (MSR_TM_ACTIVE(msr)) {
-> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> /* We recheckpoint on return. */
-> struct ucontext __user *uc_transact;
-> =20
-> @@ -779,7 +783,6 @@ SYSCALL_DEFINE0(rt_sigreturn)
-> if (restore_tm_sigcontexts(current, &uc->uc_mcontext,
-> &uc_transact->uc_mcontext))
-> goto badframe;
-> -#endif
-> } else {
-> /*
-> * Fall through, for non-TM restore
->
-> My only concern here was whether it was valid to access
-> if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
-> if CONFIG_PPC_TRANSACTIONAL_MEM was not defined, but I didn't think of
-> any obvious reason why it wouldn't be...
+I looked over this again and I think the reason for the speedup is that
+my implementation of unsafe_copy_from_user() in this series calls
+__copy_tofrom_user() directly avoiding a barrier_nospec(). This speeds
+up all the unsafe_get_from_user() calls in this version.
 
-Hmm, we don't really need it for the non-TM case and it is another extra
-uaccess. I will take your suggestion to remove the need for the other
-ifdefs but might keep this one. Keeping it also makes it very clear this
-call is only here for TM and possible to remove in a potentially TM-less
-future :)
+Skipping the barrier_nospec() like that is incorrect, but Christophe
+recently sent a patch which moves barrier_nospec() into the uaccess
+allowance helpers. It looks like mpe has already accepted that patch:
 
->
-> > @@ -818,10 +818,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigse=
-t_t *set,
-> >  	unsigned long newsp =3D 0;
-> >  	long err =3D 0;
-> >  	struct pt_regs *regs =3D tsk->thread.regs;
-> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  	/* Save the thread's msr before get_tm_stackpointer() changes it */
-> >  	unsigned long msr =3D regs->msr;
-> > -#endif
->
-> I wondered if that comment still makes sense in the absence of the
-> ifdef. It is preserved in commit f1cf4f93de2f ("powerpc/signal32: Remove
-> ifdefery in middle of if/else"), and I can't figure out how you would
-> improve it, so I guess it's probably good as it is.
->
-> >  	frame =3D get_sigframe(ksig, tsk, sizeof(*frame), 0);
-> >  	if (!access_ok(frame, sizeof(*frame)))
-> > @@ -836,8 +834,9 @@ int handle_rt_signal64(struct ksignal *ksig, sigset=
-_t *set,
-> >  	/* Create the ucontext.  */
-> >  	err |=3D __put_user(0, &frame->uc.uc_flags);
-> >  	err |=3D __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
-> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> > +
-> >  	if (MSR_TM_ACTIVE(msr)) {
-> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  		/* The ucontext_t passed to userland points to the second
-> >  		 * ucontext_t (for transactional state) with its uc_link ptr.
-> >  		 */
-> > @@ -847,9 +846,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset=
-_t *set,
-> >  					    tsk, ksig->sig, NULL,
-> >  					    (unsigned long)ksig->ka.sa.sa_handler,
-> >  					    msr);
-> > -	} else
-> >  #endif
-> > -	{
-> > +	} else {
-> >  		err |=3D __put_user(0, &frame->uc.uc_link);
-> >  		prepare_setup_sigcontext(tsk, 1);
-> >  		err |=3D setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
->
-> That seems reasonable to me.
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2021-February/223959.html
 
-Thanks for the feedback!
+That means that my implementation of unsafe_copy_from_user() is _now_
+correct _and_ faster. We do not need to call barrier_nospec() since the
+precondition for the 'unsafe' routine is that we called one of the
+helpers to open up a uaccess window earlier.
 
 >
 > Kind regards,
 > Daniel
+>
+> >
+> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+> > ---
+> >  arch/powerpc/kernel/signal_64.c | 14 ++++++++++++--
+> >  1 file changed, 12 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/sign=
+al_64.c
+> > index 817b64e1e409..42fdc4a7ff72 100644
+> > --- a/arch/powerpc/kernel/signal_64.c
+> > +++ b/arch/powerpc/kernel/signal_64.c
+> > @@ -97,6 +97,14 @@ static void prepare_setup_sigcontext(struct task_str=
+uct *tsk, int ctx_has_vsx_re
+> >  #endif /* CONFIG_VSX */
+> >  }
+> > =20
+> > +static inline int get_user_sigset(sigset_t *dst, const sigset_t *src)
+> > +{
+> > +	if (sizeof(sigset_t) <=3D 8)
+> > +		return __get_user(dst->sig[0], &src->sig[0]);
+> > +	else
+> > +		return __copy_from_user(dst, src, sizeof(sigset_t));
+> > +}
+> > +
+> >  /*
+> >   * Set up the sigcontext for the signal frame.
+> >   */
+> > @@ -701,8 +709,9 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user=
+ *, old_ctx,
+> >  	 * We kill the task with a SIGSEGV in this situation.
+> >  	 */
+> > =20
+> > -	if (__copy_from_user(&set, &new_ctx->uc_sigmask, sizeof(set)))
+> > +	if (get_user_sigset(&set, &new_ctx->uc_sigmask))
+> >  		do_exit(SIGSEGV);
+> > +
+> >  	set_current_blocked(&set);
+> > =20
+> >  	if (!user_read_access_begin(new_ctx, ctx_size))
+> > @@ -740,8 +749,9 @@ SYSCALL_DEFINE0(rt_sigreturn)
+> >  	if (!access_ok(uc, sizeof(*uc)))
+> >  		goto badframe;
+> > =20
+> > -	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
+> > +	if (get_user_sigset(&set, &uc->uc_sigmask))
+> >  		goto badframe;
+> > +
+> >  	set_current_blocked(&set);
+> > =20
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > --=20
+> > 2.26.1
 
