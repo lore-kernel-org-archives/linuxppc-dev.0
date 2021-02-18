@@ -2,68 +2,60 @@ Return-Path: <SRS0=eBaR=HU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3083FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 11:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F561C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 12:31:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 065BD64E76
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 11:34:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 065BD64E76
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 88E7F64E28
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 12:31:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88E7F64E28
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DhCL74jtqz3cK0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 22:34:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DhDbR4XJ9z3cJh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Feb 2021 23:31:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=gSDkhirL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=K0SaaRee;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canb.auug.org.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=sfr@canb.auug.org.au; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.a=rsa-sha256 header.s=201702 header.b=gSDkhirL; 
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=K0SaaRee; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DhCKg4yCtz30LZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 22:34:30 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4DhCKd0DFpz9sRN;
- Thu, 18 Feb 2021 22:34:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1613648069;
- bh=VXSHB3U6S26m/drvh4a+pj7NEw/q1khXZJuZz7rXrUE=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=gSDkhirLQjnW2lGMxOvtuxAzGo2ioIuv5CvfP5rSvUVRaJfJ0/pY+PnvMH7yjbMv6
- aiUp6KFRUxGgfE6W7DRqdRsqFVq94lAHCeL/AX/V3XKfqxvxTlwtYlMh9a7EUzLbwr
- QWTYPtWvUvQVU41GTcQpVzX+5OCe0YhyCtvfL0qy8T5PUM6SwWcgcHFR7XHNF+cOU6
- T+L8ztT6lJiIfcbtbX5OBY4xNJMLRnrVMiH8h0Dt2lqyD/0nRVkyaTt5ZOrfwyPR/m
- kCK0dLmoDJfwFaObw1b9SltvI1ODpAIPiZq3vZtpzLk9EzP4a8tReJd+47WXOD9Kja
- I2KjLPCYEMe+A==
-Date: Thu, 18 Feb 2021 22:34:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: manual merge of the devicetree tree with the
- powerpc tree
-Message-ID: <20210218223427.77109d83@canb.auug.org.au>
-In-Reply-To: <874ki9vene.fsf@mpe.ellerman.id.au>
-References: <20210218144815.5673ae6f@canb.auug.org.au>
- <874ki9vene.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DhDb00ckNz30Jg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2021 23:31:07 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4DhDZy2s71z9sRf; Thu, 18 Feb 2021 23:31:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1613651466;
+ bh=xp/ezbo41vIeFD5aIIkklGguj/vXqX5MpA0WPNap3Bw=;
+ h=From:To:Cc:Subject:Date:From;
+ b=K0SaaReeT0MLlOfvdt0Jp9xiDRvfEz0679R2lsn6U12W/65JBPkpnGy5dEi40vVVG
+ 2Zt3rmIGmouPkUkiqt65e6bwxbaJ16Ddzk1iNeBVwXUqiaZcKG8j+rdMJZRJvvEHh5
+ vvTl5cxs4UotBxI6qw35qQhcXpUD0UXvOjNe+wFwGeKcMsi9fLSbn4ZUm7VyD0izF+
+ Pd1QpNcJTxiV5z07Mogc89n4XB2IbSeIAMn5EzV9AT7YFqEpDRgrt7NBymJW1aBMnq
+ ekHl9Ye7ezQaHSdTu2WBjl7hkzhWxGPXrgdLMkObj/QMl+F+/ckrmMH1QXdQ9VwRPB
+ C80y2zxQzxlvA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/4xx: Fix build errors from mfdcr()
+Date: Thu, 18 Feb 2021 23:30:58 +1100
+Message-Id: <20210218123058.748882-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Krv4dNl2WGCiT=lWt4ozErY";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,74 +67,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Rob Herring <robherring2@gmail.com>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: feng.tang@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/Krv4dNl2WGCiT=lWt4ozErY
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+lkp reported a build error in fsp2.o:
 
-Hi Michael,
+  CC      arch/powerpc/platforms/44x/fsp2.o
+  {standard input}:577: Error: unsupported relocation against base
 
-On Thu, 18 Feb 2021 21:44:37 +1100 Michael Ellerman <mpe@ellerman.id.au> wr=
-ote:
->
-> I think it just needs this?
->=20
-> diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
-> index 87e34611f93d..0492ca6003f3 100644
-> --- a/arch/powerpc/kexec/elf_64.c
-> +++ b/arch/powerpc/kexec/elf_64.c
-> @@ -104,7 +104,7 @@ static void *elf64_load(struct kimage *image, char *k=
-ernel_buf,
-> =20
->  	fdt =3D of_kexec_alloc_and_setup_fdt(image, initrd_load_addr,
->  					   initrd_len, cmdline,
-> -					   fdt_totalsize(initial_boot_params));
-> +					   kexec_fdt_totalsize_ppc64(image));
->  	if (!fdt) {
->  		pr_err("Error setting up the new device tree.\n");
->  		ret =3D -EINVAL;
->=20
+Which comes from:
 
-I thought about that, but the last argument to
-of_kexec_alloc_and_setup_fdt() is extra_fdt_size and the allocation
-done is for this:
+  pr_err("GESR0: 0x%08x\n", mfdcr(base + PLB4OPB_GESR0));
 
-fdt_size =3D fdt_totalsize(initial_boot_params) +
-                   (cmdline ? strlen(cmdline) : 0) +
-                   FDT_EXTRA_SPACE +
-                   extra_fdt_size;
+Where our mfdcr() macro is stringifying "base + PLB4OPB_GESR0", and
+passing that to the assembler, which obviously doesn't work.
 
-and kexec_fdt_totalsize_ppc64() also includes
-fdt_totalsize(initial_boot_params) so I was not sure.  Maybe
-kexec_fdt_totalsize_ppc64() needs modification as well?
+The mfdcr() macro already checks that the argument is constant using
+__builtin_constant_p(), and if not calls the out-of-line version of
+mfdcr(). But in this case GCC is smart enough to notice that "base +
+PLB4OPB_GESR0" will be constant, even though it's not something we can
+immediately stringify into a register number.
 
---=20
-Cheers,
-Stephen Rothwell
+Segher pointed out that passing the register number to the inline asm
+as a constant would be better, and in fact it fixes the build error,
+presumably because it gives GCC a chance to resolve the value.
 
---Sig_/Krv4dNl2WGCiT=lWt4ozErY
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+While we're at it, change mtdcr() similarly.
 
------BEGIN PGP SIGNATURE-----
+Reported-by: kernel test robot <lkp@intel.com>
+Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/dcr-native.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmAuUMMACgkQAVBC80lX
-0GzMywf/Vkwbwfcyt2jmZE4boVwAlJBei33m6JzQD/llGlrkrbm66R5c8eGWe32d
-K9z2RTBFuqqc+RAcYHIoh39nP/ENoYXYMlJsxOptGMv3pRGjP5ptI5wJm9BxtZtD
-NJ+zSqPmndklUwNSkzaoZPtbs7d/BpIR+jkLt10w8YMnFeyshBiwPJGcZlhmrUfM
-i9kF3NgF1dQCXWtDValsb0SCVlza1GdMNZGI+g62Ykv2IscKZ1tVfOYgfTZ5DZNZ
-Yfsqs9CaTnLrnQaY8ai0jLplJPojHbZ3CCmInS6/rSo+K3Pa6KpFtYYgXRYLU72E
-Tinhkws2VRmnyOM6lr7w+fhYaaKEqw==
-=Ze8C
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
+index 7141ccea8c94..a92059964579 100644
+--- a/arch/powerpc/include/asm/dcr-native.h
++++ b/arch/powerpc/include/asm/dcr-native.h
+@@ -53,8 +53,8 @@ static inline void mtdcrx(unsigned int reg, unsigned int val)
+ #define mfdcr(rn)						\
+ 	({unsigned int rval;					\
+ 	if (__builtin_constant_p(rn) && rn < 1024)		\
+-		asm volatile("mfdcr %0," __stringify(rn)	\
+-		              : "=r" (rval));			\
++		asm volatile("mfdcr %0, %1" : "=r" (rval)	\
++			      : "n" (rn));			\
+ 	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+ 		rval = mfdcrx(rn);				\
+ 	else							\
+@@ -64,8 +64,8 @@ static inline void mtdcrx(unsigned int reg, unsigned int val)
+ #define mtdcr(rn, v)						\
+ do {								\
+ 	if (__builtin_constant_p(rn) && rn < 1024)		\
+-		asm volatile("mtdcr " __stringify(rn) ",%0"	\
+-			      : : "r" (v)); 			\
++		asm volatile("mtdcr %0, %1"			\
++			      : : "n" (rn), "r" (v));		\
+ 	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+ 		mtdcrx(rn, v);					\
+ 	else							\
+-- 
+2.25.1
 
---Sig_/Krv4dNl2WGCiT=lWt4ozErY--
