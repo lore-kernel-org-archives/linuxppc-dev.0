@@ -2,76 +2,63 @@ Return-Path: <SRS0=YiAJ=HX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BA0DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:16:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8D99C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:50:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1886264EB3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:16:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1886264EB3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 303B464DEC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:50:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 303B464DEC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkBmW436wz3cQC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:16:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkCWh5BjYz3cKT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:50:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=bMuBhHK7;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=G/d7RTcg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=210.131.2.91;
- helo=conssluserg-06.nifty.com; envelope-from=masahiroy@kernel.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=bMuBhHK7; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.a=rsa-sha256 header.s=default header.b=G/d7RTcg; 
  dkim-atps=neutral
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DkBm03WFyz30M8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 04:15:44 +1100 (AEDT)
-Received: from mail-oi1-f176.google.com (mail-oi1-f176.google.com
- [209.85.167.176]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id 11LHFQrZ029418
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 02:15:27 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com 11LHFQrZ029418
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1613927727;
- bh=+E+JRgKeitH5eFBx4Z/rh8FyWasix1MSTNAEXqizMQU=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=bMuBhHK7G0jarpKwNRXWEMYT5MtPlzuF5j6jQhR0vKMbsbDlQYSfL7y4bC3BtKc+c
- +x9fwA0r9GMAlg25UIIjgntPPxvjQKVJXrieXIEBqLwSYbUOMLRJs/BBjg9S5lDoJe
- YFO+UWc6yok8wxWw5YHFcsaU+oWdY9hhIKQUV+1Vo8/hPo5kHU17wmhY2kmMkthXx1
- Aac2tia/pqlRCEWpFaoNZu15eFP3XovGAJdZrNhdopztTSxTvNrTvSYUa/Wc0pUBjc
- 49b1LTdcahp1zJ37gWLuAPMixQeM/MK89EqDPRXF7Syn76qh20IGYMFKLKVDrjW2PT
- Ro+SpRajqEwHw==
-X-Nifty-SrcIP: [209.85.167.176]
-Received: by mail-oi1-f176.google.com with SMTP id 12so8884846oij.6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 09:15:27 -0800 (PST)
-X-Gm-Message-State: AOAM533460o1CzGVlO+H9EXk/InbpLW+XK1UebRVde452dRjOWh+L/PN
- sJmCPg8JnxKBwFprbT1aITiFz2L2B/3adzxg7q0=
-X-Google-Smtp-Source: ABdhPJxczjkYYwfFedULPavyehBQNlTo4yyE2oDz3aAz68ppY9EMF/VKLUDXMsDnW+fSNSL17VJtx2kpM0VX1zgRRK4=
-X-Received: by 2002:a17:90a:609:: with SMTP id
- j9mr19512007pjj.198.1613927724902; 
- Sun, 21 Feb 2021 09:15:24 -0800 (PST)
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DkCW85SzFz30Mh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 04:49:40 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
+ [73.42.176.67])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 87CB820B57A1;
+ Sun, 21 Feb 2021 09:49:38 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 87CB820B57A1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1613929779;
+ bh=qa+NJP4aqiYfDfVBgbCgEyvzbYLV5ECOdj7x4WIL6oA=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=G/d7RTcg/ory144srJ3zFNOHdVnpVuPjh+/Fz/2/AJljEm7AI8MwD+CZUPeLtWz/b
+ 6sr1vAA3A1WwA9W1r/hTAIEQUzR15aasFMemQzfHnyseqeXrdhY8MfukrJnrAZXnp4
+ EcXVwjlzwkOxnjftqRPQTp6FxkBX1bs0I271mpmM=
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
+ takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
+ joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au,
+ sfr@canb.auug.org.au
+Subject: [PATCH v19 04/13] x86: Use ELF fields defined in 'struct kimage'
+Date: Sun, 21 Feb 2021 09:49:21 -0800
+Message-Id: <20210221174930.27324-5-nramas@linux.microsoft.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210221174930.27324-1-nramas@linux.microsoft.com>
+References: <20210221174930.27324-1-nramas@linux.microsoft.com>
 MIME-Version: 1.0
-References: <20210215004823.440102-1-masahiroy@kernel.org>
-In-Reply-To: <20210215004823.440102-1-masahiroy@kernel.org>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Mon, 22 Feb 2021 02:14:47 +0900
-X-Gmail-Original-Message-ID: <CAK7LNATvCAyHSUQNTdSck3JM1MfHNFcanjn0i4835okWE9Km5w@mail.gmail.com>
-Message-ID: <CAK7LNATvCAyHSUQNTdSck3JM1MfHNFcanjn0i4835okWE9Km5w@mail.gmail.com>
-Subject: Re: [PATCH 1/2] arch: syscalls: add missing FORCE and fix 'targets'
- to make if_changed work
-To: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,48 +70,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Linux-sh list <linux-sh@vger.kernel.org>, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
- X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: mark.rutland@arm.com, tao.li@vivo.com, paulus@samba.org,
+ vincenzo.frascino@arm.com, frowand.list@gmail.com, sashal@kernel.org,
+ masahiroy@kernel.org, jmorris@namei.org, allison@lohutok.net, serge@hallyn.com,
+ devicetree@vger.kernel.org, pasha.tatashin@soleen.com,
+ prsriva@linux.microsoft.com, hsinyi@chromium.org,
+ linux-arm-kernel@lists.infradead.org, christophe.leroy@c-s.fr,
+ mbrugger@suse.com, balajib@linux.microsoft.com, dmitry.kasatkin@gmail.com,
+ linux-kernel@vger.kernel.org, james.morse@arm.com,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 15, 2021 at 9:50 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
->
-> The rules in these Makefiles cannot detect the command line change
-> because the prerequisite 'FORCE' is missing.
->
-> Adding 'FORCE' will result in the headers being rebuilt every time
-> because the 'targets' additions are also wrong; the file paths in
-> 'targets' must be relative to the current Makefile.
->
-> Fix all of them so the if_changed rules work correctly.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+ELF related fields elf_headers, elf_headers_sz, and elf_load_addr
+have been moved from 'struct kimage_arch' to 'struct kimage'.
 
+Use the ELF fields defined in 'struct kimage'.
 
-Both applied to linux-kbuild.
+Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Rob Herring <robh@kernel.org>
+Fixes: 33488dc4d61f ("of: Add a common kexec FDT setup function")
+Reported-by: kernel test robot <lkp@intel.com>
+---
+ arch/x86/include/asm/kexec.h       |  5 -----
+ arch/x86/kernel/crash.c            | 14 +++++++-------
+ arch/x86/kernel/kexec-bzimage64.c  |  2 +-
+ arch/x86/kernel/machine_kexec_64.c |  4 ++--
+ 4 files changed, 10 insertions(+), 15 deletions(-)
 
-
+diff --git a/arch/x86/include/asm/kexec.h b/arch/x86/include/asm/kexec.h
+index 6802c59e8252..0a6e34b07017 100644
+--- a/arch/x86/include/asm/kexec.h
++++ b/arch/x86/include/asm/kexec.h
+@@ -150,11 +150,6 @@ struct kimage_arch {
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+-
+-	/* Core ELF header buffer */
+-	void *elf_headers;
+-	unsigned long elf_headers_sz;
+-	unsigned long elf_load_addr;
+ };
+ #endif /* CONFIG_X86_32 */
+ 
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index a8f3af257e26..9d0722fb8842 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -323,8 +323,8 @@ static int memmap_exclude_ranges(struct kimage *image, struct crash_mem *cmem,
+ 	cmem->nr_ranges = 1;
+ 
+ 	/* Exclude elf header region */
+-	start = image->arch.elf_load_addr;
+-	end = start + image->arch.elf_headers_sz - 1;
++	start = image->elf_load_addr;
++	end = start + image->elf_headers_sz - 1;
+ 	return crash_exclude_mem_range(cmem, start, end);
+ }
+ 
+@@ -407,20 +407,20 @@ int crash_load_segments(struct kimage *image)
+ 	if (ret)
+ 		return ret;
+ 
+-	image->arch.elf_headers = kbuf.buffer;
+-	image->arch.elf_headers_sz = kbuf.bufsz;
++	image->elf_headers = kbuf.buffer;
++	image->elf_headers_sz = kbuf.bufsz;
+ 
+ 	kbuf.memsz = kbuf.bufsz;
+ 	kbuf.buf_align = ELF_CORE_HEADER_ALIGN;
+ 	kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+ 	ret = kexec_add_buffer(&kbuf);
+ 	if (ret) {
+-		vfree((void *)image->arch.elf_headers);
++		vfree((void *)image->elf_headers);
+ 		return ret;
+ 	}
+-	image->arch.elf_load_addr = kbuf.mem;
++	image->elf_load_addr = kbuf.mem;
+ 	pr_debug("Loaded ELF headers at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+-		 image->arch.elf_load_addr, kbuf.bufsz, kbuf.bufsz);
++		 image->elf_load_addr, kbuf.bufsz, kbuf.bufsz);
+ 
+ 	return ret;
+ }
+diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
+index ce831f9448e7..170d0fd68b1f 100644
+--- a/arch/x86/kernel/kexec-bzimage64.c
++++ b/arch/x86/kernel/kexec-bzimage64.c
+@@ -75,7 +75,7 @@ static int setup_cmdline(struct kimage *image, struct boot_params *params,
+ 
+ 	if (image->type == KEXEC_TYPE_CRASH) {
+ 		len = sprintf(cmdline_ptr,
+-			"elfcorehdr=0x%lx ", image->arch.elf_load_addr);
++			"elfcorehdr=0x%lx ", image->elf_load_addr);
+ 	}
+ 	memcpy(cmdline_ptr + len, cmdline, cmdline_len);
+ 	cmdline_len += len;
+diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
+index a29a44a98e5b..055c18a6f7bf 100644
+--- a/arch/x86/kernel/machine_kexec_64.c
++++ b/arch/x86/kernel/machine_kexec_64.c
+@@ -402,8 +402,8 @@ void machine_kexec(struct kimage *image)
+ #ifdef CONFIG_KEXEC_FILE
+ void *arch_kexec_kernel_image_load(struct kimage *image)
+ {
+-	vfree(image->arch.elf_headers);
+-	image->arch.elf_headers = NULL;
++	vfree(image->elf_headers);
++	image->elf_headers = NULL;
+ 
+ 	if (!image->fops || !image->fops->load)
+ 		return ERR_PTR(-ENOEXEC);
 -- 
-Best Regards
-Masahiro Yamada
+2.30.0
+
