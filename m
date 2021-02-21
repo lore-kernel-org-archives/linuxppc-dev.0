@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E135AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E33AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:53:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DFE164EE6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:53:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DFE164EE6
+	by mail.kernel.org (Postfix) with ESMTPS id 198BB64EE9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:53:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 198BB64EE9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkCb16njmz3dJX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:53:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkCbT5bHtz3dP5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:53:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=rfc7uF9s;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=WFt1eJq5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
@@ -29,31 +29,31 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=rfc7uF9s; 
+ header.a=rsa-sha256 header.s=default header.b=WFt1eJq5; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DkCWB2K35z30QG
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DkCWB50zlz30QZ
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 04:49:42 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id E597020B57A3;
- Sun, 21 Feb 2021 09:49:39 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com E597020B57A3
+ by linux.microsoft.com (Postfix) with ESMTPSA id 4AB8620B57A6;
+ Sun, 21 Feb 2021 09:49:41 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 4AB8620B57A6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1613929780;
- bh=OunIuY3a6UzaNP21VBx43v+PHDvj8j9lvm4EchyZIGU=;
+ s=default; t=1613929781;
+ bh=UcSmGozOexENegIGUGz3qQicWRTEGAasLQOBTUtlc0U=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=rfc7uF9szUxAkIoP4QqLgKmwmCnK+aDA1cNKo/LtnMb9I+6tOFLlLQAGZMfB+T84p
- pmOzToQFJfdbIgdrfyiE+VWfSwB7JXosvwKTWX7DVOJyGqvV+xvnTthUKAwgWM7tee
- 0Qmb9CMISe2l6HiBrc0YAK/QMCq3NJdtFMkR8sjw=
+ b=WFt1eJq5Efwh83btLCIi59YgKIj0aHOdXfGC49i6llkIi24mC9rLUoO1gf0lmVxHD
+ Ux+7g7zJVM62aoidzdGCuDwRtQaTe9Szy5FWsmfQP+X+PTrY+etNB9PNzqAlQMkmRM
+ apoBOXTUevm9INOZAoMQWIxZEoyychOf/AkNHOLU=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au,
  sfr@canb.auug.org.au
-Subject: [PATCH v19 06/13] arm64: Use common of_kexec_alloc_and_setup_fdt()
-Date: Sun, 21 Feb 2021 09:49:23 -0800
-Message-Id: <20210221174930.27324-7-nramas@linux.microsoft.com>
+Subject: [PATCH v19 08/13] powerpc: Move ima buffer fields to struct kimage
+Date: Sun, 21 Feb 2021 09:49:25 -0800
+Message-Id: <20210221174930.27324-9-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210221174930.27324-1-nramas@linux.microsoft.com>
 References: <20210221174930.27324-1-nramas@linux.microsoft.com>
@@ -83,249 +83,164 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rob Herring <robh@kernel.org>
+The fields ima_buffer_addr and ima_buffer_size in "struct kimage_arch"
+for powerpc are used to carry forward the IMA measurement list across
+kexec system call.  These fields are not architecture specific, but are
+currently limited to powerpc.
 
-The code for setting up the /chosen node in the device tree
-and updating the memory reservation for the next kernel has been
-moved to of_kexec_alloc_and_setup_fdt() defined in "drivers/of/kexec.c".
+arch_ima_add_kexec_buffer() defined in "arch/powerpc/kexec/ima.c"
+sets ima_buffer_addr and ima_buffer_size for the kexec system call.
+This function does not have architecture specific code, but is
+currently limited to powerpc.
 
-Use the common of_kexec_alloc_and_setup_fdt() to setup the device tree
-and update the memory reservation for kexec for arm64.
+Move ima_buffer_addr and ima_buffer_size to "struct kimage".
+Set ima_buffer_addr and ima_buffer_size in ima_add_kexec_buffer()
+in security/integrity/ima/ima_kexec.c.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
+Co-developed-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
 Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Suggested-by: Will Deacon <will@kernel.org>
 Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
- arch/arm64/kernel/machine_kexec_file.c | 180 ++-----------------------
- 1 file changed, 8 insertions(+), 172 deletions(-)
+ arch/powerpc/include/asm/ima.h     |  3 ---
+ arch/powerpc/include/asm/kexec.h   |  5 -----
+ arch/powerpc/kexec/ima.c           | 29 ++++++-----------------------
+ include/linux/kexec.h              |  3 +++
+ security/integrity/ima/ima_kexec.c |  8 ++------
+ 5 files changed, 11 insertions(+), 37 deletions(-)
 
-diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index 5553de3d401a..63634b4d72c1 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -15,23 +15,12 @@
- #include <linux/kexec.h>
- #include <linux/libfdt.h>
- #include <linux/memblock.h>
-+#include <linux/of.h>
- #include <linux/of_fdt.h>
--#include <linux/random.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
- #include <linux/vmalloc.h>
--#include <asm/byteorder.h>
+diff --git a/arch/powerpc/include/asm/ima.h b/arch/powerpc/include/asm/ima.h
+index ead488cf3981..51f64fd06c19 100644
+--- a/arch/powerpc/include/asm/ima.h
++++ b/arch/powerpc/include/asm/ima.h
+@@ -14,9 +14,6 @@ static inline void remove_ima_buffer(void *fdt, int chosen_node) {}
+ #endif
+ 
+ #ifdef CONFIG_IMA_KEXEC
+-int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
+-			      size_t size);
 -
--/* relevant device tree properties */
--#define FDT_PROP_KEXEC_ELFHDR	"linux,elfcorehdr"
--#define FDT_PROP_MEM_RANGE	"linux,usable-memory-range"
--#define FDT_PROP_INITRD_START	"linux,initrd-start"
--#define FDT_PROP_INITRD_END	"linux,initrd-end"
--#define FDT_PROP_BOOTARGS	"bootargs"
--#define FDT_PROP_KASLR_SEED	"kaslr-seed"
--#define FDT_PROP_RNG_SEED	"rng-seed"
--#define RNG_SEED_SIZE		128
+ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node);
+ #else
+ static inline int setup_ima_buffer(const struct kimage *image, void *fdt,
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index c483c2cf284e..4d2c9b5087e1 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -108,11 +108,6 @@ struct kimage_arch {
+ 	unsigned long backup_start;
+ 	void *backup_buf;
+ 	void *fdt;
+-
+-#ifdef CONFIG_IMA_KEXEC
+-	phys_addr_t ima_buffer_addr;
+-	size_t ima_buffer_size;
+-#endif
+ };
  
- const struct kexec_file_ops * const kexec_file_loaders[] = {
- 	&kexec_image_ops,
-@@ -40,7 +29,7 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
- 
- int arch_kimage_file_post_load_cleanup(struct kimage *image)
- {
--	vfree(image->arch.dtb);
-+	kvfree(image->arch.dtb);
- 	image->arch.dtb = NULL;
- 
- 	vfree(image->elf_headers);
-@@ -50,162 +39,6 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
- 	return kexec_image_post_load_cleanup_default(image);
+ char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
+diff --git a/arch/powerpc/kexec/ima.c b/arch/powerpc/kexec/ima.c
+index 720e50e490b6..ed38125e2f87 100644
+--- a/arch/powerpc/kexec/ima.c
++++ b/arch/powerpc/kexec/ima.c
+@@ -128,23 +128,6 @@ void remove_ima_buffer(void *fdt, int chosen_node)
  }
  
--static int setup_dtb(struct kimage *image,
--		     unsigned long initrd_load_addr, unsigned long initrd_len,
--		     char *cmdline, void *dtb)
+ #ifdef CONFIG_IMA_KEXEC
+-/**
+- * arch_ima_add_kexec_buffer - do arch-specific steps to add the IMA buffer
+- *
+- * Architectures should use this function to pass on the IMA buffer
+- * information to the next kernel.
+- *
+- * Return: 0 on success, negative errno on error.
+- */
+-int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
+-			      size_t size)
 -{
--	int off, ret;
--
--	ret = fdt_path_offset(dtb, "/chosen");
--	if (ret < 0)
--		goto out;
--
--	off = ret;
--
--	ret = fdt_delprop(dtb, off, FDT_PROP_KEXEC_ELFHDR);
--	if (ret && ret != -FDT_ERR_NOTFOUND)
--		goto out;
--	ret = fdt_delprop(dtb, off, FDT_PROP_MEM_RANGE);
--	if (ret && ret != -FDT_ERR_NOTFOUND)
--		goto out;
--
--	if (image->type == KEXEC_TYPE_CRASH) {
--		/* add linux,elfcorehdr */
--		ret = fdt_appendprop_addrrange(dtb, 0, off,
--				FDT_PROP_KEXEC_ELFHDR,
--				image->elf_load_addr,
--				image->elf_headers_sz);
--		if (ret)
--			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
--
--		/* add linux,usable-memory-range */
--		ret = fdt_appendprop_addrrange(dtb, 0, off,
--				FDT_PROP_MEM_RANGE,
--				crashk_res.start,
--				crashk_res.end - crashk_res.start + 1);
--		if (ret)
--			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
--	}
--
--	/* add bootargs */
--	if (cmdline) {
--		ret = fdt_setprop_string(dtb, off, FDT_PROP_BOOTARGS, cmdline);
--		if (ret)
--			goto out;
--	} else {
--		ret = fdt_delprop(dtb, off, FDT_PROP_BOOTARGS);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--	}
--
--	/* add initrd-* */
--	if (initrd_load_addr) {
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_INITRD_START,
--				      initrd_load_addr);
--		if (ret)
--			goto out;
--
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_INITRD_END,
--				      initrd_load_addr + initrd_len);
--		if (ret)
--			goto out;
--	} else {
--		ret = fdt_delprop(dtb, off, FDT_PROP_INITRD_START);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--
--		ret = fdt_delprop(dtb, off, FDT_PROP_INITRD_END);
--		if (ret && (ret != -FDT_ERR_NOTFOUND))
--			goto out;
--	}
--
--	/* add kaslr-seed */
--	ret = fdt_delprop(dtb, off, FDT_PROP_KASLR_SEED);
--	if (ret == -FDT_ERR_NOTFOUND)
--		ret = 0;
--	else if (ret)
--		goto out;
--
--	if (rng_is_initialized()) {
--		u64 seed = get_random_u64();
--		ret = fdt_setprop_u64(dtb, off, FDT_PROP_KASLR_SEED, seed);
--		if (ret)
--			goto out;
--	} else {
--		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
--				FDT_PROP_KASLR_SEED);
--	}
--
--	/* add rng-seed */
--	if (rng_is_initialized()) {
--		void *rng_seed;
--		ret = fdt_setprop_placeholder(dtb, off, FDT_PROP_RNG_SEED,
--				RNG_SEED_SIZE, &rng_seed);
--		if (ret)
--			goto out;
--		get_random_bytes(rng_seed, RNG_SEED_SIZE);
--	} else {
--		pr_notice("RNG is not initialised: omitting \"%s\" property\n",
--				FDT_PROP_RNG_SEED);
--	}
--
--out:
--	if (ret)
--		return (ret == -FDT_ERR_NOSPACE) ? -ENOMEM : -EINVAL;
+-	image->arch.ima_buffer_addr = load_addr;
+-	image->arch.ima_buffer_size = size;
 -
 -	return 0;
 -}
 -
--/*
-- * More space needed so that we can add initrd, bootargs, kaslr-seed,
-- * rng-seed, userable-memory-range and elfcorehdr.
-- */
--#define DTB_EXTRA_SPACE 0x1000
--
--static int create_dtb(struct kimage *image,
--		      unsigned long initrd_load_addr, unsigned long initrd_len,
--		      char *cmdline, void **dtb)
--{
--	void *buf;
--	size_t buf_size;
--	size_t cmdline_len;
--	int ret;
--
--	cmdline_len = cmdline ? strlen(cmdline) : 0;
--	buf_size = fdt_totalsize(initial_boot_params)
--			+ cmdline_len + DTB_EXTRA_SPACE;
--
--	for (;;) {
--		buf = vmalloc(buf_size);
--		if (!buf)
--			return -ENOMEM;
--
--		/* duplicate a device tree blob */
--		ret = fdt_open_into(initial_boot_params, buf, buf_size);
--		if (ret)
--			return -EINVAL;
--
--		ret = setup_dtb(image, initrd_load_addr, initrd_len,
--				cmdline, buf);
--		if (ret) {
--			vfree(buf);
--			if (ret == -ENOMEM) {
--				/* unlikely, but just in case */
--				buf_size += DTB_EXTRA_SPACE;
--				continue;
--			} else {
--				return ret;
--			}
--		}
--
--		/* trim it */
--		fdt_pack(buf);
--		*dtb = buf;
--
--		return 0;
--	}
--}
--
- static int prepare_elf_headers(void **addr, unsigned long *sz)
+ static int write_number(void *p, u64 value, int cells)
  {
- 	struct crash_mem *cmem;
-@@ -312,12 +145,15 @@ int load_other_segments(struct kimage *image,
- 	}
+ 	if (cells == 1) {
+@@ -180,7 +163,7 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	u8 value[16];
  
- 	/* load dtb */
--	ret = create_dtb(image, initrd_load_addr, initrd_len, cmdline, &dtb);
--	if (ret) {
-+	dtb = of_kexec_alloc_and_setup_fdt(image, initrd_load_addr,
-+					   initrd_len, cmdline, 0);
-+	if (!dtb) {
- 		pr_err("Preparing for new dtb failed\n");
- 		goto out_err;
- 	}
+ 	remove_ima_buffer(fdt, chosen_node);
+-	if (!image->arch.ima_buffer_size)
++	if (!image->ima_buffer_size)
+ 		return 0;
  
-+	/* trim it */
-+	fdt_pack(dtb);
- 	dtb_len = fdt_totalsize(dtb);
- 	kbuf.buffer = dtb;
- 	kbuf.bufsz = dtb_len;
-@@ -341,6 +177,6 @@ int load_other_segments(struct kimage *image,
+ 	ret = get_addr_size_cells(&addr_cells, &size_cells);
+@@ -192,11 +175,11 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	if (entry_size > sizeof(value))
+ 		return -EINVAL;
  
- out_err:
- 	image->nr_segments = orig_segments;
--	vfree(dtb);
-+	kvfree(dtb);
- 	return ret;
+-	ret = write_number(value, image->arch.ima_buffer_addr, addr_cells);
++	ret = write_number(value, image->ima_buffer_addr, addr_cells);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = write_number(value + 4 * addr_cells, image->arch.ima_buffer_size,
++	ret = write_number(value + 4 * addr_cells, image->ima_buffer_size,
+ 			   size_cells);
+ 	if (ret)
+ 		return ret;
+@@ -206,13 +189,13 @@ int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node)
+ 	if (ret < 0)
+ 		return -EINVAL;
+ 
+-	ret = fdt_add_mem_rsv(fdt, image->arch.ima_buffer_addr,
+-			      image->arch.ima_buffer_size);
++	ret = fdt_add_mem_rsv(fdt, image->ima_buffer_addr,
++			      image->ima_buffer_size);
+ 	if (ret)
+ 		return -EINVAL;
+ 
+ 	pr_debug("IMA buffer at 0x%llx, size = 0x%zx\n",
+-		 image->arch.ima_buffer_addr, image->arch.ima_buffer_size);
++		 image->ima_buffer_addr, image->ima_buffer_size);
+ 
+ 	return 0;
  }
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 0208fe8f8e42..c3e2a2af1aea 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -304,6 +304,9 @@ struct kimage {
+ #ifdef CONFIG_IMA_KEXEC
+ 	/* Virtual address of IMA measurement buffer for kexec syscall */
+ 	void *ima_buffer;
++
++	phys_addr_t ima_buffer_addr;
++	size_t ima_buffer_size;
+ #endif
+ 
+ 	/* Core ELF header buffer */
+diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
+index e29bea3dd4cc..8b1a3d50c49c 100644
+--- a/security/integrity/ima/ima_kexec.c
++++ b/security/integrity/ima/ima_kexec.c
+@@ -123,12 +123,8 @@ void ima_add_kexec_buffer(struct kimage *image)
+ 		return;
+ 	}
+ 
+-	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
+-	if (ret) {
+-		pr_err("Error passing over kexec measurement buffer.\n");
+-		return;
+-	}
+-
++	image->ima_buffer_addr = kbuf.mem;
++	image->ima_buffer_size = kexec_segment_size;
+ 	image->ima_buffer = kexec_buffer;
+ 
+ 	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
 -- 
 2.30.0
 
