@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 250A8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:24:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADEEFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:24:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D87464EEC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:24:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D87464EEC
+	by mail.kernel.org (Postfix) with ESMTPS id 1EF2D64E86
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:24:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EF2D64E86
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DjnfQ3PWLz3cPP
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 12:24:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Djnfl64Xqz3cZ6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 12:24:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=codefail.de (client-ip=68.65.122.27;
  helo=mta-07-4.privateemail.com; envelope-from=cmr@codefail.de;
@@ -28,19 +28,19 @@ Received: from MTA-07-4.privateemail.com (mta-07-4.privateemail.com
  [68.65.122.27])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Djnf40KwTz30Mq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Djnf40Q39z30N0
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 12:24:09 +1100 (AEDT)
 Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
- by MTA-07.privateemail.com (Postfix) with ESMTP id 7479460045;
- Sat, 20 Feb 2021 20:24:06 -0500 (EST)
+ by MTA-07.privateemail.com (Postfix) with ESMTP id 5E97F6004D;
+ Sat, 20 Feb 2021 20:24:07 -0500 (EST)
 Received: from oc8246131445.ibm.com (unknown [10.20.151.213])
- by MTA-07.privateemail.com (Postfix) with ESMTPA id 2DC0060047;
- Sun, 21 Feb 2021 01:24:06 +0000 (UTC)
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id 21A9F60049;
+ Sun, 21 Feb 2021 01:24:07 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 01/10] powerpc/uaccess: Add unsafe_copy_from_user
-Date: Sat, 20 Feb 2021 19:23:52 -0600
-Message-Id: <20210221012401.22328-2-cmr@codefail.de>
+Subject: [PATCH v6 04/10] powerpc: Reference parameter in MSR_TM_ACTIVE() macro
+Date: Sat, 20 Feb 2021 19:23:55 -0600
+Message-Id: <20210221012401.22328-5-cmr@codefail.de>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210221012401.22328-1-cmr@codefail.de>
 References: <20210221012401.22328-1-cmr@codefail.de>
@@ -63,29 +63,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Just wrap __copy_tofrom_user() for the usual 'unsafe' pattern which
-accepts a label to goto on error.
+Unlike the other MSR_TM_* macros, MSR_TM_ACTIVE does not reference or
+use its parameter unless CONFIG_PPC_TRANSACTIONAL_MEM is defined. This
+causes an 'unused variable' compile warning unless the variable is also
+guarded with CONFIG_PPC_TRANSACTIONAL_MEM.
+
+Reference but do nothing with the argument in the macro to avoid a
+potential compile warning.
 
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 Reviewed-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/uaccess.h | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/include/asm/reg.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 78e2a3990eab..33b2de642120 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -487,6 +487,9 @@ user_write_access_begin(const void __user *ptr, size_t len)
- #define unsafe_put_user(x, p, e) \
- 	__unsafe_put_user_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index da103e92c112..1be20bc8dce2 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -124,7 +124,7 @@
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
+ #else
+-#define MSR_TM_ACTIVE(x) 0
++#define MSR_TM_ACTIVE(x) ((void)(x), 0)
+ #endif
  
-+#define unsafe_copy_from_user(d, s, l, e) \
-+	unsafe_op_wrap(__copy_tofrom_user((__force void __user *)d, s, l), e)
-+
- #define unsafe_copy_to_user(d, s, l, e) \
- do {									\
- 	u8 __user *_dst = (u8 __user *)(d);				\
+ #if defined(CONFIG_PPC_BOOK3S_64)
 -- 
 2.26.1
 
