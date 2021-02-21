@@ -2,52 +2,76 @@ Return-Path: <SRS0=YiAJ=HX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A50BC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:27:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BA0DC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:16:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B808164EEE
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 01:27:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B808164EEE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id 1886264EB3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:16:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1886264EB3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Djnjz3KFpz3dnG
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 12:27:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=68.65.122.27;
- helo=mta-07-4.privateemail.com; envelope-from=cmr@codefail.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkBmW436wz3cQC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:16:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=bMuBhHK7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.91;
+ helo=conssluserg-06.nifty.com; envelope-from=masahiroy@kernel.org;
  receiver=<UNKNOWN>)
-Received: from MTA-07-4.privateemail.com (mta-07-4.privateemail.com
- [68.65.122.27])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=bMuBhHK7; 
+ dkim-atps=neutral
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Djnf40rcLz30Q6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 12:24:09 +1100 (AEDT)
-Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
- by MTA-07.privateemail.com (Postfix) with ESMTP id E8F1F6004F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2021 20:24:07 -0500 (EST)
-Received: from oc8246131445.ibm.com (unknown [10.20.151.213])
- by MTA-07.privateemail.com (Postfix) with ESMTPA id C3D8460049
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 01:24:07 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 06/10] powerpc/signal64: Replace setup_sigcontext() w/
- unsafe_setup_sigcontext()
-Date: Sat, 20 Feb 2021 19:23:57 -0600
-Message-Id: <20210221012401.22328-7-cmr@codefail.de>
-X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20210221012401.22328-1-cmr@codefail.de>
-References: <20210221012401.22328-1-cmr@codefail.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DkBm03WFyz30M8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 04:15:44 +1100 (AEDT)
+Received: from mail-oi1-f176.google.com (mail-oi1-f176.google.com
+ [209.85.167.176]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id 11LHFQrZ029418
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 02:15:27 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com 11LHFQrZ029418
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1613927727;
+ bh=+E+JRgKeitH5eFBx4Z/rh8FyWasix1MSTNAEXqizMQU=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=bMuBhHK7G0jarpKwNRXWEMYT5MtPlzuF5j6jQhR0vKMbsbDlQYSfL7y4bC3BtKc+c
+ +x9fwA0r9GMAlg25UIIjgntPPxvjQKVJXrieXIEBqLwSYbUOMLRJs/BBjg9S5lDoJe
+ YFO+UWc6yok8wxWw5YHFcsaU+oWdY9hhIKQUV+1Vo8/hPo5kHU17wmhY2kmMkthXx1
+ Aac2tia/pqlRCEWpFaoNZu15eFP3XovGAJdZrNhdopztTSxTvNrTvSYUa/Wc0pUBjc
+ 49b1LTdcahp1zJ37gWLuAPMixQeM/MK89EqDPRXF7Syn76qh20IGYMFKLKVDrjW2PT
+ Ro+SpRajqEwHw==
+X-Nifty-SrcIP: [209.85.167.176]
+Received: by mail-oi1-f176.google.com with SMTP id 12so8884846oij.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 09:15:27 -0800 (PST)
+X-Gm-Message-State: AOAM533460o1CzGVlO+H9EXk/InbpLW+XK1UebRVde452dRjOWh+L/PN
+ sJmCPg8JnxKBwFprbT1aITiFz2L2B/3adzxg7q0=
+X-Google-Smtp-Source: ABdhPJxczjkYYwfFedULPavyehBQNlTo4yyE2oDz3aAz68ppY9EMF/VKLUDXMsDnW+fSNSL17VJtx2kpM0VX1zgRRK4=
+X-Received: by 2002:a17:90a:609:: with SMTP id
+ j9mr19512007pjj.198.1613927724902; 
+ Sun, 21 Feb 2021 09:15:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+References: <20210215004823.440102-1-masahiroy@kernel.org>
+In-Reply-To: <20210215004823.440102-1-masahiroy@kernel.org>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Mon, 22 Feb 2021 02:14:47 +0900
+X-Gmail-Original-Message-ID: <CAK7LNATvCAyHSUQNTdSck3JM1MfHNFcanjn0i4835okWE9Km5w@mail.gmail.com>
+Message-ID: <CAK7LNATvCAyHSUQNTdSck3JM1MfHNFcanjn0i4835okWE9Km5w@mail.gmail.com>
+Subject: Re: [PATCH 1/2] arch: syscalls: add missing FORCE and fix 'targets'
+ to make if_changed work
+To: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,171 +83,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
+ X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously setup_sigcontext() performed a costly KUAP switch on every
-uaccess operation. These repeated uaccess switches cause a significant
-drop in signal handling performance.
+On Mon, Feb 15, 2021 at 9:50 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> The rules in these Makefiles cannot detect the command line change
+> because the prerequisite 'FORCE' is missing.
+>
+> Adding 'FORCE' will result in the headers being rebuilt every time
+> because the 'targets' additions are also wrong; the file paths in
+> 'targets' must be relative to the current Makefile.
+>
+> Fix all of them so the if_changed rules work correctly.
+>
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Rewrite setup_sigcontext() to assume that a userspace write access window
-is open by replacing all uaccess functions with their 'unsafe' versions.
-Modify the callers to first open, call unsafe_setup_sigcontext() and
-then close the uaccess window.
 
-Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
----
- arch/powerpc/kernel/signal_64.c | 71 ++++++++++++++++++++-------------
- 1 file changed, 44 insertions(+), 27 deletions(-)
+Both applied to linux-kbuild.
 
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index bd8d210c9115..3faaa736ed62 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -101,9 +101,13 @@ static void prepare_setup_sigcontext(struct task_struct *tsk)
-  * Set up the sigcontext for the signal frame.
-  */
- 
--static long setup_sigcontext(struct sigcontext __user *sc,
--		struct task_struct *tsk, int signr, sigset_t *set,
--		unsigned long handler, int ctx_has_vsx_region)
-+#define unsafe_setup_sigcontext(sc, tsk, signr, set, handler,		\
-+				ctx_has_vsx_region, e)			\
-+	unsafe_op_wrap(__unsafe_setup_sigcontext(sc, tsk, signr, set,	\
-+			handler, ctx_has_vsx_region), e)
-+static long notrace __unsafe_setup_sigcontext(struct sigcontext __user *sc,
-+					struct task_struct *tsk, int signr, sigset_t *set,
-+					unsigned long handler, int ctx_has_vsx_region)
- {
- 	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
- 	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
-@@ -118,20 +122,19 @@ static long setup_sigcontext(struct sigcontext __user *sc,
- #endif
- 	struct pt_regs *regs = tsk->thread.regs;
- 	unsigned long msr = regs->msr;
--	long err = 0;
- 	/* Force usr to alway see softe as 1 (interrupts enabled) */
- 	unsigned long softe = 0x1;
- 
- 	BUG_ON(tsk != current);
- 
- #ifdef CONFIG_ALTIVEC
--	err |= __put_user(v_regs, &sc->v_regs);
-+	unsafe_put_user(v_regs, &sc->v_regs, efault_out);
- 
- 	/* save altivec registers */
- 	if (tsk->thread.used_vr) {
- 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
--		err |= __copy_to_user(v_regs, &tsk->thread.vr_state,
--				      33 * sizeof(vector128));
-+		unsafe_copy_to_user(v_regs, &tsk->thread.vr_state,
-+				    33 * sizeof(vector128), efault_out);
- 		/* set MSR_VEC in the MSR value in the frame to indicate that sc->v_reg)
- 		 * contains valid data.
- 		 */
-@@ -140,12 +143,12 @@ static long setup_sigcontext(struct sigcontext __user *sc,
- 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
- 	 * use altivec.
- 	 */
--	err |= __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
-+	unsafe_put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33], efault_out);
- #else /* CONFIG_ALTIVEC */
--	err |= __put_user(0, &sc->v_regs);
-+	unsafe_put_user(0, &sc->v_regs, efault_out);
- #endif /* CONFIG_ALTIVEC */
- 	/* copy fpr regs and fpscr */
--	err |= copy_fpr_to_user(&sc->fp_regs, tsk);
-+	unsafe_copy_fpr_to_user(&sc->fp_regs, tsk, efault_out);
- 
- 	/*
- 	 * Clear the MSR VSX bit to indicate there is no valid state attached
-@@ -160,24 +163,27 @@ static long setup_sigcontext(struct sigcontext __user *sc,
- 	 */
- 	if (tsk->thread.used_vsr && ctx_has_vsx_region) {
- 		v_regs += ELF_NVRREG;
--		err |= copy_vsx_to_user(v_regs, tsk);
-+		unsafe_copy_vsx_to_user(v_regs, tsk, efault_out);
- 		/* set MSR_VSX in the MSR value in the frame to
- 		 * indicate that sc->vs_reg) contains valid data.
- 		 */
- 		msr |= MSR_VSX;
- 	}
- #endif /* CONFIG_VSX */
--	err |= __put_user(&sc->gp_regs, &sc->regs);
-+	unsafe_put_user(&sc->gp_regs, &sc->regs, efault_out);
- 	WARN_ON(!FULL_REGS(regs));
--	err |= __copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE);
--	err |= __put_user(msr, &sc->gp_regs[PT_MSR]);
--	err |= __put_user(softe, &sc->gp_regs[PT_SOFTE]);
--	err |= __put_user(signr, &sc->signal);
--	err |= __put_user(handler, &sc->handler);
-+	unsafe_copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE, efault_out);
-+	unsafe_put_user(msr, &sc->gp_regs[PT_MSR], efault_out);
-+	unsafe_put_user(softe, &sc->gp_regs[PT_SOFTE], efault_out);
-+	unsafe_put_user(signr, &sc->signal, efault_out);
-+	unsafe_put_user(handler, &sc->handler, efault_out);
- 	if (set != NULL)
--		err |=  __put_user(set->sig[0], &sc->oldmask);
-+		unsafe_put_user(set->sig[0], &sc->oldmask, efault_out);
- 
--	return err;
-+	return 0;
-+
-+efault_out:
-+	return -EFAULT;
- }
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -670,12 +676,15 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 
- 	if (old_ctx != NULL) {
- 		prepare_setup_sigcontext(current);
--		if (!access_ok(old_ctx, ctx_size)
--		    || setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL, 0,
--					ctx_has_vsx_region)
--		    || __copy_to_user(&old_ctx->uc_sigmask,
--				      &current->blocked, sizeof(sigset_t)))
-+		if (!user_write_access_begin(old_ctx, ctx_size))
- 			return -EFAULT;
-+
-+		unsafe_setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL,
-+					0, ctx_has_vsx_region, efault_out);
-+		unsafe_copy_to_user(&old_ctx->uc_sigmask, &current->blocked,
-+				    sizeof(sigset_t), efault_out);
-+
-+		user_write_access_end();
- 	}
- 	if (new_ctx == NULL)
- 		return 0;
-@@ -704,6 +713,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	/* This returns like rt_sigreturn */
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
-+
-+efault_out:
-+	user_write_access_end();
-+	return -EFAULT;
- }
- 
- 
-@@ -854,9 +867,13 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 	} else {
- 		err |= __put_user(0, &frame->uc.uc_link);
- 		prepare_setup_sigcontext(tsk);
--		err |= setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
--					NULL, (unsigned long)ksig->ka.sa.sa_handler,
--					1);
-+		if (!user_write_access_begin(&frame->uc.uc_mcontext,
-+					     sizeof(frame->uc.uc_mcontext)))
-+			return -EFAULT;
-+		err |= __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
-+						ksig->sig, NULL,
-+						(unsigned long)ksig->ka.sa.sa_handler, 1);
-+		user_write_access_end();
- 	}
- 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
- 	if (err)
+
 -- 
-2.26.1
-
+Best Regards
+Masahiro Yamada
