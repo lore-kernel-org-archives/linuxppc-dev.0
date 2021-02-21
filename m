@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 438BFC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B862C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:51:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AE9C64EE6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:51:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AE9C64EE6
+	by mail.kernel.org (Postfix) with ESMTPS id 2AC1C64E2F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Feb 2021 17:51:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AC1C64E2F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkCY41cMXz3cnS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:51:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkCYW6VXnz3d4r
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 04:51:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=N90zXZVQ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=OxRmZxdl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
@@ -29,31 +29,31 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=N90zXZVQ; 
+ header.a=rsa-sha256 header.s=default header.b=OxRmZxdl; 
  dkim-atps=neutral
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DkCW85QfRz30MT
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DkCW85qp7z30ND
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 04:49:39 +1100 (AEDT)
 Received: from localhost.localdomain (c-73-42-176-67.hsd1.wa.comcast.net
  [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id D6D7E20B57A0;
+ by linux.microsoft.com (Postfix) with ESMTPSA id 316B2209FACE;
  Sun, 21 Feb 2021 09:49:37 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com D6D7E20B57A0
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 316B2209FACE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1613929778;
- bh=Hqz5rjYgPmheQdI+jnp77oRTr6wTnE3ljaY8476eY94=;
+ s=default; t=1613929777;
+ bh=MgAdoofhEsBi9ijWTsxP8/GBNa/+wmI9q0RKTL7qSb8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=N90zXZVQeek+N0w16uhc1rnRB34kSd/W6uJfgXvytxT0QkDFJBp23ZOcNUisxHFbX
- dxFD5K8F9MWF97Kqs/nLV+3tbK5mafDeUBxQ9V9HUXcy31cNWWdyrwcjZV5wtcxYsE
- YvgWrKHjC2eLUj3JHDDF22yFtJ7mdRM8MdI80gmU=
+ b=OxRmZxdlfJ/ULDZwTxFlrrVVojo60qJw4/YRlOTsSL/PVPMbrCtAGGTniL6WFwHX3
+ Ag8qdgt19bC+IQkxpaimLQcaMDu+bA8hAcONiBXRF7FgTDCyiJaqm8sKBjhNAimVS/
+ U+GXo79K8iPkqg84fJ31YOs1ec2T1gI90Fi6A10A=
 From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 To: zohar@linux.ibm.com, bauerman@linux.ibm.com, robh@kernel.org,
  takahiro.akashi@linaro.org, gregkh@linuxfoundation.org, will@kernel.org,
  joe@perches.com, catalin.marinas@arm.com, mpe@ellerman.id.au,
  sfr@canb.auug.org.au
-Subject: [PATCH v19 03/13] powerpc: Use ELF fields defined in 'struct kimage'
-Date: Sun, 21 Feb 2021 09:49:20 -0800
-Message-Id: <20210221174930.27324-4-nramas@linux.microsoft.com>
+Subject: [PATCH v19 02/13] arm64: Use ELF fields defined in 'struct kimage'
+Date: Sun, 21 Feb 2021 09:49:19 -0800
+Message-Id: <20210221174930.27324-3-nramas@linux.microsoft.com>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210221174930.27324-1-nramas@linux.microsoft.com>
 References: <20210221174930.27324-1-nramas@linux.microsoft.com>
@@ -83,7 +83,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ELF related fields elf_headers, elf_headers_sz, and elfcorehdr_addr
+ELF related fields elf_headers, elf_headers_sz, and elf_headers_mem
 have been moved from 'struct kimage_arch' to 'struct kimage' as
 elf_headers, elf_headers_sz, and elf_load_addr respectively.
 
@@ -94,79 +94,32 @@ Suggested-by: Rob Herring <robh@kernel.org>
 Fixes: 33488dc4d61f ("of: Add a common kexec FDT setup function")
 Reported-by: kernel test robot <lkp@intel.com>
 ---
- arch/powerpc/include/asm/kexec.h  |  4 ----
- arch/powerpc/kexec/file_load.c    |  6 +++---
- arch/powerpc/kexec/file_load_64.c | 14 +++++++-------
- 3 files changed, 10 insertions(+), 14 deletions(-)
+ arch/arm64/include/asm/kexec.h         |  4 ----
+ arch/arm64/kernel/machine_kexec_file.c | 18 +++++++++---------
+ 2 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 55d6ede30c19..69c2a8aa142a 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -108,10 +108,6 @@ struct kimage_arch {
- 	unsigned long backup_start;
- 	void *backup_buf;
- 
--	unsigned long elfcorehdr_addr;
--	unsigned long elf_headers_sz;
+diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
+index d24b527e8c00..12a561a54128 100644
+--- a/arch/arm64/include/asm/kexec.h
++++ b/arch/arm64/include/asm/kexec.h
+@@ -96,10 +96,6 @@ static inline void crash_post_resume(void) {}
+ struct kimage_arch {
+ 	void *dtb;
+ 	unsigned long dtb_mem;
+-	/* Core ELF header buffer */
 -	void *elf_headers;
--
- #ifdef CONFIG_IMA_KEXEC
- 	phys_addr_t ima_buffer_addr;
- 	size_t ima_buffer_size;
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index 9a232bc36c8f..19d2c5f49daf 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -45,7 +45,7 @@ char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
- 		return NULL;
+-	unsigned long elf_headers_mem;
+-	unsigned long elf_headers_sz;
+ };
  
- 	elfcorehdr_strlen = sprintf(cmdline_ptr, "elfcorehdr=0x%lx ",
--				    image->arch.elfcorehdr_addr);
-+				    image->elf_load_addr);
- 
- 	if (elfcorehdr_strlen + cmdline_len > COMMAND_LINE_SIZE) {
- 		pr_err("Appending elfcorehdr=<addr> exceeds cmdline size\n");
-@@ -263,8 +263,8 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 		 * Avoid elfcorehdr from being stomped on in kdump kernel by
- 		 * setting up memory reserve map.
- 		 */
--		ret = fdt_add_mem_rsv(fdt, image->arch.elfcorehdr_addr,
--				      image->arch.elf_headers_sz);
-+		ret = fdt_add_mem_rsv(fdt, image->elf_load_addr,
-+				      image->elf_headers_sz);
- 		if (ret) {
- 			pr_err("Error reserving elfcorehdr memory: %s\n",
- 			       fdt_strerror(ret));
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index c69bcf9b547a..4350f225bb67 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -815,9 +815,9 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
- 		goto out;
- 	}
- 
--	image->arch.elfcorehdr_addr = kbuf->mem;
--	image->arch.elf_headers_sz = headers_sz;
--	image->arch.elf_headers = headers;
-+	image->elf_load_addr = kbuf->mem;
-+	image->elf_headers_sz = headers_sz;
-+	image->elf_headers = headers;
- out:
- 	kfree(cmem);
- 	return ret;
-@@ -851,7 +851,7 @@ int load_crashdump_segments_ppc64(struct kimage *image,
- 		return ret;
- 	}
- 	pr_debug("Loaded elf core header at 0x%lx, bufsz=0x%lx memsz=0x%lx\n",
--		 image->arch.elfcorehdr_addr, kbuf->bufsz, kbuf->memsz);
-+		 image->elf_load_addr, kbuf->bufsz, kbuf->memsz);
- 
- 	return 0;
- }
-@@ -1107,9 +1107,9 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
- 	vfree(image->arch.backup_buf);
- 	image->arch.backup_buf = NULL;
+ extern const struct kexec_file_ops kexec_image_ops;
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index 03210f644790..5553de3d401a 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -43,9 +43,9 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
+ 	vfree(image->arch.dtb);
+ 	image->arch.dtb = NULL;
  
 -	vfree(image->arch.elf_headers);
 -	image->arch.elf_headers = NULL;
@@ -177,6 +130,34 @@ index c69bcf9b547a..4350f225bb67 100644
  
  	return kexec_image_post_load_cleanup_default(image);
  }
+@@ -73,8 +73,8 @@ static int setup_dtb(struct kimage *image,
+ 		/* add linux,elfcorehdr */
+ 		ret = fdt_appendprop_addrrange(dtb, 0, off,
+ 				FDT_PROP_KEXEC_ELFHDR,
+-				image->arch.elf_headers_mem,
+-				image->arch.elf_headers_sz);
++				image->elf_load_addr,
++				image->elf_headers_sz);
+ 		if (ret)
+ 			return (ret == -FDT_ERR_NOSPACE ? -ENOMEM : -EINVAL);
+ 
+@@ -282,12 +282,12 @@ int load_other_segments(struct kimage *image,
+ 			vfree(headers);
+ 			goto out_err;
+ 		}
+-		image->arch.elf_headers = headers;
+-		image->arch.elf_headers_mem = kbuf.mem;
+-		image->arch.elf_headers_sz = headers_sz;
++		image->elf_headers = headers;
++		image->elf_load_addr = kbuf.mem;
++		image->elf_headers_sz = headers_sz;
+ 
+ 		pr_debug("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+-			 image->arch.elf_headers_mem, kbuf.bufsz, kbuf.memsz);
++			 image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
+ 	}
+ 
+ 	/* load initrd */
 -- 
 2.30.0
 
