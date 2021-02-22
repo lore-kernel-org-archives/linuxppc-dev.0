@@ -2,107 +2,66 @@ Return-Path: <SRS0=5SgM=HY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE437C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 22:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC801C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 22:39:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02B1C64DF2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 22:23:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02B1C64DF2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1C55664EC9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 22:39:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C55664EC9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkxY44YVsz3cbs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Feb 2021 09:23:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dkxv73tn1z3cQ0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Feb 2021 09:39:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iYab1XVV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lRSqlP3j;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=iYab1XVV; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=lRSqlP3j; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DkxXZ4QG0z30Qf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2021 09:23:26 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 11MMK8Oo110640; Mon, 22 Feb 2021 17:23:24 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=UmvtzvfxROJDiscc8m5MKltOL6plKqCJi88n/9n74og=;
- b=iYab1XVVL7eOKV+4CI/Kk+T9SHbQ1l4S7c1pIOMvvsEodWyagqrPi/PhzTuGyNDvvAh6
- pDStjMaPzqyvHjpIyyVjWZHbgcLglMQqQ94XWNKERf0qLZqMkNK19hxljWlVcr+AQ3pS
- oJyD7rTwtUOwt4h/0EwjgEY4Fy3pJ9Q7dy5yrocyji6W787K8T2mulEneKjkwDwdn4aZ
- qB5/mirv/jMcFS2oq5VQyFELRdMcvBNJ8xvRcNTMjZKHRyr3t8/G+WP26+SgE2q+4GMT
- 7kvyU9vFd32m35W3/PHm20a0R78sSb1uoOUuAyhUEgZRk8o2sTQgEoSA+utHjif22d0V jQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 36vkg03wj1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Feb 2021 17:23:24 -0500
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 11MMN4sQ125434;
- Mon, 22 Feb 2021 17:23:23 -0500
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 36vkg03whu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Feb 2021 17:23:23 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11MMLmW7023049;
- Mon, 22 Feb 2021 22:23:23 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma01wdc.us.ibm.com with ESMTP id 36tt28t83v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Feb 2021 22:23:23 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11MMNM0e34668976
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 22 Feb 2021 22:23:23 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D8E2AAE063;
- Mon, 22 Feb 2021 22:23:22 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2B1EDAE05C;
- Mon, 22 Feb 2021 22:23:22 +0000 (GMT)
-Received: from localhost (unknown [9.160.141.72])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
- Mon, 22 Feb 2021 22:23:21 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 03/13] KVM: PPC: Book3S HV: Ensure MSR[ME] is always set
- in guest MSR
-In-Reply-To: <20210219063542.1425130-4-npiggin@gmail.com>
-References: <20210219063542.1425130-1-npiggin@gmail.com>
- <20210219063542.1425130-4-npiggin@gmail.com>
-Date: Mon, 22 Feb 2021 19:23:20 -0300
-Message-ID: <87h7m3yc6f.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-02-22_07:2021-02-22,
- 2021-02-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 mlxlogscore=985 spamscore=0
- priorityscore=1501 suspectscore=0 malwarescore=0 phishscore=0 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102220190
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dkxtf1pJnz30KL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2021 09:39:05 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 34D8564E27;
+ Mon, 22 Feb 2021 22:39:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1614033543;
+ bh=UbYbIp4FKJqKLIr6OvJG5dzkozXdK3yFqwH/pvSXG8w=;
+ h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+ b=lRSqlP3jLJQRPkoJdU8FQrYeMty+Qkl5j/wh8FjxcFAvXPT382Bah3CtCr6Tk3u6E
+ 7fv/pte/vMV5SPJ+PGz2aMRcvDnTKX9+Tf8P2L7JS5+sp67FGMr59WUlqQRmX7cJ7E
+ nsntGcdP3ZIHxsJCVipRpX99N5PYhqkEs3HZ1M6JcnvMuNcwrffEne4Dck/GrzFLDb
+ Go8h2krayqQsshtkK9r2lTKIj21ZFWUhzgVE6cZgTGZWH4g3Rk2kkBvIb82IoDe+MN
+ QJaDoVHXP4gAc7tJAlQpustN6UQ1KgkGtqA6zKAvITquK9rzrGedIXucNLTg/jWBIW
+ UpdaZLADp9BaA==
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.12-1 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87o8gctii6.fsf@mpe.ellerman.id.au>
+References: <87o8gctii6.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List
+ <linuxppc-dev.lists.ozlabs.org>
+X-PR-Tracked-Message-Id: <87o8gctii6.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.12-1
+X-PR-Tracked-Commit-Id: 82d2c16b350f72aa21ac2a6860c542aa4b43a51e
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: b12b47249688915e987a9a2a393b522f86f6b7ab
+Message-Id: <161403354303.914.13622504126022266023.pr-tracker-bot@kernel.org>
+Date: Mon, 22 Feb 2021 22:39:03 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,42 +73,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: ananth@linux.ibm.com, aik@ozlabs.ru, skirmisher@protonmail.com,
+ cmr@codefail.de, zhengyongjun3@huawei.com, oohall@gmail.com,
+ sandipan@linux.ibm.com, cy.fan@huawei.com, elfring@users.sourceforge.net,
+ jiapeng.chong@linux.alibaba.com, f.fainelli@gmail.com, unixbhaskar@gmail.com,
+ eerykitty@gmail.com, aneesh.kumar@linux.ibm.com, haren@linux.ibm.com,
+ ganeshgr@linux.ibm.com, msuchanek@suse.de, nathanl@linux.ibm.com,
+ robh@kernel.org, kjain@linux.ibm.com, npiggin@gmail.com, broonie@kernel.org,
+ cai@lca.pw, kernelfans@gmail.com, hbathini@linux.ibm.com,
+ atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ rdunlap@infradead.org, linux-kernel@vger.kernel.org, fbarrat@linux.ibm.com,
+ po-hsu.lin@canonical.com, Linus Torvalds <torvalds@linux-foundation.org>,
+ clg@kaod.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+The pull request you sent on Mon, 22 Feb 2021 23:05:37 +1100:
 
-> Rather than add the ME bit to the MSR when the guest is entered, make
-> it clear that the hypervisor does not allow the guest to clear the bit.
->
-> The ME addition is kept in the code for now, but a future patch will
-> warn if it's not present.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.12-1
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/b12b47249688915e987a9a2a393b522f86f6b7ab
 
-> ---
->  arch/powerpc/kvm/book3s_hv_builtin.c | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-> index dad118760a4e..ae8f291c5c48 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -661,6 +661,13 @@ static void kvmppc_end_cede(struct kvm_vcpu *vcpu)
->
->  void kvmppc_set_msr_hv(struct kvm_vcpu *vcpu, u64 msr)
->  {
-> +	/*
-> +	 * Guest must always run with machine check interrupt
-> +	 * enabled.
-> +	 */
-> +	if (!(msr & MSR_ME))
-> +		msr |= MSR_ME;
-> +
->  	/*
->  	 * Check for illegal transactional state bit combination
->  	 * and if we find it, force the TS field to a safe state.
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
