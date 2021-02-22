@@ -2,80 +2,93 @@ Return-Path: <SRS0=5SgM=HY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF736C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:41:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96CAAC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 05:25:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B81C64EC8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:41:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B81C64EC8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 8EEF564EDE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 05:25:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EEF564EDE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkPz26z29z3cWF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 12:41:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkVxw5jM1z30Qm
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 16:25:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=T60i5xmq;
+	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=oaaBO+mf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::435;
- helo=mail-pf1-x435.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::435;
+ helo=mail-pf1-x435.google.com; envelope-from=aik@ozlabs.ru;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=T60i5xmq; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=oaaBO+mf; dkim-atps=neutral
 Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
  [IPv6:2607:f8b0:4864:20::435])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DkPyZ5qFPz30QW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 12:40:37 +1100 (AEDT)
-Received: by mail-pf1-x435.google.com with SMTP id x129so926739pfx.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 17:40:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=Pmfn8f/i9TumuS4aSYkIvZo4/H99mKopifdoxhuUtdg=;
- b=T60i5xmqABV5ARr6WaanBLU2cGHolVYLPmE8mrIYt8SPrVLMMpkuxwYiviwuc+L/u/
- C2gaolDpezEK6fLu0XlDVV8E0WMSwzTrsCT/Wshcx36Yjszf+UlIJRa4va6+DbG31ldw
- 14kfSmTnvfkgCJYqH1/jrOwaHT8u6AA+kA3TU=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DkVxL5b6tz30LL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 16:24:51 +1100 (AEDT)
+Received: by mail-pf1-x435.google.com with SMTP id 201so2789371pfw.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 21:24:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=hGeA39Rok1Cc1GkXN/XsuF5wpXfilzhhdTN9JhuPtls=;
+ b=oaaBO+mfEFM25ZERc3s7+iEktqRZRqAMjck7fQgZnhegMGc1ISqPx3NMmgAzjN3P3f
+ OoQzjLUEWR8PsrZrWhyf+8R0s6e0YHhzW8XbV7SUm7jnQZ7S1jCXsV4LzFKNy/8DUfdx
+ HrFo3ntl8qhqc9GkaJ+kr+jhlt4pkPx2bjTKBL8O36su35jBMdtjn7ifdUhkP1AAx9g7
+ h9BjmdGf0IVkTw3rLUMqwuG2Cq0tUuuI77Imy2XDqOO1a9KQQY3AhUDOjRt76GA5gZ0G
+ C80OQ8Hg84OVYS1yXQGTCPh6poREWUKwenQWzaX3Aez5yXdkyptanZUX0XtAc/hN4OK+
+ kY+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=Pmfn8f/i9TumuS4aSYkIvZo4/H99mKopifdoxhuUtdg=;
- b=sbyyp7y8HG5t8Zk2m6KscjEanXZLlL86wWmqMGIHrgwZH1eikSd+vohHCA6RUaEpIY
- H08m/B8wd6zipbJV5jnZroaCJNdBeV7zX6SEZI7VFOQwiSf1aOXb4k+S5jFhobp7XDdn
- IDHP5bvP94fsj7rV1ubqIZ/eBYXYGiVuwicj2+U5Xc30uXP56ZEwa7qp1YYuv5Tyg83P
- z8S1mDSDzGfuaV5SvvmHeULRrqQCImg/SYgb91Jch34w4yB57VUboO0TnJ148SZaA19b
- UUdKoaBdC5YF4mE1g2wbrAjCF+LLFSiwuCXTGPdMW/Q1XJwAwHwjdTQt+F2uLVx3En0s
- yliQ==
-X-Gm-Message-State: AOAM530Z+vgn4HeY9S5NfbmowuITmwag80IBafo94JZk/Aaav+JdtKqB
- 7dhQZSogSf/BXRd3A0/K06vCzg==
-X-Google-Smtp-Source: ABdhPJxtyPWEO8BWjW1Faie4bC1Bqwm2iJDW3XPcs1fWp5czZ1Gt1y7cs6vsAEeh8RmiztWxGvI7Ww==
-X-Received: by 2002:a65:6a4b:: with SMTP id o11mr17970000pgu.138.1613958030061; 
- Sun, 21 Feb 2021 17:40:30 -0800 (PST)
-Received: from localhost
- (2001-44b8-1113-6700-c141-3594-a9dc-6972.static.ipv6.internode.on.net.
- [2001:44b8:1113:6700:c141:3594:a9dc:6972])
- by smtp.gmail.com with ESMTPSA id v1sm19889837pfi.99.2021.02.21.17.40.29
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 21 Feb 2021 17:40:29 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Yang Li <yang.lee@linux.alibaba.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc: use ARRAY_SIZE instead of division operation
-In-Reply-To: <1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com>
-References: <1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com>
-Date: Mon, 22 Feb 2021 12:40:26 +1100
-Message-ID: <87blccq3qt.fsf@dja-thinkpad.axtens.net>
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=hGeA39Rok1Cc1GkXN/XsuF5wpXfilzhhdTN9JhuPtls=;
+ b=n8s7/hnviZ3SlhxG/tvsBQt4mktpRNzC2qzhcJpPBjUyHo+M0HUf2pDOcL7vY1YeDe
+ nuCk/pslUOwr52aiDgP9PHUfk5ssjaFUipwAdJDHNf6xLVJTCjAGiWHfkLNoeMKQJiyc
+ OIG3s83iAI3QHDS2hxmX8hfGSScR+bkZonlr2cMNMdPwnPKz8jRdnZL4BCYKR7HspRYF
+ 3MNcBWshdXk00bBS5JYZH1JYMdGmPBXM2C0kmDy1CrxxWlFrVQQlf1OedsZd0O9DmhIW
+ YdnlnqxIWNZMAwNGc2PKjgPUQqE5MtTJ7tODy1ic6THu3p6fQHFlRhhTH7aHDOYXle7G
+ m/tg==
+X-Gm-Message-State: AOAM531WIkdJkCv/6CF5DxXobpAqFiuS/3Jz9aYNR6yueej61ml9vt92
+ yqECXrgTwa9ZMGMBUCMJ/6sle5QfUr8SWw==
+X-Google-Smtp-Source: ABdhPJxNk9Pd3nA62RWz6+kIvbT5QFldMlVKropgQt/S+hIVbDXlL89lwblbQ29BTYfS/OicHZOTEw==
+X-Received: by 2002:a63:f10b:: with SMTP id f11mr18942520pgi.248.1613971489748; 
+ Sun, 21 Feb 2021 21:24:49 -0800 (PST)
+Received: from [192.168.10.23] (124-171-107-241.dyn.iinet.net.au.
+ [124.171.107.241])
+ by smtp.gmail.com with UTF8SMTPSA id br2sm1877800pjb.40.2021.02.21.21.24.46
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Sun, 21 Feb 2021 21:24:49 -0800 (PST)
+Subject: Re: [PATCH kernel 2/2] powerpc/iommu: Do not immediately panic when
+ failed IOMMU table allocation
+To: Leonardo Bras <leobras.c@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20210216033307.69863-1-aik@ozlabs.ru>
+ <20210216033307.69863-3-aik@ozlabs.ru>
+ <433396d9ef216aa090e32bb344d42f60de1fb9aa.camel@gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <0ae74efe-8b9a-566a-d984-8e5b662ff330@ozlabs.ru>
+Date: Mon, 22 Feb 2021 16:24:44 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101
+ Thunderbird/85.0
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <433396d9ef216aa090e32bb344d42f60de1fb9aa.camel@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,50 +100,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yang Li <yang.lee@linux.alibaba.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Yang,
 
-> This eliminates the following coccicheck warning:
-> ./arch/powerpc/boot/mktree.c:130:31-32: WARNING: Use ARRAY_SIZE
->
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
-> ---
->  arch/powerpc/boot/mktree.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/boot/mktree.c b/arch/powerpc/boot/mktree.c
-> index dc603f3..0b2def5 100644
-> --- a/arch/powerpc/boot/mktree.c
-> +++ b/arch/powerpc/boot/mktree.c
-> @@ -127,7 +127,7 @@ int main(int argc, char *argv[])
->  			exit(5);
->  		}
->  		cp = tmpbuf;
-> -		for (i = 0; i < sizeof(tmpbuf) / sizeof(unsigned int); i++)
-> +		for (i = 0; i < ARRAY_SIZE(tmpbuf); i++)
 
-Unfortunately this breaks the build - see
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com/
+On 18/02/2021 06:32, Leonardo Bras wrote:
+> On Tue, 2021-02-16 at 14:33 +1100, Alexey Kardashevskiy wrote:
+>> Most platforms allocate IOMMU table structures (specifically it_map)
+>> at the boot time and when this fails - it is a valid reason for panic().
+>>
+>> However the powernv platform allocates it_map after a device is returned
+>> to the host OS after being passed through and this happens long after
+>> the host OS booted. It is quite possible to trigger the it_map allocation
+>> panic() and kill the host even though it is not necessary - the host OS
+>> can still use the DMA bypass mode (requires a tiny fraction of it_map's
+>> memory) and even if that fails, the host OS is runnnable as it was without
+>> the device for which allocating it_map causes the panic.
+>>
+>> Instead of immediately crashing in a powernv/ioda2 system, this prints
+>> an error and continues. All other platforms still call panic().
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> Hello Alexey,
+> 
+> This looks like a good change, that passes panic() decision to platform
+> code. Everything looks pretty straightforward, but I have a question
+> regarding this:
+> 
+>> @@ -1930,16 +1931,16 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+>>   		res_start = pe->phb->ioda.m32_pci_base >> tbl->it_page_shift;
+>>   		res_end = min(window_size, SZ_4G) >> tbl->it_page_shift;
+>>   	}
+>> -	iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end);
+>> -	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+>>
+>> +	if (iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end))
+>> +		rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+>> +	else
+>> +		rc = -ENOMEM;
+>>   	if (rc) {
+>> -		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
+>> -				rc);
+>> +		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n", rc);
+>>   		iommu_tce_table_put(tbl);
+>> -		return rc;
+>> +		tbl = NULL; /* This clears iommu_table_base below */
+>>   	}
+>> -
+>>   	if (!pnv_iommu_bypass_disabled)
+>>   		pnv_pci_ioda2_set_bypass(pe, true);
+>>   
+>>
+> 
+> If I could understand correctly, previously if iommu_init_table() did
+> not panic(), and pnv_pci_ioda2_set_window() returned something other
+> than 0, it would return rc in the if (rc) clause, but now it does not
+> happen anymore, going through if (!pnv_iommu_bypass_disabled) onwards.
+> 
+> Is that desired?
 
-This is because 'boot/mktree.c' is a userspace program without access to
-the usual kernel headers.
 
-It might be best to get coccicheck to exclude all of
-'arch/powerpc/boot/' as I believe everything in that directory is
-compiled differently to the rest of the kernel (see the Makefile), but
-maybe just blacklisting boot/mktree.c would be sufficient.
+Yes. A PE (==device, pretty much) has 2 DMA windows:
+- the default one which requires some RAM to operate
+- a bypass mode which tells the hardware that PCI addresses are 
+statically mapped to RAM 1:1.
 
-Kind regards,
-Daniel
+This bypass mode does not require extra memory to work and is used in 
+the most cases on the bare metal as long as the device supports 64bit 
+DMA which is everything except GPUs. Since it is cheap to enable and 
+this what we prefer anyway, no urge to fail.
 
->  			cksum += *cp++;
->  		if (write(out_fd, tmpbuf, sizeof(tmpbuf)) != sizeof(tmpbuf)) {
->  			perror("boot-image write");
-> -- 
-> 1.8.3.1
+
+> As far as I could see, returning rc there seems a good procedure after
+> iommu_init_table returning -ENOMEM.
+
+This change is intentional and yes it could be done by a separate patch 
+but I figured there is no that much value in splitting.
+
+
+
+-- 
+Alexey
