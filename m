@@ -2,93 +2,110 @@ Return-Path: <SRS0=5SgM=HY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96CAAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 05:25:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A483C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 06:26:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EEF564EDE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 05:25:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EEF564EDE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 357AF64E76
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 06:26:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 357AF64E76
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkVxw5jM1z30Qm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 16:25:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkXJB2vXXz3cSq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 17:26:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=oaaBO+mf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cmJuDmjk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::435;
- helo=mail-pf1-x435.google.com; envelope-from=aik@ozlabs.ru;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=oaaBO+mf; dkim-atps=neutral
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
- [IPv6:2607:f8b0:4864:20::435])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=cmJuDmjk; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DkVxL5b6tz30LL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 16:24:51 +1100 (AEDT)
-Received: by mail-pf1-x435.google.com with SMTP id 201so2789371pfw.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 21:24:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=hGeA39Rok1Cc1GkXN/XsuF5wpXfilzhhdTN9JhuPtls=;
- b=oaaBO+mfEFM25ZERc3s7+iEktqRZRqAMjck7fQgZnhegMGc1ISqPx3NMmgAzjN3P3f
- OoQzjLUEWR8PsrZrWhyf+8R0s6e0YHhzW8XbV7SUm7jnQZ7S1jCXsV4LzFKNy/8DUfdx
- HrFo3ntl8qhqc9GkaJ+kr+jhlt4pkPx2bjTKBL8O36su35jBMdtjn7ifdUhkP1AAx9g7
- h9BjmdGf0IVkTw3rLUMqwuG2Cq0tUuuI77Imy2XDqOO1a9KQQY3AhUDOjRt76GA5gZ0G
- C80OQ8Hg84OVYS1yXQGTCPh6poREWUKwenQWzaX3Aez5yXdkyptanZUX0XtAc/hN4OK+
- kY+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=hGeA39Rok1Cc1GkXN/XsuF5wpXfilzhhdTN9JhuPtls=;
- b=n8s7/hnviZ3SlhxG/tvsBQt4mktpRNzC2qzhcJpPBjUyHo+M0HUf2pDOcL7vY1YeDe
- nuCk/pslUOwr52aiDgP9PHUfk5ssjaFUipwAdJDHNf6xLVJTCjAGiWHfkLNoeMKQJiyc
- OIG3s83iAI3QHDS2hxmX8hfGSScR+bkZonlr2cMNMdPwnPKz8jRdnZL4BCYKR7HspRYF
- 3MNcBWshdXk00bBS5JYZH1JYMdGmPBXM2C0kmDy1CrxxWlFrVQQlf1OedsZd0O9DmhIW
- YdnlnqxIWNZMAwNGc2PKjgPUQqE5MtTJ7tODy1ic6THu3p6fQHFlRhhTH7aHDOYXle7G
- m/tg==
-X-Gm-Message-State: AOAM531WIkdJkCv/6CF5DxXobpAqFiuS/3Jz9aYNR6yueej61ml9vt92
- yqECXrgTwa9ZMGMBUCMJ/6sle5QfUr8SWw==
-X-Google-Smtp-Source: ABdhPJxNk9Pd3nA62RWz6+kIvbT5QFldMlVKropgQt/S+hIVbDXlL89lwblbQ29BTYfS/OicHZOTEw==
-X-Received: by 2002:a63:f10b:: with SMTP id f11mr18942520pgi.248.1613971489748; 
- Sun, 21 Feb 2021 21:24:49 -0800 (PST)
-Received: from [192.168.10.23] (124-171-107-241.dyn.iinet.net.au.
- [124.171.107.241])
- by smtp.gmail.com with UTF8SMTPSA id br2sm1877800pjb.40.2021.02.21.21.24.46
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sun, 21 Feb 2021 21:24:49 -0800 (PST)
-Subject: Re: [PATCH kernel 2/2] powerpc/iommu: Do not immediately panic when
- failed IOMMU table allocation
-To: Leonardo Bras <leobras.c@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20210216033307.69863-1-aik@ozlabs.ru>
- <20210216033307.69863-3-aik@ozlabs.ru>
- <433396d9ef216aa090e32bb344d42f60de1fb9aa.camel@gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <0ae74efe-8b9a-566a-d984-8e5b662ff330@ozlabs.ru>
-Date: Mon, 22 Feb 2021 16:24:44 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101
- Thunderbird/85.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DkXHf3Jycz30MB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 17:25:49 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 11M6Ed6h017520; Mon, 22 Feb 2021 01:25:41 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=FwuNTTcqLG4LZyFlFfSRGTehbGBQdjAVPJODaNMbETQ=;
+ b=cmJuDmjkxGBtyzFx2mX9pmFHrQacJVTUhxIkwrH6tLvzvLObRKR64PrIGAEqkhNe33G/
+ p3Ig7hKtk3Ck5gpMSVqxbesIj5oTqmSdEqzh38bqCXDkqpsaW0CoYLRCt5Kq0CUDd2tW
+ GKRDldV5nGSDZkJ8UOcY/meVdyO9FixXcUSwoDF9OjHZY56FXsLAmgCzIbvEmAWVM4Iy
+ nPm66QzJWc2/eBulDjUIJXSENpNLqkLV8Nm4YQj+ReHVr15o+zY2ejlG3b5w2ZUaOEy4
+ GrGXUCeo4eAkfJfHE0H1o5NB8xVTHibpT+DSnmMAiDpqqf79yHGg1/fs3oetd9/bHBvA 7w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36v760gatq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Feb 2021 01:25:40 -0500
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 11M6F2nf020082;
+ Mon, 22 Feb 2021 01:25:39 -0500
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 36v760gass-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Feb 2021 01:25:39 -0500
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11M6NOsN030442;
+ Mon, 22 Feb 2021 06:25:37 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04fra.de.ibm.com with ESMTP id 36tt288pns-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Feb 2021 06:25:37 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 11M6PY3429950460
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 22 Feb 2021 06:25:34 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4FFAFA4057;
+ Mon, 22 Feb 2021 06:25:34 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D0E3DA4040;
+ Mon, 22 Feb 2021 06:25:32 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.85.69.50])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 22 Feb 2021 06:25:32 +0000 (GMT)
+Date: Mon, 22 Feb 2021 11:55:30 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v4 1/3] powerpc/book3s64/radix/tlb: tlbie primitives for
+ process-scoped invalidations from guests
+Message-ID: <20210222062530.GA3672042@in.ibm.com>
+References: <20210215063542.3642366-1-bharata@linux.ibm.com>
+ <20210215063542.3642366-2-bharata@linux.ibm.com>
+ <YCxiUCm/UCJJGOJD@yekko.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <433396d9ef216aa090e32bb344d42f60de1fb9aa.camel@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YCxiUCm/UCJJGOJD@yekko.fritz.box>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-02-21_14:2021-02-18,
+ 2021-02-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 clxscore=1015 suspectscore=0
+ mlxlogscore=943 mlxscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102220055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,88 +117,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: bharata@linux.ibm.com
+Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 18/02/2021 06:32, Leonardo Bras wrote:
-> On Tue, 2021-02-16 at 14:33 +1100, Alexey Kardashevskiy wrote:
->> Most platforms allocate IOMMU table structures (specifically it_map)
->> at the boot time and when this fails - it is a valid reason for panic().
->>
->> However the powernv platform allocates it_map after a device is returned
->> to the host OS after being passed through and this happens long after
->> the host OS booted. It is quite possible to trigger the it_map allocation
->> panic() and kill the host even though it is not necessary - the host OS
->> can still use the DMA bypass mode (requires a tiny fraction of it_map's
->> memory) and even if that fails, the host OS is runnnable as it was without
->> the device for which allocating it_map causes the panic.
->>
->> Instead of immediately crashing in a powernv/ioda2 system, this prints
->> an error and continues. All other platforms still call panic().
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+On Wed, Feb 17, 2021 at 11:24:48AM +1100, David Gibson wrote:
+> On Mon, Feb 15, 2021 at 12:05:40PM +0530, Bharata B Rao wrote:
+> > H_RPT_INVALIDATE hcall needs to perform process scoped tlbie
+> > invalidations of L1 and nested guests from L0. This needs RS register
+> > for TLBIE instruction to contain both PID and LPID. Introduce
+> > primitives that execute tlbie instruction with both PID
+> > and LPID set in prepartion for H_RPT_INVALIDATE hcall.
+> > 
+> > While we are here, move RIC_FLUSH definitions to header file
+> > and introduce helper rpti_pgsize_to_psize() that will be needed
+> > by the upcoming hcall.
+> > 
+> > Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> > ---
+> >  .../include/asm/book3s/64/tlbflush-radix.h    |  18 +++
+> >  arch/powerpc/mm/book3s64/radix_tlb.c          | 122 +++++++++++++++++-
+> >  2 files changed, 136 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > index 94439e0cefc9..aace7e9b2397 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > @@ -4,6 +4,10 @@
+> >  
+> >  #include <asm/hvcall.h>
+> >  
+> > +#define RIC_FLUSH_TLB 0
+> > +#define RIC_FLUSH_PWC 1
+> > +#define RIC_FLUSH_ALL 2
+> > +
+> >  struct vm_area_struct;
+> >  struct mm_struct;
+> >  struct mmu_gather;
+> > @@ -21,6 +25,20 @@ static inline u64 psize_to_rpti_pgsize(unsigned long psize)
+> >  	return H_RPTI_PAGE_ALL;
+> >  }
+> >  
+> > +static inline int rpti_pgsize_to_psize(unsigned long page_size)
+> > +{
+> > +	if (page_size == H_RPTI_PAGE_4K)
+> > +		return MMU_PAGE_4K;
+> > +	if (page_size == H_RPTI_PAGE_64K)
+> > +		return MMU_PAGE_64K;
+> > +	if (page_size == H_RPTI_PAGE_2M)
+> > +		return MMU_PAGE_2M;
+> > +	if (page_size == H_RPTI_PAGE_1G)
+> > +		return MMU_PAGE_1G;
+> > +	else
+> > +		return MMU_PAGE_64K; /* Default */
+> > +}
 > 
-> Hello Alexey,
-> 
-> This looks like a good change, that passes panic() decision to platform
-> code. Everything looks pretty straightforward, but I have a question
-> regarding this:
-> 
->> @@ -1930,16 +1931,16 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
->>   		res_start = pe->phb->ioda.m32_pci_base >> tbl->it_page_shift;
->>   		res_end = min(window_size, SZ_4G) >> tbl->it_page_shift;
->>   	}
->> -	iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end);
->> -	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
->>
->> +	if (iommu_init_table(tbl, pe->phb->hose->node, res_start, res_end))
->> +		rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
->> +	else
->> +		rc = -ENOMEM;
->>   	if (rc) {
->> -		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
->> -				rc);
->> +		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n", rc);
->>   		iommu_tce_table_put(tbl);
->> -		return rc;
->> +		tbl = NULL; /* This clears iommu_table_base below */
->>   	}
->> -
->>   	if (!pnv_iommu_bypass_disabled)
->>   		pnv_pci_ioda2_set_bypass(pe, true);
->>   
->>
-> 
-> If I could understand correctly, previously if iommu_init_table() did
-> not panic(), and pnv_pci_ioda2_set_window() returned something other
-> than 0, it would return rc in the if (rc) clause, but now it does not
-> happen anymore, going through if (!pnv_iommu_bypass_disabled) onwards.
-> 
-> Is that desired?
+> Would it make sense to put the H_RPT_PAGE_ tags into the
+> mmu_psize_defs table and scan that here, rather than open coding the
+> conversion?
 
+I will give this a try and see how it looks.
 
-Yes. A PE (==device, pretty much) has 2 DMA windows:
-- the default one which requires some RAM to operate
-- a bypass mode which tells the hardware that PCI addresses are 
-statically mapped to RAM 1:1.
+Otherwise the changes in the patch which are mainly about
+introducing primitives that require to set both PID and LPID
+for tlbie instruction - do they look right?
 
-This bypass mode does not require extra memory to work and is used in 
-the most cases on the bare metal as long as the device supports 64bit 
-DMA which is everything except GPUs. Since it is cheap to enable and 
-this what we prefer anyway, no urge to fail.
-
-
-> As far as I could see, returning rc there seems a good procedure after
-> iommu_init_table returning -ENOMEM.
-
-This change is intentional and yes it could be done by a separate patch 
-but I figured there is no that much value in splitting.
-
-
-
--- 
-Alexey
+Regards,
+Bharata.
