@@ -2,65 +2,80 @@ Return-Path: <SRS0=5SgM=HY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5F40C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF736C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:41:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5036564EC8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:36:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5036564EC8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6B81C64EC8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 01:41:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B81C64EC8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DkPsn4Lrrz3cJ3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 12:36:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DkPz26z29z3cWF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Feb 2021 12:41:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Qq4J4yH6;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=T60i5xmq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::435;
+ helo=mail-pf1-x435.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=Qq4J4yH6; 
- dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DkPsH71L5z30LH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 12:36:03 +1100 (AEDT)
-Received: from [192.168.0.104] (c-73-42-176-67.hsd1.wa.comcast.net
- [73.42.176.67])
- by linux.microsoft.com (Postfix) with ESMTPSA id D759320B57A0;
- Sun, 21 Feb 2021 17:35:59 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com D759320B57A0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1613957760;
- bh=ExCdsyPkQI85bgvWno/UIC3VrrC79Ve3YTXOyYnfvYU=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=Qq4J4yH6UugpeNQ3CD/H/jYSDYubKgYDrULJm5MSRGGMy4pVUF3ZhkkpFDiz4UKpC
- Fbe9plxzMLfQUkOqW20+R5R0Fp3HF31QA9jJO+T4Drq2NGRAd0AXMWGRuiHddmF4lc
- s/bgSL36U18cNAWtIPD4IoDQS7mWtllOclFbv2tE=
-Subject: Re: [PATCH v18 03/11] of: Add a common kexec FDT setup function
-To: Guenter Roeck <linux@roeck-us.net>
-References: <20210213161049.6190-1-nramas@linux.microsoft.com>
- <20210213161049.6190-4-nramas@linux.microsoft.com>
- <20210222013207.GA142216@roeck-us.net>
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <b4237414-24ec-f905-2561-6237081ea7ff@linux.microsoft.com>
-Date: Sun, 21 Feb 2021 17:35:59 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=T60i5xmq; dkim-atps=neutral
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
+ [IPv6:2607:f8b0:4864:20::435])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DkPyZ5qFPz30QW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2021 12:40:37 +1100 (AEDT)
+Received: by mail-pf1-x435.google.com with SMTP id x129so926739pfx.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2021 17:40:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=Pmfn8f/i9TumuS4aSYkIvZo4/H99mKopifdoxhuUtdg=;
+ b=T60i5xmqABV5ARr6WaanBLU2cGHolVYLPmE8mrIYt8SPrVLMMpkuxwYiviwuc+L/u/
+ C2gaolDpezEK6fLu0XlDVV8E0WMSwzTrsCT/Wshcx36Yjszf+UlIJRa4va6+DbG31ldw
+ 14kfSmTnvfkgCJYqH1/jrOwaHT8u6AA+kA3TU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=Pmfn8f/i9TumuS4aSYkIvZo4/H99mKopifdoxhuUtdg=;
+ b=sbyyp7y8HG5t8Zk2m6KscjEanXZLlL86wWmqMGIHrgwZH1eikSd+vohHCA6RUaEpIY
+ H08m/B8wd6zipbJV5jnZroaCJNdBeV7zX6SEZI7VFOQwiSf1aOXb4k+S5jFhobp7XDdn
+ IDHP5bvP94fsj7rV1ubqIZ/eBYXYGiVuwicj2+U5Xc30uXP56ZEwa7qp1YYuv5Tyg83P
+ z8S1mDSDzGfuaV5SvvmHeULRrqQCImg/SYgb91Jch34w4yB57VUboO0TnJ148SZaA19b
+ UUdKoaBdC5YF4mE1g2wbrAjCF+LLFSiwuCXTGPdMW/Q1XJwAwHwjdTQt+F2uLVx3En0s
+ yliQ==
+X-Gm-Message-State: AOAM530Z+vgn4HeY9S5NfbmowuITmwag80IBafo94JZk/Aaav+JdtKqB
+ 7dhQZSogSf/BXRd3A0/K06vCzg==
+X-Google-Smtp-Source: ABdhPJxtyPWEO8BWjW1Faie4bC1Bqwm2iJDW3XPcs1fWp5czZ1Gt1y7cs6vsAEeh8RmiztWxGvI7Ww==
+X-Received: by 2002:a65:6a4b:: with SMTP id o11mr17970000pgu.138.1613958030061; 
+ Sun, 21 Feb 2021 17:40:30 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-c141-3594-a9dc-6972.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:c141:3594:a9dc:6972])
+ by smtp.gmail.com with ESMTPSA id v1sm19889837pfi.99.2021.02.21.17.40.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 21 Feb 2021 17:40:29 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Yang Li <yang.lee@linux.alibaba.com>, mpe@ellerman.id.au
+Subject: Re: [PATCH] powerpc: use ARRAY_SIZE instead of division operation
+In-Reply-To: <1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com>
+References: <1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com>
+Date: Mon, 22 Feb 2021 12:40:26 +1100
+Message-ID: <87blccq3qt.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <20210222013207.GA142216@roeck-us.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,73 +87,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, tao.li@vivo.com, zohar@linux.ibm.com,
- paulus@samba.org, vincenzo.frascino@arm.com, frowand.list@gmail.com,
- sashal@kernel.org, robh@kernel.org, masahiroy@kernel.org, jmorris@namei.org,
- takahiro.akashi@linaro.org, linux-arm-kernel@lists.infradead.org,
- catalin.marinas@arm.com, serge@hallyn.com, devicetree@vger.kernel.org,
- pasha.tatashin@soleen.com, will@kernel.org, prsriva@linux.microsoft.com,
- hsinyi@chromium.org, allison@lohutok.net, christophe.leroy@c-s.fr,
- mbrugger@suse.com, balajib@linux.microsoft.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, james.morse@arm.com, dmitry.kasatkin@gmail.com,
- joe@perches.com, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: Yang Li <yang.lee@linux.alibaba.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/21/21 5:32 PM, Guenter Roeck wrote:
+Hi Yang,
 
-Hi Guenter,
+> This eliminates the following coccicheck warning:
+> ./arch/powerpc/boot/mktree.c:130:31-32: WARNING: Use ARRAY_SIZE
+>
+> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> ---
+>  arch/powerpc/boot/mktree.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/boot/mktree.c b/arch/powerpc/boot/mktree.c
+> index dc603f3..0b2def5 100644
+> --- a/arch/powerpc/boot/mktree.c
+> +++ b/arch/powerpc/boot/mktree.c
+> @@ -127,7 +127,7 @@ int main(int argc, char *argv[])
+>  			exit(5);
+>  		}
+>  		cp = tmpbuf;
+> -		for (i = 0; i < sizeof(tmpbuf) / sizeof(unsigned int); i++)
+> +		for (i = 0; i < ARRAY_SIZE(tmpbuf); i++)
 
-> On Sat, Feb 13, 2021 at 08:10:41AM -0800, Lakshmi Ramasubramanian wrote:
->> From: Rob Herring <robh@kernel.org>
->>
->> Both arm64 and powerpc do essentially the same FDT /chosen setup for
->> kexec.  The differences are either omissions that arm64 should have
->> or additional properties that will be ignored.  The setup code can be
->> combined and shared by both powerpc and arm64.
->>
->> The differences relative to the arm64 version:
->>   - If /chosen doesn't exist, it will be created (should never happen).
->>   - Any old dtb and initrd reserved memory will be released.
->>   - The new initrd and elfcorehdr are marked reserved.
->>   - "linux,booted-from-kexec" is set.
->>
->> The differences relative to the powerpc version:
->>   - "kaslr-seed" and "rng-seed" may be set.
->>   - "linux,elfcorehdr" is set.
->>   - Any existing "linux,usable-memory-range" is removed.
->>
->> Combine the code for setting up the /chosen node in the FDT and updating
->> the memory reservation for kexec, for powerpc and arm64, in
->> of_kexec_alloc_and_setup_fdt() and move it to "drivers/of/kexec.c".
->>
->> Signed-off-by: Rob Herring <robh@kernel.org>
->> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-> 
-> s390:allmodconfig:
-> 
-> drivers/of/kexec.c: In function 'of_kexec_alloc_and_setup_fdt':
-> drivers/of/kexec.c:378:10: error: 'const struct kimage' has no member named 'arch'
->    378 |     image->arch.elf_load_addr,
->        |          ^~
-> drivers/of/kexec.c:379:10: error: 'const struct kimage' has no member named 'arch'
->    379 |     image->arch.elf_headers_sz);
->        |          ^~
-> drivers/of/kexec.c:387:35: error: 'const struct kimage' has no member named 'arch'
->    387 |   ret = fdt_add_mem_rsv(fdt, image->arch.elf_load_addr,
->        |                                   ^~
-> drivers/of/kexec.c:388:16: error: 'const struct kimage' has no member named 'arch'
->    388 |           image->arch.elf_headers_sz);
->        |                ^~
-> 
+Unfortunately this breaks the build - see
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/1613808853-78381-1-git-send-email-yang.lee@linux.alibaba.com/
 
-I have posted a new patch set (link given below) that fixes the above 
-build break. Could you please try that?
+This is because 'boot/mktree.c' is a userspace program without access to
+the usual kernel headers.
 
-https://patchwork.kernel.org/project/linux-integrity/patch/20210221174930.27324-14-nramas@linux.microsoft.com/
+It might be best to get coccicheck to exclude all of
+'arch/powerpc/boot/' as I believe everything in that directory is
+compiled differently to the rest of the kernel (see the Makefile), but
+maybe just blacklisting boot/mktree.c would be sufficient.
 
-thanks,
-  -lakshmi
+Kind regards,
+Daniel
 
+>  			cksum += *cp++;
+>  		if (write(out_fd, tmpbuf, sizeof(tmpbuf)) != sizeof(tmpbuf)) {
+>  			perror("boot-image write");
+> -- 
+> 1.8.3.1
