@@ -1,53 +1,81 @@
-Return-Path: <SRS0=itdR=HZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=wwxH=H2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97B87C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Feb 2021 23:53:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B26CAC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Feb 2021 00:43:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9A7764EB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Feb 2021 23:53:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9A7764EB6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id D2C8764E05
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Feb 2021 00:43:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2C8764E05
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DlbVY1tkYz3cGt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Feb 2021 10:53:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DlcbY18l6z3cHH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Feb 2021 11:43:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=pvorel@suse.cz;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=hSySjeXt;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 1175 seconds by postgrey-1.36 at boromir;
- Wed, 24 Feb 2021 10:53:39 AEDT
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=hSySjeXt; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DlbVC0Z3Zz30NM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2021 10:53:38 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 93768AC6E;
- Tue, 23 Feb 2021 23:34:00 +0000 (UTC)
-Date: Wed, 24 Feb 2021 00:33:58 +0100
-From: Petr Vorel <pvorel@suse.cz>
-To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Subject: Re: [PATCH v2 1/2] ima: Free IMA measurement buffer on error
-Message-ID: <YDWQ5rBBe8t7+Bs2@pevik>
-References: <20210204174951.25771-1-nramas@linux.microsoft.com>
- <YB0YdqbbdAdbEOQw@kroah.com>
- <7000d128-272e-3654-8480-e46bf7dfad74@linux.microsoft.com>
- <6a5b7a1767265122d21f185c81399692d12191f4.camel@linux.ibm.com>
- <b8573374-86d0-f679-6c9f-a61b2bc6f7ea@linux.microsoft.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dlcb61TKCz30MX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2021 11:42:55 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id q20so138930pfu.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2021 16:42:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=5kYVNmbgvMOZlaQ+xmb8/ZKstsbN1EWY+/Lsj+Py4GY=;
+ b=hSySjeXtwY+9ptuXA9xBsj/VCJ/AMvw1iKD2HTpDbAflX7YbnAz3/2PnY8uoxbg49S
+ WCUJ+6Igt43GTEUOqKoTEg5xScAcXe+DfAhuYSE9Oj5TaFt+EOzka+YCqIQB+K4kAWb1
+ PwkZ8pnBTzzc+VMhRTZGRgWDI2XWPX64rV0CA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=5kYVNmbgvMOZlaQ+xmb8/ZKstsbN1EWY+/Lsj+Py4GY=;
+ b=mULx/ZZTQteaQXxYpcbi/e0leqjduv+JjTHHYINyydgl9NmwEK6hfy+MTVr0HLFf56
+ RVsXp+h1uQTwPLDuO46Rx7MGkoaau55dd8BaV5eOPUDFDqnJxMs5KbZRSnC6QSSAzBWJ
+ L3prfa4+eL1p446TudiMgjMdKUtdexZ3sTKTgtsApK3O6RHdA1UiFmOzdtEHh47UQYBk
+ mX2XB5iQ7chz9YMxtBTyZXYIyh2cQP+p9JjkkQhf3/wVxd9V3bgOiza7W3/zM3xX9vyN
+ PoJWfP6BpuLtJHJdEIm1nzZtKMVVYV5vM48faSyHCFsNYXLvmcqfCfqseEBod2f9XUKk
+ u/bw==
+X-Gm-Message-State: AOAM533hmF5W7bFHshYcBzS3nqpBrMnRkXURy4GT+doAu2OiQom1rkJ6
+ ZaB/lO3zVlo2MP9kAfkWjEX6AA==
+X-Google-Smtp-Source: ABdhPJzw7I9LaxeV7Y855sXBTO4KIsWPVlE+Zt66g/bJS4hXR129dPcXQzp2gfw+6XNJTBTsX+jrxA==
+X-Received: by 2002:a63:170e:: with SMTP id x14mr26240565pgl.245.1614127371919; 
+ Tue, 23 Feb 2021 16:42:51 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-8f72-9e89-07fc-5b36.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:8f72:9e89:7fc:5b36])
+ by smtp.gmail.com with ESMTPSA id cx6sm283224pjb.39.2021.02.23.16.42.50
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 23 Feb 2021 16:42:51 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] selftests/powerpc: Fix L1D flushing tests for Power10
+In-Reply-To: <20210223070227.2916871-1-ruscur@russell.cc>
+References: <20210223070227.2916871-1-ruscur@russell.cc>
+Date: Wed, 24 Feb 2021 11:42:47 +1100
+Message-ID: <878s7epa7s.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b8573374-86d0-f679-6c9f-a61b2bc6f7ea@linux.microsoft.com>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,59 +87,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Petr Vorel <pvorel@suse.cz>
-Cc: sashal@kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
- tyhicks@linux.microsoft.com, ebiederm@xmission.com, dmitry.kasatkin@gmail.com,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+Russell Currey <ruscur@russell.cc> writes:
 
-<snip>
-> > > > <formletter>
+> The rfi_flush and entry_flush selftests work by using the PM_LD_MISS_L1
+> perf event to count L1D misses.  The value of this event has changed
+> over time:
+>
+> - Power7 uses 0x400f0
+> - Power8 and Power9 use both 0x400f0 and 0x3e054
+> - Power10 uses only 0x3e054
+>
+> Rather than relying on raw values, configure perf to count L1D read
+> misses in the most explicit way available.
+>
+> This fixes the selftests to work on systems without 0x400f0 as
+> PM_LD_MISS_L1, and should change no behaviour for systems that the tests
+> already worked on.
+>
+> The only potential downside is that referring to a specific perf event
+> requires PMU support implemented in the kernel for that platform.
 
-> > > > This is not the correct way to submit patches for inclusion in the
-> > > > stable kernel tree.  Please read:
-> > > >       https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
-> > > > for how to do this properly.
+So, IIUC:
 
-> > > > </formletter>
+ - if you used raw events and ran the binary on a P10 system using an
+   older kernel that did not support P10 PMU events, you would still get
+   valid results
+ - but, if the HW perf event changes again, we have the same issue with
+   failing tests
+
+vs
+
+ - if you use symbolic events and run the binary on a P10 system using
+   an older kernel that does not support P10 PMU events, you would not
+   be able to run the test.
+ - but, if the HW perf event changes again, the test will continue to
+   work. 
 
 
-> > > Thanks for the info Greg.
+This seems like the correct tradeoff to make.
 
-> > > I will re-submit the two patches in the proper format.
+Having spent some quality time with these tests in the past:
 
-> > No need.  I'm testing these patches now.  I'm not exactly sure what the
-> > problem is.  Stable wasn't Cc'ed.  Is it that you sent the patch
-> > directly to Greg or added "Fixes"?
-
-> I had not Cced stable, but had "Fixes" tag in the patch.
-
-> Fixes: 7b8589cc29e7 ("ima: on soft reboot, save the measurement list")
-
-> The problem is that the buffer allocated for forwarding the IMA measurement
-> list is not freed - at the end of the kexec call and also in an error path.
-> Please see the patch description for
-
-> [PATCH v2 2/2] ima: Free IMA measurement buffer after kexec syscall
-
-> IMA allocates kernel virtual memory to carry forward the measurement
-> list, from the current kernel to the next kernel on kexec system call,
-> in ima_add_kexec_buffer() function.  This buffer is not freed before
-> completing the kexec system call resulting in memory leak.
-
-> thanks,
->  -lakshmi
-
-Mimi, Lakshmi, it looks like these two fixes haven't been submitted to stable kernels.
-Could you please submit them?
-
-Thanks a lot!
+Acked-by: Daniel Axtens <dja@axtens.net>
 
 Kind regards,
-Petr
+Daniel
+
+>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+> v2: Move away from raw events as suggested by mpe
+>
+>  tools/testing/selftests/powerpc/security/entry_flush.c | 2 +-
+>  tools/testing/selftests/powerpc/security/flush_utils.h | 4 ++++
+>  tools/testing/selftests/powerpc/security/rfi_flush.c   | 2 +-
+>  3 files changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/tools/testing/selftests/powerpc/security/entry_flush.c b/tools/testing/selftests/powerpc/security/entry_flush.c
+> index 78cf914fa321..68ce377b205e 100644
+> --- a/tools/testing/selftests/powerpc/security/entry_flush.c
+> +++ b/tools/testing/selftests/powerpc/security/entry_flush.c
+> @@ -53,7 +53,7 @@ int entry_flush_test(void)
+>  
+>  	entry_flush = entry_flush_orig;
+>  
+> -	fd = perf_event_open_counter(PERF_TYPE_RAW, /* L1d miss */ 0x400f0, -1);
+> +	fd = perf_event_open_counter(PERF_TYPE_HW_CACHE, PERF_L1D_READ_MISS_CONFIG, -1);
+>  	FAIL_IF(fd < 0);
+>  
+>  	p = (char *)memalign(zero_size, CACHELINE_SIZE);
+> diff --git a/tools/testing/selftests/powerpc/security/flush_utils.h b/tools/testing/selftests/powerpc/security/flush_utils.h
+> index 07a5eb301466..7a3d60292916 100644
+> --- a/tools/testing/selftests/powerpc/security/flush_utils.h
+> +++ b/tools/testing/selftests/powerpc/security/flush_utils.h
+> @@ -9,6 +9,10 @@
+>  
+>  #define CACHELINE_SIZE 128
+>  
+> +#define PERF_L1D_READ_MISS_CONFIG	((PERF_COUNT_HW_CACHE_L1D) | 		\
+> +					(PERF_COUNT_HW_CACHE_OP_READ << 8) |	\
+> +					(PERF_COUNT_HW_CACHE_RESULT_MISS << 16))
+> +
+>  void syscall_loop(char *p, unsigned long iterations,
+>  		  unsigned long zero_size);
+>  
+> diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tools/testing/selftests/powerpc/security/rfi_flush.c
+> index 7565fd786640..f73484a6470f 100644
+> --- a/tools/testing/selftests/powerpc/security/rfi_flush.c
+> +++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
+> @@ -54,7 +54,7 @@ int rfi_flush_test(void)
+>  
+>  	rfi_flush = rfi_flush_orig;
+>  
+> -	fd = perf_event_open_counter(PERF_TYPE_RAW, /* L1d miss */ 0x400f0, -1);
+> +	fd = perf_event_open_counter(PERF_TYPE_HW_CACHE, PERF_L1D_READ_MISS_CONFIG, -1);
+>  	FAIL_IF(fd < 0);
+>  
+>  	p = (char *)memalign(zero_size, CACHELINE_SIZE);
+> -- 
+> 2.30.1
