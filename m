@@ -2,74 +2,71 @@ Return-Path: <SRS0=yiwx=H3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32F47C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:35:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DEDFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:36:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7703364DDC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:35:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7703364DDC
+	by mail.kernel.org (Postfix) with ESMTPS id AF74E601FB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:36:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF74E601FB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dml130YV0z3ckk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 07:35:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dml1W1Wcfz3dCM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 07:36:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lulIOwnu;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kJjC2HdF;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Itg1HgnA;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=R+fgiTn8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=lulIOwnu; 
+ header.s=2020 header.b=Itg1HgnA; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=kJjC2HdF; 
+ header.a=ed25519-sha256 header.s=2020e header.b=R+fgiTn8; 
  dkim-atps=neutral
 X-Greylist: delayed 606 seconds by postgrey-1.36 at boromir;
  Fri, 26 Feb 2021 07:34:57 AEDT
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dml012T3Zz3cY8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dml013ltgz3cYQ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 07:34:57 +1100 (AEDT)
 From: John Ogness <john.ogness@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1614284687;
+ s=2020; t=1614284679;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2Gfs86MRR/HIf8qjS9ZT5ZBnpaj1z3IcrEotyUzGR2E=;
- b=lulIOwnuyU3hd/34KyMUx7ZFGNNdseWIGnmk9oyARB+psVa+gwZ1G9Xq6W1/sETRB0Y0cT
- 76f/S43QXtg23OwOevaSwfLS9mKZy/VjTO3zsAMrM02VxLZDByEP7jPv5x57ePIKaGQ5kE
- fqygiDs8QaBDHz9ZmEiTZBBpkDrqZWLviyZDsxNAOBtzCD4TGTUjVLBU4hTAhBzHBJlUqS
- M2ZMEF50ojDbTEN2iN+JqWDOmeR7DFEL3JpvuXmmObWw7lLWDyiHWO1PB5UWstma0kJBJ7
- 9cU7tZNaVjcSLJpfZmkFAMES+5hOTrDBAFzM4HvE1PDACj0QVUvnZT7w724Faw==
+ content-transfer-encoding:content-transfer-encoding;
+ bh=qDVKAKnnfPFs0Dxv5+kX2VVyNzrYE33K+BDYTVeJME8=;
+ b=Itg1HgnAQey3puEfZXpKRRf1RkHbrPWXsodppd3f9/agHLs59mQxmZvHrDVfXhn7TF2e+X
+ YgctQb8llo4ek4IXOH40pHKrSlSJUv+qmqSuRbNPlwERu5vmF3/VXIexN4FpY+8WHM5d4n
+ 3zHVITkWvbjhosz0zzfOytwQyTccmRTsG9uKDQ/PoVKslKdevkHeAS8FY/vBbTk7ZYAmwx
+ j9C6lcv4wUAstQLOYdbQOINDWx2UjXbjMRmTNEt/9KnzbRIvSmj2EXQuCLrXAd5jyQHGnB
+ 6degQSHuHB1F0v3eFX0HxngBtbRJympKrqQjrUQzvVBIk1MNI805LQYIDMpUAg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1614284687;
+ s=2020e; t=1614284679;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2Gfs86MRR/HIf8qjS9ZT5ZBnpaj1z3IcrEotyUzGR2E=;
- b=kJjC2HdFMTtlJGouQmxH7HQD/YDJ7f3i2SUg/u42twc7gzOZhHLeKKxgP3jL+zaTHIv7Cw
- daPYXYV4xAlealBw==
+ content-transfer-encoding:content-transfer-encoding;
+ bh=qDVKAKnnfPFs0Dxv5+kX2VVyNzrYE33K+BDYTVeJME8=;
+ b=R+fgiTn80NtyboUkoI+34S01BUhJK8k4MSy2VNzuYCNOKjN83g0YvSMQCLvesqnrTwxeYZ
+ t+PogSzB5duz2fCg==
 To: Petr Mladek <pmladek@suse.com>
-Subject: [PATCH next v3 14/15] printk: kmsg_dump: remove _nolock() variants
-Date: Thu, 25 Feb 2021 21:24:37 +0100
-Message-Id: <20210225202438.28985-15-john.ogness@linutronix.de>
-In-Reply-To: <20210225202438.28985-1-john.ogness@linutronix.de>
-References: <20210225202438.28985-1-john.ogness@linutronix.de>
+Subject: [PATCH next v3 00/15] printk: remove logbuf_lock
+Date: Thu, 25 Feb 2021 21:24:23 +0100
+Message-Id: <20210225202438.28985-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -83,241 +80,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Douglas Anderson <dianders@chromium.org>, Paul Mackerras <paulus@samba.org>,
+Cc: linux-hyperv@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Vignesh Raghavendra <vigneshr@ti.com>,
+ Douglas Anderson <dianders@chromium.org>, linux-mtd@lists.infradead.org,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Thomas Meyer <thomas@m3y3r.de>,
  Kees Cook <keescook@chromium.org>,
  Daniel Thompson <daniel.thompson@linaro.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Jordan Niethe <jniethe5@gmail.com>,
- Wei Li <liwei391@huawei.com>, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Richard Weinberger <richard@nod.at>, Anton Vorontsov <anton@enomsg.org>,
+ Joel Stanley <joel@jms.id.au>, Jordan Niethe <jniethe5@gmail.com>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>, Wei Li <liwei391@huawei.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
  Pavel Tatashin <pasha.tatashin@soleen.com>,
- Alistair Popple <alistair@popple.id.au>, Steven Rostedt <rostedt@goodmis.org>,
+ Alistair Popple <alistair@popple.id.au>, Jeff Dike <jdike@addtoit.com>,
+ Colin Cross <ccross@android.com>, linux-um@lists.infradead.org,
+ Wei Liu <wei.liu@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
  Davidlohr Bueso <dave@stgolabs.net>, Nicholas Piggin <npiggin@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Sumit Garg <sumit.garg@linaro.org>,
- linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Michael Kelley <mikelley@microsoft.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Sumit Garg <sumit.garg@linaro.org>,
+ Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Jason Wessel <jason.wessel@windriver.com>,
- kgdb-bugreport@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>
+ kgdb-bugreport@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kmsg_dump_rewind() and kmsg_dump_get_line() are lockless, so there is
-no need for _nolock() variants. Remove these functions and switch all
-callers of the _nolock() variants.
+Hello,
 
-The functions without _nolock() were chosen because they are already
-exported to kernel modules.
+Here is v3 of a series to remove @logbuf_lock, exposing the
+ringbuffer locklessly to both readers and writers. v2 is here [0].
 
-Signed-off-by: John Ogness <john.ogness@linutronix.de>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
----
- arch/powerpc/xmon/xmon.c    |  4 +--
- include/linux/kmsg_dump.h   | 16 ----------
- kernel/debug/kdb/kdb_main.c |  8 ++---
- kernel/printk/printk.c      | 60 +++++--------------------------------
- 4 files changed, 14 insertions(+), 74 deletions(-)
+Since @logbuf_lock was protecting much more than just the
+ringbuffer, this series clarifies and cleans up the various
+protections using comments, lockless accessors, atomic types, and a
+new finer-grained @syslog_lock.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 5978b90a885f..bf7d69625a2e 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3013,9 +3013,9 @@ dump_log_buf(void)
- 	catch_memory_errors = 1;
- 	sync();
- 
--	kmsg_dump_rewind_nolock(&iter);
-+	kmsg_dump_rewind(&iter);
- 	xmon_start_pagination();
--	while (kmsg_dump_get_line_nolock(&iter, false, buf, sizeof(buf), &len)) {
-+	while (kmsg_dump_get_line(&iter, false, buf, sizeof(buf), &len)) {
- 		buf[len] = '\0';
- 		printf("%s", buf);
- 	}
-diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
-index 5d3bf20f9f0a..532673b6570a 100644
---- a/include/linux/kmsg_dump.h
-+++ b/include/linux/kmsg_dump.h
-@@ -57,17 +57,12 @@ struct kmsg_dumper {
- #ifdef CONFIG_PRINTK
- void kmsg_dump(enum kmsg_dump_reason reason);
- 
--bool kmsg_dump_get_line_nolock(struct kmsg_dump_iter *iter, bool syslog,
--			       char *line, size_t size, size_t *len);
--
- bool kmsg_dump_get_line(struct kmsg_dump_iter *iter, bool syslog,
- 			char *line, size_t size, size_t *len);
- 
- bool kmsg_dump_get_buffer(struct kmsg_dump_iter *iter, bool syslog,
- 			  char *buf, size_t size, size_t *len_out);
- 
--void kmsg_dump_rewind_nolock(struct kmsg_dump_iter *iter);
--
- void kmsg_dump_rewind(struct kmsg_dump_iter *iter);
- 
- int kmsg_dump_register(struct kmsg_dumper *dumper);
-@@ -80,13 +75,6 @@ static inline void kmsg_dump(enum kmsg_dump_reason reason)
- {
- }
- 
--static inline bool kmsg_dump_get_line_nolock(struct kmsg_dump_iter *iter,
--					     bool syslog, const char *line,
--					     size_t size, size_t *len)
--{
--	return false;
--}
--
- static inline bool kmsg_dump_get_line(struct kmsg_dump_iter *iter, bool syslog,
- 				const char *line, size_t size, size_t *len)
- {
-@@ -99,10 +87,6 @@ static inline bool kmsg_dump_get_buffer(struct kmsg_dump_iter *iter, bool syslog
- 	return false;
- }
- 
--static inline void kmsg_dump_rewind_nolock(struct kmsg_dump_iter *iter)
--{
--}
--
- static inline void kmsg_dump_rewind(struct kmsg_dump_iter *iter)
- {
- }
-diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
-index 8544d7a55a57..67d9f2403b52 100644
---- a/kernel/debug/kdb/kdb_main.c
-+++ b/kernel/debug/kdb/kdb_main.c
-@@ -2126,8 +2126,8 @@ static int kdb_dmesg(int argc, const char **argv)
- 		kdb_set(2, setargs);
- 	}
- 
--	kmsg_dump_rewind_nolock(&iter);
--	while (kmsg_dump_get_line_nolock(&iter, 1, NULL, 0, NULL))
-+	kmsg_dump_rewind(&iter);
-+	while (kmsg_dump_get_line(&iter, 1, NULL, 0, NULL))
- 		n++;
- 
- 	if (lines < 0) {
-@@ -2159,8 +2159,8 @@ static int kdb_dmesg(int argc, const char **argv)
- 	if (skip >= n || skip < 0)
- 		return 0;
- 
--	kmsg_dump_rewind_nolock(&iter);
--	while (kmsg_dump_get_line_nolock(&iter, 1, buf, sizeof(buf), &len)) {
-+	kmsg_dump_rewind(&iter);
-+	while (kmsg_dump_get_line(&iter, 1, buf, sizeof(buf), &len)) {
- 		if (skip) {
- 			skip--;
- 			continue;
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 01385ea92e7c..15a9bc409e0a 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -3373,7 +3373,7 @@ void kmsg_dump(enum kmsg_dump_reason reason)
- }
- 
- /**
-- * kmsg_dump_get_line_nolock - retrieve one kmsg log line (unlocked version)
-+ * kmsg_dump_get_line - retrieve one kmsg log line
-  * @iter: kmsg dump iterator
-  * @syslog: include the "<4>" prefixes
-  * @line: buffer to copy the line to
-@@ -3388,18 +3388,18 @@ void kmsg_dump(enum kmsg_dump_reason reason)
-  *
-  * A return value of FALSE indicates that there are no more records to
-  * read.
-- *
-- * The function is similar to kmsg_dump_get_line(), but grabs no locks.
-  */
--bool kmsg_dump_get_line_nolock(struct kmsg_dump_iter *iter, bool syslog,
--			       char *line, size_t size, size_t *len)
-+bool kmsg_dump_get_line(struct kmsg_dump_iter *iter, bool syslog,
-+			char *line, size_t size, size_t *len)
- {
- 	struct printk_info info;
- 	unsigned int line_count;
- 	struct printk_record r;
-+	unsigned long flags;
- 	size_t l = 0;
- 	bool ret = false;
- 
-+	printk_safe_enter_irqsave(flags);
- 	prb_rec_init_rd(&r, &info, line, size);
- 
- 	/* Read text or count text lines? */
-@@ -3420,40 +3420,11 @@ bool kmsg_dump_get_line_nolock(struct kmsg_dump_iter *iter, bool syslog,
- 	iter->cur_seq = r.info->seq + 1;
- 	ret = true;
- out:
-+	printk_safe_exit_irqrestore(flags);
- 	if (len)
- 		*len = l;
- 	return ret;
- }
--
--/**
-- * kmsg_dump_get_line - retrieve one kmsg log line
-- * @iter: kmsg dump iterator
-- * @syslog: include the "<4>" prefixes
-- * @line: buffer to copy the line to
-- * @size: maximum size of the buffer
-- * @len: length of line placed into buffer
-- *
-- * Start at the beginning of the kmsg buffer, with the oldest kmsg
-- * record, and copy one record into the provided buffer.
-- *
-- * Consecutive calls will return the next available record moving
-- * towards the end of the buffer with the youngest messages.
-- *
-- * A return value of FALSE indicates that there are no more records to
-- * read.
-- */
--bool kmsg_dump_get_line(struct kmsg_dump_iter *iter, bool syslog,
--			char *line, size_t size, size_t *len)
--{
--	unsigned long flags;
--	bool ret;
--
--	printk_safe_enter_irqsave(flags);
--	ret = kmsg_dump_get_line_nolock(iter, syslog, line, size, len);
--	printk_safe_exit_irqrestore(flags);
--
--	return ret;
--}
- EXPORT_SYMBOL_GPL(kmsg_dump_get_line);
- 
- /**
-@@ -3542,22 +3513,6 @@ bool kmsg_dump_get_buffer(struct kmsg_dump_iter *iter, bool syslog,
- }
- EXPORT_SYMBOL_GPL(kmsg_dump_get_buffer);
- 
--/**
-- * kmsg_dump_rewind_nolock - reset the iterator (unlocked version)
-- * @iter: kmsg dump iterator
-- *
-- * Reset the dumper's iterator so that kmsg_dump_get_line() and
-- * kmsg_dump_get_buffer() can be called again and used multiple
-- * times within the same dumper.dump() callback.
-- *
-- * The function is similar to kmsg_dump_rewind(), but grabs no locks.
-- */
--void kmsg_dump_rewind_nolock(struct kmsg_dump_iter *iter)
--{
--	iter->cur_seq = latched_seq_read_nolock(&clear_seq);
--	iter->next_seq = prb_next_seq(prb);
--}
--
- /**
-  * kmsg_dump_rewind - reset the iterator
-  * @iter: kmsg dump iterator
-@@ -3571,7 +3526,8 @@ void kmsg_dump_rewind(struct kmsg_dump_iter *iter)
- 	unsigned long flags;
- 
- 	printk_safe_enter_irqsave(flags);
--	kmsg_dump_rewind_nolock(iter);
-+	iter->cur_seq = latched_seq_read_nolock(&clear_seq);
-+	iter->next_seq = prb_next_seq(prb);
- 	printk_safe_exit_irqrestore(flags);
- }
- EXPORT_SYMBOL_GPL(kmsg_dump_rewind);
+Removing @logbuf_lock required changing the semantics of the
+kmsg_dumper callback in order to work locklessly. Since this
+involved touching all the kmsg_dump users, we also decided [1] to
+use this opportunity to clean up and clarify the kmsg_dump semantics
+in general.
+
+This series is based on next-20210225.
+
+Changes since v2:
+
+- use get_maintainer.pl to get the full list of developers that
+  should at least see the changes in their respective areas
+
+- do not disable interrupts in arch/um kmsg_dumper (because there is
+  no need to)
+
+- protect the mtd/mtdoops kmsg_dumper buffer against concurrent
+  dumps
+
+- update kerneldoc for kmsg_dump_get_line() (@len_out)
+
+- remove ksmg_dump's @active flag
+
+- change kmsg_dumper callback to:
+  void (*dump)(enum kmsg_dump_reason reason);
+
+- rename kmsg_dumper_iter to kmsg_dump_iter
+
+- update kmsg_dumpers to use their own kmsg_dump_iter (and
+  initialize it with kmsg_dump_rewind() if necessary)
+
+John Ogness
+
+[0] https://lkml.kernel.org/r/20210218081817.28849-1-john.ogness@linutronix.de
+[1] https://lkml.kernel.org/r/YDeZAA08NKCHa4s%2F@alley
+
+John Ogness (15):
+  um: synchronize kmsg_dumper
+  mtd: mtdoops: synchronize kmsg_dumper
+  printk: limit second loop of syslog_print_all
+  printk: kmsg_dump: remove unused fields
+  printk: refactor kmsg_dump_get_buffer()
+  printk: consolidate kmsg_dump_get_buffer/syslog_print_all code
+  printk: introduce CONSOLE_LOG_MAX for improved multi-line support
+  printk: use seqcount_latch for clear_seq
+  printk: use atomic64_t for devkmsg_user.seq
+  printk: add syslog_lock
+  printk: kmsg_dumper: remove @active field
+  printk: introduce a kmsg_dump iterator
+  printk: remove logbuf_lock
+  printk: kmsg_dump: remove _nolock() variants
+  printk: console: remove unnecessary safe buffer usage
+
+ arch/powerpc/kernel/nvram_64.c             |  14 +-
+ arch/powerpc/platforms/powernv/opal-kmsg.c |   3 +-
+ arch/powerpc/xmon/xmon.c                   |   6 +-
+ arch/um/kernel/kmsg_dump.c                 |  15 +-
+ drivers/hv/vmbus_drv.c                     |   7 +-
+ drivers/mtd/mtdoops.c                      |  20 +-
+ fs/pstore/platform.c                       |   8 +-
+ include/linux/kmsg_dump.h                  |  49 +--
+ kernel/debug/kdb/kdb_main.c                |  10 +-
+ kernel/printk/internal.h                   |   4 +-
+ kernel/printk/printk.c                     | 456 ++++++++++-----------
+ kernel/printk/printk_safe.c                |  27 +-
+ 12 files changed, 309 insertions(+), 310 deletions(-)
+
 -- 
 2.20.1
 
