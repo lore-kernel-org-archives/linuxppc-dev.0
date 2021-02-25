@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F9A0C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7BA3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:54:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2C3964F3B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:53:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2C3964F3B
+	by mail.kernel.org (Postfix) with ESMTPS id 19E2964F3B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:54:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19E2964F3B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgQ146PNz3cZn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:53:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgQM50sRz3d8X
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:54:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLW2jQ4z3cjr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLW5q2Bz3ckK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DmgLQ6NXvz9v1BB;
- Thu, 25 Feb 2021 18:50:38 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DmgLP6SmLz9v1B8;
+ Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QvMhW63DNFRf; Thu, 25 Feb 2021 18:50:38 +0100 (CET)
+ with ESMTP id e37ZUKBcZMRF; Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLQ5FHxz9v19y;
- Thu, 25 Feb 2021 18:50:38 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLP5gPqz9v19y;
+ Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 905668B895;
- Thu, 25 Feb 2021 18:50:40 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7778D8B895;
+ Thu, 25 Feb 2021 18:50:39 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hhm05etgtTnB; Thu, 25 Feb 2021 18:50:40 +0100 (CET)
+ with ESMTP id hKVa0wPP-HGu; Thu, 25 Feb 2021 18:50:39 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4E6888B88B;
- Thu, 25 Feb 2021 18:50:40 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 43CED8B88B;
+ Thu, 25 Feb 2021 18:50:39 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 295BD67442; Thu, 25 Feb 2021 17:50:40 +0000 (UTC)
-Message-Id: <1bca82b81046b5cf094fbb9163d73c4043455865.1614275314.git.christophe.leroy@csgroup.eu>
+ id 1EEC767442; Thu, 25 Feb 2021 17:50:39 +0000 (UTC)
+Message-Id: <129ae74443042123ca249216484b12a534568d51.1614275314.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 References: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 10/15] powerpc/uaccess: Split out __get_user_nocheck()
+Subject: [PATCH v1 09/15] powerpc/uaccess: Remove calls to __get_user_bad()
+ and __put_user_bad()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 25 Feb 2021 17:50:40 +0000 (UTC)
+Date: Thu, 25 Feb 2021 17:50:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,69 +75,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-One part of __get_user_nocheck() is used for __get_user(),
-the other part for unsafe_get_user().
+__get_user_bad() and __put_user_bad() are functions that are
+declared but not defined, in order to make the build fails in
+case they are called.
 
-Move the part dedicated to unsafe_get_user() in it.
+Nowadays, we have BUILD_BUG() and BUILD_BUG_ON() for that.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/uaccess.h | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index a8c683695ec7..678651a615c3 100644
+index a9f2639ca3a8..a8c683695ec7 100644
 --- a/arch/powerpc/include/asm/uaccess.h
 +++ b/arch/powerpc/include/asm/uaccess.h
-@@ -49,7 +49,7 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
- 	__put_user_check((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
- 
- #define __get_user(x, ptr) \
--	__get_user_nocheck((x), (ptr), sizeof(*(ptr)), true)
-+	__get_user_nocheck((x), (ptr), sizeof(*(ptr)))
+@@ -53,8 +53,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
  #define __put_user(x, ptr) \
  	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
  
-@@ -216,19 +216,15 @@ do {								\
- #define __long_type(x) \
- 	__typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
- 
--#define __get_user_nocheck(x, ptr, size, do_allow)			\
-+#define __get_user_nocheck(x, ptr, size)			\
- ({								\
- 	long __gu_err;						\
- 	__long_type(*(ptr)) __gu_val;				\
- 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__typeof__(size) __gu_size = (size);			\
- 								\
--	if (do_allow) {								\
--		might_fault();					\
--		__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err);	\
--	} else {									\
--		__get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err); \
--	}									\
-+	might_fault();					\
-+	__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err);	\
- 	(x) = (__typeof__(*(ptr)))__gu_val;			\
- 								\
- 	__gu_err;						\
-@@ -386,8 +382,14 @@ user_write_access_begin(const void __user *ptr, size_t len)
- #define user_write_access_end		prevent_current_write_to_user
- 
- #define unsafe_get_user(x, p, e) do {					\
--	if (unlikely(__get_user_nocheck((x), (p), sizeof(*(p)), false)))\
--		goto e;							\
-+	long __gu_err;						\
-+	__long_type(*(p)) __gu_val;				\
-+	__typeof__(*(p)) __user *__gu_addr = (p);		\
-+								\
-+	__get_user_size_allowed(__gu_val, __gu_addr, sizeof(*(p)), __gu_err); \
-+	if (__gu_err)						\
-+		goto e;						\
-+	(x) = (__typeof__(*(p)))__gu_val;			\
+-extern long __put_user_bad(void);
+-
+ #define __put_user_size(x, ptr, size, retval)			\
+ do {								\
+ 	__label__ __pu_failed;					\
+@@ -136,12 +134,10 @@ do {								\
+ 	case 2: __put_user_asm_goto(x, __pus_addr, label, "sth"); break;	\
+ 	case 4: __put_user_asm_goto(x, __pus_addr, label, "stw"); break;	\
+ 	case 8: __put_user_asm2_goto(x, __pus_addr, label); break;		\
+-	default: __put_user_bad();				\
++	default: BUILD_BUG();					\
+ 	}							\
  } while (0)
  
- #define unsafe_put_user(x, p, e) \
+-extern long __get_user_bad(void);
+-
+ /*
+  * This does an atomic 128 byte aligned load from userspace.
+  * Upto caller to do enable_kernel_vmx() before calling!
+@@ -196,14 +192,13 @@ extern long __get_user_bad(void);
+ #define __get_user_size_allowed(x, ptr, size, retval)		\
+ do {								\
+ 	retval = 0;						\
+-	if (size > sizeof(x))					\
+-		(x) = __get_user_bad();				\
++	BUILD_BUG_ON(size > sizeof(x));				\
+ 	switch (size) {						\
+ 	case 1: __get_user_asm(x, (u8 __user *)ptr, retval, "lbz"); break;	\
+ 	case 2: __get_user_asm(x, (u16 __user *)ptr, retval, "lhz"); break;	\
+ 	case 4: __get_user_asm(x, (u32 __user *)ptr, retval, "lwz"); break;	\
+ 	case 8: __get_user_asm2(x, (u64 __user *)ptr, retval);  break;	\
+-	default: (x) = __get_user_bad();			\
++	default: BUILD_BUG();					\
+ 	}							\
+ } while (0)
+ 
 -- 
 2.25.0
 
