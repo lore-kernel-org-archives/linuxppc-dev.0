@@ -7,58 +7,57 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72DF5C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FC65C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:53:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A7C664F36
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:52:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A7C664F36
+	by mail.kernel.org (Postfix) with ESMTPS id BD27E64F2F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:53:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD27E64F2F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgP01LRHz3db4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:52:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgPL2k5Bz3d5C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:53:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLV25qsz3cbj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLV33CNz3cby
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DmgLK5ypCz9v1B5;
- Thu, 25 Feb 2021 18:50:33 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DmgLM56NWz9v1B9;
+ Thu, 25 Feb 2021 18:50:35 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Z9Pb4fbjnuJQ; Thu, 25 Feb 2021 18:50:33 +0100 (CET)
+ with ESMTP id 49-Jw7QhTgVc; Thu, 25 Feb 2021 18:50:35 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLK3p0zz9v19y;
- Thu, 25 Feb 2021 18:50:33 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5BA528B895;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLM4Gr8z9v1B7;
  Thu, 25 Feb 2021 18:50:35 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 707AB8B895;
+ Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id I9ck2BO1wRgn; Thu, 25 Feb 2021 18:50:35 +0100 (CET)
+ with ESMTP id D_0GLLUJmK9f; Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A1758B88B;
- Thu, 25 Feb 2021 18:50:35 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A2258B88B;
+ Thu, 25 Feb 2021 18:50:37 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 04CD167442; Thu, 25 Feb 2021 17:50:35 +0000 (UTC)
-Message-Id: <66b96f8a598b2835855a0ae26ff47bcfff448e9c.1614275314.git.christophe.leroy@csgroup.eu>
+ id 126C467442; Thu, 25 Feb 2021 17:50:37 +0000 (UTC)
+Message-Id: <37821177867fdabd8aed8b7e4769922d232bb322.1614275314.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 References: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 05/15] powerpc/align: Don't use __get_user_instr() on
- kernel addresses
+Subject: [PATCH v1 07/15] powerpc/uaccess: Remove __unsafe_put_user_goto()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 25 Feb 2021 17:50:35 +0000 (UTC)
+Date: Thu, 25 Feb 2021 17:50:37 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,41 +74,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the old days, when we didn't have kernel userspace access
-protection and had set_fs(), it was wise to use __get_user()
-and friends to read kernel memory.
+__unsafe_put_user_goto() is just an intermediate layer to
+__put_user_size_goto() without added value other than doing
+the __user pointer type checking.
 
-Nowadays, get_user() is granting userspace access and is exclusively
-for userspace access.
-
-In alignment exception handler, use probe_kernel_read_inst()
-instead of __get_user_instr() for reading instructions in kernel.
-
-This will allow to remove the is_kernel_addr() check in
-__get/put_user() in a following patch.
+Do the __user pointer type checking in __put_user_size_goto()
+and remove __unsafe_put_user_goto().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/align.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/uaccess.h | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index 83b199026a1e..55e262627b53 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -305,7 +305,11 @@ int fix_alignment(struct pt_regs *regs)
- 	 */
- 	CHECK_FULL_REGS(regs);
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index c4bbc64758a0..a6d3563cf3ee 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -130,23 +130,17 @@ __pu_failed:							\
  
--	if (unlikely(__get_user_instr(instr, (void __user *)regs->nip)))
-+	if (is_kernel_addr(regs->nip))
-+		r = probe_kernel_read_inst(&instr, (void *)regs->nip);
-+	else
-+		r = __get_user_instr(instr, (void __user *)regs->nip);
-+	if (unlikely(r))
- 		return -EFAULT;
- 	if ((regs->msr & MSR_LE) != (MSR_KERNEL & MSR_LE)) {
- 		/* We don't handle PPC little-endian any more... */
+ #define __put_user_size_goto(x, ptr, size, label)		\
+ do {								\
++	__typeof__(*(ptr)) __user *__pus_addr = (ptr);		\
++								\
+ 	switch (size) {						\
+-	case 1: __put_user_asm_goto(x, ptr, label, "stb"); break;	\
+-	case 2: __put_user_asm_goto(x, ptr, label, "sth"); break;	\
+-	case 4: __put_user_asm_goto(x, ptr, label, "stw"); break;	\
+-	case 8: __put_user_asm2_goto(x, ptr, label); break;	\
++	case 1: __put_user_asm_goto(x, __pus_addr, label, "stb"); break;	\
++	case 2: __put_user_asm_goto(x, __pus_addr, label, "sth"); break;	\
++	case 4: __put_user_asm_goto(x, __pus_addr, label, "stw"); break;	\
++	case 8: __put_user_asm2_goto(x, __pus_addr, label); break;		\
+ 	default: __put_user_bad();				\
+ 	}							\
+ } while (0)
+ 
+-#define __unsafe_put_user_goto(x, ptr, size, label)		\
+-do {								\
+-	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
+-	__chk_user_ptr(ptr);					\
+-	__put_user_size_goto((x), __pu_addr, (size), label);	\
+-} while (0)
+-
+-
+ extern long __get_user_bad(void);
+ 
+ /*
+@@ -405,7 +399,7 @@ user_write_access_begin(const void __user *ptr, size_t len)
+ } while (0)
+ 
+ #define unsafe_put_user(x, p, e) \
+-	__unsafe_put_user_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
++	__put_user_size_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
+ 
+ #define unsafe_copy_to_user(d, s, l, e) \
+ do {									\
 -- 
 2.25.0
 
