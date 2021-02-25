@@ -2,63 +2,65 @@ Return-Path: <SRS0=yiwx=H3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF21C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A882C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:12:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC23364F31
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC23364F31
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id E83BC64F2B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:12:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E83BC64F2B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgSG2lFhz3fNl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:55:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmkVW3FYhz3ckD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 07:12:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=qYoy3qMe;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
+ (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256
+ header.s=20201203 header.b=qYoy3qMe; dkim-atps=neutral
+X-Greylist: delayed 448 seconds by postgrey-1.36 at boromir;
+ Fri, 26 Feb 2021 07:12:28 AEDT
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLc6c4Mz3cc0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:48 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DmgLT08sBz9v1BD;
- Thu, 25 Feb 2021 18:50:41 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id H2LwkeRtkeT5; Thu, 25 Feb 2021 18:50:40 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLS6RpVz9v19y;
- Thu, 25 Feb 2021 18:50:40 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B1DE68B895;
- Thu, 25 Feb 2021 18:50:42 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id rmmEhHZ5srwC; Thu, 25 Feb 2021 18:50:42 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5EA648B88B;
- Thu, 25 Feb 2021 18:50:42 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 36B5967442; Thu, 25 Feb 2021 17:50:42 +0000 (UTC)
-Message-Id: <3c174edb80d2d37af6b08c637b09268f675e5371.1614275314.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1614275314.git.christophe.leroy@csgroup.eu>
-References: <cover.1614275314.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 12/15] powerpc/uaccess: Refactor get/put_user() and
- __get/put_user()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 25 Feb 2021 17:50:42 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmkV41snKz3cYX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 07:12:28 +1100 (AEDT)
+Received: from localhost (unknown [IPv6:2601:281:8300:104d::5f6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ms.lwn.net (Postfix) with ESMTPSA id B4C3177F;
+ Thu, 25 Feb 2021 20:04:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net B4C3177F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+ t=1614283491; bh=lFhsGiaPaFrLP7bCx4x5oX0VuWHZvAm6Q4Pio+vky4g=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=qYoy3qMeV1Jj27pmWOiJ6LCiqLr/yY8dbHBPIwyJHt8OVdyWASoMm9KhBPhJdXP+E
+ LkmVUwfRo0J7Yj1xmJ7nnwyZadGmRB8OQ0jow4P1BN47q+SP1y66P4sqfgyq3ZGnCs
+ moXKp3phc/nShUfAFxWrufBr/3vIIMdzpyaCdIqBI+JcAquHuCIyYlpSAX2AWE5CU0
+ d3ajcvGl+et67nkQbL/8Xsaad3WrOoPYLdMvWPs/W/NpSh+M6m81LbjbmaEDrZ3lw0
+ +G8Uc4ExKGgWW0ouHlAYwlSEU0lsGAZ9jq94Ep2LhGNxewpZur03EFCkelAWadhC3A
+ J1hPwm/YEvnJA==
+From: Jonathan Corbet <corbet@lwn.net>
+To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] docs: powerpc: Fix tables in syscall64-abi.rst
+In-Reply-To: <20210225060857.16083-1-ajd@linux.ibm.com>
+References: <20210225060857.16083-1-ajd@linux.ibm.com>
+Date: Thu, 25 Feb 2021 13:04:51 -0700
+Message-ID: <874khzdicc.fsf@meer.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,135 +72,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: mchehab+huawei@kernel.org, linux-doc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make get_user() do the access_ok() check then call __get_user().
-Make put_user() do the access_ok() check then call __put_user().
+Andrew Donnellan <ajd@linux.ibm.com> writes:
 
-Then embed  __get_user_size() and __put_user_size() in
-__get_user() and __put_user().
+> Commit 209b44c804c ("docs: powerpc: syscall64-abi.rst: fix a malformed
+> table") attempted to fix the formatting of tables in syscall64-abi.rst, but
+> inadvertently changed some register names.
+>
+> Redo the tables with the correct register names, and while we're here,
+> clean things up to separate the registers into different rows and add
+> headings.
+>
+> Fixes: 209b44c804c ("docs: powerpc: syscall64-abi.rst: fix a malformed table")
+> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+> ---
+>  Documentation/powerpc/syscall64-abi.rst | 51 ++++++++++++++++---------
+>  1 file changed, 32 insertions(+), 19 deletions(-)
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/uaccess.h | 66 +++++++++++-------------------
- 1 file changed, 23 insertions(+), 43 deletions(-)
+Applied, thanks.
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 616a3a7928c2..671c083f2f2f 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -43,21 +43,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
-  * exception handling means that it's no longer "just"...)
-  *
-  */
--#define __put_user_size(x, ptr, size, retval)			\
--do {								\
--	__label__ __pu_failed;					\
--								\
--	retval = 0;						\
--	allow_write_to_user(ptr, size);				\
--	__put_user_size_goto(x, ptr, size, __pu_failed);	\
--	prevent_write_to_user(ptr, size);			\
--	break;							\
--								\
--__pu_failed:							\
--	retval = -EFAULT;					\
--	prevent_write_to_user(ptr, size);			\
--} while (0)
--
- #define __put_user(x, ptr)					\
- ({								\
- 	long __pu_err;						\
-@@ -66,23 +51,29 @@ __pu_failed:							\
- 	__typeof__(sizeof(*(ptr))) __pu_size = sizeof(*(ptr));	\
- 								\
- 	might_fault();						\
--	__put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err);	\
-+	do {							\
-+		__label__ __pu_failed;				\
-+								\
-+		allow_write_to_user(__pu_addr, __pu_size);	\
-+		__put_user_size_goto(__pu_val, __pu_addr, __pu_size, __pu_failed);	\
-+		prevent_write_to_user(__pu_addr, __pu_size);	\
-+		__pu_err = 0;					\
-+		break;						\
-+								\
-+__pu_failed:							\
-+		prevent_write_to_user(__pu_addr, __pu_size);	\
-+		__pu_err = -EFAULT;				\
-+	} while (0);						\
- 								\
- 	__pu_err;						\
- })
- 
- #define put_user(x, ptr)						\
- ({									\
--	long __pu_err = -EFAULT;					\
--	__typeof__(*(ptr)) __user *__pu_addr = (ptr);			\
--	__typeof__(*(ptr)) __pu_val = (__typeof__(*(ptr)))(x);		\
--	__typeof__(sizeof(*(ptr))) __pu_size = sizeof(*(ptr));		\
-+	__typeof__(*(ptr)) __user *_pu_addr = (ptr);			\
- 									\
--	might_fault();							\
--	if (access_ok(__pu_addr, __pu_size))				\
--		__put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err); \
--									\
--	__pu_err;							\
-+	access_ok(_pu_addr, sizeof(*(ptr))) ?				\
-+		  __put_user(x, _pu_addr) : -EFAULT;			\
- })
- 
- /*
-@@ -192,13 +183,6 @@ do {								\
- 	}							\
- } while (0)
- 
--#define __get_user_size(x, ptr, size, retval)			\
--do {								\
--	allow_read_from_user(ptr, size);			\
--	__get_user_size_allowed(x, ptr, size, retval);		\
--	prevent_read_from_user(ptr, size);			\
--} while (0)
--
- /*
-  * This is a type: either unsigned long, if the argument fits into
-  * that type, or otherwise unsigned long long.
-@@ -214,7 +198,9 @@ do {								\
- 	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));	\
- 								\
- 	might_fault();					\
--	__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err);	\
-+	allow_read_from_user(__gu_addr, __gu_size);		\
-+	__get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err);	\
-+	prevent_read_from_user(__gu_addr, __gu_size);		\
- 	(x) = (__typeof__(*(ptr)))__gu_val;			\
- 								\
- 	__gu_err;						\
-@@ -222,17 +208,11 @@ do {								\
- 
- #define get_user(x, ptr)						\
- ({									\
--	long __gu_err = -EFAULT;					\
--	__long_type(*(ptr)) __gu_val = 0;				\
--	__typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
--	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));		\
--									\
--	might_fault();							\
--	if (access_ok(__gu_addr, __gu_size))				\
--		__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err); \
--	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
-+	__typeof__(*(ptr)) __user *_gu_addr = (ptr);			\
- 									\
--	__gu_err;							\
-+	access_ok(_gu_addr, sizeof(*(ptr))) ?				\
-+		  __get_user(x, _gu_addr) :				\
-+		  ((x) = (__force __typeof__(*(ptr)))0, -EFAULT);	\
- })
- 
- /* more complex routines */
--- 
-2.25.0
-
+jon
