@@ -7,42 +7,43 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACAB3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 08:57:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C720C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 09:13:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B5E764DF3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 08:57:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B5E764DF3
+	by mail.kernel.org (Postfix) with ESMTPS id C1E2664EBA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 09:13:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1E2664EBA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmRWM6WBgz3cLS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 19:57:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmRt35hfDz3ck4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:13:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.133;
- helo=out30-133.freemail.mail.aliyun.com;
- envelope-from=yang.lee@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-133.freemail.mail.aliyun.com
- (out30-133.freemail.mail.aliyun.com [115.124.30.133])
+ smtp.mailfrom=linux.alibaba.com (client-ip=47.88.44.36;
+ helo=out4436.biz.mail.alibaba.com; envelope-from=yang.lee@linux.alibaba.com;
+ receiver=<UNKNOWN>)
+Received: from out4436.biz.mail.alibaba.com (out4436.biz.mail.alibaba.com
+ [47.88.44.36])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmRW14Xg7z3cGP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2021 19:57:15 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R191e4; CH=green; DM=||false|;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmRsk2K8Zz30Ql
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2021 20:13:29 +1100 (AEDT)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R161e4; CH=green; DM=||false|;
  DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e01424; MF=yang.lee@linux.alibaba.com;
- NM=1; PH=DS; RN=9; SR=0; TI=SMTPD_---0UPX1XpO_1614243418; 
+ NM=1; PH=DS; RN=6; SR=0; TI=SMTPD_---0UPXPpzL_1614244379; 
 Received: from
  j63c13417.sqa.eu95.tbsite.net(mailfrom:yang.lee@linux.alibaba.com
- fp:SMTPD_---0UPX1XpO_1614243418) by smtp.aliyun-inc.com(127.0.0.1);
- Thu, 25 Feb 2021 16:56:59 +0800
+ fp:SMTPD_---0UPXPpzL_1614244379) by smtp.aliyun-inc.com(127.0.0.1);
+ Thu, 25 Feb 2021 17:13:00 +0800
 From: Yang Li <yang.lee@linux.alibaba.com>
-To: herbert@gondor.apana.org.au
-Subject: [PATCH] crypto/nx: add missing call to of_node_put()
-Date: Thu, 25 Feb 2021 16:56:57 +0800
-Message-Id: <1614243417-48556-1-git-send-email-yang.lee@linux.alibaba.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Replace DEFINE_SIMPLE_ATTRIBUTE with
+ DEFINE_DEBUGFS_ATTRIBUTE
+Date: Thu, 25 Feb 2021 17:12:58 +0800
+Message-Id: <1614244378-63152-1-git-send-email-yang.lee@linux.alibaba.com>
 X-Mailer: git-send-email 1.8.3.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,39 +56,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org,
- linux-crypto@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Yang Li <yang.lee@linux.alibaba.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In one of the error paths of the for_each_child_of_node() loop,
-add missing call to of_node_put().
-
 Fix the following coccicheck warning:
-./drivers/crypto/nx/nx-common-powernv.c:927:1-23: WARNING: Function
-"for_each_child_of_node" should have of_node_put() before return around
-line 936.
+./arch/powerpc/kernel/setup_64.c:1143:0-23: WARNING: fops_rfi_flush
+should be defined with DEFINE_DEBUGFS_ATTRIBUTE
+./arch/powerpc/kernel/setup_64.c:1169:0-23: WARNING: fops_entry_flush
+should be defined with DEFINE_DEBUGFS_ATTRIBUTE
+./arch/powerpc/kernel/setup_64.c:1195:0-23: WARNING: fops_uaccess_flush
+should be defined with DEFINE_DEBUGFS_ATTRIBUTE
+./arch/powerpc/platforms/powernv/memtrace.c:311:0-23: WARNING:
+memtrace_init_fops should be defined with DEFINE_DEBUGFS_ATTRIBUTE
+./arch/powerpc/xmon/xmon.c:3997:0-23: WARNING: xmon_dbgfs_ops should be
+defined with DEFINE_DEBUGFS_ATTRIBUTE
 
 Reported-by: Abaci Robot <abaci@linux.alibaba.com>
 Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/crypto/nx/nx-common-powernv.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/setup_64.c            | 6 +++---
+ arch/powerpc/platforms/powernv/memtrace.c | 4 ++--
+ arch/powerpc/xmon/xmon.c                  | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/crypto/nx/nx-common-powernv.c b/drivers/crypto/nx/nx-common-powernv.c
-index 13c65de..b43c457 100644
---- a/drivers/crypto/nx/nx-common-powernv.c
-+++ b/drivers/crypto/nx/nx-common-powernv.c
-@@ -933,6 +933,7 @@ static int __init nx_powernv_probe_vas(struct device_node *pn)
- 				NX_CT_GZIP, "ibm,p9-nx-gzip", &ct_gzip);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 560ed8b..6a030b0 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -1140,7 +1140,7 @@ static int rfi_flush_get(void *data, u64 *val)
+ 	return 0;
+ }
  
- 		if (ret)
-+			of_node_put(dn);
- 			return ret;
- 	}
+-DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
++DEFINE_DEBUGFS_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
  
+ static int entry_flush_set(void *data, u64 val)
+ {
+@@ -1166,7 +1166,7 @@ static int entry_flush_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(fops_entry_flush, entry_flush_get, entry_flush_set, "%llu\n");
++DEFINE_DEBUGFS_ATTRIBUTE(fops_entry_flush, entry_flush_get, entry_flush_set, "%llu\n");
+ 
+ static int uaccess_flush_set(void *data, u64 val)
+ {
+@@ -1192,7 +1192,7 @@ static int uaccess_flush_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(fops_uaccess_flush, uaccess_flush_get, uaccess_flush_set, "%llu\n");
++DEFINE_DEBUGFS_ATTRIBUTE(fops_uaccess_flush, uaccess_flush_get, uaccess_flush_set, "%llu\n");
+ 
+ static __init int rfi_flush_debugfs_init(void)
+ {
+diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+index 019669e..731be02 100644
+--- a/arch/powerpc/platforms/powernv/memtrace.c
++++ b/arch/powerpc/platforms/powernv/memtrace.c
+@@ -308,8 +308,8 @@ static int memtrace_enable_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
+-					memtrace_enable_set, "0x%016llx\n");
++DEFINE_DEBUGFS_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
++			 memtrace_enable_set, "0x%016llx\n");
+ 
+ static int memtrace_init(void)
+ {
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 3fe3749..6d54767 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3994,7 +3994,7 @@ static int xmon_dbgfs_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(xmon_dbgfs_ops, xmon_dbgfs_get,
++DEFINE_DEBUGFS_ATTRIBUTE(xmon_dbgfs_ops, xmon_dbgfs_get,
+ 			xmon_dbgfs_set, "%llu\n");
+ 
+ static int __init setup_xmon_dbgfs(void)
 -- 
 1.8.3.1
 
