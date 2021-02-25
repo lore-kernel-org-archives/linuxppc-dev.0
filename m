@@ -2,59 +2,62 @@ Return-Path: <SRS0=yiwx=H3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD432C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B84C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:51:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D7FF764F2F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:51:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7FF764F2F
+	by mail.kernel.org (Postfix) with ESMTPS id C34FE64F3B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:51:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C34FE64F3B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgM83L2xz3d6b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:51:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgMV2jjmz3cnH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:51:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLR5gTpz3cYP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLR5bKVz3cY9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:36 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DmgLD4QBbz9v1B0;
- Thu, 25 Feb 2021 18:50:28 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DmgLJ0trMz9v1B3;
+ Thu, 25 Feb 2021 18:50:32 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 4bSuDRE5h1vb; Thu, 25 Feb 2021 18:50:28 +0100 (CET)
+ with ESMTP id Y_K27AuZqyRY; Thu, 25 Feb 2021 18:50:32 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLD3FF7z9v19y;
- Thu, 25 Feb 2021 18:50:28 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLJ04p9z9v19y;
+ Thu, 25 Feb 2021 18:50:32 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 493D78B895;
- Thu, 25 Feb 2021 18:50:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 823958B895;
+ Thu, 25 Feb 2021 18:50:33 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id C4JgywURdKTZ; Thu, 25 Feb 2021 18:50:30 +0100 (CET)
+ with ESMTP id x4-dAar3FAUb; Thu, 25 Feb 2021 18:50:33 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 161A18B88B;
- Thu, 25 Feb 2021 18:50:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1ABF08B88B;
+ Thu, 25 Feb 2021 18:50:33 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D011367442; Thu, 25 Feb 2021 17:50:29 +0000 (UTC)
-Message-Id: <cover.1614275314.git.christophe.leroy@csgroup.eu>
+ id EB78867442; Thu, 25 Feb 2021 17:50:32 +0000 (UTC)
+Message-Id: <8732e0c78400c99ec418323ab6b0853b91752be4.1614275314.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1614275314.git.christophe.leroy@csgroup.eu>
+References: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 00/15] powerpc: Cleanup of uaccess.h
+Subject: [PATCH v1 03/15] powerpc/uaccess: Remove __get/put_user_inatomic()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 25 Feb 2021 17:50:29 +0000 (UTC)
+Date: Thu, 25 Feb 2021 17:50:32 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,33 +74,187 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series cleans up uaccess.h
+Since commit 662bbcb2747c ("mm, sched: Allow uaccess in atomic with
+pagefault_disable()"), __get/put_user() can be used in atomic parts
+of the code, therefore the __get/put_user_inatomic() introduced
+by commit e68c825bb016 ("[POWERPC] Add inatomic versions of __get_user
+and __put_user") have become useless.
 
-Christophe Leroy (15):
-  powerpc/uaccess: Remove __get_user_allowed() and unsafe_op_wrap()
-  powerpc/uaccess: Define ___get_user_instr() for ppc32
-  powerpc/uaccess: Remove __get/put_user_inatomic()
-  powerpc/uaccess: Move get_user_instr helpers in asm/inst.h
-  powerpc/align: Don't use __get_user_instr() on kernel addresses
-  powerpc/uaccess: Call might_fault() inconditionaly
-  powerpc/uaccess: Remove __unsafe_put_user_goto()
-  powerpc/uaccess: Remove __chk_user_ptr() in __get/put_user
-  powerpc/uaccess: Remove calls to __get_user_bad() and __put_user_bad()
-  powerpc/uaccess: Split out __get_user_nocheck()
-  powerpc/uaccess: Rename __get/put_user_check/nocheck
-  powerpc/uaccess: Refactor get/put_user() and __get/put_user()
-  powerpc/uaccess: Swap clear_user() and __clear_user()
-  powerpc/uaccess: Also perform 64 bits copies in unsafe_copy_to_user()
-    on ppc32
-  powerpc/uaccess: Move copy_mc_xxx() functions down
+powerpc is the only one having such functions. There is a real
+intention not to have to provide such _inatomic() helpers, see the
+comment in might_fault() in mm/memory.c introduced by
+commit 3ee1afa308f2 ("x86: some lock annotations for user
+copy paths, v2"):
 
- arch/powerpc/include/asm/inst.h               |  34 ++
- arch/powerpc/include/asm/uaccess.h            | 303 ++++++------------
- arch/powerpc/kernel/align.c                   |  38 ++-
- .../kernel/hw_breakpoint_constraints.c        |   2 +-
- arch/powerpc/kernel/traps.c                   |   2 +-
- 5 files changed, 147 insertions(+), 232 deletions(-)
+	/*
+	 * it would be nicer only to annotate paths which are not under
+	 * pagefault_disable, however that requires a larger audit and
+	 * providing helpers like get_user_atomic.
+	 */
 
+So remove __get_user_inatomic() and __put_user_inatomic().
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/uaccess.h            | 37 -------------------
+ arch/powerpc/kernel/align.c                   | 32 ++++++++--------
+ .../kernel/hw_breakpoint_constraints.c        |  2 +-
+ arch/powerpc/kernel/traps.c                   |  2 +-
+ 4 files changed, 18 insertions(+), 55 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index a08c482b1315..01aea0df4dd0 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -53,11 +53,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
+ #define __put_user(x, ptr) \
+ 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+ 
+-#define __get_user_inatomic(x, ptr) \
+-	__get_user_nosleep((x), (ptr), sizeof(*(ptr)))
+-#define __put_user_inatomic(x, ptr) \
+-	__put_user_nosleep((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+-
+ #ifdef CONFIG_PPC64
+ 
+ #define ___get_user_instr(gu_op, dest, ptr)				\
+@@ -92,9 +87,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
+ #define __get_user_instr(x, ptr) \
+ 	___get_user_instr(__get_user, x, ptr)
+ 
+-#define __get_user_instr_inatomic(x, ptr) \
+-	___get_user_instr(__get_user_inatomic, x, ptr)
+-
+ extern long __put_user_bad(void);
+ 
+ #define __put_user_size(x, ptr, size, retval)			\
+@@ -141,20 +133,6 @@ __pu_failed:							\
+ 	__pu_err;							\
+ })
+ 
+-#define __put_user_nosleep(x, ptr, size)			\
+-({								\
+-	long __pu_err;						\
+-	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
+-	__typeof__(*(ptr)) __pu_val = (x);			\
+-	__typeof__(size) __pu_size = (size);			\
+-								\
+-	__chk_user_ptr(__pu_addr);				\
+-	__put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err); \
+-								\
+-	__pu_err;						\
+-})
+-
+-
+ /*
+  * We don't tell gcc that we are accessing memory, but this is OK
+  * because we do not write to any memory gcc knows about, so there
+@@ -320,21 +298,6 @@ do {								\
+ 	__gu_err;							\
+ })
+ 
+-#define __get_user_nosleep(x, ptr, size)			\
+-({								\
+-	long __gu_err;						\
+-	__long_type(*(ptr)) __gu_val;				\
+-	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+-	__typeof__(size) __gu_size = (size);			\
+-								\
+-	__chk_user_ptr(__gu_addr);				\
+-	__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err); \
+-	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+-								\
+-	__gu_err;						\
+-})
+-
+-
+ /* more complex routines */
+ 
+ extern unsigned long __copy_tofrom_user(void __user *to,
+diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
+index c7797eb958c7..83b199026a1e 100644
+--- a/arch/powerpc/kernel/align.c
++++ b/arch/powerpc/kernel/align.c
+@@ -174,18 +174,18 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
+ 
+ 		switch (nb) {
+ 		case 8:
+-			ret |= __get_user_inatomic(temp.v[0], p++);
+-			ret |= __get_user_inatomic(temp.v[1], p++);
+-			ret |= __get_user_inatomic(temp.v[2], p++);
+-			ret |= __get_user_inatomic(temp.v[3], p++);
++			ret |= __get_user(temp.v[0], p++);
++			ret |= __get_user(temp.v[1], p++);
++			ret |= __get_user(temp.v[2], p++);
++			ret |= __get_user(temp.v[3], p++);
+ 			fallthrough;
+ 		case 4:
+-			ret |= __get_user_inatomic(temp.v[4], p++);
+-			ret |= __get_user_inatomic(temp.v[5], p++);
++			ret |= __get_user(temp.v[4], p++);
++			ret |= __get_user(temp.v[5], p++);
+ 			fallthrough;
+ 		case 2:
+-			ret |= __get_user_inatomic(temp.v[6], p++);
+-			ret |= __get_user_inatomic(temp.v[7], p++);
++			ret |= __get_user(temp.v[6], p++);
++			ret |= __get_user(temp.v[7], p++);
+ 			if (unlikely(ret))
+ 				return -EFAULT;
+ 		}
+@@ -259,18 +259,18 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
+ 		p = addr;
+ 		switch (nb) {
+ 		case 8:
+-			ret |= __put_user_inatomic(data.v[0], p++);
+-			ret |= __put_user_inatomic(data.v[1], p++);
+-			ret |= __put_user_inatomic(data.v[2], p++);
+-			ret |= __put_user_inatomic(data.v[3], p++);
++			ret |= __put_user(data.v[0], p++);
++			ret |= __put_user(data.v[1], p++);
++			ret |= __put_user(data.v[2], p++);
++			ret |= __put_user(data.v[3], p++);
+ 			fallthrough;
+ 		case 4:
+-			ret |= __put_user_inatomic(data.v[4], p++);
+-			ret |= __put_user_inatomic(data.v[5], p++);
++			ret |= __put_user(data.v[4], p++);
++			ret |= __put_user(data.v[5], p++);
+ 			fallthrough;
+ 		case 2:
+-			ret |= __put_user_inatomic(data.v[6], p++);
+-			ret |= __put_user_inatomic(data.v[7], p++);
++			ret |= __put_user(data.v[6], p++);
++			ret |= __put_user(data.v[7], p++);
+ 		}
+ 		if (unlikely(ret))
+ 			return -EFAULT;
+diff --git a/arch/powerpc/kernel/hw_breakpoint_constraints.c b/arch/powerpc/kernel/hw_breakpoint_constraints.c
+index 867ee4aa026a..675d1f66ab72 100644
+--- a/arch/powerpc/kernel/hw_breakpoint_constraints.c
++++ b/arch/powerpc/kernel/hw_breakpoint_constraints.c
+@@ -141,7 +141,7 @@ void wp_get_instr_detail(struct pt_regs *regs, struct ppc_inst *instr,
+ {
+ 	struct instruction_op op;
+ 
+-	if (__get_user_instr_inatomic(*instr, (void __user *)regs->nip))
++	if (__get_user_instr(*instr, (void __user *)regs->nip))
+ 		return;
+ 
+ 	analyse_instr(&op, regs, *instr);
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1583fd1c6010..1fa36bd08efe 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -864,7 +864,7 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
+ 	unsigned long ea, msr, msr_mask;
+ 	bool swap;
+ 
+-	if (__get_user_inatomic(instr, (unsigned int __user *)regs->nip))
++	if (__get_user(instr, (unsigned int __user *)regs->nip))
+ 		return;
+ 
+ 	/*
 -- 
 2.25.0
 
