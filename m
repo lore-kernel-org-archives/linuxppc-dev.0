@@ -7,58 +7,58 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9334C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF21C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54A8C64F33
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54A8C64F33
+	by mail.kernel.org (Postfix) with ESMTPS id CC23364F31
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 17:55:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC23364F31
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgRv5vQRz3cnl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:55:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmgSG2lFhz3fNl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 04:55:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLc1dF6z3cmD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmgLc6c4Mz3cc0
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 04:50:48 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DmgLV74Y4z9v1BG;
- Thu, 25 Feb 2021 18:50:42 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DmgLT08sBz9v1BD;
+ Thu, 25 Feb 2021 18:50:41 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Nbs45xOKHs7u; Thu, 25 Feb 2021 18:50:42 +0100 (CET)
+ with ESMTP id H2LwkeRtkeT5; Thu, 25 Feb 2021 18:50:40 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLV6BK3z9v19y;
- Thu, 25 Feb 2021 18:50:42 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DmgLS6RpVz9v19y;
+ Thu, 25 Feb 2021 18:50:40 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B04B58B895;
- Thu, 25 Feb 2021 18:50:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B1DE68B895;
+ Thu, 25 Feb 2021 18:50:42 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uWEk6KeL33cy; Thu, 25 Feb 2021 18:50:44 +0100 (CET)
+ with ESMTP id rmmEhHZ5srwC; Thu, 25 Feb 2021 18:50:42 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A4F68B88B;
- Thu, 25 Feb 2021 18:50:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5EA648B88B;
+ Thu, 25 Feb 2021 18:50:42 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4444567442; Thu, 25 Feb 2021 17:50:44 +0000 (UTC)
-Message-Id: <ac83ef352de8618606fe57126b14ff0b611275ad.1614275314.git.christophe.leroy@csgroup.eu>
+ id 36B5967442; Thu, 25 Feb 2021 17:50:42 +0000 (UTC)
+Message-Id: <3c174edb80d2d37af6b08c637b09268f675e5371.1614275314.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 References: <cover.1614275314.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 14/15] powerpc/uaccess: Also perform 64 bits copies in
- unsafe_copy_to_user() on ppc32
+Subject: [PATCH v1 12/15] powerpc/uaccess: Refactor get/put_user() and
+ __get/put_user()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 25 Feb 2021 17:50:44 +0000 (UTC)
+Date: Thu, 25 Feb 2021 17:50:42 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,31 +75,130 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ppc32 has an efficiant 64 bits __put_user(), so also use it in
-order to unroll loops more.
+Make get_user() do the access_ok() check then call __get_user().
+Make put_user() do the access_ok() check then call __put_user().
+
+Then embed  __get_user_size() and __put_user_size() in
+__get_user() and __put_user().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/uaccess.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 66 +++++++++++-------------------
+ 1 file changed, 23 insertions(+), 43 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index b3bd1fb42242..e831653db51a 100644
+index 616a3a7928c2..671c083f2f2f 100644
 --- a/arch/powerpc/include/asm/uaccess.h
 +++ b/arch/powerpc/include/asm/uaccess.h
-@@ -371,9 +371,9 @@ do {									\
- 	size_t _len = (l);						\
- 	int _i;								\
+@@ -43,21 +43,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
+  * exception handling means that it's no longer "just"...)
+  *
+  */
+-#define __put_user_size(x, ptr, size, retval)			\
+-do {								\
+-	__label__ __pu_failed;					\
+-								\
+-	retval = 0;						\
+-	allow_write_to_user(ptr, size);				\
+-	__put_user_size_goto(x, ptr, size, __pu_failed);	\
+-	prevent_write_to_user(ptr, size);			\
+-	break;							\
+-								\
+-__pu_failed:							\
+-	retval = -EFAULT;					\
+-	prevent_write_to_user(ptr, size);			\
+-} while (0)
+-
+ #define __put_user(x, ptr)					\
+ ({								\
+ 	long __pu_err;						\
+@@ -66,23 +51,29 @@ __pu_failed:							\
+ 	__typeof__(sizeof(*(ptr))) __pu_size = sizeof(*(ptr));	\
+ 								\
+ 	might_fault();						\
+-	__put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err);	\
++	do {							\
++		__label__ __pu_failed;				\
++								\
++		allow_write_to_user(__pu_addr, __pu_size);	\
++		__put_user_size_goto(__pu_val, __pu_addr, __pu_size, __pu_failed);	\
++		prevent_write_to_user(__pu_addr, __pu_size);	\
++		__pu_err = 0;					\
++		break;						\
++								\
++__pu_failed:							\
++		prevent_write_to_user(__pu_addr, __pu_size);	\
++		__pu_err = -EFAULT;				\
++	} while (0);						\
+ 								\
+ 	__pu_err;						\
+ })
+ 
+ #define put_user(x, ptr)						\
+ ({									\
+-	long __pu_err = -EFAULT;					\
+-	__typeof__(*(ptr)) __user *__pu_addr = (ptr);			\
+-	__typeof__(*(ptr)) __pu_val = (__typeof__(*(ptr)))(x);		\
+-	__typeof__(sizeof(*(ptr))) __pu_size = sizeof(*(ptr));		\
++	__typeof__(*(ptr)) __user *_pu_addr = (ptr);			\
  									\
--	for (_i = 0; _i < (_len & ~(sizeof(long) - 1)); _i += sizeof(long))		\
--		unsafe_put_user(*(long*)(_src + _i), (long __user *)(_dst + _i), e); \
--	if (IS_ENABLED(CONFIG_PPC64) && (_len & 4)) {			\
-+	for (_i = 0; _i < (_len & ~(sizeof(u64) - 1)); _i += sizeof(u64))	\
-+		unsafe_put_user(*(u64 *)(_src + _i), (u64 __user *)(_dst + _i), e); \
-+	if (_len & 4) {							\
- 		unsafe_put_user(*(u32*)(_src + _i), (u32 __user *)(_dst + _i), e); \
- 		_i += 4;						\
- 	}								\
+-	might_fault();							\
+-	if (access_ok(__pu_addr, __pu_size))				\
+-		__put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err); \
+-									\
+-	__pu_err;							\
++	access_ok(_pu_addr, sizeof(*(ptr))) ?				\
++		  __put_user(x, _pu_addr) : -EFAULT;			\
+ })
+ 
+ /*
+@@ -192,13 +183,6 @@ do {								\
+ 	}							\
+ } while (0)
+ 
+-#define __get_user_size(x, ptr, size, retval)			\
+-do {								\
+-	allow_read_from_user(ptr, size);			\
+-	__get_user_size_allowed(x, ptr, size, retval);		\
+-	prevent_read_from_user(ptr, size);			\
+-} while (0)
+-
+ /*
+  * This is a type: either unsigned long, if the argument fits into
+  * that type, or otherwise unsigned long long.
+@@ -214,7 +198,9 @@ do {								\
+ 	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));	\
+ 								\
+ 	might_fault();					\
+-	__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err);	\
++	allow_read_from_user(__gu_addr, __gu_size);		\
++	__get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err);	\
++	prevent_read_from_user(__gu_addr, __gu_size);		\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 								\
+ 	__gu_err;						\
+@@ -222,17 +208,11 @@ do {								\
+ 
+ #define get_user(x, ptr)						\
+ ({									\
+-	long __gu_err = -EFAULT;					\
+-	__long_type(*(ptr)) __gu_val = 0;				\
+-	__typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+-	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));		\
+-									\
+-	might_fault();							\
+-	if (access_ok(__gu_addr, __gu_size))				\
+-		__get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err); \
+-	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
++	__typeof__(*(ptr)) __user *_gu_addr = (ptr);			\
+ 									\
+-	__gu_err;							\
++	access_ok(_gu_addr, sizeof(*(ptr))) ?				\
++		  __get_user(x, _gu_addr) :				\
++		  ((x) = (__force __typeof__(*(ptr)))0, -EFAULT);	\
+ })
+ 
+ /* more complex routines */
 -- 
 2.25.0
 
