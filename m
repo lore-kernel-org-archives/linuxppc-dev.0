@@ -4,63 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A882C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:12:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46117C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:35:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E83BC64F2B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:12:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E83BC64F2B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id 5A76E64E21
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 20:35:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A76E64E21
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmkVW3FYhz3ckD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 07:12:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dml0Z4fksz3ckD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 07:35:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=qYoy3qMe;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=svK53kI/;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=euv5naXl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256
- header.s=20201203 header.b=qYoy3qMe; dkim-atps=neutral
-X-Greylist: delayed 448 seconds by postgrey-1.36 at boromir;
- Fri, 26 Feb 2021 07:12:28 AEDT
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=svK53kI/; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=euv5naXl; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmkV41snKz3cYX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 07:12:28 +1100 (AEDT)
-Received: from localhost (unknown [IPv6:2601:281:8300:104d::5f6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id B4C3177F;
- Thu, 25 Feb 2021 20:04:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net B4C3177F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
- t=1614283491; bh=lFhsGiaPaFrLP7bCx4x5oX0VuWHZvAm6Q4Pio+vky4g=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=qYoy3qMeV1Jj27pmWOiJ6LCiqLr/yY8dbHBPIwyJHt8OVdyWASoMm9KhBPhJdXP+E
- LkmVUwfRo0J7Yj1xmJ7nnwyZadGmRB8OQ0jow4P1BN47q+SP1y66P4sqfgyq3ZGnCs
- moXKp3phc/nShUfAFxWrufBr/3vIIMdzpyaCdIqBI+JcAquHuCIyYlpSAX2AWE5CU0
- d3ajcvGl+et67nkQbL/8Xsaad3WrOoPYLdMvWPs/W/NpSh+M6m81LbjbmaEDrZ3lw0
- +G8Uc4ExKGgWW0ouHlAYwlSEU0lsGAZ9jq94Ep2LhGNxewpZur03EFCkelAWadhC3A
- J1hPwm/YEvnJA==
-From: Jonathan Corbet <corbet@lwn.net>
-To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] docs: powerpc: Fix tables in syscall64-abi.rst
-In-Reply-To: <20210225060857.16083-1-ajd@linux.ibm.com>
-References: <20210225060857.16083-1-ajd@linux.ibm.com>
-Date: Thu, 25 Feb 2021 13:04:51 -0700
-Message-ID: <874khzdicc.fsf@meer.lwn.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dml013txFz3cYW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 07:34:57 +1100 (AEDT)
+From: John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1614284685;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=wAnJIgR/CTnBt9x/EHKtesHS7Vx5fct1XicfsTWpa/Y=;
+ b=svK53kI/q3MoJRtnVKyEA9QIRM7RnbBbT6oE/t37t6hVUt2RspYJL0F0oZjb7FcP+n0UKS
+ y4E6rgYXugMcj//f4+y9g1LgLZ9aBw87rCAB7JzAO7RAgCCc7U6XeWzBZHWLhyKAbUX8Ph
+ HH1QiQlgFouckYMeOqrmy1/1xrNjgkYLpWDuUDjpcLH8S5wU6HpTz/h1axvDI6YjXIpf/H
+ ID7uJPpQOTBsK90vp0pUgRjw7Yxg/AQLlHDWyGn8//JVsK3aHAXRejxL2Lvl3KqrBPPlhr
+ LWzPOtj20R+Vfkflptt/cagFZnp5rxhUEQ1ALCCKtUQgRsk239XmCQTNdyYFug==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1614284685;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=wAnJIgR/CTnBt9x/EHKtesHS7Vx5fct1XicfsTWpa/Y=;
+ b=euv5naXleiYhIzMoGwsLYwhFgjx5t5FAgtl24pUMCQQSNQ3OtjZOL9hMIEicpxI+1W3yQn
+ +eouYuqb7WvtixBg==
+To: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH next v3 11/15] printk: kmsg_dumper: remove @active field
+Date: Thu, 25 Feb 2021 21:24:34 +0100
+Message-Id: <20210225202438.28985-12-john.ogness@linutronix.de>
+In-Reply-To: <20210225202438.28985-1-john.ogness@linutronix.de>
+References: <20210225202438.28985-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,27 +81,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mchehab+huawei@kernel.org, linux-doc@vger.kernel.org
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Douglas Anderson <dianders@chromium.org>, Paul Mackerras <paulus@samba.org>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Jordan Niethe <jniethe5@gmail.com>,
+ Wei Li <liwei391@huawei.com>, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Alistair Popple <alistair@popple.id.au>,
+ Steven Rostedt <rostedt@goodmis.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Nicholas Piggin <npiggin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Sumit Garg <sumit.garg@linaro.org>, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Jason Wessel <jason.wessel@windriver.com>,
+ kgdb-bugreport@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Donnellan <ajd@linux.ibm.com> writes:
+All 6 kmsg_dumpers do not benefit from the @active flag:
 
-> Commit 209b44c804c ("docs: powerpc: syscall64-abi.rst: fix a malformed
-> table") attempted to fix the formatting of tables in syscall64-abi.rst, but
-> inadvertently changed some register names.
->
-> Redo the tables with the correct register names, and while we're here,
-> clean things up to separate the registers into different rows and add
-> headings.
->
-> Fixes: 209b44c804c ("docs: powerpc: syscall64-abi.rst: fix a malformed table")
-> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
-> ---
->  Documentation/powerpc/syscall64-abi.rst | 51 ++++++++++++++++---------
->  1 file changed, 32 insertions(+), 19 deletions(-)
+  (provide their own synchronization)
+  - arch/powerpc/kernel/nvram_64.c
+  - arch/um/kernel/kmsg_dump.c
+  - drivers/mtd/mtdoops.c
+  - fs/pstore/platform.c
 
-Applied, thanks.
+  (only dump on KMSG_DUMP_PANIC, which does not require
+  synchronization)
+  - arch/powerpc/platforms/powernv/opal-kmsg.c
+  - drivers/hv/vmbus_drv.c
 
-jon
+The other 2 kmsg_dump users also do not rely on @active:
+
+  (hard-code @active to always be true)
+  - arch/powerpc/xmon/xmon.c
+  - kernel/debug/kdb/kdb_main.c
+
+Therefore, @active can be removed.
+
+Signed-off-by: John Ogness <john.ogness@linutronix.de>
+---
+ arch/powerpc/xmon/xmon.c    |  2 +-
+ include/linux/kmsg_dump.h   |  2 --
+ kernel/debug/kdb/kdb_main.c |  2 +-
+ kernel/printk/printk.c      | 10 +---------
+ 4 files changed, 3 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 3fe37495f63d..80ed3e1becf9 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3001,7 +3001,7 @@ print_address(unsigned long addr)
+ static void
+ dump_log_buf(void)
+ {
+-	struct kmsg_dumper dumper = { .active = 1 };
++	struct kmsg_dumper dumper;
+ 	unsigned char buf[128];
+ 	size_t len;
+ 
+diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
+index 070c994ff19f..84eaa2090efa 100644
+--- a/include/linux/kmsg_dump.h
++++ b/include/linux/kmsg_dump.h
+@@ -36,7 +36,6 @@ enum kmsg_dump_reason {
+  * 		through the record iterator
+  * @max_reason:	filter for highest reason number that should be dumped
+  * @registered:	Flag that specifies if this is already registered
+- * @active:	Flag that specifies if this is currently dumping
+  * @cur_seq:	Points to the oldest message to dump
+  * @next_seq:	Points after the newest message to dump
+  */
+@@ -44,7 +43,6 @@ struct kmsg_dumper {
+ 	struct list_head list;
+ 	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason);
+ 	enum kmsg_dump_reason max_reason;
+-	bool active;
+ 	bool registered;
+ 
+ 	/* private state of the kmsg iterator */
+diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
+index 930ac1b25ec7..315169d5e119 100644
+--- a/kernel/debug/kdb/kdb_main.c
++++ b/kernel/debug/kdb/kdb_main.c
+@@ -2101,7 +2101,7 @@ static int kdb_dmesg(int argc, const char **argv)
+ 	int adjust = 0;
+ 	int n = 0;
+ 	int skip = 0;
+-	struct kmsg_dumper dumper = { .active = 1 };
++	struct kmsg_dumper dumper;
+ 	size_t len;
+ 	char buf[201];
+ 
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index c2ed7db8930b..45cb3e9c62c5 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -3408,8 +3408,6 @@ void kmsg_dump(enum kmsg_dump_reason reason)
+ 			continue;
+ 
+ 		/* initialize iterator with data about the stored records */
+-		dumper->active = true;
+-
+ 		logbuf_lock_irqsave(flags);
+ 		dumper->cur_seq = latched_seq_read_nolock(&clear_seq);
+ 		dumper->next_seq = prb_next_seq(prb);
+@@ -3417,9 +3415,6 @@ void kmsg_dump(enum kmsg_dump_reason reason)
+ 
+ 		/* invoke dumper which will iterate over records */
+ 		dumper->dump(dumper, reason);
+-
+-		/* reset iterator */
+-		dumper->active = false;
+ 	}
+ 	rcu_read_unlock();
+ }
+@@ -3454,9 +3449,6 @@ bool kmsg_dump_get_line_nolock(struct kmsg_dumper *dumper, bool syslog,
+ 
+ 	prb_rec_init_rd(&r, &info, line, size);
+ 
+-	if (!dumper->active)
+-		goto out;
+-
+ 	/* Read text or count text lines? */
+ 	if (line) {
+ 		if (!prb_read_valid(prb, dumper->cur_seq, &r))
+@@ -3542,7 +3534,7 @@ bool kmsg_dump_get_buffer(struct kmsg_dumper *dumper, bool syslog,
+ 	bool ret = false;
+ 	bool time = printk_time;
+ 
+-	if (!dumper->active || !buf || !size)
++	if (!buf || !size)
+ 		goto out;
+ 
+ 	logbuf_lock_irqsave(flags);
+-- 
+2.20.1
+
