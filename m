@@ -2,83 +2,81 @@ Return-Path: <SRS0=yiwx=H3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48E89C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 03:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D555C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 03:14:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CEF6164EB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 03:14:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEF6164EB1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id DF90564EBA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 03:14:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF90564EBA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DmHtw38NPz3f6x
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 14:14:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DmHvN3xcZz3dM7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Feb 2021 14:14:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=ouf5D+bv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=bH9vGPAt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::135;
+ helo=mail-lf1-x135.google.com; envelope-from=festevam@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=ouf5D+bv; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=bH9vGPAt; dkim-atps=neutral
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com
+ [IPv6:2a00:1450:4864:20::135])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DmHq81n1dz3d2m
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2021 14:10:44 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id d12so133713pfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2021 19:10:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=8kLCG5Xf2rldTZLpgMUjTs8QdJPGExRp8Y6d/UJveAk=;
- b=ouf5D+bv4GixdA8LtkSBYDaaxFPcSTo0+rJ26xQKnou+cH1GKu5WmgNPre+hVc57mZ
- nMrllgvVSpjf1xWvXrTl8yn+Fie+ySHYELg3Ae017J0fCEQptZZ6eHWS/KKn2AKp+4/l
- 495OoqDGYA29btc2ThrMIMJOB6/P5gPZPOuvM=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DmHqP2kvZz3d88
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2021 14:10:57 +1100 (AEDT)
+Received: by mail-lf1-x135.google.com with SMTP id w36so6361018lfu.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2021 19:10:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=EnWKtR8Gi6MBZCyGkt9dN20MUD2l2Ye826UGjeumL/M=;
+ b=bH9vGPAt9TT8vyB02A3LusGmI+8chLo2PIYd/qdVnAoXcA4p9U8W5tREoMsyzsBZ4Z
+ Q9NWpJGzbzKuGHL8s6oMt0bLW3cEcmbC9NdcLISbdy921Vh/wsagj4AH++LZuIzRDEbT
+ /WeaCZUdRo1TnFila95eDP1Wh6V9uR/3XL/ldcc37WLU90lRiqTi5RA7028rpBzspYn0
+ uzW+qM+xaP557V5nIjT5QocjQY/t2x2za9ZZhZ52SkaDpq5OPJHeeJmMELdtjDXjttJT
+ B9WSVRITYzuXvO6JzTkJ79NxGhasXXQhMfU3k2UQOy3nrYfAVvhpTpohOVYNphQy7Wsl
+ Pj9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=8kLCG5Xf2rldTZLpgMUjTs8QdJPGExRp8Y6d/UJveAk=;
- b=nZGZt8xu9uOOmShZzZdbtMhD1wkjZVVyVWFLt1yWvGoRBhRUZVm7L3PRADBHMxmXuU
- sDkvePhy5VL06+qnFMxb9XpbcW9JNzlBwRUpW3Jaup0zzsbe4qKprg1lcFuFmiJBmtIy
- L6S3iAD12bAj3OyCavq0LWHsc3zYLmH1kAGVbDJ9EQTpv36JuVq1Y4Wkmu4Qu1E0eouL
- 0ZSJMIzYrcs4qjyy8F2ZFcb2L5WPg6WWp1npwL7m5njzDPKLF7Hy/ZmoQVzSzm129yhB
- qqtmUa85vazfhQJYnP/q73TvSGbjSSLPsKdz4T+u1QmAPmiWhOzw0EREhR5qrBh4aEfu
- zt9A==
-X-Gm-Message-State: AOAM530ZznKoA+XsNTll57xQqbmBDCKvj4GYtE+dNq4Qh3VbeCCTYVR0
- C4yPWGPDfsbrRKQwors/kqG2RxacE8zxcitV
-X-Google-Smtp-Source: ABdhPJzeTgBZ7BGBAFBdK6Vqp13rIf5VA3VPAUEMYa2TfHcoqc3Txuc2+nyG8WuyktdUtSMZSJ8jtg==
-X-Received: by 2002:a65:5806:: with SMTP id g6mr1018694pgr.112.1614222641942; 
- Wed, 24 Feb 2021 19:10:41 -0800 (PST)
-Received: from localhost
- (2001-44b8-1113-6700-6e65-7e50-8dac-f7ef.static.ipv6.internode.on.net.
- [2001:44b8:1113:6700:6e65:7e50:8dac:f7ef])
- by smtp.gmail.com with ESMTPSA id o129sm3927279pgo.27.2021.02.24.19.10.40
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 24 Feb 2021 19:10:41 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: llvmlinux@lists.linuxfoundation.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 8/8] powerpc/64/asm: don't reassign labels
-Date: Thu, 25 Feb 2021 14:10:06 +1100
-Message-Id: <20210225031006.1204774-9-dja@axtens.net>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210225031006.1204774-1-dja@axtens.net>
-References: <20210225031006.1204774-1-dja@axtens.net>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=EnWKtR8Gi6MBZCyGkt9dN20MUD2l2Ye826UGjeumL/M=;
+ b=UdSnY/oxr4Xbnqh972ty9ZRWtEJXMabBtfluY0GrqVgRckYRWbApX0Grg4CbmNpZyf
+ m2svC6ncOWV5G4+p6QI3mBCp2lNiI16OyR5RYQGJHI8pcq6wZvsnxniFUeZQGXev3QdX
+ PSZR5U+nw8QWyPZhl8vkxCtA3tozoY3uUzWlTRIyJkClWfp0OZc8pluQTY/nbtDc3kHo
+ gLGH1IxMSX0exzwi5O4NHU3AnnpqDPsLFoS2cFfJCnfI529aN+AvfmQzYg7FgeuQYRIo
+ qB52XHEvy7gkyWRDXd1tejUca+wJfMMTRyjAlWIrnptePuMARO12rVjWi22+gum8R5XW
+ bFbg==
+X-Gm-Message-State: AOAM532Uns/KjprA8CowGHqQiosJlvb2I6zv71+I1vMa/0p9KYSsdJpX
+ Q5+dmp5DljC66EIbYm1Tf3o479qzoayi435rWmk=
+X-Google-Smtp-Source: ABdhPJxCV+TqWtFTdMF/6bZM7j6af9TKwjCsqsLP5PqihQfPd5E2/w9l1zUzIOTZC6eXqdEZ1+/twFQLRzEl5p88ras=
+X-Received: by 2002:a19:4147:: with SMTP id o68mr691484lfa.295.1614222649170; 
+ Wed, 24 Feb 2021 19:10:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
+ <1612693435-31418-4-git-send-email-shengjiu.wang@nxp.com>
+ <20210210221252.GA2885308@robh.at.kernel.org>
+ <CAA+D8APfd8trC8cFsT8k8G54nhrYDrwXxECx9RpDAgw3rco9DQ@mail.gmail.com>
+In-Reply-To: <CAA+D8APfd8trC8cFsT8k8G54nhrYDrwXxECx9RpDAgw3rco9DQ@mail.gmail.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Thu, 25 Feb 2021 00:10:38 -0300
+Message-ID: <CAOMZO5D3HgVF6Gq6sFo7j7OJ63NVN--ZtmwZCoM7=dmmhVZchQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/7] ASoC: dt-bindings: fsl_rpmsg: Add binding doc for
+ rpmsg cpu dai driver
+To: Shengjiu Wang <shengjiu.wang@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,281 +88,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
+Cc: Rob Herring <robh@kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The assembler really does not like us reassigning things to the same
-label:
+On Thu, Feb 18, 2021 at 4:21 AM Shengjiu Wang <shengjiu.wang@gmail.com> wrote:
 
-<instantiation>:7:9: error: invalid reassignment of non-absolute variable 'fs_label'
+> > rpmsg is a protocol. What's the h/w block?
+>
+> On Linux side this driver is a virtual driver, it is running
+> on Arm Cortex-A core. The h/w block is controlled by
+> another core (cortex-M core). so this driver actually
+> doesn't touch any hardware, it just does configuration
+> for rpmsg channel.
+> fsl,version: There are maybe different image running on M core, this
+> is the image version, different image has different function.
 
-This happens across a bunch of platforms:
-https://github.com/ClangBuiltLinux/linux/issues/1043
-https://github.com/ClangBuiltLinux/linux/issues/1008
-https://github.com/ClangBuiltLinux/linux/issues/920
-https://github.com/ClangBuiltLinux/linux/issues/1050
-
-There is no hope of getting this fixed in LLVM, so if we want to build
-with LLVM_IAS, we need to hack around it ourselves.
-
-For us the big problem comes from this:
-
-\#define USE_FIXED_SECTION(sname)				\
-	fs_label = start_##sname;				\
-	fs_start = sname##_start;				\
-	use_ftsec sname;
-
-\#define USE_TEXT_SECTION()
-	fs_label = start_text;					\
-	fs_start = text_start;					\
-	.text
-
-and in particular fs_label.
-
-I have tried to work around it by not setting those 'variables', and
-requiring that users of the variables instead track for themselves
-what section they are in. This isn't amazing, by any stretch, but it
-gets us further in the compilation.
-
-I'm still stuck with the following from head_64.S:
-
-.balign 8
-p_end: .8byte _end - copy_to_here
-
-4:
-	/*
-	 * Now copy the rest of the kernel up to _end, add
-	 * _end - copy_to_here to the copy limit and run again.
-	 */
-	addis   r8,r26,(ABS_ADDR(p_end, text))@ha
-	ld      r8,(ABS_ADDR(p_end, text))@l(r8)
-	add	r5,r5,r8
-5:	bl	copy_and_flush		/* copy the rest */
-
-9:	b	start_here_multiplatform
-
-Clang does not like this code - in particular it complains about the addis, saying
-
-<unknown>:0: error: expected relocatable expression
-
-I don't know what's special about p_end, because just above we do an
-ABS_ADDR(4f, text) and that seems to work just fine.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/include/asm/head-64.h   | 12 +++++------
- arch/powerpc/kernel/exceptions-64s.S | 31 ++++++++++++++--------------
- arch/powerpc/kernel/head_64.S        | 16 +++++++-------
- 3 files changed, 29 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-index 7d8ccab47e86..43849a777f91 100644
---- a/arch/powerpc/include/asm/head-64.h
-+++ b/arch/powerpc/include/asm/head-64.h
-@@ -98,13 +98,9 @@ linker_stub_catch:						\
- 	. = sname##_len;
- 
- #define USE_FIXED_SECTION(sname)				\
--	fs_label = start_##sname;				\
--	fs_start = sname##_start;				\
- 	use_ftsec sname;
- 
- #define USE_TEXT_SECTION()					\
--	fs_label = start_text;					\
--	fs_start = text_start;					\
- 	.text
- 
- #define CLOSE_FIXED_SECTION(sname)				\
-@@ -161,13 +157,15 @@ end_##sname:
-  * - ABS_ADDR is used to find the absolute address of any symbol, from within
-  *   a fixed section.
-  */
--#define DEFINE_FIXED_SYMBOL(label)				\
--	label##_absolute = (label - fs_label + fs_start)
-+// define label as being _in_ sname
-+#define DEFINE_FIXED_SYMBOL(label, sname) \
-+	label##_absolute = (label - start_ ## sname + sname ## _start)
- 
- #define FIXED_SYMBOL_ABS_ADDR(label)				\
- 	(label##_absolute)
- 
--#define ABS_ADDR(label) (label - fs_label + fs_start)
-+// find label from _within_ sname
-+#define ABS_ADDR(label, sname) (label - start_ ## sname + sname ## _start)
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 720fb9892745..295d90202665 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -64,7 +64,7 @@
- 	.balign IFETCH_ALIGN_BYTES;				\
- 	.global name;						\
- 	_ASM_NOKPROBE_SYMBOL(name);				\
--	DEFINE_FIXED_SYMBOL(name);				\
-+	DEFINE_FIXED_SYMBOL(name, text);			\
- name:
- 
- #define TRAMP_REAL_BEGIN(name)					\
-@@ -92,18 +92,18 @@ name:
- 	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
- 	ori	reg,reg,FIXED_SYMBOL_ABS_ADDR(label)
- 
--#define __LOAD_HANDLER(reg, label)					\
-+#define __LOAD_HANDLER(reg, label, section)					\
- 	ld	reg,PACAKBASE(r13);					\
--	ori	reg,reg,(ABS_ADDR(label))@l
-+	ori	reg,reg,(ABS_ADDR(label, section))@l
- 
- /*
-  * Branches from unrelocated code (e.g., interrupts) to labels outside
-  * head-y require >64K offsets.
-  */
--#define __LOAD_FAR_HANDLER(reg, label)					\
-+#define __LOAD_FAR_HANDLER(reg, label, section)					\
- 	ld	reg,PACAKBASE(r13);					\
--	ori	reg,reg,(ABS_ADDR(label))@l;				\
--	addis	reg,reg,(ABS_ADDR(label))@h
-+	ori	reg,reg,(ABS_ADDR(label, section))@l;				\
-+	addis	reg,reg,(ABS_ADDR(label, section))@h
- 
- /*
-  * Branch to label using its 0xC000 address. This results in instruction
-@@ -113,8 +113,9 @@ name:
-  * This could set the 0xc bits for !RELOCATABLE as an immediate, rather than
-  * load KBASE for a slight optimisation.
-  */
-+// only called once
- #define BRANCH_TO_C000(reg, label)					\
--	__LOAD_FAR_HANDLER(reg, label);					\
-+	__LOAD_FAR_HANDLER(reg, label, real_trampolines);					\
- 	mtctr	reg;							\
- 	bctr
- 
-@@ -458,7 +459,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
-  * This switches to virtual mode and sets MSR[RI].
-  */
- .macro __GEN_COMMON_ENTRY name
--DEFINE_FIXED_SYMBOL(\name\()_common_real)
-+DEFINE_FIXED_SYMBOL(\name\()_common_real, text)
- \name\()_common_real:
- 	.if IKVM_REAL
- 		KVMTEST \name
-@@ -481,7 +482,7 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real)
- 	.endif
- 
- 	.balign IFETCH_ALIGN_BYTES
--DEFINE_FIXED_SYMBOL(\name\()_common_virt)
-+DEFINE_FIXED_SYMBOL(\name\()_common_virt, text)
- \name\()_common_virt:
- 	.if IKVM_VIRT
- 		KVMTEST \name
-@@ -495,7 +496,7 @@ DEFINE_FIXED_SYMBOL(\name\()_common_virt)
-  * want to run in real mode.
-  */
- .macro __GEN_REALMODE_COMMON_ENTRY name
--DEFINE_FIXED_SYMBOL(\name\()_common_real)
-+DEFINE_FIXED_SYMBOL(\name\()_common_real, text)
- \name\()_common_real:
- 	.if IKVM_REAL
- 		KVMTEST \name
-@@ -856,12 +857,12 @@ EXC_VIRT_END(system_call_vectored, 0x3000, 0x1000)
- 
- #ifdef CONFIG_RELOCATABLE
- TRAMP_VIRT_BEGIN(system_call_vectored_tramp)
--	__LOAD_HANDLER(r10, system_call_vectored_common)
-+	__LOAD_HANDLER(r10, system_call_vectored_common, virt_trampolines)
- 	mtctr	r10
- 	bctr
- 
- TRAMP_VIRT_BEGIN(system_call_vectored_sigill_tramp)
--	__LOAD_HANDLER(r10, system_call_vectored_sigill)
-+	__LOAD_HANDLER(r10, system_call_vectored_sigill, virt_trampolines)
- 	mtctr	r10
- 	bctr
- #endif
-@@ -1968,14 +1969,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
- 	HMT_MEDIUM
- 
- 	.if ! \virt
--	__LOAD_HANDLER(r10, system_call_common_real)
-+	__LOAD_HANDLER(r10, system_call_common_real, real_vectors)
- 	mtctr	r10
- 	bctr
- 	.else
- 	li	r10,MSR_RI
- 	mtmsrd 	r10,1			/* Set RI (EE=0) */
- #ifdef CONFIG_RELOCATABLE
--	__LOAD_HANDLER(r10, system_call_common)
-+	__LOAD_HANDLER(r10, system_call_common, virt_vectors)
- 	mtctr	r10
- 	bctr
- #else
-@@ -3075,7 +3076,7 @@ USE_FIXED_SECTION(virt_trampolines)
- 	.align	7
- 	.globl	__end_interrupts
- __end_interrupts:
--DEFINE_FIXED_SYMBOL(__end_interrupts)
-+DEFINE_FIXED_SYMBOL(__end_interrupts, virt_trampolines)
- 
- #ifdef CONFIG_PPC_970_NAP
- 	/*
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index ece7f97bafff..3a10e9f55baa 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -156,7 +156,7 @@ __secondary_hold:
- 	/* Tell the master cpu we're here */
- 	/* Relocation is off & we are located at an address less */
- 	/* than 0x100, so only need to grab low order offset.    */
--	std	r24,(ABS_ADDR(__secondary_hold_acknowledge))(0)
-+	std	r24,(ABS_ADDR(__secondary_hold_acknowledge, first_256B))(0)
- 	sync
- 
- 	li	r26,0
-@@ -164,7 +164,7 @@ __secondary_hold:
- 	tovirt(r26,r26)
- #endif
- 	/* All secondary cpus wait here until told to start. */
--100:	ld	r12,(ABS_ADDR(__secondary_hold_spinloop))(r26)
-+100:	ld	r12,(ABS_ADDR(__secondary_hold_spinloop, first_256B))(r26)
- 	cmpdi	0,r12,0
- 	beq	100b
- 
-@@ -646,15 +646,15 @@ __after_prom_start:
- 3:
- #endif
- 	/* # bytes of memory to copy */
--	lis	r5,(ABS_ADDR(copy_to_here))@ha
--	addi	r5,r5,(ABS_ADDR(copy_to_here))@l
-+	lis	r5,(ABS_ADDR(copy_to_here, text))@ha
-+	addi	r5,r5,(ABS_ADDR(copy_to_here, text))@l
- 
- 	bl	copy_and_flush		/* copy the first n bytes	 */
- 					/* this includes the code being	 */
- 					/* executed here.		 */
- 	/* Jump to the copy of this code that we just made */
--	addis	r8,r3,(ABS_ADDR(4f))@ha
--	addi	r12,r8,(ABS_ADDR(4f))@l
-+	addis	r8,r3,(ABS_ADDR(4f, text))@ha
-+	addi	r12,r8,(ABS_ADDR(4f, text))@l
- 	mtctr	r12
- 	bctr
- 
-@@ -666,8 +666,8 @@ p_end: .8byte _end - copy_to_here
- 	 * Now copy the rest of the kernel up to _end, add
- 	 * _end - copy_to_here to the copy limit and run again.
- 	 */
--	addis   r8,r26,(ABS_ADDR(p_end))@ha
--	ld      r8,(ABS_ADDR(p_end))@l(r8)
-+	addis   r8,r26,(ABS_ADDR(p_end, text))@ha
-+	ld      r8,(ABS_ADDR(p_end, text))@l(r8)
- 	add	r5,r5,r8
- 5:	bl	copy_and_flush		/* copy the rest */
- 
--- 
-2.27.0
-
+To answer Rob's question: the hardware block that handles these
+messages is the Message Unit block.
