@@ -2,106 +2,107 @@ Return-Path: <SRS0=07gb=H4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4D09C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 16:39:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 328C6C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 16:43:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F10F564F13
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 16:39:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F10F564F13
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 61E0764F0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Feb 2021 16:43:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61E0764F0E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DnFk41WHYz3cnH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 03:39:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DnFpp5NHdz3d3J
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 03:43:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f8e9Vi8/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lH4fdlWD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=f8e9Vi8/; dkim-atps=neutral
+ header.s=pp1 header.b=lH4fdlWD; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DnFjZ4l4Lz3cLk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 03:39:13 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DnFpL0FQJz3cLr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 03:43:21 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 11QGXMxZ013154; Fri, 26 Feb 2021 11:39:09 -0500
+ 11QGXEe4144147; Fri, 26 Feb 2021 11:43:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=pqOo7IEXZuN4o2GJtHjkXskjvWSpvNljjvnukPmdQyc=;
- b=f8e9Vi8/lklPfvZdQ8ZWF5Y6vjqXxp7Ukz7d2dGtXKlWCyJgKexLqxzHPoxq6mo0pnee
- ohKUFJAICiUi+GzSdaM0ggkf0aq5mEyYLHwW9fRHu/rk52PQTqJQsxiDWuOvKRLVda++
- o9RQSuQBb103x0zxYod13oqjRy87VvFdubKwhxMRCZ5zW9GPb4s76XmKDPoLC8NiGrDU
- 9ym8rrn7m3kakbq5VYsAWu07svLpZAvhnEN/kqJcDeDPPFPFJ8upkmDAZb0IwsQoMmCu
- fGgvIf48oTeDX4FVsTHeZMeYkbRlE3jpX5rdA9Wv4l2IiQEhvMBBn3MTF5uWGPA8a2BQ ig== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 36xphv13vf-1
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=tTQd8IOKfC1YlQjukCk55gM98ra90mieBbKfhPSLLrc=;
+ b=lH4fdlWDuSJcSXy5Rpfa3f1ghOb6pvhjxP7PTZSuGLqEtZkJ7Ts1XShnKxt57QH/yGnQ
+ KFJ9pcIBiD8udt2cAU09A8tv9hHGUw6/QbniqwDDmYNg2HMz9QrwLoTbnS7t17wvfcuJ
+ u9awEysK81OvjmRJ+s+484jFILllz+ht16xMRd+2w1h+X4NxoWmIEuIntSkIrbEDAlzy
+ 92RqOSw3HcgBxmu4Ao5/RzpKmfmK/Nu8LrwYvLsyUdE5Qom4VYtRWwQ1d8p5QQNjVwbA
+ 79rTEiWQITakDisDvIW5vM5mKRjbSAo6gRewVyRJcNAVxI59Sr9Cc3yGYh0Z0ujB7TJ8 YA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 36xn10kr7c-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Feb 2021 11:39:09 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11QGVvqt010940;
- Fri, 26 Feb 2021 16:39:07 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma05wdc.us.ibm.com with ESMTP id 36y2re0vph-1
+ Fri, 26 Feb 2021 11:43:19 -0500
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 11QGXww3147005;
+ Fri, 26 Feb 2021 11:43:19 -0500
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 36xn10kr73-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Feb 2021 16:39:07 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 11QGd7QZ14680536
+ Fri, 26 Feb 2021 11:43:19 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 11QGVvBm017106;
+ Fri, 26 Feb 2021 16:38:18 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 36v5y9vf3f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Feb 2021 16:38:18 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 11QGcHsl30343650
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Feb 2021 16:39:07 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 598B328064;
- Fri, 26 Feb 2021 16:39:07 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 55C932805A;
- Fri, 26 Feb 2021 16:39:06 +0000 (GMT)
-Received: from oc6034535106.ibm.com (unknown [9.211.115.75])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 26 Feb 2021 16:39:06 +0000 (GMT)
-Subject: Re: [PATCH v4 2/5] ibmvfc: fix invalid sub-CRQ handles after hard
- reset
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
- james.bottomley@hansenpartnership.com
-References: <20210225215057.23020-1-tyreld@linux.ibm.com>
- <20210225215057.23020-3-tyreld@linux.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <3309f472-51ca-e2f5-8b74-0dfb9382e53a@linux.vnet.ibm.com>
-Date: Fri, 26 Feb 2021 10:39:05 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
+ Fri, 26 Feb 2021 16:38:18 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E22F1112065;
+ Fri, 26 Feb 2021 16:38:17 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 39B93112063;
+ Fri, 26 Feb 2021 16:38:17 +0000 (GMT)
+Received: from localhost (unknown [9.65.76.206])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Fri, 26 Feb 2021 16:38:16 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 17/37] KVM: PPC: Book3S HV P9: Move setting HDEC
+ after switching to guest LPCR
+In-Reply-To: <20210225134652.2127648-18-npiggin@gmail.com>
+References: <20210225134652.2127648-1-npiggin@gmail.com>
+ <20210225134652.2127648-18-npiggin@gmail.com>
+Date: Fri, 26 Feb 2021 13:38:15 -0300
+Message-ID: <8735xiyebs.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20210225215057.23020-3-tyreld@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-02-26_05:2021-02-26,
  2021-02-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxlogscore=885
- malwarescore=0 suspectscore=0 priorityscore=1501 phishscore=0 spamscore=0
- bulkscore=0 mlxscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2102260123
+ lowpriorityscore=0
+ suspectscore=0 mlxscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ malwarescore=0 impostorscore=0 mlxlogscore=999 spamscore=0 adultscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102260123
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,17 +114,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+Nicholas Piggin <npiggin@gmail.com> writes:
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+> LPCR[HDICE]=0 suppresses hypervisor decrementer exceptions on some
+> processors, so it must be enabled before HDEC is set.
+>
+> Rather than set it in the host LPCR then setting HDEC, move the HDEC
+> update to after the guest MMU context (including LPCR) is loaded.
+> There shouldn't be much concern with delaying HDEC by some 10s or 100s
+> of nanoseconds by setting it a bit later.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 24 ++++++++++--------------
+>  1 file changed, 10 insertions(+), 14 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index d4770b222d7e..63cc92c45c5d 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3490,23 +3490,13 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>  		host_dawrx1 = mfspr(SPRN_DAWRX1);
+>  	}
+>
+> -	/*
+> -	 * P8 and P9 suppress the HDEC exception when LPCR[HDICE] = 0,
+> -	 * so set HDICE before writing HDEC.
+> -	 */
+> -	mtspr(SPRN_LPCR, kvm->arch.host_lpcr | LPCR_HDICE);
+> -	isync();
+> -
+> -	hdec = time_limit - mftb();
 
+Would it be possible to leave the mftb() in this patch and then replace
+them all at once in patch 20/37 - "KVM: PPC: Book3S HV P9: Reduce mftb
+per guest entry/exit"?
+
+> -	if (hdec < 0) {
+> -		mtspr(SPRN_LPCR, kvm->arch.host_lpcr);
+> -		isync();
+> +	tb = mftb();
+> +	hdec = time_limit - tb;
+> +	if (hdec < 0)
+>  		return BOOK3S_INTERRUPT_HV_DECREMENTER;
+> -	}
+> -	mtspr(SPRN_HDEC, hdec);
+>
+>  	if (vc->tb_offset) {
+> -		u64 new_tb = mftb() + vc->tb_offset;
+> +		u64 new_tb = tb + vc->tb_offset;
+>  		mtspr(SPRN_TBU40, new_tb);
+>  		tb = mftb();
+>  		if ((tb & 0xffffff) < (new_tb & 0xffffff))
+> @@ -3549,6 +3539,12 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>
+>  	switch_mmu_to_guest_radix(kvm, vcpu, lpcr);
+>
+> +	/*
+> +	 * P9 suppresses the HDEC exception when LPCR[HDICE] = 0,
+> +	 * so set guest LPCR (with HDICE) before writing HDEC.
+> +	 */
+> +	mtspr(SPRN_HDEC, hdec);
+> +
+>  	mtspr(SPRN_SRR0, vcpu->arch.shregs.srr0);
+>  	mtspr(SPRN_SRR1, vcpu->arch.shregs.srr1);
