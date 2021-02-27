@@ -3,23 +3,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA27C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A3D4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:15:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4223664DAF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:15:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4223664DAF
+	by mail.kernel.org (Postfix) with ESMTPS id 9262264ED2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:15:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9262264ED2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DnT976t1kz3d7V
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 12:15:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DnT9T23y6z3dkN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 12:15:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=codefail.de (client-ip=131.153.2.43;
  helo=h2.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
@@ -28,26 +28,29 @@ Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
  [131.153.2.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DnT6g4wFQz3cYN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DnT6g50BLz3cYn
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 12:13:15 +1100 (AEDT)
 Received: from MTA-14-4.privateemail.com (mta-14.privateemail.com
  [198.54.118.205])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id C62C580C48
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 20:13:10 -0500 (EST)
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 8F0A880C90
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 20:13:11 -0500 (EST)
 Received: from mta-14.privateemail.com (localhost [127.0.0.1])
- by mta-14.privateemail.com (Postfix) with ESMTP id 9F68E80078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 20:13:06 -0500 (EST)
+ by mta-14.privateemail.com (Postfix) with ESMTP id 078F38007B;
+ Fri, 26 Feb 2021 20:13:09 -0500 (EST)
 Received: from oc8246131445.ibm.com (unknown [10.20.151.203])
- by mta-14.privateemail.com (Postfix) with ESMTPA id 6726680077
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 01:13:06 +0000 (UTC)
+ by mta-14.privateemail.com (Postfix) with ESMTPA id BCE8480089;
+ Sat, 27 Feb 2021 01:13:08 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 00/10] Improve signal performance on PPC64 with KUAP
-Date: Fri, 26 Feb 2021 19:12:49 -0600
-Message-Id: <20210227011259.11992-1-cmr@codefail.de>
+Subject: [PATCH v7 08/10] powerpc/signal64: Rewrite handle_rt_signal64() to
+ minimise uaccess switches
+Date: Fri, 26 Feb 2021 19:12:57 -0600
+Message-Id: <20210227011259.11992-9-cmr@codefail.de>
 X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20210227011259.11992-1-cmr@codefail.de>
+References: <20210227011259.11992-1-cmr@codefail.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: ClamAV using ClamSMTP
@@ -62,114 +65,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As reported by Anton, there is a large penalty to signal handling
-performance on radix systems using KUAP. The signal handling code
-performs many user access operations, each of which needs to switch the
-KUAP permissions bit to open and then close user access. This involves a
-costly 'mtspr' operation [0].
+From: Daniel Axtens <dja@axtens.net>
 
-There is existing work done on x86 and by Christophe Leroy for PPC32 to
-instead open up user access in "blocks" using user_*_access_{begin,end}.
-We can do the same in PPC64 to bring performance back up on KUAP-enabled
-radix and now also hash MMU systems [1].
+Add uaccess blocks and use the 'unsafe' versions of functions doing user
+access where possible to reduce the number of times uaccess has to be
+opened/closed.
 
-Hash MMU KUAP support along with uaccess flush has landed in linuxppc/next
-since the last revision. This series also provides a large benefit on hash
-with KUAP. However, in the hash implementation of KUAP the user AMR is
-always restored during system_call_exception() which cannot be avoided.
-Fewer user access switches naturally also result in less uaccess flushing.
+There is no 'unsafe' version of copy_siginfo_to_user, so move it
+slightly to allow for a "longer" uaccess block.
 
-The first two patches add some needed 'unsafe' versions of copy-from
-functions. While these do not make use of asm-goto they still allow for
-avoiding the repeated uaccess switches.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+Co-developed-by: Christopher M. Riedl <cmr@codefail.de>
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/powerpc/kernel/signal_64.c | 56 ++++++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 21 deletions(-)
 
-The third patch moves functions called by setup_sigcontext() into a new
-prepare_setup_sigcontext() to simplify converting setup_sigcontext()
-into an 'unsafe' version which assumes an open uaccess window later.
-
-The fourth and fifths patches clean-up some of the Transactional Memory
-ifdef stuff to simplify using uaccess blocks later.
-
-The next two patches rewrite some of the signal64 helper functions to
-be 'unsafe'. Finally, the last three patches update the main signal
-handling functions to make use of the new 'unsafe' helpers and eliminate
-some additional uaccess switching.
-
-I used the will-it-scale signal1 benchmark to measure and compare
-performance [2]. The below results are from running a minimal
-kernel+initramfs QEMU/KVM guest on a POWER9 Blackbird:
-
-	signal1_threads -t1 -s10
-
-	|                              | hash   | radix  |
-	| ---------------------------- | ------ | ------ |
-	| linuxppc/next                | 117898 | 135884 |
-	| linuxppc/next w/o KUAP+KUEP  | 225502 | 227509 |
-	| unsafe-signal64              | 195351 | 230922 |
-
-[0]: https://github.com/linuxppc/issues/issues/277
-[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278
-[2]: https://github.com/antonblanchard/will-it-scale/blob/master/tests/signal1.c
-
-v7:	* Address feedback from Christophe Leroy
-
-v6:	* Rebase on latest linuxppc/next and address feedback comments from
-	  Daniel Axtens and friends (also pick up some Reviewed-by tags)
-	* Simplify __get_user_sigset(), fix sparse warnings, and use it
-	  in ppc32 signal handling
-	* Remove ctx_has_vsx_region arg to prepare_setup_sigcontext()
-	* Remove local buffer in copy_{fpr,vsx}_from_user()
-	* Rework the TM ifdefery-removal and remove one of the ifdef
-	  pairs altogether
-
-v5:	* Use sizeof(buf) in copy_{vsx,fpr}_from_user() (Thanks David Laight)
-	* Rebase on latest linuxppc/next
-
-v4:	* Fix issues identified by Christophe Leroy (Thanks for review)
-	* Use __get_user() directly to copy the 8B sigset_t
-
-v3:	* Rebase on latest linuxppc/next
-	* Reword confusing commit messages
-	* Add missing comma in macro in signal.h which broke compiles without
-	  CONFIG_ALTIVEC
-	* Validate hash KUAP signal performance improvements
-
-v2:	* Rebase on latest linuxppc/next + Christophe Leroy's PPC32
-	  signal series
-	* Simplify/remove TM ifdefery similar to PPC32 series and clean
-	  up the uaccess begin/end calls
-	* Isolate non-inline functions so they are not called when
-	  uaccess window is open
-
-Christopher M. Riedl (8):
-  powerpc/uaccess: Add unsafe_copy_from_user()
-  powerpc/signal: Add unsafe_copy_{vsx,fpr}_from_user()
-  powerpc/signal64: Remove non-inline calls from setup_sigcontext()
-  powerpc: Reference parameter in MSR_TM_ACTIVE() macro
-  powerpc/signal64: Remove TM ifdefery in middle of if/else block
-  powerpc/signal64: Replace setup_sigcontext() w/
-    unsafe_setup_sigcontext()
-  powerpc/signal64: Replace restore_sigcontext() w/
-    unsafe_restore_sigcontext()
-  powerpc/signal: Use __get_user() to copy sigset_t
-
-Daniel Axtens (2):
-  powerpc/signal64: Rewrite handle_rt_signal64() to minimise uaccess
-    switches
-  powerpc/signal64: Rewrite rt_sigreturn() to minimise uaccess switches
-
- arch/powerpc/include/asm/reg.h     |   2 +-
- arch/powerpc/include/asm/uaccess.h |  21 ++
- arch/powerpc/kernel/process.c      |   3 +-
- arch/powerpc/kernel/signal.h       |  33 +++
- arch/powerpc/kernel/signal_32.c    |   2 +-
- arch/powerpc/kernel/signal_64.c    | 316 +++++++++++++++++------------
- 6 files changed, 246 insertions(+), 131 deletions(-)
-
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 23a44ec3ac01..788854734b9a 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -854,45 +854,52 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	unsigned long msr = regs->msr;
+ 
+ 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 0);
+-	if (!access_ok(frame, sizeof(*frame)))
+-		goto badframe;
+ 
+-	err |= __put_user(&frame->info, &frame->pinfo);
+-	err |= __put_user(&frame->uc, &frame->puc);
+-	err |= copy_siginfo_to_user(&frame->info, &ksig->info);
+-	if (err)
++	/* This only applies when calling unsafe_setup_sigcontext() and must be
++	 * called before opening the uaccess window.
++	 */
++	if (!MSR_TM_ACTIVE(msr))
++		prepare_setup_sigcontext(tsk);
++
++	if (!user_write_access_begin(frame, sizeof(*frame)))
+ 		goto badframe;
+ 
++	unsafe_put_user(&frame->info, &frame->pinfo, badframe_block);
++	unsafe_put_user(&frame->uc, &frame->puc, badframe_block);
++
+ 	/* Create the ucontext.  */
+-	err |= __put_user(0, &frame->uc.uc_flags);
+-	err |= __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
++	unsafe_put_user(0, &frame->uc.uc_flags, badframe_block);
++	unsafe_save_altstack(&frame->uc.uc_stack, regs->gpr[1], badframe_block);
+ 
+ 	if (MSR_TM_ACTIVE(msr)) {
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 		/* The ucontext_t passed to userland points to the second
+ 		 * ucontext_t (for transactional state) with its uc_link ptr.
+ 		 */
+-		err |= __put_user(&frame->uc_transact, &frame->uc.uc_link);
++		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link, badframe_block);
++
++		user_write_access_end();
++
+ 		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
+ 					    &frame->uc_transact.uc_mcontext,
+ 					    tsk, ksig->sig, NULL,
+ 					    (unsigned long)ksig->ka.sa.sa_handler,
+ 					    msr);
++
++		if (!user_write_access_begin(&frame->uc.uc_sigmask,
++					     sizeof(frame->uc.uc_sigmask)))
++			goto badframe;
++
+ #endif
+ 	} else {
+-		err |= __put_user(0, &frame->uc.uc_link);
+-		prepare_setup_sigcontext(tsk);
+-		if (!user_write_access_begin(&frame->uc.uc_mcontext,
+-					     sizeof(frame->uc.uc_mcontext)))
+-			return -EFAULT;
+-		err |= __unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk,
+-						ksig->sig, NULL,
+-						(unsigned long)ksig->ka.sa.sa_handler, 1);
+-		user_write_access_end();
++		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
++		unsafe_setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
++					NULL, (unsigned long)ksig->ka.sa.sa_handler,
++					1, badframe_block);
+ 	}
+-	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+-	if (err)
+-		goto badframe;
++
++	unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), badframe_block);
++	user_write_access_end();
+ 
+ 	/* Make sure signal handler doesn't get spurious FP exceptions */
+ 	tsk->thread.fp_state.fpscr = 0;
+@@ -907,6 +914,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 		regs->nip = (unsigned long) &frame->tramp[0];
+ 	}
+ 
++
++	/* Save the siginfo outside of the unsafe block. */
++	if (copy_siginfo_to_user(&frame->info, &ksig->info))
++		goto badframe;
++
+ 	/* Allocate a dummy caller frame for the signal handler. */
+ 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
+ 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
+@@ -946,6 +958,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 
+ 	return 0;
+ 
++badframe_block:
++	user_write_access_end();
+ badframe:
+ 	signal_fault(current, regs, "handle_rt_signal64", frame);
+ 
 -- 
 2.26.1
 
