@@ -7,46 +7,47 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5242C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:14:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 042FEC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:14:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40C4B64E7A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:14:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40C4B64E7A
+	by mail.kernel.org (Postfix) with ESMTPS id 727E864E7A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 01:14:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 727E864E7A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DnT8271g6z3dMg
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 12:14:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DnT8N1PXbz3dSx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Feb 2021 12:14:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=131.153.2.43;
- helo=h2.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=codefail.de (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
-Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
- [131.153.2.43])
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DnT6g6NMPz3cYx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DnT6g4p8Yz3cYH
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 12:13:15 +1100 (AEDT)
 Received: from MTA-14-4.privateemail.com (mta-14.privateemail.com
  [198.54.118.205])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id D065280BF0
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id E67E480933
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 20:13:10 -0500 (EST)
 Received: from mta-14.privateemail.com (localhost [127.0.0.1])
- by mta-14.privateemail.com (Postfix) with ESMTP id D561A80081;
- Fri, 26 Feb 2021 20:13:07 -0500 (EST)
+ by mta-14.privateemail.com (Postfix) with ESMTP id 813AE8007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2021 20:13:07 -0500 (EST)
 Received: from oc8246131445.ibm.com (unknown [10.20.151.203])
- by mta-14.privateemail.com (Postfix) with ESMTPA id 975D68007E;
- Sat, 27 Feb 2021 01:13:07 +0000 (UTC)
+ by mta-14.privateemail.com (Postfix) with ESMTPA id 51AD58007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2021 01:13:07 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 04/10] powerpc: Reference parameter in MSR_TM_ACTIVE() macro
-Date: Fri, 26 Feb 2021 19:12:53 -0600
-Message-Id: <20210227011259.11992-5-cmr@codefail.de>
+Subject: [PATCH v7 03/10] powerpc/signal64: Remove non-inline calls from
+ setup_sigcontext()
+Date: Fri, 26 Feb 2021 19:12:52 -0600
+Message-Id: <20210227011259.11992-4-cmr@codefail.de>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210227011259.11992-1-cmr@codefail.de>
 References: <20210227011259.11992-1-cmr@codefail.de>
@@ -64,38 +65,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Unlike the other MSR_TM_* macros, MSR_TM_ACTIVE does not reference or
-use its parameter unless CONFIG_PPC_TRANSACTIONAL_MEM is defined. This
-causes an 'unused variable' compile warning unless the variable is also
-guarded with CONFIG_PPC_TRANSACTIONAL_MEM.
+The majority of setup_sigcontext() can be refactored to execute in an
+"unsafe" context assuming an open uaccess window except for some
+non-inline function calls. Move these out into a separate
+prepare_setup_sigcontext() function which must be called first and
+before opening up a uaccess window. Non-inline function calls should be
+avoided during a uaccess window for a few reasons:
 
-Reference but do nothing with the argument in the macro to avoid a
-potential compile warning.
+	- KUAP should be enabled for as much kernel code as possible.
+	  Opening a uaccess window disables KUAP which means any code
+	  executed during this time contributes to a potential attack
+	  surface.
+
+	- Non-inline functions default to traceable which means they are
+	  instrumented for ftrace. This adds more code which could run
+	  with KUAP disabled.
+
+	- Powerpc does not currently support the objtool UACCESS checks.
+	  All code running with uaccess must be audited manually which
+	  means: less code -> less work -> fewer problems (in theory).
+
+A follow-up commit converts setup_sigcontext() to be "unsafe".
 
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/reg.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/signal_64.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index da103e92c112..1be20bc8dce2 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -124,7 +124,7 @@
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
- #else
--#define MSR_TM_ACTIVE(x) 0
-+#define MSR_TM_ACTIVE(x) ((void)(x), 0)
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index f9e4a1ac440f..6ca546192cbf 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -79,6 +79,24 @@ static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+ }
  #endif
  
- #if defined(CONFIG_PPC_BOOK3S_64)
++static void prepare_setup_sigcontext(struct task_struct *tsk)
++{
++#ifdef CONFIG_ALTIVEC
++	/* save altivec registers */
++	if (tsk->thread.used_vr)
++		flush_altivec_to_thread(tsk);
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		tsk->thread.vrsave = mfspr(SPRN_VRSAVE);
++#endif /* CONFIG_ALTIVEC */
++
++	flush_fp_to_thread(tsk);
++
++#ifdef CONFIG_VSX
++	if (tsk->thread.used_vsr)
++		flush_vsx_to_thread(tsk);
++#endif /* CONFIG_VSX */
++}
++
+ /*
+  * Set up the sigcontext for the signal frame.
+  */
+@@ -97,7 +115,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	 */
+ #ifdef CONFIG_ALTIVEC
+ 	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
+-	unsigned long vrsave;
+ #endif
+ 	struct pt_regs *regs = tsk->thread.regs;
+ 	unsigned long msr = regs->msr;
+@@ -112,7 +129,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 
+ 	/* save altivec registers */
+ 	if (tsk->thread.used_vr) {
+-		flush_altivec_to_thread(tsk);
+ 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
+ 		err |= __copy_to_user(v_regs, &tsk->thread.vr_state,
+ 				      33 * sizeof(vector128));
+@@ -124,17 +140,10 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+ 	 * use altivec.
+ 	 */
+-	vrsave = 0;
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC)) {
+-		vrsave = mfspr(SPRN_VRSAVE);
+-		tsk->thread.vrsave = vrsave;
+-	}
+-
+-	err |= __put_user(vrsave, (u32 __user *)&v_regs[33]);
++	err |= __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
+ #else /* CONFIG_ALTIVEC */
+ 	err |= __put_user(0, &sc->v_regs);
+ #endif /* CONFIG_ALTIVEC */
+-	flush_fp_to_thread(tsk);
+ 	/* copy fpr regs and fpscr */
+ 	err |= copy_fpr_to_user(&sc->fp_regs, tsk);
+ 
+@@ -150,7 +159,6 @@ static long setup_sigcontext(struct sigcontext __user *sc,
+ 	 * VMX data.
+ 	 */
+ 	if (tsk->thread.used_vsr && ctx_has_vsx_region) {
+-		flush_vsx_to_thread(tsk);
+ 		v_regs += ELF_NVRREG;
+ 		err |= copy_vsx_to_user(v_regs, tsk);
+ 		/* set MSR_VSX in the MSR value in the frame to
+@@ -655,6 +663,7 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 		ctx_has_vsx_region = 1;
+ 
+ 	if (old_ctx != NULL) {
++		prepare_setup_sigcontext(current);
+ 		if (!access_ok(old_ctx, ctx_size)
+ 		    || setup_sigcontext(&old_ctx->uc_mcontext, current, 0, NULL, 0,
+ 					ctx_has_vsx_region)
+@@ -842,6 +851,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ #endif
+ 	{
+ 		err |= __put_user(0, &frame->uc.uc_link);
++		prepare_setup_sigcontext(tsk);
+ 		err |= setup_sigcontext(&frame->uc.uc_mcontext, tsk, ksig->sig,
+ 					NULL, (unsigned long)ksig->ka.sa.sa_handler,
+ 					1);
 -- 
 2.26.1
 
