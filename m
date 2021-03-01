@@ -2,52 +2,67 @@ Return-Path: <SRS0=kNGO=H7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95319C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 08:00:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBAA0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 08:43:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D69B364E04
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 08:00:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D69B364E04
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A1B0664DE3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 08:43:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1B0664DE3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dpt493wm8z3cc9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 19:00:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dpv1Z5dHtz3cGP
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 19:43:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Dpt3q2yQbz30MT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Mar 2021 19:00:38 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C1E031063;
- Mon,  1 Mar 2021 00:00:36 -0800 (PST)
-Received: from [10.163.67.14] (unknown [10.163.67.14])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 17F0A3F70D;
- Mon,  1 Mar 2021 00:00:33 -0800 (PST)
-Subject: Re: [PATCH] mm: Generalize HUGETLB_PAGE_SIZE_VARIABLE
-To: Christoph Hellwig <hch@lst.de>
-References: <1614577853-7452-1-git-send-email-anshuman.khandual@arm.com>
- <20210301062358.GA25761@lst.de>
- <89f2d77c-f4bc-8f7b-a6b0-1c04e422fb77@arm.com>
- <20210301075352.GA27659@lst.de>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <d5fc741d-0c24-5b0f-c9b3-3a2be796ad79@arm.com>
-Date: Mon, 1 Mar 2021 13:31:07 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=joVg0CWz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+bce9324c41c3486454c7+6399+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=joVg0CWz; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dpv172gX5z30N1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Mar 2021 19:43:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+ Content-Description:In-Reply-To:References;
+ bh=ek5kJL1ujiFKFtGeUxZiZdEhbkWQuXJzNlrMDDHSiZY=; b=joVg0CWz6LOS4vHGAG6rOh1CYA
+ VoKirvya1vx0R653IThlzzolk/FLpUhL1sfQ311khwX7z/Y43KLMfWX94+SNy22cIQB9BdyFuAnQq
+ IoESLZejtT4K9+4i0pIIOti8gNZuSmcQfsYrSZL27OtRB+I8Pf2Kkmln+CTiCHMDQZ88+j1BsOmul
+ RhmH18HUErxq1FhyH/4E+cdIw5COFzr+KOLMCExHYYaWgF0opImqih4Xjo+VFEsu5KGe1IcPVB4uv
+ +H7eXnnD3AUfP/Dpzfr0KWPnYguG3RnGj3C0sVTTJc+REBlm1iIODwrEywoe80ldRgW7psNaNhJS1
+ yEk9uS6A==;
+Received: from [2001:4bb8:19b:e4b7:cdf9:733f:4874:8eb4] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1lGe8q-00FUUo-TU; Mon, 01 Mar 2021 08:43:01 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Li Yang <leoyang.li@nxp.com>
+Subject: cleanup unused or almost unused IOMMU APIs and the FSL PAMU driver
+Date: Mon,  1 Mar 2021 09:42:40 +0100
+Message-Id: <20210301084257.945454-1-hch@lst.de>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <20210301075352.GA27659@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,26 +74,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: freedreno@lists.freedesktop.org, kvm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
+ Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi all,
 
+there are a bunch of IOMMU APIs that are entirely unused, or only used as
+a private communication channel between the FSL PAMU driver and it's only
+consumer, the qbman portal driver.
 
-On 3/1/21 1:23 PM, Christoph Hellwig wrote:
-> On Mon, Mar 01, 2021 at 01:13:41PM +0530, Anshuman Khandual wrote:
->>> doesn't this need a 'if HUGETLB_PAGE'
->>
->> While making HUGETLB_PAGE_SIZE_VARIABLE a generic option, also made it
->> dependent on HUGETLB_PAGE. Should not that gate HUGETLB_PAGE_SIZE_VARIABLE
->> when HUGETLB_PAGE is not available irrespective of the select statement on
->> the platforms ?
-> 
-> depends doesn't properly work for variables that are selected.
-> 
+So this series drops a huge chunk of entirely unused FSL PAMU
+functionality, then drops all kinds of unused IOMMU APIs, and then
+replaces what is left of the iommu_attrs with properly typed, smaller
+and easier to use specific APIs.
 
-Alright, will move the HUGETLB_PAGE dependency to platforms while selecting
-the variable HUGETLB_PAGE_SIZE_VARIABLE.
+Diffstat:
+ arch/powerpc/include/asm/fsl_pamu_stash.h   |   12 
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c     |    2 
+ drivers/iommu/amd/iommu.c                   |   23 
+ drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c |   85 ---
+ drivers/iommu/arm/arm-smmu/arm-smmu.c       |  122 +---
+ drivers/iommu/dma-iommu.c                   |    8 
+ drivers/iommu/fsl_pamu.c                    |  264 ----------
+ drivers/iommu/fsl_pamu.h                    |   10 
+ drivers/iommu/fsl_pamu_domain.c             |  694 ++--------------------------
+ drivers/iommu/fsl_pamu_domain.h             |   46 -
+ drivers/iommu/intel/iommu.c                 |   55 --
+ drivers/iommu/iommu.c                       |   75 ---
+ drivers/soc/fsl/qbman/qman_portal.c         |   56 --
+ drivers/vfio/vfio_iommu_type1.c             |   31 -
+ drivers/vhost/vdpa.c                        |   10 
+ include/linux/iommu.h                       |   81 ---
+ 16 files changed, 214 insertions(+), 1360 deletions(-)
