@@ -2,107 +2,69 @@ Return-Path: <SRS0=kNGO=H7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE3C9C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 13:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD3EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 15:32:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A81864D9F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 13:26:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A81864D9F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kroah.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3FA21600CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Mar 2021 15:32:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FA21600CF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dq1Hr4Mr0z3cbJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 00:26:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dq44q2ZWrz3cmc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 02:32:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256 header.s=fm3 header.b=da8PxaQS;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=g+7ZblKh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=w6JDGDqv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kroah.com (client-ip=66.111.4.25;
- helo=out1-smtp.messagingengine.com; envelope-from=greg@kroah.com;
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.76;
+ helo=conuserg-09.nifty.com; envelope-from=masahiroy@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256
- header.s=fm3 header.b=da8PxaQS; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=g+7ZblKh; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=w6JDGDqv; 
  dkim-atps=neutral
-X-Greylist: delayed 655 seconds by postgrey-1.36 at boromir;
- Tue, 02 Mar 2021 00:26:03 AEDT
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dq1HH3WL1z2ydG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 00:26:03 +1100 (AEDT)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailout.nyi.internal (Postfix) with ESMTP id 4C0EC5C00EC;
- Mon,  1 Mar 2021 08:15:02 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Mon, 01 Mar 2021 08:15:02 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=
- date:from:to:cc:subject:message-id:references:mime-version
- :content-type:content-transfer-encoding:in-reply-to; s=fm3; bh=1
- Pe2IyPmY560XOFrxaPfizQCmaqW+xt4WTzJ89t7Qds=; b=da8PxaQSuz53U+9dT
- pfB3wkj51toBqy8Iy7pGVN5w1qzuT2l9G9/N0e2YbLuVdBpTVrAn0WZw43ggFhCr
- i/zZODE4AbmB4QJ7vqE4+DjVF3tBPdQiuZ9rfF0p6+Wimk9x93QdCNRBpOxAa2qP
- LZO5f7NLks8t7qhtGfEK+WhtVr4fJkBFCBjK8ETiMaGptmNmLV2T9+rmGWM7NGHu
- m+6wkOwPglBn2vmbVASlg0X86blmuP7aTyvCbORl96U1LrmP1tK0md9qtPUiNnhL
- YuxUtJ+TyeIpe8E7ugVhlyqdQqLr9Lj7YN5bfdkaQ8FEFLO228REVhIZWGBro5LE
- kEjKQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=1Pe2IyPmY560XOFrxaPfizQCmaqW+xt4WTzJ89t7Q
- ds=; b=g+7ZblKhsNLdaEw6RP9H+oSv7IvfdLtk6BSc8kzgbEMNebAgv1zNtkpEm
- aAk2kbeXr2aie/dyLnIn5Y0DwpPU5jVKucanNiAjW++P0B+xaLupw1W5ktQUStH0
- KNXrfDnCPgWyq+ieWSX6WYZyu0jCflKpxxaLUrYTfz4cByidkdLOfWwmOOXpJW1r
- e2YOnp7V0GbR1xbSTXIN6CaAj6r2DuJZFP+/BPQDOXHdhFlUu08eqOhUtcHXJJRN
- aO/tzpAqZgYRx3wCZ/zJs+ErNERYJtzTx4HlttkYqzvBuVZs7FVGhMm2/qtqgA/v
- qKii73V41EcwTmxIdCgXK9mnJRcfg==
-X-ME-Sender: <xms:1eg8YK-rPAf68_0L0-L2w_uE7dBE5wXkJ3imu-0MjlLwVVIbpTY10A>
- <xme:1eg8YKtvXuZqpzhp_kndux_01F01lC0XxE2yMnnkuqtaa3caOoJ8NWS0qJS72kV5U
- W18I2QlcMwaCA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrleekgdegkecutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
- fjughrpeffhffvuffkfhggtggugfgjsehtkeertddttddunecuhfhrohhmpefirhgvghcu
- mffjuceoghhrvghgsehkrhhorghhrdgtohhmqeenucggtffrrghtthgvrhhnpedvfffgue
- eiuefhheevheetgfehvdefgeekfeevueejfeeftdetudetiefhheffvdenucffohhmrghi
- nhepkhgvrhhnvghlrdhorhhgnecukfhppeekfedrkeeirdejgedrieegnecuvehluhhsth
- gvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepghhrvghgsehkrhhorghh
- rdgtohhm
-X-ME-Proxy: <xmx:1eg8YACGjSHYzLHc7YjNgwD8ex0s_O6itykxFsnshFWPFNQNQvo-wg>
- <xmx:1eg8YCd6iTzUI-jn2lqY-fsT9z5Mmm4EuAROw0qhLnR_1DPKlnG0Yw>
- <xmx:1eg8YPPQf_SkKxvWAieRtewY6V-NajUN6r2j4DJXBYNhGC_-MX3ylg>
- <xmx:1ug8YIbpKsQ75oFbrIxpWpL7GjM5Xw8S-3jH-54_zd3IuG5fGPemmw>
-Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
- by mail.messagingengine.com (Postfix) with ESMTPA id 39E52108005C;
- Mon,  1 Mar 2021 08:15:01 -0500 (EST)
-Date: Mon, 1 Mar 2021 14:14:59 +0100
-From: Greg KH <greg@kroah.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH for 5.10] powerpc/32: Preserve cr1 in exception prolog
- stack check to fix build error
-Message-ID: <YDzo01MSvxr4CftS@kroah.com>
-References: <f6d16f3321f1dc89b77ada1c7d961fae4089766e.1613120077.git.christophe.leroy@csgroup.eu>
- <YCqFn/4YuT+445xW@kroah.com>
- <d0b1ff43-59e0-29a4-1bd0-47bcfff8effa@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dq44K5dn0z30Md
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 02:31:45 +1100 (AEDT)
+Received: from oscar.flets-west.jp (softbank126026090165.bbtec.net
+ [126.26.90.165]) (authenticated)
+ by conuserg-09.nifty.com with ESMTP id 121FUTYP004032;
+ Tue, 2 Mar 2021 00:30:31 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 121FUTYP004032
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1614612631;
+ bh=m5BEroMGeIUiadj/RSTW31YN9SmSSZvY3G0oo0FkkdU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=w6JDGDqvHM3semXwXDeIqSufTvNdwP6Ib9PK9lX4w/t8yETP304reQ0M0Ck8QZjSF
+ clJdT7C1Eo5YDRqIeDd6dm8tnFg4ELheu9N0PUstlFJeQU0CuyHJGUGEcCDtzk5lJS
+ HFjFUVSXlpy/I/HSrIee+dgOBIhTYEr0ff9MZ6r5oLG0O26Ry7FXEGXKc0ymczdIAI
+ NAFKLS5grheoejWXjvVMFtedbF9Mln6wD9pHtYCpgCMvVsUxxff+SkC2PXncqJlz+k
+ C1/5tbHdYE9jaQ0WQn8FU6r5cHZ12tyjLDnEjNCxnEDhIdv2J1D2tK6w8FEGNzWn1f
+ 2zjuHYVcprjrg==
+X-Nifty-SrcIP: [126.26.90.165]
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc: syscalls: switch to generic syscallhdr.sh
+Date: Tue,  2 Mar 2021 00:30:19 +0900
+Message-Id: <20210301153019.362742-2-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210301153019.362742-1-masahiroy@kernel.org>
+References: <20210301153019.362742-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <d0b1ff43-59e0-29a4-1bd0-47bcfff8effa@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,30 +76,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, fedora.dm0@gmail.com, stable@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Stefan Asserhall <stefan.asserhall@xilinx.com>,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-kernel@vger.kernel.org,
+ Michal Simek <michal.simek@xilinx.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 23, 2021 at 03:39:20PM +0100, Christophe Leroy wrote:
-> 
-> 
-> Le 15/02/2021 à 15:30, Greg KH a écrit :
-> > On Fri, Feb 12, 2021 at 08:57:14AM +0000, Christophe Leroy wrote:
-> > > This is backport of 3642eb21256a ("powerpc/32: Preserve cr1 in
-> > > exception prolog stack check to fix build error") for kernel 5.10
-> > > 
-> > > It fixes the build failure on v5.10 reported by kernel test robot
-> > > and by David Michael.
-> > > 
-> > > This fix is not in Linux tree yet, it is in next branch in powerpc tree.
-> > 
-> > Then there's nothing I can do about it until that happens :(
-> > 
-> 
-> It now is in Linus' tree, see https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=3642eb21256a317ac14e9ed560242c6d20cf06d9
+Many architectures duplicate similar shell scripts.
 
-Now queued up, thanks.
+This commit converts powerpc to use scripts/syscallhdr.sh.
 
-greg k-h
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
+
+ arch/powerpc/kernel/syscalls/Makefile      | 11 +++----
+ arch/powerpc/kernel/syscalls/syscallhdr.sh | 36 ----------------------
+ 2 files changed, 4 insertions(+), 43 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
+
+diff --git a/arch/powerpc/kernel/syscalls/Makefile b/arch/powerpc/kernel/syscalls/Makefile
+index df21c731c806..5476f62eb80f 100644
+--- a/arch/powerpc/kernel/syscalls/Makefile
++++ b/arch/powerpc/kernel/syscalls/Makefile
+@@ -6,23 +6,20 @@ _dummy := $(shell [ -d '$(uapi)' ] || mkdir -p '$(uapi)')	\
+ 	  $(shell [ -d '$(kapi)' ] || mkdir -p '$(kapi)')
+ 
+ syscall := $(src)/syscall.tbl
+-syshdr := $(srctree)/$(src)/syscallhdr.sh
++syshdr := $(srctree)/scripts/syscallhdr.sh
+ systbl := $(srctree)/scripts/syscalltbl.sh
+ 
+ quiet_cmd_syshdr = SYSHDR  $@
+-      cmd_syshdr = $(CONFIG_SHELL) '$(syshdr)' '$<' '$@'	\
+-		   '$(syshdr_abis_$(basetarget))'		\
+-		   '$(syshdr_pfx_$(basetarget))'		\
+-		   '$(syshdr_offset_$(basetarget))'
++      cmd_syshdr = $(CONFIG_SHELL) $(syshdr) --emit-nr --abis $(abis) $< $@
+ 
+ quiet_cmd_systbl = SYSTBL  $@
+       cmd_systbl = $(CONFIG_SHELL) $(systbl) --abis $(abis) $< $@
+ 
+-syshdr_abis_unistd_32 := common,nospu,32
++$(uapi)/unistd_32.h: abis := common,nospu,32
+ $(uapi)/unistd_32.h: $(syscall) $(syshdr) FORCE
+ 	$(call if_changed,syshdr)
+ 
+-syshdr_abis_unistd_64 := common,nospu,64
++$(uapi)/unistd_64.h: abis := common,nospu,64
+ $(uapi)/unistd_64.h: $(syscall) $(syshdr) FORCE
+ 	$(call if_changed,syshdr)
+ 
+diff --git a/arch/powerpc/kernel/syscalls/syscallhdr.sh b/arch/powerpc/kernel/syscalls/syscallhdr.sh
+deleted file mode 100644
+index 02d6751f3be3..000000000000
+--- a/arch/powerpc/kernel/syscalls/syscallhdr.sh
++++ /dev/null
+@@ -1,36 +0,0 @@
+-#!/bin/sh
+-# SPDX-License-Identifier: GPL-2.0
+-
+-in="$1"
+-out="$2"
+-my_abis=`echo "($3)" | tr ',' '|'`
+-prefix="$4"
+-offset="$5"
+-
+-fileguard=_UAPI_ASM_POWERPC_`basename "$out" | sed \
+-	-e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/' \
+-	-e 's/[^A-Z0-9_]/_/g' -e 's/__/_/g'`
+-grep -E "^[0-9A-Fa-fXx]+[[:space:]]+${my_abis}" "$in" | sort -n | (
+-	printf "#ifndef %s\n" "${fileguard}"
+-	printf "#define %s\n" "${fileguard}"
+-	printf "\n"
+-
+-	nxt=0
+-	while read nr abi name entry compat ; do
+-		if [ -z "$offset" ]; then
+-			printf "#define __NR_%s%s\t%s\n" \
+-				"${prefix}" "${name}" "${nr}"
+-		else
+-			printf "#define __NR_%s%s\t(%s + %s)\n" \
+-				"${prefix}" "${name}" "${offset}" "${nr}"
+-		fi
+-		nxt=$((nr+1))
+-	done
+-
+-	printf "\n"
+-	printf "#ifdef __KERNEL__\n"
+-	printf "#define __NR_syscalls\t%s\n" "${nxt}"
+-	printf "#endif\n"
+-	printf "\n"
+-	printf "#endif /* %s */\n" "${fileguard}"
+-) > "$out"
+-- 
+2.27.0
+
