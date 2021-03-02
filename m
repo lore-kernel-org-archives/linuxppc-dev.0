@@ -2,68 +2,102 @@ Return-Path: <SRS0=ynH/=IA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97E47C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 22:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A134BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 23:06:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99C6664EED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 22:49:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99C6664EED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B9E6564F2C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 23:06:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9E6564F2C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqslC0L4Nz3ccj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 09:49:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dqt6x73Xcz3d3L
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 10:06:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FoEWol+U;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=frj05sTF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=FoEWol+U; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=frj05sTF; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dqskn3fhNz30N6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 09:49:20 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Dqskk3fWpz9sRR;
- Wed,  3 Mar 2021 09:49:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1614725359;
- bh=HFXBoTB9QkIdpfj1nthDl4GEiFA8/e8waHgz50PRC8I=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=FoEWol+UK+GJoezLROpzsabdlUI03TbZ4RDyPvqk3eDCGhyynEf972LjugnqBrJIz
- OPCWA2PWLBK0S3xQNe/T4dHP5oe6TrnfPp/4b+FmS7t0gAdslcRp/IGhSRGTXwJRZD
- eGqsvxvXt+syiaFA/17r59OhQOC0P/4j3CuETrYmyKNhwqq8DU8E+icn+mOaoTfc/j
- IFywYYKkO5/M1IXpJS6E0SWjQ62oMk1hV5NEYWlmRx7ZrxRr0pn4Mq7WQ7p26D8jrJ
- bKbU3+cfxYG+1L4o/wPfydWM2fRHrt4NhzGBkvbf64opIEA2eExypKkfl7d3fhHo3J
- fyV1WT+IWN0RA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, Stephen Rothwell
- <sfr@canb.auug.org.au>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the powerpc-fixes tree
-In-Reply-To: <6113ab65-7b3c-07f0-2813-76ddaa4c7236@kleine-koenig.org>
-References: <20210302112131.5bb7b08b@canb.auug.org.au>
- <87pn0is3wg.fsf@mpe.ellerman.id.au>
- <6113ab65-7b3c-07f0-2813-76ddaa4c7236@kleine-koenig.org>
-Date: Wed, 03 Mar 2021 09:49:15 +1100
-Message-ID: <87eegxrx1w.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dqt6S6thzz30Gb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 10:06:24 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 122N4LsN144564; Tue, 2 Mar 2021 18:06:13 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=XPxG3FFgPXal80lLQGs7HdzL8g2BGCEdUKlMKFxA35E=;
+ b=frj05sTFNSV9IQoPI3MFMyWd24kPy+LTrSRDcIviNfMX8I0XBQKAnWyke3o/OGEF9LMs
+ wguSOCmPWVrfjlxKRCrbUnKHvcWLbEs6iUwiyLrabOtLerVYhH2JOqcAULhiULw6lPHV
+ xIs0ak0Lh4aGwMBCsfXN9VoUV7T7WGdjNwr0ylv+G1Q5+Cl2LUR1qzmDuUSMcPDDLEXx
+ pXSXdHu6NFQZV4xkDxIyV6j+PkDCx0rxFIOl0hqR029VlF8QnOehCdG2OghCDsDvtfq/
+ SCglV0KfhGCXFtUlrX7oFomCx2mycnkNaFFAOQv6NhbiDb8OXSaB+Dvld0d4brWmc8UP JA== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 371xp8g65n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 02 Mar 2021 18:06:13 -0500
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 122N2qSj020006;
+ Tue, 2 Mar 2021 23:05:48 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma01dal.us.ibm.com with ESMTP id 371qmubfk2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 02 Mar 2021 23:05:48 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 122N5kJc22937996
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 2 Mar 2021 23:05:46 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 62A436E050;
+ Tue,  2 Mar 2021 23:05:46 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 044916E04C;
+ Tue,  2 Mar 2021 23:05:46 +0000 (GMT)
+Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue,  2 Mar 2021 23:05:45 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Subject: [PATCH v5 3/5] ibmvfc: treat H_CLOSED as success during sub-CRQ
+ registration
+Date: Tue,  2 Mar 2021 17:05:41 -0600
+Message-Id: <20210302230543.9905-4-tyreld@linux.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210302230543.9905-1-tyreld@linux.ibm.com>
+References: <20210302230543.9905-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-02_08:2021-03-01,
+ 2021-03-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0
+ phishscore=0 mlxscore=0 lowpriorityscore=0 priorityscore=1501
+ clxscore=1015 bulkscore=0 spamscore=0 suspectscore=0 mlxlogscore=999
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2103020170
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,43 +109,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, brking@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.org> writes:
-> Hello,
->
-> On 3/2/21 3:09 AM, Michael Ellerman wrote:
->> Stephen Rothwell <sfr@canb.auug.org.au> writes:
->>> Hi all,
->>>
->>> After merging the powerpc-fixes tree, today's linux-next build (powerpc
->>> allyesconfig) failed like this:
->>>
->>> drivers/net/ethernet/ibm/ibmvnic.c:5399:13: error: conflicting types fo=
-r 'ibmvnic_remove'
->>>   5399 | static void ibmvnic_remove(struct vio_dev *dev)
->>>        |             ^~~~~~~~~~~~~~
->>> drivers/net/ethernet/ibm/ibmvnic.c:81:12: note: previous declaration of=
- 'ibmvnic_remove' was here
->>>     81 | static int ibmvnic_remove(struct vio_dev *);
->>>        |            ^~~~~~~~~~~~~~
->>>
->>> Caused by commit
->>>
->>>    1bdd1e6f9320 ("vio: make remove callback return void")
->>=20
->> Gah, is IBMVNIC in any of our defconfigs?! ... no it's not.
->
-> Would you accept a patch to add the driver to one of the defconfigs as=20
-> an excuse for the build breakage I created?
+A non-zero return code for H_REG_SUB_CRQ is currently treated as a
+failure resulting in failing sub-CRQ setup. The case of H_CLOSED should
+not be treated as a failure. This return code translates to a successful
+sub-CRQ registration by the hypervisor, and is meant to communicate back
+that there is currently no partner VIOS CRQ connection established as of
+yet. This is a common occurrence during a disconnect where the client
+adapter can possibly come back up prior to the partner adapter.
 
-Thanks, but I already sent a patch adding it.
+For non-zero return code from H_REG_SUB_CRQ treat a H_CLOSED as success
+so that sub-CRQs are successfully setup.
 
-We should really have these drivers enabled in our defconfig, so that's
-on us.
+Fixes: 3034ebe26389 ("ibmvfc: add alloc/dealloc routines for SCSI Sub-CRQ Channels")
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Reviewed-by: Brian King <brking@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-cheers
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index d34e1a4f74d9..1d9f961715ca 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -5636,7 +5636,8 @@ static int ibmvfc_register_scsi_channel(struct ibmvfc_host *vhost,
+ 	rc = h_reg_sub_crq(vdev->unit_address, scrq->msg_token, PAGE_SIZE,
+ 			   &scrq->cookie, &scrq->hw_irq);
+ 
+-	if (rc) {
++	/* H_CLOSED indicates successful register, but no CRQ partner */
++	if (rc && rc != H_CLOSED) {
+ 		dev_warn(dev, "Error registering sub-crq: %d\n", rc);
+ 		if (rc == H_PARAMETER)
+ 			dev_warn_once(dev, "Firmware may not support MQ\n");
+-- 
+2.27.0
+
