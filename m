@@ -2,61 +2,77 @@ Return-Path: <SRS0=ynH/=IA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1AB3C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 08:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A95C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 08:59:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2295164D9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 08:48:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2295164D9E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 0EB7D64D9C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 08:59:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EB7D64D9C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqW5248KNz3d9R
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 19:48:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DqWJl42bjz3cL1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 19:59:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=VuJezB0t;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::32b;
+ helo=mail-ot1-x32b.google.com; envelope-from=elver@google.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=VuJezB0t; dkim-atps=neutral
+Received: from mail-ot1-x32b.google.com (mail-ot1-x32b.google.com
+ [IPv6:2607:f8b0:4864:20::32b])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DqW4L6PQDz30NV
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 19:48:16 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DqW4C5qLLz9txQh;
- Tue,  2 Mar 2021 09:48:11 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uolnubRyter1; Tue,  2 Mar 2021 09:48:11 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DqW4C439fz9txQg;
- Tue,  2 Mar 2021 09:48:11 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A12808B7AC;
- Tue,  2 Mar 2021 09:48:12 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id X_N73Rd8VYWJ; Tue,  2 Mar 2021 09:48:12 +0100 (CET)
-Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2195E8B75F;
- Tue,  2 Mar 2021 09:48:12 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 8941D674AD; Tue,  2 Mar 2021 08:48:11 +0000 (UTC)
-Message-Id: <1fc81f07cabebb875b963e295408cc3dd38c8d85.1614674882.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 1/2] powerpc: Use lwarx/ldarx directly instead of
- PPC_LWARX/LDARX macros
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue,  2 Mar 2021 08:48:11 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DqWJG32y6z30Nc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 19:58:35 +1100 (AEDT)
+Received: by mail-ot1-x32b.google.com with SMTP id x9so14956223otp.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Mar 2021 00:58:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ZedzYRAADqpCRUEjxpUyyJbfTq4kXSXEtgpjDsYUTaM=;
+ b=VuJezB0tzWYNW+rVlp2nsM418xSp5+ufG0JWLAq5r5MM0gK8qNtLMnGAtK7yHadsqw
+ TmlF+UOZJINweGW5BON+tIaVXtB2L0NH6OKZSjkNpdTma8yO6kGtpqImMC6FondtWL/v
+ cYDAzZwQMwxb+qIDEpg/nF96V85V4wG/Rk7rTuvW1Sly7+7/AtTKx2fY7W5p8xkRwCrS
+ 1Lu3BvWIA04+WZGGBL8Pnq3XNaIYUnKTpX+08p/+LiJLC6k4RMdZrhXt8apJEY6APftp
+ sj2e2Blq8v+FSC48imCvzkT7fpDSibVRZDUzuRj+zAvXCexjO4/Qdpr2e4wROPokdGt/
+ LKPw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ZedzYRAADqpCRUEjxpUyyJbfTq4kXSXEtgpjDsYUTaM=;
+ b=McGM1aHyj0dIufzueeQiq9DoZahcNOiUOybHNwcRhxJcIuBr5ib9o8xeFy2hi1qR3v
+ spXBn8p8QyL+Qzy2r6lZrMKQ4jK4d6LQAIsHAQMunt6qAAx4Sr4yHrLI7ONt8KQvlBZy
+ qDb9X0rxtM1orA84RCLS254Gmv7gcjEIBxSLYJOe3Ru0YSPvYTQwWCnfIPfg9lbSzzZa
+ sZhXqmzW3M3MU/zAFbUyzQUZrd/zo3mx1roMrG5/5HUtVFb6w7PsW4IXBd8PS+j4Ziuq
+ b4R0rZmhKNawFdw8+d2tmspUf8JEDEZvrfHvfH5L5m1KxpJZ7Iqic9cxwIXfx0aSB4DA
+ KeLw==
+X-Gm-Message-State: AOAM532GIssdOuk2nhTttK63TKyN44laPlGhsoWZFYCqURT3B5bStwh7
+ XdUyluAq/J+RHRfV27jKeS15WRUMDLnO1RToXLSkkw==
+X-Google-Smtp-Source: ABdhPJwyuV/L1oxMIfR9yCj0QXq4vfpZWv+7bnDC4oXhj8Ui6jlu9nIWMXS6e4hKLyGSbTtljGRukRNmhekdkwAAlVM=
+X-Received: by 2002:a9d:644a:: with SMTP id m10mr17387529otl.233.1614675511068; 
+ Tue, 02 Mar 2021 00:58:31 -0800 (PST)
+MIME-Version: 1.0
+References: <51c397a23631d8bb2e2a6515c63440d88bf74afd.1614674144.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <51c397a23631d8bb2e2a6515c63440d88bf74afd.1614674144.git.christophe.leroy@csgroup.eu>
+From: Marco Elver <elver@google.com>
+Date: Tue, 2 Mar 2021 09:58:19 +0100
+Message-ID: <CANpmjNPOJfL_qsSZYRbwMUrxnXxtF5L3k9hursZZ7k9H1jLEuA@mail.gmail.com>
+Subject: Re: [RFC PATCH v1] powerpc: Enable KFENCE for PPC32
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,148 +84,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ Alexander Potapenko <glider@google.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Dmitry Vyukov <dvyukov@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Force the eh flag at 0 on PPC32.
+On Tue, 2 Mar 2021 at 09:37, Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+> Add architecture specific implementation details for KFENCE and enable
+> KFENCE for the ppc32 architecture. In particular, this implements the
+> required interface in <asm/kfence.h>.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/asm-compat.h      | 4 ++--
- arch/powerpc/include/asm/atomic.h          | 4 ++--
- arch/powerpc/include/asm/bitops.h          | 8 ++++----
- arch/powerpc/include/asm/ppc-opcode.h      | 2 --
- arch/powerpc/include/asm/simple_spinlock.h | 6 +++---
- 5 files changed, 11 insertions(+), 13 deletions(-)
+Nice!
 
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index 19b70c5b5f18..2b736d9fbb1b 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -17,7 +17,7 @@
- #define PPC_LONG	stringify_in_c(.8byte)
- #define PPC_LONG_ALIGN	stringify_in_c(.balign 8)
- #define PPC_TLNEI	stringify_in_c(tdnei)
--#define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
-+#define PPC_LLARX	stringify_in_c(ldarx)
- #define PPC_STLCX	stringify_in_c(stdcx.)
- #define PPC_CNTLZL	stringify_in_c(cntlzd)
- #define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), RS)
-@@ -50,7 +50,7 @@
- #define PPC_LONG	stringify_in_c(.long)
- #define PPC_LONG_ALIGN	stringify_in_c(.balign 4)
- #define PPC_TLNEI	stringify_in_c(twnei)
--#define PPC_LLARX(t, a, b, eh)	PPC_LWARX(t, a, b, eh)
-+#define PPC_LLARX	stringify_in_c(lwarx)
- #define PPC_STLCX	stringify_in_c(stwcx.)
- #define PPC_CNTLZL	stringify_in_c(cntlzw)
- #define PPC_MTOCRF	stringify_in_c(mtcrf)
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index 61c6e8b200e8..ba177d0be278 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -204,7 +204,7 @@ atomic_try_cmpxchg_lock(atomic_t *v, int *old, int new)
- 	int r, o = *old;
- 
- 	__asm__ __volatile__ (
--"1:\t"	PPC_LWARX(%0,0,%2,1) "	# atomic_try_cmpxchg_acquire	\n"
-+"1:	lwarx	%0,0,%2,%5	# atomic_try_cmpxchg_acquire		\n"
- "	cmpw	0,%0,%3							\n"
- "	bne-	2f							\n"
- "	stwcx.	%4,0,%2							\n"
-@@ -212,7 +212,7 @@ atomic_try_cmpxchg_lock(atomic_t *v, int *old, int new)
- "\t"	PPC_ACQUIRE_BARRIER "						\n"
- "2:									\n"
- 	: "=&r" (r), "+m" (v->counter)
--	: "r" (&v->counter), "r" (o), "r" (new)
-+	: "r" (&v->counter), "r" (o), "r" (new), "i" (IS_ENABLED(CONFIG_PPC64) ? 1 : 0)
- 	: "cr0", "memory");
- 
- 	if (unlikely(r != o))
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 299ab33505a6..11847b6a244e 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -70,7 +70,7 @@ static inline void fn(unsigned long mask,	\
- 	unsigned long *p = (unsigned long *)_p;	\
- 	__asm__ __volatile__ (			\
- 	prefix					\
--"1:"	PPC_LLARX(%0,0,%3,0) "\n"		\
-+"1:"	PPC_LLARX "%0,0,%3,0\n"			\
- 	stringify_in_c(op) "%0,%0,%2\n"		\
- 	PPC_STLCX "%0,0,%3\n"			\
- 	"bne- 1b\n"				\
-@@ -115,13 +115,13 @@ static inline unsigned long fn(			\
- 	unsigned long *p = (unsigned long *)_p;		\
- 	__asm__ __volatile__ (				\
- 	prefix						\
--"1:"	PPC_LLARX(%0,0,%3,eh) "\n"			\
-+"1:"	PPC_LLARX "%0,0,%3,%4\n"			\
- 	stringify_in_c(op) "%1,%0,%2\n"			\
- 	PPC_STLCX "%1,0,%3\n"				\
- 	"bne- 1b\n"					\
- 	postfix						\
- 	: "=&r" (old), "=&r" (t)			\
--	: "r" (mask), "r" (p)				\
-+	: "r" (mask), "r" (p), "i" (IS_ENABLED(CONFIG_PPC64) ? eh : 0)	\
- 	: "cc", "memory");				\
- 	return (old & mask);				\
- }
-@@ -170,7 +170,7 @@ clear_bit_unlock_return_word(int nr, volatile unsigned long *addr)
- 
- 	__asm__ __volatile__ (
- 	PPC_RELEASE_BARRIER
--"1:"	PPC_LLARX(%0,0,%3,0) "\n"
-+"1:"	PPC_LLARX "%0,0,%3,0\n"
- 	"andc %1,%0,%2\n"
- 	PPC_STLCX "%1,0,%3\n"
- 	"bne- 1b\n"
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index ed161ef2b3ca..9550af2301b1 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -531,8 +531,6 @@
- #define	PPC_DIVDE(t, a, b)	stringify_in_c(.long PPC_RAW_DIVDE(t, a, b))
- #define	PPC_DIVDEU(t, a, b)	stringify_in_c(.long PPC_RAW_DIVDEU(t, a, b))
- #define PPC_LQARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LQARX(t, a, b, eh))
--#define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LDARX(t, a, b, eh))
--#define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LWARX(t, a, b, eh))
- #define PPC_STQCX(t, a, b)	stringify_in_c(.long PPC_RAW_STQCX(t, a, b))
- #define PPC_MADDHD(t, a, b, c)	stringify_in_c(.long PPC_RAW_MADDHD(t, a, b, c))
- #define PPC_MADDHDU(t, a, b, c)	stringify_in_c(.long PPC_RAW_MADDHDU(t, a, b, c))
-diff --git a/arch/powerpc/include/asm/simple_spinlock.h b/arch/powerpc/include/asm/simple_spinlock.h
-index 5b862de29dff..1b1ded4a21f3 100644
---- a/arch/powerpc/include/asm/simple_spinlock.h
-+++ b/arch/powerpc/include/asm/simple_spinlock.h
-@@ -52,7 +52,7 @@ static inline unsigned long __arch_spin_trylock(arch_spinlock_t *lock)
- 
- 	token = LOCK_TOKEN;
- 	__asm__ __volatile__(
--"1:	" PPC_LWARX(%0,0,%2,1) "\n\
-+"1:	lwarx		%0,0,%2,1\n\
- 	cmpwi		0,%0,0\n\
- 	bne-		2f\n\
- 	stwcx.		%1,0,%2\n\
-@@ -180,7 +180,7 @@ static inline long __arch_read_trylock(arch_rwlock_t *rw)
- 	long tmp;
- 
- 	__asm__ __volatile__(
--"1:	" PPC_LWARX(%0,0,%1,1) "\n"
-+"1:	lwarx		%0,0,%1,1\n"
- 	__DO_SIGN_EXTEND
- "	addic.		%0,%0,1\n\
- 	ble-		2f\n"
-@@ -204,7 +204,7 @@ static inline long __arch_write_trylock(arch_rwlock_t *rw)
- 
- 	token = WRLOCK_TOKEN;
- 	__asm__ __volatile__(
--"1:	" PPC_LWARX(%0,0,%2,1) "\n\
-+"1:	lwarx		%0,0,%2,1\n\
- 	cmpwi		0,%0,0\n\
- 	bne-		2f\n"
- "	stwcx.		%1,0,%2\n\
--- 
-2.25.0
+> KFENCE requires that attributes for pages from its memory pool can
+> individually be set. Therefore, force the Read/Write linear map to be
+> mapped at page granularity.
+>
+> Unit tests succeed on all tests but one:
+>
+>         [   15.053324]     # test_invalid_access: EXPECTATION FAILED at mm/kfence/kfence_test.c:636
+>         [   15.053324]     Expected report_matches(&expect) to be true, but is false
+>         [   15.068359]     not ok 21 - test_invalid_access
 
+This is strange, given all the other tests passed. Do you mind sharing
+the full test log?
+
+Thanks,
+-- Marco
