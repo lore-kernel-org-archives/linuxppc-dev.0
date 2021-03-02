@@ -7,51 +7,51 @@ X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 472C7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 05:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BA4CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 05:28:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 199C364E7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 05:27:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 199C364E7C
+	by mail.kernel.org (Postfix) with ESMTPS id E91DD64E7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 05:27:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E91DD64E7C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dr2ZJ2lBMz3cXy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 16:27:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dr2Zk49Lvz3cZv
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 16:27:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d6eV35ZP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rFORUmuo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=d6eV35ZP; 
+ header.s=k20201202 header.b=rFORUmuo; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dqnmp0vM8z30N7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 06:50:49 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8A6CC60201;
- Tue,  2 Mar 2021 19:50:44 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dqp9b397gz30RM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 07:08:51 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 40A9964F21;
+ Tue,  2 Mar 2021 20:08:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614714646;
- bh=S5zLlyqTS4bPCDBeQLQlrq+lr35udnmJMzLYiOmY8f8=;
+ s=k20201202; t=1614715728;
+ bh=+ZnFHkCt4vxwdfNeetS0nLlA+jw/GbxPFD8wsnXzPjE=;
  h=From:To:Cc:Subject:Date:From;
- b=d6eV35ZP5ds1iqC9d0QYDkq5pojZ2icNP1P+w9EXalsdPml0LtRCCZINGg2QYzbJY
- Mu1t5lBk+gUMPwskrQkjAWgndAv3mYpd9otYcI3ZF8dEqR1jsHB9dKOVkxUTYDIEnx
- TEo8TB7bOY6ZHRRRAuhnrQWOfuc+HQpS80rkMutcWhbQrv12PDEemF8RqlYg+EgDdf
- 3XHe/ZZfdKr90xGC16DpKkv/Ws984SDRbtDh2RYZ/un6/tCSzwwX7HLA1B0hjH58Sd
- phkESWQw+62mvh7zqOwIUcF/SpsBLAuMqCOmj+KDB+x5Dn8QFiEXa6MG1WDCUHAYqL
- 7/VlXhfwPG+fg==
+ b=rFORUmuoN8/sw1fsN52kQIk1QPdI3scUBNK3k0XmymgtXQ5xFn2NROK7ivr4YxPO/
+ 1eTkyWWTNkjLInsdr8IhmoOHXsuTpbBx/9M4WL0McXGVpD6Hafo56Kv6LT8ipAvIs0
+ b2SiRYcRPNQqY2eSit6+3UGuGsf1qSXwGlaYFSJf9CWWl66sWRu/WGSS28vIXtFo3h
+ +MvJuST3FMaXUIx1z+fhSSHYL02hvAjPcKgeatebPykL24rjKs1tq1WhLshXJh8xYd
+ KqUSN2kvYRBJ18Ub3QEtjr1jW8JDg7Il7ja7K6z6bxjDxOAm97nh/cHMTQSqWj4PwN
+ zfC5dn8pWeOSQ==
 From: Nathan Chancellor <nathan@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/fadump: Mark fadump_calculate_reserve_size as __init
-Date: Tue,  2 Mar 2021 12:50:14 -0700
-Message-Id: <20210302195013.2626335-1-nathan@kernel.org>
+Subject: [PATCH] powerpc/prom: Mark identical_pvr_fixup as __init
+Date: Tue,  2 Mar 2021 13:08:29 -0700
+Message-Id: <20210302200829.2680663-1-nathan@kernel.org>
 X-Mailer: git-send-email 2.31.0.rc0.75.gec125d1bc1
 MIME-Version: 1.0
 X-Patchwork-Bot: notify
@@ -75,50 +75,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If fadump_calculate_reserve_size() is not inlined, there is a modpost
-warning:
+If identical_pvr_fixup() is not inlined, there are two modpost warnings:
 
-WARNING: modpost: vmlinux.o(.text+0x5196c): Section mismatch in
-reference from the function fadump_calculate_reserve_size() to the
-function .init.text:parse_crashkernel()
-The function fadump_calculate_reserve_size() references
-the function __init parse_crashkernel().
-This is often because fadump_calculate_reserve_size lacks a __init
-annotation or the annotation of parse_crashkernel is wrong.
+WARNING: modpost: vmlinux.o(.text+0x54e8): Section mismatch in reference
+from the function identical_pvr_fixup() to the function
+.init.text:of_get_flat_dt_prop()
+The function identical_pvr_fixup() references
+the function __init of_get_flat_dt_prop().
+This is often because identical_pvr_fixup lacks a __init
+annotation or the annotation of of_get_flat_dt_prop is wrong.
 
-fadump_calculate_reserve_size() calls parse_crashkernel(), which is
-marked as __init and fadump_calculate_reserve_size() is called from
-within fadump_reserve_mem(), which is also marked as __init.
+WARNING: modpost: vmlinux.o(.text+0x551c): Section mismatch in reference
+from the function identical_pvr_fixup() to the function
+.init.text:identify_cpu()
+The function identical_pvr_fixup() references
+the function __init identify_cpu().
+This is often because identical_pvr_fixup lacks a __init
+annotation or the annotation of identify_cpu is wrong.
 
-Mark fadump_calculate_reserve_size() as __init to fix the section
-mismatch. Additionally, remove the inline keyword as it is not necessary
-to inline this function; the compiler is still free to do so if it feels
-it is worthwhile since commit 889b3c1245de ("compiler: remove
-CONFIG_OPTIMIZE_INLINING entirely").
+identical_pvr_fixup() calls two functions marked as __init and is only
+called by a function marked as __init so it should be marked as __init
+as well. At the same time, remove the inline keywork as it is not
+necessary to inline this function. The compiler is still free to do so
+if it feels it is worthwhile since commit 889b3c1245de ("compiler:
+remove CONFIG_OPTIMIZE_INLINING entirely").
 
-Fixes: 11550dc0a00b ("powerpc/fadump: reuse crashkernel parameter for fadump memory reservation")
-Link: https://github.com/ClangBuiltLinux/linux/issues/1300
+Fixes: 14b3d926a22b ("[POWERPC] 4xx: update 440EP(x)/440GR(x) identical PVR issue workaround")
+Link: https://github.com/ClangBuiltLinux/linux/issues/1316
 Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 ---
-
-Send while streaming at https://www.twitch.tv/nathanchance :P
-
- arch/powerpc/kernel/fadump.c | 2 +-
+ arch/powerpc/kernel/prom.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 8482739d42f3..eddf362caedc 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -292,7 +292,7 @@ static void fadump_show_config(void)
-  * that is required for a kernel to boot successfully.
-  *
-  */
--static inline u64 fadump_calculate_reserve_size(void)
-+static __init u64 fadump_calculate_reserve_size(void)
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9a4797d1d40d..a8b2d6bfc1ca 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -267,7 +267,7 @@ static struct feature_property {
+ };
+ 
+ #if defined(CONFIG_44x) && defined(CONFIG_PPC_FPU)
+-static inline void identical_pvr_fixup(unsigned long node)
++static __init void identical_pvr_fixup(unsigned long node)
  {
- 	u64 base, size, bootmem_min;
- 	int ret;
+ 	unsigned int pvr;
+ 	const char *model = of_get_flat_dt_prop(node, "model", NULL);
 
 base-commit: 5c88a17e15795226b56d83f579cbb9b7a4864f79
 -- 
