@@ -2,66 +2,60 @@ Return-Path: <SRS0=ynH/=IA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98F91C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 02:09:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12FE3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 02:10:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AF426148E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 02:09:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AF426148E
+	by mail.kernel.org (Postfix) with ESMTPS id C10E76148E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 02:10:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C10E76148E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqLDH4gtxz3cmc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 13:09:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DqLFD2dHKz3d4y
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 13:10:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HpZ+Oh2i;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i7a9YCDR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=HpZ+Oh2i; 
+ header.a=rsa-sha256 header.s=201909 header.b=i7a9YCDR; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DqLCs18Qcz3cGV
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 13:09:11 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4DqLCl0gdqz9s1l;
- Tue,  2 Mar 2021 13:09:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DqLDj69q2z30Jj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 13:09:57 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4DqLDj4lvPz9sVw; Tue,  2 Mar 2021 13:09:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1614650947;
- bh=43rR5Zp4k5I4zGrVf/+RiKC5vErMo3wYmtY4bmcRmsA=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=HpZ+Oh2iNxKicmC1PzodQXqkyHpjRTYDNBRIJMEmpSjqqcp/CRqCahnUFZ4qMV7nu
- CdY9REoh5BBo15+ot1ixnH3s/uIPcX3e1qLi9ZB1bgpIIEILc1JQ/1Boue0nYfV5ET
- IGZC61B8sHEsrSFswrLhjNvDaNeRqCBfhpMtRp7PRFRSqQf3lDlHsagyz73snTg18/
- 6N4nYjAspa4DML1rw2Q9xm0xCWN/E/vSbEMPrmWCrBGKdc7l2b8w3+umg83e2ixVGd
- NAszUP8NPrPNzwRGVuZg0+EK/TJEUe8JataAJin7GaInqTqkGF6fQwUl/ZjA19s7ht
- eyYp85nTV0fiA==
+ s=201909; t=1614650997;
+ bh=3By2plsfm8KYf9qxlo26luvRA7Hv3TzI8Eo2K+ayWyA=;
+ h=From:To:Subject:Date:From;
+ b=i7a9YCDRsEcbDUkzVFobsXvMXPDq1MpSQPw2e3FOZR9a4etePuG1y8EXMUZ1TC15b
+ b94M3hV6YaG1OsYUPTLr62hbXw2lOc9a0LUT52Bk6fLQ4s70mgExoCHLdtLB9C/VW8
+ i4ziX1NLe/3BeSAYgh+G+kUhyVVlYpkdKgbaqbrNtxEBD0uAR/5PaCVX0cPUEMiZzS
+ YYY8OsKvdFFSIWDeO5Y1OwQLilhuPvXNFbuhicM0Vbe4XAFIL1NPo3AbLWNUpxD4Fo
+ i8wi8c6/UJxkXCwHIFJ88khHZvvVKICVJFUKt8/i840FgokUFtjql0mkTZkRwc+S9F
+ 1aPrz6cPfoTgQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the powerpc-fixes tree
-In-Reply-To: <20210302112131.5bb7b08b@canb.auug.org.au>
-References: <20210302112131.5bb7b08b@canb.auug.org.au>
-Date: Tue, 02 Mar 2021 13:09:03 +1100
-Message-ID: <87pn0is3wg.fsf@mpe.ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/configs: Add IBMVNIC to some 64-bit configs
+Date: Tue,  2 Mar 2021 13:09:54 +1100
+Message-Id: <20210302020954.2980046-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,62 +67,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-> Hi all,
->
-> After merging the powerpc-fixes tree, today's linux-next build (powerpc
-> allyesconfig) failed like this:
->
-> drivers/net/ethernet/ibm/ibmvnic.c:5399:13: error: conflicting types for 'ibmvnic_remove'
->  5399 | static void ibmvnic_remove(struct vio_dev *dev)
->       |             ^~~~~~~~~~~~~~
-> drivers/net/ethernet/ibm/ibmvnic.c:81:12: note: previous declaration of 'ibmvnic_remove' was here
->    81 | static int ibmvnic_remove(struct vio_dev *);
->       |            ^~~~~~~~~~~~~~
->
-> Caused by commit
->
->   1bdd1e6f9320 ("vio: make remove callback return void")
+This is an IBM specific driver that we should enable to get some
+build/boot testing.
 
-Gah, is IBMVNIC in any of our defconfigs?! ... no it's not.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/configs/ppc64_defconfig   | 1 +
+ arch/powerpc/configs/pseries_defconfig | 1 +
+ 2 files changed, 2 insertions(+)
 
-> I have applied the following patch for today:
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 4f05a6652478..f82675d4d44e 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -177,6 +177,7 @@ CONFIG_CHELSIO_T1=m
+ CONFIG_BE2NET=m
+ CONFIG_IBMVETH=m
+ CONFIG_EHEA=m
++CONFIG_IBMVNIC=m
+ CONFIG_E100=y
+ CONFIG_E1000=y
+ CONFIG_E1000E=y
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 777221775c83..a85ff7bc1fb7 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -159,6 +159,7 @@ CONFIG_BE2NET=m
+ CONFIG_S2IO=m
+ CONFIG_IBMVETH=y
+ CONFIG_EHEA=y
++CONFIG_IBMVNIC=y
+ CONFIG_E100=y
+ CONFIG_E1000=y
+ CONFIG_E1000E=y
+-- 
+2.25.1
 
-Thanks, I'll squash it in.
-
-cheers
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 2 Mar 2021 11:06:37 +1100
-> Subject: [PATCH] vio: fix for make remove callback return void
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/net/ethernet/ibm/ibmvnic.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index eb39318766f6..fe3201ba2034 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -78,7 +78,6 @@ MODULE_LICENSE("GPL");
->  MODULE_VERSION(IBMVNIC_DRIVER_VERSION);
->  
->  static int ibmvnic_version = IBMVNIC_INITIAL_VERSION;
-> -static int ibmvnic_remove(struct vio_dev *);
->  static void release_sub_crqs(struct ibmvnic_adapter *, bool);
->  static int ibmvnic_reset_crq(struct ibmvnic_adapter *);
->  static int ibmvnic_send_crq_init(struct ibmvnic_adapter *);
-> -- 
-> 2.30.0
->
-> -- 
-> Cheers,
-> Stephen Rothwell
