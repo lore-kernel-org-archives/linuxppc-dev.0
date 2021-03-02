@@ -7,52 +7,53 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B22BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 11:58:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9DE2C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 11:58:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 955C964F88
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 11:58:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 955C964F88
+	by mail.kernel.org (Postfix) with ESMTPS id C84CC64F97
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 11:58:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C84CC64F97
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqbHG0kNgz3cMT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 22:58:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DqbHh2NP7z3dVd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 22:58:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jKxlK8uJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S+cvuqYg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jKxlK8uJ; 
+ header.s=k20201202 header.b=S+cvuqYg; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DqbGB0y8Hz3dFB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 22:57:06 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id C402964F53;
- Tue,  2 Mar 2021 11:57:02 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DqbGD68Mwz3dFk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 22:57:08 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 6283C64F5C;
+ Tue,  2 Mar 2021 11:57:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614686223;
- bh=BgcOHfwvydH1yXWb/ipxKMGonTpJkoG8DBfuIUv7qXY=;
+ s=k20201202; t=1614686227;
+ bh=JXnZzuhfjp+IoFjmftM4WsrePuwRN8h6VGXcC/RrJo4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=jKxlK8uJ9HgboP5Rv/+BYoVh+ftans1Gcnr1UrVETccVniqawznVrF/H7tMwQhFSY
- YXDgpUwI49+sT0SBH2ILagk/tsV2FwgmBQhuYjqTkSoZwTXgnAlLfllUnnxKcUWhwQ
- 9iQghfFCQVZ9i40jyrAGHH5m2qMzdJkOHZI7s4r8pdAAnXPH0mPzEsUKztW6tYg2Xm
- udzm1RlG9ZjpIFv0FsIlp23cIdH6bEzrhZ7leRDrd0F0ci6+4SiAIlGSkyDljcRvEr
- +YkJHEi/qVnUMfsamtO5TWHMPRbSjZ7Nlj2rFqj/dqIy0nSE5Vg3hAmkXPuXW8vJTB
- 71VN8o24qpC7Q==
+ b=S+cvuqYgyltNcPZU0ot6QiUrWqBnsEP+VTYSEkbRYisfmUMnxSEBr97GYQ+r7fnxb
+ ONwh83/DluVORSrebnh+rlxJ83H+pbLwYXqN20FCeQbtcjKhHoyRHV8pq4bgSxDPbB
+ pnPQkUtPA21ecB/7MUOO8SMZGtFEkvjTzcD1TiRaWfzfuWBrqW8idntfiHAhIQ8lQ4
+ E5Adk0ILo0flJXSAzydEoTfQcnoA4xwVU5f6GR7EWAbGGeD6oYbrc8ahkfRLdPI7z8
+ 9usYp0IxLw80gkkiuMP3M7WJDievYB3zeBYJcBD99LKre20O4gpy2gnDmqlKSn/963
+ SEwx80wu6aZeQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 13/47] powerpc/pci: Add ppc_md.discover_phbs()
-Date: Tue,  2 Mar 2021 06:56:12 -0500
-Message-Id: <20210302115646.62291-13-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 16/47] powerpc: improve handling of unrecoverable
+ system reset
+Date: Tue,  2 Mar 2021 06:56:15 -0500
+Message-Id: <20210302115646.62291-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210302115646.62291-1-sashal@kernel.org>
 References: <20210302115646.62291-1-sashal@kernel.org>
@@ -72,93 +73,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Oliver O'Halloran <oohall@gmail.com>, kernel test robot <lkp@intel.com>
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+From: Nicholas Piggin <npiggin@gmail.com>
 
-[ Upstream commit 5537fcb319d016ce387f818dd774179bc03217f5 ]
+[ Upstream commit 11cb0a25f71818ca7ab4856548ecfd83c169aa4d ]
 
-On many powerpc platforms the discovery and initalisation of
-pci_controllers (PHBs) happens inside of setup_arch(). This is very early
-in boot (pre-initcalls) and means that we're initialising the PHB long
-before many basic kernel services (slab allocator, debugfs, a real ioremap)
-are available.
+If an unrecoverable system reset hits in process context, the system
+does not have to panic. Similar to machine check, call nmi_exit()
+before die().
 
-On PowerNV this causes an additional problem since we map the PHB registers
-with ioremap(). As of commit d538aadc2718 ("powerpc/ioremap: warn on early
-use of ioremap()") a warning is printed because we're using the "incorrect"
-API to setup and MMIO mapping in searly boot. The kernel does provide
-early_ioremap(), but that is not intended to create long-lived MMIO
-mappings and a seperate warning is printed by generic code if
-early_ioremap() mappings are "leaked."
-
-This is all fixable with dumb hacks like using early_ioremap() to setup
-the initial mapping then replacing it with a real ioremap later on in
-boot, but it does raise the question: Why the hell are we setting up the
-PHB's this early in boot?
-
-The old and wise claim it's due to "hysterical rasins." Aside from amused
-grapes there doesn't appear to be any real reason to maintain the current
-behaviour. Already most of the newer embedded platforms perform PHB
-discovery in an arch_initcall and between the end of setup_arch() and the
-start of initcalls none of the generic kernel code does anything PCI
-related. On powerpc scanning PHBs occurs in a subsys_initcall so it should
-be possible to move the PHB discovery to a core, postcore or arch initcall.
-
-This patch adds the ppc_md.discover_phbs hook and a core_initcall stub that
-calls it. The core_initcalls are the earliest to be called so this will
-any possibly issues with dependency between initcalls. This isn't just an
-academic issue either since on pseries and PowerNV EEH init occurs in an
-arch_initcall and depends on the pci_controllers being available, similarly
-the creation of pci_dns occurs at core_initcall_sync (i.e. between core and
-postcore initcalls). These problems need to be addressed seperately.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-[mpe: Make discover_phbs() static]
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20201103043523.916109-1-oohall@gmail.com
+Link: https://lore.kernel.org/r/20210130130852.2952424-26-npiggin@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/include/asm/machdep.h |  3 +++
- arch/powerpc/kernel/pci-common.c   | 10 ++++++++++
- 2 files changed, 13 insertions(+)
+ arch/powerpc/kernel/traps.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 475687f24f4a..d319160d790c 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -59,6 +59,9 @@ struct machdep_calls {
- 	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
- 				*bridge);
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 5006dcbe1d9f..77dffea3d537 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -509,8 +509,11 @@ out:
+ 		die("Unrecoverable nested System Reset", regs, SIGABRT);
+ #endif
+ 	/* Must die if the interrupt is not recoverable */
+-	if (!(regs->msr & MSR_RI))
++	if (!(regs->msr & MSR_RI)) {
++		/* For the reason explained in die_mce, nmi_exit before die */
++		nmi_exit();
+ 		die("Unrecoverable System Reset", regs, SIGABRT);
++	}
  
-+	/* finds all the pci_controllers present at boot */
-+	void 		(*discover_phbs)(void);
-+
- 	/* To setup PHBs when using automatic OF platform driver for PCI */
- 	int		(*pci_setup_phb)(struct pci_controller *host);
- 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index be108616a721..7920559a1ca8 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1625,3 +1625,13 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-+
-+
-+static int __init discover_phbs(void)
-+{
-+	if (ppc_md.discover_phbs)
-+		ppc_md.discover_phbs();
-+
-+	return 0;
-+}
-+core_initcall(discover_phbs);
+ 	if (saved_hsrrs) {
+ 		mtspr(SPRN_HSRR0, hsrr0);
 -- 
 2.30.1
 
