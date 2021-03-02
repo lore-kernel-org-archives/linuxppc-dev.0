@@ -2,63 +2,60 @@ Return-Path: <SRS0=ynH/=IA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 275BFC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90385C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:26:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E18464F07
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:25:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E18464F07
+	by mail.kernel.org (Postfix) with ESMTPS id B503764F34
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:26:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B503764F34
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqkYM04RGz3d3H
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 04:25:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DqkYj2hBFz3d9p
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 04:26:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DqkY00nqYz30Mt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DqkY00tY6z30N7
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 04:25:21 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DqkXs0XHJz9v1C1;
- Tue,  2 Mar 2021 18:25:17 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DqkXq2Y55z9v1By;
+ Tue,  2 Mar 2021 18:25:15 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8AQXiv03Ce1i; Tue,  2 Mar 2021 18:25:17 +0100 (CET)
+ with ESMTP id 3XK1Ji_IwYa7; Tue,  2 Mar 2021 18:25:15 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DqkXr6pLxz9v1Bx;
- Tue,  2 Mar 2021 18:25:16 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DqkXq139Yz9v1Bx;
+ Tue,  2 Mar 2021 18:25:15 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A124F8B7B5;
- Tue,  2 Mar 2021 18:25:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D6D058B7B5;
+ Tue,  2 Mar 2021 18:25:16 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 3ORhUvp-jb-p; Tue,  2 Mar 2021 18:25:18 +0100 (CET)
+ with ESMTP id fhn6Nsk8d_7h; Tue,  2 Mar 2021 18:25:16 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 65EAF8B75F;
- Tue,  2 Mar 2021 18:25:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 81F848B75F;
+ Tue,  2 Mar 2021 18:25:16 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 3E729674A2; Tue,  2 Mar 2021 17:25:18 +0000 (UTC)
-Message-Id: <3b4291271ce4af4941a771e5af5cbba3c8fa1b2a.1614705851.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1614705851.git.christophe.leroy@csgroup.eu>
-References: <cover.1614705851.git.christophe.leroy@csgroup.eu>
+ id 41160674A2; Tue,  2 Mar 2021 17:25:16 +0000 (UTC)
+Message-Id: <cover.1614705851.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 2/7] drivers: of: use cmdline building function
+Subject: [PATCH v2 0/7] Improve boot command line handling
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  danielwa@cisco.com, robh@kernel.org, daniel@gimpelevich.san-francisco.ca.us
-Date: Tue,  2 Mar 2021 17:25:18 +0000 (UTC)
+Date: Tue,  2 Mar 2021 17:25:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,57 +73,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch uses the new cmdline building function to
-concatenate the of provided cmdline with built-in parts
-based on compile-time options.
+The purpose of this series is to improve and enhance the
+handling of kernel boot arguments.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/of/fdt.c | 23 ++++-------------------
- 1 file changed, 4 insertions(+), 19 deletions(-)
+It is first focussed on powerpc but also extends the capability
+for other arches.
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index dcc1dd96911a..cf2b95b8f298 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -25,6 +25,7 @@
- #include <linux/serial_core.h>
- #include <linux/sysfs.h>
- #include <linux/random.h>
-+#include <linux/cmdline.h>
- 
- #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
- #include <asm/page.h>
-@@ -1050,26 +1051,10 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
- 
- 	/* Retrieve command line */
- 	p = of_get_flat_dt_prop(node, "bootargs", &l);
--	if (p != NULL && l > 0)
--		strlcpy(data, p, min(l, COMMAND_LINE_SIZE));
-+	if (l <= 0)
-+		p = NULL;
- 
--	/*
--	 * CONFIG_CMDLINE is meant to be a default in case nothing else
--	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
--	 * is set in which case we override whatever was found earlier.
--	 */
--#ifdef CONFIG_CMDLINE
--#if defined(CONFIG_CMDLINE_EXTEND)
--	strlcat(data, " ", COMMAND_LINE_SIZE);
--	strlcat(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
--#elif defined(CONFIG_CMDLINE_FORCE)
--	strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
--#else
--	/* No arguments from boot loader, use kernel's  cmdl*/
--	if (!((char *)data)[0])
--		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
--#endif
--#endif /* CONFIG_CMDLINE */
-+	cmdline_build(data, p, COMMAND_LINE_SIZE);
- 
- 	pr_debug("Command line is: %s\n", (char *)data);
- 
+This is based on suggestion from Daniel Walker <danielwa@cisco.com>
+
+Christophe Leroy (7):
+  cmdline: Add generic function to build command line.
+  drivers: of: use cmdline building function
+  powerpc: convert to generic builtin command line
+  cmdline: Add capability to prepend the command line
+  powerpc: add capability to prepend default command line
+  cmdline: Gives architectures opportunity to use generically defined
+    boot cmdline manipulation
+  powerpc: use generic CMDLINE manipulations
+
+ arch/powerpc/Kconfig            | 37 ++-----------------
+ arch/powerpc/kernel/prom_init.c | 35 +++---------------
+ drivers/of/fdt.c                | 23 ++----------
+ include/linux/cmdline.h         | 65 +++++++++++++++++++++++++++++++++
+ init/Kconfig                    | 56 ++++++++++++++++++++++++++++
+ 5 files changed, 133 insertions(+), 83 deletions(-)
+ create mode 100644 include/linux/cmdline.h
+
 -- 
 2.25.0
 
