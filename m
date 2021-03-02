@@ -2,51 +2,70 @@ Return-Path: <SRS0=ynH/=IA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3075CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 06:37:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27B59C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 06:41:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 295E76148E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 06:37:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 295E76148E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 39BED60201
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 06:41:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39BED60201
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=163.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DqS9c1bcwz3cY6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:37:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DqSFj2j41z3cZ3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Mar 2021 17:41:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DqS9G2dRJz30Lj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 17:37:20 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DC47531B;
- Mon,  1 Mar 2021 22:37:16 -0800 (PST)
-Received: from [10.163.67.84] (unknown [10.163.67.84])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 173343F73B;
- Mon,  1 Mar 2021 22:37:13 -0800 (PST)
-Subject: Re: [PATCH V2] mm: Generalize HUGETLB_PAGE_SIZE_VARIABLE
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, linux-mm@kvack.org
-References: <1614661987-23881-1-git-send-email-anshuman.khandual@arm.com>
- <a3772544-1e84-1969-b71c-ea2a3d013471@csgroup.eu>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <c33fe839-82c6-d0cd-32d6-b386d143ac51@arm.com>
-Date: Tue, 2 Mar 2021 12:07:47 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=M4IAEP65;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=163.com
+ (client-ip=220.181.12.14; helo=m12-14.163.com;
+ envelope-from=dingsenjie@163.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256
+ header.s=s110527 header.b=M4IAEP65; dkim-atps=neutral
+X-Greylist: delayed 1011 seconds by postgrey-1.36 at boromir;
+ Tue, 02 Mar 2021 14:58:23 AEDT
+Received: from m12-14.163.com (m12-14.163.com [220.181.12.14])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DqNdq5Fnfz30Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Mar 2021 14:58:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+ s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=6+L6S
+ 3PF+6atFy4jcL2HpjZWPg77zuao14pJR5Pd/C8=; b=M4IAEP65qhN9uRUtZBpE4
+ er8phBbh0WUyuH6eIuy4+yqBs0rp34D0r3bf6HOHHqK5W7dQsYyWLmGwi0Mg3wZH
+ nn0lxXc2G79me9A0skSg/6isswce54SHbSWwoyjD/AnuAlWOAOvbWB0fxSvjUI7f
+ jsivNSHZxFPLyf5wOC0si4=
+Received: from COOL-20201222LC.ccdomain.com (unknown [218.94.48.178])
+ by smtp10 (Coremail) with SMTP id DsCowACHnyvHsz1gggkAnQ--.8851S2;
+ Tue, 02 Mar 2021 11:40:57 +0800 (CST)
+From: dingsenjie@163.com
+To: geoff@infradead.org,
+	perex@perex.cz,
+	tiwai@suse.com
+Subject: [PATCH] sound: pps: fix spelling typo of values
+Date: Tue,  2 Mar 2021 11:40:53 +0800
+Message-Id: <20210302034053.34524-1-dingsenjie@163.com>
+X-Mailer: git-send-email 2.21.0.windows.1
 MIME-Version: 1.0
-In-Reply-To: <a3772544-1e84-1969-b71c-ea2a3d013471@csgroup.eu>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DsCowACHnyvHsz1gggkAnQ--.8851S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7XF4rtrWDur4UWFyUJryxZrb_yoWxCwbE9a
+ ykt3y8Wr95XFsrAr4jyF1rJrWFqas5Aryqgr4xKF4DGw15Zrs5C3y5Cry7Jr97WF4DXFyr
+ ZFnYgrnxKr92kjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUnzT5PUUUUU==
+X-Originating-IP: [218.94.48.178]
+X-CM-SenderInfo: 5glqw25hqmxvi6rwjhhfrp/1tbiTglJyFUDH86npgAAsA
+X-Mailman-Approved-At: Tue, 02 Mar 2021 17:40:50 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,44 +77,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: dingsenjie <dingsenjie@yulong.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: dingsenjie <dingsenjie@yulong.com>
+
+vaules -> values
+
+Signed-off-by: dingsenjie <dingsenjie@yulong.com>
+---
+ sound/ppc/snd_ps3_reg.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/ppc/snd_ps3_reg.h b/sound/ppc/snd_ps3_reg.h
+index 566a318..e2212b7 100644
+--- a/sound/ppc/snd_ps3_reg.h
++++ b/sound/ppc/snd_ps3_reg.h
+@@ -308,7 +308,7 @@
+ each interrupt in this register.
+ Writing 1b to a field containing 1b clears field and de-asserts interrupt.
+ Writing 0b to a field has no effect.
+-Field vaules are the following:
++Field values are the following:
+ 0 - Interrupt hasn't occurred.
+ 1 - Interrupt has occurred.
+ 
+-- 
+1.9.1
 
 
-On 3/2/21 11:13 AM, Christophe Leroy wrote:
-> 
-> 
-> Le 02/03/2021 à 06:13, Anshuman Khandual a écrit :
->> HUGETLB_PAGE_SIZE_VARIABLE need not be defined for each individual
->> platform subscribing it. Instead just make it generic.
->>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Christoph Hellwig <hch@lst.de>
->> Cc: linux-ia64@vger.kernel.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: linux-mm@kvack.org
->> Cc: linux-kernel@vger.kernel.org
->> Suggested-by: Christoph Hellwig <hch@lst.de>
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
->> ---
->> This change was originally suggested in an earilier discussion. This
->> applies on v5.12-rc1 and has been build tested on all applicable
->> platforms i.e ia64 and powerpc.
->>
->> https://patchwork.kernel.org/project/linux-mm/patch/1613024531-19040-3-git-send-email-anshuman.khandual@arm.com/
->>
->> Changes in V2:
->>
->> - Added a description for HUGETLB_PAGE_SIZE_VARIABLE
-> 
-> You are doing more than adding a description: you are making it user selectable. Is that what you want ?
-
-No, this was unintended. Will drop that description.
