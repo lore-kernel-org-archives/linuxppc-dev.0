@@ -2,78 +2,67 @@ Return-Path: <SRS0=PW48=IB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD888C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 20:58:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 197BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 21:03:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B61D864EC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 20:58:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B61D864EC4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 993E961477
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 21:03:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 993E961477
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=uniontech.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrRCy6p3pz3d2W
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 07:58:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sGUGROZQ;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrRLH5Ld1z3cYk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 08:03:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ smtp.mailfrom=uniontech.com (client-ip=211.157.147.134;
+ helo=lucky1.263xmail.com; envelope-from=maqianga@uniontech.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sGUGROZQ; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+X-Greylist: delayed 209 seconds by postgrey-1.36 at boromir;
+ Wed, 03 Mar 2021 23:01:09 AEDT
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrRCS36CYz30Ny
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 07:57:40 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPS id C0BC864EF8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 20:57:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614805055;
- bh=YMCJBWTpTDiCmIegn6vABlw60Eghb/elYNXA6npJq6U=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=sGUGROZQN/iYe7DSsryHN/TJ4zhHwyi+TRsgPJU7ERt7D7xVksuV5ugCXMSr6yQVZ
- 8Bs0gYZe4eO9iXzwSmw6twYrfy9DlmYqV6PEgScxxTonk2ICyUoLUJam1b1v7qS12a
- Y6z06lWONWSGYldOl4RxFLZBCBPM5/uyoUVHT2XmqQUHOOkK4FeaKz7D1wzY5l6ZyR
- TPb255+9VXzyGjGGdw7GG44nUnvqGufcU7Yx27OQyRDB/xaaWNRyJB/2TTZT2tDp8x
- YdmrirWRHg0XYBwVWalbPqdJIvblHR5/LIduTeVotfwOlck7AzKlyvmye07esJ9qLj
- fkRfpJbdiyNXA==
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206203] kmemleak reports various leaks in drivers/of/unittest.c
-Date: Wed, 03 Mar 2021 20:57:35 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: OBSOLETE
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-206203-206035-nBHQVev3Kf@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206203-206035@https.bugzilla.kernel.org/>
-References: <bug-206203-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrCJP3Hbqz3cJL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Mar 2021 23:01:09 +1100 (AEDT)
+Received: from localhost (unknown [192.168.167.13])
+ by lucky1.263xmail.com (Postfix) with ESMTP id E7B09C75D3;
+ Wed,  3 Mar 2021 19:57:16 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED4: 1
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [124.126.19.250])
+ by smtp.263.net (postfix) whith ESMTP id
+ P4300T140473571735296S1614772632866484_; 
+ Wed, 03 Mar 2021 19:57:18 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <ba80ddaa333c65d3e86d5ece2779404c>
+X-RL-SENDER: maqianga@uniontech.com
+X-SENDER: maqianga@uniontech.com
+X-LOGIN-NAME: maqianga@uniontech.com
+X-FST-TO: mpe@ellerman.id.au
+X-SENDER-IP: 124.126.19.250
+X-ATTACHMENT-NUM: 0
+X-System-Flag: 0
+From: maqiang <maqianga@uniontech.com>
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH] powerpc: remove redundant space
+Date: Wed,  3 Mar 2021 19:57:10 +0800
+Message-Id: <20210303115710.30886-1-maqianga@uniontech.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 04 Mar 2021 08:03:17 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,28 +74,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maqiang <maqianga@uniontech.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206203
+These one line of code don't meet the kernel coding style,
+so remove the redundant space.
 
-Erhard F. (erhard_f@mailbox.org) changed:
+Signed-off-by: maqiang <maqianga@uniontech.com>
+---
+ arch/powerpc/kernel/syscalls.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |OBSOLETE
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 078608ec2e92..9248288752d5 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -81,7 +81,7 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
+ int
+ ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
+ {
+-	if ( (unsigned long)n >= 4096 )
++	if ((unsigned long)n >= 4096)
+ 	{
+ 		unsigned long __user *buffer = (unsigned long __user *)n;
+ 		if (!access_ok(buffer, 5*sizeof(unsigned long))
+-- 
+2.20.1
 
---- Comment #21 from Erhard F. (erhard_f@mailbox.org) ---
-Kmemleak remains silent since at least 5.11.x on these machines. Which is a
-good sign I guess. ;)
 
-Closing for now. In case I hit these of: based memleaks again I will re-ope=
-n.
 
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
