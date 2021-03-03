@@ -2,91 +2,70 @@ Return-Path: <SRS0=PW48=IB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B6FBC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:52:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15B23C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:57:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B30E601FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:52:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B30E601FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3FD4B64EF0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:57:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FD4B64EF0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrM5R5mhSz3dwn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:52:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
- receiver=<UNKNOWN>)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrMCh5wlxz3dH8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:57:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrM292mDXz3cZM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 04:49:20 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 123HWdqI028911; Wed, 3 Mar 2021 12:49:07 -0500
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 372ehyh8ed-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Mar 2021 12:49:06 -0500
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 123HhbTE027553;
- Wed, 3 Mar 2021 17:49:02 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma06fra.de.ibm.com with ESMTP id 3713s9s1b3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Mar 2021 17:49:02 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 123Hn09N50200882
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 3 Mar 2021 17:49:00 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ECC4211C054;
- Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA84311C052;
- Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
-Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
-Received: from yukon.ibmuc.com (unknown [9.171.85.87])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 33425220523;
- Wed,  3 Mar 2021 18:48:59 +0100 (CET)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/8] powerpc/xive: Use cpu_to_node() instead of ibm,
- chip-id property
-Date: Wed,  3 Mar 2021 18:48:50 +0100
-Message-Id: <20210303174857.1760393-2-clg@kaod.org>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210303174857.1760393-1-clg@kaod.org>
-References: <20210303174857.1760393-1-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrMCL3mGSz30J0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 04:57:16 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DrMCF1XV1z9v4QZ;
+ Wed,  3 Mar 2021 18:57:13 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id QezXv5b5bs7A; Wed,  3 Mar 2021 18:57:13 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DrMCD6mvcz9ttC2;
+ Wed,  3 Mar 2021 18:57:12 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CFC08B7DB;
+ Wed,  3 Mar 2021 18:57:13 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id HfuXNu-LNDVW; Wed,  3 Mar 2021 18:57:13 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3EC2D8B7E6;
+ Wed,  3 Mar 2021 18:57:12 +0100 (CET)
+Subject: Re: [PATCH v2 1/7] cmdline: Add generic function to build command
+ line.
+To: Will Deacon <will@kernel.org>
+References: <cover.1614705851.git.christophe.leroy@csgroup.eu>
+ <d8cf7979ad986de45301b39a757c268d9df19f35.1614705851.git.christophe.leroy@csgroup.eu>
+ <20210303172810.GA19713@willie-the-truck>
+ <a0cfef11-efba-2e5c-6f58-ed63a2c3bfa0@csgroup.eu>
+ <20210303174627.GC19713@willie-the-truck>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <dc6576ac-44ff-7db4-d718-7565b83f50b8@csgroup.eu>
+Date: Wed, 3 Mar 2021 18:57:09 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-03_05:2021-03-03,
- 2021-03-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1034 malwarescore=0
- impostorscore=0 bulkscore=0 mlxlogscore=986 mlxscore=0 spamscore=0
- lowpriorityscore=0 adultscore=0 phishscore=0 suspectscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2103030124
+In-Reply-To: <20210303174627.GC19713@willie-the-truck>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,51 +77,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kurz <groug@kaod.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: linux-arch@vger.kernel.org, robh@kernel.org,
+ daniel@gimpelevich.san-francisco.ca.us, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, danielwa@cisco.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The 'chip_id' field of the XIVE CPU structure is used to choose a
-target for a source located on the same chip when possible. This field
-is assigned on the PowerNV platform using the "ibm,chip-id" property
-on pSeries under KVM when NUMA nodes are defined but it is undefined
-under PowerVM. The XIVE source structure has a similar field
-'src_chip' which is only assigned on the PowerNV platform.
 
-cpu_to_node() returns a compatible value on all platforms, 0 being the
-default node. It will also give us the opportunity to set the affinity
-of a source on pSeries when we can localize them.
 
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Le 03/03/2021 à 18:46, Will Deacon a écrit :
+> On Wed, Mar 03, 2021 at 06:38:16PM +0100, Christophe Leroy wrote:
+>> Le 03/03/2021 à 18:28, Will Deacon a écrit :
+>>> On Tue, Mar 02, 2021 at 05:25:17PM +0000, Christophe Leroy wrote:
+>>>> This code provides architectures with a way to build command line
+>>>> based on what is built in the kernel and what is handed over by the
+>>>> bootloader, based on selected compile-time options.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>>> ---
+>>>>    include/linux/cmdline.h | 62 +++++++++++++++++++++++++++++++++++++++++
+>>>>    1 file changed, 62 insertions(+)
+>>>>    create mode 100644 include/linux/cmdline.h
+>>>>
+>>>> diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
+>>>> new file mode 100644
+>>>> index 000000000000..ae3610bb0ee2
+>>>> --- /dev/null
+>>>> +++ b/include/linux/cmdline.h
+>>>> @@ -0,0 +1,62 @@
+>>>> +/* SPDX-License-Identifier: GPL-2.0 */
+>>>> +#ifndef _LINUX_CMDLINE_H
+>>>> +#define _LINUX_CMDLINE_H
+>>>> +
+>>>> +static __always_inline size_t cmdline_strlen(const char *s)
+>>>> +{
+>>>> +	const char *sc;
+>>>> +
+>>>> +	for (sc = s; *sc != '\0'; ++sc)
+>>>> +		; /* nothing */
+>>>> +	return sc - s;
+>>>> +}
+>>>> +
+>>>> +static __always_inline size_t cmdline_strlcat(char *dest, const char *src, size_t count)
+>>>> +{
+>>>> +	size_t dsize = cmdline_strlen(dest);
+>>>> +	size_t len = cmdline_strlen(src);
+>>>> +	size_t res = dsize + len;
+>>>> +
+>>>> +	/* This would be a bug */
+>>>> +	if (dsize >= count)
+>>>> +		return count;
+>>>> +
+>>>> +	dest += dsize;
+>>>> +	count -= dsize;
+>>>> +	if (len >= count)
+>>>> +		len = count - 1;
+>>>> +	memcpy(dest, src, len);
+>>>> +	dest[len] = 0;
+>>>> +	return res;
+>>>> +}
+>>>
+>>> Why are these needed instead of using strlen and strlcat directly?
+>>
+>> Because on powerpc (at least), it will be used in prom_init, it is very
+>> early in the boot and KASAN shadow memory is not set up yet so calling
+>> generic string functions would crash the board.
+> 
+> Hmm. We deliberately setup a _really_ early shadow on arm64 for this, can
+> you not do something similar? Failing that, I think it would be better to
+> offer the option for an arch to implement cmdline_*, but have then point to
+> the normal library routines by default.
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index 595310e056f4..b8e456da28aa 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1335,16 +1335,11 @@ static int xive_prepare_cpu(unsigned int cpu)
-=20
- 	xc =3D per_cpu(xive_cpu, cpu);
- 	if (!xc) {
--		struct device_node *np;
--
- 		xc =3D kzalloc_node(sizeof(struct xive_cpu),
- 				  GFP_KERNEL, cpu_to_node(cpu));
- 		if (!xc)
- 			return -ENOMEM;
--		np =3D of_get_cpu_node(cpu, NULL);
--		if (np)
--			xc->chip_id =3D of_get_ibm_chip_id(np);
--		of_node_put(np);
-+		xc->chip_id =3D cpu_to_node(cpu);
- 		xc->hw_ipi =3D XIVE_BAD_IRQ;
-=20
- 		per_cpu(xive_cpu, cpu) =3D xc;
---=20
-2.26.2
+I don't think it is possible to setup an earlier early shadow.
 
+At the point we are in prom_init, the code is not yet relocated at the address it was linked for, 
+and it is running with the MMU set by the bootloader, I can't imagine being able to setup MMU 
+entries for the early shadow KASAN yet without breaking everything.
+
+Is it really worth trying to point to the normal library routines by default ? It is really only a 
+few lines of code hence only not many bytes, and anyway they are in __init section so they get 
+discarded at the end.
+
+> 
+>>>> +/*
+>>>> + * This function will append a builtin command line to the command
+>>>> + * line provided by the bootloader. Kconfig options can be used to alter
+>>>> + * the behavior of this builtin command line.
+>>>> + * @dest: The destination of the final appended/prepended string.
+>>>> + * @src: The starting string or NULL if there isn't one. Must not equal dest.
+>>>> + * @length: the length of dest buffer.
+>>>> + */
+>>>> +static __always_inline void cmdline_build(char *dest, const char *src, size_t length)
+>>>> +{
+>>>> +	if (length <= 0)
+>>>> +		return;
+>>>> +
+>>>> +	dest[0] = 0;
+>>>> +
+>>>> +#ifdef CONFIG_CMDLINE
+>>>> +	if (IS_ENABLED(CONFIG_CMDLINE_FORCE) || !src || !src[0]) {
+>>>> +		cmdline_strlcat(dest, CONFIG_CMDLINE, length);
+>>>> +		return;
+>>>> +	}
+>>>> +#endif
+>>>
+>>> CONFIG_CMDLINE_FORCE implies CONFIG_CMDLINE, and even if it didn't,
+>>> CONFIG_CMDLINE is at worst an empty string. Can you drop the #ifdef?
+>>
+>> Ah yes, since cbe46bd4f510 ("powerpc: remove CONFIG_CMDLINE #ifdef mess") it
+>> is feasible. I can change that now.
+>>
+>>>
+>>>> +	if (dest != src)
+>>>> +		cmdline_strlcat(dest, src, length);
+>>>> +#ifdef CONFIG_CMDLINE
+>>>> +	if (IS_ENABLED(CONFIG_CMDLINE_EXTEND) && sizeof(CONFIG_CMDLINE) > 1)
+>>>> +		cmdline_strlcat(dest, " " CONFIG_CMDLINE, length);
+>>>> +#endif
+>>>
+>>> Likewise, but also I'm not sure why the sizeof() is required.
+>>
+>> It is to avoid adding a white space at the end of the command line when
+>> CONFIG_CMDLINE is empty. But maybe it doesn't matter ?
+> 
+> If CONFIG_CMDLINE is empty, I don't think you can select
+> CONFIG_CMDLINE_EXTEND (but even if you could, I don't think it matters).
+
+Ok I'll simplify that when I re-spin.
+
+Christophe
