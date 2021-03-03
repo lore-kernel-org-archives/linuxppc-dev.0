@@ -2,24 +2,24 @@ Return-Path: <SRS0=PW48=IB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2B16C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:49:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED261C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:50:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18CDE64DE8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:49:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18CDE64DE8
+	by mail.kernel.org (Postfix) with ESMTPS id 0841064EE6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:50:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0841064EE6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrM2p5q1Zz3cb4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:49:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrM3D4d28z3cYs
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:50:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -29,50 +29,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrM250Xwsz3cGV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrM250pCWz3cJY
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 04:49:15 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 123HjvuR142592; Wed, 3 Mar 2021 12:49:09 -0500
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 372f54825v-1
+ 123HWOgm055150; Wed, 3 Mar 2021 12:49:04 -0500
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 372eusgjy0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Mar 2021 12:49:08 -0500
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 123Hh749026977;
- Wed, 3 Mar 2021 17:49:06 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04ams.nl.ibm.com with ESMTP id 3712fmj0he-1
+ Wed, 03 Mar 2021 12:49:04 -0500
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 123HjQcL022155;
+ Wed, 3 Mar 2021 17:49:01 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma02fra.de.ibm.com with ESMTP id 36yj532134-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Mar 2021 17:49:06 +0000
+ Wed, 03 Mar 2021 17:49:01 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 123Hn3SS53870972
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 123Hmj9x33358248
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 3 Mar 2021 17:49:03 GMT
+ Wed, 3 Mar 2021 17:48:45 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AFBB8A4054;
- Wed,  3 Mar 2021 17:49:03 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7FE9CA405B;
+ Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 68560A405C;
- Wed,  3 Mar 2021 17:49:03 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4B88AA4054;
+ Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed,  3 Mar 2021 17:49:03 +0000 (GMT)
+ Wed,  3 Mar 2021 17:48:59 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.85.87])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id C90FF220423;
- Wed,  3 Mar 2021 18:49:02 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id B43FC220423;
+ Wed,  3 Mar 2021 18:48:58 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 8/8] powerpc/xive: Map one IPI interrupt per node
-Date: Wed,  3 Mar 2021 18:48:57 +0100
-Message-Id: <20210303174857.1760393-9-clg@kaod.org>
+Subject: [PATCH v2 0/8] powerpc/xive: Map one IPI interrupt per node
+Date: Wed,  3 Mar 2021 18:48:49 +0100
+Message-Id: <20210303174857.1760393-1-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210303174857.1760393-1-clg@kaod.org>
-References: <20210303174857.1760393-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -81,10 +79,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-03_05:2021-03-03,
  2021-03-03 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 bulkscore=0
- clxscore=1034 impostorscore=0 spamscore=0 phishscore=0 malwarescore=0
- priorityscore=1501 suspectscore=0 mlxscore=0 mlxlogscore=999
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0 mlxscore=0
+ clxscore=1034 priorityscore=1501 impostorscore=0 malwarescore=0
+ mlxlogscore=999 suspectscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2103030124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,6 +100,8 @@ Cc: Greg Kurz <groug@kaod.org>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+
+Hello,
 
 ipistorm [*] can be used to benchmark the raw interrupt rate of an
 interrupt controller by measuring the number of IPIs a system can
@@ -123,13 +123,13 @@ As a fix, this proposal allocates an IPI interrupt per node, to be
 shared by all CPUs of that node. It solves the scaling issue, the IRQ
 lockup detector still has an impact but the XIVE interrupt rate scales
 linearly. It also improves the "noirqdebug" case as showed in the
-tables below.
+tables below.=20
 
  * P9 DD2.2 - 2s * 64 threads
 
                                                "noirqdebug"
-                        Mint/s                    Mint/s
- chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys
+                        Mint/s                    Mint/s  =20
+ chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys    =20
  --------------------------------------------------------------
  1      0-15     4.984023   4.875405       4.996536   5.048892
         0-31    10.879164  10.544040      10.757632  11.037859
@@ -140,11 +140,12 @@ tables below.
         0-111   10.151693  31.397803      31.771773  32.388122
         0-127    9.948502  33.139336      34.875716  35.224548
 
+
  * P10 DD1 - 4s (not homogeneous) 352 threads
 
                                                "noirqdebug"
-                        Mint/s                    Mint/s
- chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys
+                        Mint/s                    Mint/s  =20
+ chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys    =20
  --------------------------------------------------------------
  1      0-15     2.409402   2.364108       2.383303   2.395091
         0-31     6.028325   6.046075       6.089999   6.073750
@@ -171,105 +172,31 @@ tables below.
 
 [*] https://github.com/antonblanchard/ipistorm
 
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/xive-internal.h |  2 --
- arch/powerpc/sysdev/xive/common.c        | 39 ++++++++++++++++++------
- 2 files changed, 30 insertions(+), 11 deletions(-)
+Thanks,
 
-diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysd=
-ev/xive/xive-internal.h
-index 9cf57c722faa..b3a456fdd3a5 100644
---- a/arch/powerpc/sysdev/xive/xive-internal.h
-+++ b/arch/powerpc/sysdev/xive/xive-internal.h
-@@ -5,8 +5,6 @@
- #ifndef __XIVE_INTERNAL_H
- #define __XIVE_INTERNAL_H
-=20
--#define XIVE_IPI_HW_IRQ		0 /* interrupt source # for IPIs */
--
- /*
-  * A "disabled" interrupt should never fire, to catch problems
-  * we set its logical number to this
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index 8eefd152b947..c27f7bb0494b 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -65,8 +65,16 @@ static struct irq_domain *xive_irq_domain;
- #ifdef CONFIG_SMP
- static struct irq_domain *xive_ipi_irq_domain;
-=20
--/* The IPIs all use the same logical irq number */
--static u32 xive_ipi_irq;
-+/* The IPIs use the same logical irq number when on the same chip */
-+static struct xive_ipi_desc {
-+	unsigned int irq;
-+	char name[8]; /* enough bytes to fit IPI-XXX */
-+} *xive_ipis;
-+
-+static unsigned int xive_ipi_cpu_to_irq(unsigned int cpu)
-+{
-+	return xive_ipis[cpu_to_node(cpu)].irq;
-+}
- #endif
-=20
- /* Xive state for each CPU */
-@@ -1106,25 +1114,36 @@ static const struct irq_domain_ops xive_ipi_irq_d=
-omain_ops =3D {
-=20
- static void __init xive_request_ipi(void)
- {
--	unsigned int virq;
-+	unsigned int node;
-=20
--	xive_ipi_irq_domain =3D irq_domain_add_linear(NULL, 1,
-+	xive_ipi_irq_domain =3D irq_domain_add_linear(NULL, nr_node_ids,
- 						    &xive_ipi_irq_domain_ops, NULL);
- 	if (WARN_ON(xive_ipi_irq_domain =3D=3D NULL))
- 		return;
-=20
--	/* Initialize it */
--	virq =3D irq_create_mapping(xive_ipi_irq_domain, XIVE_IPI_HW_IRQ);
--	xive_ipi_irq =3D virq;
-+	xive_ipis =3D kcalloc(nr_node_ids, sizeof(*xive_ipis), GFP_KERNEL | __G=
-FP_NOFAIL);
-+	for_each_node(node) {
-+		struct xive_ipi_desc *xid =3D &xive_ipis[node];
-+		irq_hw_number_t node_ipi_hwirq =3D node;
-+
-+		/*
-+		 * Map one IPI interrupt per node for all cpus of that node.
-+		 * Since the HW interrupt number doesn't have any meaning,
-+		 * simply use the node number.
-+		 */
-+		xid->irq =3D irq_create_mapping(xive_ipi_irq_domain, node_ipi_hwirq);
-+		snprintf(xid->name, sizeof(xid->name), "IPI-%d", node);
-=20
--	WARN_ON(request_irq(virq, xive_muxed_ipi_action,
--			    IRQF_PERCPU | IRQF_NO_THREAD, "IPI", NULL));
-+		WARN_ON(request_irq(xid->irq, xive_muxed_ipi_action,
-+				    IRQF_PERCPU | IRQF_NO_THREAD, xid->name, NULL));
-+	}
- }
-=20
- static int xive_setup_cpu_ipi(unsigned int cpu)
- {
- 	struct xive_cpu *xc;
- 	int rc;
-+	unsigned int xive_ipi_irq =3D xive_ipi_cpu_to_irq(cpu);
-=20
- 	pr_debug("Setting up IPI for CPU %d\n", cpu);
-=20
-@@ -1165,6 +1184,8 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
-=20
- static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
- {
-+	unsigned int xive_ipi_irq =3D xive_ipi_cpu_to_irq(cpu);
-+
- 	/* Disable the IPI and free the IRQ data */
-=20
- 	/* Already cleaned up ? */
+C.
+
+Changes in v2:
+
+  - extra simplification on xmon
+  - fixes on issues reported by the kernel test robot
+
+C=C3=A9dric Le Goater (8):
+  powerpc/xive: Use cpu_to_node() instead of ibm,chip-id property
+  powerpc/xive: Introduce an IPI interrupt domain
+  powerpc/xive: Remove useless check on XIVE_IPI_HW_IRQ
+  powerpc/xive: Simplify xive_core_debug_show()
+  powerpc/xive: Drop check on irq_data in xive_core_debug_show()
+  powerpc/xive: Simplify the dump of XIVE interrupts under xmon
+  powerpc/xive: Fix xmon command "dxi"
+  powerpc/xive: Map one IPI interrupt per node
+
+ arch/powerpc/include/asm/xive.h          |   1 +
+ arch/powerpc/sysdev/xive/xive-internal.h |   2 -
+ arch/powerpc/sysdev/xive/common.c        | 163 +++++++++++++----------
+ arch/powerpc/xmon/xmon.c                 |  28 +---
+ 4 files changed, 93 insertions(+), 101 deletions(-)
+
 --=20
 2.26.2
 
