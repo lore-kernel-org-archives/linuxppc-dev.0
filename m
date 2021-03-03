@@ -7,69 +7,69 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A91EC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CE02C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:51:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B34F64EDB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:51:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B34F64EDB
+	by mail.kernel.org (Postfix) with ESMTPS id 7C3EF64EDB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Mar 2021 17:51:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C3EF64EDB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrM435fTWz3dTm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:50:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrM4Q0mS0z3d79
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 04:51:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrM2803Qtz3cVQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 04:49:19 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrM283lsGz3cYP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 04:49:20 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 123HXMJj032286; Wed, 3 Mar 2021 12:49:07 -0500
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 372dwsjr93-1
+ 123HWcfn028826; Wed, 3 Mar 2021 12:49:07 -0500
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 372ehyh8ej-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Wed, 03 Mar 2021 12:49:07 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 123HguV2015176;
- Wed, 3 Mar 2021 17:49:03 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma06ams.nl.ibm.com with ESMTP id 37293fr9ym-1
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 123HheFQ031092;
+ Wed, 3 Mar 2021 17:49:02 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 371162j2dx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Mar 2021 17:49:03 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 123Hn1Vg55771578
+ Wed, 03 Mar 2021 17:49:02 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 123Hn0OV49611236
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 3 Mar 2021 17:49:01 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E460AE045;
- Wed,  3 Mar 2021 17:49:01 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3B4A3AE055;
- Wed,  3 Mar 2021 17:49:01 +0000 (GMT)
+ Wed, 3 Mar 2021 17:49:00 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6E90A11C04A;
+ Wed,  3 Mar 2021 17:49:00 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3C45A11C052;
+ Wed,  3 Mar 2021 17:49:00 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed,  3 Mar 2021 17:49:01 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed,  3 Mar 2021 17:49:00 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.85.87])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id A756F220423;
- Wed,  3 Mar 2021 18:49:00 +0100 (CET)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id A84FE220423;
+ Wed,  3 Mar 2021 18:48:59 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/8] powerpc/xive: Simplify xive_core_debug_show()
-Date: Wed,  3 Mar 2021 18:48:53 +0100
-Message-Id: <20210303174857.1760393-5-clg@kaod.org>
+Subject: [PATCH v2 2/8] powerpc/xive: Introduce an IPI interrupt domain
+Date: Wed,  3 Mar 2021 18:48:51 +0100
+Message-Id: <20210303174857.1760393-3-clg@kaod.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210303174857.1760393-1-clg@kaod.org>
 References: <20210303174857.1760393-1-clg@kaod.org>
@@ -81,9 +81,9 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-03_05:2021-03-03,
  2021-03-03 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0
- adultscore=0 malwarescore=0 mlxscore=0 bulkscore=0 mlxlogscore=960
- phishscore=0 impostorscore=0 lowpriorityscore=0 clxscore=1034
+ clxscore=1034 malwarescore=0
+ impostorscore=0 bulkscore=0 mlxlogscore=712 mlxscore=0 spamscore=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 suspectscore=0
  priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2103030124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -103,62 +103,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the IPI interrupt has its own domain, the checks on the HW
-interrupt number XIVE_IPI_HW_IRQ and on the chip can be replaced by a
-check on the domain.
+The IPI interrupt is a special case of the XIVE IRQ domain. When
+mapping and unmapping the interrupts in the Linux interrupt number
+space, the HW interrupt number 0 (XIVE_IPI_HW_IRQ) is checked to
+distinguish the IPI interrupt from other interrupts of the system.
+
+Simplify the XIVE interrupt domain by introducing a specific domain
+for the IPI.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 51 +++++++++++++------------------
+ 1 file changed, 22 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
 /common.c
-index 678680531d26..7581cb12bb53 100644
+index b8e456da28aa..e7783760d278 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1579,17 +1579,14 @@ static void xive_debug_show_cpu(struct seq_file *=
-m, int cpu)
- 	seq_puts(m, "\n");
- }
+@@ -63,6 +63,8 @@ static const struct xive_ops *xive_ops;
+ static struct irq_domain *xive_irq_domain;
 =20
--static void xive_debug_show_irq(struct seq_file *m, u32 hw_irq, struct i=
-rq_data *d)
-+static void xive_debug_show_irq(struct seq_file *m, struct irq_data *d)
+ #ifdef CONFIG_SMP
++static struct irq_domain *xive_ipi_irq_domain;
++
+ /* The IPIs all use the same logical irq number */
+ static u32 xive_ipi_irq;
+ #endif
+@@ -1067,20 +1069,32 @@ static struct irq_chip xive_ipi_chip =3D {
+ 	.irq_unmask =3D xive_ipi_do_nothing,
+ };
+=20
++/*
++ * IPIs are marked per-cpu. We use separate HW interrupts under the
++ * hood but associated with the same "linux" interrupt
++ */
++static int xive_ipi_irq_domain_map(struct irq_domain *h, unsigned int vi=
+rq,
++				   irq_hw_number_t hw)
++{
++	irq_set_chip_and_handler(virq, &xive_ipi_chip, handle_percpu_irq);
++	return 0;
++}
++
++static const struct irq_domain_ops xive_ipi_irq_domain_ops =3D {
++	.map =3D xive_ipi_irq_domain_map,
++};
++
+ static void __init xive_request_ipi(void)
  {
--	struct irq_chip *chip =3D irq_data_get_irq_chip(d);
-+	unsigned int hw_irq =3D (unsigned int)irqd_to_hwirq(d);
- 	int rc;
- 	u32 target;
- 	u8 prio;
- 	u32 lirq;
+ 	unsigned int virq;
 =20
--	if (!is_xive_irq(chip))
+-	/*
+-	 * Initialization failed, move on, we might manage to
+-	 * reach the point where we display our errors before
+-	 * the system falls appart
+-	 */
+-	if (!xive_irq_domain)
++	xive_ipi_irq_domain =3D irq_domain_add_linear(NULL, 1,
++						    &xive_ipi_irq_domain_ops, NULL);
++	if (WARN_ON(xive_ipi_irq_domain =3D=3D NULL))
+ 		return;
+=20
+ 	/* Initialize it */
+-	virq =3D irq_create_mapping(xive_irq_domain, XIVE_IPI_HW_IRQ);
++	virq =3D irq_create_mapping(xive_ipi_irq_domain, XIVE_IPI_HW_IRQ);
+ 	xive_ipi_irq =3D virq;
+=20
+ 	WARN_ON(request_irq(virq, xive_muxed_ipi_action,
+@@ -1178,19 +1192,6 @@ static int xive_irq_domain_map(struct irq_domain *=
+h, unsigned int virq,
+ 	 */
+ 	irq_clear_status_flags(virq, IRQ_LEVEL);
+=20
+-#ifdef CONFIG_SMP
+-	/* IPIs are special and come up with HW number 0 */
+-	if (hw =3D=3D XIVE_IPI_HW_IRQ) {
+-		/*
+-		 * IPIs are marked per-cpu. We use separate HW interrupts under
+-		 * the hood but associated with the same "linux" interrupt
+-		 */
+-		irq_set_chip_and_handler(virq, &xive_ipi_chip,
+-					 handle_percpu_irq);
+-		return 0;
+-	}
+-#endif
+-
+ 	rc =3D xive_irq_alloc_data(virq, hw);
+ 	if (rc)
+ 		return rc;
+@@ -1202,15 +1203,7 @@ static int xive_irq_domain_map(struct irq_domain *=
+h, unsigned int virq,
+=20
+ static void xive_irq_domain_unmap(struct irq_domain *d, unsigned int vir=
+q)
+ {
+-	struct irq_data *data =3D irq_get_irq_data(virq);
+-	unsigned int hw_irq;
+-
+-	/* XXX Assign BAD number */
+-	if (!data)
 -		return;
--
- 	rc =3D xive_ops->get_irq_config(hw_irq, &target, &prio, &lirq);
- 	if (rc) {
- 		seq_printf(m, "IRQ 0x%08x : no config rc=3D%d\n", hw_irq, rc);
-@@ -1627,16 +1624,9 @@ static int xive_core_debug_show(struct seq_file *m=
-, void *private)
-=20
- 	for_each_irq_desc(i, desc) {
- 		struct irq_data *d =3D irq_desc_get_irq_data(desc);
--		unsigned int hw_irq;
--
--		if (!d)
--			continue;
--
--		hw_irq =3D (unsigned int)irqd_to_hwirq(d);
-=20
--		/* IPIs are special (HW number 0) */
--		if (hw_irq !=3D XIVE_IPI_HW_IRQ)
--			xive_debug_show_irq(m, hw_irq, d);
-+		if (d->domain =3D=3D xive_irq_domain)
-+			xive_debug_show_irq(m, d);
- 	}
- 	return 0;
+-	hw_irq =3D (unsigned int)irqd_to_hwirq(data);
+-	if (hw_irq !=3D XIVE_IPI_HW_IRQ)
+-		xive_irq_free_data(virq);
++	xive_irq_free_data(virq);
  }
+=20
+ static int xive_irq_domain_xlate(struct irq_domain *h, struct device_nod=
+e *ct,
 --=20
 2.26.2
 
