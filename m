@@ -2,64 +2,69 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87B10C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 07:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36861C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 07:02:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4376064E89
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 07:01:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4376064E89
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A62A364EE4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 07:02:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A62A364EE4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrhcP60ddz3dB5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 18:01:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=O6uN1+ar;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Drhcw61g2z3d3p
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 18:02:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=O6uN1+ar; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrhbR3l5zz30JC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 18:00:51 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4DrhbK10Ygz9sRf; Thu,  4 Mar 2021 18:00:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1614841245;
- bh=MFvEsPtNECyZ+EAM4aMoblYWUXq/S/CCBpo2A5jbvl0=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=O6uN1+arBjrKq0cxxuQLWJ0StQbWyg4OvuQMfhryDBHlVqdO8LjqjQqfSJOyPlvc1
- bIET68joJALivFHWCYI6kVvdTl9hwmevKCqmq4aHTKNRNw3+agnST1rk+ZM/zFpRNS
- Df309d+3obRD7C1c3MBbtKgcuwiZGuRRNShkTreQ=
-Date: Thu, 4 Mar 2021 17:56:26 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v5 2/3] KVM: PPC: Book3S HV: Add support for
- H_RPT_INVALIDATE
-Message-ID: <YECEmkb0mGCJP0M0@yekko.fritz.box>
-References: <20210224082510.3962423-1-bharata@linux.ibm.com>
- <20210224082510.3962423-3-bharata@linux.ibm.com>
- <YD2YrkY0cg+uO+wz@yekko.fritz.box>
- <20210302045853.GC188607@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrhbX3XRlz30Nh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 18:00:53 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DrhbP2wMDz9v1Mh;
+ Thu,  4 Mar 2021 08:00:49 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id q2gLmLW1LtAi; Thu,  4 Mar 2021 08:00:49 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DrhbP1M63z9v1Mg;
+ Thu,  4 Mar 2021 08:00:49 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6390D8B7F5;
+ Thu,  4 Mar 2021 08:00:50 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id CsaKbGkrdrkk; Thu,  4 Mar 2021 08:00:50 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2E7348B773;
+ Thu,  4 Mar 2021 08:00:49 +0100 (CET)
+Subject: Re: [PATCH 1/5] CMDLINE: add generic builtin command line
+To: Daniel Walker <danielwa@cisco.com>, Will Deacon <will@kernel.org>,
+ ob Herring <robh@kernel.org>,
+ Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+ Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20210304044803.812204-1-danielwa@cisco.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <da33aa9e-ffd8-b012-0f2d-c9ad05f32b8f@csgroup.eu>
+Date: Thu, 4 Mar 2021 08:00:49 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ZCMh9tBN2+kVRtHm"
-Content-Disposition: inline
-In-Reply-To: <20210302045853.GC188607@in.ibm.com>
+In-Reply-To: <20210304044803.812204-1-danielwa@cisco.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,393 +76,256 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Ruslan Bilovol <rbilovol@cisco.com>, linux-kernel@vger.kernel.org,
+ xe-linux-external@cisco.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---ZCMh9tBN2+kVRtHm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 02, 2021 at 10:28:53AM +0530, Bharata B Rao wrote:
-> On Tue, Mar 02, 2021 at 12:45:18PM +1100, David Gibson wrote:
-> > > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/=
-api.rst
-> > > index 45fd862ac128..38ce3f21b21f 100644
-> > > --- a/Documentation/virt/kvm/api.rst
-> > > +++ b/Documentation/virt/kvm/api.rst
-> > > @@ -6225,6 +6225,24 @@ KVM_RUN_BUS_LOCK flag is used to distinguish b=
-etween them.
-> > >  This capability can be used to check / enable 2nd DAWR feature provi=
-ded
-> > >  by POWER10 processor.
-> > > =20
-> > > +7.23 KVM_CAP_PPC_RPT_INVALIDATE
-> > > +------------------------------
-> > > +
-> > > +:Capability: KVM_CAP_PPC_RPT_INVALIDATE
-> > > +:Architectures: ppc
-> > > +:Type: vm
-> > > +
-> > > +This capability indicates that the kernel is capable of handling
-> > > +H_RPT_INVALIDATE hcall.
-> > > +
-> > > +In order to enable the use of H_RPT_INVALIDATE in the guest,
-> > > +user space might have to advertise it for the guest. For example,
-> > > +IBM pSeries (sPAPR) guest starts using it if "hcall-rpt-invalidate" =
-is
-> > > +present in the "ibm,hypertas-functions" device-tree property.
-> > > +
-> > > +This capability is enabled for hypervisors on platforms like POWER9
-> > > +that support radix MMU.
-> >=20
-> > Does this mean that KVM will handle the hypercall, even if not
-> > explicitly enabled by userspace (qemu)?  That's generally not what we
-> > want, since we need to allow qemu to set up backwards compatible
-> > guests.
->=20
-> This capability only indicates that hypervisor supports the hcall.
->=20
-> QEMU will check for this and conditionally enable the hcall
-> (via KVM_CAP_PPC_ENABLE_HCALL ioctl). Enabling the hcall is
-> conditional to cap-rpt-invalidate sPAPR machine capability being
-> enabled by the user. Will post a followup QEMU patch shortly.
+Le 04/03/2021 à 05:47, Daniel Walker a écrit :
+> This code allows architectures to use a generic builtin command line.
+> The state of the builtin command line options across architecture is
+> diverse. On x86 and mips they have pretty much the same code and the
+> code prepends the builtin command line onto the boot loader provided
+> one. On powerpc there is only a builtin override and nothing else.
 
-Ok.
+This is not exact. powerpc has:
+CONFIG_FROM_BOOTLOADER
+CONFIG_EXTEND
+CONFIG_FORCE
 
-> Older QEMU patch can be found here:
-> https://lists.gnu.org/archive/html/qemu-devel/2021-01/msg00627.html
->=20
-> >=20
-> > > +
-> > >  8. Other capabilities.
-> > >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > > =20
-> > > diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/ar=
-ch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > > index 8b33601cdb9d..a46fd37ad552 100644
-> > > --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > > +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > > @@ -4,6 +4,10 @@
-> > > =20
-> > >  #include <asm/hvcall.h>
-> > > =20
-> > > +#define RIC_FLUSH_TLB 0
-> > > +#define RIC_FLUSH_PWC 1
-> > > +#define RIC_FLUSH_ALL 2
-> > > +
-> > >  struct vm_area_struct;
-> > >  struct mm_struct;
-> > >  struct mmu_gather;
-> > > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/inc=
-lude/asm/kvm_book3s.h
-> > > index 2f5f919f6cd3..a1515f94400e 100644
-> > > --- a/arch/powerpc/include/asm/kvm_book3s.h
-> > > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> > > @@ -305,6 +305,9 @@ void kvmhv_set_ptbl_entry(unsigned int lpid, u64 =
-dw0, u64 dw1);
-> > >  void kvmhv_release_all_nested(struct kvm *kvm);
-> > >  long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu);
-> > >  long kvmhv_do_nested_tlbie(struct kvm_vcpu *vcpu);
-> > > +long kvmhv_h_rpti_nested(struct kvm_vcpu *vcpu, unsigned long lpid,
-> > > +			 unsigned long type, unsigned long pg_sizes,
-> > > +			 unsigned long start, unsigned long end);
-> > >  int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu,
-> > >  			  u64 time_limit, unsigned long lpcr);
-> > >  void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state=
- *hr);
-> > > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/in=
-clude/asm/mmu_context.h
-> > > index 652ce85f9410..820caf4e01b7 100644
-> > > --- a/arch/powerpc/include/asm/mmu_context.h
-> > > +++ b/arch/powerpc/include/asm/mmu_context.h
-> > > @@ -124,8 +124,19 @@ static inline bool need_extra_context(struct mm_=
-struct *mm, unsigned long ea)
-> > > =20
-> > >  #if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RAD=
-IX_MMU)
-> > >  extern void radix_kvm_prefetch_workaround(struct mm_struct *mm);
-> > > +void do_h_rpt_invalidate(unsigned long pid, unsigned long lpid,
-> > > +			 unsigned long type, unsigned long page_size,
-> > > +			 unsigned long psize, unsigned long start,
-> > > +			 unsigned long end);
-> > >  #else
-> > >  static inline void radix_kvm_prefetch_workaround(struct mm_struct *m=
-m) { }
-> > > +static inline void do_h_rpt_invalidate(unsigned long pid,
-> > > +				       unsigned long lpid,
-> > > +				       unsigned long type,
-> > > +				       unsigned long page_size,
-> > > +				       unsigned long psize,
-> > > +				       unsigned long start,
-> > > +				       unsigned long end) { }
-> > >  #endif
-> > > =20
-> > >  extern void switch_cop(struct mm_struct *next);
-> > > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_h=
-v.c
-> > > index 13bad6bf4c95..d83f006fc19d 100644
-> > > --- a/arch/powerpc/kvm/book3s_hv.c
-> > > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > > @@ -921,6 +921,69 @@ static int kvmppc_get_yield_count(struct kvm_vcp=
-u *vcpu)
-> > >  	return yield_count;
-> > >  }
-> > > =20
-> > > +static void do_h_rpt_invalidate_prs(unsigned long pid, unsigned long=
- lpid,
-> > > +				    unsigned long type, unsigned long pg_sizes,
-> > > +				    unsigned long start, unsigned long end)
-> > > +{
-> > > +	unsigned long psize;
-> > > +	struct mmu_psize_def *def;
-> > > +
-> > > +	for (psize =3D 0; psize < MMU_PAGE_COUNT; psize++) {
-> > > +		def =3D &mmu_psize_defs[psize];
-> > > +		if (pg_sizes & def->h_rpt_pgsize)
-> > > +			do_h_rpt_invalidate(pid, lpid, type,
-> > > +					    (1UL << def->shift), psize,
-> > > +					    start, end);
-> > > +	}
-> > > +}
-> > > +
-> > > +static void kvmppc_nested_rpt_invalidate(struct kvm_vcpu *vcpu)
-> > > +{
-> > > +	do_h_rpt_invalidate_prs(kvmppc_get_gpr(vcpu, 4),
-> > > +				vcpu->arch.nested->shadow_lpid,
-> > > +				kvmppc_get_gpr(vcpu, 5),
-> > > +				kvmppc_get_gpr(vcpu, 6),
-> > > +				kvmppc_get_gpr(vcpu, 7),
-> > > +				kvmppc_get_gpr(vcpu, 8));
-> > > +	kvmppc_set_gpr(vcpu, 3, H_SUCCESS);
-> > > +}
-> > > +
-> > > +static long kvmppc_h_rpt_invalidate(struct kvm_vcpu *vcpu,
-> > > +				    unsigned long pid, unsigned long target,
-> > > +				    unsigned long type, unsigned long pg_sizes,
-> > > +				    unsigned long start, unsigned long end)
-> > > +{
-> > > +	if (!kvm_is_radix(vcpu->kvm))
-> > > +		return H_UNSUPPORTED;
-> > > +
-> > > +	/*
-> > > +	 * For nested guests, this hcall is handled in
-> > > +	 * L0. See kvmppc_handle_nested_exit() for details.
-> > > +	 */
-> > > +	if (kvmhv_on_pseries())
-> > > +		return H_UNSUPPORTED;
-> > > +
-> > > +	if (end < start)
-> > > +		return H_P5;
-> > > +
-> > > +	if (type & H_RPTI_TYPE_NESTED) {
-> > > +		if (!nesting_enabled(vcpu->kvm))
-> > > +			return H_FUNCTION;
-> > > +
-> > > +		/* Support only cores as target */
-> > > +		if (target !=3D H_RPTI_TARGET_CMMU)
-> > > +			return H_P2;
-> > > +
-> >=20
-> > IIUC, we'll hit this code path if an L1 calls this on behalf of an L2,
->=20
-> Correct.
->=20
-> > whereas we'll hit the nested exit code path going straight to
-> > kvmhv_h_rpti_nested() if an L2 calls it on behalf of an L3.  Is that
-> > right?
->=20
-> We will hit the nested exit code path when L2 calls it on behalf
-> of L3. Looks like I am not handling this case (hcall issued by
-> L2 on behalf of L3 for handling partition scoped translations)
-> in the nested exit path.
->=20
-> >=20
-> > > +		return kvmhv_h_rpti_nested(vcpu, pid,
-> > > +					   (type & ~H_RPTI_TYPE_NESTED),
-> > > +					    pg_sizes, start, end);
-> > > +	}
-> > > +
-> > > +	do_h_rpt_invalidate_prs(pid, vcpu->kvm->arch.lpid, type, pg_sizes,
-> > > +				start, end);
-> > > +	return H_SUCCESS;
-> > > +}
-> > > +
-> > >  int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
-> > >  {
-> > >  	unsigned long req =3D kvmppc_get_gpr(vcpu, 3);
-> > > @@ -1129,6 +1192,14 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *v=
-cpu)
-> > >  		 */
-> > >  		ret =3D kvmppc_h_svm_init_abort(vcpu->kvm);
-> > >  		break;
-> > > +	case H_RPT_INVALIDATE:
-> > > +		ret =3D kvmppc_h_rpt_invalidate(vcpu, kvmppc_get_gpr(vcpu, 4),
-> > > +					      kvmppc_get_gpr(vcpu, 5),
-> > > +					      kvmppc_get_gpr(vcpu, 6),
-> > > +					      kvmppc_get_gpr(vcpu, 7),
-> > > +					      kvmppc_get_gpr(vcpu, 8),
-> > > +					      kvmppc_get_gpr(vcpu, 9));
-> > > +		break;
-> > > =20
-> > >  	default:
-> > >  		return RESUME_HOST;
-> > > @@ -1175,6 +1246,7 @@ static int kvmppc_hcall_impl_hv(unsigned long c=
-md)
-> > >  	case H_XIRR_X:
-> > >  #endif
-> > >  	case H_PAGE_INIT:
-> > > +	case H_RPT_INVALIDATE:
-> > >  		return 1;
-> > >  	}
-> > > =20
-> > > @@ -1590,6 +1662,24 @@ static int kvmppc_handle_nested_exit(struct kv=
-m_vcpu *vcpu)
-> > >  		if (!xics_on_xive())
-> > >  			kvmppc_xics_rm_complete(vcpu, 0);
-> > >  		break;
-> > > +	case BOOK3S_INTERRUPT_SYSCALL:
-> > > +	{
-> > > +		unsigned long req =3D kvmppc_get_gpr(vcpu, 3);
-> > > +
-> > > +		/*
-> > > +		 * The H_RPT_INVALIDATE hcalls issued by nested
-> > > +		 * guests for process scoped invalidations when
-> > > +		 * GTSE=3D0, are handled here in L0.
-> > > +		 */
-> >=20
-> > What if the L2 is not calling this for the GTSE=3D0 case, but on behalf
-> > of an L3?
->=20
-> That case would be for flushing partition scoped translations. I am
-> realizing that I am not handling that case, but it should be handled
-> here in the nested hcall exit path.
->=20
-> Currently I am handling only the hcall requests for process scoped
-> translations from nested guests here.
+> 
+> The code in this commit unifies the code into a generic
+> header file under the CONFIG_GENERIC_CMDLINE option. When this
+> option is enabled the architecture can call the cmdline_add_builtin()
+> to add the builtin command line.
+> 
+> Cc: xe-linux-external@cisco.com
+> Signed-off-by: Ruslan Bilovol <rbilovol@cisco.com>
+> Signed-off-by: Daniel Walker <danielwa@cisco.com>
+> ---
+>   include/linux/cmdline.h | 75 +++++++++++++++++++++++++++++++++++++++++
+>   init/Kconfig            | 68 +++++++++++++++++++++++++++++++++++++
+>   2 files changed, 143 insertions(+)
+>   create mode 100644 include/linux/cmdline.h
+> 
+> diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
+> new file mode 100644
+> index 000000000000..f44011d1a9ee
+> --- /dev/null
+> +++ b/include/linux/cmdline.h
+> @@ -0,0 +1,75 @@
 
-Ok.  At the very least you need to detect and fail for that case.
+Missing the SPDX Licence Identifier
 
-> >=20
-> > > +		if (req =3D=3D H_RPT_INVALIDATE) {
-> > > +			kvmppc_nested_rpt_invalidate(vcpu);
-> > > +			r =3D RESUME_GUEST;
-> > > +			break;
-> > > +		}
-> > > +
-> > > +		r =3D RESUME_HOST;
-> > > +		break;
-> > > +	}
-> > >  	default:
-> > >  		r =3D RESUME_HOST;
-> > >  		break;
-> > > diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/b=
-ook3s_hv_nested.c
-> > > index 0cd0e7aad588..ca43b2d38dce 100644
-> > > --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> > > +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> > > @@ -1191,6 +1191,83 @@ long kvmhv_do_nested_tlbie(struct kvm_vcpu *vc=
-pu)
-> > >  	return H_SUCCESS;
-> > >  }
-> > > =20
-> > > +static long do_tlb_invalidate_nested_tlb(struct kvm_vcpu *vcpu,
-> > > +					 unsigned long lpid,
-> > > +					 unsigned long page_size,
-> > > +					 unsigned long ap,
-> > > +					 unsigned long start,
-> > > +					 unsigned long end)
-> > > +{
-> > > +	unsigned long addr =3D start;
-> > > +	int ret;
-> > > +
-> > > +	do {
-> > > +		ret =3D kvmhv_emulate_tlbie_tlb_addr(vcpu, lpid, ap,
-> > > +						   get_epn(addr));
-> > > +		if (ret)
-> > > +			return ret;
-> > > +		addr +=3D page_size;
-> > > +	} while (addr < end);
-> > > +
-> > > +	return ret;
-> > > +}
-> > > +
-> > > +static long do_tlb_invalidate_nested_all(struct kvm_vcpu *vcpu,
-> > > +					 unsigned long lpid)
-> > > +{
-> > > +	struct kvm *kvm =3D vcpu->kvm;
-> > > +	struct kvm_nested_guest *gp;
-> > > +
-> > > +	gp =3D kvmhv_get_nested(kvm, lpid, false);
-> > > +	if (gp) {
-> > > +		kvmhv_emulate_tlbie_lpid(vcpu, gp, RIC_FLUSH_ALL);
-> > > +		kvmhv_put_nested(gp);
-> > > +	}
-> > > +	return H_SUCCESS;
-> > > +}
-> > > +
-> > > +long kvmhv_h_rpti_nested(struct kvm_vcpu *vcpu, unsigned long lpid,
-> > > +			 unsigned long type, unsigned long pg_sizes,
-> > > +			 unsigned long start, unsigned long end)
-> > > +{
-> > > +	struct kvm_nested_guest *gp;
-> > > +	long ret;
-> > > +	unsigned long psize, ap;
-> > > +
-> > > +	/*
-> > > +	 * If L2 lpid isn't valid, we need to return H_PARAMETER.
-> > > +	 *
-> > > +	 * However, nested KVM issues a L2 lpid flush call when creating
-> > > +	 * partition table entries for L2. This happens even before the
-> > > +	 * corresponding shadow lpid is created in HV which happens in
-> > > +	 * H_ENTER_NESTED call. Since we can't differentiate this case from
-> > > +	 * the invalid case, we ignore such flush requests and return succe=
-ss.
-> > > +	 */
-> >=20
-> > What if this is being called on behalf of an L3 or deeper?  Do we need
-> > something to do a translation from L3 to L2 addresses?
->=20
-> I am not sure, I will have to check if gp->shadow_lpid points to
-> correct nested LPID in all the cases.
->=20
-> >=20
-> > > +	gp =3D kvmhv_find_nested(vcpu->kvm, lpid);
-> > > +	if (!gp)
-> > > +		return H_SUCCESS;
->=20
-> Regards,
-> Bharata.
->=20
+> +#ifndef _LINUX_CMDLINE_H
+> +#define _LINUX_CMDLINE_H
+> +
+> +/*
+> + *
+> + * Copyright (C) 2006,2021. Cisco Systems, Inc.
+> + *
+> + * Generic Append/Prepend cmdline support.
+> + */
+> +
+> +#if defined(CONFIG_GENERIC_CMDLINE) && defined(CONFIG_CMDLINE_BOOL)
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I think it would be better if we can avoid the CONFIG_CMDLINE_BOOL.
+By making the CMDLINEs default to "" at all time, I think we can about that BOOL.
 
---ZCMh9tBN2+kVRtHm
-Content-Type: application/pgp-signature; name="signature.asc"
+> +
+> +#ifndef CONFIG_CMDLINE_OVERRIDE
+> +/*
+> + * This function will append or prepend a builtin command line to the command
 
------BEGIN PGP SIGNATURE-----
+As far as I understand, it doesn't "append _or_ prepend" but it does "append _and_ prepend"
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBAhJgACgkQbDjKyiDZ
-s5KiJQ/+KHQjlD3CiWFD7CmOFHb7RiYJEueoJF1OMRbTgeAJbfV8GtkD8IQ09VWG
-4WVgQPlGYrblKkc1M10lzk3lqC4iV67G4caIzgiNf38O3sA6QdXlR8xA4yoJElKc
-KYu3fag4ydJARpOPsHExKXuXKetEgd3QB0l7VZtgREo4Fo610GIuhicMG0Jr9Lu6
-ECVOr/restGq1wrBkaXrO6YuZBCPoRNqXa4lN23xTd9aa4xeNexm3kt8DsCQCvcl
-i7uc5gMnDvpIf7oMbId6F8EeCL+/Br4yAedtaiOFqpn7UrYNNL93k1rFSODT2Fea
-wWIn2Kp2SO0NJ27KoxuQuNLbKixPIZB1F5UY+PrZUfqS4We1kJD4pyNJ6tFnV7cm
-nYFyVxLjjqI3aMZlhtn/Zzphoq1k6vcGjf0/44lWBErHCXnRfVqz3FPGBt64Jdx9
-6lWOa0+EBuSuxP4omgnFIPj+piBkzqDrgx6fSYnGsJS/M/61H3c/dQr2a6W91qwl
-x1HMINFfSnOIc3FilDdM2p2bYn+XbTW0MOV+cmD9jUMfzRDIjz/d9QFkpajwumKY
-/ztJq7m9XSc6gbMMY+giLK0ruM35NRydRRznDFV1loZ3AwOpKBV/19vwTRrJHr+P
-AMOx6iDJq4nrUux+dFxA9iHPhIuG1gaj33A6YNkYEvl0pJo9DVM=
-=Kd+0
------END PGP SIGNATURE-----
+> + * line provided by the bootloader. Kconfig options can be used to alter
+> + * the behavior of this builtin command line.
+> + * @dest: The destination of the final appended/prepended string
+> + * @src: The starting string or NULL if there isn't one.
+> + * @tmp: temporary space used for prepending
+> + * @length: the maximum length of the strings above.
 
---ZCMh9tBN2+kVRtHm--
+Missing some parameters here, but I think we should avoid those 'strlcpy' and 'strlcat', see later 
+comment.
+
+> + */
+> +static inline void
+> +__cmdline_add_builtin(char *dest, const char *src, char *tmp, unsigned long length,
+> +		size_t (*strlcpy)(char *dest, const char *src, size_t size),
+> +		size_t (*strlcat)(char *dest, const char *src, size_t count)
+
+Don't use names that overide names of existing functions.
+
+'count' is __kernel_size_t not size_t
+
+> +		)
+> +{
+> +	if (src != dest && src != NULL) {
+> +		strlcpy(dest, " ", length);
+
+Why do you need a space up front in that case ? Why not just copy the source to the destination ?
+
+> +		strlcat(dest, src, length);
+> +	}
+> +
+> +	if (sizeof(CONFIG_CMDLINE_APPEND) > 1)
+> +		strlcat(dest, " " CONFIG_CMDLINE_APPEND, length);
+> +
+> +	if (sizeof(CONFIG_CMDLINE_PREPEND) > 1) {
+> +		strlcpy(tmp, CONFIG_CMDLINE_PREPEND " ", length);
+> +		strlcat(tmp, dest, length);
+> +		strlcpy(dest, tmp, length);
+
+Could we use memmove(), or implement strmove() and avoid the temporary buffer at all ?
+
+> +	}
+> +}
+> +
+> +#define cmdline_add_builtin_custom(dest, src, length, label, strlcpy, strlcat) 			\
+
+It is misleading to call parameters 'strlcpy' or 'strlcat', it hides that they are overriden.
+
+> +{ 												\
+> +	if (sizeof(CONFIG_CMDLINE_PREPEND) > 1) { 						\
+> +		static label char cmdline_tmp_space[length]; 					\
+
+Let the architecture define the temporary space when using the custom variant instead of just asking 
+the architecture to provide the name of the section to use. powerpc already have prom_scratch for that.
+
+> +		__cmdline_add_builtin(dest, src, cmdline_tmp_space, length, strlcpy, strlcat); 	\
+> +	} else if (sizeof(CONFIG_CMDLINE_APPEND) > 1) { 					\
+> +		__cmdline_add_builtin(dest, src, NULL, length, strlcpy, strlcat); 		\
+> +	} 											\
+
+Ah, so if I understand correctly, the user can set both CONFIG_CMDLINE_PREPEND and 
+CONFIG_CMDLINE_APPEND but one of them is silently ignored.
+
+Then I think we should just offer the user to set one, name it CONFIG_CMDLINE then ask him to choose 
+between FORCE, APPEND or PREPEND.
+
+> +}
+> +#define cmdline_add_builtin(dest, src, length)	                           \
+> +	cmdline_add_builtin_custom(dest, src, length, __initdata, &strlcpy, &strlcat)
+> +#else
+> +#define cmdline_add_builtin(dest, src, length)				   \
+> +{								  	   \
+> +	strlcpy(dest, CONFIG_CMDLINE_PREPEND " " CONFIG_CMDLINE_APPEND,    \
+> +		length);		   				   \
+> +}
+> +#endif /* !CONFIG_CMDLINE_OVERRIDE */
+> +
+> +#else
+> +#define cmdline_add_builtin_custom(dest, src, length, label, strlcpy, strlcat) { \
+> +	if (src != NULL) 							 \
+> +		strlcpy(dest, src, length);	 				 \
+> +}
+> +
+> +#define cmdline_add_builtin(dest, src, length) { 				\
+> +	cmdline_add_builtin_custom(dest, src, length, strlcpy, strlcat); 	\
+> +}
+> +#endif /* CONFIG_GENERIC_CMDLINE */
+
+I'd rather avoid all those macros and use static inline functions instead.
+
+For the strlcpy() and strlcat(), use another name, for instance cmdline_strlcpy and cmdline_strlcat. 
+Then at the begining of the file, define them as strlcpy ad strlcat unless they are already defined 
+to something else (by the architecture before including cmdline.h).
+
+> +
+> +
+> +#endif /* _LINUX_CMDLINE_H */
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 29ad68325028..28363ab07cd4 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -2032,6 +2032,74 @@ config PROFILING
+>   config TRACEPOINTS
+>   	bool
+>   
+> +config GENERIC_CMDLINE
+> +	bool
+> +
+> +if GENERIC_CMDLINE
+> +
+> +config CMDLINE_BOOL
+> +	bool "Built-in kernel command line"
+
+We don't need the CMDLINE_BOOL, just have CMDLINE always "" by default.
+
+> +	help
+> +	  Allow for specifying boot arguments to the kernel at
+> +	  build time.  On some systems (e.g. embedded ones), it is
+> +	  necessary or convenient to provide some or all of the
+> +	  kernel boot arguments with the kernel itself (that is,
+> +	  to not rely on the boot loader to provide them.)
+> +
+> +	  To compile command line arguments into the kernel,
+> +	  set this option to 'Y', then fill in the
+> +	  the boot arguments in CONFIG_CMDLINE.
+> +
+> +	  Systems with fully functional boot loaders (i.e. non-embedded)
+> +	  should leave this option set to 'N'.
+> +
+> +config CMDLINE_APPEND
+
+As far as I understand, the generic code will only take CMDLINE_APPEND into account if 
+CMDLINE_PREPEND doesn't exist, otherwise it will silently ignore it.
+
+Only offer one string: CONFIG_CMDLINE, and make the use choose between APPEND, EXTEND or OVERRIDE
+
+> +	string "Built-in kernel command string append"
+> +	depends on CMDLINE_BOOL
+> +	default ""
+> +	help
+> +	  Enter arguments here that should be compiled into the kernel
+> +	  image and used at boot time.  If the boot loader provides a
+> +	  command line at boot time, this string is appended to it to
+> +	  form the full kernel command line, when the system boots.
+> +
+> +	  However, you can use the CONFIG_CMDLINE_OVERRIDE option to
+> +	  change this behavior.
+> +
+> +	  In most cases, the command line (whether built-in or provided
+> +	  by the boot loader) should specify the device for the root
+> +	  file system.
+> +
+> +config CMDLINE_PREPEND
+> +	string "Built-in kernel command string prepend"
+> +	depends on CMDLINE_BOOL
+> +	default ""
+> +	help
+> +	  Enter arguments here that should be compiled into the kernel
+> +	  image and used at boot time.  If the boot loader provides a
+> +	  command line at boot time, this string is prepended to it to
+> +	  form the full kernel command line, when the system boots.
+> +
+> +	  However, you can use the CONFIG_CMDLINE_OVERRIDE option to
+> +	  change this behavior.
+> +
+> +	  In most cases, the command line (whether built-in or provided
+> +	  by the boot loader) should specify the device for the root
+> +	  file system.
+> +
+> +config CMDLINE_OVERRIDE
+> +	bool "Built-in command line overrides boot loader arguments"
+> +	depends on CMDLINE_BOOL
+> +	help
+> +	  Set this option to 'Y' to have the kernel ignore the boot loader
+> +	  command line, and use ONLY the built-in command line. In this case
+> +	  append and prepend strings are concatenated to form the full
+> +	  command line.
+> +
+> +	  This is used to work around broken boot loaders.  This should
+> +	  be set to 'N' under normal conditions.
+> +endif
+> +
+>   endmenu		# General setup
+>   
+>   source "arch/Kconfig"
+> 
+
+Christophe
