@@ -2,66 +2,84 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E5BAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:25:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5DEBC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:31:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8109D64F8E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:25:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8109D64F8E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 4007464F1E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:31:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4007464F1E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrvnY1czgz3dFp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 02:25:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrvwP4k5Vz3dCZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 02:31:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=ZbSTgcxF;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::c32;
+ helo=mail-oo1-xc32.google.com; envelope-from=elver@google.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=ZbSTgcxF; dkim-atps=neutral
+Received: from mail-oo1-xc32.google.com (mail-oo1-xc32.google.com
+ [IPv6:2607:f8b0:4864:20::c32])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Drvn66df3z3cbZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 02:24:55 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Drvmy1RXQzB09ZZ;
- Thu,  4 Mar 2021 16:24:50 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ho3sY1I-wauT; Thu,  4 Mar 2021 16:24:50 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Drvmx5sgGzB09ZW;
- Thu,  4 Mar 2021 16:24:49 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EA2E18B816;
- Thu,  4 Mar 2021 16:24:51 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hRFfu02BTibG; Thu,  4 Mar 2021 16:24:51 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7270C8B812;
- Thu,  4 Mar 2021 16:24:51 +0100 (CET)
-Subject: Re: [PATCH v2] powerpc/32: remove bogus ppc_select syscall
-To: Arnd Bergmann <arnd@arndb.de>
-References: <2daa39fa210d971863a6f9ac7c81849764e7a261.1614862233.git.christophe.leroy@csgroup.eu>
- <CAK8P3a2=qOG1iLhw2fi=r128bRMdfNx4BseXONiS7vrnbVvr6w@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <aca143f6-fcfc-d89f-bb00-26e90257fbf6@csgroup.eu>
-Date: Thu, 4 Mar 2021 16:24:46 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Drvvw081cz3ccF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 02:30:49 +1100 (AEDT)
+Received: by mail-oo1-xc32.google.com with SMTP id l5so6663003ooj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Mar 2021 07:30:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=YsbrBjQ4ejiQFiBXd0K2I2t5lmeYk0KLBpHXPT2nL3g=;
+ b=ZbSTgcxFwVsXX8cacvNImXqBk6nL/JKSCQkK8scwbdaJ7P4GYL5DdRitYj772F3UVb
+ nHY0yD6KlXNqJE+L9Pi7OVrD3aQQIplqSeILnDuA84nAGcWj/AxOngi3I6P1vRiwv+hW
+ idOi6ga0uJkAuYZMCZZgt1W49Wd8gkdaZum+jYs97edYqkMZqdpehf5Hx9yVUsmISKa1
+ NLIoME0vYh8Js3r4lhGvxJkgX2lazM75fPrd0jIvoYaeAqTv2SaEUimY7MOjszdisZ6o
+ zftRIiWcuRRMDCB8Qim3QODe0HfKi/AelrXYsQEIVw7szPOcXJDLEyCsJiR+U14eGnBb
+ IMqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=YsbrBjQ4ejiQFiBXd0K2I2t5lmeYk0KLBpHXPT2nL3g=;
+ b=S0ji4SXLGlAhabYuAOC6fftnFII5uJ69LeVl1j6EiSlBJqJYdxKA6E8/IqZLrWYKLn
+ bHD6RnletZpLRf2F92tVb86nPWC7sY47jYsYeXK7ETtEYJBuDyhdoTZepvsTtMrBy4hb
+ /Ly3TwDe1TTQMBURt3x5libjP9H+hBWAiRDmDVr4ZuHY5a6fzKfL8sHBrBD4SMEUZ724
+ 1IN6EPXkH5hjroXgpdXjGM4eXaCY7iSGI5wFsGwSEAN6Rnk1INmYrpf3nO0CSh6J+Rak
+ xyybvfS3ISZO6a8czDwWkGOr33+ZtvD9Y6MFDcaVy3AiUN/vhs0BASA3POh88nmYdYZo
+ F/OQ==
+X-Gm-Message-State: AOAM530sMGuZg2LZDXg7pvlxHr7hSsQuQm1GOgmGaMhztwmOeB6q2sO/
+ 6TIZEDTQsD4dF6ICHaoWU3hRVpnbJai8zatl59JK3A==
+X-Google-Smtp-Source: ABdhPJxwWfhCLZ/Ry11Sw8qKBy3AkxAR0n0dJiFMrBMUt5ATFagcLEL89wFGXjzG8+FRsArb8luNHCOKKV+KiQWPxL8=
+X-Received: by 2002:a4a:a105:: with SMTP id i5mr3765483ool.54.1614871845744;
+ Thu, 04 Mar 2021 07:30:45 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a2=qOG1iLhw2fi=r128bRMdfNx4BseXONiS7vrnbVvr6w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <e2e8728c4c4553bbac75a64b148e402183699c0c.1614780567.git.christophe.leroy@csgroup.eu>
+ <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
+ <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
+ <YD+o5QkCZN97mH8/@elver.google.com>
+ <20210304145730.GC54534@C02TD0UTHF1T.local>
+In-Reply-To: <20210304145730.GC54534@C02TD0UTHF1T.local>
+From: Marco Elver <elver@google.com>
+Date: Thu, 4 Mar 2021 16:30:34 +0100
+Message-ID: <CANpmjNOSpFbbDaH9hNucXrpzG=HpsoQpk5w-24x8sU_G-6cz0Q@mail.gmail.com>
+Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
+ save_stack_trace() and friends
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,67 +91,242 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, halesh.sadashiv@ap.sony.com
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, broonie@kernel.org,
+ Paul Mackerras <paulus@samba.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, 4 Mar 2021 at 15:57, Mark Rutland <mark.rutland@arm.com> wrote:
+> [adding Mark Brown]
+>
+> On Wed, Mar 03, 2021 at 04:20:43PM +0100, Marco Elver wrote:
+> > On Wed, Mar 03, 2021 at 03:52PM +0100, Christophe Leroy wrote:
+> > > Le 03/03/2021 =C3=AF=C2=BF=C2=BD 15:38, Marco Elver a =C3=AF=C2=BF=C2=
+=BDcrit=C3=AF=C2=BF=C2=BD:
+> > > > On Wed, 3 Mar 2021 at 15:09, Christophe Leroy
+> > > > <christophe.leroy@csgroup.eu> wrote:
+> > > > >
+> > > > > It seems like all other sane architectures, namely x86 and arm64
+> > > > > at least, include the running function as top entry when saving
+> > > > > stack trace.
+> > > > >
+> > > > > Functionnalities like KFENCE expect it.
+> > > > >
+> > > > > Do the same on powerpc, it allows KFENCE to properly identify the=
+ faulting
+> > > > > function as depicted below. Before the patch KFENCE was identifyi=
+ng
+> > > > > finish_task_switch.isra as the faulting function.
+> > > > >
+> > > > > [   14.937370] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > > > [   14.948692] BUG: KFENCE: invalid read in test_invalid_access+0=
+x54/0x108
+> > > > > [   14.948692]
+> > > > > [   14.956814] Invalid read at 0xdf98800a:
+> > > > > [   14.960664]  test_invalid_access+0x54/0x108
+> > > > > [   14.964876]  finish_task_switch.isra.0+0x54/0x23c
+> > > > > [   14.969606]  kunit_try_run_case+0x5c/0xd0
+> > > > > [   14.973658]  kunit_generic_run_threadfn_adapter+0x24/0x30
+> > > > > [   14.979079]  kthread+0x15c/0x174
+> > > > > [   14.982342]  ret_from_kernel_thread+0x14/0x1c
+> > > > > [   14.986731]
+> > > > > [   14.988236] CPU: 0 PID: 111 Comm: kunit_try_catch Tainted: G  =
+  B             5.12.0-rc1-01537-g95f6e2088d7e-dirty #4682
+> > > > > [   14.999795] NIP:  c016ec2c LR: c02f517c CTR: c016ebd8
+> > > > > [   15.004851] REGS: e2449d90 TRAP: 0301   Tainted: G    B       =
+       (5.12.0-rc1-01537-g95f6e2088d7e-dirty)
+> > > > > [   15.015274] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 22000004  XER=
+: 00000000
+> > > > > [   15.022043] DAR: df98800a DSISR: 20000000
+> > > > > [   15.022043] GPR00: c02f517c e2449e50 c1142080 e100dd24 c084b13=
+c 00000008 c084b32b c016ebd8
+> > > > > [   15.022043] GPR08: c0850000 df988000 c0d10000 e2449eb0 2200028=
+8
+> > > > > [   15.040581] NIP [c016ec2c] test_invalid_access+0x54/0x108
+> > > > > [   15.046010] LR [c02f517c] kunit_try_run_case+0x5c/0xd0
+> > > > > [   15.051181] Call Trace:
+> > > > > [   15.053637] [e2449e50] [c005a68c] finish_task_switch.isra.0+0x=
+54/0x23c (unreliable)
+> > > > > [   15.061338] [e2449eb0] [c02f517c] kunit_try_run_case+0x5c/0xd0
+> > > > > [   15.067215] [e2449ed0] [c02f648c] kunit_generic_run_threadfn_a=
+dapter+0x24/0x30
+> > > > > [   15.074472] [e2449ef0] [c004e7b0] kthread+0x15c/0x174
+> > > > > [   15.079571] [e2449f30] [c001317c] ret_from_kernel_thread+0x14/=
+0x1c
+> > > > > [   15.085798] Instruction dump:
+> > > > > [   15.088784] 8129d608 38e7ebd8 81020280 911f004c 39000000 995f0=
+024 907f0028 90ff001c
+> > > > > [   15.096613] 3949000a 915f0020 3d40c0d1 3d00c085 <8929000a> 390=
+8adb0 812a4b98 3d40c02f
+> > > > > [   15.104612] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > > >
+> > > > > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> > > >
+> > > > Acked-by: Marco Elver <elver@google.com>
+> > > >
+> > > > Thank you, I think this looks like the right solution. Just a quest=
+ion below:
+> > > >
+> > > ...
+> > >
+> > > > > @@ -59,23 +70,26 @@ void save_stack_trace(struct stack_trace *tra=
+ce)
+> > > > >
+> > > > >          sp =3D current_stack_frame();
+> > > > >
+> > > > > -       save_context_stack(trace, sp, current, 1);
+> > > > > +       save_context_stack(trace, sp, (unsigned long)save_stack_t=
+race, current, 1);
+> > > >
+> > > > This causes ip =3D=3D save_stack_trace and also below for
+> > > > save_stack_trace_tsk. Does this mean save_stack_trace() is included=
+ in
+> > > > the trace? Looking at kernel/stacktrace.c, I think the library want=
+s
+> > > > to exclude itself from the trace, as it does '.skip =3D skipnr + 1'=
+ (and
+> > > > '.skip   =3D skipnr + (current =3D=3D tsk)' for the _tsk variant).
+> > > >
+> > > > If the arch-helper here is included, should this use _RET_IP_ inste=
+ad?
+> > > >
+> > >
+> > > Don't really know, I was inspired by arm64 which has:
+> > >
+> > > void arch_stack_walk(stack_trace_consume_fn consume_entry, void *cook=
+ie,
+> > >                  struct task_struct *task, struct pt_regs *regs)
+> > > {
+> > >     struct stackframe frame;
+> > >
+> > >     if (regs)
+> > >             start_backtrace(&frame, regs->regs[29], regs->pc);
+> > >     else if (task =3D=3D current)
+> > >             start_backtrace(&frame,
+> > >                             (unsigned long)__builtin_frame_address(0)=
+,
+> > >                             (unsigned long)arch_stack_walk);
+> > >     else
+> > >             start_backtrace(&frame, thread_saved_fp(task),
+> > >                             thread_saved_pc(task));
+> > >
+> > >     walk_stackframe(task, &frame, consume_entry, cookie);
+> > > }
+> > >
+> > > But looking at x86 you may be right, so what should be done really ?
+> >
+> > x86:
+> >
+> > [    2.843292] calling stack_trace_save:
+> > [    2.843705]  test_func+0x6c/0x118
+> > [    2.844184]  do_one_initcall+0x58/0x270
+> > [    2.844618]  kernel_init_freeable+0x1da/0x23a
+> > [    2.845110]  kernel_init+0xc/0x166
+> > [    2.845494]  ret_from_fork+0x22/0x30
+> >
+> > [    2.867525] calling stack_trace_save_tsk:
+> > [    2.868017]  test_func+0xa9/0x118
+> > [    2.868530]  do_one_initcall+0x58/0x270
+> > [    2.869003]  kernel_init_freeable+0x1da/0x23a
+> > [    2.869535]  kernel_init+0xc/0x166
+> > [    2.869957]  ret_from_fork+0x22/0x30
+> >
+> > arm64:
+> >
+> > [    3.786911] calling stack_trace_save:
+> > [    3.787147]  stack_trace_save+0x50/0x78
+> > [    3.787443]  test_func+0x84/0x13c
+> > [    3.787738]  do_one_initcall+0x5c/0x310
+> > [    3.788099]  kernel_init_freeable+0x214/0x294
+> > [    3.788363]  kernel_init+0x18/0x164
+> > [    3.788585]  ret_from_fork+0x10/0x30
+> >
+> > [    3.803615] calling stack_trace_save_tsk:
+> > [    3.804266]  stack_trace_save_tsk+0x9c/0x100
+> > [    3.804541]  test_func+0xc4/0x13c
+> > [    3.804803]  do_one_initcall+0x5c/0x310
+> > [    3.805031]  kernel_init_freeable+0x214/0x294
+> > [    3.805284]  kernel_init+0x18/0x164
+> > [    3.805505]  ret_from_fork+0x10/0x30
+> >
+> > +Cc arm64 folks.
+> >
+> > So I think the arm64 version also has a bug, because I think a user of
+> > <linux/stacktrace.h> really doesn't care about the library function
+> > itself. And from reading kernel/stacktrace.c I think it wants to exclud=
+e
+> > itself entirely.
+> >
+> > It's a shame that <linux/stacktrace.h> isn't better documented, but I'm
+> > pretty sure that including the library functions in the trace is not
+> > useful.
+>
+> I agree this behaviour isn't desireable, and that the lack of
+> documentation is unfortunate.
+>
+> It looks like GCC is happy to give us the function-entry-time FP if we us=
+e
+> __builtin_frame_address(1), and assuming clang is similarly happy we can =
+do:
+>
+> | diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktr=
+ace.c
+> | index ad20981dfda4..5dfbf915eb7f 100644
+> | --- a/arch/arm64/kernel/stacktrace.c
+> | +++ b/arch/arm64/kernel/stacktrace.c
+> | @@ -203,8 +203,8 @@ void arch_stack_walk(stack_trace_consume_fn consume=
+_entry, void *cookie,
+> |                 start_backtrace(&frame, regs->regs[29], regs->pc);
+> |         else if (task =3D=3D current)
+> |                 start_backtrace(&frame,
+> | -                               (unsigned long)__builtin_frame_address(=
+0),
+> | -                               (unsigned long)arch_stack_walk);
+> | +                               (unsigned long)__builtin_frame_address(=
+1),
+> | +                               (unsigned long)__builtin_return_address=
+(0));
+> |         else
+> |                 start_backtrace(&frame, thread_saved_fp(task),
+> |                                 thread_saved_pc(task));
+>
+> ... such that arch_stack_walk() will try to avoid including itself in a
+> trace, and so the existing skipping should (w/ caveats below) skip
+> stack_trace_save() or stack_trace_save_tsk().
 
+Thank you! Yes, that works.
 
-Le 04/03/2021 à 16:17, Arnd Bergmann a écrit :
-> On Thu, Mar 4, 2021 at 1:51 PM Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
->>
->> From: Arnd Bergmann <arnd@arndb.de>
->>
->> The ppc_select function was introduced in linux-2.3.48 in order to support
->> code confusing the legacy select() calling convention with the standard one.
->> Even 24 years ago, all correctly built code should not have done this and
->> could have easily been phased out. Nothing that was compiled later should
->> actually try to use the old_select interface, and it would have been broken
->> already on all ppc64 kernels with the syscall emulation layer.
->>
->> This patch brings the 32 bit compat ABI and the native 32 bit ABI for
->> powerpc into a consistent state, by removing support for both the
->> old_select system call number and the handler for it.
->>
->> The bug report triggering this came from
->> Halesh Sadashiiv <halesh.sadashiv@ap.sony.com>, who discovered that the
->> 32 bit implementation of ppc_select would in case of a negative number
->> of file descriptors incorrectly return -EFAULT instead of -EINVAL.
->> There seems to be no way to fix this problem in a way that would
->> keep broken pre-1997 binaries running.
->>
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->> Cc: Halesh Sadashiiv <halesh.sadashiv@ap.sony.com>
->> [chleroy: Rebased and updated the number of years elapsed in the commit message]
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->> First version was in 2008, at that time it was rejected, see
->> http://patchwork.ozlabs.org/project/linuxppc-dev/patch/200809240839.14902.arnd@arndb.de/
-> 
-> The patch from 2008 did two things:
-> 
-> - it removed the ppc32 specific 'select' syscall at #82
-> - it fixed the generic '_newselect' syscall at #142
-> 
-> Back then, the decision was to only address the second issue, which
-> got merged in commit dad2f2fb0fc7 ("powerpc: Fix wrong error code from
-> ppc32 select syscall").
-> 
-> It is probably ok to remove the old select system call now, but
-> my changelog text no longer makes sense, as the patch has nothing
-> to do with the bug that was reported back then.
-> 
+> If that works for you, I can spin that as a patch, though we'll need to
+> check that doesn't introduce a new fencepost error elsewhere.
+>
+> The bigger problem here is that skipping is dodgy to begin with, and
+> this is still liable to break in some cases. One big concern is that
+> (especially with LTO) we cannot guarantee the compiler will not inline
+> or outline functions, causing the skipp value to be too large or too
+> small. That's liable to happen to callers, and in theory (though
+> unlikely in practice), portions of arch_stack_walk() or
+> stack_trace_save() could get outlined too.
+>
+> Unless we can get some strong guarantees from compiler folk such that we
+> can guarantee a specific function acts boundary for unwinding (and
+> doesn't itself get split, etc), the only reliable way I can think to
+> solve this requires an assembly trampoline. Whatever we do is liable to
+> need some invasive rework.
 
-I understood that the original reported bug was that calling that version of select() with a 
-negative value as first parametre would lead to a -EFAULT instead of -EINVAL. That's exactly the 
-case here, if you set n = -1 you get into this (unsigned long)n > 4096 then the buffer is at 
-0xffffffff and access_ok() won't grand access to it so the return value will be -EFAULT instead of 
--EINVAL.
+Will LTO and friends respect 'noinline'? One thing I also noticed is
+that tail calls would also cause the stack trace to appear somewhat
+incomplete (for some of my tests I've disabled tail call
+optimizations). Is there a way to also mark a function
+non-tail-callable? But I'm also not sure if with all that we'd be
+guaranteed the code we want, even though in practice it might.
 
-Am I missing something ?
-
-Christophe
+Thanks,
+-- Marco
