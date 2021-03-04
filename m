@@ -5,48 +5,46 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3E9EC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 06:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BCD5C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 06:56:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3775664F04
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 06:45:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3775664F04
+	by mail.kernel.org (Postfix) with ESMTPS id D7AC564EC4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 06:56:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7AC564EC4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrhFl6gv7z3cPh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 17:45:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DrhVF40Mmz30Lx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 17:56:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
  helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 607 seconds by postgrey-1.36 at boromir;
- Thu, 04 Mar 2021 17:45:13 AEDT
 Received: from fornost.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DrhFP1Gh8z30LS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 17:45:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DrhTv1nbCz30HQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 17:56:03 +1100 (AEDT)
 Received: from gwarestrin.arnor.me.apana.org.au ([192.168.103.7])
  by fornost.hmeau.com with smtp (Exim 4.92 #5 (Debian))
- id 1lHhjK-0007gu-UT; Thu, 04 Mar 2021 17:45:04 +1100
+ id 1lHhZH-0007P6-Jj; Thu, 04 Mar 2021 17:34:40 +1100
 Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
- Thu, 04 Mar 2021 17:45:02 +1100
-Date: Thu, 4 Mar 2021 17:45:02 +1100
+ Thu, 04 Mar 2021 17:34:39 +1100
+Date: Thu, 4 Mar 2021 17:34:39 +1100
 From: Herbert Xu <herbert@gondor.apana.org.au>
 To: Yang Li <yang.lee@linux.alibaba.com>
-Subject: Re: [PATCH v2] crypto/nx: add missing call to of_node_put()
-Message-ID: <20210304064502.GM15863@gondor.apana.org.au>
-References: <1614302586-15095-1-git-send-email-yang.lee@linux.alibaba.com>
+Subject: Re: [PATCH] crypto: sha: remove unneeded semicolon
+Message-ID: <20210304063439.GA15863@gondor.apana.org.au>
+References: <1612775438-126031-1-git-send-email-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1614302586-15095-1-git-send-email-yang.lee@linux.alibaba.com>
+In-Reply-To: <1612775438-126031-1-git-send-email-yang.lee@linux.alibaba.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,24 +64,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 26, 2021 at 09:23:06AM +0800, Yang Li wrote:
-> In one of the error paths of the for_each_child_of_node() loop,
-> add missing call to of_node_put().
-> 
-> Fix the following coccicheck warning:
-> ./drivers/crypto/nx/nx-common-powernv.c:927:1-23: WARNING: Function
-> "for_each_child_of_node" should have of_node_put() before return around
-> line 936.
+On Mon, Feb 08, 2021 at 05:10:38PM +0800, Yang Li wrote:
+> Eliminate the following coccicheck warning:
+> ./arch/powerpc/crypto/sha1-spe-glue.c:110:2-3: Unneeded semicolon
 > 
 > Reported-by: Abaci Robot <abaci@linux.alibaba.com>
 > Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 > ---
-> 
-> Changes in v2:
-> -add braces for if
-> 
->  drivers/crypto/nx/nx-common-powernv.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  arch/powerpc/crypto/sha1-spe-glue.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Patch applied.  Thanks.
 -- 
