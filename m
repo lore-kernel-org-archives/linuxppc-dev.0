@@ -2,68 +2,65 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3C92C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 14:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30F9BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 14:35:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC21E64F36
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 14:33:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC21E64F36
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4F19B64F55
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 14:35:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F19B64F55
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrtdY38qfz3d56
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 01:33:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SUFTMJXC;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Drth73WY7z3d5S
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 01:35:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=SUFTMJXC; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Drtd53VW9z30NZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 01:32:57 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id D571764F36
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 14:32:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614868375;
- bh=tXeyflvi5gXEFLfWrEhyPYpQ9H6G+alEokJ1yiiFZAs=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=SUFTMJXCghhXPTfTU7DVatK7XQYGDso/6+901ptTAr+6UkFzvVY3LMy1bIBwg4Q82
- isDF6GXrYzW1tsDNFKNmrnfQGi9Pq81iowaq3SFhnU9RUHy15KF384r3EJ495u9xU3
- NCq881YQgUwtaNX3jPN2E0VR267kElrANWeJxmprwDTzSzDN1p8sT8jooPzXarYvDy
- mtBUdM42PWgJcC5evM+Re9wAYHKdY7ascu2Ek0ewIpvA8DtzgZz7SB9ab2syZ5KtWl
- VoNwX5CEdlZXGVJHEGyKYrWFY4mx9bYABQrAxfY4zQG8EPOnKH7l5Y26oldHmtbElN
- VJRGrvRWooQLg==
-Received: by mail-ed1-f44.google.com with SMTP id p1so30651639edy.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Mar 2021 06:32:54 -0800 (PST)
-X-Gm-Message-State: AOAM533+6PlOy8oVhGy4LEeiL5wH2DCAxCqzk+vm5lLd1U+TZaZ7+Z9a
- nKyZ0Og/RjweP8N7d8Uh9rFiqabjQWrC4SMgTA==
-X-Google-Smtp-Source: ABdhPJzabdQJ8ncT4i9Jv5kLvVwXJ4FdjdlgX7bAUmE7phJTm1J2xtfPKQoM5FboSII3Jp66Lb89kLcDHwPLvNaueFU=
-X-Received: by 2002:aa7:c403:: with SMTP id j3mr4615939edq.137.1614868373460; 
- Thu, 04 Mar 2021 06:32:53 -0800 (PST)
-MIME-Version: 1.0
-References: <20210304044803.812204-2-danielwa@cisco.com>
-In-Reply-To: <20210304044803.812204-2-danielwa@cisco.com>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 4 Mar 2021 08:32:37 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqKnAMp0bkXzU-B8b8xx5fPC1R1NdOBn9Kpk=SONJL5paQ@mail.gmail.com>
-Message-ID: <CAL_JsqKnAMp0bkXzU-B8b8xx5fPC1R1NdOBn9Kpk=SONJL5paQ@mail.gmail.com>
-Subject: Re: [PATCH 2/5] CMDLINE: drivers: of: ifdef out cmdline section
-To: Daniel Walker <danielwa@cisco.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Drtgm5f6qz30NZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 01:35:16 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Drtgg275KzB09ZV;
+ Thu,  4 Mar 2021 15:35:11 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id I5IG9Wie4N1y; Thu,  4 Mar 2021 15:35:11 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Drtgf6dfgzB09ZR;
+ Thu,  4 Mar 2021 15:35:10 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DD3BB8B813;
+ Thu,  4 Mar 2021 15:35:12 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id VpKHhIzPqhYW; Thu,  4 Mar 2021 15:35:12 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3EC018B80A;
+ Thu,  4 Mar 2021 15:35:12 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 1E721674E6; Thu,  4 Mar 2021 14:35:12 +0000 (UTC)
+Message-Id: <678576e515573333c324fbc88cbc146e812dd9c8.1614868445.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <8dfe1bd2abde26337c1d8c1ad0acfcc82185e0d5.1614868445.git.christophe.leroy@csgroup.eu>
+References: <8dfe1bd2abde26337c1d8c1ad0acfcc82185e0d5.1614868445.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 3/4] powerpc/64s: Allow double call of
+ kernel_[un]map_linear_page()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>
+Date: Thu,  4 Mar 2021 14:35:12 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,82 +72,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Ruslan Ruslichenko <rruslich@cisco.com>,
- Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
- Frank Rowand <frowand.list@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, X86 ML <x86@kernel.org>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- xe-linux-external@cisco.com, Andrew Morton <akpm@linux-foundation.org>,
- Will Deacon <will@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 3, 2021 at 10:48 PM Daniel Walker <danielwa@cisco.com> wrote:
->
-> It looks like there's some seepage of cmdline stuff into
-> the generic device tree code. This conflicts with the
-> generic cmdline implementation so I remove it in the case
-> when that's enabled.
->
-> Cc: xe-linux-external@cisco.com
-> Signed-off-by: Ruslan Ruslichenko <rruslich@cisco.com>
-> Signed-off-by: Daniel Walker <danielwa@cisco.com>
-> ---
->  drivers/of/fdt.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index feb0f2d67fc5..cfe4f8d3c9f5 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -25,6 +25,7 @@
->  #include <linux/serial_core.h>
->  #include <linux/sysfs.h>
->  #include <linux/random.h>
-> +#include <linux/cmdline.h>
->
->  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
->  #include <asm/page.h>
-> @@ -1048,8 +1049,18 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
->
->         early_init_dt_check_for_initrd(node);
->
-> +#ifdef CONFIG_GENERIC_CMDLINE
+If the page is already mapped resp. already unmapped, bail out.
 
-What I like about Christophe's version is it removes the old DT
-implementation. Who's going to convert the rest of the DT based
-arches? That's arm, arm64, hexagon, microblaze, nios2, openrisc,
-riscv, sh, and xtensa. Either separate the common code from the config
-like Christophe's version or these all need converting. Though it's
-fine to hash out patch 1 with a couple of arches first.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: New
+---
+ arch/powerpc/mm/book3s64/hash_utils.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
->         /* Retrieve command line */
->         p = of_get_flat_dt_prop(node, "bootargs", &l);
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index f1b5a5f1d3a9..cb09a49be798 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -1944,6 +1944,9 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
+ 	if (!vsid)
+ 		return;
+ 
++	if (linear_map_hash_slots[lmi] & 0x80)
++		return;
++
+ 	ret = hpte_insert_repeating(hash, vpn, __pa(vaddr), mode,
+ 				    HPTE_V_BOLTED,
+ 				    mmu_linear_psize, mmu_kernel_ssize);
+@@ -1963,7 +1966,10 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
+ 
+ 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
+ 	spin_lock(&linear_map_hash_lock);
+-	BUG_ON(!(linear_map_hash_slots[lmi] & 0x80));
++	if (!(linear_map_hash_slots[lmi] & 0x80)) {
++		spin_unlock(&linear_map_hash_lock);
++		return;
++	}
+ 	hidx = linear_map_hash_slots[lmi] & 0x7f;
+ 	linear_map_hash_slots[lmi] = 0;
+ 	spin_unlock(&linear_map_hash_lock);
+-- 
+2.25.0
 
-This needs to be outside the ifdef.
-
-> +
-> +       /*
-> +        * The builtin command line will be added here, or it can override
-> +        * with the DT bootargs.
-> +        */
-> +       cmdline_add_builtin(data,
-> +                           ((p != NULL && l > 0) ? p : NULL), /* This is sanity checking */
-> +                           COMMAND_LINE_SIZE);
-> +#else
->         if (p != NULL && l > 0)
->                 strlcpy(data, p, min(l, COMMAND_LINE_SIZE));
->
-> @@ -1070,6 +1081,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
->                 strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
->  #endif
->  #endif /* CONFIG_CMDLINE */
-> +#endif /* CONFIG_GENERIC_CMDLINE */
->
->         pr_debug("Command line is: %s\n", (char *)data);
->
-> --
-> 2.25.1
->
