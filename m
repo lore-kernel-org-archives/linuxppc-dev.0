@@ -2,71 +2,76 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C12FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 20:05:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 848BCC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 20:49:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7551964F65
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 20:05:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7551964F65
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 920F364EEC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 20:49:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 920F364EEC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ds20q6Q6hz3dCy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 07:05:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ds2z56W01z3dCg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 07:49:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z/ZCNH1i;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=gzARH/X8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Z/ZCNH1i; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ds20K2Hhzz3cP2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 07:05:04 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 70E2A64F73
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Mar 2021 20:05:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614888300;
- bh=RUOa+jhAmK+h73T8EOU9DsvhCI2E8Dn8FH/Ia3vJc3g=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Z/ZCNH1ifsYXMOqxSS+vwP879iLQBcDXyn1H/7QusIM5zsOkA7artXq5whqVPK460
- 7A8gdRsO3HwpoqhfpDCn9iGRqzvTMilw5fXHzT0b3HmP24fJAfw30dabM/sqJQvBs1
- fFLMfhAu/Y34199XaYjzJcW8aJAwpR2Br+UMtU0KVQC0ZEQFbZXvMaUivSNKE0uO2p
- VjkgHAjNRqucjOwH4H1+d5MljrZ1OLodWXPUpx7JFxjcmivEpct/YbbN5rw83bDZPQ
- gJSXGku2c6Yn+AWwWafPqIIrHgnsrKILLqyJIqjZShQRaHDng7AjPyJpHk7RJOku0+
- WT8qKoRn+iwKg==
-Received: by mail-ed1-f41.google.com with SMTP id dm26so13023467edb.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Mar 2021 12:05:00 -0800 (PST)
-X-Gm-Message-State: AOAM532UG60dzA/x+TIXOwG6lyQgEWr6M+E7h5MKViK7Cpm6Q5wjCE8k
- QzQVxjDzxHUmnJvbkzicwl9mofEq7xz5thuHnw==
-X-Google-Smtp-Source: ABdhPJyT+WJus7T3jwrxrdTRd/Zm7drWY1Nq415cI9il3xyb1hXROafInBX/zusYrRdtrHQ0uWkFNttElXzFgzzJpBM=
-X-Received: by 2002:aa7:d3d8:: with SMTP id o24mr6306044edr.165.1614888299086; 
- Thu, 04 Mar 2021 12:04:59 -0800 (PST)
+ smtp.mailfrom=cisco.com (client-ip=173.37.86.78; helo=rcdn-iport-7.cisco.com;
+ envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
+ header.s=iport header.b=gzARH/X8; dkim-atps=neutral
+Received: from rcdn-iport-7.cisco.com (rcdn-iport-7.cisco.com [173.37.86.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ds2yb3pfwz3cb5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 07:48:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=cisco.com; i=@cisco.com; l=2263; q=dns/txt; s=iport;
+ t=1614890919; x=1616100519;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=GjLbEy4mzc1GE+5Hnhb3oU35QJXDVH6Er8mIRNVDXJg=;
+ b=gzARH/X8XzGi+dqXPnprPCKcW5Hwb/6c7Sq8/oq9+SNQpyvW8A54yhtn
+ 4Z9JZIblgjei4+7wJVztyEefSQBYi6MzPlGgPupRYNVrIXHAVF4/c8RuD
+ P8UHPwdKDtKEn/8miCU0fWkh8XEnyc7BX8dGSXjXjJWgVxGHyzgV/Qk+F w=;
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0DHAABGRkFg/4wNJK1iHAEBAQEBAQc?=
+ =?us-ascii?q?BARIBAQQEAQFAgT4EAQELAYIqgUwBOTGWHY96Fow7CwEBAQ0BATQEAQGETQK?=
+ =?us-ascii?q?BegIlNwYOAgMBAQsBAQUBAQECAQYEcYVuhkUBBTo/EAsYLjwbBhOFeK4YdIE?=
+ =?us-ascii?q?0iR+BRBQOgRYBjUImHIFJQoQrPoQVhh4EgkAHgQ57gS0Sk3sBii2be4MGgR+?=
+ =?us-ascii?q?acjEQo0a2cgIEBgUCFoFqJIFXMxoIGxWDJFAZDY4qF45HIAMvOAIGCgEBAwm?=
+ =?us-ascii?q?JT4JEAQE?=
+X-IronPort-AV: E=Sophos;i="5.81,223,1610409600"; d="scan'208";a="855671246"
+Received: from alln-core-7.cisco.com ([173.36.13.140])
+ by rcdn-iport-7.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
+ 04 Mar 2021 20:48:31 +0000
+Received: from zorba ([10.24.1.42])
+ by alln-core-7.cisco.com (8.15.2/8.15.2) with ESMTPS id 124KmTRL023920
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Thu, 4 Mar 2021 20:48:30 GMT
+Date: Thu, 4 Mar 2021 12:48:23 -0800
+From: Daniel Walker <danielwa@cisco.com>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 2/5] CMDLINE: drivers: of: ifdef out cmdline section
+Message-ID: <20210304204823.GI109100@zorba>
+References: <20210304044803.812204-2-danielwa@cisco.com>
+ <CAL_JsqKnAMp0bkXzU-B8b8xx5fPC1R1NdOBn9Kpk=SONJL5paQ@mail.gmail.com>
 MIME-Version: 1.0
-References: <1612693435-31418-1-git-send-email-shengjiu.wang@nxp.com>
- <1612693435-31418-8-git-send-email-shengjiu.wang@nxp.com>
- <20210210221704.GA2894134@robh.at.kernel.org>
- <CAA+D8ANOv91jr4381Acz1B2mZ6=Mx2J_2CMTGXmPKztv7bMjPA@mail.gmail.com>
-In-Reply-To: <CAA+D8ANOv91jr4381Acz1B2mZ6=Mx2J_2CMTGXmPKztv7bMjPA@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 4 Mar 2021 14:04:33 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqK1uc82hfdE4yj0ye-D6vygiqWkDVW96NOb-8kEFVqHMg@mail.gmail.com>
-Message-ID: <CAL_JsqK1uc82hfdE4yj0ye-D6vygiqWkDVW96NOb-8kEFVqHMg@mail.gmail.com>
-Subject: Re: [PATCH v2 7/7] ASoC: dt-bindings: imx-rpmsg: Add binding doc for
- rpmsg machine driver
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqKnAMp0bkXzU-B8b8xx5fPC1R1NdOBn9Kpk=SONJL5paQ@mail.gmail.com>
+X-Auto-Response-Suppress: DR, OOF, AutoReply
+X-Outbound-SMTP-Client: 10.24.1.42, [10.24.1.42]
+X-Outbound-Node: alln-core-7.cisco.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,36 +83,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <festevam@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, Ruslan Ruslichenko <rruslich@cisco.com>,
+ Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+ Frank Rowand <frowand.list@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, X86 ML <x86@kernel.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ xe-linux-external@cisco.com, Andrew Morton <akpm@linux-foundation.org>,
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 18, 2021 at 1:23 AM Shengjiu Wang <shengjiu.wang@gmail.com> wrote:
->
-> On Thu, Feb 11, 2021 at 6:18 AM Rob Herring <robh@kernel.org> wrote:
+On Thu, Mar 04, 2021 at 08:32:37AM -0600, Rob Herring wrote:
+> On Wed, Mar 3, 2021 at 10:48 PM Daniel Walker <danielwa@cisco.com> wrote:
 > >
-> > On Sun, Feb 07, 2021 at 06:23:55PM +0800, Shengjiu Wang wrote:
-> > > Imx-rpmsg is a new added machine driver for supporting audio on Cortex-M
-> > > core. The Cortex-M core will control the audio interface, DMA and audio
-> > > codec, setup the pipeline, the audio driver on Cortex-A core side is just
-> > > to communitcate with M core, it is a virtual sound card and don't touch
-> > > the hardware.
+> > It looks like there's some seepage of cmdline stuff into
+> > the generic device tree code. This conflicts with the
+> > generic cmdline implementation so I remove it in the case
+> > when that's enabled.
 > >
-> > I don't understand why there are 2 nodes for this other than you happen
-> > to want to split this into 2 Linux drivers. It's 1 h/w thing.
->
-> This one is for the sound card machine driver.  Another one is
-> for the sound card cpu dai driver. so there are 2 nodes.
+> > Cc: xe-linux-external@cisco.com
+> > Signed-off-by: Ruslan Ruslichenko <rruslich@cisco.com>
+> > Signed-off-by: Daniel Walker <danielwa@cisco.com>
+> > ---
+> >  drivers/of/fdt.c | 12 ++++++++++++
+> >  1 file changed, 12 insertions(+)
+> >
+> > diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> > index feb0f2d67fc5..cfe4f8d3c9f5 100644
+> > --- a/drivers/of/fdt.c
+> > +++ b/drivers/of/fdt.c
+> > @@ -25,6 +25,7 @@
+> >  #include <linux/serial_core.h>
+> >  #include <linux/sysfs.h>
+> >  #include <linux/random.h>
+> > +#include <linux/cmdline.h>
+> >
+> >  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+> >  #include <asm/page.h>
+> > @@ -1048,8 +1049,18 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+> >
+> >         early_init_dt_check_for_initrd(node);
+> >
+> > +#ifdef CONFIG_GENERIC_CMDLINE
+> 
+> What I like about Christophe's version is it removes the old DT
+> implementation. Who's going to convert the rest of the DT based
+> arches? That's arm, arm64, hexagon, microblaze, nios2, openrisc,
+> riscv, sh, and xtensa. Either separate the common code from the config
+> like Christophe's version or these all need converting. Though it's
+> fine to hash out patch 1 with a couple of arches first.
+ 
+I'm limited in what I can test, so I can't know for sure that I have something
+which works on those architectures. Even powerpc 64 is part of this series but
+I can't really test it at this time. Also Cisco's needs out strip the
+implementation of extend or override.
 
-You are explaining this to me in terms of drivers. Explain it in terms
-of h/w blocks.
+I have un-tested conversions for arm32, arm64, c6x, microblaze, nios2, and
+openrisc. These could go into -next and we can see who complains. The
+implementation on these architectures isn't all uniform.
 
-Rob
+> >         /* Retrieve command line */
+> >         p = of_get_flat_dt_prop(node, "bootargs", &l);
+> 
+> This needs to be outside the ifdef.
+
+Ok ..
+
+Daniel
