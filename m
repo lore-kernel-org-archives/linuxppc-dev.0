@@ -2,55 +2,52 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C285C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:49:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 282F6C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 16:59:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6179E64F02
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:49:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6179E64F02
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4C56164F59
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 16:59:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C56164F59
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DrwJy0gjzz3dL1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 02:49:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Drxtf3V3sz3d36
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 03:59:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DrwJc56mRz3cmX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 02:48:47 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 124FjbCr026969;
- Thu, 4 Mar 2021 09:45:37 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 124FjacO026968;
- Thu, 4 Mar 2021 09:45:36 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Thu, 4 Mar 2021 09:45:35 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/3] powerpc: sstep: Fix load and update emulation
-Message-ID: <20210304154535.GS29191@gate.crashing.org>
-References: <20210203063841.431063-1-sandipan@linux.ibm.com>
- <20210203094909.GD210@DESKTOP-TDPLP67.localdomain>
- <20210203211732.GD30983@gate.crashing.org>
- <20210204082753.GI210@DESKTOP-TDPLP67.localdomain>
- <20210302023732.GH29191@gate.crashing.org>
- <20210303163127.GE1913@DESKTOP-TDPLP67.localdomain>
-Mime-Version: 1.0
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DrxtJ5mPQz3clq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 03:59:34 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E108031B;
+ Thu,  4 Mar 2021 08:59:30 -0800 (PST)
+Received: from C02TD0UTHF1T.local (unknown [10.57.53.210])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DA6FF3F7D7;
+ Thu,  4 Mar 2021 08:59:28 -0800 (PST)
+Date: Thu, 4 Mar 2021 16:59:23 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Marco Elver <elver@google.com>
+Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
+ save_stack_trace() and friends
+Message-ID: <20210304165923.GA60457@C02TD0UTHF1T.local>
+References: <e2e8728c4c4553bbac75a64b148e402183699c0c.1614780567.git.christophe.leroy@csgroup.eu>
+ <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
+ <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
+ <YD+o5QkCZN97mH8/@elver.google.com>
+ <20210304145730.GC54534@C02TD0UTHF1T.local>
+ <CANpmjNOSpFbbDaH9hNucXrpzG=HpsoQpk5w-24x8sU_G-6cz0Q@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210303163127.GE1913@DESKTOP-TDPLP67.localdomain>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <CANpmjNOSpFbbDaH9hNucXrpzG=HpsoQpk5w-24x8sU_G-6cz0Q@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,50 +59,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, ananth@linux.ibm.com, jniethe5@gmail.com,
- paulus@samba.org, Sandipan Das <sandipan@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, dja@axtens.net
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, broonie@kernel.org,
+ Paul Mackerras <paulus@samba.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 03, 2021 at 10:01:27PM +0530, Naveen N. Rao wrote:
-> On 2021/03/01 08:37PM, Segher Boessenkool wrote:
-> > > And, r6 always ends up with 0xaea. It changes with the value I put into 
-> > > r6 though.
-> > 
-> > That is exactly the behaviour specified for p8.  0aaa+0040=0aea.
-> > 
-> > > Granted, this is all up in the air, but it does look like there is more 
-> > > going on and the value isn't the EA or the value at the address.
-> > 
-> > That *is* the EA.  The EA is the address the insn does the access at.
+On Thu, Mar 04, 2021 at 04:30:34PM +0100, Marco Elver wrote:
+> On Thu, 4 Mar 2021 at 15:57, Mark Rutland <mark.rutland@arm.com> wrote:
+> > [adding Mark Brown]
+> >
+> > The bigger problem here is that skipping is dodgy to begin with, and
+> > this is still liable to break in some cases. One big concern is that
+> > (especially with LTO) we cannot guarantee the compiler will not inline
+> > or outline functions, causing the skipp value to be too large or too
+> > small. That's liable to happen to callers, and in theory (though
+> > unlikely in practice), portions of arch_stack_walk() or
+> > stack_trace_save() could get outlined too.
+> >
+> > Unless we can get some strong guarantees from compiler folk such that we
+> > can guarantee a specific function acts boundary for unwinding (and
+> > doesn't itself get split, etc), the only reliable way I can think to
+> > solve this requires an assembly trampoline. Whatever we do is liable to
+> > need some invasive rework.
 > 
-> I'm probably missing something here. 0xaaa is the value I stored at an 
-> offset of 64 bytes from the stack pointer (r1 is copied into r6). In the 
-> ldu instruction above, the EA is 64(r6), which should translate to 
-> r1+64.  The data returned by the load would be 0xaaa, which should be 
-> discarded per the description you provided above. So, I would expect to 
-> see a 0xc0.. address in r6.
+> Will LTO and friends respect 'noinline'?
 
-Yes, I misread your code it seems.
+I hope so (and suspect we'd have more problems otherwise), but I don't
+know whether they actually so.
 
-> In fact, this looks to be the behavior documented for P9:
-> 
-> > > Power9 does:
-> > >
-> > >   Load with Update Instructions (RA = 0)
-> > >     EA is placed into R0.
-> > >   Load with Update Instructions (RA = RT)
-> > >     The storage operand addressed by EA is accessed. The 
-> > >     displacement
-> > >     field is added to the data returned by the load and placed into 
-> > >     RT.
+I suspect even with 'noinline' the compiler is permitted to outline
+portions of a function if it wanted to (and IIUC it could still make
+specialized copies in the absence of 'noclone').
 
-Yup.  So on what cpu did you test?
+> One thing I also noticed is that tail calls would also cause the stack
+> trace to appear somewhat incomplete (for some of my tests I've
+> disabled tail call optimizations).
 
-Either way, the kernel should not emulate any particular cpu here, I'd
-say, esp. since recent cpus do different things for this invalid form.
+I assume you mean for a chain A->B->C where B tail-calls C, you get a
+trace A->C? ... or is A going missing too?
 
+> Is there a way to also mark a function non-tail-callable?
 
-Segher
+I think this can be bodged using __attribute__((optimize("$OPTIONS")))
+on a caller to inhibit TCO (though IIRC GCC doesn't reliably support
+function-local optimization options), but I don't expect there's any way
+to mark a callee as not being tail-callable.
+
+Accoding to the GCC documentation, GCC won't TCO noreturn functions, but
+obviously that's not something we can use generally.
+
+https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
+
+> But I'm also not sure if with all that we'd be guaranteed the code we
+> want, even though in practice it might.
+
+True! I'd just like to be on the least dodgy ground we can be.
+
+Thanks,
+Mark.
