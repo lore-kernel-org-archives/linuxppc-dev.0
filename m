@@ -2,54 +2,72 @@ Return-Path: <SRS0=6LlZ=IC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6EE1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 880D9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:36:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31FDE64EEE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:33:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31FDE64EEE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B909C60202
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Mar 2021 15:36:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B909C60202
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Drvz43Kz5z3d6g
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 02:33:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Drw2f3Gfgz3dBq
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 02:36:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 460 seconds by postgrey-1.36 at boromir;
- Fri, 05 Mar 2021 02:33:17 AEDT
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Drvyj58y1z30Lw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 02:33:16 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D51141FB;
- Thu,  4 Mar 2021 07:25:34 -0800 (PST)
-Received: from [10.57.48.219] (unknown [10.57.48.219])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2435D3F766;
- Thu,  4 Mar 2021 07:25:32 -0800 (PST)
-Subject: Re: [PATCH 14/17] iommu: remove DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
-To: Christoph Hellwig <hch@lst.de>, Joerg Roedel <joro@8bytes.org>,
- Will Deacon <will@kernel.org>, Li Yang <leoyang.li@nxp.com>
-References: <20210301084257.945454-1-hch@lst.de>
- <20210301084257.945454-15-hch@lst.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <1658805c-ed28-b650-7385-a56fab3383e3@arm.com>
-Date: Thu, 4 Mar 2021 15:25:27 +0000
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.17.24; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+X-Greylist: delayed 310 seconds by postgrey-1.36 at boromir;
+ Fri, 05 Mar 2021 02:36:23 AEDT
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Drw2H1pKpz30Kl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 02:36:21 +1100 (AEDT)
+Received: from mail-ot1-f49.google.com ([209.85.210.49]) by
+ mrelayeu.kundenserver.de (mreue108 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1M5fQq-1lOxk615nm-007GjM for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Mar
+ 2021 16:31:08 +0100
+Received: by mail-ot1-f49.google.com with SMTP id j8so2163771otc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Mar 2021 07:31:07 -0800 (PST)
+X-Gm-Message-State: AOAM532ItmnmC3PSNHibegfpBP83E4FP5M3U80dkZIxq8E9VDJ2Ch08M
+ xWVh42BHDL79hPsBffDbcVaKQU8WkIUhedMarac=
+X-Google-Smtp-Source: ABdhPJzlMu4XFdyVnD9hytIlowXXGFU41H5abzxoBv1GxGV5riUHWJk7l9y4vC3dE0f4RXteXOKokQ94laXC4xEr3Bw=
+X-Received: by 2002:a9d:6b8b:: with SMTP id b11mr3870962otq.210.1614871866158; 
+ Thu, 04 Mar 2021 07:31:06 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20210301084257.945454-15-hch@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+References: <2daa39fa210d971863a6f9ac7c81849764e7a261.1614862233.git.christophe.leroy@csgroup.eu>
+ <CAK8P3a2=qOG1iLhw2fi=r128bRMdfNx4BseXONiS7vrnbVvr6w@mail.gmail.com>
+ <aca143f6-fcfc-d89f-bb00-26e90257fbf6@csgroup.eu>
+In-Reply-To: <aca143f6-fcfc-d89f-bb00-26e90257fbf6@csgroup.eu>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 4 Mar 2021 16:30:49 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a02S+8rr4QCwAWF9bTJEK1Tdi0Py11=PVMTu0vARc9ruw@mail.gmail.com>
+Message-ID: <CAK8P3a02S+8rr4QCwAWF9bTJEK1Tdi0Py11=PVMTu0vARc9ruw@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/32: remove bogus ppc_select syscall
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:+BRgl3XxCSQv1G8r8mGwEPXrrP5sMD/feQYNSWFTfWUDbppksmj
+ N1PIhmMmstSxqvKQQM5sLI2eptjtfbk8meSX06w2DAIWKpMw0ZnOnTVDdr8raQJWK0oC5K8
+ F/wQ5q36KdiMTjbbpMciFJ4uBJw1RlP20OFDrwGrn/DvBQOumhveh79j+dqrSGj3ystK2/h
+ j0rIP29kS3sHWLIeXtgSA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:58IWH4JPyeA=:AtVGC30NiIcmDLDJd/NkBM
+ qukLW4QMrDLYYCjKHlRKFYnljPergE632EQeOiyuL5LTpARUMZg7Olu9t92W1xTPWUY+eUATP
+ x8CofTC0w1LH3u8QF6QN6cVhQ9r7rGncWRs/h1oI9gUFkozYgzPF+TfWVUHrAHcyR8zmh9yy1
+ ExhSWTdDmu7gPWOk5Uk7i+4mDWmrGg6o621vZRbYCzrOvlvSMM+nhWhCND+oBOcLsvJcr0LOE
+ XMZkUJiRKlpxuqOAC1nduSVYQ0CJgjjWxFO6o/ZAugA7DX1Jdt9v/vcdhfjPYB+ORyrEGobQt
+ KK7KtYA+ABx/r7H87SDHkLWZaj8NTSTU+2FrD0H7r682Oxtqs1/3/zf3EkoTgfRni3Q20KNuv
+ oY8CjoDTtEuPza/WgqHiikMjh9m2LnNL01K+ps+v3LBKvVJoqZx6qGs4f0auVCK0mqJCxTDR6
+ +hh3FwcTPZLxT01nW0/EWTyk92DdZF/jnOwZir+9vNPDuQUGnnbJ1fhwVQax5K3s3axitqzCt
+ hdKeRW/gEZ4o1Vzg7RP3m7Ez5zLrns/9Mldibd1NNvIDa02cQumdcQ8QelIHgdmlQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,425 +79,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, freedreno@lists.freedesktop.org,
- David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, halesh.sadashiv@ap.sony.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-03-01 08:42, Christoph Hellwig wrote:
-> Use explicit methods for setting and querying the information instead.
+On Thu, Mar 4, 2021 at 4:24 PM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+> Le 04/03/2021 =C3=A0 16:17, Arnd Bergmann a =C3=A9crit :
+> > On Thu, Mar 4, 2021 at 1:51 PM Christophe Leroy <christophe.leroy@csgro=
+up.eu> wrote:
+> >> ---
+> >> First version was in 2008, at that time it was rejected, see
+> >> http://patchwork.ozlabs.org/project/linuxppc-dev/patch/200809240839.14=
+902.arnd@arndb.de/
+> >
+> > The patch from 2008 did two things:
+> >
+> > - it removed the ppc32 specific 'select' syscall at #82
+> > - it fixed the generic '_newselect' syscall at #142
+> >
+> > Back then, the decision was to only address the second issue, which
+> > got merged in commit dad2f2fb0fc7 ("powerpc: Fix wrong error code from
+> > ppc32 select syscall").
+> >
+> > It is probably ok to remove the old select system call now, but
+> > my changelog text no longer makes sense, as the patch has nothing
+> > to do with the bug that was reported back then.
+> >
+>
+> I understood that the original reported bug was that calling that version=
+ of select() with a
+> negative value as first parametre would lead to a -EFAULT instead of -EIN=
+VAL. That's exactly the
+> case here, if you set n =3D -1 you get into this (unsigned long)n > 4096 =
+then the buffer is at
+> 0xffffffff and access_ok() won't grand access to it so the return value w=
+ill be -EFAULT instead of
+> -EINVAL.
+>
+> Am I missing something ?
 
-Now that everyone's using iommu-dma, is there any point in bouncing this 
-through the drivers at all? Seems like it would make more sense for the 
-x86 drivers to reflect their private options back to iommu_dma_strict 
-(and allow Intel's caching mode to override it as well), then have 
-iommu_dma_init_domain just test !iommu_dma_strict && 
-domain->ops->flush_iotlb_all.
+This is the behavior of the ppc_select() implementation, but as far as
+I can tell,
+the bug report was for the problem that this behavior would happen for both
+syscall #82 and syscall #142 when the correct behavior would have been to
+only do it for #82 but not for #142.
 
-Robin.
-
-> Also remove the now unused iommu_domain_get_attr functionality.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->   drivers/iommu/amd/iommu.c                   | 23 ++-------
->   drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c | 47 ++++++-----------
->   drivers/iommu/arm/arm-smmu/arm-smmu.c       | 56 +++++----------------
->   drivers/iommu/dma-iommu.c                   |  8 ++-
->   drivers/iommu/intel/iommu.c                 | 27 ++--------
->   drivers/iommu/iommu.c                       | 19 +++----
->   include/linux/iommu.h                       | 17 ++-----
->   7 files changed, 51 insertions(+), 146 deletions(-)
-> 
-> diff --git a/drivers/iommu/amd/iommu.c b/drivers/iommu/amd/iommu.c
-> index a69a8b573e40d0..37a8e51db17656 100644
-> --- a/drivers/iommu/amd/iommu.c
-> +++ b/drivers/iommu/amd/iommu.c
-> @@ -1771,24 +1771,11 @@ static struct iommu_group *amd_iommu_device_group(struct device *dev)
->   	return acpihid_device_group(dev);
->   }
->   
-> -static int amd_iommu_domain_get_attr(struct iommu_domain *domain,
-> -		enum iommu_attr attr, void *data)
-> +static bool amd_iommu_dma_use_flush_queue(struct iommu_domain *domain)
->   {
-> -	switch (domain->type) {
-> -	case IOMMU_DOMAIN_UNMANAGED:
-> -		return -ENODEV;
-> -	case IOMMU_DOMAIN_DMA:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE:
-> -			*(int *)data = !amd_iommu_unmap_flush;
-> -			return 0;
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	default:
-> -		return -EINVAL;
-> -	}
-> +	if (domain->type != IOMMU_DOMAIN_DMA)
-> +		return false;
-> +	return !amd_iommu_unmap_flush;
->   }
->   
->   /*****************************************************************************
-> @@ -2257,7 +2244,7 @@ const struct iommu_ops amd_iommu_ops = {
->   	.release_device = amd_iommu_release_device,
->   	.probe_finalize = amd_iommu_probe_finalize,
->   	.device_group = amd_iommu_device_group,
-> -	.domain_get_attr = amd_iommu_domain_get_attr,
-> +	.dma_use_flush_queue = amd_iommu_dma_use_flush_queue,
->   	.get_resv_regions = amd_iommu_get_resv_regions,
->   	.put_resv_regions = generic_iommu_put_resv_regions,
->   	.is_attach_deferred = amd_iommu_is_attach_deferred,
-> diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> index 8594b4a8304375..bf96172e8c1f71 100644
-> --- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> +++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> @@ -2449,33 +2449,21 @@ static struct iommu_group *arm_smmu_device_group(struct device *dev)
->   	return group;
->   }
->   
-> -static int arm_smmu_domain_get_attr(struct iommu_domain *domain,
-> -				    enum iommu_attr attr, void *data)
-> +static bool arm_smmu_dma_use_flush_queue(struct iommu_domain *domain)
->   {
->   	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
->   
-> -	switch (domain->type) {
-> -	case IOMMU_DOMAIN_UNMANAGED:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_NESTING:
-> -			*(int *)data = (smmu_domain->stage == ARM_SMMU_DOMAIN_NESTED);
-> -			return 0;
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	case IOMMU_DOMAIN_DMA:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE:
-> -			*(int *)data = smmu_domain->non_strict;
-> -			return 0;
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	default:
-> -		return -EINVAL;
-> -	}
-> +	if (domain->type != IOMMU_DOMAIN_DMA)
-> +		return false;
-> +	return smmu_domain->non_strict;
-> +}
-> +
-> +
-> +static void arm_smmu_dma_enable_flush_queue(struct iommu_domain *domain)
-> +{
-> +	if (domain->type != IOMMU_DOMAIN_DMA)
-> +		return;
-> +	to_smmu_domain(domain)->non_strict = true;
->   }
->   
->   static int arm_smmu_domain_set_attr(struct iommu_domain *domain,
-> @@ -2505,13 +2493,7 @@ static int arm_smmu_domain_set_attr(struct iommu_domain *domain,
->   		}
->   		break;
->   	case IOMMU_DOMAIN_DMA:
-> -		switch(attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE:
-> -			smmu_domain->non_strict = *(int *)data;
-> -			break;
-> -		default:
-> -			ret = -ENODEV;
-> -		}
-> +		ret = -ENODEV;
->   		break;
->   	default:
->   		ret = -EINVAL;
-> @@ -2619,7 +2601,8 @@ static struct iommu_ops arm_smmu_ops = {
->   	.probe_device		= arm_smmu_probe_device,
->   	.release_device		= arm_smmu_release_device,
->   	.device_group		= arm_smmu_device_group,
-> -	.domain_get_attr	= arm_smmu_domain_get_attr,
-> +	.dma_use_flush_queue	= arm_smmu_dma_use_flush_queue,
-> +	.dma_enable_flush_queue	= arm_smmu_dma_enable_flush_queue,
->   	.domain_set_attr	= arm_smmu_domain_set_attr,
->   	.of_xlate		= arm_smmu_of_xlate,
->   	.get_resv_regions	= arm_smmu_get_resv_regions,
-> diff --git a/drivers/iommu/arm/arm-smmu/arm-smmu.c b/drivers/iommu/arm/arm-smmu/arm-smmu.c
-> index d8c6bfde6a6158..e7893e96f5177a 100644
-> --- a/drivers/iommu/arm/arm-smmu/arm-smmu.c
-> +++ b/drivers/iommu/arm/arm-smmu/arm-smmu.c
-> @@ -1481,42 +1481,20 @@ static struct iommu_group *arm_smmu_device_group(struct device *dev)
->   	return group;
->   }
->   
-> -static int arm_smmu_domain_get_attr(struct iommu_domain *domain,
-> -				    enum iommu_attr attr, void *data)
-> +static bool arm_smmu_dma_use_flush_queue(struct iommu_domain *domain)
->   {
->   	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
->   
-> -	switch(domain->type) {
-> -	case IOMMU_DOMAIN_UNMANAGED:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_NESTING:
-> -			*(int *)data = (smmu_domain->stage == ARM_SMMU_DOMAIN_NESTED);
-> -			return 0;
-> -		case DOMAIN_ATTR_IO_PGTABLE_CFG: {
-> -			struct io_pgtable_domain_attr *pgtbl_cfg = data;
-> -			*pgtbl_cfg = smmu_domain->pgtbl_cfg;
-> +	if (domain->type != IOMMU_DOMAIN_DMA)
-> +		return false;
-> +	return smmu_domain->pgtbl_cfg.quirks & IO_PGTABLE_QUIRK_NON_STRICT;
-> +}
->   
-> -			return 0;
-> -		}
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	case IOMMU_DOMAIN_DMA:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE: {
-> -			bool non_strict = smmu_domain->pgtbl_cfg.quirks &
-> -					  IO_PGTABLE_QUIRK_NON_STRICT;
-> -			*(int *)data = non_strict;
-> -			return 0;
-> -		}
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	default:
-> -		return -EINVAL;
-> -	}
-> +static void arm_smmu_dma_enable_flush_queue(struct iommu_domain *domain)
-> +{
-> +	if (domain->type != IOMMU_DOMAIN_DMA)
-> +		return;
-> +	to_smmu_domain(domain)->pgtbl_cfg.quirks |= IO_PGTABLE_QUIRK_NON_STRICT;
->   }
->   
->   static int arm_smmu_domain_set_attr(struct iommu_domain *domain,
-> @@ -1557,16 +1535,7 @@ static int arm_smmu_domain_set_attr(struct iommu_domain *domain,
->   		}
->   		break;
->   	case IOMMU_DOMAIN_DMA:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE:
-> -			if (*(int *)data)
-> -				smmu_domain->pgtbl_cfg.quirks |= IO_PGTABLE_QUIRK_NON_STRICT;
-> -			else
-> -				smmu_domain->pgtbl_cfg.quirks &= ~IO_PGTABLE_QUIRK_NON_STRICT;
-> -			break;
-> -		default:
-> -			ret = -ENODEV;
-> -		}
-> +		ret = -ENODEV;
->   		break;
->   	default:
->   		ret = -EINVAL;
-> @@ -1631,7 +1600,8 @@ static struct iommu_ops arm_smmu_ops = {
->   	.probe_device		= arm_smmu_probe_device,
->   	.release_device		= arm_smmu_release_device,
->   	.device_group		= arm_smmu_device_group,
-> -	.domain_get_attr	= arm_smmu_domain_get_attr,
-> +	.dma_use_flush_queue	= arm_smmu_dma_use_flush_queue,
-> +	.dma_enable_flush_queue	= arm_smmu_dma_enable_flush_queue,
->   	.domain_set_attr	= arm_smmu_domain_set_attr,
->   	.of_xlate		= arm_smmu_of_xlate,
->   	.get_resv_regions	= arm_smmu_get_resv_regions,
-> diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
-> index 9ab6ee22c11088..d3fe5aad9d6ecf 100644
-> --- a/drivers/iommu/dma-iommu.c
-> +++ b/drivers/iommu/dma-iommu.c
-> @@ -305,8 +305,8 @@ static void iommu_dma_flush_iotlb_all(struct iova_domain *iovad)
->   	cookie = container_of(iovad, struct iommu_dma_cookie, iovad);
->   	domain = cookie->fq_domain;
->   	/*
-> -	 * The IOMMU driver supporting DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
-> -	 * implies that ops->flush_iotlb_all must be non-NULL.
-> +	 * The IOMMU driver supporting a DMA flush queue implies that
-> +	 * ops->flush_iotlb_all must be non-NULL.
->   	 */
->   	domain->ops->flush_iotlb_all(domain);
->   }
-> @@ -329,7 +329,6 @@ static int iommu_dma_init_domain(struct iommu_domain *domain, dma_addr_t base,
->   	struct iommu_dma_cookie *cookie = domain->iova_cookie;
->   	unsigned long order, base_pfn;
->   	struct iova_domain *iovad;
-> -	int attr;
->   
->   	if (!cookie || cookie->type != IOMMU_DMA_IOVA_COOKIE)
->   		return -EINVAL;
-> @@ -365,8 +364,7 @@ static int iommu_dma_init_domain(struct iommu_domain *domain, dma_addr_t base,
->   
->   	init_iova_domain(iovad, 1UL << order, base_pfn);
->   
-> -	if (!cookie->fq_domain && !iommu_domain_get_attr(domain,
-> -			DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE, &attr) && attr) {
-> +	if (!cookie->fq_domain && iommu_dma_use_flush_queue(domain)) {
->   		if (init_iova_flush_queue(iovad, iommu_dma_flush_iotlb_all,
->   					  iommu_dma_entry_dtor))
->   			pr_warn("iova flush queue initialization failed\n");
-> diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-> index ee0932307d646b..eaa80c33f4bc91 100644
-> --- a/drivers/iommu/intel/iommu.c
-> +++ b/drivers/iommu/intel/iommu.c
-> @@ -5453,13 +5453,13 @@ intel_iommu_domain_set_attr(struct iommu_domain *domain,
->   	return ret;
->   }
->   
-> -static bool domain_use_flush_queue(void)
-> +static bool intel_iommu_dma_use_flush_queue(struct iommu_domain *domain)
->   {
->   	struct dmar_drhd_unit *drhd;
->   	struct intel_iommu *iommu;
->   	bool r = true;
->   
-> -	if (intel_iommu_strict)
-> +	if (domain->type != IOMMU_DOMAIN_DMA || intel_iommu_strict)
->   		return false;
->   
->   	/*
-> @@ -5483,27 +5483,6 @@ static bool domain_use_flush_queue(void)
->   	return r;
->   }
->   
-> -static int
-> -intel_iommu_domain_get_attr(struct iommu_domain *domain,
-> -			    enum iommu_attr attr, void *data)
-> -{
-> -	switch (domain->type) {
-> -	case IOMMU_DOMAIN_UNMANAGED:
-> -		return -ENODEV;
-> -	case IOMMU_DOMAIN_DMA:
-> -		switch (attr) {
-> -		case DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE:
-> -			*(int *)data = domain_use_flush_queue();
-> -			return 0;
-> -		default:
-> -			return -ENODEV;
-> -		}
-> -		break;
-> -	default:
-> -		return -EINVAL;
-> -	}
-> -}
-> -
->   /*
->    * Check that the device does not live on an external facing PCI port that is
->    * marked as untrusted. Such devices should not be able to apply quirks and
-> @@ -5576,7 +5555,7 @@ const struct iommu_ops intel_iommu_ops = {
->   	.capable		= intel_iommu_capable,
->   	.domain_alloc		= intel_iommu_domain_alloc,
->   	.domain_free		= intel_iommu_domain_free,
-> -	.domain_get_attr        = intel_iommu_domain_get_attr,
-> +	.dma_use_flush_queue	= intel_iommu_dma_use_flush_queue,
->   	.domain_set_attr	= intel_iommu_domain_set_attr,
->   	.attach_dev		= intel_iommu_attach_device,
->   	.detach_dev		= intel_iommu_detach_device,
-> diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-> index 23daaea7883b75..0f12c4d58cdc42 100644
-> --- a/drivers/iommu/iommu.c
-> +++ b/drivers/iommu/iommu.c
-> @@ -1512,12 +1512,8 @@ static int iommu_group_alloc_default_domain(struct bus_type *bus,
->   	if (!group->domain)
->   		group->domain = dom;
->   
-> -	if (!iommu_dma_strict) {
-> -		int attr = 1;
-> -		iommu_domain_set_attr(dom,
-> -				      DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
-> -				      &attr);
-> -	}
-> +	if (!iommu_dma_strict && dom->ops->dma_enable_flush_queue)
-> +		dom->ops->dma_enable_flush_queue(dom);
->   
->   	return 0;
->   }
-> @@ -2664,14 +2660,13 @@ static int __init iommu_init(void)
->   }
->   core_initcall(iommu_init);
->   
-> -int iommu_domain_get_attr(struct iommu_domain *domain,
-> -			  enum iommu_attr attr, void *data)
-> +bool iommu_dma_use_flush_queue(struct iommu_domain *domain)
->   {
-> -	if (!domain->ops->domain_get_attr)
-> -		return -EINVAL;
-> -	return domain->ops->domain_get_attr(domain, attr, data);
-> +	if (!domain->ops->dma_use_flush_queue)
-> +		return false;
-> +	return domain->ops->dma_use_flush_queue(domain);
->   }
-> -EXPORT_SYMBOL_GPL(iommu_domain_get_attr);
-> +EXPORT_SYMBOL_GPL(iommu_dma_use_flush_queue);
->   
->   int iommu_domain_set_attr(struct iommu_domain *domain,
->   			  enum iommu_attr attr, void *data)
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-> index c15a8658daad64..f30de33c6ff56e 100644
-> --- a/include/linux/iommu.h
-> +++ b/include/linux/iommu.h
-> @@ -108,7 +108,6 @@ enum iommu_cap {
->   
->   enum iommu_attr {
->   	DOMAIN_ATTR_NESTING,	/* two stages of translation */
-> -	DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
->   	DOMAIN_ATTR_IO_PGTABLE_CFG,
->   	DOMAIN_ATTR_MAX,
->   };
-> @@ -194,7 +193,8 @@ struct iommu_iotlb_gather {
->    * @probe_finalize: Do final setup work after the device is added to an IOMMU
->    *                  group and attached to the groups domain
->    * @device_group: find iommu group for a particular device
-> - * @domain_get_attr: Query domain attributes
-> + * @dma_use_flush_queue: Returns %true if a DMA flush queue is used
-> + * @dma_enable_flush_queue: Try to enable the DMA flush queue
->    * @domain_set_attr: Change domain attributes
->    * @get_resv_regions: Request list of reserved regions for a device
->    * @put_resv_regions: Free list of reserved regions for a device
-> @@ -244,8 +244,8 @@ struct iommu_ops {
->   	void (*release_device)(struct device *dev);
->   	void (*probe_finalize)(struct device *dev);
->   	struct iommu_group *(*device_group)(struct device *dev);
-> -	int (*domain_get_attr)(struct iommu_domain *domain,
-> -			       enum iommu_attr attr, void *data);
-> +	bool (*dma_use_flush_queue)(struct iommu_domain *domain);
-> +	void (*dma_enable_flush_queue)(struct iommu_domain *domain);
->   	int (*domain_set_attr)(struct iommu_domain *domain,
->   			       enum iommu_attr attr, void *data);
->   
-> @@ -491,8 +491,7 @@ extern int iommu_page_response(struct device *dev,
->   extern int iommu_group_id(struct iommu_group *group);
->   extern struct iommu_domain *iommu_group_default_domain(struct iommu_group *);
->   
-> -extern int iommu_domain_get_attr(struct iommu_domain *domain, enum iommu_attr,
-> -				 void *data);
-> +bool iommu_dma_use_flush_queue(struct iommu_domain *domain);
->   extern int iommu_domain_set_attr(struct iommu_domain *domain, enum iommu_attr,
->   				 void *data);
->   
-> @@ -861,12 +860,6 @@ static inline int iommu_group_id(struct iommu_group *group)
->   	return -ENODEV;
->   }
->   
-> -static inline int iommu_domain_get_attr(struct iommu_domain *domain,
-> -					enum iommu_attr attr, void *data)
-> -{
-> -	return -EINVAL;
-> -}
-> -
->   static inline int iommu_domain_set_attr(struct iommu_domain *domain,
->   					enum iommu_attr attr, void *data)
->   {
-> 
+       Arnd
