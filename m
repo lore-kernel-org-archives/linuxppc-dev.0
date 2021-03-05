@@ -2,61 +2,56 @@ Return-Path: <SRS0=c12Q=ID=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1992CC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 18:21:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9BE6C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 18:37:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D73564DF4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 18:21:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D73564DF4
+	by mail.kernel.org (Postfix) with ESMTPS id 2E2FE6509A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 18:37:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E2FE6509A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dsbf44x9rz3dJX
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Mar 2021 05:21:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dsc105v5hz3dPq
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Mar 2021 05:37:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
  (client-ip=63.228.1.57; helo=gate.crashing.org;
  envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Dsbdj2TLXz3cmM
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Mar 2021 05:20:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Dsc0d3q1zz30MK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Mar 2021 05:37:21 +1100 (AEDT)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 125IGTa8026099;
- Fri, 5 Mar 2021 12:16:29 -0600
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 125IX2ju027144;
+ Fri, 5 Mar 2021 12:33:02 -0600
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 125IGS7W026098;
- Fri, 5 Mar 2021 12:16:28 -0600
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 125IX0sO027136;
+ Fri, 5 Mar 2021 12:33:00 -0600
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Fri, 5 Mar 2021 12:16:28 -0600
+Date: Fri, 5 Mar 2021 12:33:00 -0600
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
- save_stack_trace() and friends
-Message-ID: <20210305181628.GW29191@gate.crashing.org>
-References: <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
- <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
- <YD+o5QkCZN97mH8/@elver.google.com>
- <20210304145730.GC54534@C02TD0UTHF1T.local>
- <CANpmjNOSpFbbDaH9hNucXrpzG=HpsoQpk5w-24x8sU_G-6cz0Q@mail.gmail.com>
- <20210304165923.GA60457@C02TD0UTHF1T.local>
- <YEEYDSJeLPvqRAHZ@elver.google.com>
- <CAKwvOd=wBArMwvtDC8zV-QjQa5UuwWoxksQ8j+hUCZzbEAn+Fw@mail.gmail.com>
- <20210304192447.GT29191@gate.crashing.org>
- <ed3c08d2-04ba-217e-9924-28cab7750234@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/7] cmdline: Add generic function to build command
+ line.
+Message-ID: <20210305183300.GX29191@gate.crashing.org>
+References: <cover.1614705851.git.christophe.leroy@csgroup.eu>
+ <d8cf7979ad986de45301b39a757c268d9df19f35.1614705851.git.christophe.leroy@csgroup.eu>
+ <20210303172810.GA19713@willie-the-truck>
+ <a0cfef11-efba-2e5c-6f58-ed63a2c3bfa0@csgroup.eu>
+ <20210303174627.GC19713@willie-the-truck>
+ <dc6576ac-44ff-7db4-d718-7565b83f50b8@csgroup.eu>
+ <20210303181651.GE19713@willie-the-truck> <87sg59rewl.fsf@mpe.ellerman.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ed3c08d2-04ba-217e-9924-28cab7750234@csgroup.eu>
+In-Reply-To: <87sg59rewl.fsf@mpe.ellerman.id.au>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,59 +64,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Marco Elver <elver@google.com>,
- Will Deacon <will@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- Nick Desaulniers <ndesaulniers@google.com>,
- LKML <linux-kernel@vger.kernel.org>, kasan-dev <kasan-dev@googlegroups.com>,
- Mark Brown <broonie@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linux-toolchains@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: linux-arch@vger.kernel.org, robh@kernel.org,
+ daniel@gimpelevich.san-francisco.ca.us, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
+ danielwa@cisco.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 05, 2021 at 07:38:25AM +0100, Christophe Leroy wrote:
-> Le 04/03/2021 à 20:24, Segher Boessenkool a écrit :
-> https://github.com/linuxppc/linux/commit/a9a3ed1eff36
+On Fri, Mar 05, 2021 at 10:58:02PM +1100, Michael Ellerman wrote:
+> Will Deacon <will@kernel.org> writes:
+> > That's very similar to us; we're not relocated, although we are at least
+> > in control of the MMU (which is using a temporary set of page-tables).
 > 
-> >
-> >That is much heavier than needed (an mb()).  You can just put an empty
-> >inline asm after a call before a return, and that call cannot be
-> >optimised to a sibling call: (the end of a function is an implicit
-> >return:)
+> prom_init runs as an OF client, with the MMU off (except on some Apple
+> machines), and we don't own the MMU. So there's really nothing we can do :)
 
-> In the commit mentionned at the top, it is said:
-> 
-> The next attempt to prevent compilers from tail-call optimizing
-> the last function call cpu_startup_entry(), ... , was to add an empty 
-> asm("").
-> 
-> This current solution was short and sweet, and reportedly, is supported
-> by both compilers but we didn't get very far this time: future (LTO?)
-> optimization passes could potentially eliminate this,
+You *could* take over all memory mapping.  This is complex, and I
+estimate the change you get this to work correctly on all supported
+systems to be between -400% and 0%.
 
-This is simply not true.  A volatile inline asm (like this is, all
-asm without outputs are) is always run on the reel machine exactly like
-on the abstract machine.  LTO can not eliminate it, not more than any
-other optimisation can.  The compiler makes no assumption about the
-constents of the template of an asm, empty or not.
+And not very long later Linux jettisons OF completely anyway.
 
-If you are really scared the compiler violates the rules of GCC inline
-asm and thinks it knows what "" means, you can write
-  asm(";#");
-(that is a comment on all supported archs).
+> Though now that I look at it, I don't think we should be doing this
+> level of commandline handling in prom_init. It should just grab the
+> value from firmware and pass it to the kernel proper, and then all the
+> prepend/append/force etc. logic should happen there.
 
-> which leads us
-> to the third attempt: having an actual memory barrier there which the
-> compiler cannot ignore or move around etc.
-
-Why would it not be allowed to delete this, and delete some other asm?
-
-And the compiler *can* move around asm like this.  But the point is,
-it has to stay in order with other side effects, so there cannot be a
-sibling call here, the call has to remain: any call contains a sequence
-point, so side effects cannot be reordered over it, so the call (being
-before the asm) cannot be transformed to a tail call.
+That sounds much simpler, yes :-)
 
 
 Segher
