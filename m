@@ -2,64 +2,67 @@ Return-Path: <SRS0=c12Q=ID=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD9EFC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 10:00:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54A63C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 10:06:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F250064ECF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 10:00:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F250064ECF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 78B3564DF4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 10:06:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78B3564DF4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DsNXb275Yz3dDQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 21:00:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DsNgf6PJDz3dKC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 21:06:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VdQgZNul;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=VdQgZNul; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DsNX54M4hz3cH2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 21:00:21 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B9C7C64F56;
- Fri,  5 Mar 2021 10:00:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1614938418;
- bh=q7+GpxBp+H0eRgTkIdpsEpb4AOMic5EYKdk6TlKfzNU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=VdQgZNulq90gd29Xtg9/oNfQ2d54P/SpjBprppu6WHUCh5dXm1SSl0GGu+C3Db9Uo
- pzwAKH5nDVAuHW4QcGz/8GQB5Uwy2F1AF4JKaBAKwYloGiPn5yGUdPVMFOmSFrGY4q
- 1BFHvZTVShuR2OJT0m5VHBTe69UQAbmD/qup6iCvMDYVTI30coAfWYG48n1Nx0Zwfg
- ff6QcANvdoSlC3az1tKSteLjGyz8Je2PCg+wq1tAcIFASs2XSsNRO2eEn2wRIe4a5a
- tAI98WNSpofbBZCB1IrCBc5S9hoqSYa/Hnq02bUaEneKTqhx6nKn4Ab9WNOF3O7t4d
- jOwVlaHOUjTTQ==
-Date: Fri, 5 Mar 2021 10:00:12 +0000
-From: Will Deacon <will@kernel.org>
-To: Rob Clark <robdclark@gmail.com>
-Subject: Re: [Freedreno] [PATCH 16/17] iommu: remove DOMAIN_ATTR_IO_PGTABLE_CFG
-Message-ID: <20210305100012.GB22536@willie-the-truck>
-References: <20210301084257.945454-1-hch@lst.de>
- <20210301084257.945454-17-hch@lst.de>
- <d567ad5c-5f89-effa-7260-88c6d86b4695@arm.com>
- <CAF6AEGtTs-=aO-Ntp0Qn6mYDSv4x0-q3y217QxU7kZ6H1b1fiQ@mail.gmail.com>
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.131; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DsNgH00Lmz30J6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 21:06:33 +1100 (AEDT)
+Received: from mail-oi1-f173.google.com ([209.85.167.173]) by
+ mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1M8hlZ-1lMoJm2eAL-004mmi for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Mar
+ 2021 11:06:27 +0100
+Received: by mail-oi1-f173.google.com with SMTP id x78so1940804oix.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Mar 2021 02:06:27 -0800 (PST)
+X-Gm-Message-State: AOAM532gNeceY2NafdoSUki866/Hxi6d9Bf4l60hnE/hj7WIDFJ9uaZC
+ 1McLXhl7jexUN7+D7GoK64FPsMHAFQlUKmL0Q7Y=
+X-Google-Smtp-Source: ABdhPJwzyOO7oekaLxVCuYpCBrhMK4PzMy38JZ7xjbD74JT6jclKDiqZP1kKYyYJiRiPAwfQ+NkcFWiabrQ66QAV4CE=
+X-Received: by 2002:a05:6808:3d9:: with SMTP id
+ o25mr6442482oie.4.1614938786377; 
+ Fri, 05 Mar 2021 02:06:26 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAF6AEGtTs-=aO-Ntp0Qn6mYDSv4x0-q3y217QxU7kZ6H1b1fiQ@mail.gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <f08ef2b6f339ba19987cfef4307a4dd26b2faf97.1614933479.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <f08ef2b6f339ba19987cfef4307a4dd26b2faf97.1614933479.git.christophe.leroy@csgroup.eu>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 5 Mar 2021 11:06:09 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a2b+u+8smkKWB-V2Non+nnZmNG4dNi6cGpM8weYuY5j6A@mail.gmail.com>
+Message-ID: <CAK8P3a2b+u+8smkKWB-V2Non+nnZmNG4dNi6cGpM8weYuY5j6A@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/32: remove bogus ppc_select syscall
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:ECmvxo4EZF2C6wqu1qXSTSQqjhrKyzy+Xr8knTSu0WzuUMFPV9f
+ qf+PcF/Y4j5WLXDnukZxcPaLl3qq7p+rX1bDJ80nrgxjudR/FEJM4KL2m/uRpEFgQ72eTfh
+ 8j41ifAKlPvQie0BAJYC7b3cJn60xF8qMlgtPWCUwcS9uhsYm0rOIirO4b2Y1PwvjiueCQQ
+ 0Aq//RHB7LBf/SHwpVBig==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UMorT1T0Z2Y=:njb46D23dvb0DoI/QokGXP
+ 7tWV2PllqDqSO6BM0JP1dmwEzE3W7L8u5LhZRFaxyCuYHsq46HS2VbwYorR3qiI4FQEmPPTWr
+ SOH55OXn0pt0hnnFYiCSSEYt4ZTv7u3IiEd8FdHe3KGXx3djEDAXkSNfVV5acrPcA8XUQ+nE6
+ 909H5NCbeoSFy7URFQzk2Jt4D5ge0/lR7ib0cM0u5foHDA8Lxo5Z6+vlhBt1N/WLYVRFIIk6j
+ Z0BvRF5y2VpC0frH55ZmyMb7WhBfVRXeSJowX7xoZOoUGwfzkvtXv/P4BUlaXMhBsSqbQ5APR
+ 8rmcqC5ftm8CgHvbM4QaYCAS1Jrj3Zi9XJuVkeRe+h1/ABX2HcrJaEsIq8JhMonyWG7LC6dsY
+ /5Li+C2yFcTOAXCdOG9A9wtstc0Qkbnv3seJuO46h/U1tf918cjmcdENDywU/uz4gZeFV2A46
+ /T6u8ucBr6PcZQHmHpBJunmuAR+zwurmwGgQY5jnJPhot2pe321F
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,44 +74,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: freedreno <freedreno@lists.freedesktop.org>,
- Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>, kvm@vger.kernel.org,
- Joerg Roedel <joro@8bytes.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- dri-devel <dri-devel@lists.freedesktop.org>, Li Yang <leoyang.li@nxp.com>,
- "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>,
- Joerg Roedel <joro@8bytes.org>, " <iommu@lists.linux-foundation.org>,
- netdev@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
- linux-arm-msm <linux-arm-msm@vger.kernel.org>,
- virtualization@lists.linux-foundation.org, Robin Murphy <robin.murphy@arm.com>,
- Christoph Hellwig <hch@lst.de>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 04, 2021 at 03:11:08PM -0800, Rob Clark wrote:
-> On Thu, Mar 4, 2021 at 7:48 AM Robin Murphy <robin.murphy@arm.com> wrote:
-> >
-> > On 2021-03-01 08:42, Christoph Hellwig wrote:
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> >
-> > Moreso than the previous patch, where the feature is at least relatively
-> > generic (note that there's a bunch of in-flight development around
-> > DOMAIN_ATTR_NESTING), I'm really not convinced that it's beneficial to
-> > bloat the generic iommu_ops structure with private driver-specific
-> > interfaces. The attribute interface is a great compromise for these
-> > kinds of things, and you can easily add type-checked wrappers around it
-> > for external callers (maybe even make the actual attributes internal
-> > between the IOMMU core and drivers) if that's your concern.
-> 
-> I suppose if this is *just* for the GPU we could move it into adreno_smmu_priv..
-> 
-> But one thing I'm not sure about is whether
-> IO_PGTABLE_QUIRK_ARM_OUTER_WBWA is something that other devices
-> *should* be using as well, but just haven't gotten around to yet.
+On Fri, Mar 5, 2021 at 9:40 AM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The ppc_select function was introduced in linux-2.3.48 in order to support
+> code confusing the legacy select() calling convention with the standard one.
+> Even 24 years ago, all correctly built code should not have done this and
+> could have easily been phased out. Nothing that was compiled later should
+> actually try to use the old_select interface, and it would have been broken
+> already on all ppc64 kernels with the syscall emulation layer.
+>
+> This patch brings the 32 bit compat ABI and the native 32 bit ABI for
+> powerpc into a consistent state, by removing support for both the
+> old_select system call number and the handler for it.
 
-The intention is certainly that this would be a place to collate per-domain
-pgtable quirks, so I'd prefer not to tie that to the GPU.
+The description still seems wrong, please drop all the nonsense I wrote
+back then and explain what is actually going on.
 
-Will
+This is what I can see from the linux-history tree:
+
+- The original ppc32 port (linux-1.3.45) had a regular '__NR_select/sys_select'
+  syscall at #82 and an unusable '__NR__newselect/sys_panic' syscall at #142,
+  while i386 had the indirect '__NR_select/sys_oldselect' syscall at #82
+  and the regular '__NR__newselect/sys_select' version at #142. This was
+  rather confusing.
+
+- linux-2.1.48 changed both #82 and #142 to the ppc_select() version that
+  tries to guess whether the x86 __NR_select/sys_oldselect() behavior or
+  the regular __NR__newselect/sys_select() behavior is used.
+
+- linux-2.5.5 added ppc64 support, with a compat version of ppc_select()
+  on both #82 and #142 that would either use the __NR__newselect/sys_select
+  semantics or panic() when passed an invalud 'n'. The native ppc64
+  port started out with just __NR__newselect/sys_select() on #142
+
+- linux-2.5.19 changed ppc64 compat mode to no longer panic(), making
+  both #82 and #142 behave like __NR__newselect/sys_select().
+
+- glibc support for ppc32 gets merged during the linux-2.5 days, supporting
+  only #142 with the new behavior.
+
+- linux-2.5.41 dropped support for #82 on ppc64 in compat mode but not
+  native ppc32.
+
+- linux-2.6.14 merged the two architecture ports but kept the behavior
+  unchanged for both.
+
+- linux-2.6.32 changed the native ppc32 #142 __NR__newselect to
+  behave the same as compat mode and no longer emulate the
+  x86 oldselect, but #82 remained unchanged.
+
+So we have changed behavior multiple times in the past, and the
+current state still theoretically allows running non-glibc binaries that
+ran on kernels before 2.1.48 that used either the original powerpc
+select or the i386 compatible oldselect semantics. Chances are that
+those binaries are broken for some other reason now.
+
+          Arnd
