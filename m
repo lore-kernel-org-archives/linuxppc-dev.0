@@ -7,60 +7,49 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF66AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05468C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:32:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C69D64F53
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:31:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C69D64F53
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	by mail.kernel.org (Postfix) with ESMTPS id 659AA64FE1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:32:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 659AA64FE1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DsMtf2PS4z3dC7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 20:31:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.167.52; helo=mail-lf1-f52.google.com;
- envelope-from=yefremov.denis@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com
- [209.85.167.52])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DsMwC66Xtz3dDv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 20:32:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DsMtH45xxz30JR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 20:31:00 +1100 (AEDT)
-Received: by mail-lf1-f52.google.com with SMTP id k9so2440582lfo.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Mar 2021 01:31:00 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=Sij05VFpJgeqCqXYg4ZQk/H8ai0dlbHB0/ggBdsdDto=;
- b=PExTkVRnO+9zi0Xfh02Ra89oCZ5lZb9Q97QhKytL/GZMr0grKyv/DpY99TGtou5TF5
- Kbtq2bPShpMXGzN8my+I1/D7Nk54zBeBFYJ7+bRu6+wt+hgIOD/XOfCRKiiqyvGIBLo7
- KMisnECHmcIaxT5wz03yzqyhxNQH2QFKw/VkvDC6S5XHTaSXA1WrRlOk0aI7jJKoUE1/
- ORbZOh9M+UG+CnZ2Aduo4MU1n9QMUphAENZMmETwrC5yxYfZRVDMBlNxgzvv70hFq542
- xK5lm+MXAWI/XPEkYMhw4QNvCnUwWUOgA8Cxzwg7zwLhe2Kb6hBGM6ie1hXpqOpYgID+
- XcqQ==
-X-Gm-Message-State: AOAM532eWmnSKlfG+RO7/vV5ch16gBNM+RKCp3uSgtyNL0vXevtOsMuM
- IIGjt03yoRmEOyqMuf3zIAQ=
-X-Google-Smtp-Source: ABdhPJzIIwckwhz4dez/Qa5mirOLbysEmtBCHhNNNvoffsjQZdYCneb7i3/07I1Gv98gVTrUJ/xllQ==
-X-Received: by 2002:a19:ed8:: with SMTP id 207mr4748995lfo.164.1614936655904; 
- Fri, 05 Mar 2021 01:30:55 -0800 (PST)
-Received: from localhost.. (broadband-188-32-236-56.ip.moscow.rt.ru.
- [188.32.236.56])
- by smtp.googlemail.com with ESMTPSA id w13sm239454ljw.2.2021.03.05.01.30.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 05 Mar 2021 01:30:55 -0800 (PST)
-From: Denis Efremov <efremov@linux.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/ptrace: Remove duplicate check from pt_regs_check()
-Date: Fri,  5 Mar 2021 14:28:07 +0300
-Message-Id: <20210305112807.26299-1-efremov@linux.com>
-X-Mailer: git-send-email 2.26.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DsMvr0wN9z2xb3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 20:32:23 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id DBC7D2013FB;
+ Fri,  5 Mar 2021 10:32:18 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9FCB62013FE;
+ Fri,  5 Mar 2021 10:32:13 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 72E5A40249;
+ Fri,  5 Mar 2021 10:32:07 +0100 (CET)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl_asrc_dma: request dma channel from specific
+ controller
+Date: Fri,  5 Mar 2021 17:19:37 +0800
+Message-Id: <1614935977-21638-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,33 +61,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Denis Efremov <efremov@linux.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"offsetof(struct pt_regs, msr) == offsetof(struct user_pt_regs, msr)"
-checked in pt_regs_check() twice in a row. Remove the second check.
+From: Robin Gong <yibin.gong@nxp.com>
 
-Signed-off-by: Denis Efremov <efremov@linux.com>
+Request dma channel from specific dma controller instead of generic
+dma controller list, otherwise, may get the wrong dma controller
+if there are multi dma controllers such as i.MX8MP.
+
+Signed-off-by: Robin Gong <yibin.gong@nxp.com>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/kernel/ptrace/ptrace.c | 2 --
- 1 file changed, 2 deletions(-)
+ sound/soc/fsl/fsl_asrc_dma.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 4f3d4ff3728c..51801777906c 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -354,8 +354,6 @@ void __init pt_regs_check(void)
- 		     offsetof(struct user_pt_regs, nip));
- 	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
- 		     offsetof(struct user_pt_regs, msr));
--	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
--		     offsetof(struct user_pt_regs, msr));
- 	BUILD_BUG_ON(offsetof(struct pt_regs, orig_gpr3) !=
- 		     offsetof(struct user_pt_regs, orig_gpr3));
- 	BUILD_BUG_ON(offsetof(struct pt_regs, ctr) !=
+diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+index 29f91cdecbc3..c313a26c8f95 100644
+--- a/sound/soc/fsl/fsl_asrc_dma.c
++++ b/sound/soc/fsl/fsl_asrc_dma.c
+@@ -141,6 +141,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+ 	struct dma_slave_config config_fe, config_be;
+ 	enum asrc_pair_index index = pair->index;
+ 	struct device *dev = component->dev;
++	struct device_node *of_dma_node;
+ 	int stream = substream->stream;
+ 	struct imx_dma_data *tmp_data;
+ 	struct snd_soc_dpcm *dpcm;
+@@ -231,8 +232,10 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+ 		pair->dma_data.priority = tmp_data->priority;
+ 		dma_release_channel(tmp_chan);
+ 
++		of_dma_node = pair->dma_chan[!dir]->device->dev->of_node;
+ 		pair->dma_chan[dir] =
+-			dma_request_channel(mask, filter, &pair->dma_data);
++			__dma_request_channel(&mask, filter, &pair->dma_data,
++					      of_dma_node);
+ 		pair->req_dma_chan = true;
+ 	} else {
+ 		pair->dma_chan[dir] = tmp_chan;
 -- 
-2.26.2
+2.27.0
 
