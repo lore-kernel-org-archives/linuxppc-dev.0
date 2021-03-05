@@ -2,89 +2,65 @@ Return-Path: <SRS0=c12Q=ID=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C6CCC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:15:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF66AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:31:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E23964F45
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:15:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E23964F45
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2C69D64F53
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 09:31:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C69D64F53
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DsMWz4mh8z3dHL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 20:15:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=nZ2pVXGc;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DsMtf2PS4z3dC7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Mar 2021 20:31:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::32d;
- helo=mail-ot1-x32d.google.com; envelope-from=elver@google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=nZ2pVXGc; dkim-atps=neutral
-Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com
- [IPv6:2607:f8b0:4864:20::32d])
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.52; helo=mail-lf1-f52.google.com;
+ envelope-from=yefremov.denis@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com
+ [209.85.167.52])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DsMWR2sdDz3bP5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 20:14:40 +1100 (AEDT)
-Received: by mail-ot1-x32d.google.com with SMTP id 97so1107184otf.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Mar 2021 01:14:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=NPj0KxMXFfRe8+xSa+Go2DD4qn2EGEmIs7ZK90LXWyQ=;
- b=nZ2pVXGclYhYcE8eyYD9uK+g0vVWr50jDEOrQ6w5W7BHmKPAL7XOu/NpdmORq5vOQ+
- zolQsIBdqV4+a9y3q7m35ms/qkzIoC+KenRTzx8P06UwfTP2OxMVlcCADug51B5D5QWz
- kPYFXy03vqWh5KaDirbCAsPqTE4+uuwR2doAzftOg/ubc4GjJ8YcW6jEtESM1U5gLFN4
- HsFHKxUgKXBgQXp+MqU3mthIiZDeH+aRPpWB0jk7BvenhFVjXYSPlSC2rjV8bgvQ8h9B
- X6FQTXWXXob2e3/KIgnQ+f03yfYds0Q0mp4NKeKQaeaxi08dUxi5WVMUvsz2Xq8/ZLxS
- sPBg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DsMtH45xxz30JR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Mar 2021 20:31:00 +1100 (AEDT)
+Received: by mail-lf1-f52.google.com with SMTP id k9so2440582lfo.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Mar 2021 01:31:00 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=NPj0KxMXFfRe8+xSa+Go2DD4qn2EGEmIs7ZK90LXWyQ=;
- b=h7u6esaYw4wm1BTK25fO8vORvkyw36raAuSRhi5HiC3gmbIcZIsMucLzuEHXiYFheL
- lWHydQST0d01abVYuAxu8dvDzefz53/pnX+H883ACPcFpZbps7AThlNGXitlh4RGWOFV
- oQmIB01TbKhceFpzg2aXyup3zQTp8ZNfDAC34cuhcgFgN6u6Q1U5WuDw3YI2G0BDSsCY
- 87OLtJUStNRKxZD4dd/wvcIDEpWL9YugKcCb6RMpjmETLQp/GrWaCgECsRd4j5QHJxUy
- +KjkPw05E/gtqNgJJjFV1l2R6JO/yuOGlvLmWBnPAgzxesFQCB5lA/TSsJ/b1o3Aw+cA
- nRyA==
-X-Gm-Message-State: AOAM531fbh3404UPs3TdMNAsFU0aEqPdW6BXMORlt5/aAIhF1j8FHH0f
- v78QEPLuRJ+oauiI5rcGRgmwVrqSsixhhJNiGk6C3g==
-X-Google-Smtp-Source: ABdhPJyP45gFULzY3byGgkiMQ/gTlEFmoYywr5bJJ0uN4yvCPosIJGsbuWsd/hT9Z6uErmsyhsk7D5HBW2aZu+iKXL4=
-X-Received: by 2002:a9d:7f11:: with SMTP id j17mr7316937otq.251.1614935675615; 
- Fri, 05 Mar 2021 01:14:35 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Sij05VFpJgeqCqXYg4ZQk/H8ai0dlbHB0/ggBdsdDto=;
+ b=PExTkVRnO+9zi0Xfh02Ra89oCZ5lZb9Q97QhKytL/GZMr0grKyv/DpY99TGtou5TF5
+ Kbtq2bPShpMXGzN8my+I1/D7Nk54zBeBFYJ7+bRu6+wt+hgIOD/XOfCRKiiqyvGIBLo7
+ KMisnECHmcIaxT5wz03yzqyhxNQH2QFKw/VkvDC6S5XHTaSXA1WrRlOk0aI7jJKoUE1/
+ ORbZOh9M+UG+CnZ2Aduo4MU1n9QMUphAENZMmETwrC5yxYfZRVDMBlNxgzvv70hFq542
+ xK5lm+MXAWI/XPEkYMhw4QNvCnUwWUOgA8Cxzwg7zwLhe2Kb6hBGM6ie1hXpqOpYgID+
+ XcqQ==
+X-Gm-Message-State: AOAM532eWmnSKlfG+RO7/vV5ch16gBNM+RKCp3uSgtyNL0vXevtOsMuM
+ IIGjt03yoRmEOyqMuf3zIAQ=
+X-Google-Smtp-Source: ABdhPJzIIwckwhz4dez/Qa5mirOLbysEmtBCHhNNNvoffsjQZdYCneb7i3/07I1Gv98gVTrUJ/xllQ==
+X-Received: by 2002:a19:ed8:: with SMTP id 207mr4748995lfo.164.1614936655904; 
+ Fri, 05 Mar 2021 01:30:55 -0800 (PST)
+Received: from localhost.. (broadband-188-32-236-56.ip.moscow.rt.ru.
+ [188.32.236.56])
+ by smtp.googlemail.com with ESMTPSA id w13sm239454ljw.2.2021.03.05.01.30.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 05 Mar 2021 01:30:55 -0800 (PST)
+From: Denis Efremov <efremov@linux.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/ptrace: Remove duplicate check from pt_regs_check()
+Date: Fri,  5 Mar 2021 14:28:07 +0300
+Message-Id: <20210305112807.26299-1-efremov@linux.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-References: <CANpmjNPGj4C2rr2FbSD+FC-GnWUvJrtdLyX5TYpJE_Um8CGu1Q@mail.gmail.com>
- <08a96c5d-4ae7-03b4-208f-956226dee6bb@csgroup.eu>
- <CANpmjNPYEmLtQEu5G=zJLUzOBaGoqNKwLyipDCxvytdKDKb7mg@mail.gmail.com>
- <ad61cb3a-2b4a-3754-5761-832a1dd0c34e@csgroup.eu>
- <CANpmjNOnVzei7frKcMzMHxaDXh5NvTA-Wpa29C2YC1GUxyKfhQ@mail.gmail.com>
- <f036c53d-7e81-763c-47f4-6024c6c5f058@csgroup.eu>
- <CANpmjNMn_CUrgeSqBgiKx4+J8a+XcxkaLPWoDMUvUEXk8+-jxg@mail.gmail.com>
- <7270e1cc-bb6b-99ee-0043-08a027b8d83a@csgroup.eu>
- <YEDXJ5JNkgvDFehc@elver.google.com>
- <874khqry78.fsf@mpe.ellerman.id.au> <YEHiq1ALdPn2crvP@elver.google.com>
- <f6e47f4f-6953-6584-f023-8b9c22d6974e@csgroup.eu>
-In-Reply-To: <f6e47f4f-6953-6584-f023-8b9c22d6974e@csgroup.eu>
-From: Marco Elver <elver@google.com>
-Date: Fri, 5 Mar 2021 10:14:23 +0100
-Message-ID: <CANpmjNM9o1s4O4v2T9HUohPdCDJzWcaC5KDrt_7BSVdTUQWagw@mail.gmail.com>
-Subject: Re: [RFC PATCH v1] powerpc: Enable KFENCE for PPC32
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,178 +72,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, kasan-dev <kasan-dev@googlegroups.com>,
- Alexander Potapenko <glider@google.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Dmitry Vyukov <dvyukov@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, Denis Efremov <efremov@linux.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 5 Mar 2021 at 09:23, Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
->
->
->
-> Le 05/03/2021 =C3=A0 08:50, Marco Elver a =C3=A9crit :
-> > On Fri, Mar 05, 2021 at 04:01PM +1100, Michael Ellerman wrote:
-> >> Marco Elver <elver@google.com> writes:
-> >>> On Thu, Mar 04, 2021 at 12:48PM +0100, Christophe Leroy wrote:
-> >>>> Le 04/03/2021 =C3=A0 12:31, Marco Elver a =C3=A9crit :
-> >>>>> On Thu, 4 Mar 2021 at 12:23, Christophe Leroy
-> >>>>> <christophe.leroy@csgroup.eu> wrote:
-> >>>>>> Le 03/03/2021 =C3=A0 11:56, Marco Elver a =C3=A9crit :
-> >>>>>>>
-> >>>>>>> Somewhat tangentially, I also note that e.g. show_regs(regs) (whi=
-ch
-> >>>>>>> was printed along the KFENCE report above) didn't include the top
-> >>>>>>> frame in the "Call Trace", so this assumption is definitely not
-> >>>>>>> isolated to KFENCE.
-> >>>>>>>
-> >>>>>>
-> >>>>>> Now, I have tested PPC64 (with the patch I sent yesterday to modif=
-y save_stack_trace_regs()
-> >>>>>> applied), and I get many failures. Any idea ?
-> >>>>>>
-> >>>>>> [   17.653751][   T58] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D
-> >>>>>> [   17.654379][   T58] BUG: KFENCE: invalid free in .kfence_guarde=
-d_free+0x2e4/0x530
-> >>>>>> [   17.654379][   T58]
-> >>>>>> [   17.654831][   T58] Invalid free of 0xc00000003c9c0000 (in kfen=
-ce-#77):
-> >>>>>> [   17.655358][   T58]  .kfence_guarded_free+0x2e4/0x530
-> >>>>>> [   17.655775][   T58]  .__slab_free+0x320/0x5a0
-> >>>>>> [   17.656039][   T58]  .test_double_free+0xe0/0x198
-> >>>>>> [   17.656308][   T58]  .kunit_try_run_case+0x80/0x110
-> >>>>>> [   17.656523][   T58]  .kunit_generic_run_threadfn_adapter+0x38/0=
-x50
-> >>>>>> [   17.657161][   T58]  .kthread+0x18c/0x1a0
-> >>>>>> [   17.659148][   T58]  .ret_from_kernel_thread+0x58/0x70
-> >>>>>> [   17.659869][   T58]
-> >>> [...]
-> >>>>>
-> >>>>> Looks like something is prepending '.' to function names. We expect
-> >>>>> the function name to appear as-is, e.g. "kfence_guarded_free",
-> >>>>> "test_double_free", etc.
-> >>>>>
-> >>>>> Is there something special on ppc64, where the '.' is some conventi=
-on?
-> >>>>>
-> >>>>
-> >>>> I think so, see https://refspecs.linuxfoundation.org/ELF/ppc64/PPC-e=
-lf64abi.html#FUNC-DES
-> >>>>
-> >>>> Also see commit https://github.com/linuxppc/linux/commit/02424d896
-> >>>
-> >>> Thanks -- could you try the below patch? You'll need to define
-> >>> ARCH_FUNC_PREFIX accordingly.
-> >>>
-> >>> We think, since there are only very few architectures that add a pref=
-ix,
-> >>> requiring <asm/kfence.h> to define something like ARCH_FUNC_PREFIX is
-> >>> the simplest option. Let me know if this works for you.
-> >>>
-> >>> There an alternative option, which is to dynamically figure out the
-> >>> prefix, but if this simpler option is fine with you, we'd prefer it.
-> >>
-> >> We have rediscovered this problem in basically every tracing / debuggi=
-ng
-> >> feature added in the last 20 years :)
-> >>
-> >> I think the simplest solution is the one tools/perf/util/symbol.c uses=
-,
-> >> which is to just skip a leading '.'.
-> >>
-> >> Does that work?
-> >>
-> >> diff --git a/mm/kfence/report.c b/mm/kfence/report.c
-> >> index ab83d5a59bb1..67b49dc54b38 100644
-> >> --- a/mm/kfence/report.c
-> >> +++ b/mm/kfence/report.c
-> >> @@ -67,6 +67,9 @@ static int get_stack_skipnr(const unsigned long stac=
-k_entries[], int num_entries
-> >>      for (skipnr =3D 0; skipnr < num_entries; skipnr++) {
-> >>              int len =3D scnprintf(buf, sizeof(buf), "%ps", (void *)st=
-ack_entries[skipnr]);
-> >>
-> >> +            if (buf[0] =3D=3D '.')
-> >> +                    buf++;
-> >> +
-> >
-> > Unfortunately this does not work, since buf is an array. We'd need an
-> > offset, and it should be determined outside the loop. I had a solution
-> > like this, but it turned out quite complex (see below). And since most
-> > architectures do not require this, decided that the safest option is to
-> > use the macro approach with ARCH_FUNC_PREFIX, for which Christophe
-> > already prepared a patch and tested:
-> > https://lore.kernel.org/linux-mm/20210304144000.1148590-1-elver@google.=
-com/
-> > https://lkml.kernel.org/r/afaec81a551ef15345cb7d7563b3fac3d7041c3a.1614=
-868445.git.christophe.leroy@csgroup.eu
-> >
-> > Since KFENCE requires <asm/kfence.h> anyway, we'd prefer this approach
-> > (vs.  dynamically detecting).
-> >
-> > Thanks,
-> > -- Marco
-> >
->
-> What about
+"offsetof(struct pt_regs, msr) == offsetof(struct user_pt_regs, msr)"
+checked in pt_regs_check() twice in a row. Remove the second check.
 
-Sure something like that would work. But I explicitly did *not* want
-to hard-code the '.' in non-arch code.
+Signed-off-by: Denis Efremov <efremov@linux.com>
+---
+ arch/powerpc/kernel/ptrace/ptrace.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-The choice is between:
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 4f3d4ff3728c..51801777906c 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -354,8 +354,6 @@ void __init pt_regs_check(void)
+ 		     offsetof(struct user_pt_regs, nip));
+ 	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
+ 		     offsetof(struct user_pt_regs, msr));
+-	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
+-		     offsetof(struct user_pt_regs, msr));
+ 	BUILD_BUG_ON(offsetof(struct pt_regs, orig_gpr3) !=
+ 		     offsetof(struct user_pt_regs, orig_gpr3));
+ 	BUILD_BUG_ON(offsetof(struct pt_regs, ctr) !=
+-- 
+2.26.2
 
-1. ARCH_FUNC_PREFIX (as a matter of fact, the ARCH_FUNC_PREFIX patch
-is already in -mm). Perhaps we could optimize it further, by checking
-ARCH_FUNC_PREFIX in buf, and advancing buf like you propose, but I'm
-not sure it's worth worrying about.
-
-2. The dynamic solution that I proposed that does not use a hard-coded
-'.' (or some variation thereof).
-
-Please tell me which solution you prefer, 1 or 2 -- I'd like to stop
-bikeshedding here. If there's a compelling argument for hard-coding
-the '.' in non-arch code, please clarify, but otherwise I'd like to
-keep arch-specific things out of generic code.
-
-Thanks.
-
-> diff --git a/mm/kfence/report.c b/mm/kfence/report.c
-> index 519f037720f5..5e196625fb34 100644
-> --- a/mm/kfence/report.c
-> +++ b/mm/kfence/report.c
-> @@ -43,7 +43,7 @@ static void seq_con_printf(struct seq_file *seq, const =
-char *fmt, ...)
->   static int get_stack_skipnr(const unsigned long stack_entries[], int nu=
-m_entries,
->                             const enum kfence_error_type *type)
->   {
-> -       char buf[64];
-> +       char _buf[64];
->         int skipnr, fallback =3D 0;
->
->         if (type) {
-> @@ -65,7 +65,11 @@ static int get_stack_skipnr(const unsigned long stack_=
-entries[], int num_entries
->         }
->
->         for (skipnr =3D 0; skipnr < num_entries; skipnr++) {
-> -               int len =3D scnprintf(buf, sizeof(buf), "%ps", (void *)st=
-ack_entries[skipnr]);
-> +               char *buf =3D _buf;
-> +               int len =3D scnprintf(_buf, sizeof(_buf), "%ps", (void *)=
-stack_entries[skipnr]);
-> +
-> +               if (_buf[0] =3D=3D '.')
-> +                       buf++, len--;
->
->                 if (str_has_prefix(buf, "kfence_") || str_has_prefix(buf,=
- "__kfence_") ||
->                     !strncmp(buf, "__slab_free", len)) {
-> ---
->
-> Christophe
