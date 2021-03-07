@@ -6,49 +6,48 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14850C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:10:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C36C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:11:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35DA664FCF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:10:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35DA664FCF
+	by mail.kernel.org (Postfix) with ESMTPS id 397BF64FCF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:11:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 397BF64FCF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dtxz541ynz3cm5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 10:10:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DtxzR6qVCz3cLW
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 10:10:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dtxyk6z9bz3bPN
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 10:10:22 +1100 (AEDT)
-IronPort-SDR: JD7FLRDNwi4mrowFs3Henh9Qe5s1C3fAkozGA68hchxPJLJADrA6WdC4MPMl8h5ChP/DsjpGBv
- OuwLu5iEuJHQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9916"; a="167844506"
-X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="167844506"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dtxyl0G5xz3bPZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 10:10:21 +1100 (AEDT)
+IronPort-SDR: uvgQhw5i1xuPafRrLQmoEM6OUe9hSHIKIaJbO6TikOGIt42iAujCIwN7rfhWn7XUJQW7JuySJO
+ b+hmFvs7WQNA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9916"; a="175048627"
+X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="175048627"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  07 Mar 2021 15:10:18 -0800
-IronPort-SDR: mZWsyx00LP4CdepB7SemTJfpMTLPJJUEj0e18cKEWn5ni4c/+pTG/dBzqF3iK9y8hzBaAbJTVC
- pxJ6HpuPEHmQ==
+IronPort-SDR: ZHWfAdTkUSDrsBkE4ZmwExbvKg+8pQG5GdUHZjhmsgSV0wPrEPr5mIufz3nMfv5hCxd6ZUsjbO
+ 3T0RnAcH2VGw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="375874473"
+X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="587859292"
 Received: from lkp-server01.sh.intel.com (HELO 3e992a48ca98) ([10.239.97.150])
- by fmsmga007.fm.intel.com with ESMTP; 07 Mar 2021 15:10:17 -0800
+ by orsmga005.jf.intel.com with ESMTP; 07 Mar 2021 15:10:17 -0800
 Received: from kbuild by 3e992a48ca98 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lJ2XQ-0000g4-FT; Sun, 07 Mar 2021 23:10:16 +0000
-Date: Mon, 08 Mar 2021 07:09:51 +0800
+ id 1lJ2XQ-0000g6-GP; Sun, 07 Mar 2021 23:10:16 +0000
+Date: Mon, 08 Mar 2021 07:09:49 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS WITH WARNING
- 7c6d5b4b9e8a472043a26ccc22092aebbe65ca68
-Message-ID: <60455d3f.dxQ+XwoGWoamxEDM%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS 103ebc760cccd96ab1ebc3558881106d48efdcea
+Message-ID: <60455d3d./OoInyokQJk8UWkd%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -69,31 +68,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 7c6d5b4b9e8a472043a26ccc22092aebbe65ca68  powerpc/pseries: export LPAR security flavor in lparcfg
-
-Warning reports:
-
-https://lore.kernel.org/linuxppc-dev/202103072122.wpIjBOYV-lkp@intel.com
-
-possible Warning in current branch:
-
-arch/powerpc/mm/book3s64/hash_utils.c:1986:6: warning: no previous prototype for 'kfence_protect_page' [-Wmissing-prototypes]
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- powerpc-allmodconfig
-|   `-- arch-powerpc-mm-book3s64-hash_utils.c:warning:no-previous-prototype-for-kfence_protect_page
-|-- powerpc-allyesconfig
-|   `-- arch-powerpc-mm-book3s64-hash_utils.c:warning:no-previous-prototype-for-kfence_protect_page
-`-- powerpc64-allyesconfig
-    `-- arch-powerpc-mm-book3s64-hash_utils.c:warning:no-previous-prototype-for-kfence_protect_page
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 103ebc760cccd96ab1ebc3558881106d48efdcea  Automatic merge of 'master' into merge (2021-03-07 21:07)
 
 elapsed time: 723m
 
-configs tested: 172
+configs tested: 150
 configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -122,25 +106,16 @@ arm                       mainstone_defconfig
 mips                             allmodconfig
 arm                            dove_defconfig
 sh                             shx3_defconfig
-s390                       zfcpdump_defconfig
-powerpc                     akebono_defconfig
-arc                            hsdk_defconfig
-powerpc                        warp_defconfig
-mips                      loongson3_defconfig
-m68k                                defconfig
-riscv                    nommu_k210_defconfig
-sparc                            allyesconfig
-mips                        maltaup_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                      chrp32_defconfig
-mips                        qi_lb60_defconfig
-arm                         mv78xx0_defconfig
-arm                        spear3xx_defconfig
-arc                          axs103_defconfig
 arc                          axs101_defconfig
 powerpc                  mpc866_ads_defconfig
 mips                        workpad_defconfig
 powerpc                 mpc8313_rdb_defconfig
+mips                        maltaup_defconfig
+mips                      loongson3_defconfig
+powerpc                 mpc834x_itx_defconfig
+alpha                            alldefconfig
+sh                        sh7763rdp_defconfig
+openrisc                 simple_smp_defconfig
 arm                         at91_dt_defconfig
 powerpc                     powernv_defconfig
 csky                             alldefconfig
@@ -151,14 +126,6 @@ sh                           se7722_defconfig
 arm                         s5pv210_defconfig
 arm                            hisi_defconfig
 ia64                         bigsur_defconfig
-sh                             espt_defconfig
-m68k                          sun3x_defconfig
-sparc                       sparc64_defconfig
-sh                          r7780mp_defconfig
-arc                 nsimosci_hs_smp_defconfig
-parisc                generic-64bit_defconfig
-powerpc                      bamboo_defconfig
-arc                           tb10x_defconfig
 powerpc                  mpc885_ads_defconfig
 sh                          sdk7786_defconfig
 arm                     am200epdkit_defconfig
@@ -174,8 +141,6 @@ powerpc                      pasemi_defconfig
 arc                      axs103_smp_defconfig
 powerpc                     tqm8560_defconfig
 microblaze                          defconfig
-sh                          sdk7780_defconfig
-arm                      jornada720_defconfig
 powerpc                   bluestone_defconfig
 mips                           ip27_defconfig
 xtensa                          iss_defconfig
@@ -184,6 +149,7 @@ ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
+m68k                                defconfig
 m68k                             allyesconfig
 nds32                               defconfig
 nios2                            allyesconfig
@@ -201,6 +167,7 @@ s390                                defconfig
 nios2                               defconfig
 nds32                             allnoconfig
 i386                             allyesconfig
+sparc                            allyesconfig
 sparc                               defconfig
 i386                               tinyconfig
 i386                                defconfig
@@ -208,42 +175,37 @@ mips                             allyesconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a006-20210308
-x86_64               randconfig-a001-20210308
-x86_64               randconfig-a004-20210308
-x86_64               randconfig-a002-20210308
-x86_64               randconfig-a005-20210308
-x86_64               randconfig-a003-20210308
 i386                 randconfig-a005-20210307
 i386                 randconfig-a003-20210307
 i386                 randconfig-a002-20210307
 i386                 randconfig-a004-20210307
 i386                 randconfig-a006-20210307
 i386                 randconfig-a001-20210307
-i386                 randconfig-a005-20210308
-i386                 randconfig-a003-20210308
-i386                 randconfig-a002-20210308
-i386                 randconfig-a006-20210308
-i386                 randconfig-a004-20210308
-i386                 randconfig-a001-20210308
 x86_64               randconfig-a013-20210307
 x86_64               randconfig-a016-20210307
 x86_64               randconfig-a015-20210307
 x86_64               randconfig-a014-20210307
 x86_64               randconfig-a012-20210307
 x86_64               randconfig-a011-20210307
-i386                 randconfig-a016-20210307
-i386                 randconfig-a012-20210307
-i386                 randconfig-a013-20210307
-i386                 randconfig-a014-20210307
-i386                 randconfig-a011-20210307
-i386                 randconfig-a015-20210307
 i386                 randconfig-a016-20210308
 i386                 randconfig-a012-20210308
 i386                 randconfig-a014-20210308
 i386                 randconfig-a013-20210308
 i386                 randconfig-a011-20210308
 i386                 randconfig-a015-20210308
+i386                 randconfig-a016-20210307
+i386                 randconfig-a012-20210307
+i386                 randconfig-a013-20210307
+i386                 randconfig-a014-20210307
+i386                 randconfig-a011-20210307
+i386                 randconfig-a015-20210307
+x86_64               randconfig-a006-20210308
+x86_64               randconfig-a001-20210308
+x86_64               randconfig-a004-20210308
+x86_64               randconfig-a002-20210308
+x86_64               randconfig-a005-20210308
+x86_64               randconfig-a003-20210308
+riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
