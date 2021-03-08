@@ -1,57 +1,135 @@
-Return-Path: <SRS0=4hqj=IF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xkpp=IG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C36C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FA83C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 00:31:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 397BF64FCF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Mar 2021 23:11:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 397BF64FCF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 53ACA64FCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 00:31:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53ACA64FCF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DtxzR6qVCz3cLW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 10:10:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DtzmZ3zYpz3ckF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 11:31:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=eQGiPKxp;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::335;
+ helo=mail-ot1-x335.google.com; envelope-from=groeck7@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=eQGiPKxp; dkim-atps=neutral
+Received: from mail-ot1-x335.google.com (mail-ot1-x335.google.com
+ [IPv6:2607:f8b0:4864:20::335])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dtxyl0G5xz3bPZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 10:10:21 +1100 (AEDT)
-IronPort-SDR: uvgQhw5i1xuPafRrLQmoEM6OUe9hSHIKIaJbO6TikOGIt42iAujCIwN7rfhWn7XUJQW7JuySJO
- b+hmFvs7WQNA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9916"; a="175048627"
-X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="175048627"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Mar 2021 15:10:18 -0800
-IronPort-SDR: ZHWfAdTkUSDrsBkE4ZmwExbvKg+8pQG5GdUHZjhmsgSV0wPrEPr5mIufz3nMfv5hCxd6ZUsjbO
- 3T0RnAcH2VGw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,231,1610438400"; d="scan'208";a="587859292"
-Received: from lkp-server01.sh.intel.com (HELO 3e992a48ca98) ([10.239.97.150])
- by orsmga005.jf.intel.com with ESMTP; 07 Mar 2021 15:10:17 -0800
-Received: from kbuild by 3e992a48ca98 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lJ2XQ-0000g6-GP; Sun, 07 Mar 2021 23:10:16 +0000
-Date: Mon, 08 Mar 2021 07:09:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 103ebc760cccd96ab1ebc3558881106d48efdcea
-Message-ID: <60455d3d./OoInyokQJk8UWkd%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dtzm451k6z30RT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 11:31:13 +1100 (AEDT)
+Received: by mail-ot1-x335.google.com with SMTP id v12so7584155ott.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Mar 2021 16:31:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:subject:to:cc:references:from:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=3rM9/pP2BdU9S9K45RbV/1PyW9E84N2VnvEOvgoysKo=;
+ b=eQGiPKxpjQVwNXAAfD2+DrADN3mZLlzwN/UkcPJf8DId+9uHEuqGSbKA34m0aQZRSf
+ mhrtlQGpZgrwhdhVhu2WRKsMOb6HtkUXgcAUYK5EYwbIUCp+um1trazcRcvWlcud7SPE
+ WqlNeZsqpk0V16lni0RA0muIT7XgTow6W8J8Z5e2hOuCZXkS7ASW+/kpJ8kI6U7B4m2d
+ fjmfjaeq51Wce2d3YDXIVCvFTXa4/zxmaaLzYPdBLRZxzoUrs9Bfj0jstcF7bzgXIPGr
+ Cdd/Cm0dY3yfBl3W+l8e/1MqyUpcERRiyczyT2NTdbh0Wmr5u0lnTQ15M7WiHCqO5b+L
+ jPkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:subject:to:cc:references:from:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=3rM9/pP2BdU9S9K45RbV/1PyW9E84N2VnvEOvgoysKo=;
+ b=Q6C1DBScAfh2ukVA8t4xnfPUEZ1lRrkPLrRzmrh50MSxcySDCg5SwBHPXcYNooXG6p
+ LngSM9H6Iowq8Tu0XBpFma/LRzcRCEtJLVix6z2Zf1q+81UhJxLMX8ZfLfOHc4tnHTaW
+ QluCzuQGGHi5EfFV2lPNDmy4+PS0f4hXZzUNXb30U9yySeE76zZguFl6YfokbI2G7A2u
+ WYJwDvoJL+TPFqA1OwCzsQsYSeuhjMDzYLkfUhno4O/Uj6Tj6iqc6+eBuH1mejJA7kXD
+ gpcE1KO+freyi173cW6AlGO8QSUDrb/cM1DuQD2RgZu/IBepF00c39Q8rIboUgQ6K+kZ
+ svEA==
+X-Gm-Message-State: AOAM533Gs1gpNWIZ2yCWlXxnadwDIHstypopQuw7vllW+K2EXz5DdTiV
+ kzUOVvRLNuQHKAwXOxDVLI9GeJ17oDE=
+X-Google-Smtp-Source: ABdhPJxcY/PsIuP1QCQMExD7EUhuFX98c3eff4h+efhDQPwCezNogvk6E36EWcbQhjtWGcTuIAS86g==
+X-Received: by 2002:a05:6830:1de9:: with SMTP id
+ b9mr17379623otj.137.1615163465375; 
+ Sun, 07 Mar 2021 16:31:05 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id
+ e82sm2039691oob.37.2021.03.07.16.31.03
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Sun, 07 Mar 2021 16:31:04 -0800 (PST)
+Subject: Re: Errant readings on LM81 with T2080 SoC
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ "jdelvare@suse.com" <jdelvare@suse.com>
+References: <8e0a88ba-01e9-9bc1-c78b-20f26ce27d12@alliedtelesis.co.nz>
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+Message-ID: <96d660bc-17ab-4e0e-9a94-bce1737a8da1@roeck-us.net>
+Date: Sun, 7 Mar 2021 16:31:02 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <8e0a88ba-01e9-9bc1-c78b-20f26ce27d12@alliedtelesis.co.nz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,176 +141,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 103ebc760cccd96ab1ebc3558881106d48efdcea  Automatic merge of 'master' into merge (2021-03-07 21:07)
+On 3/7/21 2:52 PM, Chris Packham wrote:
+> Hi,
+> 
+> I've got a system using a PowerPC T2080 SoC and among other things has 
+> an LM81 hwmon chip.
+> 
+> Under a high CPU load we see errant readings from the LM81 as well as 
+> actual failures. It's the errant readings that cause the most concern 
+> since we can easily ignore the read errors in our monitoring application 
+> (although it would be better if they weren't there at all).
+> 
+> I'm able to reproduce this with a test application[0] that artificially 
+> creates a high CPU load then by repeatedly checking for the all-1s 
+> values from the LM81 datasheet[1](page 17). The all-1s readings stick 
+> out as they are obviously higher than the voltage rails that are 
+> connected and disagree with measurements taken with a multimeter.
+> 
+> Here's the output from my device
+> 
+> [root@linuxbox ~]# cpuload 90&
+> [root@linuxbox ~]# (while true; do cat /sys/class/hwmon/hwmon0/in*_input 
+> | grep '3320\|4383\|6641\|15930\|3586'; sleep 1; done)&
+> 3586
+> 3586
+> cat: read error: No such device or address
+> cat: read error: No such device or address
+> 3320
+> 3320
+> 3586
+> 3586
+> 6641
+> 6641
+> 4383
+> 4383
+> 
+> Fundamentally I think this is a problem with the fact that the LM81 is 
+> an SMBus device but the T2080 (and other Freescale SoCs) uses i2c and we 
+> emulate SMBus. I suspect the errant readings are when we don't get round 
+> to completing the read within the timeout specified by the SMBus 
+> specification. Depending on when that happens we either fail the 
+> transfer or interpret the result as all-1s.
+> 
 
-elapsed time: 723m
+That is quite unlikely. Many sensor chips are SMBus chips connected to
+i2c busses. It is much more likely that there is a bug in the T2080 i2c driver,
+that the chip doesn't like the bulk read command issued through regmap, that
+the chip has problems with the i2c bus speed, or that the i2c bus is noisy.
 
-configs tested: 150
-configs skipped: 2
+In this context, the "No such device or address" responses are very suspicious.
+Those are reported by the i2c driver, not by the hwmon driver, and suggest
+that the chip did not respond to a read request. Maybe it helps to enable
+debugging to the i2c driver to see if it reports anything useful. Even
+better might be to connect an i2c bus analyzer to the i2c bus and check
+what is going on.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                           ip28_defconfig
-mips                       capcella_defconfig
-arm                        mini2440_defconfig
-arm                           spitz_defconfig
-arm                          pxa168_defconfig
-mips                           gcw0_defconfig
-sh                           se7724_defconfig
-arc                        nsim_700_defconfig
-powerpc                     mpc83xx_defconfig
-mips                  decstation_64_defconfig
-arm                        clps711x_defconfig
-arc                              allyesconfig
-parisc                              defconfig
-powerpc                    klondike_defconfig
-sh                            titan_defconfig
-xtensa                    smp_lx200_defconfig
-powerpc                    ge_imp3a_defconfig
-arm                       mainstone_defconfig
-mips                             allmodconfig
-arm                            dove_defconfig
-sh                             shx3_defconfig
-arc                          axs101_defconfig
-powerpc                  mpc866_ads_defconfig
-mips                        workpad_defconfig
-powerpc                 mpc8313_rdb_defconfig
-mips                        maltaup_defconfig
-mips                      loongson3_defconfig
-powerpc                 mpc834x_itx_defconfig
-alpha                            alldefconfig
-sh                        sh7763rdp_defconfig
-openrisc                 simple_smp_defconfig
-arm                         at91_dt_defconfig
-powerpc                     powernv_defconfig
-csky                             alldefconfig
-mips                        nlm_xlr_defconfig
-xtensa                       common_defconfig
-sh                                  defconfig
-sh                           se7722_defconfig
-arm                         s5pv210_defconfig
-arm                            hisi_defconfig
-ia64                         bigsur_defconfig
-powerpc                  mpc885_ads_defconfig
-sh                          sdk7786_defconfig
-arm                     am200epdkit_defconfig
-mips                            gpr_defconfig
-arm                         cm_x300_defconfig
-arc                        vdk_hs38_defconfig
-sh                          polaris_defconfig
-arc                    vdk_hs38_smp_defconfig
-powerpc                     tqm8555_defconfig
-mips                       rbtx49xx_defconfig
-arm                          pxa3xx_defconfig
-powerpc                      pasemi_defconfig
-arc                      axs103_smp_defconfig
-powerpc                     tqm8560_defconfig
-microblaze                          defconfig
-powerpc                   bluestone_defconfig
-mips                           ip27_defconfig
-xtensa                          iss_defconfig
-mips                         tb0226_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-nios2                               defconfig
-nds32                             allnoconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210307
-i386                 randconfig-a003-20210307
-i386                 randconfig-a002-20210307
-i386                 randconfig-a004-20210307
-i386                 randconfig-a006-20210307
-i386                 randconfig-a001-20210307
-x86_64               randconfig-a013-20210307
-x86_64               randconfig-a016-20210307
-x86_64               randconfig-a015-20210307
-x86_64               randconfig-a014-20210307
-x86_64               randconfig-a012-20210307
-x86_64               randconfig-a011-20210307
-i386                 randconfig-a016-20210308
-i386                 randconfig-a012-20210308
-i386                 randconfig-a014-20210308
-i386                 randconfig-a013-20210308
-i386                 randconfig-a011-20210308
-i386                 randconfig-a015-20210308
-i386                 randconfig-a016-20210307
-i386                 randconfig-a012-20210307
-i386                 randconfig-a013-20210307
-i386                 randconfig-a014-20210307
-i386                 randconfig-a011-20210307
-i386                 randconfig-a015-20210307
-x86_64               randconfig-a006-20210308
-x86_64               randconfig-a001-20210308
-x86_64               randconfig-a004-20210308
-x86_64               randconfig-a002-20210308
-x86_64               randconfig-a005-20210308
-x86_64               randconfig-a003-20210308
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a006-20210307
-x86_64               randconfig-a001-20210307
-x86_64               randconfig-a004-20210307
-x86_64               randconfig-a005-20210307
-x86_64               randconfig-a002-20210307
-x86_64               randconfig-a003-20210307
-x86_64               randconfig-a013-20210308
-x86_64               randconfig-a016-20210308
-x86_64               randconfig-a015-20210308
-x86_64               randconfig-a014-20210308
-x86_64               randconfig-a011-20210308
-x86_64               randconfig-a012-20210308
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Guenter
