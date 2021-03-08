@@ -8,75 +8,77 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACDE8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 09:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7378CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 09:54:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09B7C64FB7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 09:53:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09B7C64FB7
+	by mail.kernel.org (Postfix) with ESMTPS id C7FD964FB7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 09:54:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7FD964FB7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DvDF44YCvz3dHV
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 20:53:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvDFX3XNNz3dM3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Mar 2021 20:54:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=btCzEuSM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=NmUXpDBo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434;
- helo=mail-pf1-x434.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036;
+ helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=btCzEuSM; dkim-atps=neutral
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com
- [IPv6:2607:f8b0:4864:20::434])
+ header.s=20161025 header.b=NmUXpDBo; dkim-atps=neutral
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
+ [IPv6:2607:f8b0:4864:20::1036])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvDDD4F3zz3cLl
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 20:53:00 +1100 (AEDT)
-Received: by mail-pf1-x434.google.com with SMTP id t85so1531822pfc.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Mar 2021 01:53:00 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DvDDH74lXz3cXv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Mar 2021 20:53:03 +1100 (AEDT)
+Received: by mail-pj1-x1036.google.com with SMTP id
+ ga23-20020a17090b0397b02900c0b81bbcd4so2671862pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Mar 2021 01:53:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=cKOElDbOOYhBWt4cAVGyc+iLTO7fKLi9zB1w5hJBFng=;
- b=btCzEuSMKWDim8NDHRqt6OsgNoe/QwUxMVr7MScjW31FngkeiQLnUiYt33JqwBQfpS
- 2T682Zl0rZl8Oqn7zg/kpdfpRmHOG5WIwFQfhuimkcFQ0WsEB8a+V66WIlfRzreLQEr0
- G6PKmcv2buoU7EzLQqN97ipn+ysiANboIxlanxnAKsIvZg/pz3cN6eI+La1jisDEyMty
- YRFoEhUcpx60S2x1YplDV1kUc7TqCYfowl8IvRBeDwlWezZ85asU5yey1o+8KmUaeH6X
- vv9SBCDIVn/NH2ZNxW5WY9q2KVKP1fAcH6t2K3bGOSUbDtPJtXQHJ88OKK+qxv62J6y+
- S1Gg==
+ bh=IcUGC/WC3idmEiqYEdboYch4xIiveWzvciw18OaggPU=;
+ b=NmUXpDBom/s5+1aLumOhffsdRF0XAC1ILzKZ4O8FmcS2i2D7/d742Z9mvC7UvtMaW7
+ nwaFE85nn1qecUiKqV8+smwCjv+5yAZzdNeFTjOfBIhORzqaf/MexfKHjN17nQGZeRX9
+ l38ikC2tQ0DICY+a1xcCQimj44KTTYKrHbhe0LnlNFx2W6cA4jotAea3lGETQSw20DOv
+ XqqOPwRfvq/ixR3abbTL7AGCxSpvqORI1apfxNkl20hfrSOKksmdWUCsB51rPT/0v1LB
+ faztyTznJpYXYk3wqu88F32lcLylmpaonIl2HSEYoPBIKb+sbYSjdZsfpvkt4IMJZr77
+ 0cJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=cKOElDbOOYhBWt4cAVGyc+iLTO7fKLi9zB1w5hJBFng=;
- b=qWxgZIOHFGdGib22CXfH1zwtaAgTSx4Ax3VFvXnKptnXN94oB3buE+3HfMgCEOrvI2
- nApVUtnTD6V7qIdeX0KUlYb3gi10v8ITOYKUdoW9BeoH3cYbl3/WRZT7DqFmrtp2CyTc
- jqdACBmh3an+twMfQTFHgReLElmw8Rgx0I8x4L5gFsCZAEHOgD1W5x91w+EWXB2nQjL/
- 5jFMctUrEo37sXk8K6NPI9F63VYtd66rOsjYizawltcUIz0W74yDdzUO2pmH2TBpIpFx
- xjiHplGNs0HBKRoxf11Ma4B5yjnatXvi/odJZrJz7ofRXhrSNhDPu11Cy3wHpKfE9yXc
- F8GA==
-X-Gm-Message-State: AOAM530DHWzU4D0ldEhMqykwZXL4mkHKfn4wBhHMpCjtFNKBR+xr6bvq
- gkDPnFf1T38+Lyn6EPFO14U/bKiKkvY=
-X-Google-Smtp-Source: ABdhPJwVpUlOlU5F0jgCuei4SjcY28Kbz5XE9I7fvregeAnMYE+LPG/BOi8F4fj2F8+gGmiHyCh87w==
-X-Received: by 2002:a05:6a00:22d6:b029:1cb:35ac:d8e0 with SMTP id
- f22-20020a056a0022d6b02901cb35acd8e0mr20032111pfj.17.1615197177962; 
- Mon, 08 Mar 2021 01:52:57 -0800 (PST)
+ bh=IcUGC/WC3idmEiqYEdboYch4xIiveWzvciw18OaggPU=;
+ b=jhUARuP+Joscxc/SkzzrLiBOdb/IUd06zgefpFUNkGqVAxKgU7KDdRNqKXCC2V1HyL
+ uobzkIDMTVVxi8+9X5JSZDFOvjIaJrHou3V5cvmiadxrMi8YQKZ+4niYXCz9eBzYsrMJ
+ rflFpniF5IePf7ssgmIdWukNzh+iLxA0z+kJn2HRd3yJA6VARUzjnIjBRQP/v4aeMNzv
+ CX+x10DfnDwYB0RTyEzPYqpZPncYgcvz/PAs8ltgCO0m6nU6yErtojqP/viEN3QG0gt8
+ 7zuSDC01WFU5STszUHqihmKIfpcxMh8vO3l/G+8Xc4jQIxblIpy3wJhpm4niw6iRqma4
+ xjrQ==
+X-Gm-Message-State: AOAM531eUsYsqpzJWW4cqFas4BY+3gXJ4oz7j+B9XdPBNTQIY8tl7COs
+ Ko7HWiFyguOm0v44lygr/FP6v4OegOo=
+X-Google-Smtp-Source: ABdhPJxiyyGXrbwSi+06vs/eTtowFpWZ60+nknPVBc7pILhvWm4ypZ7YVS9Ddwxt2vTqr30/WWBOtg==
+X-Received: by 2002:a17:90a:66c2:: with SMTP id
+ z2mr3084985pjl.139.1615197180902; 
+ Mon, 08 Mar 2021 01:53:00 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (58-6-239-121.tpgi.com.au. [58.6.239.121])
  by smtp.gmail.com with ESMTPSA id
- e63sm1326850pfe.208.2021.03.08.01.52.54
+ e63sm1326850pfe.208.2021.03.08.01.52.58
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 08 Mar 2021 01:52:57 -0800 (PST)
+ Mon, 08 Mar 2021 01:53:00 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: fix inverted SET_FULL_REGS bitop
-Date: Mon,  8 Mar 2021 19:52:37 +1000
-Message-Id: <20210308095244.3195782-2-npiggin@gmail.com>
+Subject: [RFC PATCH 1/7] powerpc/syscall: switch user_exit_irqoff and
+ trace_hardirqs_off order
+Date: Mon,  8 Mar 2021 19:52:38 +1000
+Message-Id: <20210308095244.3195782-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210308095244.3195782-1-npiggin@gmail.com>
 References: <20210308095244.3195782-1-npiggin@gmail.com>
@@ -98,47 +100,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This bit operation was inverted and set the low bit rather than cleared
-it, breaking the ability to ptrace non-volatile GPRs after exec. Fix.
+user_exit_irqoff() -> __context_tracking_exit -> vtime_user_exit
+warns in __seqprop_assert due to lockdep thinking preemption is enabled
+because trace_hardirqs_off() has not yet been called.
 
-Fixes: feb9df3462e68 ("powerpc/64s: Always has full regs, so remove remnant checks")
+Switch the order of these two calls, which matches their ordering in
+interrupt_enter_prepare.
+
+Fixes: 5f0b6ac3905f ("powerpc/64/syscall: Reconcile interrupts")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-Well this is embarrassing. Condition flags should be represented by the
-bit set, rather than bit clear. That would have made the mistake obvious
-even at a glance.
-
-In this case, this stuff is going away soon so I won't bother to change
-it around.
-
-Thanks,
-Nick
-
- arch/powerpc/include/asm/ptrace.h | 4 ++--
+ arch/powerpc/kernel/interrupt.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 975ba260006a..1499e928ea6a 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -195,7 +195,7 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
- #define TRAP_FLAGS_MASK		0x11
- #define TRAP(regs)		((regs)->trap & ~TRAP_FLAGS_MASK)
- #define FULL_REGS(regs)		(((regs)->trap & 1) == 0)
--#define SET_FULL_REGS(regs)	((regs)->trap |= 1)
-+#define SET_FULL_REGS(regs)	((regs)->trap &= ~1)
- #endif
- #define CHECK_FULL_REGS(regs)	BUG_ON(!FULL_REGS(regs))
- #define NV_REG_POISON		0xdeadbeefdeadbeefUL
-@@ -210,7 +210,7 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
- #define TRAP_FLAGS_MASK		0x1F
- #define TRAP(regs)		((regs)->trap & ~TRAP_FLAGS_MASK)
- #define FULL_REGS(regs)		(((regs)->trap & 1) == 0)
--#define SET_FULL_REGS(regs)	((regs)->trap |= 1)
-+#define SET_FULL_REGS(regs)	((regs)->trap &= ~1)
- #define IS_CRITICAL_EXC(regs)	(((regs)->trap & 2) != 0)
- #define IS_MCHECK_EXC(regs)	(((regs)->trap & 4) != 0)
- #define IS_DEBUG_EXC(regs)	(((regs)->trap & 8) != 0)
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 2ef3c4051bb9..38ee41f8844a 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -34,11 +34,11 @@ notrace long system_call_exception(long r3, long r4, long r5,
+ 	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
+ 		BUG_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED);
+ 
++	trace_hardirqs_off(); /* finish reconciling */
++
+ 	CT_WARN_ON(ct_state() == CONTEXT_KERNEL);
+ 	user_exit_irqoff();
+ 
+-	trace_hardirqs_off(); /* finish reconciling */
+-
+ 	if (!IS_ENABLED(CONFIG_BOOKE) && !IS_ENABLED(CONFIG_40x))
+ 		BUG_ON(!(regs->msr & MSR_RI));
+ 	BUG_ON(!(regs->msr & MSR_PR));
 -- 
 2.23.0
 
