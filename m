@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BE2BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E82BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:15:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D4816523F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:14:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D4816523F
+	by mail.kernel.org (Postfix) with ESMTPS id 8C6AA6525F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:15:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C6AA6525F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DvvKG5DLvz3fsq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 23:14:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvvKp1RNBz3g0Y
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 23:15:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvvCX3rCxz3cLg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 23:09:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DvvCY3cwqz3cRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 23:09:45 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DvvCS4Cd7z9tyjM;
- Tue,  9 Mar 2021 13:09:40 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DvvCT3M0Yz9tyjJ;
+ Tue,  9 Mar 2021 13:09:41 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8h_O7B2Hk1-I; Tue,  9 Mar 2021 13:09:40 +0100 (CET)
+ with ESMTP id PCbZs61MPCwe; Tue,  9 Mar 2021 13:09:41 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DvvCS2ZYNz9tyjJ;
- Tue,  9 Mar 2021 13:09:40 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8DDF88B804;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DvvCT2cCwz9tyjH;
  Tue,  9 Mar 2021 13:09:41 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B0FEA8B800;
+ Tue,  9 Mar 2021 13:09:42 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jfGAoJi_wQ5F; Tue,  9 Mar 2021 13:09:41 +0100 (CET)
+ with ESMTP id IpL1dWQ6qyUM; Tue,  9 Mar 2021 13:09:42 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4B2598B800;
- Tue,  9 Mar 2021 13:09:41 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 59D218B7FC;
+ Tue,  9 Mar 2021 13:09:42 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2EDA167555; Tue,  9 Mar 2021 12:09:41 +0000 (UTC)
-Message-Id: <08c13f1fad1d0a5aac22f37f2569aeb79acc7d2f.1615291472.git.christophe.leroy@csgroup.eu>
+ id 34F6067555; Tue,  9 Mar 2021 12:09:42 +0000 (UTC)
+Message-Id: <cffffac0528ece664b2b49bfb50c476c5a3a057d.1615291472.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615291471.git.christophe.leroy@csgroup.eu>
 References: <cover.1615291471.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 15/43] powerpc/32: Tag DAR in EXCEPTION_PROLOG_2 for the 8xx
+Subject: [PATCH v2 16/43] powerpc/32: Enable instruction translation at the
+ same time as data translation
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Tue,  9 Mar 2021 12:09:41 +0000 (UTC)
+Date: Tue,  9 Mar 2021 12:09:42 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,92 +76,181 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-8xx requires to tag the DAR with a magic value in order to
-fixup DAR on faults generated by 'dcbX', as the 8xx
-forgets to update the DAR for those faults.
+On 40x and 8xx, kernel text is pinned.
+On book3s/32, kernel text is mapped by BATs.
 
-Do the tagging as early as possible, that is before enabling MMU.
+Enable instruction translation at the same time as data translation, it
+makes things simpler.
+
+In syscall handler, MSR_RI can also be set at the same time because
+srr0/srr1 are already saved and r1 is set properly.
+
+On booke, translation is always on, so at the end all PPC32
+have translation on early. Just update msr.
+
+Also update comment in power_save_ppc32_restore().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_32.h  |  6 ++++++
- arch/powerpc/kernel/head_8xx.S | 18 ++++++------------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/entry_32.S   | 30 ++++++++++++------------------
+ arch/powerpc/kernel/head_32.h    | 13 ++++++++-----
+ arch/powerpc/kernel/head_40x.S   | 10 +++++++---
+ arch/powerpc/kernel/head_booke.h |  6 ++++--
+ 4 files changed, 31 insertions(+), 28 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 33e97032ca25..01a064c8a96a 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -153,19 +153,11 @@ transfer_to_handler:
+ transfer_to_handler_cont:
+ 3:
+ 	mflr	r9
+-	tovirt(r9, r9)
+ 	lwz	r11,0(r9)		/* virtual address of handler */
+ 	lwz	r9,4(r9)		/* where to go when done */
+-#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
+-	mtspr	SPRN_NRI, r0
+-#endif
+-	mtspr	SPRN_SRR0,r11
+-	mtspr	SPRN_SRR1,r10
++	mtctr	r11
+ 	mtlr	r9
+-	rfi				/* jump to handler, enable MMU */
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
++	bctr				/* jump to handler */
+ 
+ #if defined (CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
+ 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
+@@ -444,8 +436,6 @@ fee_restarts:
+ 	li	r10,-1
+ 	stw	r10,_TRAP(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	lis	r10,MSR_KERNEL@h
+-	ori	r10,r10,MSR_KERNEL@l
+ 	bl	transfer_to_handler_full
+ 	.long	unrecoverable_exception
+ 	.long	ret_from_except
+@@ -945,16 +935,20 @@ _GLOBAL(enter_rtas)
+ 	mtspr	SPRN_SRR1,r9
+ 	rfi
+ 1:
+-	li	r0, MSR_KERNEL & ~MSR_IR	/* can take DTLB miss */
+-	mtmsr	r0
+-	isync
++	lis	r8, 1f@h
++	ori	r8, r8, 1f@l
++	LOAD_REG_IMMEDIATE(r9,MSR_KERNEL)
++	mtspr	SPRN_SRR0,r8
++	mtspr	SPRN_SRR1,r9
++	rfi			/* Reactivate MMU translation */
++1:
+ 	lwz	r8,INT_FRAME_SIZE+4(r1)	/* get return address */
+ 	lwz	r9,8(r1)	/* original msr value */
+ 	addi	r1,r1,INT_FRAME_SIZE
+ 	li	r0,0
+ 	stw	r0, THREAD + RTAS_SP(r2)
+-	mtspr	SPRN_SRR0,r8
+-	mtspr	SPRN_SRR1,r9
+-	rfi			/* return to caller */
++	mtlr	r8
++	mtmsr	r9
++	blr			/* return to caller */
+ _ASM_NOKPROBE_SYMBOL(enter_rtas)
+ #endif /* CONFIG_PPC_RTAS */
 diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 1b707755c68e..910f86642eec 100644
+index 910f86642eec..88b02bd91e8e 100644
 --- a/arch/powerpc/kernel/head_32.h
 +++ b/arch/powerpc/kernel/head_32.h
-@@ -57,6 +57,12 @@
- .endm
- 
- .macro EXCEPTION_PROLOG_2 handle_dar_dsisr=0
-+#ifdef CONFIG_PPC_8xx
-+	.if	\handle_dar_dsisr
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR, to be used in DTLB Error */
-+	.endif
-+#endif
- 	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
- 	mtmsr	r11
- 	isync
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 792e2fd86479..cdbfa9d41353 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -30,6 +30,12 @@
- #include <asm/export.h>
- #include <asm/code-patching-asm.h>
- 
-+/*
-+ * Value for the bits that have fixed value in RPN entries.
-+ * Also used for tagging DAR for DTLBerror.
-+ */
-+#define RPN_PATTERN	0x00f0
-+
- #include "head_32.h"
- 
- .macro compare_to_kernel_boundary scratch, addr
-@@ -42,12 +48,6 @@
+@@ -63,10 +63,14 @@
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR, to be used in DTLB Error */
+ 	.endif
  #endif
- .endm
- 
--/*
-- * Value for the bits that have fixed value in RPN entries.
-- * Also used for tagging DAR for DTLBerror.
-- */
--#define RPN_PATTERN	0x00f0
--
- #define PAGE_SHIFT_512K		19
- #define PAGE_SHIFT_8M		23
- 
-@@ -124,8 +124,6 @@ instruction_counter:
- 	. = 0x200
- MachineCheck:
- 	EXCEPTION_PROLOG handle_dar_dsisr=1
--	li	r6, RPN_PATTERN
--	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
- 	addi r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x200, machine_check_exception)
- 
-@@ -136,8 +134,6 @@ MachineCheck:
- 	. = 0x600
- Alignment:
- 	EXCEPTION_PROLOG handle_dar_dsisr=1
--	li	r6, RPN_PATTERN
--	mtspr	SPRN_DAR, r6	/* Tag DAR, to be used in DTLB Error */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	b	.Lalignment_exception_ool
- 
-@@ -331,8 +327,6 @@ DataTLBError:
- 	cmpwi	cr1, r11, RPN_PATTERN
- 	beq-	cr1, FixupDAR	/* must be a buggy dcbX, icbi insn. */
- DARFixed:/* Return from dcbx instruction bug workaround */
--	li	r11, RPN_PATTERN
--	mtspr	SPRN_DAR, r11	/* Tag DAR, to be used in DTLB Error */
- 	EXCEPTION_PROLOG_1
- 	EXCEPTION_PROLOG_2 handle_dar_dsisr=1
- 	lwz	r4, _DAR(r11)
+-	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
+-	mtmsr	r11
+-	isync
++	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~MSR_RI) /* re-enable MMU */
++	mtspr	SPRN_SRR1, r11
++	lis	r11, 1f@h
++	ori	r11, r11, 1f@l
++	mtspr	SPRN_SRR0, r11
+ 	mfspr	r11, SPRN_SPRG_SCRATCH2
++	rfi
++1:
+ 	stw	r11,GPR1(r1)
+ 	stw	r11,0(r1)
+ 	mr	r11, r1
+@@ -94,7 +98,7 @@
+ #elif defined(CONFIG_PPC_8xx)
+ 	mtspr	SPRN_EID, r2		/* Set MSR_RI */
+ #else
+-	li	r10, MSR_KERNEL & ~MSR_IR /* can take exceptions */
++	li	r10, MSR_KERNEL		/* can take exceptions */
+ 	mtmsr	r10			/* (except for mach check in rtas) */
+ #endif
+ 	stw	r0,GPR0(r11)
+@@ -179,7 +183,6 @@
+ #define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)		\
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+-	LOAD_REG_IMMEDIATE(r10, msr);				\
+ 	bl	tfer;						\
+ 	.long	hdlr;						\
+ 	.long	ret
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 7da673ec63ef..55fa99c5085c 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -126,9 +126,13 @@ _ENTRY(crit_esr)
+ 	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
+ 1:	stw	r1,crit_r1@l(0)
+ 	addi	r1,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
+-	LOAD_REG_IMMEDIATE(r11,MSR_KERNEL & ~(MSR_IR | MSR_RI))
+-	mtmsr	r11
+-	isync
++	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)) /* re-enable MMU */
++	mtspr	SPRN_SRR1, r11
++	lis	r11, 1f@h
++	ori	r11, r11, 1f@l
++	mtspr	SPRN_SRR0, r11
++	rfi
++1:
+ 	lwz	r11,crit_r1@l(0)
+ 	stw	r11,GPR1(r1)
+ 	stw	r11,0(r1)
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 4a5f0c9b652b..f712b9bc6d62 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -53,6 +53,8 @@ END_BTB_FLUSH_SECTION
+ 	mfspr	r11, SPRN_SRR1;		                                     \
+ 	DO_KVM	BOOKE_INTERRUPT_##intno SPRN_SRR1;			     \
+ 	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
++	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL);				\
++	mtmsr	r11;							\
+ 	mr	r11, r1;						     \
+ 	beq	1f;							     \
+ 	BOOKE_CLEAR_BTB(r11)						\
+@@ -192,6 +194,8 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ 	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
+ 	BOOKE_CLEAR_BTB(r10)						\
+ 	andi.	r11,r11,MSR_PR;						     \
++	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE));	\
++	mtmsr	r11;							\
+ 	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
+ 	lwz	r11, TASK_STACK - THREAD(r11); /* this thread's kernel stack */\
+ 	addi	r11,r11,EXC_LVL_FRAME_OVERHEAD;	/* allocate stack frame    */\
+@@ -282,8 +286,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ #define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)	\
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+-	lis	r10,msr@h;					\
+-	ori	r10,r10,msr@l;					\
+ 	bl	tfer;		 				\
+ 	.long	hdlr;						\
+ 	.long	ret
 -- 
 2.25.0
 
