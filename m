@@ -2,72 +2,76 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B2E4C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 18:24:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CD2C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:30:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67AE564FB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 18:24:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67AE564FB8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 19E7B64F58
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:30:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19E7B64F58
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw3Wk0kYqz3ckS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 05:24:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw7fR2k4Dz3cbM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 08:30:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=l6Pe5NJC;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.49.222; helo=6.mo52.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 3435 seconds by postgrey-1.36 at boromir;
- Wed, 10 Mar 2021 05:23:59 AEDT
-Received: from 6.mo52.mail-out.ovh.net (6.mo52.mail-out.ovh.net
- [188.165.49.222])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw3WM05nLz2xxw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 05:23:56 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.1.76])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id E80162476F6;
- Tue,  9 Mar 2021 18:26:36 +0100 (CET)
-Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Tue, 9 Mar 2021
- 18:26:36 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-103G005b3342e94-a8ab-4258-a199-b306ceb08c64,
- 8C9061D2296CFEABF2D52E5F4F8F8063DC0B97BF) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-Subject: Re: [PATCH v2 1/8] powerpc/xive: Use cpu_to_node() instead of
- ibm,chip-id property
-To: Daniel Henrique Barboza <danielhb@linux.ibm.com>, Greg Kurz
- <groug@kaod.org>
-References: <20210303174857.1760393-1-clg@kaod.org>
- <20210303174857.1760393-2-clg@kaod.org> <20210308181359.789c143b@bahia.lan>
- <8dd98e22-1f10-e87b-3fe3-e786bc9a8d71@kaod.org>
- <3180b5c6-e61f-9c5f-3c80-f10e69dc5785@linux.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <92edbc26-4cb5-6e2f-00ff-43a3dca43759@kaod.org>
-Date: Tue, 9 Mar 2021 18:26:35 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+ smtp.mailfrom=cisco.com (client-ip=173.37.86.73; helo=rcdn-iport-2.cisco.com;
+ envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
+ header.s=iport header.b=l6Pe5NJC; dkim-atps=neutral
+Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw7dr6Yl1z30HT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 08:29:51 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=cisco.com; i=@cisco.com; l=2621; q=dns/txt; s=iport;
+ t=1615325393; x=1616534993;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:content-transfer-encoding:in-reply-to;
+ bh=P29McQ6d/QFxrQq1EYKN884pwFzgqSORJbOcG1OnGCA=;
+ b=l6Pe5NJC0EM+wArX2XuF3SCAWSS1pvYGiO+o6/EwFlQ+NkBd8NrQdmfv
+ 1Mx6J3gki7mHBW2rHjzR3hnpIVi1kq3cc3lmYWds10UDPUov4QPu4YlZ9
+ JFoQ3DxBUvQNJYeAHItVw3Z66owqmOQw4qN0hXQy2ksZvR2PG0vEC3XkO w=;
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0BqAAC/50dg/40NJK1aHAEBAQEBAQc?=
+ =?us-ascii?q?BARIBAQQEAQFAgTsHAQELAQGBdDWBTAE5jRaJPI9zilaBfAsBAQENAQE0BAE?=
+ =?us-ascii?q?BgRSDNAMCAoF+AiU0CQ4CAwEBCwEBBQEBAQIBBgRxhW5DAQwBCAGFawEFMgF?=
+ =?us-ascii?q?GEAsYLjwbBoYLrGd0gTSJEYFFFA6BFwGNQiYcgUlChCw+ihAiBIJGgRBLPXx?=
+ =?us-ascii?q?XkSqMcJpwgRSDCYEfmnsxEKNitx8CBAYFAhaBVDqBVzMaCBsVgyVPGQ2OKxa?=
+ =?us-ascii?q?ORyADZwIGAQkBAQMJhiCEEIM4AQE?=
+X-IronPort-AV: E=Sophos;i="5.81,236,1610409600"; d="scan'208";a="874107942"
+Received: from alln-core-8.cisco.com ([173.36.13.141])
+ by rcdn-iport-2.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
+ 09 Mar 2021 21:29:47 +0000
+Received: from zorba ([10.24.4.5])
+ by alln-core-8.cisco.com (8.15.2/8.15.2) with ESMTPS id 129LTj55006364
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Tue, 9 Mar 2021 21:29:46 GMT
+Date: Tue, 9 Mar 2021 13:29:44 -0800
+From: Daniel Walker <danielwa@cisco.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 3/7] powerpc: convert config files to generic cmdline
+Message-ID: <20210309212944.GR109100@zorba>
+References: <20210309000247.2989531-4-danielwa@cisco.com>
+ <5f865584-09c9-d21f-ffb7-23cf07cf058e@csgroup.eu>
 MIME-Version: 1.0
-In-Reply-To: <3180b5c6-e61f-9c5f-3c80-f10e69dc5785@linux.ibm.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.103]
-X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 36be80d9-9d5e-489e-a97b-459db706a6b2
-X-Ovh-Tracer-Id: 12667499853954255721
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudduiedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeejkeduueduveelgeduueegkeelffevledujeetffeivdelvdfgkeeufeduheehfeenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepghhrohhugheskhgrohgurdhorhhg
+In-Reply-To: <5f865584-09c9-d21f-ffb7-23cf07cf058e@csgroup.eu>
+X-Auto-Response-Suppress: DR, OOF, AutoReply
+X-Outbound-SMTP-Client: 10.24.4.5, [10.24.4.5]
+X-Outbound-Node: alln-core-8.cisco.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,172 +83,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "list@suse.de:PowerPC" <qemu-ppc@nongnu.org>, linuxppc-dev@lists.ozlabs.org,
- QEMU Developers <qemu-devel@nongnu.org>, David Gibson <dgibson@redhat.com>
+Cc: Rob Herring <robh@kernel.org>,
+ Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-mips@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ xe-linux-external@cisco.com, Andrew Morton <akpm@linux-foundation.org>,
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/9/21 6:08 PM, Daniel Henrique Barboza wrote:
+On Tue, Mar 09, 2021 at 08:47:09AM +0100, Christophe Leroy wrote:
 > 
 > 
-> On 3/9/21 12:33 PM, CÃ©dric Le Goater wrote:
->> On 3/8/21 6:13 PM, Greg Kurz wrote:
->>> On Wed, 3 Mar 2021 18:48:50 +0100
->>> CÃ©dric Le Goater <clg@kaod.org> wrote:
->>>
->>>> The 'chip_id' field of the XIVE CPU structure is used to choose a
->>>> target for a source located on the same chip when possible. This field
->>>> is assigned on the PowerNV platform using the "ibm,chip-id" property
->>>> on pSeries under KVM when NUMA nodes are defined but it is undefined
->>>
->>> This sentence seems to have a syntax problem... like it is missing an
->>> 'and' before 'on pSeries'.
->>
->> ah yes, or simply a comma.
->>
->>>> under PowerVM. The XIVE source structure has a similar field
->>>> 'src_chip' which is only assigned on the PowerNV platform.
->>>>
->>>> cpu_to_node() returns a compatible value on all platforms, 0 being the
->>>> default node. It will also give us the opportunity to set the affinity
->>>> of a source on pSeries when we can localize them.
->>>>
->>>
->>> IIUC this relies on the fact that the NUMA node id is == to chip id
->>> on PowerNV, i.e. xc->chip_id which is passed to OPAL remain stable
->>> with this change.
->>
->> Linux sets the NUMA node in numa_setup_cpu(). On pseries, the hcall
->> H_HOME_NODE_ASSOCIATIVITY returns the node id if I am correct (Daniel
->> in Cc:)
+> Le 09/03/2021 à 01:02, Daniel Walker a écrit :
+> > This is a scripted mass convert of the config files to use
+> > the new generic cmdline. There is a bit of a trim effect here.
+> > It would seems that some of the config haven't been trimmed in
+> > a while.
 > 
-> That's correct. H_HOME_NODE_ASSOCIATIVITY returns not only the node_id, but
-> a list with the ibm,associativity domains of the CPU that "proc-no" (processor
-> identifier) is mapped to inside QEMU.
+> If you do that in a separate patch, you loose bisectability.
 > 
-> node_id in this case, considering that we're working with a reference-points
-> of size 4, is the 4th element of the returned list. The last element is
-> "procno" itself.
+> I think it would have been better to do things in a different way, more or less like I did in my series:
+> 1/ Provide GENERIC cmdline at the same functionnality level as what is
+> spread in the different architectures
+> 2/ Convert architectures to the generic with least churn.
+> 3/ Add new features to the generic
+
+You have to have the churn eventually, no matter how you do it. The only way you
+don't have churn is if you never upgrade the feature set.
+
+
+> > 
+> > The bash script used to convert is as follows,
+> > 
+> > if [[ -z "$1" || -z "$2" ]]; then
+> >          echo "Two arguments are needed."
+> >          exit 1
+> > fi
+> > mkdir $1
+> > cp $2 $1/.config
+> > sed -i 's/CONFIG_CMDLINE=/CONFIG_CMDLINE_BOOL=y\nCONFIG_CMDLINE_PREPEND=/g' $1/.config
 > 
+> This is not correct.
 > 
->>
->> On PowerNV, Linux uses "ibm,associativity" property of the CPU to find
->> the node id. This value is built from the chip id in OPAL, so the
->> value returned by cpu_to_node(cpu) and the value of the "ibm,chip-id"
->> property are unlikely to be different.
->>
->> cpu_to_node(cpu) is used in many places to allocate the structures
->> locally to the owning node. XIVE is not an exception (see below in the
->> same patch), it is better to be consistent and get the same information
->> (node id) using the same routine.
->>
->>
->> In Linux, "ibm,chip-id" is only used in low level PowerNV drivers :
->> LPC, XSCOM, RNG, VAS, NX. XIVE should be in that list also but skiboot
->> unifies the controllers of the system to only expose one the OS. This
->> is problematic and should be changed but it's another topic.
->>
->>
->>> On the other hand, you have the pSeries case under PowerVM that
->>> doesn't xc->chip_id, which isn't passed to any hcall AFAICT.
->>
->> yes "ibm,chip-id" is an OPAL concept unfortunately and it has no meaning
->> under PAPR. xc->chip_id on pseries (PowerVM) will contains an invalid
->> chip id.
->>
->> QEMU/KVM exposes "ibm,chip-id" but it's not used. (its value is not
->> always correct btw)
+> By default, on powerpc the provided command line is used only if the bootloader doesn't provide one.
 > 
-> 
-> If you have a way to reliably reproduce this, let me know and I'll fix it
-> up in QEMU.
+> Otherwise:
+> - the builtin command line is appended to the one provided by the bootloader
+> if CONFIG_CMDLINE_EXTEND is selected
+> - the builtin command line replaces to the one provided by the bootloader if
+> CONFIG_CMDLINE_FORCE is selected
 
-with :
+I think my changes maintain most of this due to the override of
+CONFIG_CMDLINE_PREPEND. This is an upgrade and the inflexibility in powerpc is
+an example of why these changes were created in the first place.
 
-   -smp 4,cores=1,maxcpus=8 -object memory-backend-ram,id=ram-node0,size=2G -numa node,nodeid=0,cpus=0-1,cpus=4-5,memdev=ram-node0 -object memory-backend-ram,id=ram-node1,size=2G -numa node,nodeid=1,cpus=2-3,cpus=6-7,memdev=ram-node1
+For example , say the default command line is "root=/dev/issblk0" from iss476
+platform. And the bootloader adds "root=/dev/sda1"
 
-# dmesg | grep numa
-[    0.013106] numa: Node 0 CPUs: 0-1
-[    0.013136] numa: Node 1 CPUs: 2-3
+The result is <prepend><bootloader><append>.
 
-# dtc -I fs /proc/device-tree/cpus/ -f | grep ibm,chip-id
-		ibm,chip-id = <0x01>;
-		ibm,chip-id = <0x02>;
-		ibm,chip-id = <0x00>;
-		ibm,chip-id = <0x03>;
+Then you have,
 
-with :
+root=/dev/issblk0 root=/dev/sda1
 
-  -smp 4,cores=4,maxcpus=8,threads=1 -object memory-backend-ram,id=ram-node0,size=2G -numa node,nodeid=0,cpus=0-1,cpus=4-5,memdev=ram-node0 -object memory-backend-ram,id=ram-node1,size=2G -numa node,nodeid=1,cpus=2-3,cpus=6-7,memdev=ram-node1
+and the bootloader has precedent over the default command line. So root= in the
+above cases is defined by the bootloader.
 
-# dmesg | grep numa
-[    0.013106] numa: Node 0 CPUs: 0-1
-[    0.013136] numa: Node 1 CPUs: 2-3
+The only issue would be if a person wants to override the default command line
+with an unrelated bootloader command line. I don't know how many people do this,
+but I doubt it's many. Can you think of any use cases like this?
 
-# dtc -I fs /proc/device-tree/cpus/ -f | grep ibm,chip-id
-		ibm,chip-id = <0x00>;
-		ibm,chip-id = <0x00>;
-		ibm,chip-id = <0x00>;
-		ibm,chip-id = <0x00>;
+I would imagine there are many more people who have to entirely duplicate the
+default command line in the boot loader when they really just want to change a
+single part of it like the root= device or console device or speed.
 
-I think we should simply remove "ibm,chip-id" since it's not used and
-not in the PAPR spec.
-
-Thanks,
-
-C.
-
- 
-
-> 
-> Thanks,
-> 
-> 
-> DHB
-> 
-> 
->>
->>> It looks like the chip id is only used for localization purpose in
->>> this case, right ?
->>
->> Yes and PAPR sources are not localized. So it's not used. MSI sources
->> could be if we rewrote the MSI driver.
->>
->>> In this case, what about doing this change for pSeries only,
->>> somewhere in spapr.c ?
->>
->> The IPI code is common to all platforms and all have the same issue.
->> I rather not.
->>
->> Thanks,
->>
->> C.
->>  
->>>> Signed-off-by: CÃ©dric Le Goater <clg@kaod.org>
->>>> ---
->>>>   arch/powerpc/sysdev/xive/common.c | 7 +------
->>>>   1 file changed, 1 insertion(+), 6 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
->>>> index 595310e056f4..b8e456da28aa 100644
->>>> --- a/arch/powerpc/sysdev/xive/common.c
->>>> +++ b/arch/powerpc/sysdev/xive/common.c
->>>> @@ -1335,16 +1335,11 @@ static int xive_prepare_cpu(unsigned int cpu)
->>>>         xc = per_cpu(xive_cpu, cpu);
->>>>       if (!xc) {
->>>> -        struct device_node *np;
->>>> -
->>>>           xc = kzalloc_node(sizeof(struct xive_cpu),
->>>>                     GFP_KERNEL, cpu_to_node(cpu));
->>>>           if (!xc)
->>>>               return -ENOMEM;
->>>> -        np = of_get_cpu_node(cpu, NULL);
->>>> -        if (np)
->>>> -            xc->chip_id = of_get_ibm_chip_id(np);
->>>> -        of_node_put(np);
->>>> +        xc->chip_id = cpu_to_node(cpu);
->>>>           xc->hw_ipi = XIVE_BAD_IRQ;
->>>>             per_cpu(xive_cpu, cpu) = xc;
->>>
->>
+Daniel
