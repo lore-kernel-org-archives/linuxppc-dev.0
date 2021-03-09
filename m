@@ -2,51 +2,62 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB025C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 17:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DCA3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 18:12:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB01D65244
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 17:30:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB01D65244
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id C16226522E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 18:12:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C16226522E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw2L13G8Gz3cbT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 04:30:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw3GT60K8z3cb4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 05:12:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=207.211.30.44;
+ helo=us-smtp-delivery-44.mimecast.com; envelope-from=groug@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+X-Greylist: delayed 65 seconds by postgrey-1.36 at boromir;
+ Wed, 10 Mar 2021 05:12:30 AEDT
+Received: from us-smtp-delivery-44.mimecast.com
+ (us-smtp-delivery-44.mimecast.com [207.211.30.44])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw2Kf6Szrz3cGq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 04:30:30 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id A3684ACC6;
- Tue,  9 Mar 2021 17:30:27 +0000 (UTC)
-Date: Tue, 9 Mar 2021 18:30:26 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Davidlohr Bueso <dave@stgolabs.net>
-Subject: Re: [PATCH 3/3] powerpc/qspinlock: Use generic smp_cond_load_relaxed
-Message-ID: <20210309173026.GB6564@kitsune.suse.cz>
-References: <20210309015950.27688-1-dave@stgolabs.net>
- <20210309015950.27688-4-dave@stgolabs.net>
- <20210309093912.GW6564@kitsune.suse.cz>
- <20210309154611.kbxzx65auzvmfqnt@offworld>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw3G63xHSz3cG2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 05:12:30 +1100 (AEDT)
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-379-YbQoMtiLOkGTYLcLvRh8gA-1; Tue, 09 Mar 2021 13:11:14 -0500
+X-MC-Unique: YbQoMtiLOkGTYLcLvRh8gA-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id F062C80364C;
+ Tue,  9 Mar 2021 18:11:12 +0000 (UTC)
+Received: from bahia.lan (ovpn-113-236.ams2.redhat.com [10.36.113.236])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id E053610190A7;
+ Tue,  9 Mar 2021 18:11:11 +0000 (UTC)
+Subject: [PATCH] powerpc/xmon: Check cpu id in commands "c#", "dp#" and "dx#"
+From: Greg Kurz <groug@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 09 Mar 2021 19:11:10 +0100
+Message-ID: <161531347060.252863.10490063933688958044.stgit@bahia.lan>
+User-Agent: StGit/0.21
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210309154611.kbxzx65auzvmfqnt@offworld>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: kaod.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,43 +69,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Davidlohr Bueso <dbueso@suse.de>, peterz@infradead.org, will@kernel.org,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, mingo@redhat.com,
- paulus@samba.org, longman@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 09, 2021 at 07:46:11AM -0800, Davidlohr Bueso wrote:
-> On Tue, 09 Mar 2021, Michal Such�nek wrote:
-> 
-> > On Mon, Mar 08, 2021 at 05:59:50PM -0800, Davidlohr Bueso wrote:
-> > > 49a7d46a06c3 (powerpc: Implement smp_cond_load_relaxed()) added
-> > > busy-waiting pausing with a preferred SMT priority pattern, lowering
-> > > the priority (reducing decode cycles) during the whole loop slowpath.
-> > > 
-> > > However, data shows that while this pattern works well with simple
-> >                                              ^^^^^^^^^^^^^^^^^^^^^^
-> > > spinlocks, queued spinlocks benefit more being kept in medium priority,
-> > > with a cpu_relax() instead, being a low+medium combo on powerpc.
-> > ...
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-> > > index aecfde829d5d..7ae29cfb06c0 100644
-> > > --- a/arch/powerpc/include/asm/barrier.h
-> > > +++ b/arch/powerpc/include/asm/barrier.h
-> > > @@ -80,22 +80,6 @@ do {									\
-> > > 	___p1;								\
-> > >  })
-> > > 
-> > > -#ifdef CONFIG_PPC64
-> > Maybe it should be kept for the simple spinlock case then?
-> 
-> It is kept, note that simple spinlocks don't use smp_cond_load_relaxed,
-> but instead deal with the priorities in arch_spin_lock(), so it will
-> spin in low priority until it sees a chance to take the lock, where
-> it switches back to medium.
+All these commands end up peeking into the PACA using the user originated
+cpu id as an index. Check the cpu id is valid in order to prevent xmon to
+crash. Instead of printing an error, this follows the same behavior as the
+"lp s #" command : ignore the buggy cpu id parameter and fall back to the
+#-less version of the command.
 
-Indeed, thanks for the clarification.
+Signed-off-by: Greg Kurz <groug@kaod.org>
+---
+ arch/powerpc/xmon/xmon.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Michal
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 80fbf8968f77..d3d6e044228e 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1248,7 +1248,7 @@ static int cpu_cmd(void)
+ =09unsigned long cpu, first_cpu, last_cpu;
+ =09int timeout;
+=20
+-=09if (!scanhex(&cpu)) {
++=09if (!scanhex(&cpu) || cpu >=3D num_possible_cpus()) {
+ =09=09/* print cpus waiting or in xmon */
+ =09=09printf("cpus stopped:");
+ =09=09last_cpu =3D first_cpu =3D NR_CPUS;
+@@ -2678,7 +2678,7 @@ static void dump_pacas(void)
+=20
+ =09termch =3D c;=09/* Put c back, it wasn't 'a' */
+=20
+-=09if (scanhex(&num))
++=09if (scanhex(&num) && num < num_possible_cpus())
+ =09=09dump_one_paca(num);
+ =09else
+ =09=09dump_one_paca(xmon_owner);
+@@ -2751,7 +2751,7 @@ static void dump_xives(void)
+=20
+ =09termch =3D c;=09/* Put c back, it wasn't 'a' */
+=20
+-=09if (scanhex(&num))
++=09if (scanhex(&num) && num < num_possible_cpus())
+ =09=09dump_one_xive(num);
+ =09else
+ =09=09dump_one_xive(xmon_owner);
+
+
