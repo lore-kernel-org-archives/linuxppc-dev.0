@@ -2,110 +2,57 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A9D9C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:43:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D238EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 22:10:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90C9764ED6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:43:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90C9764ED6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id F251A65030
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 22:10:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F251A65030
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw7xt1zRSz3dTP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 08:43:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw8XQ1pN7z3cZx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 09:10:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W9CsffVL;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W9CsffVL;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=hsiangkao@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=W9CsffVL; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=W9CsffVL; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw5CV0HMPz2xYq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 06:40:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1615318818;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=avJtp16vLH3ysAvGNZjvdMJS5OXrs5RoA1exdXYwigY=;
- b=W9CsffVLmOyKgENVycv/PW2DRqIIOWFYTyQ5lyY54PkDrn7doVTVWoojz2WfSZ2T/MI5po
- CTr3kNu2/hcEoTs219/YjXmTAHejePy9nvwaQ+HhCsG4OQfAgQO7mMjErzViGwOAlV7Lgq
- 9R/7hyRquQkVHGm4tN0ltyJSQnaKT8M=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1615318818;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=avJtp16vLH3ysAvGNZjvdMJS5OXrs5RoA1exdXYwigY=;
- b=W9CsffVLmOyKgENVycv/PW2DRqIIOWFYTyQ5lyY54PkDrn7doVTVWoojz2WfSZ2T/MI5po
- CTr3kNu2/hcEoTs219/YjXmTAHejePy9nvwaQ+HhCsG4OQfAgQO7mMjErzViGwOAlV7Lgq
- 9R/7hyRquQkVHGm4tN0ltyJSQnaKT8M=
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com
- [209.85.216.69]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-444-q7bC2X9GNIKnAnansfiZfA-1; Tue, 09 Mar 2021 14:33:57 -0500
-X-MC-Unique: q7bC2X9GNIKnAnansfiZfA-1
-Received: by mail-pj1-f69.google.com with SMTP id z21so2699568pjt.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Mar 2021 11:33:57 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=avJtp16vLH3ysAvGNZjvdMJS5OXrs5RoA1exdXYwigY=;
- b=fXDjUEAD6eKFYgX7Rkxew6d99padOjvSFgAO4idgkg3gVDaTAspkXNNP0PEuoOxm7N
- Rg1eXKEBIq3yisYSziSKu361QBzSZlRMrfKLBKFnlvv/PWbjTve6xKEzBdW2OrfXiUQm
- xK0WLCora/h6c7GIGVrflIcg+kS2vqO4um8zFaOwN+5644TGnt+l8fw27xPCWdMgl+sV
- iyxeZYer3kQkz3+fpjFbnRoDudUIY7VOabd3eZmdUNO4d6jzQyl1onPJ0vCiqIZCupFG
- 3VFp6hZj8Bu7Y0oQ6AvAkCK0Huun8AhsRFGl0HtsPt8XhKUSs7ZMDv2zKQC3H40ytUEb
- A0Vw==
-X-Gm-Message-State: AOAM5310NY/URokjO72C9EZz/hYvYGO7tXePssGaqCJQ/1Tc3l1YviZJ
- LzDgy/JRRUVD21vb7Tu7bxB+IAZR9UyjbW/Jo8yOo2slFKusQjnX4ftlZ5n2iOFQddaSb/ItUY8
- tdgJglQaE/WHIyd/QyWthw0akqw==
-X-Received: by 2002:a17:90a:d0c4:: with SMTP id
- y4mr6388462pjw.233.1615318436755; 
- Tue, 09 Mar 2021 11:33:56 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwRoheltWC3q/OlHwNvgRQikUup4a/cbSjffjIeSZP5QkLBGPEM1MUby0bF5Es4MSGuUmH/sg==
-X-Received: by 2002:a17:90a:d0c4:: with SMTP id
- y4mr6388446pjw.233.1615318436540; 
- Tue, 09 Mar 2021 11:33:56 -0800 (PST)
-Received: from xiangao.remote.csb ([209.132.188.80])
- by smtp.gmail.com with ESMTPSA id z3sm13835115pff.40.2021.03.09.11.33.50
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 09 Mar 2021 11:33:56 -0800 (PST)
-Date: Wed, 10 Mar 2021 03:33:42 +0800
-From: Gao Xiang <hsiangkao@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/9] fs: rename alloc_anon_inode to alloc_anon_inode_sb
-Message-ID: <20210309193342.GA3958006@xiangao.remote.csb>
-References: <20210309155348.974875-1-hch@lst.de>
- <20210309155348.974875-2-hch@lst.de>
-MIME-Version: 1.0
-In-Reply-To: <20210309155348.974875-2-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=hsiangkao@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Dw8Wz0px8z2xYp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 09:09:50 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 129M5XDc030658;
+ Tue, 9 Mar 2021 16:05:34 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 129M5X7J030657;
+ Tue, 9 Mar 2021 16:05:33 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Tue, 9 Mar 2021 16:05:32 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
+ save_stack_trace() and friends
+Message-ID: <20210309220532.GI29191@gate.crashing.org>
+References: <e2e8728c4c4553bbac75a64b148e402183699c0c.1614780567.git.christophe.leroy@csgroup.eu>
+ <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
+ <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
+ <YD+o5QkCZN97mH8/@elver.google.com>
+ <20210304145730.GC54534@C02TD0UTHF1T.local>
+ <20210304215448.GU29191@gate.crashing.org>
+ <20210309160505.GA4979@C02TD0UTHF1T.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Mailman-Approved-At: Wed, 10 Mar 2021 08:42:20 +1100
+In-Reply-To: <20210309160505.GA4979@C02TD0UTHF1T.local>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,31 +64,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason Gunthorpe <jgg@nvidia.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- "VMware, Inc." <pv-drivers@vmware.com>, David Hildenbrand <david@redhat.com>,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
- Minchan Kim <minchan@kernel.org>, Alex Williamson <alex.williamson@redhat.com>,
- Nadav Amit <namit@vmware.com>, Al Viro <viro@zeniv.linux.org.uk>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Nitin Gupta <ngupta@vflare.org>
+Cc: Marco Elver <elver@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ kasan-dev <kasan-dev@googlegroups.com>, broonie@kernel.org,
+ Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 09, 2021 at 04:53:40PM +0100, Christoph Hellwig wrote:
-> Rename alloc_inode to free the name for a new variant that does not
-> need boilerplate to create a super_block first.
+Hi!
+
+On Tue, Mar 09, 2021 at 04:05:23PM +0000, Mark Rutland wrote:
+> On Thu, Mar 04, 2021 at 03:54:48PM -0600, Segher Boessenkool wrote:
+> > On Thu, Mar 04, 2021 at 02:57:30PM +0000, Mark Rutland wrote:
+> > > It looks like GCC is happy to give us the function-entry-time FP if we use
+> > > __builtin_frame_address(1),
+> > 
+> > From the GCC manual:
+> >      Calling this function with a nonzero argument can have
+> >      unpredictable effects, including crashing the calling program.  As
+> >      a result, calls that are considered unsafe are diagnosed when the
+> >      '-Wframe-address' option is in effect.  Such calls should only be
+> >      made in debugging situations.
+> > 
+> > It *does* warn (the warning is in -Wall btw), on both powerpc and
+> > aarch64.  Furthermore, using this builtin causes lousy code (it forces
+> > the use of a frame pointer, which we normally try very hard to optimise
+> > away, for good reason).
+> > 
+> > And, that warning is not an idle warning.  Non-zero arguments to
+> > __builtin_frame_address can crash the program.  It won't on simpler
+> > functions, but there is no real definition of what a simpler function
+> > *is*.  It is meant for debugging, not for production use (this is also
+> > why no one has bothered to make it faster).
+> >
+> > On Power it should work, but on pretty much any other arch it won't.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
+> I understand this is true generally, and cannot be relied upon in
+> portable code. However as you hint here for Power, I believe that on
+> arm64 __builtin_frame_address(1) shouldn't crash the program due to the
+> way frame records work on arm64, but I'll go check with some local
+> compiler folk. I agree that __builtin_frame_address(2) and beyond
+> certainly can, e.g.  by NULL dereference and similar.
 
-That is a nice idea as well to avoid sb by introducing an unique
-fs...
+I still do not know the aarch64 ABI well enough.  If only I had time!
 
-Reviewed-by: Gao Xiang <hsiangkao@redhat.com>
+> For context, why do you think this would work on power specifically? I
+> wonder if our rationale is similar.
 
-Thanks,
-Gao Xiang
+On most 64-bit Power ABIs all stack frames are connected together as a
+linked list (which is updated atomically, importantly).  This makes it
+possible to always find all previous stack frames.
 
+> Are you aware of anything in particular that breaks using
+> __builtin_frame_address(1) in non-portable code, or is this just a
+> general sentiment of this not being a supported use-case?
+
+It is not supported, and trying to do it anyway can crash: it can use
+random stack contents as pointer!  Not really "random" of course, but
+where it thinks to find a pointer into the previous frame, which is not
+something it can rely on (unless the ABI guarantees it somehow).
+
+See gcc.gnu.org/PR60109 for example.
+
+> > > Unless we can get some strong guarantees from compiler folk such that we
+> > > can guarantee a specific function acts boundary for unwinding (and
+> > > doesn't itself get split, etc), the only reliable way I can think to
+> > > solve this requires an assembly trampoline. Whatever we do is liable to
+> > > need some invasive rework.
+> > 
+> > You cannot get such a guarantee, other than not letting the compiler
+> > see into the routine at all, like with assembler code (not inline asm,
+> > real assembler code).
+> 
+> If we cannot reliably ensure this then I'm happy to go write an assembly
+> trampoline to snapshot the state at a function call boundary (where our
+> procedure call standard mandates the state of the LR, FP, and frame
+> records pointed to by the FP).
+
+Is the frame pointer required?!
+
+> This'll require reworking a reasonable
+> amount of code cross-architecture, so I'll need to get some more
+> concrete justification (e.g. examples of things that can go wrong in
+> practice).
+
+Say you have a function that does dynamic stack allocation, then there
+is usually no way to find the previous stack frame (without function-
+specific knowledge).  So __builtin_frame_address cannot work (it knows
+nothing about frames further up).
+
+Dynamic stack allocation (alloca, or variable length automatic arrays)
+is just the most common and most convenient example; it is not the only
+case you have problems here.
+
+> > The real way forward is to bite the bullet and to no longer pretend you
+> > can do a full backtrace from just the stack contents.  You cannot.
+> 
+> I think what you mean here is that there's no reliable way to handle the
+> current/leaf function, right? If so I do agree.
+
+No, I meant what I said.
+
+There is the separate issue that you do not know where the return
+address (etc.) is stored in a function that has not yet done a call
+itself, sure.  You cannot assume anything the ABI does not tell you you
+can depend on.
+
+> Beyond that I believe that arm64's frame records should be sufficient.
+
+Do you have a simple linked list connecting all frames?  The aarch64 GCC
+port does not define anything special here (DYNAMIC_CHAIN_ADDRESS), so
+the default will be used: every frame pointer has to point to the
+previous one, no exceptions whatsoever.
+
+
+Segher
