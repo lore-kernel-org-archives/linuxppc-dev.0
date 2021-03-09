@@ -7,59 +7,58 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78656C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:12:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7420C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:12:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC5ED65252
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:12:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC5ED65252
+	by mail.kernel.org (Postfix) with ESMTPS id 6256565252
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:12:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6256565252
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DvvGp4PdQz3f5w
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 23:12:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvvH80dnHz3fCg
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 23:12:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvvCP05Bwz3cKs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 23:09:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DvvCR15Btz3cK7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 23:09:39 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DvvCK2HQDz9tyjQ;
- Tue,  9 Mar 2021 13:09:33 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DvvCM31KKz9tyjH;
+ Tue,  9 Mar 2021 13:09:35 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id l45W7vZ1yY_R; Tue,  9 Mar 2021 13:09:33 +0100 (CET)
+ with ESMTP id Dd-6LQI-1UZ2; Tue,  9 Mar 2021 13:09:35 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DvvCK1Vxgz9tyjG;
- Tue,  9 Mar 2021 13:09:33 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DvvCM0hdnz9tyjF;
+ Tue,  9 Mar 2021 13:09:35 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8DA2F8B7FC;
- Tue,  9 Mar 2021 13:09:34 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 688D48B7FC;
+ Tue,  9 Mar 2021 13:09:36 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id yMtfVgOyw_Mo; Tue,  9 Mar 2021 13:09:34 +0100 (CET)
+ with ESMTP id Q2BNzlo41jGJ; Tue,  9 Mar 2021 13:09:36 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 100848B800;
- Tue,  9 Mar 2021 13:09:34 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F0738B800;
+ Tue,  9 Mar 2021 13:09:36 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E80FA67555; Tue,  9 Mar 2021 12:09:33 +0000 (UTC)
-Message-Id: <5cbd0cb65293c3c6d98a0ca41edfad73fd005e84.1615291471.git.christophe.leroy@csgroup.eu>
+ id 03D0067555; Tue,  9 Mar 2021 12:09:36 +0000 (UTC)
+Message-Id: <28be46386846e1f454c10d7ac63cf986fc0a8193.1615291472.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615291471.git.christophe.leroy@csgroup.eu>
 References: <cover.1615291471.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 08/43] powerpc/40x: Prepare normal exception handler for
- enabling MMU early
+Subject: [PATCH v2 10/43] powerpc/32: Entry cpu time accounting in C
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Tue,  9 Mar 2021 12:09:33 +0000 (UTC)
+Date: Tue,  9 Mar 2021 12:09:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,122 +75,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ensure normal exception handler are able to manage stuff with
-MMU enabled. For that we use CONFIG_VMAP_STACK related code
-allthough there is no intention to really activate CONFIG_VMAP_STACK
-on powerpc 40x for the moment.
-
-40x uses SPRN_DEAR instead of SPRN_DAR and SPRN_ESR instead of
-SPRN_DSISR. Take it into account in common macros.
-
-40x MSR value doesn't fit on 15 bits, use LOAD_REG_IMMEDIATE() in
-common macros that will be used also with 40x.
+There is no need for this to be in asm,
+use the new interrupt entry wrapper.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/entry_32.S |  2 +-
- arch/powerpc/kernel/head_32.h  | 15 ++++++++++++++-
- arch/powerpc/kernel/head_40x.S | 17 ++++++-----------
- 3 files changed, 21 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/interrupt.h |  3 +++
+ arch/powerpc/include/asm/ppc_asm.h   | 10 ----------
+ arch/powerpc/kernel/entry_32.S       |  1 -
+ 3 files changed, 3 insertions(+), 11 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index b2f69e5dcb50..c35368adbe71 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -32,6 +32,9 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+ #ifdef CONFIG_PPC32
+ 	if (!arch_irq_disabled_regs(regs))
+ 		trace_hardirqs_off();
++
++	if (user_mode(regs))
++		account_cpu_user_entry();
+ #endif
+ 	/*
+ 	 * Book3E reconciles irq soft mask in asm
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 3dceb64fc9af..8998122fc7e2 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -23,18 +23,8 @@
+  */
+ 
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+-#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)
+ #define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)
+ #else
+-#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)				\
+-	MFTB(ra);			/* get timebase */		\
+-	PPC_LL	rb, ACCOUNT_STARTTIME_USER(ptr);			\
+-	PPC_STL	ra, ACCOUNT_STARTTIME(ptr);				\
+-	subf	rb,rb,ra;		/* subtract start value */	\
+-	PPC_LL	ra, ACCOUNT_USER_TIME(ptr);				\
+-	add	ra,ra,rb;		/* add on to user time */	\
+-	PPC_STL	ra, ACCOUNT_USER_TIME(ptr);				\
+-
+ #define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)				\
+ 	MFTB(ra);			/* get timebase */		\
+ 	PPC_LL	rb, ACCOUNT_STARTTIME(ptr);				\
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 8528b4c7f9d3..535c55f4393a 100644
+index 0f18fe14649c..0f3f1bdd909e 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -162,7 +162,7 @@ transfer_to_handler:
- 	li	r12,-1			/* clear all pending debug events */
- 	mtspr	SPRN_DBSR,r12
- 	lis	r11,global_dbcr0@ha
--	tophys(r11,r11)
-+	tophys_novmstack r11,r11
- 	addi	r11,r11,global_dbcr0@l
- #ifdef CONFIG_SMP
- 	lwz	r9,TASK_CPU(r2)
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 5d4706c14572..ac6b391f1493 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -22,9 +22,17 @@
- #ifdef CONFIG_VMAP_STACK
- 	mfspr	r10, SPRN_SPRG_THREAD
- 	.if	\handle_dar_dsisr
-+#ifdef CONFIG_40x
-+	mfspr	r11, SPRN_DEAR
-+#else
- 	mfspr	r11, SPRN_DAR
-+#endif
- 	stw	r11, DAR(r10)
-+#ifdef CONFIG_40x
-+	mfspr	r11, SPRN_ESR
-+#else
- 	mfspr	r11, SPRN_DSISR
-+#endif
- 	stw	r11, DSISR(r10)
- 	.endif
- 	mfspr	r11, SPRN_SRR0
-@@ -61,7 +69,7 @@
- 
- .macro EXCEPTION_PROLOG_2 handle_dar_dsisr=0
- #ifdef CONFIG_VMAP_STACK
--	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
-+	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_IR | MSR_RI)) /* can take DTLB miss */
- 	mtmsr	r11
- 	isync
- 	mfspr	r11, SPRN_SPRG_SCRATCH2
-@@ -158,8 +166,13 @@
- 
- .macro save_dar_dsisr_on_stack reg1, reg2, sp
- #ifndef CONFIG_VMAP_STACK
-+#ifdef CONFIG_40x
-+	mfspr	\reg1, SPRN_DEAR
-+	mfspr	\reg2, SPRN_ESR
-+#else
- 	mfspr	\reg1, SPRN_DAR
- 	mfspr	\reg2, SPRN_DSISR
-+#endif
- 	stw	\reg1, _DAR(\sp)
- 	stw	\reg2, _DSISR(\sp)
+@@ -152,7 +152,6 @@ transfer_to_handler:
+ 	lwz	r12,THREAD_DBCR0(r12)
+ 	andis.	r12,r12,DBCR0_IDM@h
  #endif
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 1468f38c3860..4bf0aee858eb 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -221,11 +221,8 @@ _ENTRY(saved_ksp_limit)
-  * if they can't resolve the lightweight TLB fault.
-  */
- 	START_EXCEPTION(0x0300,	DataStorage)
--	EXCEPTION_PROLOG
--	mfspr	r5, SPRN_ESR		/* Grab the ESR, save it */
--	stw	r5, _ESR(r11)
--	mfspr	r4, SPRN_DEAR		/* Grab the DEAR, save it */
--	stw	r4, _DEAR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack	r4, r5, r11
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- /*
-@@ -244,17 +241,15 @@ _ENTRY(saved_ksp_limit)
- 
- /* 0x0600 - Alignment Exception */
- 	START_EXCEPTION(0x0600, Alignment)
--	EXCEPTION_PROLOG
--	mfspr	r4,SPRN_DEAR		/* Grab the DEAR and save it */
--	stw	r4,_DEAR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack r4, r5, r11
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
- 
- /* 0x0700 - Program Exception */
- 	START_EXCEPTION(0x0700, ProgramCheck)
--	EXCEPTION_PROLOG
--	mfspr	r4,SPRN_ESR		/* Grab the ESR and save it */
--	stw	r4,_ESR(r11)
-+	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	save_dar_dsisr_on_stack r4, r5, r11
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x700, program_check_exception)
- 
+-	ACCOUNT_CPU_USER_ENTRY(r2, r11, r12)
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	kuep_lock r11, r12
+ #endif
 -- 
 2.25.0
 
