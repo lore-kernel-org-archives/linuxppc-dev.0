@@ -2,26 +2,26 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A1F5C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 15:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B93D4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 15:56:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B72F965242
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 15:55:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B72F965242
+	by mail.kernel.org (Postfix) with ESMTPS id EC02E65242
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 15:56:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC02E65242
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw0DF1cBcz3d7J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 02:55:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw0Dj3KQXz3dNL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 02:56:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=UqioM+JO;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=T+H3yeYw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
@@ -30,34 +30,36 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=UqioM+JO; 
+ header.s=casper.20170209 header.b=T+H3yeYw; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw0CD2Lr0z30N8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 02:54:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw0CK756bz3cPP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 02:54:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
- Content-Description:In-Reply-To:References;
- bh=KGWSD1qzjw8jWYcVTd5k5Vux/eD/dPBH9TiN6yLVseE=; b=UqioM+JOtMrCZY+99WNlohS+n6
- D8sXLpSvt07nrEhE9GYHmdMTmjw4DL1jAclk+Ci+jnYGdn+IEIwZ0S8fpKJ2whNwkyjmljxBPh47g
- cMsKfNPA0fujb0XrwseHmDs/2m816gk63sTddN9x9X9wgRohgavTvx8tm6KQtpAyIG7cxz0OK5MKP
- PgIH6/WtutbbPjhpmXZVF7C1m9jWVkHGrdDIIbgcgrxaJ3JqKKlPb7/Swf8vZxBO2cCE67ILF7rVn
- MmRlVgFU4oQqmQ/DBvwu33p+M9TPPMt61GrQMTQJl2w3aFf67m+MltPsTuxfefjtilLeB/ZfnOnxB
- lkLQIpmA==;
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=TAB/jSR7P4i0tEpg6lVq01ZMIeZeWk00j+JpXBqlTDM=; b=T+H3yeYw5iLZv7pUgmsb25tUIS
+ qPrxwvgXhTEZ/+r7gvFNaBtHWVhs+PHbFoxnkj3u3ZSdxQ1KPpmoPcESzA3k/SeQfbnnw7C7vmFV4
+ ht9K8Nznds34Ck8c6U8ozAmgx/WZQEIqhVXZbzxQSPAkP1/qbORT5eOL56k3VB2PCjAbitpXHbgpu
+ eiUF8/HeYWm75kV2gwxDcBw/l/+jgr0vuiYgcG+wnyVuvaRla7CnP3FJUd9MYQ7g8c4vFTQtC0aGz
+ WlQPsUmOhiOmPqoIXuA+dDB2dUutIqClmDeHaP1qDtnQAjooDHIbfuprZiwSY9pToikcKK3d8G5z+
+ Cxq7OdwQ==;
 Received: from [2001:4bb8:180:9884:c70:4a89:bc61:3] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lJegA-000lLy-1I; Tue, 09 Mar 2021 15:53:56 +0000
+ id 1lJegY-000lMp-OH; Tue, 09 Mar 2021 15:54:23 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: make alloc_anon_inode more useful
-Date: Tue,  9 Mar 2021 16:53:39 +0100
-Message-Id: <20210309155348.974875-1-hch@lst.de>
+Subject: [PATCH 2/9] fs: add an argument-less alloc_anon_inode
+Date: Tue,  9 Mar 2021 16:53:41 +0100
+Message-Id: <20210309155348.974875-3-hch@lst.de>
 X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210309155348.974875-1-hch@lst.de>
+References: <20210309155348.974875-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -85,31 +87,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+Add a new alloc_anon_inode helper that allocates an inode on
+the anon_inode file system.
 
-this series first renames the existing alloc_anon_inode to
-alloc_anon_inode_sb to clearly mark it as requiring a superblock.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ fs/anon_inodes.c            | 15 +++++++++++++--
+ include/linux/anon_inodes.h |  1 +
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-It then adds a new alloc_anon_inode that works on the anon_inode
-file system super block, thus removing tons of boilerplate code.
+diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+index 4745fc37014332..b6a8ea71920bc3 100644
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -63,7 +63,7 @@ static struct inode *anon_inode_make_secure_inode(
+ 	const struct qstr qname = QSTR_INIT(name, strlen(name));
+ 	int error;
+ 
+-	inode = alloc_anon_inode_sb(anon_inode_mnt->mnt_sb);
++	inode = alloc_anon_inode();
+ 	if (IS_ERR(inode))
+ 		return inode;
+ 	inode->i_flags &= ~S_PRIVATE;
+@@ -225,13 +225,24 @@ int anon_inode_getfd_secure(const char *name, const struct file_operations *fops
+ }
+ EXPORT_SYMBOL_GPL(anon_inode_getfd_secure);
+ 
++/**
++ * alloc_anon_inode - create a new anonymous inode
++ *
++ * Create an inode on the anon_inode file system and return it.
++ */
++struct inode *alloc_anon_inode(void)
++{
++	return alloc_anon_inode_sb(anon_inode_mnt->mnt_sb);
++}
++EXPORT_SYMBOL_GPL(alloc_anon_inode);
++
+ static int __init anon_inode_init(void)
+ {
+ 	anon_inode_mnt = kern_mount(&anon_inode_fs_type);
+ 	if (IS_ERR(anon_inode_mnt))
+ 		panic("anon_inode_init() kernel mount failed (%ld)\n", PTR_ERR(anon_inode_mnt));
+ 
+-	anon_inode_inode = alloc_anon_inode_sb(anon_inode_mnt->mnt_sb);
++	anon_inode_inode = alloc_anon_inode();
+ 	if (IS_ERR(anon_inode_inode))
+ 		panic("anon_inode_init() inode allocation failed (%ld)\n", PTR_ERR(anon_inode_inode));
+ 
+diff --git a/include/linux/anon_inodes.h b/include/linux/anon_inodes.h
+index 71881a2b6f7860..b5ae9a6eda9923 100644
+--- a/include/linux/anon_inodes.h
++++ b/include/linux/anon_inodes.h
+@@ -21,6 +21,7 @@ int anon_inode_getfd_secure(const char *name,
+ 			    const struct file_operations *fops,
+ 			    void *priv, int flags,
+ 			    const struct inode *context_inode);
++struct inode *alloc_anon_inode(void);
+ 
+ #endif /* _LINUX_ANON_INODES_H */
+ 
+-- 
+2.30.1
 
-The few remainig callers of alloc_anon_inode_sb all use alloc_file_pseudo
-later, but might also be ripe for some cleanup.
-
-Diffstat:
- arch/powerpc/platforms/pseries/cmm.c |   27 +-------------
- drivers/dma-buf/dma-buf.c            |    2 -
- drivers/gpu/drm/drm_drv.c            |   64 +----------------------------------
- drivers/misc/cxl/api.c               |    2 -
- drivers/misc/vmw_balloon.c           |   24 +------------
- drivers/scsi/cxlflash/ocxl_hw.c      |    2 -
- drivers/virtio/virtio_balloon.c      |   30 +---------------
- fs/aio.c                             |    2 -
- fs/anon_inodes.c                     |   15 +++++++-
- fs/libfs.c                           |    2 -
- include/linux/anon_inodes.h          |    1 
- include/linux/fs.h                   |    2 -
- kernel/resource.c                    |   30 ++--------------
- mm/z3fold.c                          |   38 +-------------------
- mm/zsmalloc.c                        |   48 +-------------------------
- 15 files changed, 39 insertions(+), 250 deletions(-)
