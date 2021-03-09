@@ -2,60 +2,60 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46504C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 00:03:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E52F3C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 00:04:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9971E65275
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 00:03:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9971E65275
+	by mail.kernel.org (Postfix) with ESMTPS id 6485B65287
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 00:04:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6485B65287
 Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dvb5z2dmgz3dL2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 11:03:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dvb6R18fyz3ccV
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 11:04:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=Q2AIAtza;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=QZxZnfia;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cisco.com (client-ip=173.37.86.73; helo=rcdn-iport-2.cisco.com;
+ smtp.mailfrom=cisco.com (client-ip=173.37.142.93; helo=alln-iport-6.cisco.com;
  envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
- header.s=iport header.b=Q2AIAtza; dkim-atps=neutral
-Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
+ header.s=iport header.b=QZxZnfia; dkim-atps=neutral
+Received: from alln-iport-6.cisco.com (alln-iport-6.cisco.com [173.37.142.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dvb4t376cz30Mt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 11:02:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dvb4t4XrTz30N1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 11:02:54 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=3040; q=dns/txt; s=iport;
- t=1615248174; x=1616457774;
+ d=cisco.com; i=@cisco.com; l=1606; q=dns/txt; s=iport;
+ t=1615248175; x=1616457775;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=qOW1VpsX4fbS7pi7TUvKz3uyZUc7qjDe5+CAjX227XY=;
- b=Q2AIAtzaCqchExreHlHZU120gR3SMnHmlyfJZwVuWqZI3xfhWVZGV24I
- nGEZelw6Z0a4OXD0+MdniIx2Rk+CxQyfg/ODtTQt2OH2wS769sblP5+V9
- 8PECxZYcoABLLGFS5jIN/vx2TL8QwioleO0r7KfPxyYnvu/jKJAZg2i0B E=;
+ bh=5nfrAdR24COgZBWF2wEri9D+5QFCKExgHngLXOOCcpM=;
+ b=QZxZnfiaCvnw3sBzAXICuUhv7E2/o5gggyWCs+cbACaMX6VQTZ/icTKI
+ inkNynJbdno/JIW3zo0ZtgNfkx8I1C3hgVTsEijdsmHb7rZvbADayegky
+ 3Na8E/ocBzJekvQxw7r/FscDHPs6HZFIcU1R+8eJ4qxiblZ8pSVx+roa7 c=;
+X-IPAS-Result: =?us-ascii?q?A0AvAgCwuUZgkIcNJK1iHQEBAQEJARIBBQUBgg+DdwE5M?=
+ =?us-ascii?q?bJsCwEBAQ80BAEBhE2BfAIlOBMCAwEBAQMCAwEBAQEFAQEBAgEGBBQBAQEBA?=
+ =?us-ascii?q?QGGRYZ9AUaBPgESgnCDCKwkgiiJCoFFFIEliFx0hBgcgUlCgRGDWIozBIJAB?=
+ =?us-ascii?q?4EOgigSnjWcAoMIgR+aeA8io2yUXaJVgWshgVkzGggbFYMkUBkNjjiNcwFcI?=
+ =?us-ascii?q?AMvOAIGCgEBAwmPJgEB?=
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0BDAwAiukZg/4cNJK1iHAEBAQEBAQc?=
- =?us-ascii?q?BARIBAQQEAQGCD4IrgUwBObMcCwEBAQ80BAEBhE2BfAIlOBMCAwEBCwEBBQE?=
- =?us-ascii?q?BAQIBBgRxhW6GfQFGgT4BgwKDCKwkgiiJCoFFFIEliFx0hBgcgUlCjxwEgkd?=
- =?us-ascii?q?pJQGBCGc/nkCcAoMIgR+PKotODyKjbJRdolWBayOBVzMaCBsVgyVPGQ2cKwF?=
- =?us-ascii?q?cIANnAgYKAQEDCY8mAQE?=
-X-IronPort-AV: E=Sophos;i="5.81,233,1610409600"; d="scan'208";a="873669200"
+X-IronPort-AV: E=Sophos;i="5.81,233,1610409600"; d="scan'208";a="698440084"
 Received: from alln-core-2.cisco.com ([173.36.13.135])
- by rcdn-iport-2.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
- 09 Mar 2021 00:02:49 +0000
+ by alln-iport-6.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
+ 09 Mar 2021 00:02:52 +0000
 Received: from zorba.cisco.com ([10.24.7.91])
- by alln-core-2.cisco.com (8.15.2/8.15.2) with ESMTP id 12902mKa014497;
- Tue, 9 Mar 2021 00:02:48 GMT
+ by alln-core-2.cisco.com (8.15.2/8.15.2) with ESMTP id 12902mKc014497;
+ Tue, 9 Mar 2021 00:02:51 GMT
 From: Daniel Walker <danielwa@cisco.com>
 To: Will Deacon <will@kernel.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -63,14 +63,11 @@ To: Will Deacon <will@kernel.org>,
  Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
  Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- xe-linux-external@cisco.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 0/7] Generic Command Line changes
-Date: Mon,  8 Mar 2021 16:02:36 -0800
-Message-Id: <20210309000247.2989531-1-danielwa@cisco.com>
+ xe-linux-external@cisco.com, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>
+Subject: [PATCH v2 2/7] CMDLINE: drivers: of: ifdef out cmdline section
+Date: Mon,  8 Mar 2021 16:02:38 -0800
+Message-Id: <20210309000247.2989531-3-danielwa@cisco.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -88,69 +85,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Ruslan Ruslichenko <rruslich@cisco.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This fixed some problem identified in my last release. I made updates
-based on comments from Christophe Leroy.
+It looks like there's some seepage of cmdline stuff into
+the generic device tree code. This conflicts with the
+generic cmdline implementation so I remove it in the case
+when that's enabled.
 
-I added scripted updates to the defconfig file for mips and powerpc.
-This is required in order to maintain the status quo for those platforms
-which used the prior builtin command line system.
+Cc: xe-linux-external@cisco.com
+Signed-off-by: Ruslan Ruslichenko <rruslich@cisco.com>
+Signed-off-by: Daniel Walker <danielwa@cisco.com>
+---
+ drivers/of/fdt.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-These were tested on all effected architectures.
-
-Daniel Walker (7):
-  CMDLINE: add generic builtin command line
-  CMDLINE: drivers: of: ifdef out cmdline section
-  powerpc: convert config files to generic cmdline
-  CMDLINE: powerpc: convert to generic builtin command line
-  mips: convert config files to generic cmdline
-  CMDLINE: mips: convert to generic builtin command line
-  CMDLINE: x86: convert to generic builtin command line
-
- arch/mips/Kconfig                             |  4 +-
- arch/mips/Kconfig.debug                       | 44 ---------
- arch/mips/configs/ar7_defconfig               |  9 +-
- arch/mips/configs/bcm47xx_defconfig           |  8 +-
- arch/mips/configs/bcm63xx_defconfig           | 15 ++--
- arch/mips/configs/bmips_be_defconfig          | 11 +--
- arch/mips/configs/bmips_stb_defconfig         | 11 +--
- arch/mips/configs/capcella_defconfig          | 11 +--
- arch/mips/configs/ci20_defconfig              | 10 +--
- arch/mips/configs/cu1000-neo_defconfig        | 10 +--
- arch/mips/configs/cu1830-neo_defconfig        | 10 +--
- arch/mips/configs/e55_defconfig               |  4 +-
- arch/mips/configs/generic_defconfig           |  6 +-
- arch/mips/configs/gpr_defconfig               | 18 +---
- arch/mips/configs/loongson3_defconfig         | 13 +--
- arch/mips/configs/mpc30x_defconfig            |  7 +-
- arch/mips/configs/tb0219_defconfig            |  7 +-
- arch/mips/configs/tb0226_defconfig            |  7 +-
- arch/mips/configs/tb0287_defconfig            |  7 +-
- arch/mips/configs/workpad_defconfig           | 11 +--
- arch/mips/kernel/setup.c                      | 36 +-------
- arch/powerpc/Kconfig                          | 37 +-------
- arch/powerpc/configs/44x/fsp2_defconfig       | 33 ++++---
- arch/powerpc/configs/44x/iss476-smp_defconfig | 25 +++---
- arch/powerpc/configs/44x/warp_defconfig       | 17 ++--
- arch/powerpc/configs/holly_defconfig          | 13 +--
- arch/powerpc/configs/mvme5100_defconfig       | 23 ++---
- arch/powerpc/configs/skiroot_defconfig        | 12 ++-
- arch/powerpc/configs/storcenter_defconfig     | 18 ++--
- arch/powerpc/kernel/prom.c                    |  1 +
- arch/powerpc/kernel/prom_init.c               | 35 +++++---
- arch/x86/Kconfig                              | 44 +--------
- arch/x86/kernel/setup.c                       | 18 +---
- drivers/firmware/efi/libstub/x86-stub.c       |  2 +-
- drivers/of/fdt.c                              | 12 +++
- include/linux/cmdline.h                       | 89 +++++++++++++++++++
- init/Kconfig                                  | 68 ++++++++++++++
- 37 files changed, 321 insertions(+), 385 deletions(-)
- create mode 100644 include/linux/cmdline.h
-
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index feb0f2d67fc5..e25240d84632 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -25,6 +25,7 @@
+ #include <linux/serial_core.h>
+ #include <linux/sysfs.h>
+ #include <linux/random.h>
++#include <linux/cmdline.h>
+ 
+ #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+ #include <asm/page.h>
+@@ -1050,6 +1051,16 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 
+ 	/* Retrieve command line */
+ 	p = of_get_flat_dt_prop(node, "bootargs", &l);
++
++#ifdef CONFIG_GENERIC_CMDLINE
++	/*
++	 * The builtin command line will be added here, or it can override
++	 * with the DT bootargs.
++	 */
++	cmdline_add_builtin(data,
++			    (l > 0 ? p : NULL), /* This is sanity checking */
++			    COMMAND_LINE_SIZE);
++#else
+ 	if (p != NULL && l > 0)
+ 		strlcpy(data, p, min(l, COMMAND_LINE_SIZE));
+ 
+@@ -1070,6 +1081,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+ #endif
+ #endif /* CONFIG_CMDLINE */
++#endif /* CONFIG_GENERIC_CMDLINE */
+ 
+ 	pr_debug("Command line is: %s\n", (char *)data);
+ 
 -- 
 2.25.1
 
