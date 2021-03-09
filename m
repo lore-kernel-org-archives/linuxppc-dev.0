@@ -2,138 +2,108 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83508C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:42:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ACA2C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:42:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFE2264FAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:42:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFE2264FAD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=prevas.dk
+	by mail.kernel.org (Postfix) with ESMTPS id 52A4764FC0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 21:42:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52A4764FC0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw7wR1fqDz3cl1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 08:42:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw7wv73W9z3dBH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 08:42:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=prevas.dk header.i=@prevas.dk header.a=rsa-sha256 header.s=selector1 header.b=NsI8FJdY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J+IGfQQ0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=prevas.dk (client-ip=2a01:111:f400:fe0c::718;
- helo=eur04-db3-obe.outbound.protection.outlook.com;
- envelope-from=rasmus.villemoes@prevas.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=prevas.dk header.i=@prevas.dk header.a=rsa-sha256
- header.s=selector1 header.b=NsI8FJdY; 
- dkim-atps=neutral
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-db3eur04on0718.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe0c::718])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=danielhb@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=J+IGfQQ0; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw7vt4GDYz2xYn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 08:41:59 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=C+MBZq/DKn8WhWOveIfUb9wNEz19BGT7PwtkBsse4muYaLnAl+Qv8YEhoBc4mdP+D3iK3lt+qZZsk0JE6WjBTtjSCqyZ//k+GKlaWOJhFJ5BYirGwBxFxd/eWcWpRM6jvoHL95PetzZHToWfzQ5k0Y+1X/hUkdSnv3WIpaZMyT08DobzpnSONGUCHJA/mfdO1V/M8kUhzLI2H7y1gzM9skxulP7PrDvqPG8xFfL2I2rJ3x/bla8G6m4vzWczA4CgIBSpCwnOnW9Oz+sOh1dqqcFCbo10NsZ/IjjVZElZdWw8urGFC3mXjnk6sQ11/B990RFEVHnGlWwTbjMhAS8vdA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fZ694YIYCd2UL+4mOvbiRmANFbLnhPir7rFuQHimCsA=;
- b=k3JfwbMRzjDETfYAFSlGpUaEsOK7oH6VeRKcPqb7fNJDELvQ34/ARPRJLi7NLD1Cbr3WQgEFQ2dK+RIT9GGvvijF2f4FqU/4iQcba2R484SlLfStxzPVlrAcgIv2p1CcBCZuKj6ksfFp+FnBC8I1dacIOXJz2R8l9oTRr3J41EdLDFxsx7hiBGA+eHb6s2mRpsguh/JlX8QGxvYco2NwU7HApwxSmjvShNFTjS9Gcj6ET8NNrZHzwYAfm0zdyZLXwsiEDmHxADKMBi9/6jGaqXlnssz23FRHznvBigviTcyevl5sHybZ5BsETF2HQDyhiiGS3EN7Lwb46zBjPD5JeA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=prevas.dk; dmarc=pass action=none header.from=prevas.dk;
- dkim=pass header.d=prevas.dk; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prevas.dk; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fZ694YIYCd2UL+4mOvbiRmANFbLnhPir7rFuQHimCsA=;
- b=NsI8FJdY0YP8jYHQcU+jETsVJpec+4G2GQ9sAARJzNi6gbbgHnviJlnkHGRwhXFuxh9y4+3FUfIvveQU5yHV8uTq586I2IHR6FwXIkMDFQQ7colFlO1UcB6TUoBnNoYhZZu4cVSdoMnTlaJUKS+/cqfiYXhpuI7ZX9yUV6Uxixs=
-Authentication-Results: yulong.com; dkim=none (message not signed)
- header.d=none;yulong.com; dmarc=none action=none header.from=prevas.dk;
-Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:208:3f::10)
- by AM9PR10MB4087.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:1f2::14)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3912.17; Tue, 9 Mar
- 2021 21:41:49 +0000
-Received: from AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
- ([fe80::58b2:6a2a:b8f9:bc1a]) by AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
- ([fe80::58b2:6a2a:b8f9:bc1a%3]) with mapi id 15.20.3912.027; Tue, 9 Mar 2021
- 21:41:49 +0000
-Subject: Re: [PATCH] ethernet: ucc_geth: Use kmemdup instead of kmalloc and
- memcpy
-To: angkery <angkery@163.com>, leoyang.li@nxp.com, davem@davemloft.net,
- kuba@kernel.org
-References: <20210305142711.3022-1-angkery@163.com>
-From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-Message-ID: <f30c31a7-68fa-bd89-1ddf-857808a33f15@prevas.dk>
-Date: Tue, 9 Mar 2021 22:41:47 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw1rh1xDQz3cHt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 04:08:51 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 129H4SQO029633; Tue, 9 Mar 2021 12:08:34 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=C0fDfYqggF6O0TWpq41g6VG0VKKQPEaDC8TEUW8hVHI=;
+ b=J+IGfQQ0b6uckEy2aSvKAqlfMZCES3PnVJL253+7sQH+Yq5bnv6aBFsypWA5lf74gqVE
+ kn2DYhKa16yIsYouLZPgBHQxS39JnSCmWea+4y1ajqAFDCjbnT8BPMvAIdNNPo8Wo3y7
+ JkF32dQlgD+zDIWF83aekDBRzaOllw2MDdrx0iiZ6ty1ZLBJxOogBBIfFLNoABYwYwuI
+ rSQaYeomwYgrjPsdZhzLg4eHTsNcHQQJIZu5zhGyckyLywcSMCuLHSKr2g5roXpcYgve
+ y2XD0kbauI5/wQlj0kHyFTIq7hbek7UKWWYj+McXQ8f+IDo2JJr7thL8DkSgRk3HaAOt iw== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 376d190a8k-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 09 Mar 2021 12:08:33 -0500
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 129H54Jh006903;
+ Tue, 9 Mar 2021 17:08:32 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma04wdc.us.ibm.com with ESMTP id 3768n49v9x-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 09 Mar 2021 17:08:32 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 129H8WA826411376
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 9 Mar 2021 17:08:32 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 27F50AC05B;
+ Tue,  9 Mar 2021 17:08:32 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4D26DAC06D;
+ Tue,  9 Mar 2021 17:08:31 +0000 (GMT)
+Received: from [9.85.132.103] (unknown [9.85.132.103])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  9 Mar 2021 17:08:31 +0000 (GMT)
+Subject: Re: [PATCH v2 1/8] powerpc/xive: Use cpu_to_node() instead of
+ ibm,chip-id property
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ Greg Kurz <groug@kaod.org>
+References: <20210303174857.1760393-1-clg@kaod.org>
+ <20210303174857.1760393-2-clg@kaod.org> <20210308181359.789c143b@bahia.lan>
+ <8dd98e22-1f10-e87b-3fe3-e786bc9a8d71@kaod.org>
+From: Daniel Henrique Barboza <danielhb@linux.ibm.com>
+Message-ID: <3180b5c6-e61f-9c5f-3c80-f10e69dc5785@linux.ibm.com>
+Date: Tue, 9 Mar 2021 14:08:30 -0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
-In-Reply-To: <20210305142711.3022-1-angkery@163.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [80.208.71.248]
-X-ClientProxiedBy: AM3PR07CA0109.eurprd07.prod.outlook.com
- (2603:10a6:207:7::19) To AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
- (2603:10a6:208:3f::10)
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from [192.168.1.149] (80.208.71.248) by
- AM3PR07CA0109.eurprd07.prod.outlook.com (2603:10a6:207:7::19) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3933.16 via Frontend Transport; Tue, 9 Mar 2021 21:41:48 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 333560f2-a701-468a-34d0-08d8e34424e6
-X-MS-TrafficTypeDiagnostic: AM9PR10MB4087:
-X-Microsoft-Antispam-PRVS: <AM9PR10MB4087BE308437A79115F5BAE893929@AM9PR10MB4087.EURPRD10.PROD.OUTLOOK.COM>
-X-MS-Oob-TLC-OOBClassifiers: OLM:2000;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 0+PKg6l/T4DaVQG7pw5ihyXRWfZjz0lKa6mhypW9U3xE4GczQFcJ/pYWXRbyXTQQQL5ioO6snQyZ9d3WOnHOY5nRZpsPwGq+JCG0M3LvDaOoDaf38AFlbYJuHJyatNgeKRNvxFIiOHJ61hPHnoXEgdnliKI5LgFY9rAouxssnmazYRXTL/4juC+Y9FZ78LbTh+QKFc+Sur4ibte54tPLQCdJkjeE20Jw90wp5Vc0YxVbUuzHrAu9V5twt9Ps8tj5yVhgpb7mzir+HONMvVlRSICUA5a3iPNlP2pW22/1jk0rS34B17uEdnDttGcfWH8zm7TWMiJlv0bhjWIWys3gx9Jd6941sg0ie//tx2s6vm2JE5Hbp/AxDC/YKsLK/0EYFfQ7dMtnXn8hOzPaw/mb15ZnVggyNQQmEvjPZKVC9/hyZbMG7k+qYIz8Lg39xLUz7Qgyj0FIkDnZxPAQ28Z5J1AS+1A8Y6gc6FYEsMv+BDkbeALxYxDfrWAXWgLBnPMT+RoikHaA27sBPpvj/4CCBxJI5lhYs7bdugBzKt105sREWho7GEm0hnSJrp2U8Z8s5k7IIAk+lr6RBLQbwJRJtatIbdHH7lKaRLsUVuIUNJ0=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(39840400004)(136003)(376002)(396003)(366004)(346002)(52116002)(956004)(8676002)(2616005)(8976002)(5660300002)(2906002)(26005)(316002)(31696002)(478600001)(6486002)(8936002)(31686004)(16576012)(86362001)(83380400001)(16526019)(66476007)(44832011)(66946007)(186003)(4326008)(36756003)(66556008)(45980500001)(43740500002);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData: =?Windows-1252?Q?0mEzpFe0bxumCmL3D5U+xbrPaYDa6g/KY22dtNuLJP+KWtYkArGo6erY?=
- =?Windows-1252?Q?mEfzZIXwOyoVTZL6r6PBzohft9/datrMaRNc3sD7ngB2qa1nTrJodACh?=
- =?Windows-1252?Q?aQg6SJuZN5Yf5IPqsrIui4ja6wXmbE6haYpW75VhPVdkMvpQfiZIDCL8?=
- =?Windows-1252?Q?5m2u0iMHaMqKH7fdNvgSBq0L6QaDSbYsh7N80SThXes0WzcmSNFmeNxd?=
- =?Windows-1252?Q?CreVPijln7z22HWlBD9bGU2eka4JkUWXADPL9DQRSQqbfVkB4nLjq9Au?=
- =?Windows-1252?Q?a9/hOkFR3C2OqPAJwd7m8wBvMEoYejomUWpZjTugjIZMjRXsIU4KgW9r?=
- =?Windows-1252?Q?ZYLuO3j7xrl0uPv+vAlZMhZ78el65gvmCaIySx3WL/UsN/63aYrRVcmA?=
- =?Windows-1252?Q?7qvIdDE0H0XdDIeAODziu3DBftDFfPuqi9gHf7iyZ1W2bHxltXa4xk3R?=
- =?Windows-1252?Q?wcZ9dhaULMzQKhFJAG9Mjqz8L3/coDYaAbc1dqq8h6I9/RQjfJ5k0bJ0?=
- =?Windows-1252?Q?0tLghBABGVHkkJcafA1H0MKcBDf3ie1NUOAWPVQnCTuOX768lp91DKqD?=
- =?Windows-1252?Q?o1AI2POiNk1aUFTRqmbxAxtxGQeuCe6XolIi32i/ITd/VU8cBxOy3ZNc?=
- =?Windows-1252?Q?TucmJBoYB0uNC7HJc1yMHicExgMakw3MiptO4tI99WjgVa2rTiaYaTc3?=
- =?Windows-1252?Q?HiDBHf2h2WOOuC2++kOcdVplUXebca5+zMIDQw2fZ5ceka1R8CLXc5pP?=
- =?Windows-1252?Q?rkKWq+vmnPgDrVxGF8lGSixasRi0Xgeu42rCT3Th1LTttAU8dJHcKj3Y?=
- =?Windows-1252?Q?ZcoJTlhWy2K7tlytGqC42IzXYgsaUVnY+xCeMQnJxZeeHKcvaCd0zWQW?=
- =?Windows-1252?Q?jISKX9V7RxQ6abyMoIF2DQXFK+SEXK5yXIL70KsMijLYFsZeg1Sxgc5I?=
- =?Windows-1252?Q?wbVs3B0do0aq9WvoWySSfOKU3zDCykAqNdCB38JW809In3QwznifYQkR?=
- =?Windows-1252?Q?dIWUOx3BJ7/yWeHZg0JGjddhT/8bf9j65aqkJdiD3fc44fWS7XBwlLSK?=
- =?Windows-1252?Q?ZCWyAfjunbQaXKcHesGwBhlWttTjx2dx1LxaAPxlp1X+0esIoXsaKZBl?=
- =?Windows-1252?Q?0wUY1KSC2WhevRQwYlf+QaNH68Q0Lw2GJYVMw8+boZDssk0aFT1iheKu?=
- =?Windows-1252?Q?hxtGFv6nj2tH3pPJX3RAa2Vq4oDUz4HKGwXx1Qbn1zyUGZF4y/zjhs1D?=
- =?Windows-1252?Q?odk8FLfrWVwxB0Np0y85b7M/VXpnMAjxRod9esg1jFEfRP5mRCUiMBam?=
- =?Windows-1252?Q?LGpJMBPXo8SkUvSHUsvUyp74KPg80gveNFhLVTLHR2xxP0yV0+oPf+wN?=
- =?Windows-1252?Q?lwTsH7OYuDjYS/QT2i4FqUB9AFaOnEI/s1P27ISWAQwnFmDGNJtZ64ET?=
-X-OriginatorOrg: prevas.dk
-X-MS-Exchange-CrossTenant-Network-Message-Id: 333560f2-a701-468a-34d0-08d8e34424e6
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR10MB1874.EURPRD10.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Mar 2021 21:41:49.1082 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: d350cf71-778d-4780-88f5-071a4cb1ed61
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: XsjaG7olauGiwbr7DYI9x4KLUep9MQVBNSw25XpUwrEenDl/hxNp9hrARvhCtBJgKcZLPy6mEs2UkduUGNHeQFPiZ5gcwa00+NJzqnkrITQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR10MB4087
+In-Reply-To: <8dd98e22-1f10-e87b-3fe3-e786bc9a8d71@kaod.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-09_14:2021-03-08,
+ 2021-03-09 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 bulkscore=0
+ lowpriorityscore=0 suspectscore=0 mlxlogscore=999 adultscore=0
+ clxscore=1011 impostorscore=0 phishscore=0 malwarescore=0
+ priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2103090083
+X-Mailman-Approved-At: Wed, 10 Mar 2021 08:42:20 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,42 +115,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Junlin Yang <yangjunlin@yulong.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 05/03/2021 15.27, angkery wrote:
-> From: Junlin Yang <yangjunlin@yulong.com>
-> 
-> Fixes coccicheck warnings:
-> ./drivers/net/ethernet/freescale/ucc_geth.c:3594:11-18:
-> WARNING opportunity for kmemdup
-> 
-> Signed-off-by: Junlin Yang <yangjunlin@yulong.com>
-> ---
->  drivers/net/ethernet/freescale/ucc_geth.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-> index ef4e2fe..2c079ad 100644
-> --- a/drivers/net/ethernet/freescale/ucc_geth.c
-> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-> @@ -3591,10 +3591,9 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->  	if ((ucc_num < 0) || (ucc_num > 7))
->  		return -ENODEV;
->  
-> -	ug_info = kmalloc(sizeof(*ug_info), GFP_KERNEL);
-> +	ug_info = kmemdup(&ugeth_primary_info, sizeof(*ug_info), GFP_KERNEL);
->  	if (ug_info == NULL)
->  		return -ENOMEM;
-> -	memcpy(ug_info, &ugeth_primary_info, sizeof(*ug_info));
->  
->  	ug_info->uf_info.ucc_num = ucc_num;
->  
-> 
 
-Ah, yes, of course, I should have used that.
 
-Acked-by: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+On 3/9/21 12:33 PM, Cédric Le Goater wrote:
+> On 3/8/21 6:13 PM, Greg Kurz wrote:
+>> On Wed, 3 Mar 2021 18:48:50 +0100
+>> Cédric Le Goater <clg@kaod.org> wrote:
+>>
+>>> The 'chip_id' field of the XIVE CPU structure is used to choose a
+>>> target for a source located on the same chip when possible. This field
+>>> is assigned on the PowerNV platform using the "ibm,chip-id" property
+>>> on pSeries under KVM when NUMA nodes are defined but it is undefined
+>>
+>> This sentence seems to have a syntax problem... like it is missing an
+>> 'and' before 'on pSeries'.
+> 
+> ah yes, or simply a comma.
+> 
+>>> under PowerVM. The XIVE source structure has a similar field
+>>> 'src_chip' which is only assigned on the PowerNV platform.
+>>>
+>>> cpu_to_node() returns a compatible value on all platforms, 0 being the
+>>> default node. It will also give us the opportunity to set the affinity
+>>> of a source on pSeries when we can localize them.
+>>>
+>>
+>> IIUC this relies on the fact that the NUMA node id is == to chip id
+>> on PowerNV, i.e. xc->chip_id which is passed to OPAL remain stable
+>> with this change.
+> 
+> Linux sets the NUMA node in numa_setup_cpu(). On pseries, the hcall
+> H_HOME_NODE_ASSOCIATIVITY returns the node id if I am correct (Daniel
+> in Cc:)
+
+That's correct. H_HOME_NODE_ASSOCIATIVITY returns not only the node_id, but
+a list with the ibm,associativity domains of the CPU that "proc-no" (processor
+identifier) is mapped to inside QEMU.
+
+node_id in this case, considering that we're working with a reference-points
+of size 4, is the 4th element of the returned list. The last element is
+"procno" itself.
+
+
+> 
+> On PowerNV, Linux uses "ibm,associativity" property of the CPU to find
+> the node id. This value is built from the chip id in OPAL, so the
+> value returned by cpu_to_node(cpu) and the value of the "ibm,chip-id"
+> property are unlikely to be different.
+> 
+> cpu_to_node(cpu) is used in many places to allocate the structures
+> locally to the owning node. XIVE is not an exception (see below in the
+> same patch), it is better to be consistent and get the same information
+> (node id) using the same routine.
+> 
+> 
+> In Linux, "ibm,chip-id" is only used in low level PowerNV drivers :
+> LPC, XSCOM, RNG, VAS, NX. XIVE should be in that list also but skiboot
+> unifies the controllers of the system to only expose one the OS. This
+> is problematic and should be changed but it's another topic.
+> 
+> 
+>> On the other hand, you have the pSeries case under PowerVM that
+>> doesn't xc->chip_id, which isn't passed to any hcall AFAICT.
+> 
+> yes "ibm,chip-id" is an OPAL concept unfortunately and it has no meaning
+> under PAPR. xc->chip_id on pseries (PowerVM) will contains an invalid
+> chip id.
+> 
+> QEMU/KVM exposes "ibm,chip-id" but it's not used. (its value is not
+> always correct btw)
+
+
+If you have a way to reliably reproduce this, let me know and I'll fix it
+up in QEMU.
+
+
+
+Thanks,
+
+
+DHB
+
+
+> 
+>> It looks like the chip id is only used for localization purpose in
+>> this case, right ?
+> 
+> Yes and PAPR sources are not localized. So it's not used. MSI sources
+> could be if we rewrote the MSI driver.
+> 
+>> In this case, what about doing this change for pSeries only,
+>> somewhere in spapr.c ?
+> 
+> The IPI code is common to all platforms and all have the same issue.
+> I rather not.
+> 
+> Thanks,
+> 
+> C.
+>   
+>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>> ---
+>>>   arch/powerpc/sysdev/xive/common.c | 7 +------
+>>>   1 file changed, 1 insertion(+), 6 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+>>> index 595310e056f4..b8e456da28aa 100644
+>>> --- a/arch/powerpc/sysdev/xive/common.c
+>>> +++ b/arch/powerpc/sysdev/xive/common.c
+>>> @@ -1335,16 +1335,11 @@ static int xive_prepare_cpu(unsigned int cpu)
+>>>   
+>>>   	xc = per_cpu(xive_cpu, cpu);
+>>>   	if (!xc) {
+>>> -		struct device_node *np;
+>>> -
+>>>   		xc = kzalloc_node(sizeof(struct xive_cpu),
+>>>   				  GFP_KERNEL, cpu_to_node(cpu));
+>>>   		if (!xc)
+>>>   			return -ENOMEM;
+>>> -		np = of_get_cpu_node(cpu, NULL);
+>>> -		if (np)
+>>> -			xc->chip_id = of_get_ibm_chip_id(np);
+>>> -		of_node_put(np);
+>>> +		xc->chip_id = cpu_to_node(cpu);
+>>>   		xc->hw_ipi = XIVE_BAD_IRQ;
+>>>   
+>>>   		per_cpu(xive_cpu, cpu) = xc;
+>>
+> 
