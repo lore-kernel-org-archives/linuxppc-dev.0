@@ -2,105 +2,64 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D183C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 11:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC0A4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:09:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DED8A650F3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 11:29:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DED8A650F3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AAAAA65259
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 12:09:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAAAA65259
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DvtJq3qlXz3cGx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 22:29:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nhH5iiMs;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvvCh6F3gz3cKS
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 23:09:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=nhH5iiMs; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvtJK6tVqz30Kw
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 22:28:49 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 129B3wcx043755; Tue, 9 Mar 2021 06:28:44 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=NkdTnnfYghbRDUtA2oEECqWmnmnNMcZrmUuMlnmwJR0=;
- b=nhH5iiMs1o9Mf1a2JW9yHs3t4q7CBcpZ++nqct5+hK32fgod+Bnu2bapZR/8IFw9GR5G
- oeuC1bUMYjJZTf61ifKeO7qAO4TwDdmDUGVB8JwOFYWm//XdDh09uQ+w7+fk08+CAnDt
- pxri66J4aDWAuDbuItmqextyXSw6v6+b5fXJIW//706gsk7J6e2XvAzncNFUtFE3wKNP
- LOweRSx0cwV2YdNkI0KB4WSeBqYBjyBpL5MZn7G99CPJipaFh81/MweB3vKAjNKdLF5G
- BqhOZs3nZEug5d2fzGvK1bAMrSjVQuOHTa6PJdR+kP6yi1uKpxsDDQoIOm6v+2L/liWc KQ== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 375wcm7r18-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 09 Mar 2021 06:28:44 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 129AwlKr026965;
- Tue, 9 Mar 2021 11:28:42 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma06ams.nl.ibm.com with ESMTP id 37636fg86y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 09 Mar 2021 11:28:42 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 129BSeQM40305052
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 9 Mar 2021 11:28:40 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 88232AE045;
- Tue,  9 Mar 2021 11:28:40 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 477E8AE04D;
- Tue,  9 Mar 2021 11:28:39 +0000 (GMT)
-Received: from Madhavan.PrimaryTP (unknown [9.80.199.175])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  9 Mar 2021 11:28:38 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/perf: Fix the threshold event selection for
- memory events in power10
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <1614840015-1535-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-Message-ID: <e8b9af3b-71d2-d4b1-313c-3e108b5e3ab7@linux.ibm.com>
-Date: Tue, 9 Mar 2021 16:58:37 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.11.0
-MIME-Version: 1.0
-In-Reply-To: <1614840015-1535-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-09_09:2021-03-08,
- 2021-03-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 mlxscore=0
- bulkscore=0 adultscore=0 phishscore=0 priorityscore=1501 malwarescore=0
- lowpriorityscore=0 mlxlogscore=999 clxscore=1015 impostorscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2103090053
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DvvCJ6nvdz30LB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 23:09:30 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DvvCC06ptz9tyjM;
+ Tue,  9 Mar 2021 13:09:27 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id M-vlTheoMnF7; Tue,  9 Mar 2021 13:09:26 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DvvCB6LJbz9tyjK;
+ Tue,  9 Mar 2021 13:09:26 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 423C98B803;
+ Tue,  9 Mar 2021 13:09:28 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 5HqoCMIik9T9; Tue,  9 Mar 2021 13:09:28 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CB53C8B7FC;
+ Tue,  9 Mar 2021 13:09:27 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id AFD2B67555; Tue,  9 Mar 2021 12:09:27 +0000 (UTC)
+Message-Id: <f097a1071254e8f6875588f8fb9771467824a569.1615291471.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1615291471.git.christophe.leroy@csgroup.eu>
+References: <cover.1615291471.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 02/43] powerpc/traps: Declare unrecoverable_exception() as
+ __noreturn
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com
+Date: Tue,  9 Mar 2021 12:09:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,41 +71,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+unrecoverable_exception() is never expected to return, most callers
+have an infiniteloop in case it returns.
 
-On 3/4/21 12:10 PM, Athira Rajeev wrote:
-> Memory events (mem-loads and mem-stores) currently use the threshold
-> event selection as issue to finish. Power10 supports issue to complete
-> as part of thresholding which is more appropriate for mem-loads and
-> mem-stores. Hence fix the event code for memory events to use issue
-> to complete.
+Ensure it really never returns by terminating it with a BUG(), and
+declare it __no_return.
 
-Changes looks fine to me.
+It always GCC to really simplify functions calling it. In the exemple
+below, it avoids the stack frame in the likely fast path and avoids
+code duplication for the exit.
 
-Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+With this patch:
 
-We should also CC stable to include this fix?
+	00000348 <interrupt_exit_kernel_prepare>:
+	 348:	81 43 00 84 	lwz     r10,132(r3)
+	 34c:	71 48 00 02 	andi.   r8,r10,2
+	 350:	41 82 00 2c 	beq     37c <interrupt_exit_kernel_prepare+0x34>
+	 354:	71 4a 40 00 	andi.   r10,r10,16384
+	 358:	40 82 00 20 	bne     378 <interrupt_exit_kernel_prepare+0x30>
+	 35c:	80 62 00 70 	lwz     r3,112(r2)
+	 360:	74 63 00 01 	andis.  r3,r3,1
+	 364:	40 82 00 28 	bne     38c <interrupt_exit_kernel_prepare+0x44>
+	 368:	7d 40 00 a6 	mfmsr   r10
+	 36c:	7c 11 13 a6 	mtspr   81,r0
+	 370:	7c 12 13 a6 	mtspr   82,r0
+	 374:	4e 80 00 20 	blr
+	 378:	48 00 00 00 	b       378 <interrupt_exit_kernel_prepare+0x30>
+	 37c:	94 21 ff f0 	stwu    r1,-16(r1)
+	 380:	7c 08 02 a6 	mflr    r0
+	 384:	90 01 00 14 	stw     r0,20(r1)
+	 388:	48 00 00 01 	bl      388 <interrupt_exit_kernel_prepare+0x40>
+				388: R_PPC_REL24	unrecoverable_exception
+	 38c:	38 e2 00 70 	addi    r7,r2,112
+	 390:	3d 00 00 01 	lis     r8,1
+	 394:	7c c0 38 28 	lwarx   r6,0,r7
+	 398:	7c c6 40 78 	andc    r6,r6,r8
+	 39c:	7c c0 39 2d 	stwcx.  r6,0,r7
+	 3a0:	40 a2 ff f4 	bne     394 <interrupt_exit_kernel_prepare+0x4c>
+	 3a4:	38 60 00 01 	li      r3,1
+	 3a8:	4b ff ff c0 	b       368 <interrupt_exit_kernel_prepare+0x20>
 
+Without this patch:
 
-> Fixes: a64e697cef23 ("powerpc/perf: power10 Performance Monitoring support")
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/perf/power10-events-list.h | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/perf/power10-events-list.h b/arch/powerpc/perf/power10-events-list.h
-> index e45dafe818ed..93be7197d250 100644
-> --- a/arch/powerpc/perf/power10-events-list.h
-> +++ b/arch/powerpc/perf/power10-events-list.h
-> @@ -75,5 +75,5 @@
->    *     thresh end (TE)
->    */
->   
-> -EVENT(MEM_LOADS,				0x34340401e0);
-> -EVENT(MEM_STORES,				0x343c0401e0);
-> +EVENT(MEM_LOADS,				0x35340401e0);
-> +EVENT(MEM_STORES,				0x353c0401e0);
+	00000348 <interrupt_exit_kernel_prepare>:
+	 348:	94 21 ff f0 	stwu    r1,-16(r1)
+	 34c:	93 e1 00 0c 	stw     r31,12(r1)
+	 350:	7c 7f 1b 78 	mr      r31,r3
+	 354:	81 23 00 84 	lwz     r9,132(r3)
+	 358:	71 2a 00 02 	andi.   r10,r9,2
+	 35c:	41 82 00 34 	beq     390 <interrupt_exit_kernel_prepare+0x48>
+	 360:	71 29 40 00 	andi.   r9,r9,16384
+	 364:	40 82 00 28 	bne     38c <interrupt_exit_kernel_prepare+0x44>
+	 368:	80 62 00 70 	lwz     r3,112(r2)
+	 36c:	74 63 00 01 	andis.  r3,r3,1
+	 370:	40 82 00 3c 	bne     3ac <interrupt_exit_kernel_prepare+0x64>
+	 374:	7d 20 00 a6 	mfmsr   r9
+	 378:	7c 11 13 a6 	mtspr   81,r0
+	 37c:	7c 12 13 a6 	mtspr   82,r0
+	 380:	83 e1 00 0c 	lwz     r31,12(r1)
+	 384:	38 21 00 10 	addi    r1,r1,16
+	 388:	4e 80 00 20 	blr
+	 38c:	48 00 00 00 	b       38c <interrupt_exit_kernel_prepare+0x44>
+	 390:	7c 08 02 a6 	mflr    r0
+	 394:	90 01 00 14 	stw     r0,20(r1)
+	 398:	48 00 00 01 	bl      398 <interrupt_exit_kernel_prepare+0x50>
+				398: R_PPC_REL24	unrecoverable_exception
+	 39c:	80 01 00 14 	lwz     r0,20(r1)
+	 3a0:	81 3f 00 84 	lwz     r9,132(r31)
+	 3a4:	7c 08 03 a6 	mtlr    r0
+	 3a8:	4b ff ff b8 	b       360 <interrupt_exit_kernel_prepare+0x18>
+	 3ac:	39 02 00 70 	addi    r8,r2,112
+	 3b0:	3d 40 00 01 	lis     r10,1
+	 3b4:	7c e0 40 28 	lwarx   r7,0,r8
+	 3b8:	7c e7 50 78 	andc    r7,r7,r10
+	 3bc:	7c e0 41 2d 	stwcx.  r7,0,r8
+	 3c0:	40 a2 ff f4 	bne     3b4 <interrupt_exit_kernel_prepare+0x6c>
+	 3c4:	38 60 00 01 	li      r3,1
+	 3c8:	4b ff ff ac 	b       374 <interrupt_exit_kernel_prepare+0x2c>
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/interrupt.h | 2 +-
+ arch/powerpc/kernel/traps.c          | 6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index e8d09a841373..232a4847f596 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -436,7 +436,7 @@ DECLARE_INTERRUPT_HANDLER_NMI(hmi_exception_realmode);
+ 
+ DECLARE_INTERRUPT_HANDLER_ASYNC(TAUException);
+ 
+-void unrecoverable_exception(struct pt_regs *regs);
++void __noreturn unrecoverable_exception(struct pt_regs *regs);
+ 
+ void replay_system_reset(void);
+ void replay_soft_interrupts(void);
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index a44a30b0688c..d5c9d9ddd186 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -2170,11 +2170,15 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointRoundException)
+  * in the MSR is 0.  This indicates that SRR0/1 are live, and that
+  * we therefore lost state by taking this exception.
+  */
+-void unrecoverable_exception(struct pt_regs *regs)
++void __noreturn unrecoverable_exception(struct pt_regs *regs)
+ {
+ 	pr_emerg("Unrecoverable exception %lx at %lx (msr=%lx)\n",
+ 		 regs->trap, regs->nip, regs->msr);
+ 	die("Unrecoverable exception", regs, SIGABRT);
++	/* die() should not return */
++	WARN(true, "die() unexpectedly returned");
++	for (;;)
++		;
+ }
+ 
+ #if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
+-- 
+2.25.0
+
