@@ -2,52 +2,95 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AD06C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:06:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E78EDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:26:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4C1C6523A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:06:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4C1C6523A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0866F65237
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:26:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0866F65237
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw0S845kHz3cnm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 03:06:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw0wK3pHzz3cXP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 03:26:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Dw0Rn4T50z3bPK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 03:05:38 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2DFF21042;
- Tue,  9 Mar 2021 08:05:35 -0800 (PST)
-Received: from C02TD0UTHF1T.local (unknown [10.57.49.159])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 032A13F71B;
- Tue,  9 Mar 2021 08:05:32 -0800 (PST)
-Date: Tue, 9 Mar 2021 16:05:23 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
- save_stack_trace() and friends
-Message-ID: <20210309160505.GA4979@C02TD0UTHF1T.local>
-References: <e2e8728c4c4553bbac75a64b148e402183699c0c.1614780567.git.christophe.leroy@csgroup.eu>
- <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
- <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
- <YD+o5QkCZN97mH8/@elver.google.com>
- <20210304145730.GC54534@C02TD0UTHF1T.local>
- <20210304215448.GU29191@gate.crashing.org>
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B4YqG/fW;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IYWZ2brt;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=B4YqG/fW; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=IYWZ2brt; 
+ dkim-atps=neutral
+X-Greylist: delayed 179 seconds by postgrey-1.36 at boromir;
+ Wed, 10 Mar 2021 03:26:32 AEDT
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw0vr3p6Sz2yRh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 03:26:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1615307189;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=QDc/X1+87E7IT2HUEvNRCZ2BjXCFrZE0D42derxTKz0=;
+ b=B4YqG/fWEstCtJSF4KVi6iXo5AZ55Yyx6PrxEdn/R2n2WcmbD2iAw9rUAstzLSXuMDYPPG
+ VQqCyMdMcC7Mxcoj7AMOuHtFacju1tWD0HWWixec/fuG7K2p+0l9OkZ6uCPxOodhKdLwGJ
+ YMjBiHGl0p24zGe7WR9NkD0ogoskH9Q=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1615307190;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=QDc/X1+87E7IT2HUEvNRCZ2BjXCFrZE0D42derxTKz0=;
+ b=IYWZ2brtWsB6F60aJNkB92n01CjfDETohA2mrx8bHWfVUfqxPdHEV3aV6svMdMumV67pQ+
+ i6TpfavrHs7hj6YSYKkNyzbl9sGm/EasSIbz3MLTB9QTSe+hMfxdY+gjw7uTM8dDBzXMYy
+ DBIYQOOC6cgRegEZx/6415+dgc/yzTI=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-321-Q3Hdf_Q4ODeKumoAfx1BcQ-1; Tue, 09 Mar 2021 11:26:24 -0500
+X-MC-Unique: Q3Hdf_Q4ODeKumoAfx1BcQ-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 374F7108BD08;
+ Tue,  9 Mar 2021 16:26:22 +0000 (UTC)
+Received: from [10.36.114.143] (ovpn-114-143.ams2.redhat.com [10.36.114.143])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 1707A19C59;
+ Tue,  9 Mar 2021 16:26:18 +0000 (UTC)
+Subject: Re: [PATCH 3/9] powerpc/pseries: remove the ppc-cmm file system
+To: Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
+References: <20210309155348.974875-1-hch@lst.de>
+ <20210309155348.974875-4-hch@lst.de>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <001be2e1-995c-d5d9-734f-06f75c702b42@redhat.com>
+Date: Tue, 9 Mar 2021 17:26:18 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210304215448.GU29191@gate.crashing.org>
+In-Reply-To: <20210309155348.974875-4-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,83 +102,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marco Elver <elver@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- kasan-dev <kasan-dev@googlegroups.com>, broonie@kernel.org,
- Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: Jason Gunthorpe <jgg@nvidia.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ "VMware, Inc." <pv-drivers@vmware.com>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, virtualization@lists.linux-foundation.org,
+ linux-mm@kvack.org, Minchan Kim <minchan@kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>, Nadav Amit <namit@vmware.com>,
+ Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Nitin Gupta <ngupta@vflare.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 04, 2021 at 03:54:48PM -0600, Segher Boessenkool wrote:
-> Hi!
-
-Hi Segher,
-
-> On Thu, Mar 04, 2021 at 02:57:30PM +0000, Mark Rutland wrote:
-> > It looks like GCC is happy to give us the function-entry-time FP if we use
-> > __builtin_frame_address(1),
+On 09.03.21 16:53, Christoph Hellwig wrote:
+> Just use the generic anon_inode file system.
 > 
-> From the GCC manual:
->      Calling this function with a nonzero argument can have
->      unpredictable effects, including crashing the calling program.  As
->      a result, calls that are considered unsafe are diagnosed when the
->      '-Wframe-address' option is in effect.  Such calls should only be
->      made in debugging situations.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   arch/powerpc/platforms/pseries/cmm.c | 27 ++-------------------------
+>   1 file changed, 2 insertions(+), 25 deletions(-)
 > 
-> It *does* warn (the warning is in -Wall btw), on both powerpc and
-> aarch64.  Furthermore, using this builtin causes lousy code (it forces
-> the use of a frame pointer, which we normally try very hard to optimise
-> away, for good reason).
+> diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+> index 6d36b858b14df1..9d07e6bea7126c 100644
+> --- a/arch/powerpc/platforms/pseries/cmm.c
+> +++ b/arch/powerpc/platforms/pseries/cmm.c
+> @@ -6,6 +6,7 @@
+>    * Author(s): Brian King (brking@linux.vnet.ibm.com),
+>    */
+>   
+> +#include <linux/anon_inodes.h>
+>   #include <linux/ctype.h>
+>   #include <linux/delay.h>
+>   #include <linux/errno.h>
+> @@ -502,19 +503,6 @@ static struct notifier_block cmm_mem_nb = {
+>   };
+>   
+>   #ifdef CONFIG_BALLOON_COMPACTION
+> -static struct vfsmount *balloon_mnt;
+> -
+> -static int cmm_init_fs_context(struct fs_context *fc)
+> -{
+> -	return init_pseudo(fc, PPC_CMM_MAGIC) ? 0 : -ENOMEM;
+> -}
+> -
+> -static struct file_system_type balloon_fs = {
+> -	.name = "ppc-cmm",
+> -	.init_fs_context = cmm_init_fs_context,
+> -	.kill_sb = kill_anon_super,
+> -};
+> -
+>   static int cmm_migratepage(struct balloon_dev_info *b_dev_info,
+>   			   struct page *newpage, struct page *page,
+>   			   enum migrate_mode mode)
+> @@ -573,19 +561,10 @@ static int cmm_balloon_compaction_init(void)
+>   	balloon_devinfo_init(&b_dev_info);
+>   	b_dev_info.migratepage = cmm_migratepage;
+>   
+> -	balloon_mnt = kern_mount(&balloon_fs);
+> -	if (IS_ERR(balloon_mnt)) {
+> -		rc = PTR_ERR(balloon_mnt);
+> -		balloon_mnt = NULL;
+> -		return rc;
+> -	}
+> -
+> -	b_dev_info.inode = alloc_anon_inode_sb(balloon_mnt->mnt_sb);
+> +	b_dev_info.inode = alloc_anon_inode();
+>   	if (IS_ERR(b_dev_info.inode)) {
+>   		rc = PTR_ERR(b_dev_info.inode);
+>   		b_dev_info.inode = NULL;
+> -		kern_unmount(balloon_mnt);
+> -		balloon_mnt = NULL;
+>   		return rc;
+>   	}
+>   
+> @@ -597,8 +576,6 @@ static void cmm_balloon_compaction_deinit(void)
+>   	if (b_dev_info.inode)
+>   		iput(b_dev_info.inode);
+>   	b_dev_info.inode = NULL;
+> -	kern_unmount(balloon_mnt);
+> -	balloon_mnt = NULL;
+>   }
+>   #else /* CONFIG_BALLOON_COMPACTION */
+>   static int cmm_balloon_compaction_init(void)
 > 
-> And, that warning is not an idle warning.  Non-zero arguments to
-> __builtin_frame_address can crash the program.  It won't on simpler
-> functions, but there is no real definition of what a simpler function
-> *is*.  It is meant for debugging, not for production use (this is also
-> why no one has bothered to make it faster).
->
-> On Power it should work, but on pretty much any other arch it won't.
 
-I understand this is true generally, and cannot be relied upon in
-portable code. However as you hint here for Power, I believe that on
-arm64 __builtin_frame_address(1) shouldn't crash the program due to the
-way frame records work on arm64, but I'll go check with some local
-compiler folk. I agree that __builtin_frame_address(2) and beyond
-certainly can, e.g.  by NULL dereference and similar.
+I always wondered why that was necessary after all (with my limited fs 
+knowledge :) ).
 
-For context, why do you think this would work on power specifically? I
-wonder if our rationale is similar.
+a) I assume you want to remove PPC_CMM_MAGIC from 
+include/uapi/linux/magic.h as well?
 
-Are you aware of anything in particular that breaks using
-__builtin_frame_address(1) in non-portable code, or is this just a
-general sentiment of this not being a supported use-case?
+b) Do we still need #include <linux/magic.h>, #include <linux/mount.h> 
+and #include <linux/pseudo_fs.h>?
 
-> > Unless we can get some strong guarantees from compiler folk such that we
-> > can guarantee a specific function acts boundary for unwinding (and
-> > doesn't itself get split, etc), the only reliable way I can think to
-> > solve this requires an assembly trampoline. Whatever we do is liable to
-> > need some invasive rework.
-> 
-> You cannot get such a guarantee, other than not letting the compiler
-> see into the routine at all, like with assembler code (not inline asm,
-> real assembler code).
+Apart from that looks much cleaner.
 
-If we cannot reliably ensure this then I'm happy to go write an assembly
-trampoline to snapshot the state at a function call boundary (where our
-procedure call standard mandates the state of the LR, FP, and frame
-records pointed to by the FP). This'll require reworking a reasonable
-amount of code cross-architecture, so I'll need to get some more
-concrete justification (e.g. examples of things that can go wrong in
-practice).
-
-> The real way forward is to bite the bullet and to no longer pretend you
-> can do a full backtrace from just the stack contents.  You cannot.
-
-I think what you mean here is that there's no reliable way to handle the
-current/leaf function, right? If so I do agree.
-
-Beyond that I believe that arm64's frame records should be sufficient.
-
+-- 
 Thanks,
-Mark.
+
+David / dhildenb
+
