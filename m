@@ -2,67 +2,48 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CDDEC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1708C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:39:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2A69650DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:28:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2A69650DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id CF8D56523B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:39:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF8D56523B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dvqdl104bz3cV9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 20:28:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.77.235; helo=10.mo51.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 574 seconds by postgrey-1.36 at boromir;
- Tue, 09 Mar 2021 20:28:24 AEDT
-Received: from 10.mo51.mail-out.ovh.net (10.mo51.mail-out.ovh.net
- [46.105.77.235])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvqtH3pCJz3cRk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 20:39:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvqdN2y72z30Mg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 20:28:22 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.240])
- by mo51.mail-out.ovh.net (Postfix) with ESMTPS id 0381626AB2C;
- Tue,  9 Mar 2021 10:18:44 +0100 (CET)
-Received: from kaod.org (37.59.142.99) by DAG8EX1.mxp5.local (172.16.2.71)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Tue, 9 Mar 2021
- 10:18:43 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-99G003107742b9-2b6b-4617-a5f7-3e4702163a34,
- 5BB0FC21D60CBA87691D752E0F3295FDC8BC83A3) smtp.auth=groug@kaod.org
-X-OVh-ClientIp: 78.197.208.248
-Date: Tue, 9 Mar 2021 10:18:41 +0100
-From: Greg Kurz <groug@kaod.org>
-To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 5/8] powerpc/xive: Drop check on irq_data in
- xive_core_debug_show()
-Message-ID: <20210309101841.2117540f@bahia.lan>
-In-Reply-To: <20210303174857.1760393-6-clg@kaod.org>
-References: <20210303174857.1760393-1-clg@kaod.org>
- <20210303174857.1760393-6-clg@kaod.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dvqsx02lfz30Mg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 20:39:16 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id C85F4AB8C;
+ Tue,  9 Mar 2021 09:39:13 +0000 (UTC)
+Date: Tue, 9 Mar 2021 10:39:12 +0100
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Subject: Re: [PATCH 3/3] powerpc/qspinlock: Use generic smp_cond_load_relaxed
+Message-ID: <20210309093912.GW6564@kitsune.suse.cz>
+References: <20210309015950.27688-1-dave@stgolabs.net>
+ <20210309015950.27688-4-dave@stgolabs.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Originating-IP: [37.59.142.99]
-X-ClientProxiedBy: DAG3EX2.mxp5.local (172.16.2.22) To DAG8EX1.mxp5.local
- (172.16.2.71)
-X-Ovh-Tracer-GUID: 87401bf3-250a-4308-a15e-9b5f86c8f3a7
-X-Ovh-Tracer-Id: 4428164336141834659
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudduiedgtdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvffukfgjfhfogggtgfhisehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeevlefhtddufffhieevhefhleegleelgfetffetkedugeehjeffgfehhfefueduffenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210309015950.27688-4-dave@stgolabs.net>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,69 +55,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>,
- Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Davidlohr Bueso <dbueso@suse.de>, peterz@infradead.org, will@kernel.org,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, mingo@redhat.com,
+ paulus@samba.org, longman@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Mar 2021 18:48:54 +0100
-C=C3=A9dric Le Goater <clg@kaod.org> wrote:
+On Mon, Mar 08, 2021 at 05:59:50PM -0800, Davidlohr Bueso wrote:
+> 49a7d46a06c3 (powerpc: Implement smp_cond_load_relaxed()) added
+> busy-waiting pausing with a preferred SMT priority pattern, lowering
+> the priority (reducing decode cycles) during the whole loop slowpath.
+> 
+> However, data shows that while this pattern works well with simple
+                                              ^^^^^^^^^^^^^^^^^^^^^^
+> spinlocks, queued spinlocks benefit more being kept in medium priority,
+> with a cpu_relax() instead, being a low+medium combo on powerpc.
+...
+> 
+> diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+> index aecfde829d5d..7ae29cfb06c0 100644
+> --- a/arch/powerpc/include/asm/barrier.h
+> +++ b/arch/powerpc/include/asm/barrier.h
+> @@ -80,22 +80,6 @@ do {									\
+>  	___p1;								\
+>  })
+>  
+> -#ifdef CONFIG_PPC64
+Maybe it should be kept for the simple spinlock case then?
 
-> When looping on IRQ descriptor, irq_data is always valid.
->=20
-> Reported-by: kernel test robot <lkp@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Fixes: 930914b7d528 ("powerpc/xive: Add a debugfs file to dump internal X=
-IVE state")
-> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
-> ---
+Thanks
 
-Reviewed-by: Greg Kurz <groug@kaod.org>
-
->  arch/powerpc/sysdev/xive/common.c | 21 ++++++++++-----------
->  1 file changed, 10 insertions(+), 11 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-> index 7581cb12bb53..60ebd6f4b31d 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -1586,6 +1586,8 @@ static void xive_debug_show_irq(struct seq_file *m,=
- struct irq_data *d)
->  	u32 target;
->  	u8 prio;
->  	u32 lirq;
-> +	struct xive_irq_data *xd;
-> +	u64 val;
-> =20
->  	rc =3D xive_ops->get_irq_config(hw_irq, &target, &prio, &lirq);
->  	if (rc) {
-> @@ -1596,17 +1598,14 @@ static void xive_debug_show_irq(struct seq_file *=
-m, struct irq_data *d)
->  	seq_printf(m, "IRQ 0x%08x : target=3D0x%x prio=3D%02x lirq=3D0x%x ",
->  		   hw_irq, target, prio, lirq);
-> =20
-> -	if (d) {
-> -		struct xive_irq_data *xd =3D irq_data_get_irq_handler_data(d);
-> -		u64 val =3D xive_esb_read(xd, XIVE_ESB_GET);
+Michal
+> -#define smp_cond_load_relaxed(ptr, cond_expr) ({		\
+> -	typeof(ptr) __PTR = (ptr);				\
+> -	__unqual_scalar_typeof(*ptr) VAL;			\
+> -	VAL = READ_ONCE(*__PTR);				\
+> -	if (unlikely(!(cond_expr))) {				\
+> -		spin_begin();					\
+> -		do {						\
+> -			VAL = READ_ONCE(*__PTR);		\
+> -		} while (!(cond_expr));				\
+> -		spin_end();					\
+> -	}							\
+> -	(typeof(*ptr))VAL;					\
+> -})
+> -#endif
 > -
-> -		seq_printf(m, "flags=3D%c%c%c PQ=3D%c%c",
-> -			   xd->flags & XIVE_IRQ_FLAG_STORE_EOI ? 'S' : ' ',
-> -			   xd->flags & XIVE_IRQ_FLAG_LSI ? 'L' : ' ',
-> -			   xd->flags & XIVE_IRQ_FLAG_H_INT_ESB ? 'H' : ' ',
-> -			   val & XIVE_ESB_VAL_P ? 'P' : '-',
-> -			   val & XIVE_ESB_VAL_Q ? 'Q' : '-');
-> -	}
-> +	xd =3D irq_data_get_irq_handler_data(d);
-> +	val =3D xive_esb_read(xd, XIVE_ESB_GET);
-> +	seq_printf(m, "flags=3D%c%c%c PQ=3D%c%c",
-> +		   xd->flags & XIVE_IRQ_FLAG_STORE_EOI ? 'S' : ' ',
-> +		   xd->flags & XIVE_IRQ_FLAG_LSI ? 'L' : ' ',
-> +		   xd->flags & XIVE_IRQ_FLAG_H_INT_ESB ? 'H' : ' ',
-> +		   val & XIVE_ESB_VAL_P ? 'P' : '-',
-> +		   val & XIVE_ESB_VAL_Q ? 'Q' : '-');
->  	seq_puts(m, "\n");
->  }
-> =20
-
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  #define NOSPEC_BARRIER_SLOT   nop
+>  #elif defined(CONFIG_PPC_FSL_BOOK3E)
+> -- 
+> 2.26.2
+> 
