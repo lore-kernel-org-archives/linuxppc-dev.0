@@ -2,65 +2,66 @@ Return-Path: <SRS0=gB3U=IH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3EE5C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:16:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA9FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:23:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C96AA6521D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:16:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C96AA6521D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3EA8D6522E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 09:23:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EA8D6522E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DvqN9243kz3cHF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 20:16:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DvqWG4VXxz3cQg
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 20:23:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.222.49; helo=mail-ua1-f49.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ua1-f49.google.com (mail-ua1-f49.google.com
- [209.85.222.49])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=groug@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from smtpout1.mo529.mail-out.ovh.net
+ (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DvqMp6LbZz2xZL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 20:16:37 +1100 (AEDT)
-Received: by mail-ua1-f49.google.com with SMTP id h26so2690241uax.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Mar 2021 01:16:37 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=DxSUjQGZz4/YjWnn3wACv5aSRYiuKXpXdqRpRz0A8i4=;
- b=EuKF8tOWW4KqPMe4+DrfH2sz9WsGyTe3HvWEsJk7aESYImawlSuheWCQwfmGO8fBWF
- p7hB3RnL4iuCZGYwvPi4Alic5aGcd+Zj1/0Vt8HkMV5JxWuZYMiOtEvodg+f7blK8nCN
- hfHpR1j4XzOEjrztwUIoKQTJGb5SDomGUKgzzAx0B/0y1vFGGBArKpOM6PXsT5uNKsKa
- X8FNmkCC673SKAZx8nYo7+89gc0vXXPT3SWrDeNYOTuVwJKo3VwOHVr5MZ0JyzZz6NEh
- TVm39E0ZvBeZ2Zc14gcrmR9ScSKJHLrA3TCZZhTwmOiUzVLH9pjt1rHd0MugYYMrbpfj
- C5OA==
-X-Gm-Message-State: AOAM533lPNkRr5LTn8+u7oFXN064DjlGOczwiB1VEmrngADeIocmg/nL
- 4ZDWnsWRtlMaD8WKbxzCNRA+cmXQU9uhzRGwgS8=
-X-Google-Smtp-Source: ABdhPJww7xH7Oe5Pjr4n5IpImR4mF9lUTXCXGNF+o1r811zxaElWbHX29Xxb/k0BiTXqUy738t90tdAg9Vt/0gLMISg=
-X-Received: by 2002:a9f:35a1:: with SMTP id t30mr14845428uad.106.1615281395334; 
- Tue, 09 Mar 2021 01:16:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DvqVv6SBNz30Ht
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Mar 2021 20:22:47 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.138.121])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 034FB8E0685A;
+ Tue,  9 Mar 2021 10:22:45 +0100 (CET)
+Received: from kaod.org (37.59.142.101) by DAG8EX1.mxp5.local (172.16.2.71)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Tue, 9 Mar 2021
+ 10:22:44 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-101G0045ec21723-0857-41d9-a0a7-84be23b349b3,
+ 5BB0FC21D60CBA87691D752E0F3295FDC8BC83A3) smtp.auth=groug@kaod.org
+X-OVh-ClientIp: 78.197.208.248
+Date: Tue, 9 Mar 2021 10:22:41 +0100
+From: Greg Kurz <groug@kaod.org>
+To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v2 6/8] powerpc/xive: Simplify the dump of XIVE
+ interrupts under xmon
+Message-ID: <20210309102241.497fd01d@bahia.lan>
+In-Reply-To: <20210303174857.1760393-7-clg@kaod.org>
+References: <20210303174857.1760393-1-clg@kaod.org>
+ <20210303174857.1760393-7-clg@kaod.org>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-References: <8d7d285a027e9d21f5ff7f850fa71a2655b0c4af.1615279170.git.christophe.leroy@csgroup.eu>
- <CAMuHMdW0Cn1So8ckvhsT+N+p2hiPiksmCS32jzM0xCUYU4UAdQ@mail.gmail.com>
- <b12f9128-790b-7d8b-5f3c-e0912f5bec0a@csgroup.eu>
-In-Reply-To: <b12f9128-790b-7d8b-5f3c-e0912f5bec0a@csgroup.eu>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 9 Mar 2021 10:16:24 +0100
-Message-ID: <CAMuHMdXM0qg23UN6VBqbb0Vm2bg3tRSM=OCD5r7U2K1brpnJAg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix missing declaration of
- [en/dis]able_kernel_vsx()
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+X-Originating-IP: [37.59.142.101]
+X-ClientProxiedBy: DAG2EX2.mxp5.local (172.16.2.12) To DAG8EX1.mxp5.local
+ (172.16.2.71)
+X-Ovh-Tracer-GUID: dc6bddb7-756b-454f-812b-8a82dd5c5bd9
+X-Ovh-Tracer-Id: 4495718328549218781
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudduiedgtddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpeffhffvuffkjghfofggtgfgihesthhqredtredtjeenucfhrhhomhepifhrvghgucfmuhhriicuoehgrhhouhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepveelhfdtudffhfeiveehhfelgeellefgteffteekudegheejfffghefhfeeuudffnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,114 +73,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- amd-gfx list <amd-gfx@lists.freedesktop.org>,
- Paul Mackerras <paulus@samba.org>, Alex Deucher <alexdeucher@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+On Wed, 3 Mar 2021 18:48:55 +0100
+C=C3=A9dric Le Goater <clg@kaod.org> wrote:
 
-On Tue, Mar 9, 2021 at 9:52 AM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
-> Le 09/03/2021 =C3=A0 09:45, Geert Uytterhoeven a =C3=A9crit :
-> > On Tue, Mar 9, 2021 at 9:39 AM Christophe Leroy
-> > <christophe.leroy@csgroup.eu> wrote:
-> >> Add stub instances of enable_kernel_vsx() and disable_kernel_vsx()
-> >> when CONFIG_VSX is not set, to avoid following build failure.
-> >>
-> >>    CC [M]  drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.o
-> >> In file included from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_se=
-rvices_types.h:29,
-> >>                   from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_s=
-ervices.h:37,
-> >>                   from drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/=
-dcn_calcs.c:27:
-> >> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c: In functio=
-n 'dcn_bw_apply_registry_override':
-> >> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:64:3: error: imp=
-licit declaration of function 'enable_kernel_vsx'; did you mean 'enable_ker=
-nel_fp'? [-Werror=3Dimplicit-function-declaration]
-> >>     64 |   enable_kernel_vsx(); \
-> >>        |   ^~~~~~~~~~~~~~~~~
-> >> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:640:2: note=
-: in expansion of macro 'DC_FP_START'
-> >>    640 |  DC_FP_START();
-> >>        |  ^~~~~~~~~~~
-> >> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:75:3: error: imp=
-licit declaration of function 'disable_kernel_vsx'; did you mean 'disable_k=
-ernel_fp'? [-Werror=3Dimplicit-function-declaration]
-> >>     75 |   disable_kernel_vsx(); \
-> >>        |   ^~~~~~~~~~~~~~~~~~
-> >> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:676:2: note=
-: in expansion of macro 'DC_FP_END'
-> >>    676 |  DC_FP_END();
-> >>        |  ^~~~~~~~~
-> >> cc1: some warnings being treated as errors
-> >> make[5]: *** [drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs=
-.o] Error 1
-> >>
-> >> Fixes: 16a9dea110a6 ("amdgpu: Enable initial DCN support on POWER")
-> >> Cc: stable@vger.kernel.org
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> >
-> > Thanks for your patch!
-> >
-> >> --- a/arch/powerpc/include/asm/switch_to.h
-> >> +++ b/arch/powerpc/include/asm/switch_to.h
-> >> @@ -71,6 +71,16 @@ static inline void disable_kernel_vsx(void)
-> >>   {
-> >>          msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
-> >>   }
-> >> +#else
-> >> +static inline void enable_kernel_vsx(void)
-> >> +{
-> >> +       BUILD_BUG();
-> >> +}
-> >> +
-> >> +static inline void disable_kernel_vsx(void)
-> >> +{
-> >> +       BUILD_BUG();
-> >> +}
-> >>   #endif
-> >
-> > I'm wondering how this is any better than the current situation: using
-> > BUILD_BUG() will still cause a build failure?
->
-> No it won't cause a failure. In drivers/gpu/drm/amd/display/dc/os_types.h=
- you have:
->
-> #define DC_FP_START() { \
->         if (cpu_has_feature(CPU_FTR_VSX_COMP)) { \
->                 preempt_disable(); \
->                 enable_kernel_vsx(); \
->         } else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) { \
->                 preempt_disable(); \
->                 enable_kernel_altivec(); \
->         } else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) { \
->                 preempt_disable(); \
->                 enable_kernel_fp(); \
->         } \
->
-> When CONFIG_VSX is not selected, cpu_has_feature(CPU_FTR_VSX_COMP) consta=
-nt folds to 'false' so the
-> call to enable_kernel_vsx() is discarded and the build succeeds.
+> Move the xmon routine under XIVE subsystem and rework the loop on the
+> interrupts taking into account the xive_irq_domain to filter out IPIs.
+>=20
+> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+> ---
 
-IC. So you might as well have an empty (dummy) function instead?
+Nice again ! :)
 
-Gr{oetje,eeting}s,
+Reviewed-by: Greg Kurz <groug@kaod.org>
 
-                        Geert
+>  arch/powerpc/include/asm/xive.h   |  1 +
+>  arch/powerpc/sysdev/xive/common.c | 14 ++++++++++++++
+>  arch/powerpc/xmon/xmon.c          | 28 ++--------------------------
+>  3 files changed, 17 insertions(+), 26 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+> index 9a312b975ca8..aa094a8655b0 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -102,6 +102,7 @@ void xive_flush_interrupt(void);
+>  /* xmon hook */
+>  void xmon_xive_do_dump(int cpu);
+>  int xmon_xive_get_irq_config(u32 hw_irq, struct irq_data *d);
+> +void xmon_xive_get_irq_all(void);
+> =20
+>  /* APIs used by KVM */
+>  u32 xive_native_default_eq_shift(void);
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+> index 60ebd6f4b31d..f6b7b15bbb3a 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -291,6 +291,20 @@ int xmon_xive_get_irq_config(u32 hw_irq, struct irq_=
+data *d)
+>  	return 0;
+>  }
+> =20
+> +void xmon_xive_get_irq_all(void)
+> +{
+> +	unsigned int i;
+> +	struct irq_desc *desc;
+> +
+> +	for_each_irq_desc(i, desc) {
+> +		struct irq_data *d =3D irq_desc_get_irq_data(desc);
+> +		unsigned int hwirq =3D (unsigned int)irqd_to_hwirq(d);
+> +
+> +		if (d->domain =3D=3D xive_irq_domain)
+> +			xmon_xive_get_irq_config(hwirq, d);
+> +	}
+> +}
+> +
+>  #endif /* CONFIG_XMON */
+> =20
+>  static unsigned int xive_get_irq(void)
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 3fe37495f63d..80fbf8968f77 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -2727,30 +2727,6 @@ static void dump_all_xives(void)
+>  		dump_one_xive(cpu);
+>  }
+> =20
+> -static void dump_one_xive_irq(u32 num, struct irq_data *d)
+> -{
+> -	xmon_xive_get_irq_config(num, d);
+> -}
+> -
+> -static void dump_all_xive_irq(void)
+> -{
+> -	unsigned int i;
+> -	struct irq_desc *desc;
+> -
+> -	for_each_irq_desc(i, desc) {
+> -		struct irq_data *d =3D irq_desc_get_irq_data(desc);
+> -		unsigned int hwirq;
+> -
+> -		if (!d)
+> -			continue;
+> -
+> -		hwirq =3D (unsigned int)irqd_to_hwirq(d);
+> -		/* IPIs are special (HW number 0) */
+> -		if (hwirq)
+> -			dump_one_xive_irq(hwirq, d);
+> -	}
+> -}
+> -
+>  static void dump_xives(void)
+>  {
+>  	unsigned long num;
+> @@ -2767,9 +2743,9 @@ static void dump_xives(void)
+>  		return;
+>  	} else if (c =3D=3D 'i') {
+>  		if (scanhex(&num))
+> -			dump_one_xive_irq(num, NULL);
+> +			xmon_xive_get_irq_config(num, NULL);
+>  		else
+> -			dump_all_xive_irq();
+> +			xmon_xive_get_irq_all();
+>  		return;
+>  	}
+> =20
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
