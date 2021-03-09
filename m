@@ -7,88 +7,90 @@ X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B7FAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39D81C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:30:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD6DE601FB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:30:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD6DE601FB
+	by mail.kernel.org (Postfix) with ESMTPS id CEC5A6023B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Mar 2021 16:30:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEC5A6023B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw10730mMz3dQb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 03:30:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dw10c3kgRz3clg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 03:30:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CfgjvL6O;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CfgjvL6O;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fHD4d33y;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fHD4d33y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=CfgjvL6O; 
+ header.s=mimecast20190719 header.b=fHD4d33y; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=CfgjvL6O; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=fHD4d33y; 
  dkim-atps=neutral
+X-Greylist: delayed 87 seconds by postgrey-1.36 at boromir;
+ Wed, 10 Mar 2021 03:30:05 AEDT
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw0z911vTz3cV4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 03:29:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dw0zx09lzz3dLs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 03:30:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1615307362;
+ s=mimecast20190719; t=1615307402;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=uSaGyOLWX+NEWKQMtAmx6cE0h7h+IwRRgb4ZBbKVgjA=;
- b=CfgjvL6OhVBB4uFTP01C7DLLq8jzfUBHjnA3eFhEPn2/75kF/Q5nwOqK9j2zzk/XB/cL3z
- juii7vRTJK4iDRRFDOi7yWwC2f1MySQ8P8c6Uq/IkJgWdx5tlHY4r9lmoKo0zcEv2eBXDi
- 2xhtcvwqtCyghxvCZzgADmVdLkwNxH4=
+ bh=3Iv7BBIxQ8+W8sz1TqvejVKfcifyHSm+wQDXMt7okOA=;
+ b=fHD4d33yAvOZq2MvskNAmOPW88Lw05OK1axl1YeGpBzkCqN3hkroJJ8v3z+NCFLeyQk+5j
+ 4JAiuBdNsFglgc1uLXRhOH0BRFZhc7hEYmBxRkn+A3OBlZtkpWrPqVvObj6npc1twozN0s
+ a0mak+NcRRfwFBsT3LXNQCcI/jKciF4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1615307362;
+ s=mimecast20190719; t=1615307402;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=uSaGyOLWX+NEWKQMtAmx6cE0h7h+IwRRgb4ZBbKVgjA=;
- b=CfgjvL6OhVBB4uFTP01C7DLLq8jzfUBHjnA3eFhEPn2/75kF/Q5nwOqK9j2zzk/XB/cL3z
- juii7vRTJK4iDRRFDOi7yWwC2f1MySQ8P8c6Uq/IkJgWdx5tlHY4r9lmoKo0zcEv2eBXDi
- 2xhtcvwqtCyghxvCZzgADmVdLkwNxH4=
+ bh=3Iv7BBIxQ8+W8sz1TqvejVKfcifyHSm+wQDXMt7okOA=;
+ b=fHD4d33yAvOZq2MvskNAmOPW88Lw05OK1axl1YeGpBzkCqN3hkroJJ8v3z+NCFLeyQk+5j
+ 4JAiuBdNsFglgc1uLXRhOH0BRFZhc7hEYmBxRkn+A3OBlZtkpWrPqVvObj6npc1twozN0s
+ a0mak+NcRRfwFBsT3LXNQCcI/jKciF4=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-573-9MI7-g3zN_CJjzd-XPQQXA-1; Tue, 09 Mar 2021 11:29:17 -0500
-X-MC-Unique: 9MI7-g3zN_CJjzd-XPQQXA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
+ us-mta-18-2LKAOAxWMcKIauY_Ng6y0g-1; Tue, 09 Mar 2021 11:28:28 -0500
+X-MC-Unique: 2LKAOAxWMcKIauY_Ng6y0g-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 135A2101F00D;
- Tue,  9 Mar 2021 16:29:15 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 90CCD108BD0B;
+ Tue,  9 Mar 2021 16:28:26 +0000 (UTC)
 Received: from [10.36.114.143] (ovpn-114-143.ams2.redhat.com [10.36.114.143])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 42D871A867;
- Tue,  9 Mar 2021 16:29:02 +0000 (UTC)
-Subject: Re: [PATCH 6/9] virtio_balloon: remove the balloon-kvm file system
+ by smtp.corp.redhat.com (Postfix) with ESMTP id E403E10023AE;
+ Tue,  9 Mar 2021 16:28:16 +0000 (UTC)
+Subject: Re: [PATCH 5/9] vmw_balloon: remove the balloon-vmware file system
 To: Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
 References: <20210309155348.974875-1-hch@lst.de>
- <20210309155348.974875-7-hch@lst.de>
+ <20210309155348.974875-6-hch@lst.de>
 From: David Hildenbrand <david@redhat.com>
 Organization: Red Hat GmbH
-Message-ID: <c5c1b993-d391-b689-2293-97bba22368f1@redhat.com>
-Date: Tue, 9 Mar 2021 17:29:01 +0100
+Message-ID: <8bdd6f30-3cd1-ad7f-df95-bbb85623ae64@redhat.com>
+Date: Tue, 9 Mar 2021 17:28:16 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.8.0
 MIME-Version: 1.0
-In-Reply-To: <20210309155348.974875-7-hch@lst.de>
+In-Reply-To: <20210309155348.974875-6-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,93 +119,72 @@ On 09.03.21 16:53, Christoph Hellwig wrote:
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->   drivers/virtio/virtio_balloon.c | 30 +++---------------------------
->   1 file changed, 3 insertions(+), 27 deletions(-)
+>   drivers/misc/vmw_balloon.c | 24 ++----------------------
+>   1 file changed, 2 insertions(+), 22 deletions(-)
 > 
-> diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-> index cae76ee5bdd688..1efb890cd3ff09 100644
-> --- a/drivers/virtio/virtio_balloon.c
-> +++ b/drivers/virtio/virtio_balloon.c
-> @@ -6,6 +6,7 @@
->    *  Copyright 2008 Rusty Russell IBM Corporation
->    */
+> diff --git a/drivers/misc/vmw_balloon.c b/drivers/misc/vmw_balloon.c
+> index 5d057a05ddbee8..be4be32f858253 100644
+> --- a/drivers/misc/vmw_balloon.c
+> +++ b/drivers/misc/vmw_balloon.c
+> @@ -16,6 +16,7 @@
+>   //#define DEBUG
+>   #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 >   
 > +#include <linux/anon_inodes.h>
->   #include <linux/virtio.h>
->   #include <linux/virtio_balloon.h>
->   #include <linux/swap.h>
-> @@ -42,10 +43,6 @@
->   	(1 << (VIRTIO_BALLOON_HINT_BLOCK_ORDER + PAGE_SHIFT))
->   #define VIRTIO_BALLOON_HINT_BLOCK_PAGES (1 << VIRTIO_BALLOON_HINT_BLOCK_ORDER)
+>   #include <linux/types.h>
+>   #include <linux/io.h>
+>   #include <linux/kernel.h>
+> @@ -1735,20 +1736,6 @@ static inline void vmballoon_debugfs_exit(struct vmballoon *b)
 >   
-> -#ifdef CONFIG_BALLOON_COMPACTION
-> -static struct vfsmount *balloon_mnt;
-> -#endif
-> -
->   enum virtio_balloon_vq {
->   	VIRTIO_BALLOON_VQ_INFLATE,
->   	VIRTIO_BALLOON_VQ_DEFLATE,
-> @@ -805,18 +802,6 @@ static int virtballoon_migratepage(struct balloon_dev_info *vb_dev_info,
 >   
->   	return MIGRATEPAGE_SUCCESS;
->   }
+>   #ifdef CONFIG_BALLOON_COMPACTION
 > -
-> -static int balloon_init_fs_context(struct fs_context *fc)
+> -static int vmballoon_init_fs_context(struct fs_context *fc)
 > -{
-> -	return init_pseudo(fc, BALLOON_KVM_MAGIC) ? 0 : -ENOMEM;
+> -	return init_pseudo(fc, BALLOON_VMW_MAGIC) ? 0 : -ENOMEM;
 > -}
 > -
-> -static struct file_system_type balloon_fs = {
-> -	.name           = "balloon-kvm",
-> -	.init_fs_context = balloon_init_fs_context,
-> -	.kill_sb        = kill_anon_super,
+> -static struct file_system_type vmballoon_fs = {
+> -	.name           	= "balloon-vmware",
+> -	.init_fs_context	= vmballoon_init_fs_context,
+> -	.kill_sb        	= kill_anon_super,
 > -};
 > -
->   #endif /* CONFIG_BALLOON_COMPACTION */
->   
->   static unsigned long shrink_free_pages(struct virtio_balloon *vb,
-> @@ -909,17 +894,11 @@ static int virtballoon_probe(struct virtio_device *vdev)
->   		goto out_free_vb;
->   
->   #ifdef CONFIG_BALLOON_COMPACTION
-> -	balloon_mnt = kern_mount(&balloon_fs);
-> -	if (IS_ERR(balloon_mnt)) {
-> -		err = PTR_ERR(balloon_mnt);
-> -		goto out_del_vqs;
-> -	}
+> -static struct vfsmount *vmballoon_mnt;
 > -
->   	vb->vb_dev_info.migratepage = virtballoon_migratepage;
-> -	vb->vb_dev_info.inode = alloc_anon_inode_sb(balloon_mnt->mnt_sb);
-> +	vb->vb_dev_info.inode = alloc_anon_inode();
->   	if (IS_ERR(vb->vb_dev_info.inode)) {
->   		err = PTR_ERR(vb->vb_dev_info.inode);
-> -		goto out_kern_unmount;
-> +		goto out_del_vqs;
->   	}
->   	vb->vb_dev_info.inode->i_mapping->a_ops = &balloon_aops;
->   #endif
-> @@ -1016,8 +995,6 @@ static int virtballoon_probe(struct virtio_device *vdev)
->   out_iput:
->   #ifdef CONFIG_BALLOON_COMPACTION
->   	iput(vb->vb_dev_info.inode);
-> -out_kern_unmount:
-> -	kern_unmount(balloon_mnt);
->   out_del_vqs:
->   #endif
->   	vdev->config->del_vqs(vdev);
-> @@ -1070,7 +1047,6 @@ static void virtballoon_remove(struct virtio_device *vdev)
->   	if (vb->vb_dev_info.inode)
->   		iput(vb->vb_dev_info.inode);
+>   /**
+>    * vmballoon_migratepage() - migrates a balloon page.
+>    * @b_dev_info: balloon device information descriptor.
+> @@ -1878,8 +1865,6 @@ static void vmballoon_compaction_deinit(struct vmballoon *b)
+>   		iput(b->b_dev_info.inode);
 >   
-> -	kern_unmount(balloon_mnt);
->   #endif
->   	kfree(vb);
+>   	b->b_dev_info.inode = NULL;
+> -	kern_unmount(vmballoon_mnt);
+> -	vmballoon_mnt = NULL;
 >   }
+>   
+>   /**
+> @@ -1895,13 +1880,8 @@ static void vmballoon_compaction_deinit(struct vmballoon *b)
+>    */
+>   static __init int vmballoon_compaction_init(struct vmballoon *b)
+>   {
+> -	vmballoon_mnt = kern_mount(&vmballoon_fs);
+> -	if (IS_ERR(vmballoon_mnt))
+> -		return PTR_ERR(vmballoon_mnt);
+> -
+>   	b->b_dev_info.migratepage = vmballoon_migratepage;
+> -	b->b_dev_info.inode = alloc_anon_inode_sb(vmballoon_mnt->mnt_sb);
+> -
+> +	b->b_dev_info.inode = alloc_anon_inode();
+>   	if (IS_ERR(b->b_dev_info.inode))
+>   		return PTR_ERR(b->b_dev_info.inode);
+>   
 > 
 
-... you might know what I am going to say :)
+Same comment regarding BALLOON_VMW_MAGIC and includes (mount.h, 
+pseudo_fs.h).
 
-Apart from that LGTM.
+Apart from that looks good.
 
 -- 
 Thanks,
