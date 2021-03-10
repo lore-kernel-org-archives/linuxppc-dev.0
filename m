@@ -2,71 +2,53 @@ Return-Path: <SRS0=GP0G=II=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E829C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 13:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 943F8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 15:22:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ADCE864FE0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 13:34:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADCE864FE0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id D62EE64F33
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 15:22:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D62EE64F33
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DwY2f5PyJz3dM3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 00:34:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DwY1p1yQKz3cX6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 00:33:30 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DwY1f18kQzB09Zs;
- Wed, 10 Mar 2021 14:33:26 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id UW49o0QEjYh0; Wed, 10 Mar 2021 14:33:26 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DwY1d6BkdzB09Zn;
- Wed, 10 Mar 2021 14:33:25 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F0FE88B78C;
- Wed, 10 Mar 2021 14:33:26 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id tX8OhmiwHzB5; Wed, 10 Mar 2021 14:33:26 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C11A8B77E;
- Wed, 10 Mar 2021 14:33:26 +0100 (CET)
-Subject: Re: [PATCH] powerpc: Fix missing declaration of
- [en/dis]able_kernel_vsx()
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-References: <8d7d285a027e9d21f5ff7f850fa71a2655b0c4af.1615279170.git.christophe.leroy@csgroup.eu>
- <CAMuHMdW0Cn1So8ckvhsT+N+p2hiPiksmCS32jzM0xCUYU4UAdQ@mail.gmail.com>
- <b12f9128-790b-7d8b-5f3c-e0912f5bec0a@csgroup.eu>
- <CAMuHMdXM0qg23UN6VBqbb0Vm2bg3tRSM=OCD5r7U2K1brpnJAg@mail.gmail.com>
- <b64111a3-df3f-bf59-20ce-0af57715ad53@csgroup.eu>
- <CAMuHMdUQcE7+O9NWH4Xxxv+r7ZFnTGqtHuteOMiSPY_gK5xkZw@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <5b579a54-e596-bcf2-b003-5c28345447b7@csgroup.eu>
-Date: Wed, 10 Mar 2021 14:33:25 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
-MIME-Version: 1.0
-In-Reply-To: <CAMuHMdUQcE7+O9NWH4Xxxv+r7ZFnTGqtHuteOMiSPY_gK5xkZw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DwbRT1D7wz3d68
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 02:22:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4DwbR65c6fz30Nh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 02:22:10 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 12AFJmiu027897;
+ Wed, 10 Mar 2021 09:19:58 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 12AFJlaQ027894;
+ Wed, 10 Mar 2021 09:19:47 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 10 Mar 2021 09:19:47 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH V2 2/2] powerpc/perf: Add platform specific
+ check_attr_config
+Message-ID: <20210310151947.GJ29191@gate.crashing.org>
+References: <20210226065025.1254973-1-maddy@linux.ibm.com>
+ <20210226065025.1254973-2-maddy@linux.ibm.com>
+ <dde47591-db00-4c4f-ed24-a8ab5a7a4c6a@ozlabs.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dde47591-db00-4c4f-ed24-a8ab5a7a4c6a@ozlabs.ru>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,106 +60,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- amd-gfx list <amd-gfx@lists.freedesktop.org>,
- Paul Mackerras <paulus@samba.org>, Alex Deucher <alexdeucher@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Geert,
-
-Le 09/03/2021 à 11:55, Geert Uytterhoeven a écrit :
-> Hi Christophe,
+On Thu, Mar 11, 2021 at 12:16:25AM +1100, Alexey Kardashevskiy wrote:
+> On 26/02/2021 17:50, Madhavan Srinivasan wrote:
+> >+int isa3_X_check_attr_config(struct perf_event *ev)
 > 
-> On Tue, Mar 9, 2021 at 10:58 AM Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
->> Le 09/03/2021 à 10:16, Geert Uytterhoeven a écrit :
->>> On Tue, Mar 9, 2021 at 9:52 AM Christophe Leroy
->>> <christophe.leroy@csgroup.eu> wrote:
->>>> Le 09/03/2021 à 09:45, Geert Uytterhoeven a écrit :
->>>>> On Tue, Mar 9, 2021 at 9:39 AM Christophe Leroy
->>>>> <christophe.leroy@csgroup.eu> wrote:
->>>>>> Add stub instances of enable_kernel_vsx() and disable_kernel_vsx()
->>>>>> when CONFIG_VSX is not set, to avoid following build failure.
->>>>>>
->>>>>>      CC [M]  drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.o
->>>>>> In file included from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_services_types.h:29,
->>>>>>                     from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_services.h:37,
->>>>>>                     from drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:27:
->>>>>> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c: In function 'dcn_bw_apply_registry_override':
->>>>>> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:64:3: error: implicit declaration of function 'enable_kernel_vsx'; did you mean 'enable_kernel_fp'? [-Werror=implicit-function-declaration]
->>>>>>       64 |   enable_kernel_vsx(); \
->>>>>>          |   ^~~~~~~~~~~~~~~~~
->>>>>> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:640:2: note: in expansion of macro 'DC_FP_START'
->>>>>>      640 |  DC_FP_START();
->>>>>>          |  ^~~~~~~~~~~
->>>>>> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:75:3: error: implicit declaration of function 'disable_kernel_vsx'; did you mean 'disable_kernel_fp'? [-Werror=implicit-function-declaration]
->>>>>>       75 |   disable_kernel_vsx(); \
->>>>>>          |   ^~~~~~~~~~~~~~~~~~
->>>>>> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:676:2: note: in expansion of macro 'DC_FP_END'
->>>>>>      676 |  DC_FP_END();
->>>>>>          |  ^~~~~~~~~
->>>>>> cc1: some warnings being treated as errors
->>>>>> make[5]: *** [drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.o] Error 1
->>>>>>
->>>>>> Fixes: 16a9dea110a6 ("amdgpu: Enable initial DCN support on POWER")
->>>>>> Cc: stable@vger.kernel.org
->>>>>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->>>>>
->>>>> Thanks for your patch!
->>>>>
->>>>>> --- a/arch/powerpc/include/asm/switch_to.h
->>>>>> +++ b/arch/powerpc/include/asm/switch_to.h
->>>>>> @@ -71,6 +71,16 @@ static inline void disable_kernel_vsx(void)
->>>>>>     {
->>>>>>            msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
->>>>>>     }
->>>>>> +#else
->>>>>> +static inline void enable_kernel_vsx(void)
->>>>>> +{
->>>>>> +       BUILD_BUG();
->>>>>> +}
->>>>>> +
->>>>>> +static inline void disable_kernel_vsx(void)
->>>>>> +{
->>>>>> +       BUILD_BUG();
->>>>>> +}
->>>>>>     #endif
->>>>>
->>>>> I'm wondering how this is any better than the current situation: using
->>>>> BUILD_BUG() will still cause a build failure?
->>>>
->>>> No it won't cause a failure. In drivers/gpu/drm/amd/display/dc/os_types.h you have:
->>>>
->>>> #define DC_FP_START() { \
->>>>           if (cpu_has_feature(CPU_FTR_VSX_COMP)) { \
->>>>                   preempt_disable(); \
->>>>                   enable_kernel_vsx(); \
->>>>           } else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) { \
->>>>                   preempt_disable(); \
->>>>                   enable_kernel_altivec(); \
->>>>           } else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) { \
->>>>                   preempt_disable(); \
->>>>                   enable_kernel_fp(); \
->>>>           } \
->>>>
->>>> When CONFIG_VSX is not selected, cpu_has_feature(CPU_FTR_VSX_COMP) constant folds to 'false' so the
->>>> call to enable_kernel_vsx() is discarded and the build succeeds.
->>>
->>> IC. So you might as well have an empty (dummy) function instead?
->>>
->>
->> But with an empty function, you take the risk that one day, someone calls it without checking that
->> CONFIG_VSX is selected. Here if someone does that, build will fail.
-> 
-> OK, convinced.
-> 
+> "isa300" is used everywhere else to refer to ISA 3.00.
 
-Note that following build test performed on kisskb, with gcc 4.9 the following change is required in 
-addition: 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/b231dfa040ce4cc37f702f5c3a595fdeabfe0462.1615378209.git.christophe.leroy@csgroup.eu/
+And that itself is a misspelling, there is nothing called "ISA 3.00" (it
+is called "ISA 3.0").
 
-Christophe
+
+Segher
