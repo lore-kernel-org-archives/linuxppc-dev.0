@@ -2,61 +2,66 @@ Return-Path: <SRS0=GP0G=II=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6056AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7886CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:14:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43AC364FD7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:11:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43AC364FD7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 520D764FD9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:14:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 520D764FD9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DwWBc2hTYz3d7f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 23:11:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DwWGG2s5Yz3d59
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 23:14:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ smtp.mailfrom=kaod.org (client-ip=188.165.49.222; helo=6.mo52.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 6.mo52.mail-out.ovh.net (6.mo52.mail-out.ovh.net
+ [188.165.49.222])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DwWBF2F1Mz3cJ0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 23:10:39 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DwWB33MXvz9txr0;
- Wed, 10 Mar 2021 13:10:35 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 50zCdInSTEKv; Wed, 10 Mar 2021 13:10:35 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DwWB26L47z9txqx;
- Wed, 10 Mar 2021 13:10:34 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E2DEB8B78A;
- Wed, 10 Mar 2021 13:10:35 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id L-0L8waMBKwJ; Wed, 10 Mar 2021 13:10:35 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 576EA8B77E;
- Wed, 10 Mar 2021 13:10:35 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EB1536755D; Wed, 10 Mar 2021 12:10:34 +0000 (UTC)
-Message-Id: <b231dfa040ce4cc37f702f5c3a595fdeabfe0462.1615378209.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc: Force inlining of cpu_has_feature() to avoid build
- failure
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 10 Mar 2021 12:10:34 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DwWFv3vvFz2xxp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 23:13:54 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.16.53])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 6778A23CE18;
+ Wed, 10 Mar 2021 12:18:51 +0100 (CET)
+Received: from kaod.org (37.59.142.95) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Wed, 10 Mar
+ 2021 12:18:50 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-95G001ec6da1e9-b4b1-4b66-8e8a-1f3004fd19b8,
+ DA160024BEE8362F46BAC18ABAE7D936D1F8982C) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Subject: Re: [PATCH] powerpc/xmon: Check cpu id in commands "c#", "dp#" and
+ "dx#"
+To: Greg Kurz <groug@kaod.org>, <linuxppc-dev@lists.ozlabs.org>
+References: <161531347060.252863.10490063933688958044.stgit@bahia.lan>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <f65a4c85-ac5a-9ef1-c1a9-cc7e92b95fd5@kaod.org>
+Date: Wed, 10 Mar 2021 12:18:49 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
+MIME-Version: 1.0
+In-Reply-To: <161531347060.252863.10490063933688958044.stgit@bahia.lan>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.95]
+X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: a3310bfd-f24f-4ebf-ae6c-95a27d209d1d
+X-Ovh-Tracer-Id: 12329166930291624925
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledruddukedgvdekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeejkeduueduveelgeduueegkeelffevledujeetffeivdelvdfgkeeufeduheehfeenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,54 +73,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The code relies on constant folding of cpu_has_feature() based
-on possible and always true values as defined per
-CPU_FTRS_ALWAYS and CPU_FTRS_POSSIBLE.
+On 3/9/21 7:11 PM, Greg Kurz wrote:
+> All these commands end up peeking into the PACA using the user originated
+> cpu id as an index. Check the cpu id is valid in order to prevent xmon to
+> crash. Instead of printing an error, this follows the same behavior as the
+> "lp s #" command : ignore the buggy cpu id parameter and fall back to the
+> #-less version of the command.
+> 
+> Signed-off-by: Greg Kurz <groug@kaod.org>
 
-Build failure is encountered with for instance
-book3e_all_defconfig on kisskb in the AMDGPU driver which uses
-cpu_has_feature(CPU_FTR_VSX_COMP) to decide whether calling
-kernel_enable_vsx() or not.
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-The failure is due to cpu_has_feature() not being inlined with
-that configuration with gcc 4.9.
 
-In the same way as commit acdad8fb4a15 ("powerpc: Force inlining of
-mmu_has_feature to fix build failure"), for inlining of
-cpu_has_feature().
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/cpu_has_feature.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
-index 7897d16e0990..727d4b321937 100644
---- a/arch/powerpc/include/asm/cpu_has_feature.h
-+++ b/arch/powerpc/include/asm/cpu_has_feature.h
-@@ -7,7 +7,7 @@
- #include <linux/bug.h>
- #include <asm/cputable.h>
- 
--static inline bool early_cpu_has_feature(unsigned long feature)
-+static __always_inline bool early_cpu_has_feature(unsigned long feature)
- {
- 	return !!((CPU_FTRS_ALWAYS & feature) ||
- 		  (CPU_FTRS_POSSIBLE & cur_cpu_spec->cpu_features & feature));
-@@ -46,7 +46,7 @@ static __always_inline bool cpu_has_feature(unsigned long feature)
- 	return static_branch_likely(&cpu_feature_keys[i]);
- }
- #else
--static inline bool cpu_has_feature(unsigned long feature)
-+static __always_inline bool cpu_has_feature(unsigned long feature)
- {
- 	return early_cpu_has_feature(feature);
- }
--- 
-2.25.0
+> ---
+>  arch/powerpc/xmon/xmon.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 80fbf8968f77..d3d6e044228e 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -1248,7 +1248,7 @@ static int cpu_cmd(void)
+>  	unsigned long cpu, first_cpu, last_cpu;
+>  	int timeout;
+>  
+> -	if (!scanhex(&cpu)) {
+> +	if (!scanhex(&cpu) || cpu >= num_possible_cpus()) {
+>  		/* print cpus waiting or in xmon */
+>  		printf("cpus stopped:");
+>  		last_cpu = first_cpu = NR_CPUS;
+> @@ -2678,7 +2678,7 @@ static void dump_pacas(void)
+>  
+>  	termch = c;	/* Put c back, it wasn't 'a' */
+>  
+> -	if (scanhex(&num))
+> +	if (scanhex(&num) && num < num_possible_cpus())
+>  		dump_one_paca(num);
+>  	else
+>  		dump_one_paca(xmon_owner);
+> @@ -2751,7 +2751,7 @@ static void dump_xives(void)
+>  
+>  	termch = c;	/* Put c back, it wasn't 'a' */
+>  
+> -	if (scanhex(&num))
+> +	if (scanhex(&num) && num < num_possible_cpus())
+>  		dump_one_xive(num);
+>  	else
+>  		dump_one_xive(xmon_owner);
+> 
+> 
 
