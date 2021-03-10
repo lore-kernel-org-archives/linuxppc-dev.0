@@ -7,58 +7,57 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5213AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B93B9C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:51:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DD0B64F87
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:51:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DD0B64F87
+	by mail.kernel.org (Postfix) with ESMTPS id 5842764F7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:51:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5842764F7F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DwflF2Tj6z3g3T
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 04:51:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dwflb0N7Xz3gBd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 04:51:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dwff95xkSz3cnw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 04:46:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DwffB3zdXz3dFK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 04:46:58 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dwff54wDWz9tyv8;
- Wed, 10 Mar 2021 18:46:53 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Dwff45XpSz9tyv7;
+ Wed, 10 Mar 2021 18:46:52 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6YwoWykoiIDO; Wed, 10 Mar 2021 18:46:53 +0100 (CET)
+ with ESMTP id CbeIPE1Enk2P; Wed, 10 Mar 2021 18:46:52 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dwff53dhsz9tytH;
- Wed, 10 Mar 2021 18:46:53 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dwff43x90z9tytH;
+ Wed, 10 Mar 2021 18:46:52 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4FBF78B78D;
- Wed, 10 Mar 2021 18:46:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EA218B78D;
+ Wed, 10 Mar 2021 18:46:54 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wiBXs09fYcDI; Wed, 10 Mar 2021 18:46:55 +0100 (CET)
+ with ESMTP id r1PsR-B0Xn9t; Wed, 10 Mar 2021 18:46:54 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 16F398B77E;
- Wed, 10 Mar 2021 18:46:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1CCFE8B77E;
+ Wed, 10 Mar 2021 18:46:54 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E804E67568; Wed, 10 Mar 2021 17:46:54 +0000 (UTC)
-Message-Id: <403745b5aaa1b315bb4e8e46c1ba949e77eecec0.1615398265.git.christophe.leroy@csgroup.eu>
+ id E084767568; Wed, 10 Mar 2021 17:46:53 +0000 (UTC)
+Message-Id: <def8a39289e02653cfb1583b3b19837de9efed3a.1615398265.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615398265.git.christophe.leroy@csgroup.eu>
 References: <cover.1615398265.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 15/15] powerpc/uaccess: Use asm goto for get_user when
- compiler supports it
+Subject: [PATCH v2 14/15] powerpc/uaccess: Introduce __get_user_size_goto()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 10 Mar 2021 17:46:54 +0000 (UTC)
+Date: Wed, 10 Mar 2021 17:46:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,92 +74,68 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-clang 11 and future GCC are supporting asm goto with outputs.
+We have got two places doing a goto based on the result
+of __get_user_size_allowed().
 
-Use it to implement get_user in order to get better generated code.
-
-Note that clang requires to set x in the default branch of
-__get_user_size_goto() otherwise is compliant about x not being
-initialised :puzzled:
+Refactor that into __get_user_size_goto().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/uaccess.h | 55 ++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+ arch/powerpc/include/asm/uaccess.h | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index e3e53e88cb26..960ab5c04b11 100644
+index 671c083f2f2f..e3e53e88cb26 100644
 --- a/arch/powerpc/include/asm/uaccess.h
 +++ b/arch/powerpc/include/asm/uaccess.h
-@@ -136,6 +136,59 @@ do {								\
- 		: "=r" (err)			\
- 		: "b" (uaddr), "b" (kaddr), "i" (-EFAULT), "0" (err))
- 
-+#ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-+
-+#define __get_user_asm_goto(x, addr, label, op)			\
-+	asm_volatile_goto(					\
-+		"1:	"op"%U1%X1 %0, %1	# get_user\n"	\
-+		EX_TABLE(1b, %l2)				\
-+		: "=r" (x)					\
-+		: "m"UPD_CONSTR (*addr)				\
-+		:						\
-+		: label)
-+
-+#ifdef __powerpc64__
-+#define __get_user_asm2_goto(x, addr, label)			\
-+	__get_user_asm_goto(x, addr, label, "ld")
-+#else /* __powerpc64__ */
-+#define __get_user_asm2_goto(x, addr, label)			\
-+	asm_volatile_goto(					\
-+		"1:	lwz%X1 %0, %1\n"			\
-+		"2:	lwz%X1 %L0, %L1\n"			\
-+		EX_TABLE(1b, %l2)				\
-+		EX_TABLE(2b, %l2)				\
-+		: "=r" (x)					\
-+		: "m" (*addr)					\
-+		:						\
-+		: label)
-+#endif /* __powerpc64__ */
-+
-+#define __get_user_size_goto(x, ptr, size, label)				\
-+do {										\
-+	BUILD_BUG_ON(size > sizeof(x));						\
-+	switch (size) {								\
-+	case 1: __get_user_asm_goto(x, (u8 __user *)ptr, label, "lbz"); break;	\
-+	case 2: __get_user_asm_goto(x, (u16 __user *)ptr, label, "lhz"); break;	\
-+	case 4: __get_user_asm_goto(x, (u32 __user *)ptr, label, "lwz"); break;	\
-+	case 8: __get_user_asm2_goto(x, (u64 __user *)ptr, label);  break;	\
-+	default: x = 0; BUILD_BUG();						\
-+	}									\
-+} while (0)
-+
-+#define __get_user_size_allowed(x, ptr, size, retval)			\
-+do {									\
-+		__label__ __gus_failed;					\
-+									\
-+		__get_user_size_goto(x, ptr, size, __gus_failed);	\
-+		retval = 0;						\
-+		break;							\
-+__gus_failed:								\
-+		x = 0;							\
-+		retval = -EFAULT;					\
-+} while (0)
-+
-+#else /* CONFIG_CC_HAS_ASM_GOTO_OUTPUT */
-+
- #define __get_user_asm(x, addr, err, op)		\
- 	__asm__ __volatile__(				\
- 		"1:	"op"%U2%X2 %1, %2	# get_user\n"	\
-@@ -192,6 +245,8 @@ do {								\
- 		goto label;					\
+@@ -183,6 +183,15 @@ do {								\
+ 	}							\
  } while (0)
  
-+#endif /* CONFIG_CC_HAS_ASM_GOTO_OUTPUT */
++#define __get_user_size_goto(x, ptr, size, label)		\
++do {								\
++	long __gus_retval;					\
++								\
++	__get_user_size_allowed(x, ptr, size, __gus_retval);	\
++	if (__gus_retval)					\
++		goto label;					\
++} while (0)
 +
  /*
   * This is a type: either unsigned long, if the argument fits into
   * that type, or otherwise unsigned long long.
+@@ -352,13 +361,10 @@ user_write_access_begin(const void __user *ptr, size_t len)
+ #define user_write_access_end		prevent_current_write_to_user
+ 
+ #define unsafe_get_user(x, p, e) do {					\
+-	long __gu_err;						\
+ 	__long_type(*(p)) __gu_val;				\
+ 	__typeof__(*(p)) __user *__gu_addr = (p);		\
+ 								\
+-	__get_user_size_allowed(__gu_val, __gu_addr, sizeof(*(p)), __gu_err); \
+-	if (__gu_err)						\
+-		goto e;						\
++	__get_user_size_goto(__gu_val, __gu_addr, sizeof(*(p)), e); \
+ 	(x) = (__typeof__(*(p)))__gu_val;			\
+ } while (0)
+ 
+@@ -389,14 +395,8 @@ do {									\
+ #define HAVE_GET_KERNEL_NOFAULT
+ 
+ #define __get_kernel_nofault(dst, src, type, err_label)			\
+-do {									\
+-	int __kr_err;							\
+-									\
+-	__get_user_size_allowed(*((type *)(dst)), (__force type __user *)(src),\
+-			sizeof(type), __kr_err);			\
+-	if (unlikely(__kr_err))						\
+-		goto err_label;						\
+-} while (0)
++	__get_user_size_goto(*((type *)(dst)),				\
++		(__force type __user *)(src), sizeof(type), err_label)
+ 
+ #define __put_kernel_nofault(dst, src, type, err_label)			\
+ 	__put_user_size_goto(*((type *)(src)),				\
 -- 
 2.25.0
 
