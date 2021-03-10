@@ -2,54 +2,61 @@ Return-Path: <SRS0=GP0G=II=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A24F0C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 11:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6056AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:11:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA63864FD7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 11:32:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA63864FD7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 43AC364FD7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 12:11:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43AC364FD7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DwVLZ1DH0z3cW9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 22:32:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4DwVLC5mqPz2yjB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 22:32:32 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2A6BF1063;
- Wed, 10 Mar 2021 03:32:29 -0800 (PST)
-Received: from C02TD0UTHF1T.local (unknown [10.57.52.108])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BF2773F85F;
- Wed, 10 Mar 2021 03:32:26 -0800 (PST)
-Date: Wed, 10 Mar 2021 11:32:20 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v1] powerpc: Include running function as first entry in
- save_stack_trace() and friends
-Message-ID: <20210310112441.GA19619@C02TD0UTHF1T.local>
-References: <e2e8728c4c4553bbac75a64b148e402183699c0c.1614780567.git.christophe.leroy@csgroup.eu>
- <CANpmjNOvgbUCf0QBs1J-mO0yEPuzcTMm7aS1JpPB-17_LabNHw@mail.gmail.com>
- <1802be3e-dc1a-52e0-1754-a40f0ea39658@csgroup.eu>
- <YD+o5QkCZN97mH8/@elver.google.com>
- <20210304145730.GC54534@C02TD0UTHF1T.local>
- <20210304215448.GU29191@gate.crashing.org>
- <20210309160505.GA4979@C02TD0UTHF1T.local>
- <20210309220532.GI29191@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210309220532.GI29191@gate.crashing.org>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DwWBc2hTYz3d7f
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 23:11:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DwWBF2F1Mz3cJ0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Mar 2021 23:10:39 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DwWB33MXvz9txr0;
+ Wed, 10 Mar 2021 13:10:35 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 50zCdInSTEKv; Wed, 10 Mar 2021 13:10:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DwWB26L47z9txqx;
+ Wed, 10 Mar 2021 13:10:34 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E2DEB8B78A;
+ Wed, 10 Mar 2021 13:10:35 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id L-0L8waMBKwJ; Wed, 10 Mar 2021 13:10:35 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 576EA8B77E;
+ Wed, 10 Mar 2021 13:10:35 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id EB1536755D; Wed, 10 Mar 2021 12:10:34 +0000 (UTC)
+Message-Id: <b231dfa040ce4cc37f702f5c3a595fdeabfe0462.1615378209.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc: Force inlining of cpu_has_feature() to avoid build
+ failure
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 10 Mar 2021 12:10:34 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,156 +68,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marco Elver <elver@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- kasan-dev <kasan-dev@googlegroups.com>, broonie@kernel.org,
- Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 09, 2021 at 04:05:32PM -0600, Segher Boessenkool wrote:
-> Hi!
-> 
-> On Tue, Mar 09, 2021 at 04:05:23PM +0000, Mark Rutland wrote:
-> > On Thu, Mar 04, 2021 at 03:54:48PM -0600, Segher Boessenkool wrote:
-> > > On Thu, Mar 04, 2021 at 02:57:30PM +0000, Mark Rutland wrote:
-> > > > It looks like GCC is happy to give us the function-entry-time FP if we use
-> > > > __builtin_frame_address(1),
-> > > 
-> > > From the GCC manual:
-> > >      Calling this function with a nonzero argument can have
-> > >      unpredictable effects, including crashing the calling program.  As
-> > >      a result, calls that are considered unsafe are diagnosed when the
-> > >      '-Wframe-address' option is in effect.  Such calls should only be
-> > >      made in debugging situations.
-> > > 
-> > > It *does* warn (the warning is in -Wall btw), on both powerpc and
-> > > aarch64.  Furthermore, using this builtin causes lousy code (it forces
-> > > the use of a frame pointer, which we normally try very hard to optimise
-> > > away, for good reason).
-> > > 
-> > > And, that warning is not an idle warning.  Non-zero arguments to
-> > > __builtin_frame_address can crash the program.  It won't on simpler
-> > > functions, but there is no real definition of what a simpler function
-> > > *is*.  It is meant for debugging, not for production use (this is also
-> > > why no one has bothered to make it faster).
-> > >
-> > > On Power it should work, but on pretty much any other arch it won't.
-> > 
-> > I understand this is true generally, and cannot be relied upon in
-> > portable code. However as you hint here for Power, I believe that on
-> > arm64 __builtin_frame_address(1) shouldn't crash the program due to the
-> > way frame records work on arm64, but I'll go check with some local
-> > compiler folk. I agree that __builtin_frame_address(2) and beyond
-> > certainly can, e.g.  by NULL dereference and similar.
-> 
-> I still do not know the aarch64 ABI well enough.  If only I had time!
-> 
-> > For context, why do you think this would work on power specifically? I
-> > wonder if our rationale is similar.
-> 
-> On most 64-bit Power ABIs all stack frames are connected together as a
-> linked list (which is updated atomically, importantly).  This makes it
-> possible to always find all previous stack frames.
+The code relies on constant folding of cpu_has_feature() based
+on possible and always true values as defined per
+CPU_FTRS_ALWAYS and CPU_FTRS_POSSIBLE.
 
-We have something similar on arm64, where the kernel depends on being
-built with a frame pointer following the AAPCS frame pointer rules.
+Build failure is encountered with for instance
+book3e_all_defconfig on kisskb in the AMDGPU driver which uses
+cpu_has_feature(CPU_FTR_VSX_COMP) to decide whether calling
+kernel_enable_vsx() or not.
 
-Every stack frame contains a "frame record" *somewhere* within that
-stack frame, and the frame records are chained together as a linked
-list. The frame pointer points at the most recent frame record (and this
-is what __builtin_frame_address(0) returns).
+The failure is due to cpu_has_feature() not being inlined with
+that configuration with gcc 4.9.
 
-The records themselves are basically:
+In the same way as commit acdad8fb4a15 ("powerpc: Force inlining of
+mmu_has_feature to fix build failure"), for inlining of
+cpu_has_feature().
 
-struct record {
-	struct record *next;
-	unsigned long ret_addr;
-};
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/cpu_has_feature.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-At function call boundaries, we know that the FP is the caller's record
-(or NULL for the first function), and the LR is the address the current
-function should return to. Within a function with a stack frame, we can
-access that function's record and the `next` field (equivalent to the FP
-at the time of entry to the function) is what __builtin_frame_address(1)
-should return.
+diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
+index 7897d16e0990..727d4b321937 100644
+--- a/arch/powerpc/include/asm/cpu_has_feature.h
++++ b/arch/powerpc/include/asm/cpu_has_feature.h
+@@ -7,7 +7,7 @@
+ #include <linux/bug.h>
+ #include <asm/cputable.h>
+ 
+-static inline bool early_cpu_has_feature(unsigned long feature)
++static __always_inline bool early_cpu_has_feature(unsigned long feature)
+ {
+ 	return !!((CPU_FTRS_ALWAYS & feature) ||
+ 		  (CPU_FTRS_POSSIBLE & cur_cpu_spec->cpu_features & feature));
+@@ -46,7 +46,7 @@ static __always_inline bool cpu_has_feature(unsigned long feature)
+ 	return static_branch_likely(&cpu_feature_keys[i]);
+ }
+ #else
+-static inline bool cpu_has_feature(unsigned long feature)
++static __always_inline bool cpu_has_feature(unsigned long feature)
+ {
+ 	return early_cpu_has_feature(feature);
+ }
+-- 
+2.25.0
 
-> > Are you aware of anything in particular that breaks using
-> > __builtin_frame_address(1) in non-portable code, or is this just a
-> > general sentiment of this not being a supported use-case?
-> 
-> It is not supported, and trying to do it anyway can crash: it can use
-> random stack contents as pointer!  Not really "random" of course, but
-> where it thinks to find a pointer into the previous frame, which is not
-> something it can rely on (unless the ABI guarantees it somehow).
-> 
-> See gcc.gnu.org/PR60109 for example.
-
-Sure; I see that being true generally (and Ramana noted that on 32-bit
-arm a frame pointer wasn't mandated), but I think in this case we have a
-stronger target (and configuration) specific guarantee.
-
-> > > > Unless we can get some strong guarantees from compiler folk such that we
-> > > > can guarantee a specific function acts boundary for unwinding (and
-> > > > doesn't itself get split, etc), the only reliable way I can think to
-> > > > solve this requires an assembly trampoline. Whatever we do is liable to
-> > > > need some invasive rework.
-> > > 
-> > > You cannot get such a guarantee, other than not letting the compiler
-> > > see into the routine at all, like with assembler code (not inline asm,
-> > > real assembler code).
-> > 
-> > If we cannot reliably ensure this then I'm happy to go write an assembly
-> > trampoline to snapshot the state at a function call boundary (where our
-> > procedure call standard mandates the state of the LR, FP, and frame
-> > records pointed to by the FP).
-> 
-> Is the frame pointer required?!
-
-The arm64 Linux port mandates frame pointers for kernel code. It is
-generally possible to build code without frame pointers (e.g. userspace),
-but doing that for kernel code would be a bug.
-
-> > This'll require reworking a reasonable
-> > amount of code cross-architecture, so I'll need to get some more
-> > concrete justification (e.g. examples of things that can go wrong in
-> > practice).
-> 
-> Say you have a function that does dynamic stack allocation, then there
-> is usually no way to find the previous stack frame (without function-
-> specific knowledge).  So __builtin_frame_address cannot work (it knows
-> nothing about frames further up).
-> 
-> Dynamic stack allocation (alloca, or variable length automatic arrays)
-> is just the most common and most convenient example; it is not the only
-> case you have problems here.
-
-I agree with those as general concerns, but I don't think that affects
-arm64's frame records, since their location within a stack frame is
-immaterial given the chaining.
-
-> > > The real way forward is to bite the bullet and to no longer pretend you
-> > > can do a full backtrace from just the stack contents.  You cannot.
-> > 
-> > I think what you mean here is that there's no reliable way to handle the
-> > current/leaf function, right? If so I do agree.
-> 
-> No, I meant what I said.
-> 
-> There is the separate issue that you do not know where the return
-> address (etc.) is stored in a function that has not yet done a call
-> itself, sure.  You cannot assume anything the ABI does not tell you you
-> can depend on.
-
-This is in the frame record per the AAPCS.
-
-> > Beyond that I believe that arm64's frame records should be sufficient.
-> 
-> Do you have a simple linked list connecting all frames?
-
-Yes.
-
-Thanks,
-Mark.
