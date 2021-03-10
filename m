@@ -2,99 +2,63 @@ Return-Path: <SRS0=GP0G=II=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD43C4332E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:45:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70DF0C28D13
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:47:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF7A864EDD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:45:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF7A864EDD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A603864F49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Mar 2021 17:47:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A603864F49
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DwfcP2kcQz3dFp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 04:45:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QD4WZM3V;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DwffK1nR7z3dKT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 04:47:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=QD4WZM3V; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dwfbv0GnRz3bcs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 04:44:58 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12AHhOmt054518; Wed, 10 Mar 2021 12:44:54 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=Mn8sY8sJqOTDe7oikzYLEpWDu7TaX1hz5Zzib5aMyfk=;
- b=QD4WZM3VtiTUeDP23sZI8koJqNWM6a/altyzvE+4dOTo14GMyYE9GzRAmKqfyF3np3mT
- KCz3Iy9hxGaG9ME5xND+nvGF3GC1MOW8IKRECzDEc9atEeflNNKYWFX6do2XpyPDeMcs
- Rt0OBlVsk5RFBrhb9nNPIAdf346lQubOKhYxeDy+sguzuD0FXt7uKABOe2wjHOWdoDpv
- dOh/28SejY1uX+vEXREosOwH4vaf1JLUkclMLmxURGKhGyZ9BsIqeQSOUsKCFtNJ8Bmu
- Dl6/Pm8kSAS4hreA83PMfthYxHt3nNaGsADYTDoq5+MN3FCzLyD7Ggq0WL9jlGnJsGuT gQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3772ru03k5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Mar 2021 12:44:52 -0500
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12AHevDr002545;
- Wed, 10 Mar 2021 17:44:10 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03fra.de.ibm.com with ESMTP id 3768mprmsk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Mar 2021 17:44:09 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12AHi7xn42205572
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Mar 2021 17:44:07 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DDE7311C04C;
- Wed, 10 Mar 2021 17:44:06 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7CBFE11C04A;
- Wed, 10 Mar 2021 17:44:06 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.145.162.110])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 10 Mar 2021 17:44:06 +0000 (GMT)
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: fbarrat@linux.ibm.com, ajd@linux.ibm.com, arnd@arndb.de,
- gregkh@linuxfoundation.org
-Subject: [PATCH] cxl: don't manipulate the mm.mm_users field directly
-Date: Wed, 10 Mar 2021 18:44:05 +0100
-Message-Id: <20210310174405.51044-1-ldufour@linux.ibm.com>
-X-Mailer: git-send-email 2.30.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-10_10:2021-03-10,
- 2021-03-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=0
- spamscore=0 priorityscore=1501 adultscore=0 bulkscore=0 clxscore=1011
- impostorscore=0 mlxlogscore=745 malwarescore=0 phishscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2103100084
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dwfdy1Sg1z30N6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2021 04:46:43 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Dwfdq17RJz9tytT;
+ Wed, 10 Mar 2021 18:46:39 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id vXkdbFcQnlKL; Wed, 10 Mar 2021 18:46:39 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dwfdp6xP6z9tytQ;
+ Wed, 10 Mar 2021 18:46:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C78718B78D;
+ Wed, 10 Mar 2021 18:46:40 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id VZHKbDJcEICP; Wed, 10 Mar 2021 18:46:40 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9469D8B77E;
+ Wed, 10 Mar 2021 18:46:40 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 73BD867568; Wed, 10 Mar 2021 17:46:40 +0000 (UTC)
+Message-Id: <439179c5e54c18f2cb8bdf1eea13ea0ef6b98375.1615398265.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1615398265.git.christophe.leroy@csgroup.eu>
+References: <cover.1615398265.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 01/15] powerpc/uaccess: Remove __get_user_allowed() and
+ unsafe_op_wrap()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 10 Mar 2021 17:46:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,33 +70,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clombard@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is better to rely on the API provided by the MM layer instead of
-directly manipulating the mm_users field.
+Those two macros have only one user which is unsafe_get_user().
 
-Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+Put everything in one place and remove them.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/cxl/fault.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/uaccess.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 01153b74334a..60c829113299 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -200,7 +200,7 @@ static struct mm_struct *get_mem_context(struct cxl_context *ctx)
- 	if (ctx->mm == NULL)
- 		return NULL;
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 78e2a3990eab..8cbf3e3874f1 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -53,9 +53,6 @@ static inline bool __access_ok(unsigned long addr, unsigned long size)
+ #define __put_user(x, ptr) \
+ 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
  
--	if (!atomic_inc_not_zero(&ctx->mm->mm_users))
-+	if (!mmget_not_zero(ctx->mm))
- 		return NULL;
+-#define __get_user_allowed(x, ptr) \
+-	__get_user_nocheck((x), (ptr), sizeof(*(ptr)), false)
+-
+ #define __get_user_inatomic(x, ptr) \
+ 	__get_user_nosleep((x), (ptr), sizeof(*(ptr)))
+ #define __put_user_inatomic(x, ptr) \
+@@ -482,8 +479,11 @@ user_write_access_begin(const void __user *ptr, size_t len)
+ #define user_write_access_begin	user_write_access_begin
+ #define user_write_access_end		prevent_current_write_to_user
  
- 	return ctx->mm;
+-#define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
+-#define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
++#define unsafe_get_user(x, p, e) do {					\
++	if (unlikely(__get_user_nocheck((x), (p), sizeof(*(p)), false)))\
++		goto e;							\
++} while (0)
++
+ #define unsafe_put_user(x, p, e) \
+ 	__unsafe_put_user_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
+ 
 -- 
-2.30.1
+2.25.0
 
