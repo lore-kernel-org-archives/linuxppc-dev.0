@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73D1AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 18:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4056FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 18:25:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93E8164FE9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 18:24:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93E8164FE9
+	by mail.kernel.org (Postfix) with ESMTPS id 7D12564F87
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Mar 2021 18:25:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D12564F87
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DxHRX3mT2z3dDc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 05:24:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DxHRv6cKwz3cTS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 05:25:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DxHR94hPyz3cJw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DxHR953Vgz3cKR
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 05:24:34 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DxHR214Jrz9tyS4;
- Thu, 11 Mar 2021 19:24:30 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DxHR12yR5z9v1Bt;
+ Thu, 11 Mar 2021 19:24:29 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id h0keolxaqy_5; Thu, 11 Mar 2021 19:24:30 +0100 (CET)
+ with ESMTP id goZu1LU10u-X; Thu, 11 Mar 2021 19:24:29 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DxHR203Gpz9tyS3;
- Thu, 11 Mar 2021 19:24:30 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DxHR124RZz9v1Bs;
+ Thu, 11 Mar 2021 19:24:29 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD3CE8B80D;
- Thu, 11 Mar 2021 19:24:31 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EAB168B80D;
+ Thu, 11 Mar 2021 19:24:30 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id imUCp6fL9L8h; Thu, 11 Mar 2021 19:24:31 +0100 (CET)
+ with ESMTP id oM5t9zfqagzP; Thu, 11 Mar 2021 19:24:30 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B5F68B80B;
- Thu, 11 Mar 2021 19:24:31 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A2AE38B80B;
+ Thu, 11 Mar 2021 19:24:30 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 51A6E6758B; Thu, 11 Mar 2021 18:24:31 +0000 (UTC)
-Message-Id: <225179d2e8b93c1bec23f39275b34af9b3881f17.1615486843.git.christophe.leroy@csgroup.eu>
+ id 3DF036758B; Thu, 11 Mar 2021 18:24:30 +0000 (UTC)
+Message-Id: <656520fecf792b8842dc54beec2da3bc29d0133c.1615486986.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] [backport for 5.4] powerpc/603: Fix protection of user pages
+Subject: [PATCH] [backport for 5.10] powerpc/603: Fix protection of user pages
  mapped with PROT_NONE
 To: stable@vger.kernel.org, gregkh@linuxfoundation.org
-Date: Thu, 11 Mar 2021 18:24:31 +0000 (UTC)
+Date: Thu, 11 Mar 2021 18:24:30 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,45 +119,45 @@ Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Link: https://lore.kernel.org/r/4a0c6e3bb8f0c162457bf54d9bc6fd8d7b55129f.1612160907.git.christophe.leroy@csgroup.eu
 ---
- arch/powerpc/kernel/head_32.S | 9 ++++++---
+ arch/powerpc/kernel/head_book3s_32.S | 9 ++++++---
  1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 126ba5438430..edaab1142498 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -418,10 +418,11 @@ InstructionTLBMiss:
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 2729d8fa6e77..96b45901da64 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -461,10 +461,11 @@ InstructionTLBMiss:
  	cmplw	0,r1,r3
  #endif
  	mfspr	r2, SPRN_SPRG_PGDIR
 -	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
 +	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC | _PAGE_USER
  #if defined(CONFIG_MODULES) || defined(CONFIG_DEBUG_PAGEALLOC)
- 	bge-	112f
+ 	bgt-	112f
  	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
 +	li	r1,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
  	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
  #endif
  112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
-@@ -480,9 +481,10 @@ DataLoadTLBMiss:
- 	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+@@ -523,9 +524,10 @@ DataLoadTLBMiss:
+ 	lis	r1, TASK_SIZE@h		/* check if kernel address */
  	cmplw	0,r1,r3
  	mfspr	r2, SPRN_SPRG_PGDIR
 -	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED
 +	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER
- 	bge-	112f
+ 	bgt-	112f
  	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
 +	li	r1, _PAGE_PRESENT | _PAGE_ACCESSED
  	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
  112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
  	lwz	r2,0(r2)		/* get pmd entry */
-@@ -556,9 +558,10 @@ DataStoreTLBMiss:
- 	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+@@ -599,9 +601,10 @@ DataStoreTLBMiss:
+ 	lis	r1, TASK_SIZE@h		/* check if kernel address */
  	cmplw	0,r1,r3
  	mfspr	r2, SPRN_SPRG_PGDIR
 -	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED
 +	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER
- 	bge-	112f
+ 	bgt-	112f
  	lis	r2, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
 +	li	r1, _PAGE_RW | _PAGE_DIRTY | _PAGE_PRESENT | _PAGE_ACCESSED
  	addi	r2, r2, (swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
