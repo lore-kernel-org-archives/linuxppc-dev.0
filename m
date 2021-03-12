@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B907C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03560C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:53:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3D4C64F89
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:53:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3D4C64F89
+	by mail.kernel.org (Postfix) with ESMTPS id 7C57B64F09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:53:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C57B64F09
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm2C4fYJz3fJB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:53:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm2Y1kBTz3fM3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:53:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlz20fMRz3cbj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlz22VK6z3cjv
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:22 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dxlyy0gXxz9ttDF;
- Fri, 12 Mar 2021 13:50:18 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Dxlyv1Pqbz9ttBc;
+ Fri, 12 Mar 2021 13:50:15 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id UcuPO63RFEeH; Fri, 12 Mar 2021 13:50:18 +0100 (CET)
+ with ESMTP id cPnew7Y2OX30; Fri, 12 Mar 2021 13:50:15 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyx6HXtz9ttBg;
- Fri, 12 Mar 2021 13:50:17 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyv0cGkz9ttBS;
+ Fri, 12 Mar 2021 13:50:15 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DEDCB8B814;
- Fri, 12 Mar 2021 13:50:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C0818B813;
+ Fri, 12 Mar 2021 13:50:16 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id mf3HKHjtSvys; Fri, 12 Mar 2021 13:50:18 +0100 (CET)
+ with ESMTP id jOYcJaU7JDOt; Fri, 12 Mar 2021 13:50:16 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3330C8B764;
- Fri, 12 Mar 2021 13:50:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BE5608B812;
+ Fri, 12 Mar 2021 13:50:15 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A91B6675C9; Fri, 12 Mar 2021 12:50:17 +0000 (UTC)
-Message-Id: <602e1ec47e15ca540f7edb9cf6feb6c249911bd6.1615552866.git.christophe.leroy@csgroup.eu>
+ id 96976675C9; Fri, 12 Mar 2021 12:50:15 +0000 (UTC)
+Message-Id: <3fd75ee54c48307119acdbf66cfea966c1463bbd.1615552866.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 08/41] powerpc/32: Reconcile interrupts in C
+Subject: [PATCH v3 06/41] powerpc/40x: Prepare for enabling MMU in critical
+ exception prolog
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 12 Mar 2021 12:50:17 +0000 (UTC)
+Date: Fri, 12 Mar 2021 12:50:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,106 +76,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need for this to be in asm anymore,
-use the new interrupt entry wrapper.
+In order the enable MMU early in exception prolog, implement
+CONFIG_VMAP_STACK principles in critical exception prolog.
+
+There is no intention to use CONFIG_VMAP_STACK on 40x,
+but related code will be used to enable MMU early in exception
+in a later patch.
+
+Also address (critirq_ctx - PAGE_OFFSET) directly instead of
+using tophys() in order to win one instruction.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/interrupt.h |  4 ++
- arch/powerpc/kernel/entry_32.S       | 58 ----------------------------
- 2 files changed, 4 insertions(+), 58 deletions(-)
+ arch/powerpc/kernel/head_40x.S | 40 +++++++++++++++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index 232a4847f596..b2f69e5dcb50 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -29,6 +29,10 @@ static inline void booke_restore_dbcr0(void)
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 5b337bf49bcb..1468f38c3860 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -89,6 +89,12 @@ _ENTRY(crit_srr0)
+ 	.space	4
+ _ENTRY(crit_srr1)
+ 	.space	4
++_ENTRY(crit_r1)
++	.space	4
++_ENTRY(crit_dear)
++	.space	4
++_ENTRY(crit_esr)
++	.space	4
+ _ENTRY(saved_ksp_limit)
+ 	.space	4
  
- static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
- {
-+#ifdef CONFIG_PPC32
-+	if (!arch_irq_disabled_regs(regs))
-+		trace_hardirqs_off();
+@@ -107,32 +113,60 @@ _ENTRY(saved_ksp_limit)
+ 	mfspr	r11,SPRN_SRR1
+ 	stw	r10,crit_srr0@l(0)
+ 	stw	r11,crit_srr1@l(0)
++#ifdef CONFIG_VMAP_STACK
++	mfspr	r10,SPRN_DEAR
++	mfspr	r11,SPRN_ESR
++	stw	r10,crit_dear@l(0)
++	stw	r11,crit_esr@l(0)
 +#endif
- 	/*
- 	 * Book3E reconciles irq soft mask in asm
- 	 */
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 535c55f4393a..0f18fe14649c 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -202,22 +202,6 @@ transfer_to_handler_cont:
- 	lwz	r9,4(r9)		/* where to go when done */
- #if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
- 	mtspr	SPRN_NRI, r0
--#endif
--#ifdef CONFIG_TRACE_IRQFLAGS
--	/*
--	 * When tracing IRQ state (lockdep) we enable the MMU before we call
--	 * the IRQ tracing functions as they might access vmalloc space or
--	 * perform IOs for console output.
--	 *
--	 * To speed up the syscall path where interrupts stay on, let's check
--	 * first if we are changing the MSR value at all.
--	 */
--	tophys_novmstack r12, r1
--	lwz	r12,_MSR(r12)
--	andi.	r12,r12,MSR_EE
--	bne	1f
--
--	/* MSR isn't changing, just transition directly */
- #endif
- 	mtspr	SPRN_SRR0,r11
- 	mtspr	SPRN_SRR1,r10
-@@ -244,48 +228,6 @@ transfer_to_handler_cont:
- _ASM_NOKPROBE_SYMBOL(transfer_to_handler)
- _ASM_NOKPROBE_SYMBOL(transfer_to_handler_cont)
- 
--#ifdef CONFIG_TRACE_IRQFLAGS
--1:	/* MSR is changing, re-enable MMU so we can notify lockdep. We need to
--	 * keep interrupts disabled at this point otherwise we might risk
--	 * taking an interrupt before we tell lockdep they are enabled.
--	 */
--	lis	r12,reenable_mmu@h
--	ori	r12,r12,reenable_mmu@l
--	LOAD_REG_IMMEDIATE(r0, MSR_KERNEL)
--	mtspr	SPRN_SRR0,r12
--	mtspr	SPRN_SRR1,r0
--	rfi
--#ifdef CONFIG_40x
--	b .	/* Prevent prefetch past rfi */
--#endif
--
--reenable_mmu:
--	/*
--	 * We save a bunch of GPRs,
--	 * r3 can be different from GPR3(r1) at this point, r9 and r11
--	 * contains the old MSR and handler address respectively,
--	 * r0, r4-r8, r12, CCR, CTR, XER etc... are left
--	 * clobbered as they aren't useful past this point.
--	 */
--
--	stwu	r1,-32(r1)
--	stw	r9,8(r1)
--	stw	r11,12(r1)
--	stw	r3,16(r1)
--
--	/* If we are disabling interrupts (normal case), simply log it with
--	 * lockdep
--	 */
--1:	bl	trace_hardirqs_off
--	lwz	r3,16(r1)
--	lwz	r11,12(r1)
--	lwz	r9,8(r1)
--	addi	r1,r1,32
--	mtctr	r11
--	mtlr	r9
--	bctr				/* jump to handler */
--#endif /* CONFIG_TRACE_IRQFLAGS */
--
- #ifndef CONFIG_VMAP_STACK
- /*
-  * On kernel stack overflow, load up an initial stack pointer
+ 	mfcr	r10			/* save CR in r10 for now	   */
+ 	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
+ 	andi.	r11,r11,MSR_PR
+-	lis	r11,critirq_ctx@ha
+-	tophys(r11,r11)
+-	lwz	r11,critirq_ctx@l(r11)
++	lis	r11,(critirq_ctx-PAGE_OFFSET)@ha
++	lwz	r11,(critirq_ctx-PAGE_OFFSET)@l(r11)
+ 	beq	1f
+ 	/* COMING FROM USER MODE */
+ 	mfspr	r11,SPRN_SPRG_THREAD	/* if from user, start at top of   */
+ 	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
++#ifdef CONFIG_VMAP_STACK
++1:	stw	r1,crit_r1@l(0)
++	addi	r1,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
++	LOAD_REG_IMMEDIATE(r11,MSR_KERNEL & ~(MSR_IR | MSR_RI))
++	mtmsr	r11
++	isync
++	lwz	r11,crit_r1@l(0)
++	stw	r11,GPR1(r1)
++	stw	r11,0(r1)
++	mr	r11,r1
++#else
+ 1:	addi	r11,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
+ 	tophys(r11,r11)
+ 	stw	r1,GPR1(r11)
+ 	stw	r1,0(r11)
+ 	tovirt(r1,r11)
++#endif
+ 	stw	r10,_CCR(r11)		/* save various registers	   */
+ 	stw	r12,GPR12(r11)
+ 	stw	r9,GPR9(r11)
+ 	mflr	r10
+ 	stw	r10,_LINK(r11)
++#ifdef CONFIG_VMAP_STACK
++	lis	r9,PAGE_OFFSET@ha
++	lwz	r10,crit_r10@l(r9)
++	lwz	r12,crit_r11@l(r9)
++#else
+ 	lwz	r10,crit_r10@l(0)
+ 	lwz	r12,crit_r11@l(0)
++#endif
+ 	stw	r10,GPR10(r11)
+ 	stw	r12,GPR11(r11)
++#ifdef CONFIG_VMAP_STACK
++	lwz	r12,crit_dear@l(r9)
++	lwz	r9,crit_esr@l(r9)
++#else
+ 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
+ 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
++#endif
+ 	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+ 	stw	r9,_ESR(r11)		/* exception was taken		   */
+ 	mfspr	r12,SPRN_SRR2
 -- 
 2.25.0
 
