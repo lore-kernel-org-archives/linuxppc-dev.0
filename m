@@ -7,59 +7,58 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 706A8C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:52:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C3D4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:52:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1679264FE2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:52:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1679264FE2
+	by mail.kernel.org (Postfix) with ESMTPS id 2B18164FF5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:52:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B18164FF5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm1X4csNz3f3T
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:52:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm1s6cLgz3f8t
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:52:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlz16Gwbz3cZ4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlz22Smzz3cjs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:22 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dxlyt3ShJz9ttBZ;
- Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Dxlyy2kB6z9ttBQ;
+ Fri, 12 Mar 2021 13:50:18 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 1f5GVveoebXr; Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ with ESMTP id apE_gszE5Xew; Fri, 12 Mar 2021 13:50:18 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyt2Zb9z9ttBS;
- Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyy1lYHz9ttBP;
+ Fri, 12 Mar 2021 13:50:18 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 07EA98B815;
- Fri, 12 Mar 2021 13:50:15 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 29E708B764;
+ Fri, 12 Mar 2021 13:50:19 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VsGDtZIYFge2; Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ with ESMTP id KRlWks0BJfTf; Fri, 12 Mar 2021 13:50:19 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B49368B812;
- Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E0E308B812;
+ Fri, 12 Mar 2021 13:50:18 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8DD80675C9; Fri, 12 Mar 2021 12:50:14 +0000 (UTC)
-Message-Id: <c895ecf958c86d1736bdd2ff6f36626b55f35fd2.1615552866.git.christophe.leroy@csgroup.eu>
+ id B114B675C9; Fri, 12 Mar 2021 12:50:18 +0000 (UTC)
+Message-Id: <daca4c3e05cdfe54d237162a0718b3aaca897662.1615552866.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 05/41] powerpc/40x: Reorder a few instructions in critical
- exception prolog
+Subject: [PATCH v3 09/41] powerpc/32: Entry cpu time accounting in C
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 12 Mar 2021 12:50:14 +0000 (UTC)
+Date: Fri, 12 Mar 2021 12:50:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,44 +75,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to ease preparation for CONFIG_VMAP_STACK, reorder
-a few instruction, especially save r1 into stack frame earlier.
+There is no need for this to be in asm,
+use the new interrupt entry wrapper.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_40x.S | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/interrupt.h |  3 +++
+ arch/powerpc/include/asm/ppc_asm.h   | 10 ----------
+ arch/powerpc/kernel/entry_32.S       |  1 -
+ 3 files changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 067ae1302c1c..5b337bf49bcb 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -119,6 +119,9 @@ _ENTRY(saved_ksp_limit)
- 	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
- 1:	addi	r11,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
- 	tophys(r11,r11)
-+	stw	r1,GPR1(r11)
-+	stw	r1,0(r11)
-+	tovirt(r1,r11)
- 	stw	r10,_CCR(r11)		/* save various registers	   */
- 	stw	r12,GPR12(r11)
- 	stw	r9,GPR9(r11)
-@@ -129,14 +132,11 @@ _ENTRY(saved_ksp_limit)
- 	stw	r10,GPR10(r11)
- 	stw	r12,GPR11(r11)
- 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
--	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
- 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
-+	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
- 	stw	r9,_ESR(r11)		/* exception was taken		   */
- 	mfspr	r12,SPRN_SRR2
--	stw	r1,GPR1(r11)
- 	mfspr	r9,SPRN_SRR3
--	stw	r1,0(r11)
--	tovirt(r1,r11)
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?)	   */
- 	stw	r0,GPR0(r11)
- 	lis	r10, STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index b2f69e5dcb50..c35368adbe71 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -32,6 +32,9 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+ #ifdef CONFIG_PPC32
+ 	if (!arch_irq_disabled_regs(regs))
+ 		trace_hardirqs_off();
++
++	if (user_mode(regs))
++		account_cpu_user_entry();
+ #endif
+ 	/*
+ 	 * Book3E reconciles irq soft mask in asm
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 3dceb64fc9af..8998122fc7e2 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -23,18 +23,8 @@
+  */
+ 
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+-#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)
+ #define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)
+ #else
+-#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)				\
+-	MFTB(ra);			/* get timebase */		\
+-	PPC_LL	rb, ACCOUNT_STARTTIME_USER(ptr);			\
+-	PPC_STL	ra, ACCOUNT_STARTTIME(ptr);				\
+-	subf	rb,rb,ra;		/* subtract start value */	\
+-	PPC_LL	ra, ACCOUNT_USER_TIME(ptr);				\
+-	add	ra,ra,rb;		/* add on to user time */	\
+-	PPC_STL	ra, ACCOUNT_USER_TIME(ptr);				\
+-
+ #define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)				\
+ 	MFTB(ra);			/* get timebase */		\
+ 	PPC_LL	rb, ACCOUNT_STARTTIME(ptr);				\
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 0f18fe14649c..0f3f1bdd909e 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -152,7 +152,6 @@ transfer_to_handler:
+ 	lwz	r12,THREAD_DBCR0(r12)
+ 	andis.	r12,r12,DBCR0_IDM@h
+ #endif
+-	ACCOUNT_CPU_USER_ENTRY(r2, r11, r12)
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	kuep_lock r11, r12
+ #endif
 -- 
 2.25.0
 
