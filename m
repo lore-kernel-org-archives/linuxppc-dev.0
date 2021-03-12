@@ -2,73 +2,84 @@ Return-Path: <SRS0=42OU=IK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BED5C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 10:04:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 313B0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 11:28:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8328E65004
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 10:04:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8328E65004
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 87A9364F78
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 11:28:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87A9364F78
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DxhHl0VX1z3dST
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 21:04:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxk8r17lKz3d4h
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 22:28:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=R4SHxwx1;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.45.220; helo=5.mo52.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 166810 seconds by postgrey-1.36 at boromir;
- Fri, 12 Mar 2021 21:04:06 AEDT
-Received: from 5.mo52.mail-out.ovh.net (5.mo52.mail-out.ovh.net
- [188.165.45.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72b;
+ helo=mail-qk1-x72b.google.com; envelope-from=unixbhaskar@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=R4SHxwx1; dkim-atps=neutral
+Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com
+ [IPv6:2607:f8b0:4864:20::72b])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DxhHB21V0z3d3y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 21:04:05 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.16.128])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id C224D24BF63;
- Fri, 12 Mar 2021 10:53:59 +0100 (CET)
-Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Fri, 12 Mar
- 2021 10:53:55 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-105G006feddd577-92b5-4852-9f7d-abacc7bd9cf4,
- 795EE61F3CDF5270877287A62BE336BF03444C93) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 86.201.91.229
-Subject: Re: [PATCH v2 1/8] powerpc/xive: Use cpu_to_node() instead of
- ibm,chip-id property
-To: David Gibson <dgibson@redhat.com>
-References: <20210303174857.1760393-1-clg@kaod.org>
- <20210303174857.1760393-2-clg@kaod.org> <20210308181359.789c143b@bahia.lan>
- <8dd98e22-1f10-e87b-3fe3-e786bc9a8d71@kaod.org>
- <3180b5c6-e61f-9c5f-3c80-f10e69dc5785@linux.ibm.com>
- <92edbc26-4cb5-6e2f-00ff-43a3dca43759@kaod.org>
- <20210312125527.61bc269c@yekko.fritz.box>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <4effbb5e-6f08-03bf-cea0-60c986175668@kaod.org>
-Date: Fri, 12 Mar 2021 10:53:51 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxk8P0hvPz3cKT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 22:28:19 +1100 (AEDT)
+Received: by mail-qk1-x72b.google.com with SMTP id m186so7200477qke.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 03:28:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=KilxK7cdzAcDImsrYn4FRTgOx1aju2O33SCteVknzS4=;
+ b=R4SHxwx1Y6xGLxcY2c4ZD2u01Z350Kb2+LnLijpNN5celAQnC09BWElPHqx+Oc32x2
+ x803J/e9v8ZYvtX8FFCNQGNLXZsxBEreZLANcIBYJpjYK0QfDR9eVQaTq/WaqjgW1I5Y
+ uxKHXpJx1zE6C2OvaFS3j0InWMwhlIgjr2DQyTRltwwXlSzkvxd0Zm+Drrgu0y+RHwHY
+ 7JpV3SzJXj08Ch59RnVuQz5F23YV2pDqhQKcLQnHfIaFhMIs0L6iBmmYCO2mIjMoEi0Z
+ qfJQ2vMOqRTsWoxQzM03RVGpQnlXZs9Shm/qpUTwZiZZVx8Aj+ywgfleV6wnvf1ZMxI8
+ rgFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=KilxK7cdzAcDImsrYn4FRTgOx1aju2O33SCteVknzS4=;
+ b=iM0Gm5pQGZx14aTYWH3dW5+s0koKKKZQ/duwjSJFyiAw7GSmEd2Df2mY9cCU3yzW81
+ uSWI7vi2PLxB1c0zBg65u/Ky6TEssID6PLIjww2R/GcgMo0dWb5vs2Ja3/wB95C4sdoJ
+ 8eYO9l644XlF+MIRo/Efijk5oz/PYBifBcGAVHo6KtFRT6957OOWTaltipMlS4qpPawZ
+ MU78THwuKj06U3MAJ/JoR2LGOjFibXHA1/GPPTvBKaMjz0Xz7xa9TtUh3xNLSkFWfu7W
+ jtTQXZJQu5Zn9/TAHiMbfQFgcW5Rh3c9QI9cmkVPpJClJ3BX+kXFa85hiC1kRf+ypHZn
+ lQRw==
+X-Gm-Message-State: AOAM5307CYqcvThfOuzHuv8Wnpl6BS+wo7ZRr5NaG8b2G/p4EwpkvHrx
+ jdO6OwpwJ/DejUbOEK28Elc=
+X-Google-Smtp-Source: ABdhPJzvjzi04rjt+//P5Mvj0gHfU4HRRyBBNMjnDwsxCvwU+FpBxBKZ6pU7UFby9PbTjgdeFxTiGg==
+X-Received: by 2002:a37:4716:: with SMTP id u22mr12417015qka.21.1615548497535; 
+ Fri, 12 Mar 2021 03:28:17 -0800 (PST)
+Received: from localhost.localdomain ([37.19.198.63])
+ by smtp.gmail.com with ESMTPSA id s2sm3826926qti.54.2021.03.12.03.28.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 12 Mar 2021 03:28:16 -0800 (PST)
+From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ npiggin@gmail.com, unixbhaskar@gmail.com, aneesh.kumar@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: mm: book3s64: Fix a typo in the file mmu_context.c
+Date: Fri, 12 Mar 2021 16:55:37 +0530
+Message-Id: <20210312112537.4585-1-unixbhaskar@gmail.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-In-Reply-To: <20210312125527.61bc269c@yekko.fritz.box>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.105]
-X-ClientProxiedBy: DAG5EX2.mxp5.local (172.16.2.42) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 847daada-19e1-4769-8e73-38e32e2d5bc4
-X-Ovh-Tracer-Id: 4194821581489671017
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledruddvvddgtdelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepgeehvefffefhtdduieejheejleefieeuieeuvedvgfeiteeuvdetheduffehgeevnecuffhomhgrihhnpehrvgguhhgrthdrtghomhenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepghhrohhugheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,183 +91,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Henrique Barboza <danielhb@linux.ibm.com>,
- Greg Kurz <groug@kaod.org>, QEMU Developers <qemu-devel@nongnu.org>,
- "list@suse.de:PowerPC" <qemu-ppc@nongnu.org>, linuxppc-dev@lists.ozlabs.org
+Cc: rdunlap@infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/12/21 2:55 AM, David Gibson wrote:
-> On Tue, 9 Mar 2021 18:26:35 +0100
-> Cédric Le Goater <clg@kaod.org> wrote:
-> 
->> On 3/9/21 6:08 PM, Daniel Henrique Barboza wrote:
->>>
->>>
->>> On 3/9/21 12:33 PM, Cédric Le Goater wrote:  
->>>> On 3/8/21 6:13 PM, Greg Kurz wrote:  
->>>>> On Wed, 3 Mar 2021 18:48:50 +0100
->>>>> Cédric Le Goater <clg@kaod.org> wrote:
->>>>>  
->>>>>> The 'chip_id' field of the XIVE CPU structure is used to choose a
->>>>>> target for a source located on the same chip when possible. This field
->>>>>> is assigned on the PowerNV platform using the "ibm,chip-id" property
->>>>>> on pSeries under KVM when NUMA nodes are defined but it is undefined  
->>>>>
->>>>> This sentence seems to have a syntax problem... like it is missing an
->>>>> 'and' before 'on pSeries'.  
->>>>
->>>> ah yes, or simply a comma.
->>>>  
->>>>>> under PowerVM. The XIVE source structure has a similar field
->>>>>> 'src_chip' which is only assigned on the PowerNV platform.
->>>>>>
->>>>>> cpu_to_node() returns a compatible value on all platforms, 0 being the
->>>>>> default node. It will also give us the opportunity to set the affinity
->>>>>> of a source on pSeries when we can localize them.
->>>>>>  
->>>>>
->>>>> IIUC this relies on the fact that the NUMA node id is == to chip id
->>>>> on PowerNV, i.e. xc->chip_id which is passed to OPAL remain stable
->>>>> with this change.  
->>>>
->>>> Linux sets the NUMA node in numa_setup_cpu(). On pseries, the hcall
->>>> H_HOME_NODE_ASSOCIATIVITY returns the node id if I am correct (Daniel
->>>> in Cc:)  
->>  [...]  
->>>>
->>>> On PowerNV, Linux uses "ibm,associativity" property of the CPU to find
->>>> the node id. This value is built from the chip id in OPAL, so the
->>>> value returned by cpu_to_node(cpu) and the value of the "ibm,chip-id"
->>>> property are unlikely to be different.
->>>>
->>>> cpu_to_node(cpu) is used in many places to allocate the structures
->>>> locally to the owning node. XIVE is not an exception (see below in the
->>>> same patch), it is better to be consistent and get the same information
->>>> (node id) using the same routine.
->>>>
->>>>
->>>> In Linux, "ibm,chip-id" is only used in low level PowerNV drivers :
->>>> LPC, XSCOM, RNG, VAS, NX. XIVE should be in that list also but skiboot
->>>> unifies the controllers of the system to only expose one the OS. This
->>>> is problematic and should be changed but it's another topic.
->>>>
->>>>  
->>>>> On the other hand, you have the pSeries case under PowerVM that
->>>>> doesn't xc->chip_id, which isn't passed to any hcall AFAICT.  
->>>>
->>>> yes "ibm,chip-id" is an OPAL concept unfortunately and it has no meaning
->>>> under PAPR. xc->chip_id on pseries (PowerVM) will contains an invalid
->>>> chip id.
->>>>
->>>> QEMU/KVM exposes "ibm,chip-id" but it's not used. (its value is not
->>>> always correct btw)  
->>>
->>>
->>> If you have a way to reliably reproduce this, let me know and I'll fix it
->>> up in QEMU.  
->>
->> with :
->>
->>    -smp 4,cores=1,maxcpus=8 -object memory-backend-ram,id=ram-node0,size=2G -numa node,nodeid=0,cpus=0-1,cpus=4-5,memdev=ram-node0 -object memory-backend-ram,id=ram-node1,size=2G -numa node,nodeid=1,cpus=2-3,cpus=6-7,memdev=ram-node1
->>
->> # dmesg | grep numa
->> [    0.013106] numa: Node 0 CPUs: 0-1
->> [    0.013136] numa: Node 1 CPUs: 2-3
->>
->> # dtc -I fs /proc/device-tree/cpus/ -f | grep ibm,chip-id
->> 		ibm,chip-id = <0x01>;
->> 		ibm,chip-id = <0x02>;
->> 		ibm,chip-id = <0x00>;
->> 		ibm,chip-id = <0x03>;
->>
->> with :
->>
->>   -smp 4,cores=4,maxcpus=8,threads=1 -object memory-backend-ram,id=ram-node0,size=2G -numa node,nodeid=0,cpus=0-1,cpus=4-5,memdev=ram-node0 -object memory-backend-ram,id=ram-node1,size=2G -numa node,nodeid=1,cpus=2-3,cpus=6-7,memdev=ram-node1
->>
->> # dmesg | grep numa
->> [    0.013106] numa: Node 0 CPUs: 0-1
->> [    0.013136] numa: Node 1 CPUs: 2-3
->>
->> # dtc -I fs /proc/device-tree/cpus/ -f | grep ibm,chip-id
->> 		ibm,chip-id = <0x00>;
->> 		ibm,chip-id = <0x00>;
->> 		ibm,chip-id = <0x00>;
->> 		ibm,chip-id = <0x00>;
->>
->> I think we should simply remove "ibm,chip-id" since it's not used and
->> not in the PAPR spec.
-> 
-> As I mentioned to Daniel on our call this morning, oddly it *does*
-> appear to be used in the RHEL kernel, even though that's 4.18 based.
-> This patch seems to have caused a minor regression; not in the
-> identification of NUMA nodes, but in the number of sockets shown be
-> lscpu, etc.  See https://bugzilla.redhat.com/show_bug.cgi?id=1934421
-> for more information.
 
-Yes. The property "ibm,chip-id" is wrongly calculated in QEMU. If we 
-remove it, we get with 4.18.0-295.el8.ppc64le or 5.12.0-rc2 :
+s/detalis/details/
 
-   [root@localhost ~]# lscpu 
-   Architecture:        ppc64le
-   Byte Order:          Little Endian
-   CPU(s):              128
-   On-line CPU(s) list: 0-127
-   Thread(s) per core:  4
-   Core(s) per socket:  16
-   Socket(s):           2
-   NUMA node(s):        2
-   Model:               2.2 (pvr 004e 1202)
-   Model name:          POWER9 (architected), altivec supported
-   Hypervisor vendor:   KVM
-   Virtualization type: para
-   L1d cache:           32K
-   L1i cache:           32K
-   NUMA node0 CPU(s):   0-63
-   NUMA node1 CPU(s):   64-127
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+---
+ arch/powerpc/mm/book3s64/mmu_context.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-   [root@localhost ~]# grep . /sys/devices/system/cpu/*/topology/physical_package_id
-   /sys/devices/system/cpu/cpu0/topology/physical_package_id:-1
-   /sys/devices/system/cpu/cpu100/topology/physical_package_id:-1
-   /sys/devices/system/cpu/cpu101/topology/physical_package_id:-1
-   /sys/devices/system/cpu/cpu102/topology/physical_package_id:-1
-   /sys/devices/system/cpu/cpu103/topology/physical_package_id:-1
-   ....
-
-"ibm,chip-id" is still being used on some occasion on pSeries machines.
-This is wrong :/ The problem is :
-
-  #define topology_physical_package_id(cpu)      (cpu_to_chip_id(cpu))
-
-We should be using cpu_to_node(). 
-
-C.
-
-> 
-> Since the value was used by some PAPR kernels - even if they shouldn't
-> have - I think we should only remove this for newer machine types.  We
-> also need to check what we're not supplying that the guest kernel is
-> showing a different number of sockets than specified on the qemu
-> command line.
-> 
->>
->> Thanks,
->>
->> C.
->>
->>  
->>
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>  [...]  
->>
-> 
-> 
+diff --git a/arch/powerpc/mm/book3s64/mmu_context.c b/arch/powerpc/mm/book3s64/mmu_context.c
+index 0c8557220ae2..c10fc8a72fb3 100644
+--- a/arch/powerpc/mm/book3s64/mmu_context.c
++++ b/arch/powerpc/mm/book3s64/mmu_context.c
+@@ -119,7 +119,7 @@ static int hash__init_new_context(struct mm_struct *mm)
+ 		/* This is fork. Copy hash_context details from current->mm */
+ 		memcpy(mm->context.hash_context, current->mm->context.hash_context, sizeof(struct hash_mm_context));
+ #ifdef CONFIG_PPC_SUBPAGE_PROT
+-		/* inherit subpage prot detalis if we have one. */
++		/* inherit subpage prot details if we have one. */
+ 		if (current->mm->context.hash_context->spt) {
+ 			mm->context.hash_context->spt = kmalloc(sizeof(struct subpage_prot_table),
+ 								GFP_KERNEL);
+--
+2.26.2
 
