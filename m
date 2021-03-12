@@ -2,64 +2,60 @@ Return-Path: <SRS0=42OU=IK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BE93C4361A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:51:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CE11C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:51:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A04765005
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:51:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A04765005
+	by mail.kernel.org (Postfix) with ESMTPS id B994164FEA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:51:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B994164FEA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm026GKgz3dcK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:51:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm0N2ff8z3dBZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:51:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlyz2Q53z3cWL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlyz2NJ9z3cWF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:15 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dxlys3JPyz9ttBX;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Dxlyn2G9gz9ttBT;
+ Fri, 12 Mar 2021 13:50:09 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Z38vK4_hwXur; Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ with ESMTP id 7_3cVO9A2b4k; Fri, 12 Mar 2021 13:50:09 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlys2Rf0z9ttBS;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyn0nTwz9ttBS;
+ Fri, 12 Mar 2021 13:50:09 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6BDC28B813;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 12BDC8B812;
+ Fri, 12 Mar 2021 13:50:10 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id skjrZY-fzJZt; Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ with ESMTP id xV5S4nz9J9b7; Fri, 12 Mar 2021 13:50:09 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A68938B764;
- Fri, 12 Mar 2021 13:50:12 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B56408B764;
+ Fri, 12 Mar 2021 13:50:09 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7FAE8675C9; Fri, 12 Mar 2021 12:50:12 +0000 (UTC)
-Message-Id: <73291fb9dc9ec58182c27a40dfc3db204e3f4024.1615552866.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
-References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
+ id 5C146675C9; Fri, 12 Mar 2021 12:50:09 +0000 (UTC)
+Message-Id: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 03/41] powerpc/40x: Change CRITICAL_EXCEPTION_PROLOG macro
- to a gas macro
+Subject: [PATCH v3 00/41] powerpc/32: Switch to interrupt entry/exit in C
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 12 Mar 2021 12:50:12 +0000 (UTC)
+Date: Fri, 12 Mar 2021 12:50:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,97 +72,116 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Change CRITICAL_EXCEPTION_PROLOG macro to a gas macro to
-remove the ugly ; and \ on each line.
+This series aims at porting interrupt entry/exit in C on PPC32, using
+the work already merged for PPC64.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/head_40x.S | 71 +++++++++++++++++-----------------
- 1 file changed, 36 insertions(+), 35 deletions(-)
+First patch is an optimisation around unrecoverable_exception() function.
 
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 383238a98f77..9cef423d574b 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -100,42 +100,43 @@ _ENTRY(saved_ksp_limit)
-  * Instead we use a couple of words of memory at low physical addresses.
-  * This is OK since we don't support SMP on these processors.
-  */
--#define CRITICAL_EXCEPTION_PROLOG					     \
--	stw	r10,crit_r10@l(0);	/* save two registers to work with */\
--	stw	r11,crit_r11@l(0);					     \
--	mfcr	r10;			/* save CR in r10 for now	   */\
--	mfspr	r11,SPRN_SRR3;		/* check whether user or kernel    */\
--	andi.	r11,r11,MSR_PR;						     \
--	lis	r11,critirq_ctx@ha;					     \
--	tophys(r11,r11);						     \
--	lwz	r11,critirq_ctx@l(r11);					     \
--	beq	1f;							     \
--	/* COMING FROM USER MODE */					     \
--	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
--	lwz	r11,TASK_STACK-THREAD(r11); /* this thread's kernel stack */\
--1:	addi	r11,r11,THREAD_SIZE-INT_FRAME_SIZE; /* Alloc an excpt frm  */\
--	tophys(r11,r11);						     \
--	stw	r10,_CCR(r11);          /* save various registers	   */\
--	stw	r12,GPR12(r11);						     \
--	stw	r9,GPR9(r11);						     \
--	mflr	r10;							     \
--	stw	r10,_LINK(r11);						     \
--	mfspr	r12,SPRN_DEAR;		/* save DEAR and ESR in the frame  */\
--	stw	r12,_DEAR(r11);		/* since they may have had stuff   */\
--	mfspr	r9,SPRN_ESR;		/* in them at the point where the  */\
--	stw	r9,_ESR(r11);		/* exception was taken		   */\
--	mfspr	r12,SPRN_SRR2;						     \
--	stw	r1,GPR1(r11);						     \
--	mfspr	r9,SPRN_SRR3;						     \
--	stw	r1,0(r11);						     \
--	tovirt(r1,r11);							     \
--	rlwinm	r9,r9,0,14,12;		/* clear MSR_WE (necessary?)	   */\
--	stw	r0,GPR0(r11);						     \
--	lis	r10, STACK_FRAME_REGS_MARKER@ha; /* exception frame marker */\
--	addi	r10, r10, STACK_FRAME_REGS_MARKER@l;			     \
--	stw	r10, 8(r11);						     \
--	SAVE_4GPRS(3, r11);						     \
-+.macro CRITICAL_EXCEPTION_PROLOG
-+	stw	r10,crit_r10@l(0)	/* save two registers to work with */
-+	stw	r11,crit_r11@l(0)
-+	mfcr	r10			/* save CR in r10 for now	   */
-+	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
-+	andi.	r11,r11,MSR_PR
-+	lis	r11,critirq_ctx@ha
-+	tophys(r11,r11)
-+	lwz	r11,critirq_ctx@l(r11)
-+	beq	1f
-+	/* COMING FROM USER MODE */
-+	mfspr	r11,SPRN_SPRG_THREAD	/* if from user, start at top of   */
-+	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
-+1:	addi	r11,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
-+	tophys(r11,r11)
-+	stw	r10,_CCR(r11)		/* save various registers	   */
-+	stw	r12,GPR12(r11)
-+	stw	r9,GPR9(r11)
-+	mflr	r10
-+	stw	r10,_LINK(r11)
-+	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
-+	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
-+	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
-+	stw	r9,_ESR(r11)		/* exception was taken		   */
-+	mfspr	r12,SPRN_SRR2
-+	stw	r1,GPR1(r11)
-+	mfspr	r9,SPRN_SRR3
-+	stw	r1,0(r11)
-+	tovirt(r1,r11)
-+	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?)	   */
-+	stw	r0,GPR0(r11)
-+	lis	r10, STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-+	addi	r10, r10, STACK_FRAME_REGS_MARKER@l
-+	stw	r10, 8(r11)
-+	SAVE_4GPRS(3, r11)
- 	SAVE_2GPRS(7, r11)
-+.endm
- 
- 	/*
- 	 * State at this point:
+Six following patches do minimal changes in 40x in order to be able to enable MMU
+earlier in exception entry.
+
+Second part of the series prepares and switches interrupt exit in C.
+
+Third part moves more and more things in C, ending with KUAP management.
+
+v3 is tested on 8xx and 83xx and qemu mac99 and qemu bamboo.
+
+Changes in v3:
+- Remove the WARN in first patch
+- Fix oopses due fast_interrupt_return clobering registers after FPunavailable expection.
+- Only call restore_math if PPC64
+- Rename C version of kuap_{get_and_}check() into kuap_{get_and_}assert_locked().
+- Drop the patch to call bad_page_fault() from do_page_fault() on book3e/64
+- Remove the unneeded setting of current->thread.regs on every interrupt entry from user.
+
+Changes in v2:
+- Two first patches are new.
+- Mainly build fixes, nothing much new.
+
+Christophe Leroy (41):
+  powerpc/traps: Declare unrecoverable_exception() as __noreturn
+  powerpc/40x: Don't use SPRN_SPRG_SCRATCH0/1 in TLB miss handlers
+  powerpc/40x: Change CRITICAL_EXCEPTION_PROLOG macro to a gas macro
+  powerpc/40x: Save SRR0/SRR1 and r10/r11 earlier in critical exception
+  powerpc/40x: Reorder a few instructions in critical exception prolog
+  powerpc/40x: Prepare for enabling MMU in critical exception prolog
+  powerpc/40x: Prepare normal exception handler for enabling MMU early
+  powerpc/32: Reconcile interrupts in C
+  powerpc/32: Entry cpu time accounting in C
+  powerpc/32: Handle bookE debugging in C in exception entry
+  powerpc/32: Use fast instruction to set MSR RI in exception prolog on
+    8xx
+  powerpc/32: Remove ksp_limit
+  powerpc/32: Always enable data translation in exception prolog
+  powerpc/32: Tag DAR in EXCEPTION_PROLOG_2 for the 8xx
+  powerpc/32: Enable instruction translation at the same time as data
+    translation
+  powerpc/32: Statically initialise first emergency context
+  powerpc/32: Add vmap_stack_overflow label inside the macro
+  powerpc/32: Use START_EXCEPTION() as much as possible
+  powerpc/32: Move exception prolog code into .text once MMU is back on
+  powerpc/32: Provide a name to exception prolog continuation in virtual
+    mode
+  powerpc/32: Refactor booke critical registers saving
+  powerpc/32: Perform normal function call in exception entry
+  powerpc/32: Always save non volatile registers on exception entry
+  powerpc/32: Replace ASM exception exit by C exception exit from ppc64
+  powerpc/32: Don't save thread.regs on interrupt entry
+  powerpc/32: Set regs parameter in r3 in transfer_to_handler
+  powerpc/32: Call bad_page_fault() from do_page_fault()
+  powerpc/32: Save trap number on stack in exception prolog
+  powerpc/32: Add a prepare_transfer_to_handler macro for exception
+    prologs
+  powerpc/32: Only restore non volatile registers when required
+  powerpc/32: Dismantle EXC_XFER_STD/LITE/TEMPLATE
+  powerpc/32: Remove the xfer parameter in EXCEPTION() macro
+  powerpc/32: Refactor saving of volatile registers in exception prologs
+  powerpc/32: Save remaining registers in exception prolog
+  powerpc/32: Return directly from power_save_ppc32_restore()
+  powerpc/32: Only use prepare_transfer_to_handler function on book3s/32
+    and e500
+  powerpc/32s: Move KUEP locking/unlocking in C
+  powerpc/64s: Make kuap_check_amr() and kuap_get_and_check_amr()
+    generic
+  powerpc/32s: Create C version of kuap save/restore/check helpers
+  powerpc/8xx: Create C version of kuap save/restore/check helpers
+  powerpc/32: Manage KUAP in C
+
+ arch/powerpc/include/asm/book3s/32/kup.h     | 126 ++-
+ arch/powerpc/include/asm/book3s/64/kup.h     |  24 +-
+ arch/powerpc/include/asm/interrupt.h         |  17 +-
+ arch/powerpc/include/asm/kup.h               |  27 +-
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h |  56 +-
+ arch/powerpc/include/asm/ppc_asm.h           |  10 -
+ arch/powerpc/include/asm/processor.h         |   6 +-
+ arch/powerpc/include/asm/ptrace.h            |   6 +-
+ arch/powerpc/kernel/asm-offsets.c            |   4 -
+ arch/powerpc/kernel/entry_32.S               | 796 ++++---------------
+ arch/powerpc/kernel/fpu.S                    |   2 -
+ arch/powerpc/kernel/head_32.h                | 198 ++---
+ arch/powerpc/kernel/head_40x.S               | 271 ++++---
+ arch/powerpc/kernel/head_44x.S               |  10 +-
+ arch/powerpc/kernel/head_8xx.S               | 151 ++--
+ arch/powerpc/kernel/head_book3s_32.S         | 233 +++---
+ arch/powerpc/kernel/head_booke.h             | 203 +++--
+ arch/powerpc/kernel/head_fsl_booke.S         |  64 +-
+ arch/powerpc/kernel/idle_6xx.S               |  14 +-
+ arch/powerpc/kernel/idle_e500.S              |  14 +-
+ arch/powerpc/kernel/interrupt.c              |  41 +-
+ arch/powerpc/kernel/irq.c                    |   2 +-
+ arch/powerpc/kernel/misc_32.S                |  14 -
+ arch/powerpc/kernel/process.c                |   6 +-
+ arch/powerpc/kernel/setup_32.c               |   2 +-
+ arch/powerpc/kernel/traps.c                  |  14 +-
+ arch/powerpc/kernel/vector.S                 |   2 -
+ arch/powerpc/lib/sstep.c                     |   9 -
+ arch/powerpc/mm/book3s32/Makefile            |   1 +
+ arch/powerpc/mm/book3s32/hash_low.S          |  14 -
+ arch/powerpc/mm/book3s32/kuep.c              |  38 +
+ arch/powerpc/mm/fault.c                      |   2 +-
+ 32 files changed, 887 insertions(+), 1490 deletions(-)
+ create mode 100644 arch/powerpc/mm/book3s32/kuep.c
+
 -- 
 2.25.0
 
