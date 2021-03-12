@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE6C8C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47FF5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:57:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 25F7964FC3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:57:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25F7964FC3
+	by mail.kernel.org (Postfix) with ESMTPS id D889C64E21
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:57:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D889C64E21
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm756NwZz3gZT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:57:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxm7R4SkGz3ghp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:57:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DxlzG6Qshz3dJG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DxlzH4wBjz3dL9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:35 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dxlz96t2hz9ttBQ;
- Fri, 12 Mar 2021 13:50:29 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4DxlzC6w8hz9ttBP;
+ Fri, 12 Mar 2021 13:50:31 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yWsaFrrZn7K1; Fri, 12 Mar 2021 13:50:29 +0100 (CET)
+ with ESMTP id D3wlSrmf7_fo; Fri, 12 Mar 2021 13:50:31 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlz95X68z9ttDF;
- Fri, 12 Mar 2021 13:50:29 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DxlzC5wJ7z9ttDF;
+ Fri, 12 Mar 2021 13:50:31 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ABB2D8B812;
- Fri, 12 Mar 2021 13:50:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A59DC8B812;
+ Fri, 12 Mar 2021 13:50:32 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id WPzAv1PaoUsi; Fri, 12 Mar 2021 13:50:30 +0100 (CET)
+ with ESMTP id v7_WM30atieS; Fri, 12 Mar 2021 13:50:32 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 506768B764;
- Fri, 12 Mar 2021 13:50:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 68E6A8B764;
+ Fri, 12 Mar 2021 13:50:32 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 296FC675C9; Fri, 12 Mar 2021 12:50:30 +0000 (UTC)
-Message-Id: <d96374218815a6627e1e922ab2aba994050fb87a.1615552867.git.christophe.leroy@csgroup.eu>
+ id 400BB675C9; Fri, 12 Mar 2021 12:50:32 +0000 (UTC)
+Message-Id: <73c00f3361ca280ef8fd7814c291bd1f5b6e2081.1615552867.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 20/41] powerpc/32: Provide a name to exception prolog
- continuation in virtual mode
+Subject: [PATCH v3 22/41] powerpc/32: Perform normal function call in
+ exception entry
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 12 Mar 2021 12:50:30 +0000 (UTC)
+Date: Fri, 12 Mar 2021 12:50:32 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,300 +76,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the prolog continuation is separated in .text, give it a name
-and mark it _ASM_NOKPROBE_SYMBOL.
+Now that the MMU is re-enabled before calling the transfer function,
+we don't need anymore that hack with the address of the handler and
+the return function sitting just after the 'bl' to the transfer
+fonction, that function is retrieving via a read relative to 'lr'.
+
+Do a regular call to the transfer function, then to the handler,
+then branch to the return function.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_32.h        | 12 +++++++-----
- arch/powerpc/kernel/head_40x.S       | 22 ++++++++++++----------
- arch/powerpc/kernel/head_8xx.S       | 10 +++++-----
- arch/powerpc/kernel/head_book3s_32.S | 14 +++++++-------
- 4 files changed, 31 insertions(+), 27 deletions(-)
+ arch/powerpc/kernel/entry_32.S   | 14 ++++----------
+ arch/powerpc/kernel/head_32.h    |  4 ++--
+ arch/powerpc/kernel/head_booke.h |  6 +++---
+ 3 files changed, 9 insertions(+), 15 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index ad1fd33e1126..fb849ef922fb 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -104,7 +104,7 @@ transfer_to_handler:
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	kuep_lock r11, r12
+ #endif
+-	b	3f
++	blr
+ 
+ 	/* if from kernel, check interrupted DOZE/NAP mode */
+ 2:
+@@ -118,13 +118,7 @@ transfer_to_handler:
+ #endif /* CONFIG_PPC_BOOK3S_32 || CONFIG_E500 */
+ 	.globl transfer_to_handler_cont
+ transfer_to_handler_cont:
+-3:
+-	mflr	r9
+-	lwz	r11,0(r9)		/* virtual address of handler */
+-	lwz	r9,4(r9)		/* where to go when done */
+-	mtctr	r11
+-	mtlr	r9
+-	bctr				/* jump to handler */
++	blr
+ 
+ #if defined (CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
+ 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
+@@ -404,8 +398,8 @@ fee_restarts:
+ 	stw	r10,_TRAP(r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	transfer_to_handler_full
+-	.long	unrecoverable_exception
+-	.long	ret_from_except
++	bl	unrecoverable_exception
++	b	ret_from_except
+ #endif
+ 
+ 	.globl	ret_from_except_full
 diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 3c0aa4538514..160ebd573c37 100644
+index 160ebd573c37..e09585b88ba7 100644
 --- a/arch/powerpc/kernel/head_32.h
 +++ b/arch/powerpc/kernel/head_32.h
-@@ -10,10 +10,10 @@
-  * We assume sprg3 has the physical address of the current
-  * task's thread_struct.
-  */
--.macro EXCEPTION_PROLOG handle_dar_dsisr=0
-+.macro EXCEPTION_PROLOG		name handle_dar_dsisr=0
- 	EXCEPTION_PROLOG_0	handle_dar_dsisr=\handle_dar_dsisr
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2	handle_dar_dsisr=\handle_dar_dsisr
-+	EXCEPTION_PROLOG_2	\name handle_dar_dsisr=\handle_dar_dsisr
- .endm
+@@ -190,8 +190,8 @@ _ASM_NOKPROBE_SYMBOL(\name\()_virt)
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+ 	bl	tfer;						\
+-	.long	hdlr;						\
+-	.long	ret
++	bl	hdlr;						\
++	b	ret
  
- .macro EXCEPTION_PROLOG_0 handle_dar_dsisr=0
-@@ -56,7 +56,7 @@
- #endif
- .endm
+ #define EXC_XFER_STD(n, hdlr)		\
+ 	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, transfer_to_handler_full,	\
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index a127d5e7efb4..3707f49f0b78 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -322,9 +322,9 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ #define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)	\
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+-	bl	tfer;		 				\
+-	.long	hdlr;						\
+-	.long	ret
++	bl	tfer;						\
++	bl	hdlr;						\
++	b	ret;						\
  
--.macro EXCEPTION_PROLOG_2 handle_dar_dsisr=0
-+.macro EXCEPTION_PROLOG_2 name handle_dar_dsisr=0
- #ifdef CONFIG_PPC_8xx
- 	.if	\handle_dar_dsisr
- 	li	r11, RPN_PATTERN
-@@ -72,6 +72,7 @@
- 	rfi
- 
- 	.text
-+\name\()_virt:
- 1:
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
-@@ -109,6 +110,7 @@
- 	stw	r10,8(r11)
- 	SAVE_4GPRS(3, r11)
- 	SAVE_2GPRS(7, r11)
-+_ASM_NOKPROBE_SYMBOL(\name\()_virt)
- .endm
- 
- .macro SYSCALL_ENTRY trapno
-@@ -180,7 +182,7 @@
- 
- #define EXCEPTION(n, label, hdlr, xfer)		\
- 	START_EXCEPTION(n, label)		\
--	EXCEPTION_PROLOG;			\
-+	EXCEPTION_PROLOG label;			\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
- 	xfer(n, hdlr)
- 
-@@ -212,7 +214,7 @@
- #endif
- 	lwz	r1, emergency_ctx@l(r1)
- 	addi	r1, r1, THREAD_SIZE - INT_FRAME_SIZE
--	EXCEPTION_PROLOG_2
-+	EXCEPTION_PROLOG_2 vmap_stack_overflow
- 	SAVE_NVGPRS(r11)
- 	addi	r3, r1, STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0, stack_overflow_exception)
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index e7d8856714d3..86883ccb3dc5 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -104,7 +104,7 @@ _ENTRY(crit_esr)
-  * Instead we use a couple of words of memory at low physical addresses.
-  * This is OK since we don't support SMP on these processors.
-  */
--.macro CRITICAL_EXCEPTION_PROLOG
-+.macro CRITICAL_EXCEPTION_PROLOG name
- 	stw	r10,crit_r10@l(0)	/* save two registers to work with */
- 	stw	r11,crit_r11@l(0)
- 	mfspr	r10,SPRN_SRR0
-@@ -135,6 +135,7 @@ _ENTRY(crit_esr)
- 
- 	.text
- 1:
-+\name\()_virt:
- 	lwz	r11,crit_r1@l(0)
- 	stw	r11,GPR1(r1)
- 	stw	r11,0(r1)
-@@ -162,6 +163,7 @@ _ENTRY(crit_esr)
- 	stw	r10, 8(r11)
- 	SAVE_4GPRS(3, r11)
- 	SAVE_2GPRS(7, r11)
-+_ASM_NOKPROBE_SYMBOL(\name\()_virt)
- .endm
- 
- 	/*
-@@ -182,7 +184,7 @@ _ENTRY(crit_esr)
-  */
- #define CRITICAL_EXCEPTION(n, label, hdlr)			\
- 	START_EXCEPTION(n, label);				\
--	CRITICAL_EXCEPTION_PROLOG;				\
-+	CRITICAL_EXCEPTION_PROLOG label;				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
- 			  crit_transfer_to_handler, ret_from_crit_exc)
-@@ -205,7 +207,7 @@ _ENTRY(crit_esr)
-  * if they can't resolve the lightweight TLB fault.
-  */
- 	START_EXCEPTION(0x0300,	DataStorage)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG DataStorage handle_dar_dsisr=1
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- /*
-@@ -213,7 +215,7 @@ _ENTRY(crit_esr)
-  * This is caused by a fetch from non-execute or guarded pages.
-  */
- 	START_EXCEPTION(0x0400, InstructionAccess)
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG InstructionAccess
- 	li	r5,0
- 	stw	r5, _ESR(r11)		/* Zero ESR */
- 	stw	r12, _DEAR(r11)		/* SRR0 as DEAR */
-@@ -224,13 +226,13 @@ _ENTRY(crit_esr)
- 
- /* 0x0600 - Alignment Exception */
- 	START_EXCEPTION(0x0600, Alignment)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG Alignment handle_dar_dsisr=1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
- 
- /* 0x0700 - Program Exception */
- 	START_EXCEPTION(0x0700, ProgramCheck)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG ProgramCheck handle_dar_dsisr=1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x700, program_check_exception)
- 
-@@ -450,7 +452,7 @@ _ENTRY(crit_esr)
-  */
- 	/* 0x2000 - Debug Exception */
- 	START_EXCEPTION(0x2000, DebugTrap)
--	CRITICAL_EXCEPTION_PROLOG
-+	CRITICAL_EXCEPTION_PROLOG DebugTrap
- 
- 	/*
- 	 * If this is a single step or branch-taken exception in an
-@@ -500,7 +502,7 @@ _ENTRY(crit_esr)
- 	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
- 	__HEAD
- Decrementer:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG Decrementer
- 	lis	r0,TSR_PIS@h
- 	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-@@ -509,14 +511,14 @@ Decrementer:
- 	/* Fixed Interval Timer (FIT) Exception. (from 0x1010) */
- 	__HEAD
- FITException:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG FITException
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
- 	EXC_XFER_STD(0x1010, unknown_exception)
- 
- 	/* Watchdog Timer (WDT) Exception. (from 0x1020) */
- 	__HEAD
- WDTException:
--	CRITICAL_EXCEPTION_PROLOG;
-+	CRITICAL_EXCEPTION_PROLOG WDTException
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
- 	EXC_XFER_TEMPLATE(WatchdogException, 0x1020+2,
- 	                  (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)),
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d16d0ec71bb2..932702a38234 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -122,7 +122,7 @@ instruction_counter:
- 
- /* Machine check */
- 	START_EXCEPTION(0x200, MachineCheck)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG MachineCheck handle_dar_dsisr=1
- 	addi r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x200, machine_check_exception)
- 
-@@ -131,7 +131,7 @@ instruction_counter:
- 
- /* Alignment exception */
- 	START_EXCEPTION(0x600, Alignment)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG Alignment handle_dar_dsisr=1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
- 
-@@ -294,7 +294,7 @@ instruction_counter:
-  * addresses.  There is nothing to do but handle a big time error fault.
-  */
- 	START_EXCEPTION(0x1300, InstructionTLBError)
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG InstructionTLBError
- 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
- 	andis.	r10,r9,SRR1_ISI_NOPT@h
- 	beq+	.Litlbie
-@@ -316,7 +316,7 @@ instruction_counter:
- 	beq-	cr1, FixupDAR	/* must be a buggy dcbX, icbi insn. */
- DARFixed:/* Return from dcbx instruction bug workaround */
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2 handle_dar_dsisr=1
-+	EXCEPTION_PROLOG_2 DataTLBError handle_dar_dsisr=1
- 	lwz	r4, _DAR(r11)
- 	lwz	r5, _DSISR(r11)
- 	andis.	r10,r5,DSISR_NOHPTE@h
-@@ -347,7 +347,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
- 	rfi
- 
- 1:	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2 handle_dar_dsisr=1
-+	EXCEPTION_PROLOG_2 DataBreakpoint handle_dar_dsisr=1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	mfspr	r4,SPRN_BAR
- 	stw	r4,_DAR(r11)
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index 4a74bbe7462b..4ff67c5cae1c 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -266,7 +266,7 @@ __secondary_hold_acknowledge:
- 	mfspr	r1, SPRN_SPRG_SCRATCH2
- #endif /* CONFIG_PPC_CHRP */
- 	EXCEPTION_PROLOG_1
--7:	EXCEPTION_PROLOG_2
-+7:	EXCEPTION_PROLOG_2 MachineCheck
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- #ifdef CONFIG_PPC_CHRP
- 	beq	cr1, 1f
-@@ -296,7 +296,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_HPTE_TABLE)
- #endif
- 1:	EXCEPTION_PROLOG_0 handle_dar_dsisr=1
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2 handle_dar_dsisr=1
-+	EXCEPTION_PROLOG_2 DataAccess handle_dar_dsisr=1
- 	lwz	r5, _DSISR(r11)
- 	andis.	r0, r5, DSISR_DABRMATCH@h
- 	bne-	1f
-@@ -325,7 +325,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 	andi.	r11, r11, MSR_PR
- 
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2
-+	EXCEPTION_PROLOG_2 InstructionAccess
- 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
- 	stw	r5, _DSISR(r11)
- 	stw	r12, _DAR(r11)
-@@ -336,7 +336,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 
- /* Alignment exception */
- 	START_EXCEPTION(0x600, Alignment)
--	EXCEPTION_PROLOG handle_dar_dsisr=1
-+	EXCEPTION_PROLOG Alignment handle_dar_dsisr=1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
- 
-@@ -353,7 +353,7 @@ BEGIN_FTR_SECTION
-  */
- 	b 	ProgramCheck
- END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG FPUnavailable
- 	beq	1f
- 	bl	load_up_fpu		/* if from user, just load it up */
- 	b	fast_exception_return
-@@ -716,7 +716,7 @@ fast_hash_page_return:
- 
- 	__HEAD
- AltiVecUnavailable:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG AltiVecUnavailable
- #ifdef CONFIG_ALTIVEC
- 	beq	1f
- 	bl	load_up_altivec		/* if from user, just load it up */
-@@ -727,7 +727,7 @@ AltiVecUnavailable:
- 
- 	__HEAD
- PerformanceMonitor:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG PerformanceMonitor
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0xf00, performance_monitor_exception)
- 
+ #define EXC_XFER_STD(n, hdlr)		\
+ 	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, transfer_to_handler_full, \
 -- 
 2.25.0
 
