@@ -7,48 +7,49 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 666B0C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:39:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E95DC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:40:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3C6A64FEA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:39:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3C6A64FEA
+	by mail.kernel.org (Postfix) with ESMTPS id E2D4064FE2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:40:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2D4064FE2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxlkz2M8yz3d3P
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:39:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DxllM4d5qz3dXm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:40:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DxlkG6RJ6z3cVG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:39:16 +1100 (AEDT)
-IronPort-SDR: 7p7aMvRwptk0zhEvXkX61y+Il8wy5c2pRdjUk1w4KcH+505NRMNz79TprVgzUWpT3J89qi+0Q+
- 0C+NTb2+dI8g==
-X-IronPort-AV: E=McAfee;i="6000,8403,9920"; a="208665552"
-X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="208665552"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DxlkG6dHWz3cW7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:39:15 +1100 (AEDT)
+IronPort-SDR: wZjL6P4/HUQREjUXKEtKJQao9n6BqIiW1NfsX8yAyrnqIPSCe0Dc8/1Yv3YQIx5jMR3htQ2PbM
+ k7xd0gJinKwA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9920"; a="185470670"
+X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="185470670"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  12 Mar 2021 04:39:11 -0800
-IronPort-SDR: 4MiYjDGFNuUQxTAUO0BLGV2lFBGtUbNYbP5jMNEXKxk7ybg/wHXoc1ELcOOigzgF31QTZA9Frr
- ycbEJYTpR4gg==
+IronPort-SDR: 5Anka0J31iIg3HJBHH5SWpa19wppH1FccGz+FIdfjX6q1n1KlxpkpLTJRddeSIzJcQU0prXB4s
+ JULHG2LgenBA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="387340559"
+X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="377696786"
 Received: from lkp-server02.sh.intel.com (HELO ce64c092ff93) ([10.239.97.151])
- by orsmga002.jf.intel.com with ESMTP; 12 Mar 2021 04:39:10 -0800
+ by fmsmga007.fm.intel.com with ESMTP; 12 Mar 2021 04:39:10 -0800
 Received: from kbuild by ce64c092ff93 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lKh4P-0001Li-Nd; Fri, 12 Mar 2021 12:39:09 +0000
-Date: Fri, 12 Mar 2021 20:38:26 +0800
+ id 1lKh4P-0001Ld-Mk; Fri, 12 Mar 2021 12:39:09 +0000
+Date: Fri, 12 Mar 2021 20:38:22 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes] BUILD SUCCESS 0b736881c8f1a6cd912f7a9162b9e097b28c1c30
-Message-ID: <604b60c2.LDKh+kSUHOZqo42m%lkp@intel.com>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ cb6627c4919fb7023111d362391add9f848d2a91
+Message-ID: <604b60be.SRxkDdNwm7/7fcRb%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -69,10 +70,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-branch HEAD: 0b736881c8f1a6cd912f7a9162b9e097b28c1c30  powerpc/traps: unrecoverable_exception() is not an interrupt handler
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: cb6627c4919fb7023111d362391add9f848d2a91  powerpc/eeh: Fix build failure with CONFIG_PROC_FS=n
 
-elapsed time: 732m
+elapsed time: 731m
 
 configs tested: 106
 configs skipped: 20
