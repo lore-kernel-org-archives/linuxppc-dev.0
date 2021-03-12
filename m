@@ -2,58 +2,64 @@ Return-Path: <SRS0=42OU=IK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B1FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:40:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2234AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2C4C64D73
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:40:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2C4C64D73
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 67B5B64F09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67B5B64F09
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxllr25ywz3dfW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:40:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DxlzL6gPkz3d7M
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:50:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DxlkG6BM6z3cV2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:39:15 +1100 (AEDT)
-IronPort-SDR: SeIFoaf/ww7wElBmNXo3Ik+rid+KlUkxa1O9koAcqC7vjJ8hXj/QkU6Ne/KC0g+Fg5xKyahO2A
- KAdCDJ0MxRww==
-X-IronPort-AV: E=McAfee;i="6000,8403,9920"; a="168098745"
-X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="168098745"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2021 04:39:12 -0800
-IronPort-SDR: 6yNKI/5cQtA4lbn6A5JA62Q3DEDePTaSiJiCrkCKqKFTx3F610gBIzcvyeEtmxHP2iAW9IrkP2
- xDJMXozumilw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,243,1610438400"; d="scan'208";a="404403163"
-Received: from lkp-server02.sh.intel.com (HELO ce64c092ff93) ([10.239.97.151])
- by fmsmga008.fm.intel.com with ESMTP; 12 Mar 2021 04:39:11 -0800
-Received: from kbuild by ce64c092ff93 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lKh4P-0001Lo-Oe; Fri, 12 Mar 2021 12:39:09 +0000
-Date: Fri, 12 Mar 2021 20:38:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- acc48fec3ae30fd2c049c39582e1c4fdf25480ee
-Message-ID: <604b60c7.td/VcETTcxodrkVA%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlyz2LVwz3cW9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:17 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Dxlys5XYNz9ttBY;
+ Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 7-DEaJLS1Aw8; Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlys4btwz9ttBS;
+ Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7CE8B8B764;
+ Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id zcZcn0Kt3Lon; Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ABFE38B815;
+ Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 8651E675C9; Fri, 12 Mar 2021 12:50:13 +0000 (UTC)
+Message-Id: <79a93f253d72dc97ac968c9c62b5066960b688ed.1615552866.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
+References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 04/41] powerpc/40x: Save SRR0/SRR1 and r10/r11 earlier in
+ critical exception
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com
+Date: Fri, 12 Mar 2021 12:50:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,146 +71,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: acc48fec3ae30fd2c049c39582e1c4fdf25480ee  powerpc/uprobes: Validation for prefixed instruction
+In order to be able to switch MMU on in exception prolog, save
+SRR0 and SRR1 earlier.
 
-elapsed time: 727m
+Also save r10 and r11 into stack earlier to better match with the
+normal exception prolog.
 
-configs tested: 120
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                             mxs_defconfig
-sh                   secureedge5410_defconfig
-ia64                          tiger_defconfig
-arm                           spitz_defconfig
-ia64                             alldefconfig
-arm                         mv78xx0_defconfig
-arm                          exynos_defconfig
-m68k                        m5272c3_defconfig
-arm                         nhk8815_defconfig
-powerpc                      tqm8xx_defconfig
-arm                     davinci_all_defconfig
-powerpc                      pasemi_defconfig
-powerpc                     powernv_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                       versatile_defconfig
-m68k                        m5307c3_defconfig
-mips                      pistachio_defconfig
-sh                 kfr2r09-romimage_defconfig
-x86_64                           allyesconfig
-arm                       netwinder_defconfig
-arm                        magician_defconfig
-mips                        bcm63xx_defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm64                            alldefconfig
-sh                          r7785rp_defconfig
-arc                           tb10x_defconfig
-arm                        keystone_defconfig
-arm                        trizeps4_defconfig
-mips                          malta_defconfig
-mips                        nlm_xlr_defconfig
-arm                  colibri_pxa270_defconfig
-arm                        oxnas_v6_defconfig
-powerpc                        icon_defconfig
-arm                     eseries_pxa_defconfig
-arm                         bcm2835_defconfig
-arc                      axs103_smp_defconfig
-mips                           ci20_defconfig
-sh                           se7721_defconfig
-powerpc                    ge_imp3a_defconfig
-sh                          kfr2r09_defconfig
-arm                        mvebu_v7_defconfig
-mips                         tb0287_defconfig
-nios2                         10m50_defconfig
-arm                         palmz72_defconfig
-alpha                               defconfig
-sh                        sh7757lcr_defconfig
-sh                          rsk7201_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210311
-x86_64               randconfig-a001-20210311
-x86_64               randconfig-a005-20210311
-x86_64               randconfig-a002-20210311
-x86_64               randconfig-a003-20210311
-x86_64               randconfig-a004-20210311
-i386                 randconfig-a001-20210311
-i386                 randconfig-a005-20210311
-i386                 randconfig-a003-20210311
-i386                 randconfig-a002-20210311
-i386                 randconfig-a004-20210311
-i386                 randconfig-a006-20210311
-i386                 randconfig-a013-20210311
-i386                 randconfig-a016-20210311
-i386                 randconfig-a011-20210311
-i386                 randconfig-a014-20210311
-i386                 randconfig-a015-20210311
-i386                 randconfig-a012-20210311
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a006-20210312
-x86_64               randconfig-a001-20210312
-x86_64               randconfig-a005-20210312
-x86_64               randconfig-a003-20210312
-x86_64               randconfig-a002-20210312
-x86_64               randconfig-a004-20210312
-
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ arch/powerpc/kernel/entry_32.S | 9 ---------
+ arch/powerpc/kernel/head_40x.S | 8 ++++++++
+ 2 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 78c430b7f9d9..8528b4c7f9d3 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -107,15 +107,6 @@ _ASM_NOKPROBE_SYMBOL(crit_transfer_to_handler)
+ #ifdef CONFIG_40x
+ 	.globl	crit_transfer_to_handler
+ crit_transfer_to_handler:
+-	lwz	r0,crit_r10@l(0)
+-	stw	r0,GPR10(r11)
+-	lwz	r0,crit_r11@l(0)
+-	stw	r0,GPR11(r11)
+-	mfspr	r0,SPRN_SRR0
+-	stw	r0,crit_srr0@l(0)
+-	mfspr	r0,SPRN_SRR1
+-	stw	r0,crit_srr1@l(0)
+-
+ 	/* set the stack limit to the current stack */
+ 	mfspr	r8,SPRN_SPRG_THREAD
+ 	lwz	r0,KSP_LIMIT(r8)
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 9cef423d574b..067ae1302c1c 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -103,6 +103,10 @@ _ENTRY(saved_ksp_limit)
+ .macro CRITICAL_EXCEPTION_PROLOG
+ 	stw	r10,crit_r10@l(0)	/* save two registers to work with */
+ 	stw	r11,crit_r11@l(0)
++	mfspr	r10,SPRN_SRR0
++	mfspr	r11,SPRN_SRR1
++	stw	r10,crit_srr0@l(0)
++	stw	r11,crit_srr1@l(0)
+ 	mfcr	r10			/* save CR in r10 for now	   */
+ 	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
+ 	andi.	r11,r11,MSR_PR
+@@ -120,6 +124,10 @@ _ENTRY(saved_ksp_limit)
+ 	stw	r9,GPR9(r11)
+ 	mflr	r10
+ 	stw	r10,_LINK(r11)
++	lwz	r10,crit_r10@l(0)
++	lwz	r12,crit_r11@l(0)
++	stw	r10,GPR10(r11)
++	stw	r12,GPR11(r11)
+ 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
+ 	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+ 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
+-- 
+2.25.0
+
