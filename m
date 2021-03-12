@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2234AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBA6FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67B5B64F09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67B5B64F09
+	by mail.kernel.org (Postfix) with ESMTPS id 19DB864F09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 12:50:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19DB864F09
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DxlzL6gPkz3d7M
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:50:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dxlzh4bdjz3dGH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Mar 2021 23:50:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlyz2LVwz3cW9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dxlyz1BYDz3cW7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Mar 2021 23:50:15 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Dxlys5XYNz9ttBY;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Dxlyq1QCGz9ttBW;
+ Fri, 12 Mar 2021 13:50:11 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7-DEaJLS1Aw8; Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ with ESMTP id zCUx23ZpaIZ5; Fri, 12 Mar 2021 13:50:11 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlys4btwz9ttBS;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dxlyq0fKbz9ttBS;
+ Fri, 12 Mar 2021 13:50:11 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7CE8B8B764;
- Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EAEA8B812;
+ Fri, 12 Mar 2021 13:50:12 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zcZcn0Kt3Lon; Fri, 12 Mar 2021 13:50:14 +0100 (CET)
+ with ESMTP id rkWB_2g0almS; Fri, 12 Mar 2021 13:50:11 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ABFE38B815;
- Fri, 12 Mar 2021 13:50:13 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E6528B764;
+ Fri, 12 Mar 2021 13:50:11 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8651E675C9; Fri, 12 Mar 2021 12:50:13 +0000 (UTC)
-Message-Id: <79a93f253d72dc97ac968c9c62b5066960b688ed.1615552866.git.christophe.leroy@csgroup.eu>
+ id 785E6675C9; Fri, 12 Mar 2021 12:50:11 +0000 (UTC)
+Message-Id: <4cdaa85d38e14d594ba902424060ec55babf2c42.1615552866.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 References: <cover.1615552866.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 04/41] powerpc/40x: Save SRR0/SRR1 and r10/r11 earlier in
- critical exception
+Subject: [PATCH v3 02/41] powerpc/40x: Don't use SPRN_SPRG_SCRATCH0/1 in TLB
+ miss handlers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com
-Date: Fri, 12 Mar 2021 12:50:13 +0000 (UTC)
+Date: Fri, 12 Mar 2021 12:50:11 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,64 +76,116 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to be able to switch MMU on in exception prolog, save
-SRR0 and SRR1 earlier.
+SPRN_SPRG_SCRATCH5 is used to save SPRN_PID.
+SPRN_SPRG_SCRATCH6 is already available.
 
-Also save r10 and r11 into stack earlier to better match with the
-normal exception prolog.
+SPRN_PID is only 8 bits. We have r12 that contains CR.
+We only need to preserve CR0, so we have space available in r12
+to save PID.
+
+Keep PID in r12 and free up SPRN_SPRG_SCRATCH5.
+
+Then In TLB miss handlers, instead of using SPRN_SPRG_SCRATCH0 and
+SPRN_SPRG_SCRATCH1, use SPRN_SPRG_SCRATCH5 and SPRN_SPRG_SCRATCH6
+to avoid future conflicts with normal exception prologs.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/entry_32.S | 9 ---------
- arch/powerpc/kernel/head_40x.S | 8 ++++++++
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/head_40x.S | 39 ++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 78c430b7f9d9..8528b4c7f9d3 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -107,15 +107,6 @@ _ASM_NOKPROBE_SYMBOL(crit_transfer_to_handler)
- #ifdef CONFIG_40x
- 	.globl	crit_transfer_to_handler
- crit_transfer_to_handler:
--	lwz	r0,crit_r10@l(0)
--	stw	r0,GPR10(r11)
--	lwz	r0,crit_r11@l(0)
--	stw	r0,GPR11(r11)
--	mfspr	r0,SPRN_SRR0
--	stw	r0,crit_srr0@l(0)
--	mfspr	r0,SPRN_SRR1
--	stw	r0,crit_srr1@l(0)
--
- 	/* set the stack limit to the current stack */
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
 diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 9cef423d574b..067ae1302c1c 100644
+index 24724a7dad49..383238a98f77 100644
 --- a/arch/powerpc/kernel/head_40x.S
 +++ b/arch/powerpc/kernel/head_40x.S
-@@ -103,6 +103,10 @@ _ENTRY(saved_ksp_limit)
- .macro CRITICAL_EXCEPTION_PROLOG
- 	stw	r10,crit_r10@l(0)	/* save two registers to work with */
- 	stw	r11,crit_r11@l(0)
-+	mfspr	r10,SPRN_SRR0
-+	mfspr	r11,SPRN_SRR1
-+	stw	r10,crit_srr0@l(0)
-+	stw	r11,crit_srr1@l(0)
- 	mfcr	r10			/* save CR in r10 for now	   */
- 	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
- 	andi.	r11,r11,MSR_PR
-@@ -120,6 +124,10 @@ _ENTRY(saved_ksp_limit)
- 	stw	r9,GPR9(r11)
- 	mflr	r10
- 	stw	r10,_LINK(r11)
-+	lwz	r10,crit_r10@l(0)
-+	lwz	r12,crit_r11@l(0)
-+	stw	r10,GPR10(r11)
-+	stw	r12,GPR11(r11)
- 	mfspr	r12,SPRN_DEAR		/* save DEAR and ESR in the frame  */
- 	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
- 	mfspr	r9,SPRN_ESR		/* in them at the point where the  */
+@@ -249,13 +249,13 @@ _ENTRY(saved_ksp_limit)
+  * load TLB entries from the page table if they exist.
+  */
+ 	START_EXCEPTION(0x1100,	DTLBMiss)
+-	mtspr	SPRN_SPRG_SCRATCH0, r10 /* Save some working registers */
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
++	mtspr	SPRN_SPRG_SCRATCH5, r10 /* Save some working registers */
++	mtspr	SPRN_SPRG_SCRATCH6, r11
+ 	mtspr	SPRN_SPRG_SCRATCH3, r12
+ 	mtspr	SPRN_SPRG_SCRATCH4, r9
+ 	mfcr	r12
+ 	mfspr	r9, SPRN_PID
+-	mtspr	SPRN_SPRG_SCRATCH5, r9
++	rlwimi	r12, r9, 0, 0xff
+ 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -316,13 +316,12 @@ _ENTRY(saved_ksp_limit)
+ 	/* The bailout.  Restore registers to pre-exception conditions
+ 	 * and call the heavyweights to help us out.
+ 	 */
+-	mfspr	r9, SPRN_SPRG_SCRATCH5
+-	mtspr	SPRN_PID, r9
+-	mtcr	r12
++	mtspr	SPRN_PID, r12
++	mtcrf	0x80, r12
+ 	mfspr	r9, SPRN_SPRG_SCRATCH4
+ 	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r10, SPRN_SPRG_SCRATCH0
++	mfspr	r11, SPRN_SPRG_SCRATCH6
++	mfspr	r10, SPRN_SPRG_SCRATCH5
+ 	b	DataStorage
+ 
+ /* 0x1200 - Instruction TLB Miss Exception
+@@ -330,13 +329,13 @@ _ENTRY(saved_ksp_limit)
+  * registers and bailout to a different point.
+  */
+ 	START_EXCEPTION(0x1200,	ITLBMiss)
+-	mtspr	SPRN_SPRG_SCRATCH0, r10	 /* Save some working registers */
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
++	mtspr	SPRN_SPRG_SCRATCH5, r10	 /* Save some working registers */
++	mtspr	SPRN_SPRG_SCRATCH6, r11
+ 	mtspr	SPRN_SPRG_SCRATCH3, r12
+ 	mtspr	SPRN_SPRG_SCRATCH4, r9
+ 	mfcr	r12
+ 	mfspr	r9, SPRN_PID
+-	mtspr	SPRN_SPRG_SCRATCH5, r9
++	rlwimi	r12, r9, 0, 0xff
+ 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -397,13 +396,12 @@ _ENTRY(saved_ksp_limit)
+ 	/* The bailout.  Restore registers to pre-exception conditions
+ 	 * and call the heavyweights to help us out.
+ 	 */
+-	mfspr	r9, SPRN_SPRG_SCRATCH5
+-	mtspr	SPRN_PID, r9
+-	mtcr	r12
++	mtspr	SPRN_PID, r12
++	mtcrf	0x80, r12
+ 	mfspr	r9, SPRN_SPRG_SCRATCH4
+ 	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r10, SPRN_SPRG_SCRATCH0
++	mfspr	r11, SPRN_SPRG_SCRATCH6
++	mfspr	r10, SPRN_SPRG_SCRATCH5
+ 	b	InstructionAccess
+ 
+ 	EXCEPTION(0x1300, Trap_13, unknown_exception, EXC_XFER_STD)
+@@ -543,13 +541,12 @@ finish_tlb_load:
+ 
+ 	/* Done...restore registers and get out of here.
+ 	*/
+-	mfspr	r9, SPRN_SPRG_SCRATCH5
+-	mtspr	SPRN_PID, r9
+-	mtcr	r12
++	mtspr	SPRN_PID, r12
++	mtcrf	0x80, r12
+ 	mfspr	r9, SPRN_SPRG_SCRATCH4
+ 	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r10, SPRN_SPRG_SCRATCH0
++	mfspr	r11, SPRN_SPRG_SCRATCH6
++	mfspr	r10, SPRN_SPRG_SCRATCH5
+ 	rfi			/* Should sync shadow TLBs */
+ 	b	.		/* prevent prefetch past rfi */
+ 
 -- 
 2.25.0
 
