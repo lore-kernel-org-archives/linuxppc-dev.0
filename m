@@ -7,72 +7,71 @@ X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4D46C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Mar 2021 20:25:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 141F9C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Mar 2021 20:26:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F1B664DF3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Mar 2021 20:25:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F1B664DF3
+	by mail.kernel.org (Postfix) with ESMTPS id 55CDF64EC4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Mar 2021 20:26:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55CDF64EC4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DyZ240SdDz3dG6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 07:25:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DyZ2n35GLz3dC3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 07:26:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=VrdHK7Tf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=K0kEop7C;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::134;
- helo=mail-lf1-x134.google.com; envelope-from=festevam@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22e;
+ helo=mail-lj1-x22e.google.com; envelope-from=festevam@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=VrdHK7Tf; dkim-atps=neutral
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
- [IPv6:2a00:1450:4864:20::134])
+ header.s=20161025 header.b=K0kEop7C; dkim-atps=neutral
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com
+ [IPv6:2a00:1450:4864:20::22e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DyZ1Y6NnQz3cPT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 07:25:20 +1100 (AEDT)
-Received: by mail-lf1-x134.google.com with SMTP id e7so50932577lft.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Mar 2021 12:25:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DyZ2K0FjQz2y0J
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 07:26:00 +1100 (AEDT)
+Received: by mail-lj1-x22e.google.com with SMTP id 15so11613795ljj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Mar 2021 12:26:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=272CAvfdNnBRAEObGGz44xaMW40FGoutsX7xZRwN5z0=;
- b=VrdHK7TfbhnIMxJD7Rl/IHggv2rVfZGT0NhZkD0zhn/OTghueRl87jaj1ucW3av5Kv
- b4i7QheIJvExWec8x6+vWF1Z4tV8TkfNDP4Xpm/ccKQ8RsNbDEIDBEyOruakmBL2uRwG
- KLLO0FNTW1B5hfoSfGWmTfRPsWi8j9ti4pNANjPAZe1d9gJvVFbUubfaZ2e73gawoAZZ
- SIxSEyqUCrL9hbGKiwMh1A1i2qWc0c14oNf20TsT2qUzQa6mRZcWqVRNxCsBz0+/cNBr
- yIFDyMoReIqe7bOokkm6U0NAr+2Oh2HP30ci7TgkAB6VeT/kU1/55+Jqn1TtiBCFU1ST
- OSMA==
+ :cc; bh=nXwzLOYKpkiq1CLhD7qyOG97MFYVynskpPPG4YAoxy4=;
+ b=K0kEop7CHc8u9qijPjvgU2L1W3jO1BD3jpACZXK2KiSoFCiGPk9zchyq5/6YfLjrG+
+ ppGZUecH/5ysyVwQVIRK/QEWq3zmDSt5d1P6UDAhCNtLR7no89kZvstWKfs8NqLCOePu
+ P/OJimCXQF/TPHY8AeLKs+F5aRJf8d4pJJWVARHv+P0W1r5dAcnQc8YbEv78z7GBAKZH
+ DdI8swCdgYvNSkFIY4nlgEcwI/D8n5BsLJDfhK8AT+6Uun3WGhxOARrUDSO58qhuigKC
+ W58suNOeVWIWk2hBC0OBl5zJqU1yHrgtfQV6sOKWjooi5UHOcAWpjEpQGVCnL7E/DVt/
+ 5bag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=272CAvfdNnBRAEObGGz44xaMW40FGoutsX7xZRwN5z0=;
- b=I5I+T9VkhOtQNsdKiC57N5KlLuAv6v4Zy2jidvAi/nqhrHiwuQsYvXWr7lvY0MW11W
- l/eeme9l+43hxCu7TU0YkII+p/y90nCa25YZY1PAFX7DvqSIhDiwcQkBmRGGRUtWiC7H
- gryeAfFUOKtGL4a1Dw7l3L/O8Mx9IkhfSRiNQxjbbz3/sF2CMTrWsuIgYG5m2+4YtDYO
- G5zEQHU7MPJ37VonwJVIGubn2dfFzilof1JGQeMBRf+RbyRUqUwzWwkWHmm0VD2bltD/
- 8iXV/wJ4yWG7Av2rIkoZcx7Ta7RzJHRhyyucO9ny6TtOFfx7DOEv6VHlW40PSYGA+r/c
- EA4A==
-X-Gm-Message-State: AOAM530IP9GMVjDVb9EoH+O0fL0c4HZf5CLESBbbeO7O/B5YpmiDWo6Q
- F9VZCsFA3tA9Uf+duCfGCAoDFdJbvSrR0Q2AR/A=
-X-Google-Smtp-Source: ABdhPJydPIuew2E6A7FdCmpjZE/G3zO5v9jZ2tssDsxNcx5h9YFAkiNEfr6iRPZSikHMVAzbHlScQ4kRcXNFVVP4VEY=
-X-Received: by 2002:ac2:520f:: with SMTP id a15mr3202535lfl.223.1615667113664; 
- Sat, 13 Mar 2021 12:25:13 -0800 (PST)
+ bh=nXwzLOYKpkiq1CLhD7qyOG97MFYVynskpPPG4YAoxy4=;
+ b=m7fMnH6UFlPEfxoXerd7rrJpCJmMi6hIw1Z3OAES/hM1mCYMA/O9STUYBP8IvnjSm3
+ uJwBTQOAgLAyd3ykP6xjZrPTQPH0sqb2j6CPi0rq1kej980maKGQMDR3FjcMdo2FmoIi
+ 8fPT5orAHcg8RWZzc6SRcHpAdCcwWjQLiGdiZvOP7oaoMBni4aa3gfq6LfM6zmwiEtTB
+ wyQleH2hB5DAg7UAHNM7XGMi4NuiVKZpxONVeJHUZtk7/TjfRCUgg8cMzpmh3n0eiqtX
+ 1W4FSc/r8mCZ+KDM6YahR1y3w1N2EsibC6NKATvSuiaoT9+pOicZXWnow81byi0ugmkO
+ kTqQ==
+X-Gm-Message-State: AOAM532l3NM8bZEvC5IRWM8uFlYLdr3qt7vAS1WuqTOKlMw1GcpNyojW
+ xjPD3rsI9qLgOGyhCfwSRPs4ryuPYyLqw/V0v5s=
+X-Google-Smtp-Source: ABdhPJw7Ss7EWBxQBvdRZ94nulcY04ujzJ00fZWur8s/HypB+wsz+o6b9J0bYTqO61ZQY6vOrDbXOXoteVmmI7NrjvE=
+X-Received: by 2002:a2e:b8c3:: with SMTP id s3mr5944317ljp.264.1615667156726; 
+ Sat, 13 Mar 2021 12:25:56 -0800 (PST)
 MIME-Version: 1.0
-References: <1614848881-29637-1-git-send-email-yang.lee@linux.alibaba.com>
-In-Reply-To: <1614848881-29637-1-git-send-email-yang.lee@linux.alibaba.com>
+References: <1615623820-16592-1-git-send-email-wangqing@vivo.com>
+In-Reply-To: <1615623820-16592-1-git-send-email-wangqing@vivo.com>
 From: Fabio Estevam <festevam@gmail.com>
-Date: Sat, 13 Mar 2021 17:25:01 -0300
-Message-ID: <CAOMZO5B1syxnqfwkpRBOC3gsUUZFWfG5=fo5KW7QxJWRyKyLXA@mail.gmail.com>
-Subject: Re: [PATCH v2] ASoC: imx-hdmi: fix platform_no_drv_owner.cocci
- warnings
-To: Yang Li <yang.lee@linux.alibaba.com>
+Date: Sat, 13 Mar 2021 17:25:44 -0300
+Message-ID: <CAOMZO5BSxSo3TRAeZNhFiiF1r5PxecUGJc5p0ekF6709U3x_NQ@mail.gmail.com>
+Subject: Re: [PATCH] sound: soc: fsl: Remove unnecessary THIS_MODULE
+To: Wang Qing <wangqing@vivo.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -91,7 +90,8 @@ Cc: Linux-ALSA <alsa-devel@alsa-project.org>, linuxppc-dev@lists.ozlabs.org,
  Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
  Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
  Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
  Shengjiu Wang <shengjiu.wang@gmail.com>,
  "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
  <linux-arm-kernel@lists.infradead.org>
@@ -99,16 +99,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Yang,
+Hi Wang,
 
-On Thu, Mar 4, 2021 at 6:08 AM Yang Li <yang.lee@linux.alibaba.com> wrote:
+On Sat, Mar 13, 2021 at 5:25 AM Wang Qing <wangqing@vivo.com> wrote:
 >
-> ./sound/soc/fsl/imx-hdmi.c:226:3-8: No need to set .owner here. The core
-> will do it.
+> As THIS_MODULE has been set in module_platform_driver(), so remove it.
 >
-> Remove .owner field if calls are used which set it automatically
->
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> Signed-off-by: Wang Qing <wangqing@vivo.com>
 
-Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Thanks for the patch, but someone else has already sent the same.
