@@ -2,60 +2,45 @@ Return-Path: <SRS0=qxeE=IM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2A29C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:34:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA9A3C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:01:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16A8064EBD
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:34:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16A8064EBD
+	by mail.kernel.org (Postfix) with ESMTPS id 1BD8F64EBD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:01:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BD8F64EBD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DyvX65qPyz3dWt
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 20:34:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rcScVYfc;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dyw7Q40PXz3cnJ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 21:01:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=rcScVYfc; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DyvWC0blpz3dHg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 20:33:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dyw731Qkfz2xxq
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 21:01:19 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DyvWB6X4dz9sVt; Sun, 14 Mar 2021 20:33:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1615714422;
- bh=yJaNIuoDXfgq4FgAmZ5/uX0jsWHJQACeECSVMYagb3Q=;
- h=From:To:Subject:Date:From;
- b=rcScVYfc63Wc94XuE8BKGd/ivhje9h5L9EKwhVGWMXPo4aKGclkBV4FFJU+1wMBGe
- b+QYV6+ey3dn1Nf0Cd5x1yCeF1pvng1ZEitcaSDa+Urliq19HvdoHXgepR1tlvMh3E
- 9fsNywRMoGaqGdh9rs+6H6E4r3cULxF7J4rfTUJRy3dMKRDvffrxzALbhAnst/Whqr
- Rb5LtQK7EIW5hUp6d1vxmb8xbNY9IhI9vS7GlKUBqvNsMmObLlbbMMbTblEjYb3z/H
- z2qT9V6qBtpnbE+FzBMtJT0IiNDDArJ0wDP2EOAT3VJknMKFl4QqZ/enD+a4ahgEYE
- JGBg5Uvd2cYhA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl-pci: Fix section mismatch warning
-Date: Sun, 14 Mar 2021 20:33:41 +1100
-Message-Id: <20210314093341.132986-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ id 4Dyw7264Z4z9sWH; Sun, 14 Mar 2021 21:01:18 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, geert@linux-m68k.org,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <8d7d285a027e9d21f5ff7f850fa71a2655b0c4af.1615279170.git.christophe.leroy@csgroup.eu>
+References: <8d7d285a027e9d21f5ff7f850fa71a2655b0c4af.1615279170.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Fix missing declaration of
+ [en/dis]able_kernel_vsx()
+Message-Id: <161571587339.138988.8288160163932312489.b4-ty@ellerman.id.au>
+Date: Sun, 14 Mar 2021 21:01:18 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,34 +52,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: alexdeucher@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ christian.koenig@amd.com, amd-gfx@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Section mismatch in reference from the function .fsl_add_bridge() to
-the function .init.text:.setup_pci_cmd()
+On Tue, 9 Mar 2021 08:39:39 +0000 (UTC), Christophe Leroy wrote:
+> Add stub instances of enable_kernel_vsx() and disable_kernel_vsx()
+> when CONFIG_VSX is not set, to avoid following build failure.
+> 
+>   CC [M]  drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.o
+> In file included from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_services_types.h:29,
+>                  from ./drivers/gpu/drm/amd/amdgpu/../display/dc/dm_services.h:37,
+>                  from drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:27:
+> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c: In function 'dcn_bw_apply_registry_override':
+> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:64:3: error: implicit declaration of function 'enable_kernel_vsx'; did you mean 'enable_kernel_fp'? [-Werror=implicit-function-declaration]
+>    64 |   enable_kernel_vsx(); \
+>       |   ^~~~~~~~~~~~~~~~~
+> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:640:2: note: in expansion of macro 'DC_FP_START'
+>   640 |  DC_FP_START();
+>       |  ^~~~~~~~~~~
+> ./drivers/gpu/drm/amd/amdgpu/../display/dc/os_types.h:75:3: error: implicit declaration of function 'disable_kernel_vsx'; did you mean 'disable_kernel_fp'? [-Werror=implicit-function-declaration]
+>    75 |   disable_kernel_vsx(); \
+>       |   ^~~~~~~~~~~~~~~~~~
+> drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:676:2: note: in expansion of macro 'DC_FP_END'
+>   676 |  DC_FP_END();
+>       |  ^~~~~~~~~
+> cc1: some warnings being treated as errors
+> make[5]: *** [drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.o] Error 1
 
-fsl_add_bridge() is not __init, and can't be, and is the only caller
-of setup_pci_cmd(). Fix it by making setup_pci_cmd() non-init.
+Applied to powerpc/fixes.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/sysdev/fsl_pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[1/1] powerpc: Fix missing declaration of [en/dis]able_kernel_vsx()
+      https://git.kernel.org/powerpc/c/bd73758803c2eedc037c2268b65a19542a832594
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 040b9d01c079..69af73765783 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -455,7 +455,7 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	}
- }
- 
--static void __init setup_pci_cmd(struct pci_controller *hose)
-+static void setup_pci_cmd(struct pci_controller *hose)
- {
- 	u16 cmd;
- 	int cap_x;
--- 
-2.25.1
-
+cheers
