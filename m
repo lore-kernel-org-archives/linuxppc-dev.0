@@ -6,37 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46E12C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:04:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C16F9C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:04:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E04164EC6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:04:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E04164EC6
+	by mail.kernel.org (Postfix) with ESMTPS id 3E5F164ECD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:04:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E5F164ECD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DywBH2bmHz2xxr
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 21:04:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DywBb74THz3f7Y
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 21:04:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4Dyw7B1fhlz3cWs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dyw7B1r43z3cX0
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 21:01:24 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Dyw774f4Nz9sWW; Sun, 14 Mar 2021 21:01:23 +1100 (AEDT)
+ id 4Dyw761HXlz9sWS; Sun, 14 Mar 2021 21:01:22 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Greg Kurz <groug@kaod.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20210215094506.1196119-1-groug@kaod.org>
-References: <20210215094506.1196119-1-groug@kaod.org>
-Subject: Re: [PATCH v2] powerpc/pseries: Don't enforce MSI affinity with kdump
-Message-Id: <161571587010.138988.17393630047865691595.b4-ty@ellerman.id.au>
-Date: Sun, 14 Mar 2021 21:01:23 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, llvmlinux@lists.linuxfoundation.org,
+ Daniel Axtens <dja@axtens.net>
+In-Reply-To: <20210225031006.1204774-1-dja@axtens.net>
+References: <20210225031006.1204774-1-dja@axtens.net>
+Subject: Re: [RFC PATCH 0/8] WIP support for the LLVM integrated assembler
+Message-Id: <161571587307.138988.1094376182058512034.b4-ty@ellerman.id.au>
+Date: Sun, 14 Mar 2021 21:01:22 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,28 +49,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Cédric Le Goater <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 15 Feb 2021 10:45:06 +0100, Greg Kurz wrote:
-> Depending on the number of online CPUs in the original kernel, it is
-> likely for CPU #0 to be offline in a kdump kernel. The associated IRQs
-> in the affinity mappings provided by irq_create_affinity_masks() are
-> thus not started by irq_startup(), as per-design with managed IRQs.
+On Thu, 25 Feb 2021 14:09:58 +1100, Daniel Axtens wrote:
+> To support Clang's CFI we need LTO. For LTO, we need to be able to compile
+> with the LLVM integrated assembler.
 > 
-> This can be a problem with multi-queue block devices driven by blk-mq :
-> such a non-started IRQ is very likely paired with the single queue
-> enforced by blk-mq during kdump (see blk_mq_alloc_tag_set()). This
-> causes the device to remain silent and likely hangs the guest at
-> some point.
+> Currently, we can't.
+> 
+> This series gets us a bit closer, but I'm still stuck and I'm hoping
+> someone can point me in the right direction.
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Patch 1 applied to powerpc/fixes.
 
-[1/1] powerpc/pseries: Don't enforce MSI affinity with kdump
-      https://git.kernel.org/powerpc/c/f9619d5e5174867536b7e558683bc4408eab833f
+[1/8] powerpc/64s/exception: Clean up a missed SRR specifier
+      https://git.kernel.org/powerpc/c/c080a173301ffc62cb6c76308c803c7fee05517a
 
 cheers
