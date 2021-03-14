@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41DD8C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 23:03:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4BC5C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 23:04:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 494DE64E55
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 23:03:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 494DE64E55
+	by mail.kernel.org (Postfix) with ESMTPS id 3BE1C64DE4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 23:04:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BE1C64DE4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzFV174RSz3dBY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:03:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzFVP05rCz3dLq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:04:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DzFTH2RV9z30Lr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 10:03:10 +1100 (AEDT)
-IronPort-SDR: qHGgSz6EmLvLr4LwhZxKZZ5wWqBKTD1CVbt3fd2Fr7Ji0cBFx/EL598nlsUVc7eRCc2lfvTcVb
- YOwdvwBI3XTw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9923"; a="186637107"
-X-IronPort-AV: E=Sophos;i="5.81,249,1610438400"; d="scan'208";a="186637107"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DzFTH4M9Rz30PK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 10:03:11 +1100 (AEDT)
+IronPort-SDR: heZ1jE3sOO+GldtZhvyAaH2/V9KBgPS+Yapc5OhL9YFi/kk8PfV3f7DlpyfgrBQvDkN6FtuKxK
+ uPSkt2ecTfDQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9923"; a="189063982"
+X-IronPort-AV: E=Sophos;i="5.81,249,1610438400"; d="scan'208";a="189063982"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  14 Mar 2021 16:03:06 -0700
-IronPort-SDR: BilWV1W3Ntb78LOuS6bT1RWSyhZ1EPijmHsd6mfdt/o8dy0UYdjK/SMIdu4kP2G7F45DND+KJZ
- 6urGxgFUZWEw==
+IronPort-SDR: vJYM5ah1sb/NSy/tugaALno8v7zDMdhHeIWhWDn9g2Q67CxGX3LaUrKwNsmZZhjTn3+xy5N/vK
+ xTHfuc9VpcNA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,249,1610438400"; d="scan'208";a="439585641"
+X-IronPort-AV: E=Sophos;i="5.81,249,1610438400"; d="scan'208";a="373241192"
 Received: from lkp-server02.sh.intel.com (HELO 1dc5e1a854f4) ([10.239.97.151])
- by FMSMGA003.fm.intel.com with ESMTP; 14 Mar 2021 16:03:05 -0700
+ by orsmga006.jf.intel.com with ESMTP; 14 Mar 2021 16:03:05 -0700
 Received: from kbuild by 1dc5e1a854f4 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lLZlJ-0000Jf-6i; Sun, 14 Mar 2021 23:03:05 +0000
-Date: Mon, 15 Mar 2021 07:02:09 +0800
+ id 1lLZlJ-0000Jc-6F; Sun, 14 Mar 2021 23:03:05 +0000
+Date: Mon, 15 Mar 2021 07:02:15 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- f81787ef053051bef07cc879d609a624dc9b2d48
-Message-ID: <604e95f1.YS2c8RczgK2PI/uV%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 3411d1b25358f6007f411b1fa629ac040b8f59ad
+Message-ID: <604e95f7.TxlDJV4vqD1IYknK%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,13 +70,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: f81787ef053051bef07cc879d609a624dc9b2d48  powerpc: Force inlining of cpu_has_feature() to avoid build failure
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 3411d1b25358f6007f411b1fa629ac040b8f59ad  powerpc/Makefile: Remove workaround for gcc versions below 4.9
 
-elapsed time: 726m
+elapsed time: 724m
 
-configs tested: 111
-configs skipped: 25
+configs tested: 98
+configs skipped: 2
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -96,14 +96,11 @@ arc                 nsimosci_hs_smp_defconfig
 powerpc                      cm5200_defconfig
 h8300                            alldefconfig
 mips                      maltaaprp_defconfig
-sh                               j2_defconfig
-mips                        omega2p_defconfig
-arm                         orion5x_defconfig
-arm                      jornada720_defconfig
-sh                            titan_defconfig
-m68k                          sun3x_defconfig
-mips                        jmr3927_defconfig
-sh                         ecovec24_defconfig
+powerpc                     akebono_defconfig
+sh                            migor_defconfig
+powerpc64                        alldefconfig
+sh                        sh7785lcr_defconfig
+powerpc                 mpc837x_rdb_defconfig
 nios2                            alldefconfig
 arm                         bcm2835_defconfig
 mips                      pic32mzda_defconfig
@@ -114,18 +111,6 @@ riscv                    nommu_virt_defconfig
 powerpc                      ppc6xx_defconfig
 powerpc                     taishan_defconfig
 powerpc                     kmeter1_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                 mpc832x_rdb_defconfig
-x86_64                           alldefconfig
-arm                   milbeaut_m10v_defconfig
-xtensa                              defconfig
-sh                           se7619_defconfig
-parisc                              defconfig
-openrisc                            defconfig
-powerpc                  storcenter_defconfig
-csky                                defconfig
-microblaze                      mmu_defconfig
-mips                           ip22_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -137,12 +122,14 @@ arc                              allyesconfig
 nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
+csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
 parisc                           allyesconfig
