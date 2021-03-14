@@ -6,40 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8103FC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C42EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:02:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E182164EC6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:01:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E182164EC6
+	by mail.kernel.org (Postfix) with ESMTPS id B32ED64EC6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 10:02:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B32ED64EC6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dyw7m4N3Zz3dKX
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 21:01:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dyw873ZJ7z3dPY
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 21:02:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dyw736Tmzz2xxq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 21:01:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dyw783dl1z30MX
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 21:01:24 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Dyw734P9Lz9sWK; Sun, 14 Mar 2021 21:01:19 +1100 (AEDT)
+ id 4Dyw7123rLz9sVt; Sun, 14 Mar 2021 21:01:16 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <cf61345912c078c96f171afd0fcc48ef27cbdc3f.1614443418.git.christophe.leroy@csgroup.eu>
-References: <cf61345912c078c96f171afd0fcc48ef27cbdc3f.1614443418.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Force inlining of mmu_has_feature to fix build
- failure
-Message-Id: <161571587146.138988.4861060770867592113.b4-ty@ellerman.id.au>
-Date: Sun, 14 Mar 2021 21:01:19 +1100 (AEDT)
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <1614247839-1428-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+References: <1614247839-1428-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/perf: Fix handling of privilege level checks
+ in perf interrupt context
+Message-Id: <161571587178.138988.4741132711459286523.b4-ty@ellerman.id.au>
+Date: Sun, 14 Mar 2021 21:01:16 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,49 +49,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, peterz@infradead.org, omosnace@redhat.com,
+ acme@kernel.org, jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 27 Feb 2021 16:30:48 +0000 (UTC), Christophe Leroy wrote:
-> The test robot has managed to generate a random config leading
-> to following build failure:
+On Thu, 25 Feb 2021 05:10:39 -0500, Athira Rajeev wrote:
+> Running "perf mem record" in powerpc platforms with selinux enabled
+> resulted in soft lockup's. Below call-trace was seen in the logs:
 > 
->   LD      .tmp_vmlinux.kallsyms1
-> powerpc64-linux-ld: arch/powerpc/mm/pgtable.o: in function `ptep_set_access_flags':
-> pgtable.c:(.text.ptep_set_access_flags+0xf0): undefined reference to `hash__flush_tlb_page'
-> powerpc64-linux-ld: arch/powerpc/mm/book3s32/mmu.o: in function `MMU_init_hw_patch':
-> mmu.c:(.init.text+0x452): undefined reference to `patch__hash_page_A0'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x45e): undefined reference to `patch__hash_page_A0'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x46a): undefined reference to `patch__hash_page_A1'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x476): undefined reference to `patch__hash_page_A1'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x482): undefined reference to `patch__hash_page_A2'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x48e): undefined reference to `patch__hash_page_A2'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x49e): undefined reference to `patch__hash_page_B'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4aa): undefined reference to `patch__hash_page_B'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4b6): undefined reference to `patch__hash_page_C'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4c2): undefined reference to `patch__hash_page_C'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4ce): undefined reference to `patch__flush_hash_A0'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4da): undefined reference to `patch__flush_hash_A0'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4e6): undefined reference to `patch__flush_hash_A1'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4f2): undefined reference to `patch__flush_hash_A1'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x4fe): undefined reference to `patch__flush_hash_A2'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x50a): undefined reference to `patch__flush_hash_A2'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x522): undefined reference to `patch__flush_hash_B'
-> powerpc64-linux-ld: mmu.c:(.init.text+0x532): undefined reference to `patch__flush_hash_B'
-> powerpc64-linux-ld: arch/powerpc/mm/book3s32/mmu.o: in function `update_mmu_cache':
-> mmu.c:(.text.update_mmu_cache+0xa0): undefined reference to `add_hash_page'
-> powerpc64-linux-ld: mm/memory.o: in function `zap_pte_range':
-> memory.c:(.text.zap_pte_range+0x160): undefined reference to `flush_hash_pages'
-> powerpc64-linux-ld: mm/memory.o: in function `handle_pte_fault':
-> memory.c:(.text.handle_pte_fault+0x180): undefined reference to `hash__flush_tlb_page'
+> CPU: 58 PID: 3751 Comm: sssd_nss Not tainted 5.11.0-rc7+ #2
+> NIP:  c000000000dff3d4 LR: c000000000dff3d0 CTR: 0000000000000000
+> REGS: c000007fffab7d60 TRAP: 0100   Not tainted  (5.11.0-rc7+)
+> <<>>
+> NIP [c000000000dff3d4] _raw_spin_lock_irqsave+0x94/0x120
+> LR [c000000000dff3d0] _raw_spin_lock_irqsave+0x90/0x120
+> Call Trace:
+> [c00000000fd471a0] [c00000000fd47260] 0xc00000000fd47260 (unreliable)
+> [c00000000fd471e0] [c000000000b5fbbc] skb_queue_tail+0x3c/0x90
+> [c00000000fd47220] [c000000000296edc] audit_log_end+0x6c/0x180
+> [c00000000fd47260] [c0000000006a3f20] common_lsm_audit+0xb0/0xe0
+> [c00000000fd472a0] [c00000000066c664] slow_avc_audit+0xa4/0x110
+> [c00000000fd47320] [c00000000066cff4] avc_has_perm+0x1c4/0x260
+> [c00000000fd47430] [c00000000066e064] selinux_perf_event_open+0x74/0xd0
+> [c00000000fd47450] [c000000000669888] security_perf_event_open+0x68/0xc0
+> [c00000000fd47490] [c00000000013d788] record_and_restart+0x6e8/0x7f0
+> [c00000000fd476c0] [c00000000013dabc] perf_event_interrupt+0x22c/0x560
+> [c00000000fd477d0] [c00000000002d0fc] performance_monitor_exception0x4c/0x60
+> [c00000000fd477f0] [c00000000000b378] performance_monitor_common_virt+0x1c8/0x1d0
+> interrupt: f00 at _raw_spin_lock_irqsave+0x38/0x120
+> NIP:  c000000000dff378 LR: c000000000b5fbbc CTR: c0000000007d47f0
+> REGS: c00000000fd47860 TRAP: 0f00   Not tainted  (5.11.0-rc7+)
+> <<>>
+> NIP [c000000000dff378] _raw_spin_lock_irqsave+0x38/0x120
+> LR [c000000000b5fbbc] skb_queue_tail+0x3c/0x90
+> interrupt: f00
+> [c00000000fd47b00] [0000000000000038] 0x38 (unreliable)
+> [c00000000fd47b40] [c00000000aae6200] 0xc00000000aae6200
+> [c00000000fd47b80] [c000000000296edc] audit_log_end+0x6c/0x180
+> [c00000000fd47bc0] [c00000000029f494] audit_log_exit+0x344/0xf80
+> [c00000000fd47d10] [c0000000002a2b00] __audit_syscall_exit+0x2c0/0x320
+> [c00000000fd47d60] [c000000000032878] do_syscall_trace_leave+0x148/0x200
+> [c00000000fd47da0] [c00000000003d5b4] syscall_exit_prepare+0x324/0x390
+> [c00000000fd47e10] [c00000000000d76c] system_call_common+0xfc/0x27c
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc: Force inlining of mmu_has_feature to fix build failure
-      https://git.kernel.org/powerpc/c/acdad8fb4a1574323db88f98a38b630691574e16
+[1/1] powerpc/perf: Fix handling of privilege level checks in perf interrupt context
+      https://git.kernel.org/powerpc/c/5ae5fbd2107959b68ac69a8b75412208663aea88
 
 cheers
