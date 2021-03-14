@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF0BBC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:33:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 098A7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:33:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C4FC64EBA
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:33:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C4FC64EBA
+	by mail.kernel.org (Postfix) with ESMTPS id 3846B64EBA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 09:33:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3846B64EBA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DyvVt5nvyz3d2Z
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 20:33:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DyvWH5vLZz3dCN
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Mar 2021 20:33:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YHpdGNvW;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PYTPIdaG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=YHpdGNvW; 
+ header.a=rsa-sha256 header.s=201909 header.b=PYTPIdaG; 
  dkim-atps=neutral
 Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DyvVR0Sf1z3cGW
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 20:33:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DyvVq3Dtwz3cQK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Mar 2021 20:33:23 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4DyvVQ4YH2z9sVt; Sun, 14 Mar 2021 20:33:02 +1100 (AEDT)
+ id 4DyvVp6K4wz9sW5; Sun, 14 Mar 2021 20:33:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1615714382;
- bh=E/M29pYJDYvi2Ktr3u4IAIZD3aOlKPRHAA7xy1ST3zY=;
+ s=201909; t=1615714402;
+ bh=Idxr/NzP5n+pc1fhs/kKKkpLC67/vvEgVolFE639fpo=;
  h=From:To:Subject:Date:From;
- b=YHpdGNvWPNvWPbYWeqhu0JuxlVbHN03G5qTPaomR4g/uhoMU/7eFx9FKhPZQPgNjH
- XxGRaDBt4wav4ImoHlz421gLXmxJ+qcFFW5f7Y1OAN8y6wUWu0HkEFSVoEGOoF1Ay7
- 6SjHw4zLytbbtVWWvTWBKZ3TWzuoLv5dB2nKm07hTDe5c5eOFIZFrGqN5KTLwvSMUA
- 2SqUsYaKbB4P/5/GDWm6s6ihawNBi8L3rNffIygq1PV0x2+Npy9GgpcDq2rSzHsVwB
- WjyDqWVuep8zZcGmFo2/M0XCSVIRBvIRN2YB6HqAhYCMF2b/eRq1YoFt/qWF4DMh6Y
- SqmtUwvYIa34g==
+ b=PYTPIdaGq1ZHe+kBq2KcYPyywfhLu2R2YAL/IOLpYtjnvxEb+p/GIokEa1JFP0YA4
+ Vt/CYT1MMAZrmVixoCGY3jzFpv2jEouHudteme1LPnf0g+TcBJq2csdfR5EADppAg6
+ y4eSZYjFzEbPFFsjEd14UCMYbV4dKNo35oXcVaVp1LM5H5yZ+ilb5LHontHLL05efz
+ 6D9uZFJIV2DbGxgwJkJQR9Btu8YnXw0gzcm0kdmS8XGcZgGOW2EaenBfULktFO/v86
+ mErvZWePPkdJMvi1xYnhiiJoDkDB8FZt5WwsRsQiKbQ5iTwuqtlNmBQcpJPsbt8HTL
+ 0p+fARSbPkiqA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/eeh: Fix build failure with CONFIG_PROC_FS=n
-Date: Sun, 14 Mar 2021 20:33:00 +1100
-Message-Id: <20210314093300.131998-1-mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/64s: Fold update_current_thread_[i]amr() into their
+ only callers
+Date: Sun, 14 Mar 2021 20:33:20 +1100
+Message-Id: <20210314093320.132331-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,38 +72,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The build fails with CONFIG_PROC_FS=n:
+lkp reported warnings in some configuration due to
+update_current_thread_amr() being unused:
 
-  arch/powerpc/kernel/eeh.c:1571:12: error: ‘proc_eeh_show’ defined but not used
-   1571 | static int proc_eeh_show(struct seq_file *m, void *v)
+  arch/powerpc/mm/book3s64/pkeys.c:284:20: error: unused function 'update_current_thread_amr'
+  static inline void update_current_thread_amr(u64 value)
 
-Wrap proc_eeh_show() in an ifdef to avoid it.
+Which is because it's only use is inside an ifdef. We could move it
+inside the ifdef, but it's a single line function and only has one
+caller, so just fold it in.
 
+Similarly update_current_thread_iamr() is small and only called once,
+so fold it in also.
+
+Fixes: 48a8ab4eeb82 ("powerpc/book3s64/pkeys: Don't update SPRN_AMR when in kernel mode.")
+Reported-by: kernel test robot <lkp@intel.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/eeh.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/mm/book3s64/pkeys.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index cd60bc1c8701..01dbb44a0fe3 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1568,6 +1568,7 @@ int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index 15dcc5ad91c5..a2d9ad138709 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -301,19 +301,6 @@ void setup_kuap(bool disabled)
  }
- EXPORT_SYMBOL_GPL(eeh_pe_inject_err);
+ #endif
  
-+#ifdef CONFIG_PROC_FS
- static int proc_eeh_show(struct seq_file *m, void *v)
+-static inline void update_current_thread_amr(u64 value)
+-{
+-	current->thread.regs->amr = value;
+-}
+-
+-static inline void update_current_thread_iamr(u64 value)
+-{
+-	if (!likely(pkey_execute_disable_supported))
+-		return;
+-
+-	current->thread.regs->iamr = value;
+-}
+-
+ #ifdef CONFIG_PPC_MEM_KEYS
+ void pkey_mm_init(struct mm_struct *mm)
  {
- 	if (!eeh_enabled()) {
-@@ -1594,6 +1595,7 @@ static int proc_eeh_show(struct seq_file *m, void *v)
+@@ -328,7 +315,7 @@ static inline void init_amr(int pkey, u8 init_bits)
+ 	u64 new_amr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
+ 	u64 old_amr = current_thread_amr() & ~((u64)(0x3ul) << pkeyshift(pkey));
  
- 	return 0;
+-	update_current_thread_amr(old_amr | new_amr_bits);
++	current->thread.regs->amr = old_amr | new_amr_bits;
  }
-+#endif /* CONFIG_PROC_FS */
  
- #ifdef CONFIG_DEBUG_FS
+ static inline void init_iamr(int pkey, u8 init_bits)
+@@ -336,7 +323,10 @@ static inline void init_iamr(int pkey, u8 init_bits)
+ 	u64 new_iamr_bits = (((u64)init_bits & 0x1UL) << pkeyshift(pkey));
+ 	u64 old_iamr = current_thread_iamr() & ~((u64)(0x1ul) << pkeyshift(pkey));
  
+-	update_current_thread_iamr(old_iamr | new_iamr_bits);
++	if (!likely(pkey_execute_disable_supported))
++		return;
++
++	current->thread.regs->iamr = old_iamr | new_iamr_bits;
+ }
+ 
+ /*
 -- 
 2.25.1
 
