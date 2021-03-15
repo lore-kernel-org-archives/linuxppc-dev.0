@@ -2,45 +2,66 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 900CFC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 13:32:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 489A1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 13:42:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 612D564EF4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 13:32:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 612D564EF4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 9969B6157E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 13:42:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9969B6157E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzclg09Hdz3bml
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 00:31:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzczV0m9Qz303Z
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 00:42:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzcl021Lrz30C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 00:31:23 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Dzcks38stz9sW1; Tue, 16 Mar 2021 00:31:17 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, segher@kernel.crashing.org,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <a7aa198a88bcd33c6e35e99f70f86c7b7f2f9440.1615270757.git.christophe.leroy@csgroup.eu>
-References: <a7aa198a88bcd33c6e35e99f70f86c7b7f2f9440.1615270757.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/vdso32: Add missing _restgpr_31_x to fix build
- failure
-Message-Id: <161581505500.387233.5713425984426626454.b4-ty@ellerman.id.au>
-Date: Tue, 16 Mar 2021 00:31:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzcz61KrJz2yR5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 00:41:50 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4Dzcyt5Cddz9tyS0;
+ Mon, 15 Mar 2021 14:41:42 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Is9oE9-b_fHN; Mon, 15 Mar 2021 14:41:42 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Dzcyt3TQgz9tyRx;
+ Mon, 15 Mar 2021 14:41:42 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CC59C8B776;
+ Mon, 15 Mar 2021 14:41:47 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id IigNPlIQnF_L; Mon, 15 Mar 2021 14:41:47 +0100 (CET)
+Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9CB6A8B779;
+ Mon, 15 Mar 2021 14:41:47 +0100 (CET)
+Subject: Re: [PATCH v3 28/32] powerpc/64s: interrupt implement exit logic in C
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20200225173541.1549955-1-npiggin@gmail.com>
+ <20200225173541.1549955-29-npiggin@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <2d68d9ad-c3a2-2372-a5b2-1a1e3fdb41e4@csgroup.eu>
+Date: Mon, 15 Mar 2021 14:41:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
+MIME-Version: 1.0
+In-Reply-To: <20200225173541.1549955-29-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,25 +73,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michal Suchanek <msuchanek@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 9 Mar 2021 06:19:30 +0000 (UTC), Christophe Leroy wrote:
-> With some defconfig including CONFIG_CC_OPTIMIZE_FOR_SIZE,
-> (for instance mvme5100_defconfig and ps3_defconfig), gcc 5
-> generates a call to _restgpr_31_x.
+
+
+Le 25/02/2020 à 18:35, Nicholas Piggin a écrit :
+> Implement the bulk of interrupt return logic in C. The asm return code
+> must handle a few cases: restoring full GPRs, and emulating stack store.
 > 
-> Until recently it went unnoticed, but
-> commit 42ed6d56ade2 ("powerpc/vdso: Block R_PPC_REL24 relocations")
-> made it rise to the surface.
+> The stack store emulation is significantly simplfied, rather than creating
+> a new return frame and switching to that before performing the store, it
+> uses the PACA to keep a scratch register around to perform thestore.
 > 
-> [...]
+> The asm return code is moved into 64e for now. The new logic has made
+> allowance for 64e, but I don't have a full environment that works well
+> to test it, and even booting in emulated qemu is not great for stress
+> testing. 64e shouldn't be too far off working with this, given a bit
+> more testing and auditing of the logic.
+> 
+> This is slightly faster on a POWER9 (page fault speed increases about
+> 1.1%), probably due to reduced mtmsrd.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> ---
 
-Applied to powerpc/fixes.
+...
 
-[1/1] powerpc/vdso32: Add missing _restgpr_31_x to fix build failure
-      https://git.kernel.org/powerpc/c/08c18b63d9656e0389087d1956d2b37fd7019172
+> +notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned long msr)
+> +{
 
-cheers
+...
+
+> +
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	local_paca->tm_scratch = regs->msr;
+> +#endif
+
+Could we define a helper for that in asm/tm.h, that voids when CONFIG_PPC_TRANSACTIONAL_MEM is not 
+selected ?
+
+> +
+> +	kuap_check_amr();
+> +
+> +	account_cpu_user_exit();
+> +
+> +	return ret;
+> +}
+> +
+> +void unrecoverable_exception(struct pt_regs *regs);
+> +void preempt_schedule_irq(void);
+> +
+> +notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsigned long msr)
+> +{
+> +
+
+...
+
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	local_paca->tm_scratch = regs->msr;
+> +#endif
+> +
+> +	/*
+> +	 * We don't need to restore AMR on the way back to userspace for KUAP.
+> +	 * The value of AMR only matters while we're in the kernel.
+> +	 */
+> +	kuap_restore_amr(regs);
+> +
+> +	if (unlikely(*ti_flagsp & _TIF_EMULATE_STACK_STORE)) {
+> +		clear_bits(_TIF_EMULATE_STACK_STORE, ti_flagsp);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +#endif
+
+Christophe
