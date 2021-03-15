@@ -2,87 +2,88 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E85EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CF07C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 23:19:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 511F364F06
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:11:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 511F364F06
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 63FE664E07
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 23:19:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63FE664E07
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzrGp0FFBz3dxv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 09:11:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzsnK4Zm0z30Fy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 10:19:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=qgWJplCX;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eGS3t9M1;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eGS3t9M1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=jolsa@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=qgWJplCX; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=eGS3t9M1; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=eGS3t9M1; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzr7Q4zLNz30LN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 09:04:50 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id y13so7489159pfr.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 15:04:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=Y+dg15PmAQIaQlIl2osG/hO3jjeAvCRiFGni1ZhwgxI=;
- b=qgWJplCXwPnKxkMOZJPqEDo7lnZMeZHNv6Hof5pH5nnymSRMY7K98BZzVEmbfo7/7z
- 248aDEiIJNbjnS6z/xrXGEviK6XGxstHgeyPplWcW/SfF6sTEpT95H+smITs71RQ7tVX
- CdXSX28zNvhpHDGEGxatWvgHeYZNdD2v2Xq0rBLv8j30VQk68Zbj6MU1NzbH6I2MRwnq
- +EqqW3njmiaG0enAGkoYNRHqKomNNMhkW/1vQA4wy0Qmbow/j9I0XadBHL0kcKwqtdrd
- 8bUsNfKnZhxCxbM0UFvPSjuj+oMz3qremmot02Z+ZVUQ8R5MH1pcquEI2G5D0MRdLDfC
- dP6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Y+dg15PmAQIaQlIl2osG/hO3jjeAvCRiFGni1ZhwgxI=;
- b=QymeK0DovK0Xi0ZZt9VJcTlrRcB7GbLSTSoLznsYGK2m/U7CkSm+rKonrsR49U0jVT
- r96DFks3DA8d8DJRqY3O/2TzmdW9S7KOgysdid9UoaLjLTqY5/irwE/e7q3VKt0EhZXG
- 9qV8j25B8eEzZA8UGRn7CDYalgNrXCVzlP6vRWep8nrSND2jap8agOodsGO38h5jnMDM
- oNr4SCTwAvup6BvrazLu7nkdWTMTp/r3mikHY7/BEgjJ+griDxjWMBW+mtao8OyNqTyx
- 5zwENrS3/9o4ew4Q/flEdEtxt2m3rfT66lY4oKWQnGg43wNXsOnfNQH7nobVfh1p3Suj
- Tz2w==
-X-Gm-Message-State: AOAM533P2Rw8p/ubtQ3y59PNVUIOCuuHAvBsLjo2Wr6G76sG3UPNwz+w
- IBXTUCc16wh/n8VOiRyyQw6volGgAT0=
-X-Google-Smtp-Source: ABdhPJy4lnU/fv6tr1AnVgVacx3ckViiw0iVbuzBtfjFUzXc5SS0009vNTjwUQlfI7j0hycU3uwRXA==
-X-Received: by 2002:a05:6a00:1507:b029:1e4:d81:5586 with SMTP id
- q7-20020a056a001507b02901e40d815586mr12222975pfu.53.1615845888510; 
- Mon, 15 Mar 2021 15:04:48 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com (58-6-239-121.tpgi.com.au. [58.6.239.121])
- by smtp.gmail.com with ESMTPSA id
- y9sm14740338pgc.9.2021.03.15.15.04.46
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Mar 2021 15:04:48 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 14/14] powerpc/64s: use the same default PPR for user and
- kernel
-Date: Tue, 16 Mar 2021 08:04:02 +1000
-Message-Id: <20210315220402.260594-15-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20210315220402.260594-1-npiggin@gmail.com>
-References: <20210315220402.260594-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzsmp4TWjz2yy6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 10:18:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1615850325;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=/etmbsJvEZM1gH5LxhcUF9EBSBfjTJ2W2V26uLuorFI=;
+ b=eGS3t9M1FiZLC9wVttK4WtAiogBt6S01TtoxMzv0Y9LfbKbgFQcUp2oGettssnqUfFEO9Y
+ yZ0GGFnEUj/dJQHEamWjSeSZHxGES+zUDUKgKuFF3Bvrvjb0I7YKUzl05/4xrX1fman02Z
+ G8MGWY5KWm/a/S4PEV0KYsocx8D0fzY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1615850325;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=/etmbsJvEZM1gH5LxhcUF9EBSBfjTJ2W2V26uLuorFI=;
+ b=eGS3t9M1FiZLC9wVttK4WtAiogBt6S01TtoxMzv0Y9LfbKbgFQcUp2oGettssnqUfFEO9Y
+ yZ0GGFnEUj/dJQHEamWjSeSZHxGES+zUDUKgKuFF3Bvrvjb0I7YKUzl05/4xrX1fman02Z
+ G8MGWY5KWm/a/S4PEV0KYsocx8D0fzY=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-493-WG_tzQXgMfORg1YNpVn6og-1; Mon, 15 Mar 2021 19:18:40 -0400
+X-MC-Unique: WG_tzQXgMfORg1YNpVn6og-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id BE28F814270;
+ Mon, 15 Mar 2021 23:18:38 +0000 (UTC)
+Received: from krava (unknown [10.40.196.50])
+ by smtp.corp.redhat.com (Postfix) with SMTP id 5EC555C3E6;
+ Mon, 15 Mar 2021 23:18:36 +0000 (UTC)
+Date: Tue, 16 Mar 2021 00:18:35 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/4] tools/perf: Support pipeline stage cycles for powerpc
+Message-ID: <YE/rS5jZLA0RHYZG@krava>
+References: <1615298640-1529-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1615298640-1529-5-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <YEtlEyb2z33qHhvO@krava>
+ <FD9505E3-8CDE-4073-88A0-BCA4B92F276E@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <FD9505E3-8CDE-4073-88A0-BCA4B92F276E@linux.vnet.ibm.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,217 +95,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, kjain@linux.ibm.com,
+ linux-kernel@vger.kernel.org, acme@kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Change the default PPR to userspace to 4 (medium), matching the
-normal kernel PPR.
+On Mon, Mar 15, 2021 at 01:22:09PM +0530, Athira Rajeev wrote:
 
-This allows system calls and user interrupts to avoid setting PPR on
-entry and exit, providing a significant speedup.
+SNIP
 
-This is a change to the user environment. The problem with changing
-the kernel to match userspace at 3 (medium-low), is that userspace
-can then boost priority above the kernel which is also undesirable.
+> +
+> +static char *setup_dynamic_sort_keys(char *str)
+> +{
+> +	unsigned int j;
+> +
+> +	if (sort__mode == SORT_MODE__MEMORY)
+> +		for (j = 0; j < ARRAY_SIZE(dynamic_sort_keys_mem); j++)
+> +			if (arch_support_dynamic_key(dynamic_sort_keys_mem[j])) {
+> +				str = suffix_if_not_in(dynamic_sort_keys_mem[j], str);
+> +				if (str == NULL)
+> +					return str;
+> +			}
+> +
+> +	return str;
+> +}
+> +
+>  static int __setup_sorting(struct evlist *evlist)
+>  {
+>  	char *str;
+> @@ -3050,6 +3085,12 @@ static int __setup_sorting(struct evlist *evlist)
+>  		}
+>  	}
+>  
+> +	str = setup_dynamic_sort_keys(str);
+> +	if (str == NULL) {
+> +		pr_err("Not enough memory to setup dynamic sort keys");
+> +		return -ENOMEM;
+> +	}
 
-glibc does not seem to change PPR anywhere, so the decision is to
-go with this.
+hum, so this is basicaly overloading the default_mem_sort_order for
+architecture, right?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/interrupt.h |  2 ++
- arch/powerpc/include/asm/processor.h |  4 ++--
- arch/powerpc/kernel/exceptions-64s.S |  3 ---
- arch/powerpc/kernel/interrupt.c      | 33 ++++++++++++++++++++++++++++
- arch/powerpc/kernel/interrupt_64.S   | 17 --------------
- 5 files changed, 37 insertions(+), 22 deletions(-)
+then I think it'd be easier just overload default_mem_sort_order directly
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index d6d54bbcba2f..293e6be9fd71 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -57,6 +57,8 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
- #ifdef CONFIG_PPC64
- 	bool trace_enable = false;
- 
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, DEFAULT_PPR);
- 	if (IS_ENABLED(CONFIG_TRACE_IRQFLAGS)) {
- 		if (irq_soft_mask_set_return(IRQS_DISABLED) == IRQS_ENABLED)
- 			trace_enable = true;
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index cb1edf21a82e..5ff589042103 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -27,8 +27,8 @@
- #endif
- 
- #ifdef CONFIG_PPC64
--/* Default SMT priority is set to 3. Use 11- 13bits to save priority. */
--#define PPR_PRIORITY 3
-+/* Default SMT priority is set to 4. Use 11- 13bits to save priority. */
-+#define PPR_PRIORITY 4
- #ifdef __ASSEMBLY__
- #define DEFAULT_PPR (PPR_PRIORITY << 50)
- #else
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 75cee7cdf887..0d40614d13e0 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -367,7 +367,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- BEGIN_FTR_SECTION
- 	mfspr	r9,SPRN_PPR
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
--	HMT_MEDIUM
- 	std	r10,IAREA+EX_R10(r13)		/* save r10 - r12 */
- BEGIN_FTR_SECTION
- 	mfspr	r10,SPRN_CFAR
-@@ -1962,8 +1961,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
- 	mfspr	r11,SPRN_SRR0
- 	mfspr	r12,SPRN_SRR1
- 
--	HMT_MEDIUM
--
- 	.if ! \virt
- 	__LOAD_HANDLER(r10, system_call_common_real)
- 	mtctr	r10
-diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-index 09cf699d0e2e..a6e0595da0dd 100644
---- a/arch/powerpc/kernel/interrupt.c
-+++ b/arch/powerpc/kernel/interrupt.c
-@@ -40,6 +40,11 @@ notrace long system_call_exception(long r3, long r4, long r5,
- 
- 	regs->orig_gpr3 = r3;
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, DEFAULT_PPR);
-+#endif
-+
- 	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
- 		BUG_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED);
- 
-@@ -237,6 +242,11 @@ notrace unsigned long syscall_exit_prepare_main(unsigned long r3,
- 
- 	account_cpu_user_exit();
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, regs->ppr);
-+#endif
-+
- #ifndef CONFIG_PPC_BOOK3E_64 /* BOOK3E not using this */
- 	/*
- 	 * We do this at the end so that we do context switch with KERNEL AMR
-@@ -315,6 +325,11 @@ notrace unsigned long syscall_exit_restart(unsigned long r3, struct pt_regs *reg
- 	 */
- 	hard_irq_disable();
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, DEFAULT_PPR);
-+#endif
-+
- 	trace_hardirqs_off();
- 	user_exit_irqoff();
- 	account_cpu_user_entry();
-@@ -398,6 +413,11 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
- 
- 	account_cpu_user_exit();
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, regs->ppr);
-+#endif
-+
- 	/*
- 	 * We do this at the end so that we do context switch with KERNEL AMR
- 	 */
-@@ -489,6 +509,11 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
- 	local_paca->tm_scratch = regs->msr;
- #endif
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, regs->ppr);
-+#endif
-+
- 	/*
- 	 * Don't want to mfspr(SPRN_AMR) here, because this comes after mtmsr,
- 	 * which would cause Read-After-Write stalls. Hence, we take the AMR
-@@ -505,6 +530,10 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
- notrace unsigned long interrupt_exit_user_restart(struct pt_regs *regs)
- {
- 	hard_irq_disable();
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, DEFAULT_PPR);
-+#endif
- 
- 	trace_hardirqs_off();
- 	user_exit_irqoff();
-@@ -523,6 +552,10 @@ notrace unsigned long interrupt_exit_user_restart(struct pt_regs *regs)
- notrace unsigned long interrupt_exit_kernel_restart(struct pt_regs *regs)
- {
- 	hard_irq_disable();
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (unlikely(regs->ppr != DEFAULT_PPR))
-+		mtspr(SPRN_PPR, DEFAULT_PPR);
-+#endif
- 
- #ifndef CONFIG_PPC_BOOK3E_64
- 	set_kuap(AMR_KUAP_BLOCKED);
-diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-index eef61800f734..53fc446dcbeb 100644
---- a/arch/powerpc/kernel/interrupt_64.S
-+++ b/arch/powerpc/kernel/interrupt_64.S
-@@ -99,10 +99,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
- 	ld	r11,exception_marker@toc(r2)
- 	std	r11,-16(r10)		/* "regshere" marker */
- 
--BEGIN_FTR_SECTION
--	HMT_MEDIUM
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
--
- 	ENTER_KERNEL_SECURITY_FALLBACK
- 
- 	/*
-@@ -142,10 +138,6 @@ BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1			/* to clear the reservation */
- END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 
--BEGIN_FTR_SECTION
--	HMT_MEDIUM_LOW
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
--
- 	cmpdi	r3,0
- 	bne	.Lsyscall_vectored_\name\()_restore_regs
- 
-@@ -377,10 +369,6 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	mtspr	SPRN_XER,r0
- .Lsyscall_restore_regs_cont:
- 
--BEGIN_FTR_SECTION
--	HMT_MEDIUM_LOW
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
--
- 	/*
- 	 * We don't need to restore AMR on the way back to userspace for KUAP.
- 	 * The value of AMR only matters while we're in the kernel.
-@@ -533,11 +521,6 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\())
- 	tdnei	r4,IRQS_ENABLED
- 
- #ifdef CONFIG_PPC_BOOK3S
--BEGIN_FTR_SECTION
--	ld	r10,_PPR(r1)
--	mtspr	SPRN_PPR,r10
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
--
- 	.ifc \srr,srr
- 	lbz	r4,PACASRR_VALID(r13)
- 	.else
--- 
-2.23.0
+I was thinking more about adding extra (arch specific) loop to
+sort_dimension__add or somehow add arch's specific stuff to
+memory_sort_dimensions
+
+jirka
 
