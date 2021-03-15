@@ -2,95 +2,92 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAA64C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 11:42:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95049C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 11:42:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D3E664E81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 11:42:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D3E664E81
+	by mail.kernel.org (Postfix) with ESMTPS id 01EA264E81
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 11:42:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01EA264E81
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzZK60RxQz3c3Z
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:42:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzZKY52PFz3c8l
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:42:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jY62DhM5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n205Fb2z;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=jY62DhM5; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=n205Fb2z; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DzZGG6v2qz2yyL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 22:39:50 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DzZGH3Bvjz3019
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 22:39:51 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12FBYr21069231; Mon, 15 Mar 2021 07:38:54 -0400
+ 12FBYFqd048009; Mon, 15 Mar 2021 07:38:35 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=bO/J8KO0Y6M7dbQYI0HBH4UTuaZJG339aOghTQVdT/k=;
- b=jY62DhM54eMlN/+faAI1PgjDyQ9CnWRBiEulTxF0B6HcVot08xzg3p8ynMbB4c5ssif1
- ovb00fiZg472iuMBBPONNP+J+rk5jM6m8dfxtHDtPPKX0uyIISpZg9GwAJflWVjDofJg
- WA41eT13BaPBoxR4l9f+M9BZ4J31a9vPL1MUY7ZtUBqw+mjbpRdbVtMPRPrRTZQtstaX
- yIf70ZUAfO6OSF+IEN2sF18Q8dAWy/D9FboAsAFK9yr/u0DDhaKssImY7WxO95PSNTCy
- A+ZYpyF4C7TRNv+KSjCsXdLJ/HkEiRtOsp/eOR8OOIMU98HiTEL/cPIW4sAcRMJJ64S+ HQ== 
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=NuqsTMnmd1zb2iFgDQD9GefXohYwN+OhMJ8YkrUppsk=;
+ b=n205Fb2zppC/nMCDXSsoMWGP6Ao72lmDHjIlEsbH9BhXLzxqS/mRPcwFc8jchb6aDJLV
+ 6pRSKS7uG9EDHposdKVL4LjxcQTB3bTjDqhbc9tAEyEPY8imxlvEr40NOOCro0NZgvxm
+ hBlqmwZhg8ohGhERp1zmL496wEYd756HkSqfGtWbaysAmxmXAbfFjTlVJW6hq77S18e3
+ PHINiK9DTiu7hisLHUOu4OPu1cJ2/DJ00k8uPbpTJEY2pHzgXmvz4wu9sJKlcb+ZHl03
+ k/Veic+0hVhm5Rv0YILMHzBTSFMICDOSLyExTQevL6+WGTO3fyxw5yjUrdSzZgMiN+uJ WQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 379yhv3cna-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37a6t90355-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 07:38:53 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12FBYu8O069610;
- Mon, 15 Mar 2021 07:38:53 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 379yhv3cmy-1
+ Mon, 15 Mar 2021 07:38:35 -0400
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12FBa2Vf057762;
+ Mon, 15 Mar 2021 07:38:35 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37a6t9034p-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 07:38:53 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12FBXjfI002391;
- Mon, 15 Mar 2021 11:38:53 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma04wdc.us.ibm.com with ESMTP id 378n18pt88-1
+ Mon, 15 Mar 2021 07:38:35 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12FBX0LW022700;
+ Mon, 15 Mar 2021 11:38:34 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma01wdc.us.ibm.com with ESMTP id 378n18pttg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 11:38:52 +0000
+ Mon, 15 Mar 2021 11:38:34 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12FBcqb539256418
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 12FBcX0916318854
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 15 Mar 2021 11:38:52 GMT
+ Mon, 15 Mar 2021 11:38:33 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 85B02AC05B;
- Mon, 15 Mar 2021 11:38:52 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7A286AC05B;
+ Mon, 15 Mar 2021 11:38:33 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0C5F5AC059;
- Mon, 15 Mar 2021 11:38:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A255AAC059;
+ Mon, 15 Mar 2021 11:38:30 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.36.236])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 15 Mar 2021 11:38:49 +0000 (GMT)
+ Mon, 15 Mar 2021 11:38:30 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v2 6/6] powerpc/mm: Enable move pmd/pud
-Date: Mon, 15 Mar 2021 17:08:24 +0530
-Message-Id: <20210315113824.270796-7-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 0/6] Speedup mremap on ppc64
+Date: Mon, 15 Mar 2021 17:08:18 +0530
+Message-Id: <20210315113824.270796-1-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210315113824.270796-1-aneesh.kumar@linux.ibm.com>
-References: <20210315113824.270796-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -98,10 +95,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-15_03:2021-03-15,
  2021-03-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- malwarescore=0 bulkscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
- impostorscore=0 priorityscore=1501 clxscore=1015 mlxscore=0 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ adultscore=0
+ priorityscore=1501 spamscore=0 malwarescore=0 bulkscore=0 phishscore=0
+ lowpriorityscore=0 mlxlogscore=999 suspectscore=0 impostorscore=0
+ mlxscore=0 clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2103150081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -121,32 +118,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-mremap HAVE_MOVE_PMD/PUD optimization time comparison for 1GB region:
-1GB mremap - Source PTE-aligned, Destination PTE-aligned
-        mremap time:      1114318ns
-1GB mremap - Source PMD-aligned, Destination PMD-aligned
-        mremap time:      1097715ns
-1GB mremap - Source PUD-aligned, Destination PUD-aligned
-        mremap time:        26851ns
+This patchset enables MOVE_PMD/MOVE_PUD support on power. This requires
+the platform to support updating higher-level page tables without
+updating page table entries. This also needs to invalidate the Page Walk
+Cache on architecture supporting the same.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/platforms/Kconfig.cputype | 2 ++
- 1 file changed, 2 insertions(+)
+The patchset does that by switching the page table update to use mmu gather
+interface instead of direct tlb flush. mmu gather allows the architecture
+to manage page walk cache invalidate separately.
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 3ce907523b1e..2e666e569fdf 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -97,6 +97,8 @@ config PPC_BOOK3S_64
- 	select PPC_HAVE_PMU_SUPPORT
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
-+	select HAVE_MOVE_PMD
-+	select HAVE_MOVE_PUD
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select IRQ_WORK
+Changes from V1:
+* Rebase to recent upstream
+* Fix build issues with tlb_gather_mmu changes
+
+
+Aneesh Kumar K.V (6):
+  selftest/mremap_test: Update the test to handle pagesize other than 4K
+  selftest/mremap_test: Avoid crash with static build
+  mm/mremap: Use pmd/pud_poplulate to update page table entries
+  mm/mremap: Use mmu gather interface instead of flush_tlb_range
+  mm/mremap: Allow arch runtime override
+  powerpc/mm: Enable move pmd/pud
+
+ arch/arc/include/asm/tlb.h               |   5 +
+ arch/arm64/include/asm/tlb.h             |   6 ++
+ arch/powerpc/include/asm/tlb.h           |   6 ++
+ arch/powerpc/platforms/Kconfig.cputype   |   2 +
+ arch/x86/include/asm/tlb.h               |   5 +
+ mm/mremap.c                              |  54 +++++++++--
+ tools/testing/selftests/vm/mremap_test.c | 118 ++++++++++++-----------
+ 7 files changed, 133 insertions(+), 63 deletions(-)
+
 -- 
 2.29.2
 
