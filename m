@@ -2,61 +2,67 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A6A7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:50:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 583ECC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:55:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E766E64E76
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:50:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E766E64E76
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 67F6464E77
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 10:55:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67F6464E77
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzY9G3mYVz309v
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 21:50:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzYH1558Vz2ysp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 21:55:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.170;
- helo=mail-vk1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com;
- receiver=<UNKNOWN>)
-Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com
- [209.85.221.170])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DzY8w1qz3z2yYm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 21:50:05 +1100 (AEDT)
-Received: by mail-vk1-f170.google.com with SMTP id d2so485774vke.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 03:50:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Cn0hjLBIKyevwPH7uud+eEnfZFG55NE7s3jjb3XGsvA=;
- b=YlxI9QQHgJ2Nv36BG9kEKBHV/LrKaqQeNZmTOI5uzlCkvnC+dVMud1dJ1HStYexjCm
- 57MMoLJPlr1fA1ACDgGEpPXGifjD6Ia/gVxzOX2SbaJeKsj3Bj4KgoxQwTqWnBgfNg4W
- EQpU/MoExNID2U2yU8oJsSShVePm4nDTAnIRitmMyuGwInyKSI95tZOCRhVIIbWP0va1
- oUne+jdJh0N8BYlgoeqPpkI0IcQXG53CTOAy1SpvsD+VLweYBOBPnEbn6jvyzUno98io
- xIuAEBgMogs1rz8TDuyl1CF7DCo7lL0eCKpcRGzA5LIIkXwheuK1Y24kR7mA2PVFdMkd
- W5rA==
-X-Gm-Message-State: AOAM533sEfJHjHj4b3je3a2u+k6a/i1xqFP2n/k2YGFocQLLaGbQbJEc
- YA5DTtrljDzg6ZX4OhHkgCuQ6HyObQltvZUM3RQ=
-X-Google-Smtp-Source: ABdhPJz/2sDUrzcpIsQ6biizvJmEwGiuZAGWwvTIIvT7E2fQOhXFFkNTN7gCCw4ooKjDvbhBVrDcJvhyw+mnpboooBw=
-X-Received: by 2002:a1f:e543:: with SMTP id c64mr3902353vkh.2.1615805397738;
- Mon, 15 Mar 2021 03:49:57 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210315104409.1598822-1-geert@linux-m68k.org>
-In-Reply-To: <20210315104409.1598822-1-geert@linux-m68k.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 15 Mar 2021 11:49:46 +0100
-Message-ID: <CAMuHMdVJFprsj9njwv13jWTBELuq8RcXOmR7AoR9dqDdydLcNQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DzYGf5CBwz2yZB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 21:55:02 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4DzYGP6PxCz9tyQr;
+ Mon, 15 Mar 2021 11:54:53 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id SecQISiySvDz; Mon, 15 Mar 2021 11:54:53 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4DzYGP3v9Qz9tyQq;
+ Mon, 15 Mar 2021 11:54:53 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 944058B77B;
+ Mon, 15 Mar 2021 11:54:55 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id vyBges3r4mBy; Mon, 15 Mar 2021 11:54:55 +0100 (CET)
+Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F03148B75B;
+ Mon, 15 Mar 2021 11:54:49 +0100 (CET)
 Subject: Re: Build regressions/improvements in v5.12-rc3
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20210315104409.1598822-1-geert@linux-m68k.org>
+ <CAMuHMdVJFprsj9njwv13jWTBELuq8RcXOmR7AoR9dqDdydLcNQ@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <2c123f94-ceae-80c0-90e2-21909795eb76@csgroup.eu>
+Date: Mon, 15 Mar 2021 11:54:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
+MIME-Version: 1.0
+In-Reply-To: <CAMuHMdVJFprsj9njwv13jWTBELuq8RcXOmR7AoR9dqDdydLcNQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,35 +79,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 15, 2021 at 11:46 AM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v5.12-rc3[1] to v5.12-rc2[3], the summaries are:
->   - build errors: +2/-2
 
-> 2 error regressions:
->   + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_248' declared with attribute error: BUILD_BUG failed:  => 320:38
->   + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_249' declared with attribute error: BUILD_BUG failed:  => 320:38
 
-powerpc-gcc4.9/ppc64_book3e_allmodconfig
+Le 15/03/2021 à 11:49, Geert Uytterhoeven a écrit :
+> On Mon, Mar 15, 2021 at 11:46 AM Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> JFYI, when comparing v5.12-rc3[1] to v5.12-rc2[3], the summaries are:
+>>    - build errors: +2/-2
+> 
+>> 2 error regressions:
+>>    + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_248' declared with attribute error: BUILD_BUG failed:  => 320:38
+>>    + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_249' declared with attribute error: BUILD_BUG failed:  => 320:38
+> 
+> powerpc-gcc4.9/ppc64_book3e_allmodconfig
+> 
+> So we traded implicit declaration errors:
+> 
+>    - /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:
+> error: implicit declaration of function 'disable_kernel_vsx'
+> [-Werror=implicit-function-declaration]: 674:2 =>
+>    - /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:
+> error: implicit declaration of function 'enable_kernel_vsx'
+> [-Werror=implicit-function-declaration]: 638:2 =>
+> 
+> for compile-time assertions.
+> 
 
-So we traded implicit declaration errors:
+You are missing https://github.com/linuxppc/linux/commit/eed5fae00593ab9d261a0c1ffc1bdb786a87a55a
 
-  - /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:
-error: implicit declaration of function 'disable_kernel_vsx'
-[-Werror=implicit-function-declaration]: 674:2 =>
-  - /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/calcs/dcn_calcs.c:
-error: implicit declaration of function 'enable_kernel_vsx'
-[-Werror=implicit-function-declaration]: 638:2 =>
-
-for compile-time assertions.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Christophe
