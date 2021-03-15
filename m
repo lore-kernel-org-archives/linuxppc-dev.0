@@ -8,75 +8,74 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3A1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A41BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:07:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D07ED64DF4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:06:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D07ED64DF4
+	by mail.kernel.org (Postfix) with ESMTPS id 8393064DF4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:07:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8393064DF4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzr9W2w36z30D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 09:06:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzrB917lpz3c8s
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 09:07:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=smzFM9aO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=qN5MOVo1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432;
+ helo=mail-pf1-x432.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=smzFM9aO; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
+ header.s=20161025 header.b=qN5MOVo1; dkim-atps=neutral
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
+ [IPv6:2607:f8b0:4864:20::432])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzr6y5BZyz30CG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 09:04:26 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id b23so7460071pfo.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 15:04:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzr714tCZz30Cs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 09:04:29 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id 18so7471208pfo.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 15:04:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=c9XIxiTI18/af71g4cRXWy00Q43r1G9z1OuTDdDj6IA=;
- b=smzFM9aOkObw/J1pNIQyPQF/+NIx1djRWMwpAU56eS74PDBDcXOPRUU1ZA6VxCjEKC
- p0QtNh8x2ZtZNbE68pL7M8+uIXELllGJdCVSrLR/fhGZJ+fS+ZNOxIuZsqmMUv14hmol
- P5mlqSN8UMzEsAM398k6ajfT642qM7bq1D+BQjXT6M+CC66/neE7dkdorH8euZC015M+
- oNzpbg7ii4nJuLwwbWYm7RV3bGjD9dlS+L2zopJZa7OzDDs5noLI5rRRjtoodaOzvmGP
- 7CwlfjHWujYn8Vjvc8b173CATPUGK8QYwLuQ+p1lFOg6cUgg8ZguRUTy17VhBkTewNec
- quFw==
+ bh=iRs8xIu1KjULkjvorMhw2I8ZboUlAFDXPj1vQF0vI8U=;
+ b=qN5MOVo1xIe9brsk/w+Qh4WuQWGpBwszom6Og7Aq4tDn5GL2sHkYHkwAcDAUBvN+if
+ tNf8BDwjvZXdkCue0Sun2PfevRSqteebHFS4g4XY9ZGDPg1S5TabNAgXgVQMFa8LyQ6G
+ 61DTPfgyczwiVulrVmI0/m1Ei8CiBr5qX+HQ2D9I2CUmsg/gufWUB4ZUwrAKwvl4+IA6
+ ZpcBUW48/wNzXGJGSzCU5o8yKwAQRnF0R7AX6H5bqaIB/I245qIZMFkLOKhVhm1++3OE
+ jZOMfCbH7rDVXTXx0UmbjtU27aMiluIRkFSqgh8nhkDXyGSpqTCfIb52c+PE5ex/8V4W
+ XiEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=c9XIxiTI18/af71g4cRXWy00Q43r1G9z1OuTDdDj6IA=;
- b=NKNCW2ST+hxXbc2jfgKqLFwIMBUBT/rNDt2gubZdY5vWPVe2urgSKU6abi49zYRsTQ
- AiYKCnPZ2mdu2u1FpdI5NBTSmuBvYxlDzLzTpYG4SGrn1EMVn6VV0c0qnd1ok0X60lal
- FOkWg8qsGR+BWw008V9Lw4LGcOZculKF7s08i5wAlyaBwZq5u1lB3CL/KRYODzO/VIve
- yLTSWGumz0yDaqkR4uxDe4X6oWDhNVpYEE5iRZ6jeSjonyE1PCjCqaQMLEaFW9QD8KXl
- TGwxZyN5riFv1DmTvYG0cved1zyUZ9+fJV+LmWZvnQjJAnhdRO6pMbhPfOBXuh1w5m1G
- Fb9g==
-X-Gm-Message-State: AOAM532viYOJBa9SWNh5XnSijGubjRepbmCKoP9sq35YjoSXFOPjagag
- xGIilcq/zA3Nu4kWEHZofM+HZo/9Z54=
-X-Google-Smtp-Source: ABdhPJxpQsQlaS107ebYAjY6zVO5XeGvp7ElCDGqq4e7FZsSIfMXwjnB0HJZsItIzXLIvH+qZVsASw==
-X-Received: by 2002:a63:fb10:: with SMTP id o16mr1015078pgh.368.1615845859596; 
- Mon, 15 Mar 2021 15:04:19 -0700 (PDT)
+ bh=iRs8xIu1KjULkjvorMhw2I8ZboUlAFDXPj1vQF0vI8U=;
+ b=udgLWQPRCQst3JCbYgPY5NskVE7TujNd8yNvkDj0PVq98Gpd+noF4iMP8kDRfrRxVp
+ o9/44ecW32SOG9tpPqJnb6GiB9Gny/ijGvOazotPI7VOf0pkxvtjNYnqgb3E42hVLxs5
+ 45gzpugHiTwU6fe5cclYu9sAQvMrC+fz8nHm/Efh9CD7GxtJfuHnElIsIbkrUQsk5VhY
+ T12NzMDUzvInoYdzFc+PePEOrZORyL95NsCxfOWGgODEU5o/GykUpE9beQu2yePT8xbC
+ EQhQGQqMWTbtQN9bnFLUQM8n5BOO6k0a5erDe+CV0ouuvVpfHYuLjyLHYpXFdh6thoRd
+ zg2A==
+X-Gm-Message-State: AOAM5321UMMAzmKYNsmUyc7h8fcvXTivAj++EBiwEvcf3k9ZdzyJ+CuP
+ nG+e88cPRrLfp3Mfsoc7IRBRr7HWUXw=
+X-Google-Smtp-Source: ABdhPJztnl0Qaoc+q7Dm0uNHQ/hgSJQabEuXjxAL7zVyqJn/5L7BPAiPIE68qQIlbWrLzQ1OrKuvGg==
+X-Received: by 2002:a63:e1b:: with SMTP id d27mr1005268pgl.135.1615845865814; 
+ Mon, 15 Mar 2021 15:04:25 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (58-6-239-121.tpgi.com.au. [58.6.239.121])
  by smtp.gmail.com with ESMTPSA id
- y9sm14740338pgc.9.2021.03.15.15.04.17
+ y9sm14740338pgc.9.2021.03.15.15.04.22
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Mar 2021 15:04:19 -0700 (PDT)
+ Mon, 15 Mar 2021 15:04:25 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 03/14] powerpc/64s: introduce different functions to return
- from SRR vs HSRR interrupts
-Date: Tue, 16 Mar 2021 08:03:51 +1000
-Message-Id: <20210315220402.260594-4-npiggin@gmail.com>
+Subject: [PATCH 05/14] powerpc/64: move interrupt return asm to interrupt_64.S
+Date: Tue, 16 Mar 2021 08:03:53 +1000
+Message-Id: <20210315220402.260594-6-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210315220402.260594-1-npiggin@gmail.com>
 References: <20210315220402.260594-1-npiggin@gmail.com>
@@ -98,514 +97,1365 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This makes no real difference yet except that HSRR type interrupts will
-use hrfid to return. This is important for the next patch.
+The next patch would like to move interrupt return assembly code to a low
+location before general text, so move it into its own file and include via
+head_64.S
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/entry_64.S       | 63 ++++++++++++++++-------
- arch/powerpc/kernel/exceptions-64e.S |  4 ++
- arch/powerpc/kernel/exceptions-64s.S | 76 +++++++++++++++-------------
- arch/powerpc/kernel/vector.S         |  2 +-
- 4 files changed, 91 insertions(+), 54 deletions(-)
+ arch/powerpc/include/asm/head-64.h |   2 +-
+ arch/powerpc/kernel/entry_64.S     | 632 ----------------------------
+ arch/powerpc/kernel/head_64.S      |   5 +-
+ arch/powerpc/kernel/interrupt_64.S | 645 +++++++++++++++++++++++++++++
+ 4 files changed, 650 insertions(+), 634 deletions(-)
+ create mode 100644 arch/powerpc/kernel/interrupt_64.S
 
+diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+index 4cb9efa2eb21..242204e12993 100644
+--- a/arch/powerpc/include/asm/head-64.h
++++ b/arch/powerpc/include/asm/head-64.h
+@@ -16,7 +16,7 @@
+ 	.section ".head.data.\name\()","a",@progbits
+ .endm
+ .macro use_ftsec name
+-	.section ".head.text.\name\()"
++	.section ".head.text.\name\()","ax",@progbits
+ .endm
+ 
+ /*
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 3632d8c56e48..ccf913cedd29 100644
+index b466b3e1bb3f..15720f8661a1 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -643,43 +643,44 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	 * touched, no exit work created, then this can be used.
- 	 */
- 	.balign IFETCH_ALIGN_BYTES
--	.globl fast_interrupt_return
--fast_interrupt_return:
--_ASM_NOKPROBE_SYMBOL(fast_interrupt_return)
+@@ -32,7 +32,6 @@
+ #include <asm/irqflags.h>
+ #include <asm/hw_irq.h>
+ #include <asm/context_tracking.h>
+-#include <asm/tm.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/barrier.h>
+ #include <asm/export.h>
+@@ -48,418 +47,7 @@
+ /*
+  * System calls.
+  */
+-	.section	".toc","aw"
+-SYS_CALL_TABLE:
+-	.tc sys_call_table[TC],sys_call_table
+-
+-#ifdef CONFIG_COMPAT
+-COMPAT_SYS_CALL_TABLE:
+-	.tc compat_sys_call_table[TC],compat_sys_call_table
+-#endif
+-
+-/* This value is used to mark exception frames on the stack. */
+-exception_marker:
+-	.tc	ID_EXC_MARKER[TC],STACK_FRAME_REGS_MARKER
+-
+ 	.section	".text"
+-	.align 7
+-
+-.macro DEBUG_SRR_VALID srr
+-#ifdef CONFIG_PPC_RFI_SRR_DEBUG
+-	.ifc \srr,srr
+-	mfspr	r11,SPRN_SRR0
+-	ld	r12,_NIP(r1)
+-100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+-	mfspr	r11,SPRN_SRR1
+-	ld	r12,_MSR(r1)
+-100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+-	.else
+-	mfspr	r11,SPRN_HSRR0
+-	ld	r12,_NIP(r1)
+-100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+-	mfspr	r11,SPRN_HSRR1
+-	ld	r12,_MSR(r1)
+-100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+-	.endif
+-#endif
+-.endm
+-
+-#ifdef CONFIG_PPC_BOOK3S
+-.macro system_call_vectored name trapnr
+-	.globl system_call_vectored_\name
+-system_call_vectored_\name:
+-_ASM_NOKPROBE_SYMBOL(system_call_vectored_\name)
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-BEGIN_FTR_SECTION
+-	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
+-	bne	.Ltabort_syscall
+-END_FTR_SECTION_IFSET(CPU_FTR_TM)
+-#endif
+-	SCV_INTERRUPT_TO_KERNEL
+-	mr	r10,r1
+-	ld	r1,PACAKSAVE(r13)
+-	std	r10,0(r1)
+-	std	r11,_NIP(r1)
+-	std	r12,_MSR(r1)
+-	std	r0,GPR0(r1)
+-	std	r10,GPR1(r1)
+-	std	r2,GPR2(r1)
+-	ld	r2,PACATOC(r13)
+-	mfcr	r12
+-	li	r11,0
+-	/* Can we avoid saving r3-r8 in common case? */
+-	std	r3,GPR3(r1)
+-	std	r4,GPR4(r1)
+-	std	r5,GPR5(r1)
+-	std	r6,GPR6(r1)
+-	std	r7,GPR7(r1)
+-	std	r8,GPR8(r1)
+-	/* Zero r9-r12, this should only be required when restoring all GPRs */
+-	std	r11,GPR9(r1)
+-	std	r11,GPR10(r1)
+-	std	r11,GPR11(r1)
+-	std	r11,GPR12(r1)
+-	std	r9,GPR13(r1)
+-	SAVE_NVGPRS(r1)
+-	std	r11,_XER(r1)
+-	std	r11,_LINK(r1)
+-	std	r11,_CTR(r1)
+-
+-	li	r11,\trapnr
+-	std	r11,_TRAP(r1)
+-	std	r12,_CCR(r1)
+-	addi	r10,r1,STACK_FRAME_OVERHEAD
+-	ld	r11,exception_marker@toc(r2)
+-	std	r11,-16(r10)		/* "regshere" marker */
+-
+-BEGIN_FTR_SECTION
+-	HMT_MEDIUM
+-END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+-
+-	ENTER_KERNEL_SECURITY_FALLBACK
+-
+-	/*
+-	 * scv enters with MSR[EE]=1 and is immediately considered soft-masked.
+-	 * The entry vector already sets PACAIRQSOFTMASK to IRQS_ALL_DISABLED,
+-	 * and interrupts may be masked and pending already.
+-	 * system_call_exception() will call trace_hardirqs_off() which means
+-	 * interrupts could already have been blocked before trace_hardirqs_off,
+-	 * but this is the best we can do.
+-	 */
+-
+-	/* Calling convention has r9 = orig r0, r10 = regs */
+-	mr	r9,r0
+-	bl	system_call_exception
+-
+-.Lsyscall_vectored_\name\()_exit:
+-	addi    r4,r1,STACK_FRAME_OVERHEAD
+-	li	r5,1 /* scv */
+-	bl	syscall_exit_prepare
+-
+-	EXIT_KERNEL_SECURITY_FALLBACK
+-
+-	ld	r2,_CCR(r1)
+-	ld	r4,_NIP(r1)
+-	ld	r5,_MSR(r1)
+-
+-BEGIN_FTR_SECTION
+-	stdcx.	r0,0,r1			/* to clear the reservation */
+-END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+-
+-BEGIN_FTR_SECTION
+-	HMT_MEDIUM_LOW
+-END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+-
+-	cmpdi	r3,0
+-	bne	.Lsyscall_vectored_\name\()_restore_regs
+-
+-	/* rfscv returns with LR->NIA and CTR->MSR */
+-	mtlr	r4
+-	mtctr	r5
+-
+-	/* Could zero these as per ABI, but we may consider a stricter ABI
+-	 * which preserves these if libc implementations can benefit, so
+-	 * restore them for now until further measurement is done. */
+-	ld	r0,GPR0(r1)
+-	ld	r4,GPR4(r1)
+-	ld	r5,GPR5(r1)
+-	ld	r6,GPR6(r1)
+-	ld	r7,GPR7(r1)
+-	ld	r8,GPR8(r1)
+-	/* Zero volatile regs that may contain sensitive kernel data */
+-	li	r9,0
+-	li	r10,0
+-	li	r11,0
+-	li	r12,0
+-	mtspr	SPRN_XER,r0
+-
+-	/*
+-	 * We don't need to restore AMR on the way back to userspace for KUAP.
+-	 * The value of AMR only matters while we're in the kernel.
+-	 */
+-	mtcr	r2
+-	ld	r2,GPR2(r1)
+-	ld	r3,GPR3(r1)
+-	ld	r13,GPR13(r1)
+-	ld	r1,GPR1(r1)
+-	RFSCV_TO_USER
+-	b	.	/* prevent speculative execution */
+-
+-.Lsyscall_vectored_\name\()_restore_regs:
+-	li	r3,0
+-	mtmsrd	r3,1
+-	mtspr	SPRN_SRR0,r4
+-	mtspr	SPRN_SRR1,r5
+-
+-	ld	r3,_CTR(r1)
+-	ld	r4,_LINK(r1)
+-	ld	r5,_XER(r1)
+-
+-	REST_NVGPRS(r1)
+-	ld	r0,GPR0(r1)
+-	mtcr	r2
+-	mtctr	r3
+-	mtlr	r4
+-	mtspr	SPRN_XER,r5
+-	REST_10GPRS(2, r1)
+-	REST_2GPRS(12, r1)
+-	ld	r1,GPR1(r1)
+-	RFI_TO_USER
+-.endm
+-
+-system_call_vectored common 0x3000
+-/*
+- * We instantiate another entry copy for the SIGILL variant, with TRAP=0x7ff0
+- * which is tested by system_call_exception when r0 is -1 (as set by vector
+- * entry code).
+- */
+-system_call_vectored sigill 0x7ff0
+-
+-
+-/*
+- * Entered via kernel return set up by kernel/sstep.c, must match entry regs
+- */
+-	.globl system_call_vectored_emulate
+-system_call_vectored_emulate:
+-_ASM_NOKPROBE_SYMBOL(system_call_vectored_emulate)
+-	li	r10,IRQS_ALL_DISABLED
+-	stb	r10,PACAIRQSOFTMASK(r13)
+-	b	system_call_vectored_common
+-#endif
+-
+-	.balign IFETCH_ALIGN_BYTES
+-	.globl system_call_common_real
+-system_call_common_real:
+-	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
+-	mtmsrd	r10
+-
+-	.balign IFETCH_ALIGN_BYTES
+-	.globl system_call_common
+-system_call_common:
+-_ASM_NOKPROBE_SYMBOL(system_call_common)
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-BEGIN_FTR_SECTION
+-	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
+-	bne	.Ltabort_syscall
+-END_FTR_SECTION_IFSET(CPU_FTR_TM)
+-#endif
+-	mr	r10,r1
+-	ld	r1,PACAKSAVE(r13)
+-	std	r10,0(r1)
+-	std	r11,_NIP(r1)
+-	std	r12,_MSR(r1)
+-	std	r0,GPR0(r1)
+-	std	r10,GPR1(r1)
+-	std	r2,GPR2(r1)
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-START_BTB_FLUSH_SECTION
+-	BTB_FLUSH(r10)
+-END_BTB_FLUSH_SECTION
+-#endif
+-	ld	r2,PACATOC(r13)
+-	mfcr	r12
+-	li	r11,0
+-	/* Can we avoid saving r3-r8 in common case? */
+-	std	r3,GPR3(r1)
+-	std	r4,GPR4(r1)
+-	std	r5,GPR5(r1)
+-	std	r6,GPR6(r1)
+-	std	r7,GPR7(r1)
+-	std	r8,GPR8(r1)
+-	/* Zero r9-r12, this should only be required when restoring all GPRs */
+-	std	r11,GPR9(r1)
+-	std	r11,GPR10(r1)
+-	std	r11,GPR11(r1)
+-	std	r11,GPR12(r1)
+-	std	r9,GPR13(r1)
+-	SAVE_NVGPRS(r1)
+-	std	r11,_XER(r1)
+-	std	r11,_CTR(r1)
+-	mflr	r10
+-
+-	/*
+-	 * This clears CR0.SO (bit 28), which is the error indication on
+-	 * return from this system call.
+-	 */
+-	rldimi	r12,r11,28,(63-28)
+-	li	r11,0xc00
+-	std	r10,_LINK(r1)
+-	std	r11,_TRAP(r1)
+-	std	r12,_CCR(r1)
+-	addi	r10,r1,STACK_FRAME_OVERHEAD
+-	ld	r11,exception_marker@toc(r2)
+-	std	r11,-16(r10)		/* "regshere" marker */
+-
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r11,1
+-	stb	r11,PACASRR_VALID(r13)
+-#endif
+-
+-	/*
+-	 * We always enter kernel from userspace with irq soft-mask enabled and
+-	 * nothing pending. system_call_exception() will call
+-	 * trace_hardirqs_off().
+-	 */
+-	li	r11,IRQS_ALL_DISABLED
+-	li	r12,PACA_IRQ_HARD_DIS
+-	stb	r11,PACAIRQSOFTMASK(r13)
+-	stb	r12,PACAIRQHAPPENED(r13)
+-
+-	ENTER_KERNEL_SECURITY_FALLBACK
+-
+-	/* Calling convention has r9 = orig r0, r10 = regs */
+-	mr	r9,r0
+-	bl	system_call_exception
+-
+-.Lsyscall_exit:
+-	addi    r4,r1,STACK_FRAME_OVERHEAD
+-	li	r5,0 /* !scv */
+-	bl	syscall_exit_prepare
+-
+-	EXIT_KERNEL_SECURITY_FALLBACK
+-
+-	ld	r2,_CCR(r1)
+-	ld	r6,_LINK(r1)
+-	mtlr	r6
+-
+-#ifdef CONFIG_PPC_BOOK3S
+-	lbz	r4,PACASRR_VALID(r13)
+-	cmpdi	r4,0
+-	bne	1f
+-	li	r4,0
+-	stb	r4,PACASRR_VALID(r13)
+-#endif
+-	ld	r4,_NIP(r1)
+-	ld	r5,_MSR(r1)
+-	mtspr	SPRN_SRR0,r4
+-	mtspr	SPRN_SRR1,r5
+-1:
+-	DEBUG_SRR_VALID srr
+-
+-BEGIN_FTR_SECTION
+-	stdcx.	r0,0,r1			/* to clear the reservation */
+-END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+-
+-	cmpdi	r3,0
+-	bne	.Lsyscall_restore_regs
+-	/* Zero volatile regs that may contain sensitive kernel data */
+-	li	r0,0
+-	li	r4,0
+-	li	r5,0
+-	li	r6,0
+-	li	r7,0
+-	li	r8,0
+-	li	r9,0
+-	li	r10,0
+-	li	r11,0
+-	li	r12,0
+-	mtctr	r0
+-	mtspr	SPRN_XER,r0
+-.Lsyscall_restore_regs_cont:
+-
+-BEGIN_FTR_SECTION
+-	HMT_MEDIUM_LOW
+-END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+-
+-	/*
+-	 * We don't need to restore AMR on the way back to userspace for KUAP.
+-	 * The value of AMR only matters while we're in the kernel.
+-	 */
+-	mtcr	r2
+-	ld	r2,GPR2(r1)
+-	ld	r3,GPR3(r1)
+-	ld	r13,GPR13(r1)
+-	ld	r1,GPR1(r1)
+-	RFI_TO_USER
+-	b	.	/* prevent speculative execution */
+-
+-.Lsyscall_restore_regs:
+-	ld	r3,_CTR(r1)
+-	ld	r4,_XER(r1)
+-	REST_NVGPRS(r1)
+-	mtctr	r3
+-	mtspr	SPRN_XER,r4
+-	ld	r0,GPR0(r1)
+-	REST_8GPRS(4, r1)
+-	ld	r12,GPR12(r1)
+-	b	.Lsyscall_restore_regs_cont
+-
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-.Ltabort_syscall:
+-	/* Firstly we need to enable TM in the kernel */
+-	mfmsr	r10
+-	li	r9, 1
+-	rldimi	r10, r9, MSR_TM_LG, 63-MSR_TM_LG
+-	mtmsrd	r10, 0
+-
+-	/* tabort, this dooms the transaction, nothing else */
+-	li	r9, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
+-	TABORT(R9)
+-
+-	/*
+-	 * Return directly to userspace. We have corrupted user register state,
+-	 * but userspace will never see that register state. Execution will
+-	 * resume after the tbegin of the aborted transaction with the
+-	 * checkpointed register state.
+-	 */
+-	li	r9, MSR_RI
+-	andc	r10, r10, r9
+-	mtmsrd	r10, 1
+-	mtspr	SPRN_SRR0, r11
+-	mtspr	SPRN_SRR1, r12
+-	RFI_TO_USER
+-	b	.	/* prevent speculative execution */
+-#endif
+-
+-#ifdef CONFIG_PPC_BOOK3S
+-_GLOBAL(ret_from_fork_scv)
+-	bl	schedule_tail
+-	REST_NVGPRS(r1)
+-	li	r3,0	/* fork() return value */
+-	b	.Lsyscall_vectored_common_exit
+-#endif
+-
+-_GLOBAL(ret_from_fork)
+-	bl	schedule_tail
+-	REST_NVGPRS(r1)
+-	li	r3,0	/* fork() return value */
+-	b	.Lsyscall_exit
+-
+-_GLOBAL(ret_from_kernel_thread)
+-	bl	schedule_tail
+-	REST_NVGPRS(r1)
+-	mtctr	r14
+-	mr	r3,r15
+-#ifdef PPC64_ELF_ABI_v2
+-	mr	r12,r14
+-#endif
+-	bctrl
+-	li	r3,0
+-	b	.Lsyscall_exit
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 
+@@ -676,226 +264,6 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	addi	r1,r1,SWITCH_FRAME_SIZE
+ 	blr
+ 
+-	/*
+-	 * If MSR EE/RI was never enabled, IRQs not reconciled, NVGPRs not
+-	 * touched, no exit work created, then this can be used.
+-	 */
+-	.balign IFETCH_ALIGN_BYTES
+-	.globl fast_interrupt_return_srr
+-fast_interrupt_return_srr:
+-_ASM_NOKPROBE_SYMBOL(fast_interrupt_return_srr)
+-	kuap_check_amr r3, r4
+-	ld	r5,_MSR(r1)
+-	andi.	r0,r5,MSR_PR
+-#ifdef CONFIG_PPC_BOOK3S
+-	beq	1f
+-	kuap_user_restore r3, r4
+-	b	.Lfast_user_interrupt_return_srr
+-1:
+-	andi.	r0,r5,MSR_RI
+-	beq-	2f
+-	kuap_kernel_restore r3, r4
+-	li	r3,0 /* 0 return value, no EMULATE_STACK_STORE */
+-	b	.Lfast_kernel_interrupt_return_srr
+-2:
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	unrecoverable_exception
+-	b	. /* should not get here */
+-#else
+-	bne	.Lfast_user_interrupt_return_srr
+-	b	.Lfast_kernel_interrupt_return_srr
+-#endif
+-
+-.macro interrupt_return_macro srr
+-	.balign IFETCH_ALIGN_BYTES
+-	.globl interrupt_return_\srr
+-interrupt_return_\srr\():
+-_ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\())
+-	ld	r4,_MSR(r1)
+-	andi.	r0,r4,MSR_PR
+-	beq	.Lkernel_interrupt_return_\srr
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	interrupt_exit_user_prepare
+-	cmpdi	r3,0
+-	bne-	.Lrestore_nvgprs_\srr
+-.Lfast_user_interrupt_return_\srr\():
+-	EXIT_KERNEL_SECURITY_FALLBACK
+-
+-BEGIN_FTR_SECTION
+-	ld	r10,_PPR(r1)
+-	mtspr	SPRN_PPR,r10
+-END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+-
+-#ifdef CONFIG_PPC_BOOK3S
+-	.ifc \srr,srr
+-	lbz	r4,PACASRR_VALID(r13)
+-	.else
+-	lbz	r4,PACAHSRR_VALID(r13)
+-	.endif
+-	cmpdi	r4,0
+-	li	r4,0
+-	bne	1f
+-#endif
+-	ld	r11,_NIP(r1)
+-	ld	r12,_MSR(r1)
+-	.ifc \srr,srr
+-	mtspr	SPRN_SRR0,r11
+-	mtspr	SPRN_SRR1,r12
+-1:
+-#ifdef CONFIG_PPC_BOOK3S
+-	stb	r4,PACASRR_VALID(r13)
+-#endif
+-	.else
+-	mtspr	SPRN_HSRR0,r11
+-	mtspr	SPRN_HSRR1,r12
+-1:
+-#ifdef CONFIG_PPC_BOOK3S
+-	stb	r4,PACAHSRR_VALID(r13)
+-#endif
+-	.endif
+-	DEBUG_SRR_VALID \srr
+-
+-BEGIN_FTR_SECTION
+-	stdcx.	r0,0,r1		/* to clear the reservation */
+-FTR_SECTION_ELSE
+-	ldarx	r0,0,r1
+-ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+-
+-	ld	r3,_CCR(r1)
+-	ld	r4,_LINK(r1)
+-	ld	r5,_CTR(r1)
+-	ld	r6,_XER(r1)
+-	li	r0,0
+-
+-	REST_4GPRS(7, r1)
+-	REST_2GPRS(11, r1)
+-	REST_GPR(13, r1)
+-
+-	mtcr	r3
+-	mtlr	r4
+-	mtctr	r5
+-	mtspr	SPRN_XER,r6
+-
+-	REST_4GPRS(2, r1)
+-	REST_GPR(6, r1)
+-	REST_GPR(0, r1)
+-	REST_GPR(1, r1)
+-	.ifc \srr,srr
+-	RFI_TO_USER
+-	.else
+-	HRFI_TO_USER
+-	.endif
+-	b	.	/* prevent speculative execution */
+-
+-.Lrestore_nvgprs_\srr\():
+-	REST_NVGPRS(r1)
+-	b	.Lfast_user_interrupt_return_\srr
+-
+-	.balign IFETCH_ALIGN_BYTES
+-.Lkernel_interrupt_return_\srr\():
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	interrupt_exit_kernel_prepare
+-
+-.Lfast_kernel_interrupt_return_\srr\():
+-	cmpdi	cr1,r3,0
+-#ifdef CONFIG_PPC_BOOK3S
+-	.ifc \srr,srr
+-	lbz	r4,PACASRR_VALID(r13)
+-	.else
+-	lbz	r4,PACAHSRR_VALID(r13)
+-	.endif
+-	cmpdi	r4,0
+-	li	r4,0
+-	bne	1f
+-#endif
+-	ld	r11,_NIP(r1)
+-	ld	r12,_MSR(r1)
+-	.ifc \srr,srr
+-	mtspr	SPRN_SRR0,r11
+-	mtspr	SPRN_SRR1,r12
+-1:
+-#ifdef CONFIG_PPC_BOOK3S
+-	stb	r4,PACASRR_VALID(r13)
+-#endif
+-	.else
+-	mtspr	SPRN_HSRR0,r11
+-	mtspr	SPRN_HSRR1,r12
+-1:
+-#ifdef CONFIG_PPC_BOOK3S
+-	stb	r4,PACAHSRR_VALID(r13)
+-#endif
+-	.endif
+-	DEBUG_SRR_VALID \srr
+-
+-BEGIN_FTR_SECTION
+-	stdcx.	r0,0,r1		/* to clear the reservation */
+-FTR_SECTION_ELSE
+-	ldarx	r0,0,r1
+-ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+-
+-	ld	r3,_LINK(r1)
+-	ld	r4,_CTR(r1)
+-	ld	r5,_XER(r1)
+-	ld	r6,_CCR(r1)
+-	li	r0,0
+-
+-	REST_4GPRS(7, r1)
+-	REST_2GPRS(11, r1)
+-
+-	mtlr	r3
+-	mtctr	r4
+-	mtspr	SPRN_XER,r5
+-
+-	/*
+-	 * Leaving a stale exception_marker on the stack can confuse
+-	 * the reliable stack unwinder later on. Clear it.
+-	 */
+-	std	r0,STACK_FRAME_OVERHEAD-16(r1)
+-
+-	REST_4GPRS(2, r1)
+-
+-	bne-	cr1,1f /* emulate stack store */
+-	mtcr	r6
+-	REST_GPR(6, r1)
+-	REST_GPR(0, r1)
+-	REST_GPR(1, r1)
+-	.ifc \srr,srr
+-	RFI_TO_KERNEL
+-	.else
+-	HRFI_TO_KERNEL
+-	.endif
+-	b	.	/* prevent speculative execution */
+-
+-1:	/*
+-	 * Emulate stack store with update. New r1 value was already calculated
+-	 * and updated in our interrupt regs by emulate_loadstore, but we can't
+-	 * store the previous value of r1 to the stack before re-loading our
+-	 * registers from it, otherwise they could be clobbered.  Use
+-	 * PACA_EXGEN as temporary storage to hold the store data, as
+-	 * interrupts are disabled here so it won't be clobbered.
+-	 */
+-	mtcr	r6
+-	std	r9,PACA_EXGEN+0(r13)
+-	addi	r9,r1,INT_FRAME_SIZE /* get original r1 */
+-	REST_GPR(6, r1)
+-	REST_GPR(0, r1)
+-	REST_GPR(1, r1)
+-	std	r9,0(r1) /* perform store component of stdu */
+-	ld	r9,PACA_EXGEN+0(r13)
+-
+-	.ifc \srr,srr
+-	RFI_TO_KERNEL
+-	.else
+-	HRFI_TO_KERNEL
+-	.endif
+-	b	.	/* prevent speculative execution */
+-.endm
+-
+-interrupt_return_macro srr
+-#ifdef CONFIG_PPC_BOOK3S
+-interrupt_return_macro hsrr
+-#endif
+-
+ #ifdef CONFIG_PPC_RTAS
+ /*
+  * On CHRP, the Run-Time Abstraction Services (RTAS) have to be
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index ece7f97bafff..d49c25daf1c0 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -194,8 +194,9 @@ CLOSE_FIXED_SECTION(first_256B)
+ 
+ /* This value is used to mark exception frames on the stack. */
+ 	.section ".toc","aw"
++/* This value is used to mark exception frames on the stack. */
+ exception_marker:
+-	.tc	ID_72656773_68657265[TC],0x7265677368657265
++	.tc	ID_EXC_MARKER[TC],STACK_FRAME_REGS_MARKER
+ 	.previous
+ 
+ /*
+@@ -211,6 +212,8 @@ OPEN_TEXT_SECTION(0x100)
+ 
+ USE_TEXT_SECTION()
+ 
++#include "interrupt_64.S"
++
+ #ifdef CONFIG_PPC_BOOK3E
+ /*
+  * The booting_thread_hwid holds the thread id we want to boot in cpu
+diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
+new file mode 100644
+index 000000000000..8a2b8188108b
+--- /dev/null
++++ b/arch/powerpc/kernel/interrupt_64.S
+@@ -0,0 +1,645 @@
++#include <asm/ppc_asm.h>
++#include <asm/head-64.h>
++#include <asm/bug.h>
++#include <asm/hw_irq.h>
++#include <asm/tm.h>
++#include <asm/mmu.h>
++#include <asm/asm-offsets.h>
++#ifdef CONFIG_PPC_BOOK3S
++#include <asm/exception-64s.h>
++#else
++#include <asm/exception-64e.h>
++#endif
++#include <asm/ptrace.h>
++#include <asm/head-64.h>
++#include <asm/feature-fixups.h>
++#include <asm/kup.h>
++
++	.section	".toc","aw"
++SYS_CALL_TABLE:
++	.tc sys_call_table[TC],sys_call_table
++
++#ifdef CONFIG_COMPAT
++COMPAT_SYS_CALL_TABLE:
++	.tc compat_sys_call_table[TC],compat_sys_call_table
++#endif
++	.previous
++
++	.align 7
++
++.macro DEBUG_SRR_VALID srr
++#ifdef CONFIG_PPC_RFI_SRR_DEBUG
++	.ifc \srr,srr
++	mfspr	r11,SPRN_SRR0
++	ld	r12,_NIP(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	mfspr	r11,SPRN_SRR1
++	ld	r12,_MSR(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	.else
++	mfspr	r11,SPRN_HSRR0
++	ld	r12,_NIP(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	mfspr	r11,SPRN_HSRR1
++	ld	r12,_MSR(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	.endif
++#endif
++.endm
++
++#ifdef CONFIG_PPC_BOOK3S
++.macro system_call_vectored name trapnr
++	.globl system_call_vectored_\name
++system_call_vectored_\name:
++_ASM_NOKPROBE_SYMBOL(system_call_vectored_\name)
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++BEGIN_FTR_SECTION
++	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
++	bne	.Ltabort_syscall
++END_FTR_SECTION_IFSET(CPU_FTR_TM)
++#endif
++	SCV_INTERRUPT_TO_KERNEL
++	mr	r10,r1
++	ld	r1,PACAKSAVE(r13)
++	std	r10,0(r1)
++	std	r11,_NIP(r1)
++	std	r12,_MSR(r1)
++	std	r0,GPR0(r1)
++	std	r10,GPR1(r1)
++	std	r2,GPR2(r1)
++	ld	r2,PACATOC(r13)
++	mfcr	r12
++	li	r11,0
++	/* Can we avoid saving r3-r8 in common case? */
++	std	r3,GPR3(r1)
++	std	r4,GPR4(r1)
++	std	r5,GPR5(r1)
++	std	r6,GPR6(r1)
++	std	r7,GPR7(r1)
++	std	r8,GPR8(r1)
++	/* Zero r9-r12, this should only be required when restoring all GPRs */
++	std	r11,GPR9(r1)
++	std	r11,GPR10(r1)
++	std	r11,GPR11(r1)
++	std	r11,GPR12(r1)
++	std	r9,GPR13(r1)
++	SAVE_NVGPRS(r1)
++	std	r11,_XER(r1)
++	std	r11,_LINK(r1)
++	std	r11,_CTR(r1)
++
++	li	r11,\trapnr
++	std	r11,_TRAP(r1)
++	std	r12,_CCR(r1)
++	addi	r10,r1,STACK_FRAME_OVERHEAD
++	ld	r11,exception_marker@toc(r2)
++	std	r11,-16(r10)		/* "regshere" marker */
++
++BEGIN_FTR_SECTION
++	HMT_MEDIUM
++END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++
++	ENTER_KERNEL_SECURITY_FALLBACK
++
++	/*
++	 * scv enters with MSR[EE]=1 and is immediately considered soft-masked.
++	 * The entry vector already sets PACAIRQSOFTMASK to IRQS_ALL_DISABLED,
++	 * and interrupts may be masked and pending already.
++	 * system_call_exception() will call trace_hardirqs_off() which means
++	 * interrupts could already have been blocked before trace_hardirqs_off,
++	 * but this is the best we can do.
++	 */
++
++	/* Calling convention has r9 = orig r0, r10 = regs */
++	mr	r9,r0
++	bl	system_call_exception
++
++.Lsyscall_vectored_\name\()_exit:
++	addi    r4,r1,STACK_FRAME_OVERHEAD
++	li	r5,1 /* scv */
++	bl	syscall_exit_prepare
++
++	EXIT_KERNEL_SECURITY_FALLBACK
++
++	ld	r2,_CCR(r1)
++	ld	r4,_NIP(r1)
++	ld	r5,_MSR(r1)
++
++BEGIN_FTR_SECTION
++	stdcx.	r0,0,r1			/* to clear the reservation */
++END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
++
++BEGIN_FTR_SECTION
++	HMT_MEDIUM_LOW
++END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++
++	cmpdi	r3,0
++	bne	.Lsyscall_vectored_\name\()_restore_regs
++
++	/* rfscv returns with LR->NIA and CTR->MSR */
++	mtlr	r4
++	mtctr	r5
++
++	/* Could zero these as per ABI, but we may consider a stricter ABI
++	 * which preserves these if libc implementations can benefit, so
++	 * restore them for now until further measurement is done. */
++	ld	r0,GPR0(r1)
++	ld	r4,GPR4(r1)
++	ld	r5,GPR5(r1)
++	ld	r6,GPR6(r1)
++	ld	r7,GPR7(r1)
++	ld	r8,GPR8(r1)
++	/* Zero volatile regs that may contain sensitive kernel data */
++	li	r9,0
++	li	r10,0
++	li	r11,0
++	li	r12,0
++	mtspr	SPRN_XER,r0
++
++	/*
++	 * We don't need to restore AMR on the way back to userspace for KUAP.
++	 * The value of AMR only matters while we're in the kernel.
++	 */
++	mtcr	r2
++	ld	r2,GPR2(r1)
++	ld	r3,GPR3(r1)
++	ld	r13,GPR13(r1)
++	ld	r1,GPR1(r1)
++	RFSCV_TO_USER
++	b	.	/* prevent speculative execution */
++
++.Lsyscall_vectored_\name\()_restore_regs:
++	li	r3,0
++	mtmsrd	r3,1
++	mtspr	SPRN_SRR0,r4
++	mtspr	SPRN_SRR1,r5
++
++	ld	r3,_CTR(r1)
++	ld	r4,_LINK(r1)
++	ld	r5,_XER(r1)
++
++	REST_NVGPRS(r1)
++	ld	r0,GPR0(r1)
++	mtcr	r2
++	mtctr	r3
++	mtlr	r4
++	mtspr	SPRN_XER,r5
++	REST_10GPRS(2, r1)
++	REST_2GPRS(12, r1)
++	ld	r1,GPR1(r1)
++	RFI_TO_USER
++.endm
++
++system_call_vectored common 0x3000
++/*
++ * We instantiate another entry copy for the SIGILL variant, with TRAP=0x7ff0
++ * which is tested by system_call_exception when r0 is -1 (as set by vector
++ * entry code).
++ */
++system_call_vectored sigill 0x7ff0
++
++
++/*
++ * Entered via kernel return set up by kernel/sstep.c, must match entry regs
++ */
++	.globl system_call_vectored_emulate
++system_call_vectored_emulate:
++_ASM_NOKPROBE_SYMBOL(system_call_vectored_emulate)
++	li	r10,IRQS_ALL_DISABLED
++	stb	r10,PACAIRQSOFTMASK(r13)
++	b	system_call_vectored_common
++#endif
++
++	.balign IFETCH_ALIGN_BYTES
++	.globl system_call_common_real
++system_call_common_real:
++	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
++	mtmsrd	r10
++
++	.balign IFETCH_ALIGN_BYTES
++	.globl system_call_common
++system_call_common:
++_ASM_NOKPROBE_SYMBOL(system_call_common)
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++BEGIN_FTR_SECTION
++	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
++	bne	.Ltabort_syscall
++END_FTR_SECTION_IFSET(CPU_FTR_TM)
++#endif
++	mr	r10,r1
++	ld	r1,PACAKSAVE(r13)
++	std	r10,0(r1)
++	std	r11,_NIP(r1)
++	std	r12,_MSR(r1)
++	std	r0,GPR0(r1)
++	std	r10,GPR1(r1)
++	std	r2,GPR2(r1)
++#ifdef CONFIG_PPC_FSL_BOOK3E
++START_BTB_FLUSH_SECTION
++	BTB_FLUSH(r10)
++END_BTB_FLUSH_SECTION
++#endif
++	ld	r2,PACATOC(r13)
++	mfcr	r12
++	li	r11,0
++	/* Can we avoid saving r3-r8 in common case? */
++	std	r3,GPR3(r1)
++	std	r4,GPR4(r1)
++	std	r5,GPR5(r1)
++	std	r6,GPR6(r1)
++	std	r7,GPR7(r1)
++	std	r8,GPR8(r1)
++	/* Zero r9-r12, this should only be required when restoring all GPRs */
++	std	r11,GPR9(r1)
++	std	r11,GPR10(r1)
++	std	r11,GPR11(r1)
++	std	r11,GPR12(r1)
++	std	r9,GPR13(r1)
++	SAVE_NVGPRS(r1)
++	std	r11,_XER(r1)
++	std	r11,_CTR(r1)
++	mflr	r10
++
++	/*
++	 * This clears CR0.SO (bit 28), which is the error indication on
++	 * return from this system call.
++	 */
++	rldimi	r12,r11,28,(63-28)
++	li	r11,0xc00
++	std	r10,_LINK(r1)
++	std	r11,_TRAP(r1)
++	std	r12,_CCR(r1)
++	addi	r10,r1,STACK_FRAME_OVERHEAD
++	ld	r11,exception_marker@toc(r2)
++	std	r11,-16(r10)		/* "regshere" marker */
++
++#ifdef CONFIG_PPC_BOOK3S
++	li	r11,1
++	stb	r11,PACASRR_VALID(r13)
++#endif
++
++	/*
++	 * We always enter kernel from userspace with irq soft-mask enabled and
++	 * nothing pending. system_call_exception() will call
++	 * trace_hardirqs_off().
++	 */
++	li	r11,IRQS_ALL_DISABLED
++	li	r12,PACA_IRQ_HARD_DIS
++	stb	r11,PACAIRQSOFTMASK(r13)
++	stb	r12,PACAIRQHAPPENED(r13)
++
++	ENTER_KERNEL_SECURITY_FALLBACK
++
++	/* Calling convention has r9 = orig r0, r10 = regs */
++	mr	r9,r0
++	bl	system_call_exception
++
++.Lsyscall_exit:
++	addi    r4,r1,STACK_FRAME_OVERHEAD
++	li	r5,0 /* !scv */
++	bl	syscall_exit_prepare
++
++	EXIT_KERNEL_SECURITY_FALLBACK
++
++	ld	r2,_CCR(r1)
++	ld	r6,_LINK(r1)
++	mtlr	r6
++
++#ifdef CONFIG_PPC_BOOK3S
++	lbz	r4,PACASRR_VALID(r13)
++	cmpdi	r4,0
++	bne	1f
++	li	r4,0
++	stb	r4,PACASRR_VALID(r13)
++#endif
++	ld	r4,_NIP(r1)
++	ld	r5,_MSR(r1)
++	mtspr	SPRN_SRR0,r4
++	mtspr	SPRN_SRR1,r5
++1:
++	DEBUG_SRR_VALID srr
++
++BEGIN_FTR_SECTION
++	stdcx.	r0,0,r1			/* to clear the reservation */
++END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
++
++	cmpdi	r3,0
++	bne	.Lsyscall_restore_regs
++	/* Zero volatile regs that may contain sensitive kernel data */
++	li	r0,0
++	li	r4,0
++	li	r5,0
++	li	r6,0
++	li	r7,0
++	li	r8,0
++	li	r9,0
++	li	r10,0
++	li	r11,0
++	li	r12,0
++	mtctr	r0
++	mtspr	SPRN_XER,r0
++.Lsyscall_restore_regs_cont:
++
++BEGIN_FTR_SECTION
++	HMT_MEDIUM_LOW
++END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++
++	/*
++	 * We don't need to restore AMR on the way back to userspace for KUAP.
++	 * The value of AMR only matters while we're in the kernel.
++	 */
++	mtcr	r2
++	ld	r2,GPR2(r1)
++	ld	r3,GPR3(r1)
++	ld	r13,GPR13(r1)
++	ld	r1,GPR1(r1)
++	RFI_TO_USER
++	b	.	/* prevent speculative execution */
++
++.Lsyscall_restore_regs:
++	ld	r3,_CTR(r1)
++	ld	r4,_XER(r1)
++	REST_NVGPRS(r1)
++	mtctr	r3
++	mtspr	SPRN_XER,r4
++	ld	r0,GPR0(r1)
++	REST_8GPRS(4, r1)
++	ld	r12,GPR12(r1)
++	b	.Lsyscall_restore_regs_cont
++
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++.Ltabort_syscall:
++	/* Firstly we need to enable TM in the kernel */
++	mfmsr	r10
++	li	r9, 1
++	rldimi	r10, r9, MSR_TM_LG, 63-MSR_TM_LG
++	mtmsrd	r10, 0
++
++	/* tabort, this dooms the transaction, nothing else */
++	li	r9, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
++	TABORT(R9)
++
++	/*
++	 * Return directly to userspace. We have corrupted user register state,
++	 * but userspace will never see that register state. Execution will
++	 * resume after the tbegin of the aborted transaction with the
++	 * checkpointed register state.
++	 */
++	li	r9, MSR_RI
++	andc	r10, r10, r9
++	mtmsrd	r10, 1
++	mtspr	SPRN_SRR0, r11
++	mtspr	SPRN_SRR1, r12
++	RFI_TO_USER
++	b	.	/* prevent speculative execution */
++#endif
++
++#ifdef CONFIG_PPC_BOOK3S
++_GLOBAL(ret_from_fork_scv)
++	bl	schedule_tail
++	REST_NVGPRS(r1)
++	li	r3,0	/* fork() return value */
++	b	.Lsyscall_vectored_common_exit
++#endif
++
++_GLOBAL(ret_from_fork)
++	bl	schedule_tail
++	REST_NVGPRS(r1)
++	li	r3,0	/* fork() return value */
++	b	.Lsyscall_exit
++
++_GLOBAL(ret_from_kernel_thread)
++	bl	schedule_tail
++	REST_NVGPRS(r1)
++	mtctr	r14
++	mr	r3,r15
++#ifdef PPC64_ELF_ABI_v2
++	mr	r12,r14
++#endif
++	bctrl
++	li	r3,0
++	b	.Lsyscall_exit
++
++	/*
++	 * If MSR EE/RI was never enabled, IRQs not reconciled, NVGPRs not
++	 * touched, no exit work created, then this can be used.
++	 */
++	.balign IFETCH_ALIGN_BYTES
 +	.globl fast_interrupt_return_srr
 +fast_interrupt_return_srr:
 +_ASM_NOKPROBE_SYMBOL(fast_interrupt_return_srr)
- 	kuap_check_amr r3, r4
- 	ld	r5,_MSR(r1)
- 	andi.	r0,r5,MSR_PR
- #ifdef CONFIG_PPC_BOOK3S
- 	beq	1f
- 	kuap_user_restore r3, r4
--	b	.Lfast_user_interrupt_return
++	kuap_check_amr r3, r4
++	ld	r5,_MSR(r1)
++	andi.	r0,r5,MSR_PR
++#ifdef CONFIG_PPC_BOOK3S
++	beq	1f
++	kuap_user_restore r3, r4
 +	b	.Lfast_user_interrupt_return_srr
- 1:
- 	andi.	r0,r5,MSR_RI
- 	beq-	2f
- 	kuap_kernel_restore r3, r4
- 	li	r3,0 /* 0 return value, no EMULATE_STACK_STORE */
--	b	.Lfast_kernel_interrupt_return
++1:
++	andi.	r0,r5,MSR_RI
++	beq-	2f
++	kuap_kernel_restore r3, r4
++	li	r3,0 /* 0 return value, no EMULATE_STACK_STORE */
 +	b	.Lfast_kernel_interrupt_return_srr
- 2:
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	unrecoverable_exception
- 	b	. /* should not get here */
- #else
--	bne	.Lfast_user_interrupt_return
--	b	.Lfast_kernel_interrupt_return
++2:
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	unrecoverable_exception
++	b	. /* should not get here */
++#else
 +	bne	.Lfast_user_interrupt_return_srr
 +	b	.Lfast_kernel_interrupt_return_srr
- #endif
- 
++#endif
++
 +.macro interrupt_return_macro srr
- 	.balign IFETCH_ALIGN_BYTES
--	.globl interrupt_return
--interrupt_return:
--_ASM_NOKPROBE_SYMBOL(interrupt_return)
++	.balign IFETCH_ALIGN_BYTES
 +	.globl interrupt_return_\srr
 +interrupt_return_\srr\():
 +_ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\())
- 	ld	r4,_MSR(r1)
- 	andi.	r0,r4,MSR_PR
--	beq	.Lkernel_interrupt_return
++	ld	r4,_MSR(r1)
++	andi.	r0,r4,MSR_PR
 +	beq	.Lkernel_interrupt_return_\srr
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	interrupt_exit_user_prepare
- 	cmpdi	r3,0
--	bne-	.Lrestore_nvgprs
--.Lfast_user_interrupt_return:
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	interrupt_exit_user_prepare
++	cmpdi	r3,0
 +	bne-	.Lrestore_nvgprs_\srr
 +.Lfast_user_interrupt_return_\srr\():
- 	EXIT_KERNEL_SECURITY_FALLBACK
- 
- 	ld	r11,_NIP(r1)
-@@ -688,8 +689,13 @@ BEGIN_FTR_SECTION
- 	ld	r10,_PPR(r1)
- 	mtspr	SPRN_PPR,r10
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++	EXIT_KERNEL_SECURITY_FALLBACK
++
++BEGIN_FTR_SECTION
++	ld	r10,_PPR(r1)
++	mtspr	SPRN_PPR,r10
++END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++
++#ifdef CONFIG_PPC_BOOK3S
 +	.ifc \srr,srr
- 	mtspr	SPRN_SRR0,r11
- 	mtspr	SPRN_SRR1,r12
++	lbz	r4,PACASRR_VALID(r13)
++	.else
++	lbz	r4,PACAHSRR_VALID(r13)
++	.endif
++	cmpdi	r4,0
++	li	r4,0
++	bne	1f
++#endif
++	ld	r11,_NIP(r1)
++	ld	r12,_MSR(r1)
++	.ifc \srr,srr
++	mtspr	SPRN_SRR0,r11
++	mtspr	SPRN_SRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACASRR_VALID(r13)
++#endif
 +	.else
 +	mtspr	SPRN_HSRR0,r11
 +	mtspr	SPRN_HSRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACAHSRR_VALID(r13)
++#endif
 +	.endif
- 
- BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1		/* to clear the reservation */
-@@ -716,24 +722,33 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	REST_GPR(6, r1)
- 	REST_GPR(0, r1)
- 	REST_GPR(1, r1)
++	DEBUG_SRR_VALID \srr
++
++BEGIN_FTR_SECTION
++	stdcx.	r0,0,r1		/* to clear the reservation */
++FTR_SECTION_ELSE
++	ldarx	r0,0,r1
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
++
++	ld	r3,_CCR(r1)
++	ld	r4,_LINK(r1)
++	ld	r5,_CTR(r1)
++	ld	r6,_XER(r1)
++	li	r0,0
++
++	REST_4GPRS(7, r1)
++	REST_2GPRS(11, r1)
++	REST_GPR(13, r1)
++
++	mtcr	r3
++	mtlr	r4
++	mtctr	r5
++	mtspr	SPRN_XER,r6
++
++	REST_4GPRS(2, r1)
++	REST_GPR(6, r1)
++	REST_GPR(0, r1)
++	REST_GPR(1, r1)
 +	.ifc \srr,srr
- 	RFI_TO_USER
++	RFI_TO_USER
 +	.else
 +	HRFI_TO_USER
 +	.endif
- 	b	.	/* prevent speculative execution */
- 
--.Lrestore_nvgprs:
++	b	.	/* prevent speculative execution */
++
 +.Lrestore_nvgprs_\srr\():
- 	REST_NVGPRS(r1)
--	b	.Lfast_user_interrupt_return
++	REST_NVGPRS(r1)
 +	b	.Lfast_user_interrupt_return_\srr
- 
- 	.balign IFETCH_ALIGN_BYTES
--.Lkernel_interrupt_return:
++
++	.balign IFETCH_ALIGN_BYTES
 +.Lkernel_interrupt_return_\srr\():
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	interrupt_exit_kernel_prepare
- 
--.Lfast_kernel_interrupt_return:
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	interrupt_exit_kernel_prepare
++
 +.Lfast_kernel_interrupt_return_\srr\():
- 	cmpdi	cr1,r3,0
- 	ld	r11,_NIP(r1)
- 	ld	r12,_MSR(r1)
++	cmpdi	cr1,r3,0
++#ifdef CONFIG_PPC_BOOK3S
 +	.ifc \srr,srr
- 	mtspr	SPRN_SRR0,r11
- 	mtspr	SPRN_SRR1,r12
++	lbz	r4,PACASRR_VALID(r13)
++	.else
++	lbz	r4,PACAHSRR_VALID(r13)
++	.endif
++	cmpdi	r4,0
++	li	r4,0
++	bne	1f
++#endif
++	ld	r11,_NIP(r1)
++	ld	r12,_MSR(r1)
++	.ifc \srr,srr
++	mtspr	SPRN_SRR0,r11
++	mtspr	SPRN_SRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACASRR_VALID(r13)
++#endif
 +	.else
 +	mtspr	SPRN_HSRR0,r11
 +	mtspr	SPRN_HSRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACAHSRR_VALID(r13)
++#endif
 +	.endif
- 
- BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1		/* to clear the reservation */
-@@ -767,7 +782,11 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	REST_GPR(6, r1)
- 	REST_GPR(0, r1)
- 	REST_GPR(1, r1)
++	DEBUG_SRR_VALID \srr
++
++BEGIN_FTR_SECTION
++	stdcx.	r0,0,r1		/* to clear the reservation */
++FTR_SECTION_ELSE
++	ldarx	r0,0,r1
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
++
++	ld	r3,_LINK(r1)
++	ld	r4,_CTR(r1)
++	ld	r5,_XER(r1)
++	ld	r6,_CCR(r1)
++	li	r0,0
++
++	REST_4GPRS(7, r1)
++	REST_2GPRS(11, r1)
++
++	mtlr	r3
++	mtctr	r4
++	mtspr	SPRN_XER,r5
++
++	/*
++	 * Leaving a stale exception_marker on the stack can confuse
++	 * the reliable stack unwinder later on. Clear it.
++	 */
++	std	r0,STACK_FRAME_OVERHEAD-16(r1)
++
++	REST_4GPRS(2, r1)
++
++	bne-	cr1,1f /* emulate stack store */
++	mtcr	r6
++	REST_GPR(6, r1)
++	REST_GPR(0, r1)
++	REST_GPR(1, r1)
 +	.ifc \srr,srr
- 	RFI_TO_KERNEL
++	RFI_TO_KERNEL
 +	.else
 +	HRFI_TO_KERNEL
 +	.endif
- 	b	.	/* prevent speculative execution */
- 
- 1:	/*
-@@ -787,8 +806,18 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	std	r9,0(r1) /* perform store component of stdu */
- 	ld	r9,PACA_EXGEN+0(r13)
- 
++	b	.	/* prevent speculative execution */
++
++1:	/*
++	 * Emulate stack store with update. New r1 value was already calculated
++	 * and updated in our interrupt regs by emulate_loadstore, but we can't
++	 * store the previous value of r1 to the stack before re-loading our
++	 * registers from it, otherwise they could be clobbered.  Use
++	 * PACA_EXGEN as temporary storage to hold the store data, as
++	 * interrupts are disabled here so it won't be clobbered.
++	 */
++	mtcr	r6
++	std	r9,PACA_EXGEN+0(r13)
++	addi	r9,r1,INT_FRAME_SIZE /* get original r1 */
++	REST_GPR(6, r1)
++	REST_GPR(0, r1)
++	REST_GPR(1, r1)
++	std	r9,0(r1) /* perform store component of stdu */
++	ld	r9,PACA_EXGEN+0(r13)
++
 +	.ifc \srr,srr
- 	RFI_TO_KERNEL
++	RFI_TO_KERNEL
 +	.else
 +	HRFI_TO_KERNEL
 +	.endif
- 	b	.	/* prevent speculative execution */
++	b	.	/* prevent speculative execution */
 +.endm
 +
 +interrupt_return_macro srr
 +#ifdef CONFIG_PPC_BOOK3S
 +interrupt_return_macro hsrr
 +#endif
- 
- #ifdef CONFIG_PPC_RTAS
- /*
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index b08c84e0fa56..86612f68f5bd 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -26,6 +26,10 @@
- #include <asm/feature-fixups.h>
- #include <asm/context_tracking.h>
- 
-+/* 64e interrupt returns always use SRR registers */
-+#define fast_interrupt_return fast_interrupt_return_srr
-+#define interrupt_return interrupt_return_srr
-+
- /* XXX This will ultimately add space for a special exception save
-  *     structure used to save things like SRR0/SRR1, SPRGs, MAS, etc...
-  *     when taking special interrupts. For now we don't support that,
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0127032bc2aa..136323d38c80 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1238,7 +1238,7 @@ EXC_COMMON_BEGIN(machine_check_common)
- 	mtmsrd 	r10,1
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	machine_check_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM machine_check
- 
-@@ -1367,7 +1367,7 @@ BEGIN_MMU_FTR_SECTION
- MMU_FTR_SECTION_ELSE
- 	bl	do_page_fault
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 1:	bl	do_break
- 	/*
-@@ -1375,7 +1375,7 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	 * If so, we need to restore them with their updated values.
- 	 */
- 	REST_NVGPRS(r1)
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM data_access
- 
-@@ -1418,7 +1418,7 @@ BEGIN_MMU_FTR_SECTION
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
--	b	fast_interrupt_return
-+	b	fast_interrupt_return_srr
- 1:	/* Error case */
- MMU_FTR_SECTION_ELSE
- 	/* Radix case, access is outside page table range */
-@@ -1427,7 +1427,7 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_bad_slb_fault
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM data_access_slb
- 
-@@ -1465,7 +1465,7 @@ BEGIN_MMU_FTR_SECTION
- MMU_FTR_SECTION_ELSE
- 	bl	do_page_fault
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM instruction_access
- 
-@@ -1502,7 +1502,7 @@ BEGIN_MMU_FTR_SECTION
- 	bl	do_slb_fault
- 	cmpdi	r3,0
- 	bne-	1f
--	b	fast_interrupt_return
-+	b	fast_interrupt_return_srr
- 1:	/* Error case */
- MMU_FTR_SECTION_ELSE
- 	/* Radix case, access is outside page table range */
-@@ -1511,7 +1511,7 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
- 	std	r3,RESULT(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_bad_slb_fault
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM instruction_access_slb
- 
-@@ -1557,7 +1557,11 @@ EXC_COMMON_BEGIN(hardware_interrupt_common)
- 	GEN_COMMON hardware_interrupt
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_IRQ
--	b	interrupt_return
-+	BEGIN_FTR_SECTION
-+	b	interrupt_return_hsrr
-+	FTR_SECTION_ELSE
-+	b	interrupt_return_srr
-+	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
- 
- 	GEN_KVM hardware_interrupt
- 
-@@ -1586,7 +1590,7 @@ EXC_COMMON_BEGIN(alignment_common)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	alignment_exception
- 	REST_NVGPRS(r1) /* instruction emulation may change GPRs */
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM alignment
- 
-@@ -1695,7 +1699,7 @@ EXC_COMMON_BEGIN(program_check_common)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	program_check_exception
- 	REST_NVGPRS(r1) /* instruction emulation may change GPRs */
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM program_check
- 
-@@ -1740,12 +1744,12 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
- 	bl	load_up_fpu
--	b	fast_interrupt_return
-+	b	fast_interrupt_return_srr
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 2:	/* User process was in a transaction */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	fp_unavailable_tm
--	b	interrupt_return
-+	b	interrupt_return_srr
- #endif
- 
- 	GEN_KVM fp_unavailable
-@@ -1786,7 +1790,7 @@ EXC_COMMON_BEGIN(decrementer_common)
- 	GEN_COMMON decrementer
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	timer_interrupt
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM decrementer
- 
-@@ -1874,7 +1878,7 @@ EXC_COMMON_BEGIN(doorbell_super_common)
- #else
- 	bl	unknown_async_exception
- #endif
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM doorbell_super
- 
-@@ -2045,7 +2049,7 @@ EXC_COMMON_BEGIN(single_step_common)
- 	GEN_COMMON single_step
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	single_step_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM single_step
- 
-@@ -2086,7 +2090,7 @@ BEGIN_MMU_FTR_SECTION
- MMU_FTR_SECTION_ELSE
- 	bl      unknown_exception
- ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_TYPE_RADIX)
--	b       interrupt_return
-+	b       interrupt_return_hsrr
- 
- 	GEN_KVM h_data_storage
- 
-@@ -2113,7 +2117,7 @@ EXC_COMMON_BEGIN(h_instr_storage_common)
- 	GEN_COMMON h_instr_storage
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	unknown_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM h_instr_storage
- 
-@@ -2139,7 +2143,7 @@ EXC_COMMON_BEGIN(emulation_assist_common)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	emulation_assist_interrupt
- 	REST_NVGPRS(r1) /* instruction emulation may change GPRs */
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM emulation_assist
- 
-@@ -2222,7 +2226,7 @@ EXC_COMMON_BEGIN(hmi_exception_common)
- 	GEN_COMMON hmi_exception
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	handle_hmi_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM hmi_exception
- 
-@@ -2254,7 +2258,7 @@ EXC_COMMON_BEGIN(h_doorbell_common)
- #else
- 	bl	unknown_async_exception
- #endif
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM h_doorbell
- 
-@@ -2282,7 +2286,7 @@ EXC_COMMON_BEGIN(h_virt_irq_common)
- 	GEN_COMMON h_virt_irq
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_IRQ
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM h_virt_irq
- 
-@@ -2327,7 +2331,7 @@ EXC_COMMON_BEGIN(performance_monitor_common)
- 	GEN_COMMON performance_monitor
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	performance_monitor_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM performance_monitor
- 
-@@ -2366,19 +2370,19 @@ BEGIN_FTR_SECTION
-   END_FTR_SECTION_NESTED(CPU_FTR_TM, CPU_FTR_TM, 69)
- #endif
- 	bl	load_up_altivec
--	b	fast_interrupt_return
-+	b	fast_interrupt_return_srr
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 2:	/* User process was in a transaction */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	altivec_unavailable_tm
--	b	interrupt_return
-+	b	interrupt_return_srr
- #endif
- 1:
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	altivec_unavailable_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM altivec_unavailable
- 
-@@ -2421,14 +2425,14 @@ BEGIN_FTR_SECTION
- 2:	/* User process was in a transaction */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	vsx_unavailable_tm
--	b	interrupt_return
-+	b	interrupt_return_srr
- #endif
- 1:
- END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- #endif
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	vsx_unavailable_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM vsx_unavailable
- 
-@@ -2458,7 +2462,7 @@ EXC_COMMON_BEGIN(facility_unavailable_common)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	facility_unavailable_exception
- 	REST_NVGPRS(r1) /* instruction emulation may change GPRs */
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM facility_unavailable
- 
-@@ -2488,7 +2492,7 @@ EXC_COMMON_BEGIN(h_facility_unavailable_common)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	facility_unavailable_exception
- 	REST_NVGPRS(r1) /* XXX Shouldn't be necessary in practice */
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM h_facility_unavailable
- 
-@@ -2521,7 +2525,7 @@ EXC_COMMON_BEGIN(cbe_system_error_common)
- 	GEN_COMMON cbe_system_error
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	cbe_system_error_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM cbe_system_error
- 
-@@ -2549,7 +2553,7 @@ EXC_COMMON_BEGIN(instruction_breakpoint_common)
- 	GEN_COMMON instruction_breakpoint
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	instruction_breakpoint_exception
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM instruction_breakpoint
- 
-@@ -2671,7 +2675,7 @@ EXC_COMMON_BEGIN(denorm_exception_common)
- 	GEN_COMMON denorm_exception
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	unknown_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM denorm_exception
- 
-@@ -2692,7 +2696,7 @@ EXC_COMMON_BEGIN(cbe_maintenance_common)
- 	GEN_COMMON cbe_maintenance
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	cbe_maintenance_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM cbe_maintenance
- 
-@@ -2724,7 +2728,7 @@ EXC_COMMON_BEGIN(altivec_assist_common)
- #else
- 	bl	unknown_exception
- #endif
--	b	interrupt_return
-+	b	interrupt_return_srr
- 
- 	GEN_KVM altivec_assist
- 
-@@ -2745,7 +2749,7 @@ EXC_COMMON_BEGIN(cbe_thermal_common)
- 	GEN_COMMON cbe_thermal
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	cbe_thermal_exception
--	b	interrupt_return
-+	b	interrupt_return_hsrr
- 
- 	GEN_KVM cbe_thermal
- 
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index f5a52f444e36..54dbefcb4cde 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -131,7 +131,7 @@ _GLOBAL(load_up_vsx)
- 	/* enable use of VSX after return */
- 	oris	r12,r12,MSR_VSX@h
- 	std	r12,_MSR(r1)
--	b	fast_interrupt_return
-+	b	fast_interrupt_return_srr
- 
- #endif /* CONFIG_VSX */
- 
 -- 
 2.23.0
 
