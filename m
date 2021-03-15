@@ -2,67 +2,50 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A05FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 08:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40351C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 08:34:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69BD064E81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 08:21:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69BD064E81
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 9E85164E86
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 08:34:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E85164E86
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzTs402mnz3037
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 19:21:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzV856VJ9z304h
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 19:34:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DzTrj1dv8z2xZh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 19:20:51 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4DzTrW13W2z9tyDT;
- Mon, 15 Mar 2021 09:20:43 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id rRQxvVjnW5aL; Mon, 15 Mar 2021 09:20:42 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4DzTrT21bKz9tyDR;
- Mon, 15 Mar 2021 09:20:41 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1426D8B775;
- Mon, 15 Mar 2021 09:20:46 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7X39ztjzW6og; Mon, 15 Mar 2021 09:20:46 +0100 (CET)
-Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 076F28B777;
- Mon, 15 Mar 2021 09:20:44 +0100 (CET)
-Subject: Re: [PATCH 03/10] powerpc/64e/interrupt: use new interrupt return
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20210315031716.3940350-1-npiggin@gmail.com>
- <20210315031716.3940350-4-npiggin@gmail.com>
- <186d3513-d7ab-a658-cdb2-6fe5146c1fc4@csgroup.eu>
-Message-ID: <db33a984-b921-6147-0f80-fda157fae4ee@csgroup.eu>
-Date: Mon, 15 Mar 2021 09:20:43 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DzV7l2r8fz2xgL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 19:33:54 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id D619068C4E; Mon, 15 Mar 2021 09:33:47 +0100 (CET)
+Date: Mon, 15 Mar 2021 09:33:47 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Subject: Re: [PATCH 14/17] iommu: remove DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
+Message-ID: <20210315083347.GA28445@lst.de>
+References: <20210301084257.945454-1-hch@lst.de>
+ <20210301084257.945454-15-hch@lst.de>
+ <1658805c-ed28-b650-7385-a56fab3383e3@arm.com> <20210310091501.GC5928@lst.de>
+ <20210310092533.GA6819@lst.de> <fdacf87a-be14-c92c-4084-1d1dd4fc7766@arm.com>
+ <20210311082609.GA6990@lst.de> <dff8eb80-8f74-972b-17e9-496c1fc0396f@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <186d3513-d7ab-a658-cdb2-6fe5146c1fc4@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dff8eb80-8f74-972b-17e9-496c1fc0396f@arm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,49 +57,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>
+Cc: kvm@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Joerg Roedel <joro@8bytes.org>, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org, Li Yang <leoyang.li@nxp.com>,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
+ virtualization@lists.linux-foundation.org, freedreno@lists.freedesktop.org,
+ Christoph Hellwig <hch@lst.de>, linux-arm-msm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 15/03/2021 à 08:50, Christophe Leroy a écrit :
-> 
-> 
-> Le 15/03/2021 à 04:17, Nicholas Piggin a écrit :
->> Update the new C and asm interrupt return code to account for 64e
->> specifics, switch over to use it.
+On Fri, Mar 12, 2021 at 04:18:24PM +0000, Robin Murphy wrote:
+>> Let me know what you think of the version here:
 >>
->> The now-unused old ret_from_except code, that was moved to 64e after the
->> 64s conversion, is removed.
+>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/iommu-cleanup
 >>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> ---
->>   arch/powerpc/include/asm/asm-prototypes.h |   2 -
->>   arch/powerpc/kernel/entry_64.S            |   9 +-
->>   arch/powerpc/kernel/exceptions-64e.S      | 321 ++--------------------
->>   arch/powerpc/kernel/interrupt.c           |  27 +-
->>   arch/powerpc/kernel/irq.c                 |  76 -----
->>   5 files changed, 56 insertions(+), 379 deletions(-)
->>
->> @@ -1016,284 +1021,8 @@ alignment_more:
-> 
-> ...
-> 
->> -fast_exception_return:
->> -    wrteei    0
->> -1:    mr    r0,r13
->> -    ld    r10,_MSR(r1)
->> -    REST_4GPRS(2, r1)
->> -    andi.    r6,r10,MSR_PR
->> -    REST_2GPRS(6, r1)
->> -    beq    1f
->> -    ACCOUNT_CPU_USER_EXIT(r13, r10, r11)
-> 
-> Then ACCOUNT_CPU_USER_EXIT can be removed from asm/ppc_asm.h
-> 
+>> I'll happily switch the patch to you as the author if you're fine with
+>> that as well.
+>
+> I still have reservations about removing the attribute API entirely and 
+> pretending that io_pgtable_cfg is anything other than a SoC-specific 
+> private interface,
 
-And all associated definitions in asm-offsets.c
+I think a private inteface would make more sense.  For now I've just
+condensed it down to a generic set of quirk bits and dropped the
+attrs structure, which seems like an ok middle ground for now.  That
+being said I wonder why that quirk isn't simply set in the device
+tree?
 
-And also ACCOUNT_USER_TIME which was likely left over after the removal of ACCOUNT_CPU_USER_ENTRY()
+> but the reworked patch on its own looks reasonable to 
+> me, thanks! (I wasn't too convinced about the iommu_cmd_line wrappers 
+> either...) Just iommu_get_dma_strict() needs an export since the SMMU 
+> drivers can be modular - I consciously didn't add that myself since I was 
+> mistakenly thinking only iommu-dma would call it.
+
+Fixed.  Can I get your signoff for the patch?  Then I'll switch it to
+over to being attributed to you.
