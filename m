@@ -8,75 +8,75 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61D0CC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:05:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CAAC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:06:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5776764F4D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:05:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5776764F4D
+	by mail.kernel.org (Postfix) with ESMTPS id 0535664F4D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 22:06:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0535664F4D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzr8P732bz3bsB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 09:05:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzr924Szfz3bvC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 09:06:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=cHXTFl7I;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=STFyaxHU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c;
- helo=mail-pj1-x102c.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a;
+ helo=mail-pf1-x42a.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=cHXTFl7I; dkim-atps=neutral
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
- [IPv6:2607:f8b0:4864:20::102c])
+ header.s=20161025 header.b=STFyaxHU; dkim-atps=neutral
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
+ [IPv6:2607:f8b0:4864:20::42a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzr6q3mPRz302p
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 09:04:19 +1100 (AEDT)
-Received: by mail-pj1-x102c.google.com with SMTP id s21so9547635pjq.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 15:04:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzr6x6gjRz304L
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 09:04:25 +1100 (AEDT)
+Received: by mail-pf1-x42a.google.com with SMTP id b23so7460054pfo.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 15:04:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=2xZtKM52LZD0DvVYuxPNSZeKA6YIxjdHM9iD0YiV+p0=;
- b=cHXTFl7IKqbHO433XeG/YqSAC+I7VFBFOGNhxvJFmpEctGZxhtQqgacoqcJJy/0x1k
- tFOaatHw+6JiOWmhTG7yXL4vWhmeIPAx4amGq0S+P1gcZQR5G2tIz8bnFUZZkptmGFtn
- vEs3XdJuwl48MXqeEGIn6igXE5r6l0nVw/cBUjC6DM7bflSHTzw7e70FBIb3x1SJ3J8P
- 9YErcqncCdkwwZZwfmZvW2aNuG5Ui8OniGKOC+O9C4TuwN3www2j3vxey3cfNiWbPMXx
- wbrnqcm2/3EolWTHpo+zryhy1SA3G+KwKxEsraSX28kwkvebtzNgYOQAvkasM73FQppl
- C2fA==
+ bh=BTg4/lo7YHaJ9VbZ7gIQill2xkPZLyuy1S9VoEenBUI=;
+ b=STFyaxHU0/g3yWQZ7e4Xi7uNKF+QqsKU6cLLNmxM4lhWkaBTH5mB+p8qMBGZ4PMoue
+ VGZ/YkJ+eJvLSdsSbeDd9P5QbMouBjbNpSw5pw0qbnlpyAEOw/2idjqYOYTHKgW68JJw
+ ujs+HWz9y/z2Zy4qSQ8odiuh2rCpSg/zAkgFggmog2YHkYuLBV7eo7ZiaJ3KNdiJvn3p
+ YejIlWZ0zcte5ujEN14YoVFhhHj3sLa6RnCwuWw3juDcWatBxuvsagHUNrjd23NaA1pn
+ Z8lYKrb0xA2t+nrWaI6t6w594F1ZrhI7Wswg/z+y0K/2g+I5A9jVQGidl3q4v195QcB4
+ Dzuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=2xZtKM52LZD0DvVYuxPNSZeKA6YIxjdHM9iD0YiV+p0=;
- b=QW0f2zR3MsW+aa0pL6ljzVwiFAnLE1AY3hpvs2MaHvE9u31zMSQjttwFPs8YQWpOVe
- n4h6wJCTYO+1oeapgSqDG6pj/vqWAQhBUHc4BZCnoK966l36qhw3Ij7mZdoqmMHo7jGG
- 7W5hAWQzfSFBzHrb4gWEIl9jYJszIKAkg8VtmQY8Lc422gwalweZJXYmb12539HIJVCW
- IJrenfWcnxCAiA78Ru6npZ13GZcAZNlTjr7v7mS10BxCwQLMVW20Oyt+vIvLOynUV3ZC
- cPcTWPGkBhkOKjI8wiYgUoS+ypb9SIq6nSXxXhE1SfsR5Xj2BXtHK4ABj9i4owaOUq6v
- rmJA==
-X-Gm-Message-State: AOAM533ZpFfoOSiVgRuzImjTfvhCN8dkNcPp7ojrDR+FlDgnh5p4RJXz
- wXrc1Uytnm1OH52XOJ6O/gimzC8IDTI=
-X-Google-Smtp-Source: ABdhPJxXFbI/kcJLflmkUbEYUKRRjLii2A0c83BlnnMKFk4n+HI5whTTxBMlWxdZnGGkginzuaCfTw==
-X-Received: by 2002:a17:90b:108f:: with SMTP id
- gj15mr1247835pjb.177.1615845856918; 
- Mon, 15 Mar 2021 15:04:16 -0700 (PDT)
+ bh=BTg4/lo7YHaJ9VbZ7gIQill2xkPZLyuy1S9VoEenBUI=;
+ b=jhdDzF7nci7wvU+NtAFAIL0YOS5scYo3ooGJ5792ngCNDSDDgEPauu7p2Q5W6fJI60
+ 2FJbL6H22B5MfCgyVb4fXXFT6fP+9bBDAfGixb7jWHD+olIb3wUC5li7xr5U5YRmhSWI
+ LYXHflxQ/t8rM97P3taSDCFrh67delpJr+ntqbYVk8LSV6yYZgeHLa3UszjBANR3qlEp
+ IhcZDBUkTOySwNB2BQLH6r1WU/Z6CvdoroYGEH0TDGErwiZjJ3PDDyEj/xmLLItjLAnH
+ DG4Q2NGSsnZukdWeNDiZ7OHlLoEIAmRooE+zIeLsh3MYp+q7esSBU+wa1NqmwcnjmzDk
+ WLlA==
+X-Gm-Message-State: AOAM530nhkZsfyIzhVyE9lYnQFFi34SNNvduy1z8+2EyWdZFb2peRJra
+ oDtDNhm1qSE/P0+MLqP0G3IXj+o4n10=
+X-Google-Smtp-Source: ABdhPJwSOq0hrSzCknxJuj8VjgXlWdZT6ZI8kCAwRAXhI7X92Drf+pEpvXb4eb8aUCN6koqQgg6mUw==
+X-Received: by 2002:a63:4808:: with SMTP id v8mr973991pga.381.1615845862568;
+ Mon, 15 Mar 2021 15:04:22 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (58-6-239-121.tpgi.com.au. [58.6.239.121])
  by smtp.gmail.com with ESMTPSA id
- y9sm14740338pgc.9.2021.03.15.15.04.14
+ y9sm14740338pgc.9.2021.03.15.15.04.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Mar 2021 15:04:16 -0700 (PDT)
+ Mon, 15 Mar 2021 15:04:22 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/14] powerpc/64s: security fallback improvement
-Date: Tue, 16 Mar 2021 08:03:50 +1000
-Message-Id: <20210315220402.260594-3-npiggin@gmail.com>
+Subject: [PATCH 04/14] powerpc/64s: avoid reloading (H)SRR registers if they
+ are still valid
+Date: Tue, 16 Mar 2021 08:03:52 +1000
+Message-Id: <20210315220402.260594-5-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210315220402.260594-1-npiggin@gmail.com>
 References: <20210315220402.260594-1-npiggin@gmail.com>
@@ -98,969 +98,844 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The fallback sequences for L1D flushing and store forwarding barriers
-requires reloading r13, and saving and reloading registers from a
-special PACA save area and SPRGs.
+When an interrupt is taken, the SRR registers are set to return to
+where it left off. Unless they are modified in the meantime, or the
+return address or MSR are modified, there is no need to reload these
+registers when returning from interrupt.
 
-This is painful, and has caused a few difficult bugs (recently the scv
-interrupt re-entrancy). Things would get even more hairy with planned
-interrupt exit optimizations that can return without disabling
-interrupts.
+Introduce per-CPU flags that track the validity of SRR and HSRR
+registers, clear them when returning from interrupt, using the registers
+for something else (e.g., OPAL calls), or adjusting return address or MSR.
 
-This patch moves those fallbacks further into the kernel, to the point
-where r13 is available, and some registers are available to use.  This
-exposes slightly more attack surface, but not a huge amount (mainly some
-stack frame and more paca). Firmware to implement the stateless security
-ops has been available for several years now, which does not use this
-path.
+This improves the performance of interrupt returns.
+
+XXX: may not need to invalidate both hsrr and srr all the time
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64e.h  |   6 +
- arch/powerpc/include/asm/exception-64s.h  |  52 +++--
- arch/powerpc/include/asm/feature-fixups.h |  18 ++
- arch/powerpc/include/asm/paca.h           |   6 +-
- arch/powerpc/kernel/asm-offsets.c         |   2 +-
- arch/powerpc/kernel/entry_64.S            |  26 ++-
- arch/powerpc/kernel/exceptions-64s.S      | 186 +++++------------
- arch/powerpc/kernel/vmlinux.lds.S         |  14 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +
- arch/powerpc/lib/feature-fixups.c         | 241 ++++++++++++----------
- 10 files changed, 276 insertions(+), 279 deletions(-)
+ arch/powerpc/Kconfig.debug                 |  5 ++
+ arch/powerpc/include/asm/paca.h            |  2 +
+ arch/powerpc/include/asm/ptrace.h          | 57 +++++++++-----
+ arch/powerpc/kernel/asm-offsets.c          |  2 +
+ arch/powerpc/kernel/entry_64.S             | 91 ++++++++++++++++++++--
+ arch/powerpc/kernel/exceptions-64s.S       | 27 +++++++
+ arch/powerpc/kernel/fpu.S                  |  2 +
+ arch/powerpc/kernel/kgdb.c                 |  2 +-
+ arch/powerpc/kernel/kprobes-ftrace.c       |  2 +-
+ arch/powerpc/kernel/kprobes.c              | 10 +--
+ arch/powerpc/kernel/process.c              | 20 ++++-
+ arch/powerpc/kernel/rtas.c                 | 13 +++-
+ arch/powerpc/kernel/signal.c               |  2 +-
+ arch/powerpc/kernel/signal_64.c            | 14 ++++
+ arch/powerpc/kernel/syscalls.c             |  2 +
+ arch/powerpc/kernel/traps.c                | 18 ++---
+ arch/powerpc/kernel/vector.S               |  4 +
+ arch/powerpc/lib/sstep.c                   |  5 +-
+ arch/powerpc/math-emu/math.c               |  2 +-
+ arch/powerpc/platforms/powernv/opal-call.c |  3 +
+ arch/powerpc/sysdev/fsl_pci.c              |  2 +-
+ 21 files changed, 233 insertions(+), 52 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index 40cdcb2fb057..bc90e872484e 100644
---- a/arch/powerpc/include/asm/exception-64e.h
-+++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -164,5 +164,11 @@ exc_##label##_book3e:
- #define RFI_TO_USER							\
- 	rfi
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index ae084357994e..359ed36c5487 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -84,6 +84,11 @@ config MSI_BITMAP_SELFTEST
  
-+#define ENTER_KERNEL_SECURITY_FALLBACK
+ config PPC_IRQ_SOFT_MASK_DEBUG
+ 	bool "Include extra checks for powerpc irq soft masking"
++	depends on PPC64
 +
-+#define EXIT_KERNEL_SECURITY_FALLBACK
-+
-+#define ENTER_GUEST_SECURITY_FALLBACK
-+
- #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
++config PPC_RFI_SRR_DEBUG
++	bool "Include extra checks for RFI SRR register validity"
++	depends on PPC_BOOK3S_64
  
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index c1a8aac01cf9..9f2684488922 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -44,30 +44,21 @@
- 
- #define STF_ENTRY_BARRIER_SLOT						\
- 	STF_ENTRY_BARRIER_FIXUP_SECTION;				\
--	nop;								\
--	nop;								\
- 	nop
- 
- #define STF_EXIT_BARRIER_SLOT						\
- 	STF_EXIT_BARRIER_FIXUP_SECTION;					\
--	nop;								\
--	nop;								\
--	nop;								\
--	nop;								\
--	nop;								\
- 	nop
- 
- #define ENTRY_FLUSH_SLOT						\
- 	ENTRY_FLUSH_FIXUP_SECTION;					\
- 	nop;								\
--	nop;								\
--	nop;
-+	nop
- 
- #define SCV_ENTRY_FLUSH_SLOT						\
- 	SCV_ENTRY_FLUSH_FIXUP_SECTION;					\
- 	nop;								\
--	nop;								\
--	nop;
-+	nop
- 
- /*
-  * r10 must be free to use, r13 must be paca
-@@ -100,7 +91,6 @@
- #define RFI_FLUSH_SLOT							\
- 	RFI_FLUSH_FIXUP_SECTION;					\
- 	nop;								\
--	nop;								\
- 	nop
- 
- #define RFI_TO_KERNEL							\
-@@ -109,20 +99,17 @@
- #define RFI_TO_USER							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	rfid;								\
--	b	rfi_flush_fallback
-+	rfid
- 
- #define RFI_TO_USER_OR_KERNEL						\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	rfid;								\
--	b	rfi_flush_fallback
-+	rfid
- 
- #define RFI_TO_GUEST							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	rfid;								\
--	b	rfi_flush_fallback
-+	rfid
- 
- #define HRFI_TO_KERNEL							\
- 	hrfid
-@@ -130,35 +117,44 @@
- #define HRFI_TO_USER							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	hrfid;								\
--	b	hrfi_flush_fallback
-+	hrfid
- 
- #define HRFI_TO_USER_OR_KERNEL						\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	hrfid;								\
--	b	hrfi_flush_fallback
-+	hrfid
- 
- #define HRFI_TO_GUEST							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	hrfid;								\
--	b	hrfi_flush_fallback
-+	hrfid
- 
- #define HRFI_TO_UNKNOWN							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	hrfid;								\
--	b	hrfi_flush_fallback
-+	hrfid
- 
- #define RFSCV_TO_USER							\
- 	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
--	RFSCV;								\
--	b	rfscv_flush_fallback
-+	RFSCV
-+
-+#define ENTER_KERNEL_SECURITY_FALLBACK					\
-+	ENTER_SECURITY_FALLBACK_SECTION;				\
-+	nop
-+
-+#define EXIT_KERNEL_SECURITY_FALLBACK					\
-+	EXIT_SECURITY_FALLBACK_SECTION;					\
-+	nop
-+
-+#define ENTER_GUEST_SECURITY_FALLBACK					\
-+	EXIT_SECURITY_FALLBACK_SECTION;					\
-+	nop
- 
- #else /* __ASSEMBLY__ */
- /* Prototype for function defined in exceptions-64s.S */
-+void exit_security_fallback(void);
-+void enter_security_fallback(void);
- void do_uaccess_flush(void);
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index ac605fc369c4..4b5fab33688a 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -256,6 +256,22 @@ label##3:					       	\
- 	FTR_ENTRY_OFFSET 951b-952b;			\
- 	.popsection;
- 
-+#define ENTER_SECURITY_FALLBACK_SECTION			\
-+958:							\
-+	.pushsection __enter_security_fallback_fixup,"a"; \
-+	.align 2;					\
-+959:							\
-+	FTR_ENTRY_OFFSET 958b-959b;			\
-+	.popsection;
-+
-+#define EXIT_SECURITY_FALLBACK_SECTION			\
-+960:							\
-+	.pushsection __exit_security_fallback_fixup,"a"; \
-+	.align 2;					\
-+961:							\
-+	FTR_ENTRY_OFFSET 960b-961b;			\
-+	.popsection;
-+
- #define NOSPEC_BARRIER_FIXUP_SECTION			\
- 953:							\
- 	.pushsection __barrier_nospec_fixup,"a";	\
-@@ -288,6 +304,8 @@ extern long __start___uaccess_flush_fixup, __stop___uaccess_flush_fixup;
- extern long __start___entry_flush_fixup, __stop___entry_flush_fixup;
- extern long __start___scv_entry_flush_fixup, __stop___scv_entry_flush_fixup;
- extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
-+extern long __start___enter_security_fallback_fixup, __stop___enter_security_fallback_fixup;
-+extern long __start___exit_security_fallback_fixup, __stop___exit_security_fallback_fixup;
- extern long __start___barrier_nospec_fixup, __stop___barrier_nospec_fixup;
- extern long __start__btb_flush_fixup, __stop__btb_flush_fixup;
- 
+ config XMON
+ 	bool "Include xmon kernel debugger"
 diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index ec18ac818e3a..819db8afd425 100644
+index 819db8afd425..4cbfaa09950a 100644
 --- a/arch/powerpc/include/asm/paca.h
 +++ b/arch/powerpc/include/asm/paca.h
-@@ -249,11 +249,7 @@ struct paca_struct {
+@@ -170,6 +170,8 @@ struct paca_struct {
+ #ifdef CONFIG_PPC_BOOK3E
+ 	u16 trap_save;			/* Used when bad stack is encountered */
  #endif
- #endif
- #ifdef CONFIG_PPC_BOOK3S_64
--	/*
--	 * rfi fallback flush must be in its own cacheline to prevent
--	 * other paca data leaking into the L1d
--	 */
--	u64 exrfi[EX_SIZE] __aligned(0x80);
-+	u64 stf_fallback_scratch[2];
- 	void *rfi_flush_fallback_area;
- 	u64 l1d_flush_size;
- #endif
++	u8 hsrr_valid;			/* HSRRs set for HRFID */
++	u8 srr_valid;			/* SRRs set for RFID */
+ 	u8 irq_soft_mask;		/* mask for irq soft masking */
+ 	u8 irq_happened;		/* irq happened while soft-disabled */
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 6a04abfe5eb6..77c86ce01f20 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -121,27 +121,7 @@ struct pt_regs
+ #endif /* __powerpc64__ */
+ 
+ #ifndef __ASSEMBLY__
+-
+-static inline unsigned long instruction_pointer(struct pt_regs *regs)
+-{
+-	return regs->nip;
+-}
+-
+-static inline void instruction_pointer_set(struct pt_regs *regs,
+-		unsigned long val)
+-{
+-	regs->nip = val;
+-}
+-
+-static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+-{
+-	return regs->gpr[1];
+-}
+-
+-static inline unsigned long frame_pointer(struct pt_regs *regs)
+-{
+-	return 0;
+-}
++#include <asm/paca.h>
+ 
+ #ifdef CONFIG_SMP
+ extern unsigned long profile_pc(struct pt_regs *regs);
+@@ -171,6 +151,41 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
+ 	regs->gpr[3] = rc;
+ }
+ 
++static inline void regs_set_return_ip(struct pt_regs *regs, unsigned long ip)
++{
++	regs->nip = ip;
++#ifdef CONFIG_PPC_BOOK3S_64
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++#endif
++}
++
++static inline void regs_add_return_ip(struct pt_regs *regs, long offset)
++{
++	regs_set_return_ip(regs, regs->nip + offset);
++}
++
++static inline unsigned long instruction_pointer(struct pt_regs *regs)
++{
++	return regs->nip;
++}
++
++static inline void instruction_pointer_set(struct pt_regs *regs,
++		unsigned long val)
++{
++	regs_set_return_ip(regs, val);
++}
++
++static inline unsigned long user_stack_pointer(struct pt_regs *regs)
++{
++	return regs->gpr[1];
++}
++
++static inline unsigned long frame_pointer(struct pt_regs *regs)
++{
++	return 0;
++}
++
+ #ifdef __powerpc64__
+ #define user_mode(regs) ((((regs)->msr) >> MSR_PR_LG) & 0x1)
+ #else
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 85ba2b0bc8d8..e33f04280f77 100644
+index e33f04280f77..35ce6e36f593 100644
 --- a/arch/powerpc/kernel/asm-offsets.c
 +++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -275,7 +275,7 @@ int main(void)
- 	OFFSET(PACA_IN_MCE, paca_struct, in_mce);
- 	OFFSET(PACA_IN_NMI, paca_struct, in_nmi);
- 	OFFSET(PACA_RFI_FLUSH_FALLBACK_AREA, paca_struct, rfi_flush_fallback_area);
--	OFFSET(PACA_EXRFI, paca_struct, exrfi);
-+	OFFSET(PACA_STF_FALLBACK_SCRATCH, paca_struct, stf_fallback_scratch);
- 	OFFSET(PACA_L1D_FLUSH_SIZE, paca_struct, l1d_flush_size);
- 
- #endif
+@@ -209,6 +209,8 @@ int main(void)
+ 	OFFSET(PACATOC, paca_struct, kernel_toc);
+ 	OFFSET(PACAKBASE, paca_struct, kernelbase);
+ 	OFFSET(PACAKMSR, paca_struct, kernel_msr);
++	OFFSET(PACAHSRR_VALID, paca_struct, hsrr_valid);
++	OFFSET(PACASRR_VALID, paca_struct, srr_valid);
+ 	OFFSET(PACAIRQSOFTMASK, paca_struct, irq_soft_mask);
+ 	OFFSET(PACAIRQHAPPENED, paca_struct, irq_happened);
+ 	OFFSET(PACA_FTRACE_ENABLED, paca_struct, ftrace_enabled);
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 03727308d8cc..3632d8c56e48 100644
+index ccf913cedd29..b466b3e1bb3f 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -116,6 +116,8 @@ BEGIN_FTR_SECTION
- 	HMT_MEDIUM
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+@@ -64,6 +64,30 @@ exception_marker:
+ 	.section	".text"
+ 	.align 7
  
-+	ENTER_KERNEL_SECURITY_FALLBACK
++.macro DEBUG_SRR_VALID srr
++#ifdef CONFIG_PPC_RFI_SRR_DEBUG
++	.ifc \srr,srr
++	mfspr	r11,SPRN_SRR0
++	ld	r12,_NIP(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	mfspr	r11,SPRN_SRR1
++	ld	r12,_MSR(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	.else
++	mfspr	r11,SPRN_HSRR0
++	ld	r12,_NIP(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	mfspr	r11,SPRN_HSRR1
++	ld	r12,_MSR(r1)
++100:	tdne	r11,r12
++	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	.endif
++#endif
++.endm
++
+ #ifdef CONFIG_PPC_BOOK3S
+ .macro system_call_vectored name trapnr
+ 	.globl system_call_vectored_\name
+@@ -290,6 +314,11 @@ END_BTB_FLUSH_SECTION
+ 	ld	r11,exception_marker@toc(r2)
+ 	std	r11,-16(r10)		/* "regshere" marker */
+ 
++#ifdef CONFIG_PPC_BOOK3S
++	li	r11,1
++	stb	r11,PACASRR_VALID(r13)
++#endif
 +
  	/*
- 	 * scv enters with MSR[EE]=1 and is immediately considered soft-masked.
- 	 * The entry vector already sets PACAIRQSOFTMASK to IRQS_ALL_DISABLED,
-@@ -134,6 +136,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	li	r5,1 /* scv */
- 	bl	syscall_exit_prepare
+ 	 * We always enter kernel from userspace with irq soft-mask enabled and
+ 	 * nothing pending. system_call_exception() will call
+@@ -314,18 +343,27 @@ END_BTB_FLUSH_SECTION
+ 	EXIT_KERNEL_SECURITY_FALLBACK
  
-+	EXIT_KERNEL_SECURITY_FALLBACK
-+
  	ld	r2,_CCR(r1)
++	ld	r6,_LINK(r1)
++	mtlr	r6
++
++#ifdef CONFIG_PPC_BOOK3S
++	lbz	r4,PACASRR_VALID(r13)
++	cmpdi	r4,0
++	bne	1f
++	li	r4,0
++	stb	r4,PACASRR_VALID(r13)
++#endif
  	ld	r4,_NIP(r1)
  	ld	r5,_MSR(r1)
-@@ -296,6 +300,8 @@ END_BTB_FLUSH_SECTION
- 	stb	r11,PACAIRQSOFTMASK(r13)
- 	stb	r12,PACAIRQHAPPENED(r13)
- 
-+	ENTER_KERNEL_SECURITY_FALLBACK
-+
- 	/* Calling convention has r9 = orig r0, r10 = regs */
- 	mr	r9,r0
- 	bl	system_call_exception
-@@ -305,6 +311,8 @@ END_BTB_FLUSH_SECTION
- 	li	r5,0 /* !scv */
- 	bl	syscall_exit_prepare
- 
-+	EXIT_KERNEL_SECURITY_FALLBACK
-+
- 	ld	r2,_CCR(r1)
- 	ld	r4,_NIP(r1)
- 	ld	r5,_MSR(r1)
-@@ -642,11 +650,16 @@ _ASM_NOKPROBE_SYMBOL(fast_interrupt_return)
- 	ld	r5,_MSR(r1)
- 	andi.	r0,r5,MSR_PR
- #ifdef CONFIG_PPC_BOOK3S
--	bne	.Lfast_user_interrupt_return_amr
--	kuap_kernel_restore r3, r4
-+	beq	1f
-+	kuap_user_restore r3, r4
-+	b	.Lfast_user_interrupt_return
+-	ld	r6,_LINK(r1)
++	mtspr	SPRN_SRR0,r4
++	mtspr	SPRN_SRR1,r5
 +1:
- 	andi.	r0,r5,MSR_RI
-+	beq-	2f
-+	kuap_kernel_restore r3, r4
- 	li	r3,0 /* 0 return value, no EMULATE_STACK_STORE */
--	bne+	.Lfast_kernel_interrupt_return
-+	b	.Lfast_kernel_interrupt_return
-+2:
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	unrecoverable_exception
- 	b	. /* should not get here */
-@@ -666,12 +679,9 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return)
- 	bl	interrupt_exit_user_prepare
- 	cmpdi	r3,0
- 	bne-	.Lrestore_nvgprs
++	DEBUG_SRR_VALID srr
+ 
+ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1			/* to clear the reservation */
+ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 
+-	mtspr	SPRN_SRR0,r4
+-	mtspr	SPRN_SRR1,r5
+-	mtlr	r6
 -
--#ifdef CONFIG_PPC_BOOK3S
--.Lfast_user_interrupt_return_amr:
--	kuap_user_restore r3, r4
--#endif
- .Lfast_user_interrupt_return:
-+	EXIT_KERNEL_SECURITY_FALLBACK
+ 	cmpdi	r3,0
+ 	bne	.Lsyscall_restore_regs
+ 	/* Zero volatile regs that may contain sensitive kernel data */
+@@ -683,19 +721,39 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\())
+ .Lfast_user_interrupt_return_\srr\():
+ 	EXIT_KERNEL_SECURITY_FALLBACK
+ 
+-	ld	r11,_NIP(r1)
+-	ld	r12,_MSR(r1)
+ BEGIN_FTR_SECTION
+ 	ld	r10,_PPR(r1)
+ 	mtspr	SPRN_PPR,r10
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
 +
++#ifdef CONFIG_PPC_BOOK3S
++	.ifc \srr,srr
++	lbz	r4,PACASRR_VALID(r13)
++	.else
++	lbz	r4,PACAHSRR_VALID(r13)
++	.endif
++	cmpdi	r4,0
++	li	r4,0
++	bne	1f
++#endif
++	ld	r11,_NIP(r1)
++	ld	r12,_MSR(r1)
+ 	.ifc \srr,srr
+ 	mtspr	SPRN_SRR0,r11
+ 	mtspr	SPRN_SRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACASRR_VALID(r13)
++#endif
+ 	.else
+ 	mtspr	SPRN_HSRR0,r11
+ 	mtspr	SPRN_HSRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACAHSRR_VALID(r13)
++#endif
+ 	.endif
++	DEBUG_SRR_VALID \srr
+ 
+ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1		/* to clear the reservation */
+@@ -740,15 +798,34 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 
+ .Lfast_kernel_interrupt_return_\srr\():
+ 	cmpdi	cr1,r3,0
++#ifdef CONFIG_PPC_BOOK3S
++	.ifc \srr,srr
++	lbz	r4,PACASRR_VALID(r13)
++	.else
++	lbz	r4,PACAHSRR_VALID(r13)
++	.endif
++	cmpdi	r4,0
++	li	r4,0
++	bne	1f
++#endif
  	ld	r11,_NIP(r1)
  	ld	r12,_MSR(r1)
+ 	.ifc \srr,srr
+ 	mtspr	SPRN_SRR0,r11
+ 	mtspr	SPRN_SRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACASRR_VALID(r13)
++#endif
+ 	.else
+ 	mtspr	SPRN_HSRR0,r11
+ 	mtspr	SPRN_HSRR1,r12
++1:
++#ifdef CONFIG_PPC_BOOK3S
++	stb	r4,PACAHSRR_VALID(r13)
++#endif
+ 	.endif
++	DEBUG_SRR_VALID \srr
+ 
  BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1		/* to clear the reservation */
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0cdb59e8b577..0127032bc2aa 100644
+index 136323d38c80..0c7af27d6dc1 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -644,6 +644,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	ld	r11,exception_marker@toc(r2)
- 	std	r10,RESULT(r1)		/* clear regs->result		*/
- 	std	r11,STACK_FRAME_OVERHEAD-16(r1) /* mark the frame	*/
+@@ -567,6 +567,20 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real)
+ 	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
+ 	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
+ 
++	/* Mark our [H]SRRs valid for return */
++	li	r10,1
++	.if IHSRR_IF_HVMODE
++	BEGIN_FTR_SECTION
++	stb	r10,PACAHSRR_VALID(r13)
++	FTR_SECTION_ELSE
++	stb	r10,PACASRR_VALID(r13)
++	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
++	.elseif IHSRR
++	stb	r10,PACAHSRR_VALID(r13)
++	.else
++	stb	r10,PACASRR_VALID(r13)
++	.endif
 +
-+	ENTER_KERNEL_SECURITY_FALLBACK
- .endm
- 
- /*
-@@ -996,6 +998,8 @@ EXC_COMMON_BEGIN(system_reset_common)
- 	subi	r10,r10,1
- 	sth	r10,PACA_IN_NMI(r13)
- 
-+	EXIT_KERNEL_SECURITY_FALLBACK
-+
- 	kuap_kernel_restore r9, r10
- 	EXCEPTION_RESTORE_REGS
- 	RFI_TO_USER_OR_KERNEL
-@@ -2199,6 +2203,8 @@ EXC_COMMON_BEGIN(hmi_exception_early_common)
- 	cmpdi	cr0,r3,0
- 	bne	1f
- 
-+	EXIT_KERNEL_SECURITY_FALLBACK
-+
- 	EXCEPTION_RESTORE_REGS hsrr=1
- 	HRFI_TO_USER_OR_KERNEL
- 
-@@ -2843,26 +2849,13 @@ masked_interrupt:
- 	b	.
- .endm
- 
--TRAMP_REAL_BEGIN(stf_barrier_fallback)
--	std	r9,PACA_EXRFI+EX_R9(r13)
--	std	r10,PACA_EXRFI+EX_R10(r13)
--	sync
--	ld	r9,PACA_EXRFI+EX_R9(r13)
--	ld	r10,PACA_EXRFI+EX_R10(r13)
--	ori	31,31,0
--	.rept 14
--	b	1f
--1:
--	.endr
--	blr
--
--/* Clobbers r10, r11, ctr */
-+/* Clobbers r11, r12, ctr */
- .macro L1D_DISPLACEMENT_FLUSH
--	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
--	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
--	mtctr	r11
--	DCBT_BOOK3S_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
-+	ld	r11,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
-+	ld	r12,PACA_L1D_FLUSH_SIZE(r13)
-+	srdi	r12,r12,(7 + 3) /* 128 byte lines, unrolled 8x */
-+	mtctr	r12
-+	DCBT_BOOK3S_STOP_ALL_STREAM_IDS(r12) /* Stop prefetch streams */
- 
- 	/* order ld/st prior to dcbt stop all streams with flushing */
- 	sync
-@@ -2873,125 +2866,31 @@ TRAMP_REAL_BEGIN(stf_barrier_fallback)
- 	 * hurt).
+ 	.if ISET_RI
+ 	li	r10,MSR_RI
+ 	mtmsrd	r10,1			/* Set MSR_RI */
+@@ -668,10 +682,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ .macro EXCEPTION_RESTORE_REGS hsrr=0
+ 	/* Move original SRR0 and SRR1 into the respective regs */
+ 	ld	r9,_MSR(r1)
++	li	r10,0
+ 	.if \hsrr
+ 	mtspr	SPRN_HSRR1,r9
++	stb	r10,PACAHSRR_VALID(r13)
+ 	.else
+ 	mtspr	SPRN_SRR1,r9
++	stb	r10,PACASRR_VALID(r13)
+ 	.endif
+ 	ld	r9,_NIP(r1)
+ 	.if \hsrr
+@@ -1829,6 +1846,8 @@ EXC_COMMON_BEGIN(hdecrementer_common)
+ 	 *
+ 	 * Be careful to avoid touching the kernel stack.
  	 */
- 1:
--	ld	r11,(0x80 + 8)*0(r10)
--	ld	r11,(0x80 + 8)*1(r10)
--	ld	r11,(0x80 + 8)*2(r10)
--	ld	r11,(0x80 + 8)*3(r10)
--	ld	r11,(0x80 + 8)*4(r10)
--	ld	r11,(0x80 + 8)*5(r10)
--	ld	r11,(0x80 + 8)*6(r10)
--	ld	r11,(0x80 + 8)*7(r10)
--	addi	r10,r10,0x80*8
-+	ld	r12,(0x80 + 8)*0(r11)
-+	ld	r12,(0x80 + 8)*1(r11)
-+	ld	r12,(0x80 + 8)*2(r11)
-+	ld	r12,(0x80 + 8)*3(r11)
-+	ld	r12,(0x80 + 8)*4(r11)
-+	ld	r12,(0x80 + 8)*5(r11)
-+	ld	r12,(0x80 + 8)*6(r11)
-+	ld	r12,(0x80 + 8)*7(r11)
-+	addi	r11,r11,0x80*8
- 	bdnz	1b
- .endm
- 
--TRAMP_REAL_BEGIN(entry_flush_fallback)
--	std	r9,PACA_EXRFI+EX_R9(r13)
--	std	r10,PACA_EXRFI+EX_R10(r13)
--	std	r11,PACA_EXRFI+EX_R11(r13)
--	mfctr	r9
--	L1D_DISPLACEMENT_FLUSH
--	mtctr	r9
--	ld	r9,PACA_EXRFI+EX_R9(r13)
--	ld	r10,PACA_EXRFI+EX_R10(r13)
--	ld	r11,PACA_EXRFI+EX_R11(r13)
--	blr
--
--/*
-- * The SCV entry flush happens with interrupts enabled, so it must disable
-- * to prevent EXRFI being clobbered by NMIs (e.g., soft_nmi_common). r10
-- * (containing LR) does not need to be preserved here because scv entry
-- * puts 0 in the pt_regs, CTR can be clobbered for the same reason.
-- */
--TRAMP_REAL_BEGIN(scv_entry_flush_fallback)
--	li	r10,0
--	mtmsrd	r10,1
--	lbz	r10,PACAIRQHAPPENED(r13)
--	ori	r10,r10,PACA_IRQ_HARD_DIS
--	stb	r10,PACAIRQHAPPENED(r13)
--	std	r11,PACA_EXRFI+EX_R11(r13)
--	L1D_DISPLACEMENT_FLUSH
--	ld	r11,PACA_EXRFI+EX_R11(r13)
--	li	r10,MSR_RI
--	mtmsrd	r10,1
--	blr
--
--TRAMP_REAL_BEGIN(rfi_flush_fallback)
--	SET_SCRATCH0(r13);
--	GET_PACA(r13);
--	std	r1,PACA_EXRFI+EX_R12(r13)
--	ld	r1,PACAKSAVE(r13)
--	std	r9,PACA_EXRFI+EX_R9(r13)
--	std	r10,PACA_EXRFI+EX_R10(r13)
--	std	r11,PACA_EXRFI+EX_R11(r13)
--	mfctr	r9
--	L1D_DISPLACEMENT_FLUSH
--	mtctr	r9
--	ld	r9,PACA_EXRFI+EX_R9(r13)
--	ld	r10,PACA_EXRFI+EX_R10(r13)
--	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r1,PACA_EXRFI+EX_R12(r13)
--	GET_SCRATCH0(r13);
--	rfid
--
--TRAMP_REAL_BEGIN(hrfi_flush_fallback)
--	SET_SCRATCH0(r13);
--	GET_PACA(r13);
--	std	r1,PACA_EXRFI+EX_R12(r13)
--	ld	r1,PACAKSAVE(r13)
--	std	r9,PACA_EXRFI+EX_R9(r13)
--	std	r10,PACA_EXRFI+EX_R10(r13)
--	std	r11,PACA_EXRFI+EX_R11(r13)
--	mfctr	r9
--	L1D_DISPLACEMENT_FLUSH
--	mtctr	r9
--	ld	r9,PACA_EXRFI+EX_R9(r13)
--	ld	r10,PACA_EXRFI+EX_R10(r13)
--	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r1,PACA_EXRFI+EX_R12(r13)
--	GET_SCRATCH0(r13);
--	hrfid
--
--TRAMP_REAL_BEGIN(rfscv_flush_fallback)
--	/* system call volatile */
--	mr	r7,r13
--	GET_PACA(r13);
--	mr	r8,r1
--	ld	r1,PACAKSAVE(r13)
--	mfctr	r9
--	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
--	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
--	mtctr	r11
--	DCBT_BOOK3S_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
--
--	/* order ld/st prior to dcbt stop all streams with flushing */
-+/* Clobbers r11, r12 */
-+.macro STF_FALLBACK_BARRIER
-+	std	r11,PACA_STF_FALLBACK_SCRATCH+0(r13)
-+	std	r12,PACA_STF_FALLBACK_SCRATCH+8(r13)
- 	sync
--
--	/*
--	 * The load adresses are at staggered offsets within cachelines,
--	 * which suits some pipelines better (on others it should not
--	 * hurt).
--	 */
-+	ld	r11,PACA_STF_FALLBACK_SCRATCH+0(r13)
-+	ld	r12,PACA_STF_FALLBACK_SCRATCH+8(r13)
-+	ori	31,31,0
-+	.rept 14
-+	b	1f
- 1:
--	ld	r11,(0x80 + 8)*0(r10)
--	ld	r11,(0x80 + 8)*1(r10)
--	ld	r11,(0x80 + 8)*2(r10)
--	ld	r11,(0x80 + 8)*3(r10)
--	ld	r11,(0x80 + 8)*4(r10)
--	ld	r11,(0x80 + 8)*5(r10)
--	ld	r11,(0x80 + 8)*6(r10)
--	ld	r11,(0x80 + 8)*7(r10)
--	addi	r10,r10,0x80*8
--	bdnz	1b
--
--	mtctr	r9
--	li	r9,0
--	li	r10,0
--	li	r11,0
--	mr	r1,r8
--	mr	r13,r7
--	RFSCV
-+	.endr
-+.endm
- 
- USE_TEXT_SECTION()
- 
-@@ -3006,6 +2905,27 @@ _GLOBAL(do_uaccess_flush)
- _ASM_NOKPROBE_SYMBOL(do_uaccess_flush)
- EXPORT_SYMBOL(do_uaccess_flush)
- 
-+_GLOBAL(enter_security_fallback)
-+	STF_FALLBACK_BARRIER
-+	ld	r11,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
-+	cmpdi	r11,0
-+	beq	10f
-+	L1D_DISPLACEMENT_FLUSH
-+10:
-+	ld	r12,_MSR(r1)	// some interrupts require r12==SRR1
-+	andi.	r11,r12,MSR_PR	// and cr0 set
-+	blr
-+_ASM_NOKPROBE_SYMBOL(enter_security_fallback)
-+
-+_GLOBAL(exit_security_fallback)
-+	STF_FALLBACK_BARRIER
-+	ld	r11,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
-+	cmpdi	r11,0
-+	beq	10f
-+	L1D_DISPLACEMENT_FLUSH
-+10:
-+	blr
-+_ASM_NOKPROBE_SYMBOL(exit_security_fallback)
- 
- MASKED_INTERRUPT
- MASKED_INTERRUPT hsrr=1
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 72fa3c00229a..582009dacef4 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -165,6 +165,20 @@ SECTIONS
- 		*(__rfi_flush_fixup)
- 		__stop___rfi_flush_fixup = .;
- 	}
-+
-+	. = ALIGN(8);
-+	__enter_security_fallback_fixup : AT(ADDR(__enter_security_fallback_fixup) - LOAD_OFFSET) {
-+		__start___enter_security_fallback_fixup = .;
-+		*(__enter_security_fallback_fixup)
-+		__stop___enter_security_fallback_fixup = .;
-+	}
-+
-+	. = ALIGN(8);
-+	__exit_security_fallback_fixup : AT(ADDR(__exit_security_fallback_fixup) - LOAD_OFFSET) {
-+		__start___exit_security_fallback_fixup = .;
-+		*(__exit_security_fallback_fixup)
-+		__stop___exit_security_fallback_fixup = .;
-+	}
- #endif /* CONFIG_PPC64 */
- 
- #ifdef CONFIG_PPC_BARRIER_NOSPEC
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 5e634db4809b..e5adfa090c6a 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1066,6 +1066,8 @@ fast_guest_return:
- 	bl	kvmhv_accumulate_time
++	li	r10,0
++	stb	r10,PACAHSRR_VALID(r13)
+ 	ld	r10,PACA_EXGEN+EX_CTR(r13)
+ 	mtctr	r10
+ 	mtcrf	0x80,r9
+@@ -2663,6 +2682,8 @@ BEGIN_FTR_SECTION
+ 	ld	r10,PACA_EXGEN+EX_CFAR(r13)
+ 	mtspr	SPRN_CFAR,r10
+ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
++	li	r10,0
++	stb	r10,PACAHSRR_VALID(r13)
+ 	ld	r10,PACA_EXGEN+EX_R10(r13)
+ 	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	ld	r12,PACA_EXGEN+EX_R12(r13)
+@@ -2835,6 +2856,12 @@ masked_interrupt:
+ 	ori	r11,r11,PACA_IRQ_HARD_DIS
+ 	stb	r11,PACAIRQHAPPENED(r13)
+ 2:	/* done */
++	li	r10,0
++	.if \hsrr
++	stb	r10,PACAHSRR_VALID(r13)
++	.else
++	stb	r10,PACASRR_VALID(r13)
++	.endif
+ 	ld	r10,PACA_EXGEN+EX_CTR(r13)
+ 	mtctr	r10
+ 	mtcrf	0x80,r9
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 2c57ece6671c..44526c157bff 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -103,6 +103,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	ori	r12,r12,MSR_FP
+ 	or	r12,r12,r4
+ 	std	r12,_MSR(r1)
++	li	r4,0
++	stb	r4,PACASRR_VALID(r13)
  #endif
+ 	li	r4,1
+ 	stb	r4,THREAD_LOAD_FP(r5)
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 409080208a6c..dcac6c74a93c 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -147,7 +147,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 		return 0;
  
-+	ENTER_GUEST_SECURITY_FALLBACK
-+
- 	/* Enter guest */
+ 	if (*(u32 *)regs->nip == BREAK_INSTR)
+-		regs->nip += BREAK_INSTR_SIZE;
++		regs_add_return_ip(regs, BREAK_INSTR_SIZE);
  
- BEGIN_FTR_SECTION
-@@ -1348,6 +1350,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	li	r0, MSR_RI
- 	mtmsrd	r0, 1
- 
-+	ENTER_KERNEL_SECURITY_FALLBACK
-+
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
- 	addi	r3, r9, VCPU_TB_RMINTR
- 	mr	r4, r9
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 1fd31b4b0e13..370e98dc64db 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -118,115 +118,169 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 	return 1;
+ }
+diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
+index 660138f6c4b2..a4965a32628a 100644
+--- a/arch/powerpc/kernel/kprobes-ftrace.c
++++ b/arch/powerpc/kernel/kprobes-ftrace.c
+@@ -48,7 +48,7 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+ 			 * Emulate singlestep (and also recover regs->nip)
+ 			 * as if there is a nop
+ 			 */
+-			regs->nip += MCOUNT_INSN_SIZE;
++			regs_add_return_ip(regs, MCOUNT_INSN_SIZE);
+ 			if (unlikely(p->post_handler)) {
+ 				kcb->kprobe_status = KPROBE_HIT_SSDONE;
+ 				p->post_handler(p, regs, 0);
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 01ab2163659e..8165ed71ab51 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -178,7 +178,7 @@ static nokprobe_inline void prepare_singlestep(struct kprobe *p, struct pt_regs
+ 	 * variant as values in regs could play a part in
+ 	 * if the trap is taken or not
+ 	 */
+-	regs->nip = (unsigned long)p->ainsn.insn;
++	regs_set_return_ip(regs, (unsigned long)p->ainsn.insn);
  }
  
- #ifdef CONFIG_PPC_BOOK3S_64
--static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
-+static void do_enter_security_fallback_fixups(bool enable)
- {
--	unsigned int instrs[3], *dest;
-+	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
+ static nokprobe_inline void save_previous_kprobe(struct kprobe_ctlblk *kcb)
+@@ -415,7 +415,7 @@ static int trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
+ 	 * we end up emulating it in kprobe_handler(), which increments the nip
+ 	 * again.
+ 	 */
+-	regs->nip = orig_ret_address - 4;
++	regs_set_return_ip(regs, orig_ret_address - 4);
+ 	regs->link = orig_ret_address;
  
--	start = PTRRELOC(&__start___stf_entry_barrier_fixup);
--	end = PTRRELOC(&__stop___stf_entry_barrier_fixup);
-+	start = PTRRELOC(&__start___enter_security_fallback_fixup);
-+	end = PTRRELOC(&__stop___enter_security_fallback_fixup);
- 
--	instrs[0] = 0x60000000; /* nop */
--	instrs[1] = 0x60000000; /* nop */
--	instrs[2] = 0x60000000; /* nop */
-+	instr = 0x60000000; /* nop */
- 
--	i = 0;
--	if (types & STF_BARRIER_FALLBACK) {
--		instrs[i++] = 0x7d4802a6; /* mflr r10		*/
--		instrs[i++] = 0x60000000; /* branch patched below */
--		instrs[i++] = 0x7d4803a6; /* mtlr r10		*/
--	} else if (types & STF_BARRIER_EIEIO) {
--		instrs[i++] = 0x7e0006ac; /* eieio + bit 6 hint */
--	} else if (types & STF_BARRIER_SYNC_ORI) {
--		instrs[i++] = 0x7c0004ac; /* hwsync		*/
--		instrs[i++] = 0xe94d0000; /* ld r10,0(r13)	*/
--		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
-+	for (i = 0; start < end; start++, i++) {
-+		dest = (void *)start + *start;
-+
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+
-+		if (enable) {
-+			patch_branch((struct ppc_inst *)dest,
-+				     (unsigned long)&enter_security_fallback,
-+				     BRANCH_SET_LINK);
-+		} else {
-+			patch_instruction((struct ppc_inst *)dest,
-+					  ppc_inst(instr));
-+		}
+ 	return 0;
+@@ -450,7 +450,7 @@ int kprobe_post_handler(struct pt_regs *regs)
  	}
  
-+	printk(KERN_DEBUG "enter-security-fallback: patched %d locations (%s)\n", i,
-+			enable ? "enable" : "disable");
-+}
+ 	/* Adjust nip to after the single-stepped instruction */
+-	regs->nip = (unsigned long)cur->addr + len;
++	regs_set_return_ip(regs, (unsigned long)cur->addr + len);
+ 	regs->msr |= kcb->kprobe_saved_msr;
+ 
+ 	/*Restore back the original saved kprobes variables and continue. */
+@@ -490,7 +490,7 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ 		 * and allow the page fault handler to continue as a
+ 		 * normal page fault.
+ 		 */
+-		regs->nip = (unsigned long)cur->addr;
++		regs_set_return_ip(regs, (unsigned long)cur->addr);
+ 		regs->msr &= ~MSR_SINGLESTEP; /* Turn off 'trace' bits */
+ 		regs->msr |= kcb->kprobe_saved_msr;
+ 		if (kcb->kprobe_status == KPROBE_REENTER)
+@@ -523,7 +523,7 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ 		 * zero, try to fix up.
+ 		 */
+ 		if ((entry = search_exception_tables(regs->nip)) != NULL) {
+-			regs->nip = extable_fixup(entry);
++			regs_set_return_ip(regs, extable_fixup(entry));
+ 			return 1;
+ 		}
+ 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1e62a70a29aa..ee8e274bbfd1 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -98,6 +98,8 @@ static void check_if_tm_restore_required(struct task_struct *tsk)
+ 	    !test_thread_flag(TIF_RESTORE_TM)) {
+ 		tsk->thread.ckpt_regs.msr = tsk->thread.regs->msr;
+ 		set_thread_flag(TIF_RESTORE_TM);
++		local_paca->hsrr_valid = 0;
++		local_paca->srr_valid = 0;
+ 	}
+ }
+ 
+@@ -162,6 +164,8 @@ static void __giveup_fpu(struct task_struct *tsk)
+ 	if (cpu_has_feature(CPU_FTR_VSX))
+ 		msr &= ~MSR_VSX;
+ 	tsk->thread.regs->msr = msr;
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
+ }
+ 
+ void giveup_fpu(struct task_struct *tsk)
+@@ -245,6 +249,8 @@ static void __giveup_altivec(struct task_struct *tsk)
+ 	if (cpu_has_feature(CPU_FTR_VSX))
+ 		msr &= ~MSR_VSX;
+ 	tsk->thread.regs->msr = msr;
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
+ }
+ 
+ void giveup_altivec(struct task_struct *tsk)
+@@ -560,6 +566,8 @@ void notrace restore_math(struct pt_regs *regs)
+ 		msr_check_and_clear(new_msr);
+ 
+ 		regs->msr |= new_msr | fpexc_mode;
++		local_paca->hsrr_valid = 0;
++		local_paca->srr_valid = 0;
+ 	}
+ }
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+@@ -1284,6 +1292,8 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 			atomic_read(&current->mm->context.vas_windows)))
+ 			asm volatile(PPC_CP_ABORT);
+ 	}
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ 	return last;
+@@ -1873,6 +1883,8 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	current->thread.load_tm = 0;
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
+ }
+ EXPORT_SYMBOL(start_thread);
+ 
+@@ -1920,9 +1932,12 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
+ 	if (val > PR_FP_EXC_PRECISE)
+ 		return -EINVAL;
+ 	tsk->thread.fpexc_mode = __pack_fe01(val);
+-	if (regs != NULL && (regs->msr & MSR_FP) != 0)
++	if (regs != NULL && (regs->msr & MSR_FP) != 0) {
+ 		regs->msr = (regs->msr & ~(MSR_FE0|MSR_FE1))
+ 			| tsk->thread.fpexc_mode;
++		local_paca->hsrr_valid = 0;
++		local_paca->srr_valid = 0;
++	}
+ 	return 0;
+ }
+ 
+@@ -1974,6 +1989,9 @@ int set_endian(struct task_struct *tsk, unsigned int val)
+ 	else
+ 		return -EINVAL;
+ 
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
 +
-+static void do_exit_security_fallback_fixups(bool enable)
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index d126d71ea5bd..adb92f7d00a1 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -46,6 +46,13 @@
+ /* This is here deliberately so it's only used in this file */
+ void enter_rtas(unsigned long);
+ 
++static inline void do_enter_rtas(unsigned long args)
 +{
-+	unsigned int instr, *dest;
-+	long *start, *end;
-+	int i;
-+
-+	start = PTRRELOC(&__start___exit_security_fallback_fixup);
-+	end = PTRRELOC(&__stop___exit_security_fallback_fixup);
-+
-+	instr = 0x60000000; /* nop */
-+
- 	for (i = 0; start < end; start++, i++) {
- 		dest = (void *)start + *start;
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--
--		if (types & STF_BARRIER_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1),
--				     (unsigned long)&stf_barrier_fallback,
-+		if (enable) {
-+			patch_branch((struct ppc_inst *)dest,
-+				     (unsigned long)&exit_security_fallback,
- 				     BRANCH_SET_LINK);
--		else
--			patch_instruction((struct ppc_inst *)(dest + 1),
--					  ppc_inst(instrs[1]));
-+		} else {
-+			patch_instruction((struct ppc_inst *)dest,
-+					  ppc_inst(instr));
-+		}
-+	}
- 
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+	printk(KERN_DEBUG "exit-security-fallback: patched %d locations (%s)\n", i,
-+			enable ? "enable" : "disable");
++	enter_rtas(args);
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
 +}
 +
-+static enum stf_barrier_type enter_stf_barrier_type = STF_BARRIER_NONE;
-+static enum stf_barrier_type exit_stf_barrier_type = STF_BARRIER_NONE;
-+static enum l1d_flush_type enter_flush_type = L1D_FLUSH_NONE;
-+static enum l1d_flush_type exit_flush_type = L1D_FLUSH_NONE;
-+
-+static void update_fallback_calls(void)
-+{
-+	static bool enter_fallback_enabled = false;
-+	static bool exit_fallback_enabled = false;
-+
-+	// This is slightly racy if called concurrently.
-+
-+	if (enter_stf_barrier_type == STF_BARRIER_FALLBACK ||
-+			enter_flush_type == L1D_FLUSH_FALLBACK) {
-+		if (!enter_fallback_enabled) {
-+			do_enter_security_fallback_fixups(true);
-+			enter_fallback_enabled = true;
-+		}
-+	} else if (enter_stf_barrier_type == STF_BARRIER_NONE &&
-+			enter_flush_type == L1D_FLUSH_NONE) {
-+		if (enter_fallback_enabled) {
-+			do_enter_security_fallback_fixups(false);
-+			enter_fallback_enabled = false;
-+		}
-+	}
-+
-+	if (exit_stf_barrier_type == STF_BARRIER_FALLBACK ||
-+			exit_flush_type == L1D_FLUSH_FALLBACK) {
-+		if (!exit_fallback_enabled) {
-+			do_exit_security_fallback_fixups(true);
-+			exit_fallback_enabled = true;
-+		}
-+	} else if (exit_stf_barrier_type == STF_BARRIER_NONE &&
-+			exit_flush_type == L1D_FLUSH_NONE) {
-+		if (exit_fallback_enabled) {
-+			do_exit_security_fallback_fixups(false);
-+			exit_fallback_enabled = false;
-+		}
-+	}
-+}
-+
-+static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
-+{
-+	unsigned int instr, *dest;
-+	long *start, *end;
-+	int i;
-+
-+	start = PTRRELOC(&__start___stf_entry_barrier_fixup);
-+	end = PTRRELOC(&__stop___stf_entry_barrier_fixup);
-+
-+	instr = 0x60000000; /* nop */
-+	if (types & STF_BARRIER_EIEIO)
-+		instr = 0x7e0006ac; /* eieio + bit 6 hint */
-+
-+	for (i = 0; start < end; start++, i++) {
-+		dest = (void *)start + *start;
-+
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+
-+		patch_instruction((struct ppc_inst *)dest, ppc_inst(instr));
- 	}
+ struct rtas_t rtas = {
+ 	.lock = __ARCH_SPIN_LOCK_UNLOCKED
+ };
+@@ -384,7 +391,7 @@ static char *__fetch_rtas_last_error(char *altbuf)
+ 	save_args = rtas.args;
+ 	rtas.args = err_args;
  
- 	printk(KERN_DEBUG "stf-barrier: patched %d entry locations (%s barrier)\n", i,
- 		(types == STF_BARRIER_NONE)                  ? "no" :
- 		(types == STF_BARRIER_FALLBACK)              ? "fallback" :
- 		(types == STF_BARRIER_EIEIO)                 ? "eieio" :
--		(types == (STF_BARRIER_SYNC_ORI))            ? "hwsync"
--		                                           : "unknown");
-+		(types == STF_BARRIER_SYNC_ORI)              ? "hwsync"
-+		                                             : "unknown");
-+
-+	enter_stf_barrier_type = types;
-+	update_fallback_calls();
+-	enter_rtas(__pa(&rtas.args));
++	do_enter_rtas(__pa(&rtas.args));
+ 
+ 	err_args = rtas.args;
+ 	rtas.args = save_args;
+@@ -430,7 +437,7 @@ va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
+ 	for (i = 0; i < nret; ++i)
+ 		args->rets[i] = 0;
+ 
+-	enter_rtas(__pa(args));
++	do_enter_rtas(__pa(args));
  }
  
- static void do_stf_exit_barrier_fixups(enum stf_barrier_type types)
- {
--	unsigned int instrs[6], *dest;
-+	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
+ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret, ...)
+@@ -1127,7 +1134,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 	flags = lock_rtas();
  
- 	start = PTRRELOC(&__start___stf_exit_barrier_fixup);
- 	end = PTRRELOC(&__stop___stf_exit_barrier_fixup);
+ 	rtas.args = args;
+-	enter_rtas(__pa(&rtas.args));
++	do_enter_rtas(__pa(&rtas.args));
+ 	args = rtas.args;
  
--	instrs[0] = 0x60000000; /* nop */
--	instrs[1] = 0x60000000; /* nop */
--	instrs[2] = 0x60000000; /* nop */
--	instrs[3] = 0x60000000; /* nop */
--	instrs[4] = 0x60000000; /* nop */
--	instrs[5] = 0x60000000; /* nop */
--
--	i = 0;
--	if (types & STF_BARRIER_FALLBACK || types & STF_BARRIER_SYNC_ORI) {
--		if (cpu_has_feature(CPU_FTR_HVMODE)) {
--			instrs[i++] = 0x7db14ba6; /* mtspr 0x131, r13 (HSPRG1) */
--			instrs[i++] = 0x7db04aa6; /* mfspr r13, 0x130 (HSPRG0) */
--		} else {
--			instrs[i++] = 0x7db243a6; /* mtsprg 2,r13	*/
--			instrs[i++] = 0x7db142a6; /* mfsprg r13,1    */
--	        }
--		instrs[i++] = 0x7c0004ac; /* hwsync		*/
--		instrs[i++] = 0xe9ad0000; /* ld r13,0(r13)	*/
--		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
--		if (cpu_has_feature(CPU_FTR_HVMODE)) {
--			instrs[i++] = 0x7db14aa6; /* mfspr r13, 0x131 (HSPRG1) */
--		} else {
--			instrs[i++] = 0x7db242a6; /* mfsprg r13,2 */
--		}
--	} else if (types & STF_BARRIER_EIEIO) {
--		instrs[i++] = 0x7e0006ac; /* eieio + bit 6 hint */
--	}
-+	instr = 0x60000000; /* nop */
-+	if (types == STF_BARRIER_EIEIO)
-+		instr = 0x7e0006ac; /* eieio + bit 6 hint */
+ 	/* A -1 return code indicates that the last command couldn't
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 9ded046edb0e..285f036ef3c0 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -214,7 +214,7 @@ static void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
+ 			regs->gpr[0] = __NR_restart_syscall;
+ 		else
+ 			regs->gpr[3] = regs->orig_gpr3;
+-		regs->nip -= 4;
++		regs_add_return_ip(regs, - 4);
+ 		regs->result = 0;
+ 	} else {
+ 		if (trap_is_scv(regs)) {
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 0e3637722e97..6f1309e3c338 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -686,6 +686,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
  
- 	for (i = 0; start < end; start++, i++) {
- 		dest = (void *)start + *start;
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
--		patch_instruction((struct ppc_inst *)(dest + 3), ppc_inst(instrs[3]));
--		patch_instruction((struct ppc_inst *)(dest + 4), ppc_inst(instrs[4]));
--		patch_instruction((struct ppc_inst *)(dest + 5), ppc_inst(instrs[5]));
-+		patch_instruction((struct ppc_inst *)dest, ppc_inst(instr));
- 	}
- 	printk(KERN_DEBUG "stf-barrier: patched %d exit locations (%s barrier)\n", i,
- 		(types == STF_BARRIER_NONE)                  ? "no" :
- 		(types == STF_BARRIER_FALLBACK)              ? "fallback" :
- 		(types == STF_BARRIER_EIEIO)                 ? "eieio" :
--		(types == (STF_BARRIER_SYNC_ORI))            ? "hwsync"
--		                                           : "unknown");
--}
-+		(types == STF_BARRIER_SYNC_ORI)              ? "hwsync"
-+		                                             : "unknown");
- 
-+	exit_stf_barrier_type = types;
-+	update_fallback_calls();
-+}
- 
- void do_stf_barrier_fixups(enum stf_barrier_type types)
- {
-@@ -286,28 +340,20 @@ void do_uaccess_flush_fixups(enum l1d_flush_type types)
- 
- void do_entry_flush_fixups(enum l1d_flush_type types)
- {
--	unsigned int instrs[3], *dest;
-+	unsigned int instrs[2], *dest;
- 	long *start, *end;
- 	int i;
- 
- 	instrs[0] = 0x60000000; /* nop */
- 	instrs[1] = 0x60000000; /* nop */
--	instrs[2] = 0x60000000; /* nop */
- 
- 	i = 0;
--	if (types == L1D_FLUSH_FALLBACK) {
--		instrs[i++] = 0x7d4802a6; /* mflr r10		*/
--		instrs[i++] = 0x60000000; /* branch patched below */
--		instrs[i++] = 0x7d4803a6; /* mtlr r10		*/
--	}
--
- 	if (types & L1D_FLUSH_ORI) {
- 		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
- 		instrs[i++] = 0x63de0000; /* ori 30,30,0 L1d flush*/
--	}
--
--	if (types & L1D_FLUSH_MTTRIG)
-+	} else if (types & L1D_FLUSH_MTTRIG) {
- 		instrs[i++] = 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
-+	}
- 
- 	start = PTRRELOC(&__start___entry_flush_fixup);
- 	end = PTRRELOC(&__stop___entry_flush_fixup);
-@@ -316,15 +362,9 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--
--		if (types == L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&entry_flush_fallback,
--				     BRANCH_SET_LINK);
--		else
--			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
-+		patch_instruction((struct ppc_inst *)(dest + 0), ppc_inst(instrs[0]));
- 
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
- 	}
- 
- 	start = PTRRELOC(&__start___scv_entry_flush_fixup);
-@@ -334,15 +374,9 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--
--		if (types == L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&scv_entry_flush_fallback,
--				     BRANCH_SET_LINK);
--		else
--			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
-+		patch_instruction((struct ppc_inst *)(dest + 0), ppc_inst(instrs[0]));
- 
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
- 	}
- 
- 
-@@ -354,11 +388,14 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
- 							: "ori type" :
- 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
- 						: "unknown");
+ 	/* This returns like rt_sigreturn */
+ 	set_thread_flag(TIF_RESTOREALL);
 +
-+	enter_flush_type = types;
-+	update_fallback_calls();
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++
+ 	return 0;
  }
  
- void do_rfi_flush_fixups(enum l1d_flush_type types)
- {
--	unsigned int instrs[3], *dest;
-+	unsigned int instrs[2], *dest;
- 	long *start, *end;
- 	int i;
+@@ -791,6 +795,10 @@ SYSCALL_DEFINE0(rt_sigreturn)
+ 		goto badframe;
  
-@@ -367,29 +404,22 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 	set_thread_flag(TIF_RESTOREALL);
++
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++
+ 	return 0;
  
- 	instrs[0] = 0x60000000; /* nop */
- 	instrs[1] = 0x60000000; /* nop */
--	instrs[2] = 0x60000000; /* nop */
--
--	if (types & L1D_FLUSH_FALLBACK)
--		/* b .+16 to fallback flush */
--		instrs[0] = 0x48000010;
+ badframe:
+@@ -866,6 +874,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
  
- 	i = 0;
- 	if (types & L1D_FLUSH_ORI) {
- 		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
- 		instrs[i++] = 0x63de0000; /* ori 30,30,0 L1d flush*/
--	}
--
--	if (types & L1D_FLUSH_MTTRIG)
-+	} else if (types & L1D_FLUSH_MTTRIG) {
- 		instrs[i++] = 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
-+	}
+ 	/* Set up "regs" so we "return" to the signal handler. */
++	/* XXX: use set return IP */
+ 	if (is_elf2_task()) {
+ 		regs->ctr = (unsigned long) ksig->ka.sa.sa_handler;
+ 		regs->gpr[12] = regs->ctr;
+@@ -898,10 +907,15 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	if (err)
+ 		goto badframe;
  
- 	for (i = 0; start < end; start++, i++) {
- 		dest = (void *)start + *start;
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++
+ 	return 0;
  
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
+ badframe:
+ 	signal_fault(current, regs, "handle_rt_signal64", frame);
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
  
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		patch_instruction((struct ppc_inst *)(dest + 0), ppc_inst(instrs[0]));
- 		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
+ 	return 1;
+ }
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 078608ec2e92..13bf62ccfa18 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -123,6 +123,8 @@ SYSCALL_DEFINE0(switch_endian)
+ 	struct thread_info *ti;
+ 
+ 	current->thread.regs->msr ^= MSR_LE;
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
+ 
+ 	/*
+ 	 * Set TIF_RESTOREALL so that r3 isn't clobbered on return to
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 6c62e4e87979..c9a5bfeb8a7c 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1032,7 +1032,7 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
+ #endif /* !__LITTLE_ENDIAN__ */
+ 
+ 	/* Go to next instruction */
+-	regs->nip += 4;
++	regs_add_return_ip(regs, 4);
+ }
+ #endif /* CONFIG_VSX */
+ 
+@@ -1478,7 +1478,7 @@ static void do_program_check(struct pt_regs *regs)
+ 
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
+-			regs->nip += 4;
++			regs_add_return_ip(regs, 4);
+ 			return;
+ 		}
+ 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+@@ -1540,7 +1540,7 @@ static void do_program_check(struct pt_regs *regs)
+ 	if (reason & (REASON_ILLEGAL | REASON_PRIVILEGED)) {
+ 		switch (emulate_instruction(regs)) {
+ 		case 0:
+-			regs->nip += 4;
++			regs_add_return_ip(regs, 4);
+ 			emulate_single_step(regs);
+ 			return;
+ 		case -EFAULT:
+@@ -1595,7 +1595,7 @@ DEFINE_INTERRUPT_HANDLER(alignment_exception)
+ 
+ 	if (fixed == 1) {
+ 		/* skip over emulated instruction */
+-		regs->nip += inst_length(reason);
++		regs_add_return_ip(regs, inst_length(reason));
+ 		emulate_single_step(regs);
+ 		return;
+ 	}
+@@ -1753,7 +1753,7 @@ DEFINE_INTERRUPT_HANDLER(facility_unavailable_exception)
+ 				pr_err("DSCR based mfspr emulation failed\n");
+ 				return;
+ 			}
+-			regs->nip += 4;
++			regs_add_return_ip(regs, 4);
+ 			emulate_single_step(regs);
+ 		}
+ 		return;
+@@ -2046,7 +2046,7 @@ DEFINE_INTERRUPT_HANDLER(altivec_assist_exception)
+ 	PPC_WARN_EMULATED(altivec, regs);
+ 	err = emulate_altivec(regs);
+ 	if (err == 0) {
+-		regs->nip += 4;		/* skip emulated instruction */
++		regs_add_return_ip(regs, 4); /* skip emulated instruction */
+ 		emulate_single_step(regs);
+ 		return;
+ 	}
+@@ -2111,7 +2111,7 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointException)
+ 
+ 	err = do_spe_mathemu(regs);
+ 	if (err == 0) {
+-		regs->nip += 4;		/* skip emulated instruction */
++		regs_add_return_ip(regs, 4); /* skip emulated instruction */
+ 		emulate_single_step(regs);
+ 		return;
+ 	}
+@@ -2142,10 +2142,10 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointRoundException)
+ 		giveup_spe(current);
+ 	preempt_enable();
+ 
+-	regs->nip -= 4;
++	regs_add_return_ip(regs, - 4);
+ 	err = speround_handler(regs);
+ 	if (err == 0) {
+-		regs->nip += 4;		/* skip emulated instruction */
++		regs_add_return_ip(regs, 4); /* skip emulated instruction */
+ 		emulate_single_step(regs);
+ 		return;
+ 	}
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 54dbefcb4cde..02f8925c7919 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -73,6 +73,8 @@ _GLOBAL(load_up_altivec)
+ 	addi	r5,r4,THREAD		/* Get THREAD */
+ 	oris	r12,r12,MSR_VEC@h
+ 	std	r12,_MSR(r1)
++	li	r4,0
++	stb	r4,PACASRR_VALID(r13)
+ #endif
+ 	li	r4,1
+ 	stb	r4,THREAD_LOAD_VEC(r5)
+@@ -131,6 +133,8 @@ _GLOBAL(load_up_vsx)
+ 	/* enable use of VSX after return */
+ 	oris	r12,r12,MSR_VSX@h
+ 	std	r12,_MSR(r1)
++	li	r4,0
++	stb	r4,PACASRR_VALID(r13)
+ 	b	fast_interrupt_return_srr
+ 
+ #endif /* CONFIG_VSX */
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 45bda2520755..96505d4bba1c 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -3203,7 +3203,7 @@ void emulate_update_regs(struct pt_regs *regs, struct instruction_op *op)
+ 	default:
+ 		WARN_ON_ONCE(1);
+ 	}
+-	regs->nip = next_pc;
++	regs_set_return_ip(regs, next_pc);
+ }
+ NOKPROBE_SYMBOL(emulate_update_regs);
+ 
+@@ -3480,6 +3480,9 @@ int emulate_step(struct pt_regs *regs, struct ppc_inst instr)
+ 	unsigned long val;
+ 	unsigned long ea;
+ 
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++
+ 	r = analyse_instr(&op, regs, instr);
+ 	if (r < 0)
+ 		return r;
+diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
+index 30b4b69c6941..d92416d78aee 100644
+--- a/arch/powerpc/math-emu/math.c
++++ b/arch/powerpc/math-emu/math.c
+@@ -453,7 +453,7 @@ do_mathemu(struct pt_regs *regs)
+ 		break;
  	}
  
- 	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
-@@ -400,6 +430,9 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 							: "ori type" :
- 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
- 						: "unknown");
-+
-+	exit_flush_type = types;
-+	update_fallback_calls();
- }
+-	regs->nip += 4;
++	regs_add_return_ip(regs, 4);
+ 	return 0;
  
- void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
+ illegal:
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index 5cd0f52d258f..1a7bc261d156 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -100,6 +100,9 @@ static int64_t opal_call(int64_t a0, int64_t a1, int64_t a2, int64_t a3,
+ 	bool mmu = (msr & (MSR_IR|MSR_DR));
+ 	int64_t ret;
+ 
++	local_paca->hsrr_valid = 0;
++	local_paca->srr_valid = 0;
++
+ 	msr &= ~MSR_EE;
+ 
+ 	if (unlikely(!mmu))
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 040b9d01c079..af78e7c3108f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -1072,7 +1072,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+ 			ret = get_kernel_nofault(inst, (void *)regs->nip);
+ 
+ 		if (!ret && mcheck_handle_load(regs, inst)) {
+-			regs->nip += 4;
++			regs_add_return_ip(regs, 4);
+ 			return 1;
+ 		}
+ 	}
 -- 
 2.23.0
 
