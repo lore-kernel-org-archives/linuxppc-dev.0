@@ -2,116 +2,93 @@ Return-Path: <SRS0=qf4I=IN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62DDDC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 17:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3E40C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 17:36:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 054BC64D9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 17:01:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 054BC64D9D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E22AC64E07
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Mar 2021 17:36:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E22AC64E07
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzjPN5NWBz2yyF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 04:01:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4DzkBD40pJz30FV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 04:36:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r4z3FvJZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=cIp6tCmz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f30;
+ helo=mail-qv1-xf30.google.com; envelope-from=danielhb413@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=r4z3FvJZ; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=cIp6tCmz; dkim-atps=neutral
+Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com
+ [IPv6:2607:f8b0:4864:20::f30])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DzjLb0n5bz301v
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 03:59:02 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12FGYU6C155550; Mon, 15 Mar 2021 12:59:01 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=/aMOEnE9e033jBmsFRzzqkt6+ubrNZPIPNO8BScYaWE=;
- b=r4z3FvJZAc/VirHcGxoRxFnRoYcgdmQSPa2sAtyJxp6zRjC+lCHbY0Np8QA59/75PRa9
- E8vQBYe/oa+rAK9BeYAA3G4iarQLoPR8H8qOfr6xeyYm1MLRuE1rCeVbzPvCjnaaiCZw
- 3KUJnXP3hq1ZTOHHFc8xzgYtiJxI3Xt29R3vy53LoTTKQTGZP6K2oC06WXtXO5Bbzzgj
- 4VYWNfZ3DnuWnLvPNu3w/N/37dhoT55hUsjjSjDQh+/6lZZPQWftUzcm9VVWbraCRFaV
- 5LNnMEk64u871EMge399zQUoJ3z9qHKDsDgxXozXgTpOSY1jm0RbCle18Z64JR2tOwR5 hQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37aa8rb1qs-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 12:59:01 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12FGYULv155516;
- Mon, 15 Mar 2021 12:59:00 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37aa8rb1q9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 12:59:00 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12FGkpoL021172;
- Mon, 15 Mar 2021 16:58:59 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma02wdc.us.ibm.com with ESMTP id 378n1a0rah-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Mar 2021 16:58:59 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12FGwwQ010748232
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 15 Mar 2021 16:58:58 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 124E3BE053;
- Mon, 15 Mar 2021 16:58:58 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A2619BE058;
- Mon, 15 Mar 2021 16:58:56 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.160.44.137])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 15 Mar 2021 16:58:56 +0000 (GMT)
-Subject: Re: [PATCH] rpadlpar: fix potential drc_name corruption in store
- functions
-To: Michael Ellerman <michaele@au1.ibm.com>,
- =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-References: <20210310223021.423155-1-tyreld@linux.ibm.com>
- <20210313091751.GM6564@kitsune.suse.cz>
- <a67af978-1c47-c66b-47f0-3d754da738f9@linux.ibm.com>
- <87o8fl3z80.fsf@mpe.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <6b1728cf-c9b7-68fe-f338-3b79210357f2@linux.ibm.com>
-Date: Mon, 15 Mar 2021 09:58:55 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzk9l5twtz2xxk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 04:36:25 +1100 (AEDT)
+Received: by mail-qv1-xf30.google.com with SMTP id o19so2197022qvu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 10:36:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=70AY4ZT/fb+lIj7IJv0hqaMfunomtHXTpxDXoKgrOhc=;
+ b=cIp6tCmzcvR3woFmCbsaYF85tEbojD/yic9MphQHe4Aei9VpT2JerVun9TNmzT/YyS
+ TAyflnidpzX+W1sOQb6AbQUyrNhjNxp/sCqdeA+XiXthTv6hwx3ajo1m2zoU4b3f+vLi
+ yAgdiS4bULSk/shCV+/2cMrA6x5e0OkhlTU36Dc3WhTsy/K711Vc3t5m45tgEcipf2rD
+ xkJd4DZIP8JtlqKJGx+bLvtJBUaqMS1BvIgOxRBE5cRXVnDV4L0A0lCX2FeOFpg6RUTV
+ FwKTmbIiVREAYE+pvuI6F+UMVQF8VR+p/9SWHOmXYuMnC7wYhL5yVnZYJh82LXRAadAK
+ W9OQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=70AY4ZT/fb+lIj7IJv0hqaMfunomtHXTpxDXoKgrOhc=;
+ b=GWEl8+5QhOlbVn6W48o9zUxsXdgenLvQfkMYeRlXWIsmQV8rhvCKmfrAMpmpHMQVOu
+ cSepDs+BI9xcjqMyblfJGM1NplZjOqSHHogP1GdgwG1dSild5E7hD2llKmhqm2YrQwbg
+ YJ56TrI7PkHoUeuNr/XwnSQWnClKqgqSSZ2Ruz31YCJH38VElgFb7qi6HAZNWNYQ91RI
+ h5Dz2hu/kjP2j8FQ5AgVQAKnic9szrs5HIpjmt6XBk83NyAJUdiW0OUkDGr/QeBX3neG
+ /XnR0aVZi3mwXLdlPiePhK6UbxBvNCgp9mZupUhefrvtsDiMwD9wbL5Qtvrbinuf4E6r
+ tE5A==
+X-Gm-Message-State: AOAM533WiyGcY8Y7wRsCqGyLHQJiv1+PHGrYoRMubF9iMqQnUTFsnbJG
+ z72TKhz1to63UvmStDhSVcE=
+X-Google-Smtp-Source: ABdhPJxl+eASopO75uYm5OcTV83+35u/eWuZvp1/aCaoBlB3vwh1tkci6+MMhAlNJ0RYK9MhomJ1Iw==
+X-Received: by 2002:a05:6214:1305:: with SMTP id
+ a5mr11795254qvv.42.1615829781688; 
+ Mon, 15 Mar 2021 10:36:21 -0700 (PDT)
+Received: from [192.168.15.40] ([179.118.131.107])
+ by smtp.gmail.com with ESMTPSA id q15sm11543750qti.9.2021.03.15.10.36.19
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 15 Mar 2021 10:36:21 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/numa: Fix topology_physical_package_id() on
+ pSeries
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20210312143154.3181109-1-clg@kaod.org>
+ <bd0c948c-64f8-cf64-6d30-b9167b6a7629@gmail.com>
+ <09b298ce-a566-0542-0aa8-8c4e5248bda6@kaod.org>
+From: Daniel Henrique Barboza <danielhb413@gmail.com>
+Message-ID: <5f804f60-4b54-71ee-fde3-b60713ae151d@gmail.com>
+Date: Mon, 15 Mar 2021 14:36:17 -0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-In-Reply-To: <87o8fl3z80.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <09b298ce-a566-0542-0aa8-8c4e5248bda6@kaod.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-15_08:2021-03-15,
- 2021-03-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=0
- bulkscore=0 adultscore=0 malwarescore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 mlxlogscore=999 spamscore=0 impostorscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2103150113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,61 +100,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, mmc@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Greg Kurz <groug@kaod.org>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/14/21 7:52 PM, Michael Ellerman wrote:
-> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
->> On 3/13/21 1:17 AM, Michal Suchánek wrote:
->>> On Wed, Mar 10, 2021 at 04:30:21PM -0600, Tyrel Datwyler wrote:
->>>> Both add_slot_store() and remove_slot_store() try to fix up the drc_name
->>>> copied from the store buffer by placing a NULL terminator at nbyte + 1
->>>> or in place of a '\n' if present. However, the static buffer that we
->>>> copy the drc_name data into is not zeored and can contain anything past
->>>> the n-th byte. This is problematic if a '\n' byte appears in that buffer
->>>> after nbytes and the string copied into the store buffer was not NULL
->>>> terminated to start with as the strchr() search for a '\n' byte will mark
->>>> this incorrectly as the end of the drc_name string resulting in a drc_name
->>>> string that contains garbage data after the n-th byte. The following
->>>> debugging shows an example of the drmgr utility writing "PHB 4543" to
->>>> the add_slot sysfs attribute, but add_slot_store logging a corrupted
->>>> string value.
->>>>
->>>> [135823.702864] drmgr: drmgr: -c phb -a -s PHB 4543 -d 1
->>>> [135823.702879] add_slot_store: drc_name = PHB 4543°|<82>!, rc = -19
->>>>
->>>> Fix this by NULL terminating the string when we copy it into our static
->>>> buffer by coping nbytes + 1 of data from the store buffer. The code has
->>> Why is it OK to copy nbytes + 1 and why is it expected that the buffer
->>> contains a nul after the content?
+
+
+On 3/15/21 1:16 PM, Cédric Le Goater wrote:
+> On 3/15/21 4:12 PM, Daniel Henrique Barboza wrote:
 >>
->> It is my understanding that the store function buffer is allocated as a
->> zeroed-page which the kernel copies up to at most (PAGE_SIZE - 1) of user data
->> into. Anything after nbytes would therefore be zeroed.
-> 
-> I think that's true, but it would be nice if we didn't have to rely on
-> that obscure detail in order for this code to be correct & understandable.
-
-I think its a security guarantee, but I guess barring a comment that explicitly
-outlines the correctness it probably isn't obvious.
-
-> 
->>> Isn't it much saner to just nul terminate the string after copying?
 >>
->> At the cost of an extra line of code, sure.
+>> On 3/12/21 11:31 AM, Cédric Le Goater wrote:
+>>> Initial commit 15863ff3b8da ("powerpc: Make chip-id information
+>>> available to userspace") introduce a cpu_to_chip_id() routine for the
+>>> PowerNV platform using the "ibm,chip-id" property to query the chip id
+>>> of a CPU. But PAPR does not specify such a property and the node id
+>>> query is broken.
+>>>
+>>> Use cpu_to_node() instead which guarantees to have a correct value on
+>>> all platforms, PowerNV an pSeries.
+>>
+>> It is worth mentioning that that this patch will change how
+>> topology_physical_package_id() represents in a QEMU guest. Right now, ibm,chip-id
+>> in QEMU is matching the socket-id. After this patch, topology_physical_package_id()
+>> will now match the NUMA id of the CPU.
 > 
-> Is there a reason we can't use strscpy()? That should deal with all the
-> corner cases around the string copy, and then all you have to do is look
-> for a newline and turn it into nul.
+> yes. I should have added some more background.
+> 
+> LPARs are impacted by the use of ibm,chip-id because the property
+> does not exist under PowerVM and the topology-id in sysfs is always
+> -1 even if NUMA nodes are defined.
+> 
+> Under QEMU/KVM, ibm,chip-id is badly calculated when using uncommon
+> SMT configuration. This leads to a bogus topology-id value being
+> exported in sysfs.
+> 
+> The use of cpu_to_node() guarantees to have a correct NUMA node id
+> under both environments QEMU/KVM and PowerVM.
+> 
+> On the PowerNV platform, the numa node id returned by cpu_to_node()
+> is computed from the "ibm,associativity" property of the CPU. Its
+> value is built from the OPAL chip id and is equivalent to ibm,chip-id.
+> 
+> May be I should rephrase the commit log in a v2 ?
 
-Fine with me. I'll spin v2 with strscpy().
+It's a fine idea, given that apparently we don't have documentation explaining
+these details (well, at least I didn't find any). We can reference the commit
+message later on as explanation :)
 
--Tyrel
+
+
+
+Thanks,
+
+DHB
 
 > 
-> cheers
+> C.
 > 
-
+>   
+>> Reviewed-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+>> Tested-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+>>
+>>>
+>>> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+>>> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>>> Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>> ---
+>>>    arch/powerpc/include/asm/topology.h | 2 +-
+>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+>>> index 3beeb030cd78..887c42a4e43d 100644
+>>> --- a/arch/powerpc/include/asm/topology.h
+>>> +++ b/arch/powerpc/include/asm/topology.h
+>>> @@ -123,7 +123,7 @@ static inline int cpu_to_coregroup_id(int cpu)
+>>>    #ifdef CONFIG_PPC64
+>>>    #include <asm/smp.h>
+>>>    -#define topology_physical_package_id(cpu)    (cpu_to_chip_id(cpu))
+>>> +#define topology_physical_package_id(cpu)    (cpu_to_node(cpu))
+>>>      #define topology_sibling_cpumask(cpu)    (per_cpu(cpu_sibling_map, cpu))
+>>>    #define topology_core_cpumask(cpu)    (cpu_cpu_mask(cpu))
+>>>
+> 
