@@ -2,87 +2,88 @@ Return-Path: <SRS0=5tyt=IO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB408C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:22:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65606C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:44:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A67D65093
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:22:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A67D65093
+	by mail.kernel.org (Postfix) with ESMTPS id BD74464F6E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:44:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD74464F6E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzz9N06Cdz3bnj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 14:22:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzzg325Mvz30Cw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 14:44:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=oR37RMez;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=FC8kxpQz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e;
- helo=mail-pj1-x102e.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c;
+ helo=mail-pf1-x42c.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oR37RMez; dkim-atps=neutral
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
- [IPv6:2607:f8b0:4864:20::102e])
+ header.s=20161025 header.b=FC8kxpQz; dkim-atps=neutral
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzz5v3MCDz30Gv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 14:18:59 +1100 (AEDT)
-Received: by mail-pj1-x102e.google.com with SMTP id
- nh23-20020a17090b3657b02900c0d5e235a8so698183pjb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 20:18:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DzzfY5TFjz2yjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 14:43:48 +1100 (AEDT)
+Received: by mail-pf1-x42c.google.com with SMTP id d21so1859459pfn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 20:43:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=sYFr2m4GkFjXgv6COxhX+FNMxzJUw1VFmGa2obWXTog=;
- b=oR37RMezdlaEoDQEmMg4FxkfSnbywox6IJtWGphuGCtKdkz13g64+lmn+u6ZL+fF80
- XHHLR9J8BzxipLW1r8+mQC6d6e0gkl70ceHRY9r7kXXYT8carI+yTP/RdbT3dHvJ71Ak
- kRGQ4OzL/jifaEcxdC8bCvI47Ru+/H76NcftqGICOfiSPBf6ZupKENTO0gvfJtcJX9s5
- niSxUdcGwxq0C1zjjbHsOeOtBi7z3gHli9SzG11C3VY7SVjxQ8+IXjlEhISwWG5pbU6K
- YlVQQKHAR/O6InRgrdvTdsVlK0PVHEIiRNSPaJ5ykcTdyCu/mut3X6tE6IJ7z9nTHzht
- bEGw==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=pJMqp9EIEi0XFu4H8gDRGASddQ1NcQquoIf0sgZVsck=;
+ b=FC8kxpQzZWPyMIpBVv8QnX/o1Xp4rND8Y1f9I595cBz7iAwWgSNXDLqgeAZ/k80prG
+ pi0QOsB4MUrDO/hSpBEuS7SxDnDVZ8ZS4FJvZSiOgqwRb8j54wfJzAdtn7uaoFnWQdTp
+ Kn1VB2EdzvjeIpmWR2CmOszvq0+LltoHdyzZInRpDVFkJsJSbrDeuTorL1ZCb7fjtFNj
+ oY3a7Isx0YfbJ3ms2QTM8FiLDYrV1y81BiuITAudtNQyUFBryb1lUGqz7lG+ilOWF1zd
+ CFfn8VXYPbBvkOSyGoZpeSDA74+Fr2NkmLqgZHMBn8pjWqnLM/G9Yp4eeTDyCrWaXhlD
+ MEfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=sYFr2m4GkFjXgv6COxhX+FNMxzJUw1VFmGa2obWXTog=;
- b=bszWZgKIXx/xv/rnP3lGDakwNmsCKNcjlWYlO8OrnwucYuc5a9bpXlN8Ccs8+jfiqV
- D8PTDbRw4Wr/9LMmhKzBmzIfXJO4yBAr9xqzUvhUIWT7Bl+HiN05SFXYddat2+4qqJ3E
- WQJXd+KSnmLnu7WBOMK1d6FMDasla+g+ggcD5jFpaXl368WTG0ycYTXaEEea9+3PLhQL
- wsGSZK2HVlgHtR0rDI+DFGO0ORg/Eq+DVpCRhLva0X/wGgUXSkkubuxakzhMdRq1bj3I
- jy6oFx1KLwSwZ7xQSVv1Ij73bARTPUa2ARkENlX8N0Xes+/R6QezoZVvCR2lyLMvkbGq
- DCrg==
-X-Gm-Message-State: AOAM532vyf1xKVvcrOyfWNO8hje2o7f85884fL1+sel54ztEQuFlZanq
- BrQ74l0X8xN37AenUcHHID2CR+iNcDP5Zw==
-X-Google-Smtp-Source: ABdhPJx25hK0zlLcWykF6OmfCKMtRT6ksz9eIJyYyghOnXd5wxbZ82cxcZAXbDqiAvkm/qpQIVBNmQ==
-X-Received: by 2002:a17:902:8d8a:b029:e6:b2ea:9074 with SMTP id
- v10-20020a1709028d8ab02900e6b2ea9074mr8198740plo.30.1615864737378; 
- Mon, 15 Mar 2021 20:18:57 -0700 (PDT)
-Received: from localhost.localdomain
- (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
- by smtp.gmail.com with ESMTPSA id o13sm15098809pgv.40.2021.03.15.20.18.53
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=pJMqp9EIEi0XFu4H8gDRGASddQ1NcQquoIf0sgZVsck=;
+ b=cRIEKQIb8WIrgXOFCsCdSVrNaipBKJTa924ocEsSjHl6TdHofWWVEEBmXiGrgiA9Ss
+ b893vNkDUf2D3bIKlCDFpUCq8HVdprKG1VGcEbQzZdn311GITvksi9CLIwrys/l0ygly
+ epPg4uyfr36GpCV3YcnKdhvpGwzirMob0gzxwJYl9DbwOyhUJbqEkSzwNgRqqxU+Cjnw
+ sX6vdm6S+J3x32fmEbpJ9CHhFg8f2/AK+rsT9Ddqp8JKQi29X6DVHHUiH2rfOH3qYcOF
+ Yhl89amkWUl5saNIPVsrV6OnMeB4mM+2E5GCaJd9C/RpX/IL/LtnGRKuk8rkS9s452UP
+ 0x6A==
+X-Gm-Message-State: AOAM533o9SpwXCI3uZmL4adj8x7I3yNhwb3XqJgUUklvtl2sJNXSJAXl
+ /VNRAKDTT2gBZP+1YPCkyjo=
+X-Google-Smtp-Source: ABdhPJzqCoph7XnqsP4+hZ0QROL33qbqzR7fZiP3cJwDwx7BBugSNkKKNM1hdDQ7XFCb4uIhqQ81hQ==
+X-Received: by 2002:a62:8ccc:0:b029:1f6:c5e2:69ff with SMTP id
+ m195-20020a628ccc0000b02901f6c5e269ffmr13293916pfd.46.1615866226554; 
+ Mon, 15 Mar 2021 20:43:46 -0700 (PDT)
+Received: from localhost (58-6-239-121.tpgi.com.au. [58.6.239.121])
+ by smtp.gmail.com with ESMTPSA id d20sm1003991pjv.47.2021.03.15.20.43.44
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Mar 2021 20:18:57 -0700 (PDT)
-From: Jordan Niethe <jniethe5@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v9 8/8] powerpc/32: use set_memory_attr()
-Date: Tue, 16 Mar 2021 14:17:41 +1100
-Message-Id: <20210316031741.1004850-8-jniethe5@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210316031741.1004850-1-jniethe5@gmail.com>
-References: <20210316031741.1004850-1-jniethe5@gmail.com>
+ Mon, 15 Mar 2021 20:43:45 -0700 (PDT)
+Date: Tue, 16 Mar 2021 13:43:40 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 12/41] KVM: PPC: Book3S 64: Move hcall early register
+ setup to KVM
+To: Daniel Axtens <dja@axtens.net>, kvm-ppc@vger.kernel.org
+References: <20210305150638.2675513-1-npiggin@gmail.com>
+ <20210305150638.2675513-13-npiggin@gmail.com>
+ <87czw57wn8.fsf@linkitivity.dja.id.au>
+In-Reply-To: <87czw57wn8.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Message-Id: <1615862463.zij1m644om.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,146 +95,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, ajd@linux.ibm.com, npiggin@gmail.com,
- naveen.n.rao@linux.ibm.com, Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+Excerpts from Daniel Axtens's message of March 12, 2021 3:45 pm:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>=20
+>> System calls / hcalls have a different calling convention than
+>> other interrupts, so there is code in the KVMTEST to massage these
+>> into the same form as other interrupt handlers.
+>>
+>> Move this work into the KVM hcall handler. This means teaching KVM
+>> a little more about the low level interrupt handler setup, PACA save
+>> areas, etc., although that's not obviously worse than the current
+>> approach of coming up with an entirely different interrupt register
+>> / save convention.
+>>
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  arch/powerpc/include/asm/exception-64s.h | 13 ++++++++
+>>  arch/powerpc/kernel/exceptions-64s.S     | 42 +-----------------------
+>>  arch/powerpc/kvm/book3s_64_entry.S       | 17 ++++++++++
+>>  3 files changed, 31 insertions(+), 41 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/inc=
+lude/asm/exception-64s.h
+>> index c1a8aac01cf9..bb6f78fcf981 100644
+>> --- a/arch/powerpc/include/asm/exception-64s.h
+>> +++ b/arch/powerpc/include/asm/exception-64s.h
+>> @@ -35,6 +35,19 @@
+>>  /* PACA save area size in u64 units (exgen, exmc, etc) */
+>>  #define EX_SIZE		10
+>> =20
+>> +/* PACA save area offsets */
+>> +#define EX_R9		0
+>> +#define EX_R10		8
+>> +#define EX_R11		16
+>> +#define EX_R12		24
+>> +#define EX_R13		32
+>> +#define EX_DAR		40
+>> +#define EX_DSISR	48
+>> +#define EX_CCR		52
+>> +#define EX_CFAR		56
+>> +#define EX_PPR		64
+>> +#define EX_CTR		72
+>> +
+>>  /*
+>>   * maximum recursive depth of MCE exceptions
+>>   */
+>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/=
+exceptions-64s.S
+>> index 292435bd80f0..b7092ba87da8 100644
+>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> @@ -21,22 +21,6 @@
+>>  #include <asm/feature-fixups.h>
+>>  #include <asm/kup.h>
+>> =20
+>> -/* PACA save area offsets (exgen, exmc, etc) */
+>> -#define EX_R9		0
+>> -#define EX_R10		8
+>> -#define EX_R11		16
+>> -#define EX_R12		24
+>> -#define EX_R13		32
+>> -#define EX_DAR		40
+>> -#define EX_DSISR	48
+>> -#define EX_CCR		52
+>> -#define EX_CFAR		56
+>> -#define EX_PPR		64
+>> -#define EX_CTR		72
+>> -.if EX_SIZE !=3D 10
+>> -	.error "EX_SIZE is wrong"
+>> -.endif
+>> -
+>>  /*
+>>   * Following are fixed section helper macros.
+>>   *
+>> @@ -1964,29 +1948,8 @@ EXC_VIRT_END(system_call, 0x4c00, 0x100)
+>> =20
+>>  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+>>  TRAMP_REAL_BEGIN(system_call_kvm)
+>> -	/*
+>> -	 * This is a hcall, so register convention is as above, with these
+>> -	 * differences:
+>> -	 * r13 =3D PACA
+>> -	 * ctr =3D orig r13
+>> -	 * orig r10 saved in PACA
+>> -	 */
+>> -	 /*
+>> -	  * Save the PPR (on systems that support it) before changing to
+>> -	  * HMT_MEDIUM. That allows the KVM code to save that value into the
+>> -	  * guest state (it is the guest's PPR value).
+>> -	  */
+>> -BEGIN_FTR_SECTION
+>> -	mfspr	r10,SPRN_PPR
+>> -	std	r10,HSTATE_PPR(r13)
+>> -END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>> -	HMT_MEDIUM
+>>  	mfctr	r10
+>> -	SET_SCRATCH0(r10)
+>> -	mfcr	r10
+>> -	std	r12,HSTATE_SCRATCH0(r13)
+>> -	sldi	r12,r10,32
+>> -	ori	r12,r12,0xc00
+>> +	SET_SCRATCH0(r10) /* Save r13 in SCRATCH0 */
+>=20
+> If I've understood correctly, you've saved the _original_/guest r13 in
+> SCRATCH0. That makes sense - it just took me a while to follow the
+> logic, especially because the parameter to SET_SCRATCH0 is r10, not r13.
+>=20
+> I would probably expand the comment to say the original or guest r13 (as
+> you do in the comment at the start of kvmppc_hcall), but if there's a
+> convention here that I've missed that might not be necessary.
 
-Use set_memory_attr() instead of the PPC32 specific change_page_attr()
+There is a convention which is that all kvm interrupts including system
+call come in with r13 saved in SCRATCH0, although that's all in a state
+of flux throughput this series of course.
 
-change_page_attr() was checking that the address was not mapped by
-blocks and was handling highmem, but that's unneeded because the
-affected pages can't be in highmem and block mapping verification
-is already done by the callers.
+I added the comment because I moved the bigger comment here, I think=20
+that's okay because you're always referring to interrupted context=20
+(i.e., guest in this case) when talking about saved registers.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[ruscur: rebase on powerpc/merge with Christophe's new patches]
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
----
- arch/powerpc/mm/pgtable_32.c | 60 ++++++------------------------------
- 1 file changed, 10 insertions(+), 50 deletions(-)
+>=20
+>>  #ifdef CONFIG_RELOCATABLE
+>>  	/*
+>>  	 * Requires __LOAD_FAR_HANDLER beause kvmppc_hcall lives
+>> @@ -1994,15 +1957,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>>  	 */
+>>  	__LOAD_FAR_HANDLER(r10, kvmppc_hcall)
+>>  	mtctr   r10
+>> -	ld	r10,PACA_EXGEN+EX_R10(r13)
+>>  	bctr
+>>  #else
+>> -	ld	r10,PACA_EXGEN+EX_R10(r13)
+>>  	b       kvmppc_hcall
+>>  #endif
+>>  #endif
+>> =20
+>> -
+>>  /**
+>>   * Interrupt 0xd00 - Trace Interrupt.
+>>   * This is a synchronous interrupt in response to instruction step or
+>> diff --git a/arch/powerpc/kvm/book3s_64_entry.S b/arch/powerpc/kvm/book3=
+s_64_entry.S
+>> index 8cf5e24a81eb..a7b6edd18bc8 100644
+>> --- a/arch/powerpc/kvm/book3s_64_entry.S
+>> +++ b/arch/powerpc/kvm/book3s_64_entry.S
+>> @@ -14,6 +14,23 @@
+>>  .global	kvmppc_hcall
+>>  .balign IFETCH_ALIGN_BYTES
+>>  kvmppc_hcall:
+>> +	/*
+>> +	 * This is a hcall, so register convention is as
+>> +	 * Documentation/powerpc/papr_hcalls.rst, with these additions:
+>> +	 * R13		=3D PACA
+>> +	 * guest R13 saved in SPRN_SCRATCH0
+>> +	 * R10		=3D free
+>> +	 */
+>> +BEGIN_FTR_SECTION
+>> +	mfspr	r10,SPRN_PPR
+>> +	std	r10,HSTATE_PPR(r13)
+>> +END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>=20
+> Do we want to preserve the comment about why we save the PPR?
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index e0ec67a16887..dcf5ecca19d9 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -23,6 +23,7 @@
- #include <linux/highmem.h>
- #include <linux/memblock.h>
- #include <linux/slab.h>
-+#include <linux/set_memory.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/fixmap.h>
-@@ -132,64 +133,20 @@ void __init mapin_ram(void)
- 	}
- }
- 
--static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
--{
--	pte_t *kpte;
--	unsigned long address;
--
--	BUG_ON(PageHighMem(page));
--	address = (unsigned long)page_address(page);
--
--	if (v_block_mapped(address))
--		return 0;
--	kpte = virt_to_kpte(address);
--	if (!kpte)
--		return -EINVAL;
--	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot), 0);
--
--	return 0;
--}
--
--/*
-- * Change the page attributes of an page in the linear mapping.
-- *
-- * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
-- */
--static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
--{
--	int i, err = 0;
--	unsigned long flags;
--	struct page *start = page;
--
--	local_irq_save(flags);
--	for (i = 0; i < numpages; i++, page++) {
--		err = __change_page_attr_noflush(page, prot);
--		if (err)
--			break;
--	}
--	wmb();
--	local_irq_restore(flags);
--	flush_tlb_kernel_range((unsigned long)page_address(start),
--			       (unsigned long)page_address(page));
--	return err;
--}
--
- void mark_initmem_nx(void)
- {
--	struct page *page = virt_to_page(_sinittext);
- 	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
- 				 PFN_DOWN((unsigned long)_sinittext);
- 
- 	if (v_block_mapped((unsigned long)_sinittext))
- 		mmu_mark_initmem_nx();
- 	else
--		change_page_attr(page, numpages, PAGE_KERNEL);
-+		set_memory_attr((unsigned long)_sinittext, numpages, PAGE_KERNEL);
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
- void mark_rodata_ro(void)
- {
--	struct page *page;
- 	unsigned long numpages;
- 
- 	if (v_block_mapped((unsigned long)_stext + 1)) {
-@@ -198,20 +155,18 @@ void mark_rodata_ro(void)
- 		return;
- 	}
- 
--	page = virt_to_page(_stext);
- 	numpages = PFN_UP((unsigned long)_etext) -
- 		   PFN_DOWN((unsigned long)_stext);
- 
--	change_page_attr(page, numpages, PAGE_KERNEL_ROX);
-+	set_memory_attr((unsigned long)_stext, numpages, PAGE_KERNEL_ROX);
- 	/*
- 	 * mark .rodata as read only. Use __init_begin rather than __end_rodata
- 	 * to cover NOTES and EXCEPTION_TABLE.
- 	 */
--	page = virt_to_page(__start_rodata);
- 	numpages = PFN_UP((unsigned long)__init_begin) -
- 		   PFN_DOWN((unsigned long)__start_rodata);
- 
--	change_page_attr(page, numpages, PAGE_KERNEL_RO);
-+	set_memory_attr((unsigned long)__start_rodata, numpages, PAGE_KERNEL_RO);
- 
- 	// mark_initmem_nx() should have already run by now
- 	ptdump_check_wx();
-@@ -221,9 +176,14 @@ void mark_rodata_ro(void)
- #ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
-+	unsigned long addr = (unsigned long)page_address(page);
-+
- 	if (PageHighMem(page))
- 		return;
- 
--	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
-+	if (enable)
-+		set_memory_attr(addr, numpages, PAGE_KERNEL);
-+	else
-+		set_memory_attr(addr, numpages, __pgprot(0));
- }
- #endif /* CONFIG_DEBUG_PAGEALLOC */
--- 
-2.25.1
+Wouldn't hurt. I think the reason the comment is there is because it's a=20
+difference with system calls. Hcalls preserve the PPR, system calls do not.
 
+Should probably leave the "orig r10 saved in the PACA" comment too.
+
+>=20
+>> +	HMT_MEDIUM
+>> +	mfcr	r10
+>> +	std	r12,HSTATE_SCRATCH0(r13)
+>> +	sldi	r12,r10,32
+>> +	ori	r12,r12,0xc00
+>=20
+> I see that this is a direct copy from the earlier code, but it confuses
+> me a bit. Looking at exceptions-64s.S, there's the following comment:
+>=20
+>  * In HPT, sc 1 always goes to 0xc00 real mode. In RADIX, sc 1 can go to
+>  * 0x4c00 virtual mode.
+>=20
+> However, this code uncondionally sets the low bits to be c00, even if
+> the exception came in via 4c00. Is this right? Do we need to pass
+> that through somehow?
+
+We don't need to. The "trap" numbers are always the real-mode vectors
+(except scv which is a bit weird) by convention.
+
+>=20
+>> +	ld	r10,PACA_EXGEN+EX_R10(r13)
+>>
+>=20
+> Otherwise, this looks good to me so far.
+
+Thanks,
+Nick
