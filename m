@@ -2,107 +2,51 @@ Return-Path: <SRS0=5tyt=IO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED363C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCFA0C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 04:12:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4192B650C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:46:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4192B650C0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id 28FF5650DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 04:12:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28FF5650DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4DzzjY6QJXz30FL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 14:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=HzMVlrLH;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=UpUCtl+A;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F00Hr4vjnz30LJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 15:12:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=russell.cc (client-ip=66.111.4.28;
- helo=out4-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
- header.s=fm1 header.b=HzMVlrLH; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=UpUCtl+A; 
- dkim-atps=neutral
-X-Greylist: delayed 531 seconds by postgrey-1.36 at boromir;
- Tue, 16 Mar 2021 14:45:56 AEDT
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
- [66.111.4.28])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=szxga06-in.huawei.com;
+ envelope-from=heying24@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga06-in.huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzzj01wdcz2yRX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 14:45:56 +1100 (AEDT)
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
- by mailout.nyi.internal (Postfix) with ESMTP id 481B65C0108;
- Mon, 15 Mar 2021 23:37:00 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute2.internal (MEProxy); Mon, 15 Mar 2021 23:37:00 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- DpYLPwutDRmI/uxfHqddZ1cnpn6dGqh2dZModGa7/+w=; b=HzMVlrLH899GtYQ7
- 1n2IKeTnRx9/5K5sCe7TOMtBclG7n7C08BiKyQrawzF19j0j0nAVCyXUWxBFlqyx
- 5FT/9orh8kshhL0NodjnN7FgU0cel2HXdXLbB7Lg8JDi/vDGH7vsYyF6kaAjRGVH
- oPEK+6QGoUxEjYS5NUfL9dPgckG0e5j0u2hvFW4Ss2NWrUaOmTCFLFHJMfKMcVxf
- kLO0qovAuG4qJSjdSN9fXTOMAE4efuYc0lDhbz9QvAhElBvH0lXEjzweUo31M6mi
- /C2eR5JArHGyqAQxvXD0iQyGIfm1+8JUrPSWOE4dwX/kL+zS6Tp3Zaflnpn8zxPS
- 5tJrIA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=DpYLPwutDRmI/uxfHqddZ1cnpn6dGqh2dZModGa7/
- +w=; b=UpUCtl+Ash3j0YZ73WUP3Fv+yNctIbzRbfZgTjjCIXAYGmjFny5ls+9+d
- 0G+kUb//iFHm0f6enzofEYOPgfeEF05dZC0Fn1Pp4B7qOqTMu8jYaK8q9bjrdTu9
- 1yhSNLk16V1a87IDZJj1Pfmd8O5jE+NXon+UvG6tcgmhnoJ2Ad/plyOM0WKd9eiD
- sSE5lErWW+FDhevu1gIn9Jig+vo/8Flud8u+JzZXLwLAo9fKJnz/FP1cXZ9WqiUw
- cN7HtIfxHbKQgZZ1VXDjyx26cHLNPQN0cVxUqgzhlfLPzacysZbMoVP/JJrcvsUZ
- OP+6CwL64fWGRwSMylB8EDwh2fMcQ==
-X-ME-Sender: <xms:2ydQYFz5XZP89njQw8PRLnOMdTwmf7OQjCVJUR1Nvnwe5qepKCsaRg>
- <xme:2ydQYFTw0R0SBxtQET2n7luRzy4WlgEaHsnKt8aVaba_reKlRVZY36aCWT-La8bqV
- r1rrD4U9um-g-Smgg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrudefuddgiedtucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- gfrhhlucfvnfffucdludehmdenucfjughrpefkuffhvfffjghftggfggfgsehtkeertddt
- reejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
- hsvghllhdrtggtqeenucggtffrrghtthgvrhhnpeeukeegvdefiefgudekgefftddvtdel
- keegvefgkeelgeejueejveehvefgieeujeenucfkphepudejvddrudelfedrgeeirdehje
- enucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhs
- tghurhesrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:2ydQYPUjH62kP2lLKSLOtdiwPKrUdHbGpYwbttte_JZ0nGyTTVtLeQ>
- <xmx:2ydQYHjZT5GleL5G8Y2c7M2TSauogxaRRmELewMX-2f_YNpM_WV5Aw>
- <xmx:2ydQYHAsRWMNl_9nb_0J65ZLNdBWGdhiel5kYlzKkMSR_yzlYdnG-w>
- <xmx:3CdQYC9hx71N1Am7DvYWdoqn6c3ucy-cbSQDgq66MXIbIgUqiU5syg>
-Received: from crackle.ozlabs.ibm.com (cpe-172-193-46-57.qld.foxtel.net.au
- [172.193.46.57])
- by mail.messagingengine.com (Postfix) with ESMTPA id 779B71080054;
- Mon, 15 Mar 2021 23:36:57 -0400 (EDT)
-Message-ID: <5140a641c71f0e89edb5800b075138b32fd56544.camel@russell.cc>
-Subject: Re: [PATCH v9 2/8] powerpc/lib/code-patching: Set up Strict RWX
- patching earlier
-From: Russell Currey <ruscur@russell.cc>
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 16 Mar 2021 13:36:52 +1000
-In-Reply-To: <20210316031741.1004850-2-jniethe5@gmail.com>
-References: <20210316031741.1004850-1-jniethe5@gmail.com>
- <20210316031741.1004850-2-jniethe5@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.4 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F00HV2kLHz3035
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 15:12:15 +1100 (AEDT)
+Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.58])
+ by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4F00FR34DBzkZnD;
+ Tue, 16 Mar 2021 12:10:35 +0800 (CST)
+Received: from huawei.com (10.67.174.47) by DGGEMS405-HUB.china.huawei.com
+ (10.3.19.205) with Microsoft SMTP Server id 14.3.498.0; Tue, 16 Mar 2021
+ 12:12:00 +0800
+From: He Ying <heying24@huawei.com>
+To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <npiggin@gmail.com>, <dja@axtens.net>, <akpm@linux-foundation.org>,
+ <aneesh.kumar@linux.ibm.com>, <rppt@kernel.org>, <ardb@kernel.org>,
+ <clg@kaod.org>, <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc: arch/powerpc/kernel/setup_64.c - cleanup warnings
+Date: Tue, 16 Mar 2021 00:11:48 -0400
+Message-ID: <20210316041148.29694-1-heying24@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.67.174.47]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,82 +58,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, naveen.n.rao@linux.ibm.com, ajd@linux.ibm.com,
- npiggin@gmail.com, dja@axtens.net
+Cc: johnny.chenyi@huawei.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2021-03-16 at 14:17 +1100, Jordan Niethe wrote:
-> setup_text_poke_area() is a late init call so it runs before
-> mark_rodata_ro() and after the init calls. This lets all the init
-> code
-> patching simply write to their locations. In the future, kprobes is
-> going to allocate its instruction pages RO which means they will need
-> setup_text__poke_area() to have been already called for their code
-> patching. However, init_kprobes() (which allocates and patches some
-> instruction pages) is an early init call so it happens before
-> setup_text__poke_area().
-> 
-> start_kernel() calls poking_init() before any of the init calls. On
-> powerpc, poking_init() is currently a nop. setup_text_poke_area()
-> relies
-> on kernel virtual memory, cpu hotplug and per_cpu_areas being setup.
-> setup_per_cpu_areas(), boot_cpu_hotplug_init() and mm_init() are
-> called
-> before poking_init().
-> 
-> Turn setup_text_poke_area() into poking_init().
-> 
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+warning: symbol 'rfi_flush' was not declared.
+warning: symbol 'entry_flush' was not declared.
+warning: symbol 'uaccess_flush' was not declared.
+We found warnings above in arch/powerpc/kernel/setup_64.c by using
+sparse tool.
 
-Good job finding & fixing this bug!
+Define 'entry_flush' and 'uaccess_flush' as static because they are not
+referenced outside the file. Include asm/security_features.h in which
+'rfi_flush' is declared.
 
-Reviewed-by: Russell Currey <ruscur@russell.cc>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: He Ying <heying24@huawei.com>
+---
+ arch/powerpc/kernel/setup_64.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-> ---
-> v9: New to series
-> ---
->  arch/powerpc/lib/code-patching.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/lib/code-patching.c
-> b/arch/powerpc/lib/code-patching.c
-> index 2333625b5e31..b28afa1133db 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -65,14 +65,11 @@ static int text_area_cpu_down(unsigned int cpu)
->  }
->  
->  /*
-> - * Run as a late init call. This allows all the boot time patching
-> to be done
-> - * simply by patching the code, and then we're called here prior to
-> - * mark_rodata_ro(), which happens after all init calls are run.
-> Although
-> - * BUG_ON() is rude, in this case it should only happen if ENOMEM,
-> and we judge
-> - * it as being preferable to a kernel that will crash later when
-> someone tries
-> - * to use patch_instruction().
-> + * Although BUG_ON() is rude, in this case it should only happen if
-> ENOMEM, and
-> + * we judge it as being preferable to a kernel that will crash later
-> when
-> + * someone tries to use patch_instruction().
->   */
-> -static int __init setup_text_poke_area(void)
-> +int __init poking_init(void)
->  {
->         BUG_ON(!cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
->                 "powerpc/text_poke:online", text_area_cpu_up,
-> @@ -80,7 +77,6 @@ static int __init setup_text_poke_area(void)
->  
->         return 0;
->  }
-> -late_initcall(setup_text_poke_area);
->  
->  /*
->   * This can be called for kernel text or a module.
-
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 560ed8b975e7..f92d72a7e7ce 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -68,6 +68,7 @@
+ #include <asm/early_ioremap.h>
+ #include <asm/pgalloc.h>
+ #include <asm/asm-prototypes.h>
++#include <asm/security_features.h>
+ 
+ #include "setup.h"
+ 
+@@ -949,8 +950,8 @@ static bool no_rfi_flush;
+ static bool no_entry_flush;
+ static bool no_uaccess_flush;
+ bool rfi_flush;
+-bool entry_flush;
+-bool uaccess_flush;
++static bool entry_flush;
++static bool uaccess_flush;
+ DEFINE_STATIC_KEY_FALSE(uaccess_flush_key);
+ EXPORT_SYMBOL(uaccess_flush_key);
+ 
+-- 
+2.17.1
 
