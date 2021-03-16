@@ -3,66 +3,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F279DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 12:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 533B7C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 13:04:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4767B64E99
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 12:28:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4767B64E99
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id A206A64E28
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 13:04:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A206A64E28
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F0CJ84Fdvz3bcy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 23:28:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.187.244; helo=10.mo52.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Received: from 10.mo52.mail-out.ovh.net (10.mo52.mail-out.ovh.net
- [87.98.187.244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0CHp03vmz30BH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 23:28:21 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.138.7])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 6ACED250930;
- Tue, 16 Mar 2021 13:28:17 +0100 (CET)
-Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Tue, 16 Mar
- 2021 13:28:16 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-103G005fa0eac05-291b-4f37-9a1b-bb2b0861672f,
- F4745E3E32A08DF6AE8813652EB4480BB0CFD8A0) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-Subject: Re: [PATCH] powerpc/numa: Fix topology_physical_package_id() on
- pSeries
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20210312143154.3181109-1-clg@kaod.org>
- <20210316112811.GA2339179@linux.vnet.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <c64885a9-72d3-dcc3-c1b3-8cab5171ead2@kaod.org>
-Date: Tue, 16 Mar 2021 13:28:16 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F0D5B6d1Sz3bnV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 00:04:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4F0D4q2Y0Sz3034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 00:03:53 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 83307101E;
+ Tue, 16 Mar 2021 06:03:49 -0700 (PDT)
+Received: from [10.57.55.99] (unknown [10.57.55.99])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 768DC3F792;
+ Tue, 16 Mar 2021 06:03:47 -0700 (PDT)
+Subject: Re: [PATCH 14/17] iommu: remove DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
+To: Christoph Hellwig <hch@lst.de>
+References: <20210301084257.945454-1-hch@lst.de>
+ <20210301084257.945454-15-hch@lst.de>
+ <1658805c-ed28-b650-7385-a56fab3383e3@arm.com> <20210310091501.GC5928@lst.de>
+ <20210310092533.GA6819@lst.de> <fdacf87a-be14-c92c-4084-1d1dd4fc7766@arm.com>
+ <20210311082609.GA6990@lst.de> <dff8eb80-8f74-972b-17e9-496c1fc0396f@arm.com>
+ <20210315083347.GA28445@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <42f5aba4-9271-d106-4a85-1bfc9fd98de1@arm.com>
+Date: Tue, 16 Mar 2021 13:03:42 +0000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-In-Reply-To: <20210316112811.GA2339179@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.103]
-X-ClientProxiedBy: DAG2EX2.mxp5.local (172.16.2.12) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 12600d48-47d5-4bb7-86a0-8d77ae67ec7e
-X-Ovh-Tracer-Id: 11844748498435672940
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudefvddggeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeetfeejteefhfeuveethfduffeftdelvdeghfelhfeljeehheeuieevudeggefhnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepghhrohhugheskhgrohgurdhorhhg
+In-Reply-To: <20210315083347.GA28445@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,82 +62,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, Greg Kurz <groug@kaod.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: freedreno@lists.freedesktop.org, kvm@vger.kernel.org,
+ Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Li Yang <leoyang.li@nxp.com>,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/16/21 12:28 PM, Srikar Dronamraju wrote:
-> * C?dric Le Goater <clg@kaod.org> [2021-03-12 15:31:54]:
-> 
->> Initial commit 15863ff3b8da ("powerpc: Make chip-id information
->> available to userspace") introduce a cpu_to_chip_id() routine for the
->> PowerNV platform using the "ibm,chip-id" property to query the chip id
->> of a CPU. But PAPR does not specify such a property and the node id
->> query is broken.
+On 2021-03-15 08:33, Christoph Hellwig wrote:
+> On Fri, Mar 12, 2021 at 04:18:24PM +0000, Robin Murphy wrote:
+>>> Let me know what you think of the version here:
+>>>
+>>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/iommu-cleanup
+>>>
+>>> I'll happily switch the patch to you as the author if you're fine with
+>>> that as well.
 >>
->> Use cpu_to_node() instead which guarantees to have a correct value on
->> all platforms, PowerNV an pSeries.
->>
->> Cc: Nathan Lynch <nathanl@linux.ibm.com>
->> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->> Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  arch/powerpc/include/asm/topology.h | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
+>> I still have reservations about removing the attribute API entirely and
+>> pretending that io_pgtable_cfg is anything other than a SoC-specific
+>> private interface,
 > 
-> (Sorry I somehow managed to mangle to-address. Hence resending this mail
-> again)
+> I think a private inteface would make more sense.  For now I've just
+> condensed it down to a generic set of quirk bits and dropped the
+> attrs structure, which seems like an ok middle ground for now.  That
+> being said I wonder why that quirk isn't simply set in the device
+> tree?
+
+Because it's a software policy decision rather than any inherent 
+property of the platform, and the DT certainly doesn't know *when* any 
+particular device might prefer its IOMMU to use cacheable pagetables to 
+minimise TLB miss latency vs. saving the cache capacity for larger data 
+buffers. It really is most logical to decide this at the driver level.
+
+In truth the overall concept *is* relatively generic (a trend towards 
+larger system caches and cleverer usage is about both raw performance 
+and saving power on off-SoC DRAM traffic), it's just the particular 
+implementation of using io-pgtable to set an outer-cacheable walk 
+attribute in an SMMU TCR that's pretty much specific to Qualcomm SoCs. 
+Hence why having a common abstraction at the iommu_domain level, but 
+where the exact details are free to vary across different IOMMUs and 
+their respective client drivers, is in many ways an ideal fit.
+
+>> but the reworked patch on its own looks reasonable to
+>> me, thanks! (I wasn't too convinced about the iommu_cmd_line wrappers
+>> either...) Just iommu_get_dma_strict() needs an export since the SMMU
+>> drivers can be modular - I consciously didn't add that myself since I was
+>> mistakenly thinking only iommu-dma would call it.
 > 
-> While this looks good to me, @mpe had reservations on using nid as chip-id.
-> https://lore.kernel.org/linuxppc-dev/87lfwhypv0.fsf@concordia.ellerman.id.au/t/#u
+> Fixed.  Can I get your signoff for the patch?  Then I'll switch it to
+> over to being attributed to you.
 
-that was a different approach.
+Sure - I would have thought that the one I originally posted still 
+stands, but for the avoidance of doubt, for the parts of commit 
+8b6d45c495bd in your tree that remain from what I wrote:
 
-> He may be okay with using nid as a "virtual" package id in a pseries
-> environment.
+Signed-off-by: Robin Murphy <robin.murphy@arm.com>
 
-ibm,chip-id is only used in a couple of places in low level PowerNV
-drivers. The CPU doesn't use this property. We should be fine on
-all platforms.
-
-> Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-
-Thanks,
-
-C.
- 
-> [---=| TOFU protection by t-prot: 24 lines snipped |=---]
-> 
-> --
-> Thanks and Regards
-> Srikar Dronamraju
-> 
-> 
->> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
->> index 3beeb030cd78..887c42a4e43d 100644
->> --- a/arch/powerpc/include/asm/topology.h
->> +++ b/arch/powerpc/include/asm/topology.h
->> @@ -123,7 +123,7 @@ static inline int cpu_to_coregroup_id(int cpu)
->>  #ifdef CONFIG_PPC64
->>  #include <asm/smp.h>
->>
->> -#define topology_physical_package_id(cpu)	(cpu_to_chip_id(cpu))
->> +#define topology_physical_package_id(cpu)	(cpu_to_node(cpu))
->>
->>  #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
->>  #define topology_core_cpumask(cpu)	(cpu_cpu_mask(cpu))
->> --
->> 2.26.2
->>
-> 
-> --
-> Thanks and Regards
-> Srikar Dronamraju
-> 
-
+Cheers,
+Robin.
