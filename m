@@ -7,55 +7,57 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43AD3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 07:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3872C433E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 07:58:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 034D464F41
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 07:57:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 034D464F41
+	by mail.kernel.org (Postfix) with ESMTPS id B1B8564FE4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 07:58:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1B8564FE4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F05HT2P2Fz30DY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 18:57:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F05Hr14Zdz3bry
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 18:58:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F05H63N78z302r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F05H62HnLz301P
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 18:57:18 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F05Gx4N5Hz9v025;
- Tue, 16 Mar 2021 08:57:13 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4F05Gz4mnGz9v028;
+ Tue, 16 Mar 2021 08:57:15 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id sr1BLlSXAvKU; Tue, 16 Mar 2021 08:57:13 +0100 (CET)
+ with ESMTP id qUwhpo_oFFwc; Tue, 16 Mar 2021 08:57:15 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F05Gx39xXz9v023;
- Tue, 16 Mar 2021 08:57:13 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F05Gz3zd4z9v023;
+ Tue, 16 Mar 2021 08:57:15 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 488118B789;
- Tue, 16 Mar 2021 08:57:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5715F8B789;
+ Tue, 16 Mar 2021 08:57:16 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id nJVA84T61O5U; Tue, 16 Mar 2021 08:57:14 +0100 (CET)
+ with ESMTP id ZQunHu6nIbbi; Tue, 16 Mar 2021 08:57:16 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FAE58B782;
- Tue, 16 Mar 2021 08:57:14 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 109D58B782;
+ Tue, 16 Mar 2021 08:57:16 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id CD39D675C0; Tue, 16 Mar 2021 07:57:13 +0000 (UTC)
-Message-Id: <955248c6423cb068c5965923121ba31d4dd2fdde.1615881400.git.christophe.leroy@csgroup.eu>
+ id DF9A1675C0; Tue, 16 Mar 2021 07:57:15 +0000 (UTC)
+Message-Id: <73b36bbb101299760b95ecd2cd3a46554bea8bf9.1615881400.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <955248c6423cb068c5965923121ba31d4dd2fdde.1615881400.git.christophe.leroy@csgroup.eu>
+References: <955248c6423cb068c5965923121ba31d4dd2fdde.1615881400.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 1/4] powerpc: Activate HAVE_RELIABLE_STACKTRACE for all
+Subject: [PATCH v1 3/4] powerpc: Convert stacktrace to generic ARCH_STACKWALK
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 16 Mar 2021 07:57:13 +0000 (UTC)
+Date: Tue, 16 Mar 2021 07:57:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,48 +74,161 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_HAVE_RELIABLE_STACKTRACE is applicable to all, no
-reason to limit it to book3s/64le
+This patch converts powerpc stacktrace to the generic ARCH_STACKWALK
+implemented by commit 214d8ca6ee85 ("stacktrace: Provide common
+infrastructure")
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig             | 2 +-
- arch/powerpc/kernel/stacktrace.c | 2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/Kconfig             |  1 +
+ arch/powerpc/kernel/stacktrace.c | 91 ++++++--------------------------
+ 2 files changed, 17 insertions(+), 75 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 67c47b60cc84..bb7ca6fee885 100644
+index bb7ca6fee885..60827904a816 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -235,7 +235,7 @@ config PPC
- 	select MMU_GATHER_RCU_TABLE_FREE
- 	select MMU_GATHER_PAGE_SIZE
- 	select HAVE_REGS_AND_STACK_ACCESS_API
--	select HAVE_RELIABLE_STACKTRACE		if PPC_BOOK3S_64 && CPU_LITTLE_ENDIAN
-+	select HAVE_RELIABLE_STACKTRACE
- 	select HAVE_SOFTIRQ_ON_OWN_STACK
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_VIRT_CPU_ACCOUNTING
+@@ -145,6 +145,7 @@ config PPC
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
++	select ARCH_STACKWALK
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC32 || PPC_BOOK3S_64
+ 	select ARCH_USE_BUILTIN_BSWAP
 diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index b6440657ef92..a2a050551109 100644
+index 5b93650bc16c..80f92f5b5393 100644
 --- a/arch/powerpc/kernel/stacktrace.c
 +++ b/arch/powerpc/kernel/stacktrace.c
-@@ -88,7 +88,6 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
- }
- EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+@@ -23,12 +23,18 @@
  
--#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
+ #include <asm/paca.h>
+ 
+-/*
+- * Save stack-backtrace addresses into a stack_trace buffer.
+- */
+-static void save_context_stack(struct stack_trace *trace, unsigned long sp,
+-			struct task_struct *task, int savesched)
++void arch_stack_walk(stack_trace_consume_fn consume_entry, void *cookie,
++		     struct task_struct *task, struct pt_regs *regs)
+ {
++	unsigned long sp;
++
++	if (regs)
++		sp = regs->gpr[1];
++	else if (task == current)
++		sp = current_stack_frame();
++	else
++		sp = task->thread.ksp;
++
+ 	for (;;) {
+ 		unsigned long *stack = (unsigned long *) sp;
+ 		unsigned long newsp, ip;
+@@ -39,63 +45,21 @@ static void save_context_stack(struct stack_trace *trace, unsigned long sp,
+ 		newsp = stack[0];
+ 		ip = stack[STACK_FRAME_LR_SAVE];
+ 
+-		if (savesched || !in_sched_functions(ip)) {
+-			if (!trace->skip)
+-				trace->entries[trace->nr_entries++] = ip;
+-			else
+-				trace->skip--;
+-		}
+-
+-		if (trace->nr_entries >= trace->max_entries)
++		if (!consume_entry(cookie, ip))
+ 			return;
+ 
+ 		sp = newsp;
+ 	}
+ }
+ 
+-void save_stack_trace(struct stack_trace *trace)
+-{
+-	unsigned long sp;
+-
+-	sp = current_stack_frame();
+-
+-	save_context_stack(trace, sp, current, 1);
+-}
+-EXPORT_SYMBOL_GPL(save_stack_trace);
+-
+-void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+-{
+-	unsigned long sp;
+-
+-	if (!try_get_task_stack(tsk))
+-		return;
+-
+-	if (tsk == current)
+-		sp = current_stack_frame();
+-	else
+-		sp = tsk->thread.ksp;
+-
+-	save_context_stack(trace, sp, tsk, 0);
+-
+-	put_task_stack(tsk);
+-}
+-EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+-
+-void
+-save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+-{
+-	save_context_stack(trace, regs->gpr[1], current, 0);
+-}
+-EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+-
  /*
   * This function returns an error if it detects any unreliable features of the
   * stack.  Otherwise it guarantees that the stack trace is reliable.
-@@ -220,7 +219,6 @@ int save_stack_trace_tsk_reliable(struct task_struct *tsk,
+  *
+  * If the task is not 'current', the caller *must* ensure the task is inactive.
+  */
+-static int __save_stack_trace_tsk_reliable(struct task_struct *task,
+-					   struct stack_trace *trace)
++int arch_stack_walk_reliable(stack_trace_consume_fn consume_entry,
++			     void *cookie, struct task_struct *task)
+ {
+ 	unsigned long sp;
+ 	unsigned long newsp;
+@@ -191,35 +155,12 @@ static int __save_stack_trace_tsk_reliable(struct task_struct *task,
+ 			return -EINVAL;
+ #endif
  
- 	return ret;
+-		if (trace->nr_entries >= trace->max_entries)
+-			return -E2BIG;
+-		if (!trace->skip)
+-			trace->entries[trace->nr_entries++] = ip;
+-		else
+-			trace->skip--;
++		if (!consume_entry(cookie, ip))
++			return -EINVAL;
+ 	}
+ 	return 0;
  }
--#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
  
+-int save_stack_trace_tsk_reliable(struct task_struct *tsk,
+-				  struct stack_trace *trace)
+-{
+-	int ret;
+-
+-	/*
+-	 * If the task doesn't have a stack (e.g., a zombie), the stack is
+-	 * "reliably" empty.
+-	 */
+-	if (!try_get_task_stack(tsk))
+-		return 0;
+-
+-	ret = __save_stack_trace_tsk_reliable(tsk, trace);
+-
+-	put_task_stack(tsk);
+-
+-	return ret;
+-}
+-
  #if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI)
  static void handle_backtrace_ipi(struct pt_regs *regs)
+ {
 -- 
 2.25.0
 
