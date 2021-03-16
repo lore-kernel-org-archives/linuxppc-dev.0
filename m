@@ -8,75 +8,75 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84FC2C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 080DCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:20:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 228A965092
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:19:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 228A965092
+	by mail.kernel.org (Postfix) with ESMTPS id 977CD65093
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 03:20:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 977CD65093
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzz6n6V5Mz30FY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 14:19:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Dzz7P2M6Gz3bxn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 14:20:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=DfJNM0SB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=B6uVTpWW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e;
- helo=mail-pl1-x62e.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436;
+ helo=mail-pf1-x436.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=DfJNM0SB; dkim-atps=neutral
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
+ header.s=20161025 header.b=B6uVTpWW; dkim-atps=neutral
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
+ [IPv6:2607:f8b0:4864:20::436])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzz5T2z08z302p
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 14:18:37 +1100 (AEDT)
-Received: by mail-pl1-x62e.google.com with SMTP id 30so11726679ple.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 20:18:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Dzz5b10xNz30C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 14:18:42 +1100 (AEDT)
+Received: by mail-pf1-x436.google.com with SMTP id x7so7868966pfi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Mar 2021 20:18:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=hoUZb06JTxTijcPbi8a4pUTkZ5jr9A6529n/cLWmg6Y=;
- b=DfJNM0SB3O3oMP+NfgSLaxGSFSvaOcmHN5P4MSP/9e/mw8GlIeOCIZuUED84mEEmjo
- rfdbNjIEZ9BnJsOCiAv8drxqe1afWRSoggTMvOtilDUMspauzuYBuJoYHBVPo3nILw33
- KuIjWRic9lQulOKkQlWmbfU2k+v4VYam+OrQhqHLrvZaVCqQg+680cXkLVbqXl2Do9c7
- KpVbJoeTKk8j+JWJrR7gnLDapGiO/Sw4bmERSirKqU9oXxVgN/biFfE0mKtL3g81w95u
- oKxld/nqEVb6ziBHNn2RSTuu792FLU/T9O2xfjQDGKqtzk2CyK6UH/eoXHHK475+7e2B
- jcyA==
+ bh=7H59t/YcaUtdXxKYfZLvRzPJM2todDbVzkoX+5TuhGE=;
+ b=B6uVTpWW7GIRzCt2BT2jcUPddyYyVAwNItJEcVIds2Qw//DaFLUg63YRCjL+g2ReuU
+ HsAAKW8erGQuMcNupzeRGlwAOlxfGwHhEyPPMmMRqAWou+Hwnmg9pc/BHxfu9p1e6iF/
+ IIgDc8t8UELZKIVF/95BnISiXVYIWeeF4h19SjPUiRkWnQJiulDcYENWfSxVyVwP1Tx9
+ o5/POIMG9uOkjEkvEp0jCcxtWwN4luxX35cw36xgw2nKJRA6YMKzyhwr7UG4pmNDq29t
+ hmvj0ld8L6fTWYbpmPYBkt/gPPFQStPLZBZmZx/kSdOAMp3g/BMtaSR71ehTyys7iR/6
+ X7+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=hoUZb06JTxTijcPbi8a4pUTkZ5jr9A6529n/cLWmg6Y=;
- b=Y9sUmsataQ1VHM6U6COgPCYO8AgaWZOz62ZwvSNnLZCipAU6GnQbx3HQc0xsy6CDRG
- AohPVpavET3FQ4AtjmAd45jUid8CyDmHjly0E3ZDEGvq+bkAzKF5SOdmt8rXSirqs3g6
- FWRKZVH7GV8kLmmQoaQhBtKpX5iU7Q0dAFuQevXz8lDZWqw/IbJweoSnI+gaXabEWcp7
- Ien/c6xxmhLUp0ZeOV68aFgookrx08x/aGWZ6mA3mVrkHSUmWFAcv4b6E+quki3ZAw3K
- 9TD4CVoEjd2Ax1qa4/EcZtCGnKdGHTmLxSy5FO/L6vzdt/iEbBirm7zGGf4Gu2qJfYuz
- cQPQ==
-X-Gm-Message-State: AOAM531spAwHjUaK09+IClvxMH32JlnT2Zmt56sZFsCMOKBKXxHY3D+C
- v+I7Y5tOi7qDKq40ivIuAAewkxSaSvq4Gg==
-X-Google-Smtp-Source: ABdhPJxMfI4Y8jl3Q4qDvbfmLQoTGmJdAP+KmY/ueOBcH5uj30qrJJ8RDQRNpaaTBLOAh/A62H1Klg==
-X-Received: by 2002:a17:90a:400f:: with SMTP id
- u15mr2445964pjc.80.1615864715651; 
- Mon, 15 Mar 2021 20:18:35 -0700 (PDT)
+ bh=7H59t/YcaUtdXxKYfZLvRzPJM2todDbVzkoX+5TuhGE=;
+ b=dcggl+mJSYU58Lzb6nchlofsdL2EPjSClLcxOqTfScm7dXvPfwZCW/K3xWqgVvI/TM
+ 8Z6Fq2/gZsci7o59DPh5EpWUxzpr1Og/ipVh+j0kJhSghqQms1MiHuXGSdmiGJZ8l+og
+ LOkv+ITf9v0fkND+aAT+wdgPhGqaLfbSXgeARwe239woSdaW990OdYMemEVd6R4E3P4t
+ J3p2X8g8f5yCcXRwE05IqQQ2XolT+1FAtX1Rwgoun8PTW1gaMRiJtu7g72FuD8jz+mSk
+ cVuAdr5kI7x2YtJ+HrE5QsqNau3zgprb9lbfBqXDP4fHO1gHYM37rxVIC31Z8uudT4gk
+ CYAQ==
+X-Gm-Message-State: AOAM530k4mnxrZfmVnWI0w6RZTE5Y+ArFEAYmFOiZErIs5eGYeYTuvaS
+ Ruc41y7CXotbQx6mRXfaPw5OpmycUh0u7Q==
+X-Google-Smtp-Source: ABdhPJzSOetPKduWc4fhbbyYrmmbymSVFUrHvGSirNKrdSifMok8T4UfvqZbLCyOEGJrROlcBdmWtQ==
+X-Received: by 2002:a63:cc49:: with SMTP id q9mr1942090pgi.72.1615864720385;
+ Mon, 15 Mar 2021 20:18:40 -0700 (PDT)
 Received: from localhost.localdomain
  (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
- by smtp.gmail.com with ESMTPSA id o13sm15098809pgv.40.2021.03.15.20.18.31
+ by smtp.gmail.com with ESMTPSA id o13sm15098809pgv.40.2021.03.15.20.18.35
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Mar 2021 20:18:35 -0700 (PDT)
+ Mon, 15 Mar 2021 20:18:40 -0700 (PDT)
 From: Jordan Niethe <jniethe5@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v9 3/8] powerpc/kprobes: Mark newly allocated probes as RO
-Date: Tue, 16 Mar 2021 14:17:36 +1100
-Message-Id: <20210316031741.1004850-3-jniethe5@gmail.com>
+Subject: [PATCH v9 4/8] powerpc/mm/ptdump: debugfs handler for W+X checks at
+ runtime
+Date: Tue, 16 Mar 2021 14:17:37 +1100
+Message-Id: <20210316031741.1004850-4-jniethe5@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210316031741.1004850-1-jniethe5@gmail.com>
 References: <20210316031741.1004850-1-jniethe5@gmail.com>
@@ -93,7 +93,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, ajd@linux.ibm.com, npiggin@gmail.com,
+Cc: christophe.leroy@c-s.fr, ajd@linux.ibm.com,
+ Kees Cook <keescook@chromium.org>, npiggin@gmail.com,
  naveen.n.rao@linux.ibm.com, Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
@@ -101,68 +102,87 @@ Sender: "Linuxppc-dev"
 
 From: Russell Currey <ruscur@russell.cc>
 
-With CONFIG_STRICT_KERNEL_RWX=y and CONFIG_KPROBES=y, there will be one
-W+X page at boot by default.  This can be tested with
-CONFIG_PPC_PTDUMP=y and CONFIG_PPC_DEBUG_WX=y set, and checking the
-kernel log during boot.
+Very rudimentary, just
 
-Add an arch specific insn page allocator which returns RO pages if
-STRICT_KERNEL_RWX is enabled. This page is only written to with
-patch_instruction() which is able to write RO pages.
+	echo 1 > [debugfs]/check_wx_pages
 
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+and check the kernel log.  Useful for testing strict module RWX.
+
+Updated the Kconfig entry to reflect this.
+
+Also fixed a typo.
+
+Reviewed-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[jpn: Reword commit message, switch from vmalloc_exec(), add
-      free_insn_page()]
 Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 ---
-v9: - vmalloc_exec() no longer exists
-    - Set the page to RW before freeing it
----
- arch/powerpc/kernel/kprobes.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ arch/powerpc/Kconfig.debug      |  6 ++++--
+ arch/powerpc/mm/ptdump/ptdump.c | 21 ++++++++++++++++++++-
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 01ab2163659e..bb7e4d321988 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -25,6 +25,8 @@
- #include <asm/sections.h>
- #include <asm/inst.h>
- #include <linux/uaccess.h>
-+#include <linux/set_memory.h>
-+#include <linux/vmalloc.h>
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index ae084357994e..56e99e9a30d9 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -371,7 +371,7 @@ config PPC_PTDUMP
+ 	  If you are unsure, say N.
  
- DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
- DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
-@@ -103,6 +105,26 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- 	return addr;
+ config PPC_DEBUG_WX
+-	bool "Warn on W+X mappings at boot"
++	bool "Warn on W+X mappings at boot & enable manual checks at runtime"
+ 	depends on PPC_PTDUMP && STRICT_KERNEL_RWX
+ 	help
+ 	  Generate a warning if any W+X mappings are found at boot.
+@@ -385,7 +385,9 @@ config PPC_DEBUG_WX
+ 	  of other unfixed kernel bugs easier.
+ 
+ 	  There is no runtime or memory usage effect of this option
+-	  once the kernel has booted up - it's a one time check.
++	  once the kernel has booted up, it only automatically checks once.
++
++	  Enables the "check_wx_pages" debugfs entry for checking at runtime.
+ 
+ 	  If in doubt, say "Y".
+ 
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index aca354fb670b..78497d57b66b 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -4,7 +4,7 @@
+  *
+  * This traverses the kernel pagetables and dumps the
+  * information about the used sections of memory to
+- * /sys/kernel/debug/kernel_pagetables.
++ * /sys/kernel/debug/kernel_page_tables.
+  *
+  * Derived from the arm64 implementation:
+  * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
+@@ -459,6 +459,25 @@ void ptdump_check_wx(void)
+ 	else
+ 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
  }
++
++static int check_wx_debugfs_set(void *data, u64 val)
++{
++	if (val != 1ULL)
++		return -EINVAL;
++
++	ptdump_check_wx();
++
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set, "%llu\n");
++
++static int ptdump_check_wx_init(void)
++{
++	return debugfs_create_file("check_wx_pages", 0200, NULL,
++				   NULL, &check_wx_fops) ? 0 : -ENOMEM;
++}
++device_initcall(ptdump_check_wx_init);
+ #endif
  
-+void *alloc_insn_page(void)
-+{
-+	void *page = vmalloc(PAGE_SIZE);
-+
-+	if (!page)
-+		return NULL;
-+
-+	set_memory_ro((unsigned long)page, 1);
-+	set_memory_x((unsigned long)page, 1);
-+
-+	return page;
-+}
-+
-+void free_insn_page(void *page)
-+{
-+	set_memory_nx((unsigned long)page, 1);
-+	set_memory_rw((unsigned long)page, 1);
-+	vfree(page);
-+}
-+
- int arch_prepare_kprobe(struct kprobe *p)
- {
- 	int ret = 0;
+ static int ptdump_init(void)
 -- 
 2.25.1
 
