@@ -2,67 +2,69 @@ Return-Path: <SRS0=5tyt=IO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF888C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 15:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F033AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 15:46:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F79F650F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 15:45:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F79F650F2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 5D12D650F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 15:46:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D12D650F2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F0Hgl3ZH9z30Gn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 02:45:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F0HhC3KKFz3btf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 02:46:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=YAq24PLF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=90.155.50.34;
+ helo=casper.infradead.org;
+ envelope-from=batv+da3193128de9690cc39e+6414+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=YAq24PLF; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0HgM31zFz2xfW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 02:45:33 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F0HgF01dsz9v0XB;
- Tue, 16 Mar 2021 16:45:29 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id sg5k9CghU-Mi; Tue, 16 Mar 2021 16:45:28 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F0HgD5LfFz9v0X9;
- Tue, 16 Mar 2021 16:45:28 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 331988B7E6;
- Tue, 16 Mar 2021 16:45:30 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uxDOopJyTEv9; Tue, 16 Mar 2021 16:45:30 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A6858B7E1;
- Tue, 16 Mar 2021 16:45:28 +0100 (CET)
-Subject: Re: [PATCH RESEND] mm: Move mem_init_print_info() into mm_init()
-To: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>
-References: <20210316142637.92193-1-wangkefeng.wang@huawei.com>
- <20210316152901.70662-1-wangkefeng.wang@huawei.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <4d488195-7281-9238-b30d-9f89a6100fb9@csgroup.eu>
-Date: Tue, 16 Mar 2021 16:45:19 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F0Hgc3pNJz3bc8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 02:45:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=QN7GVfC8ZM01/BUj2S43wlyrokZblV3LlQxxQPFIb2Y=; b=YAq24PLFLbc+LDhaZbapU2igNS
+ Q1hMlEF+wEjEpYOK7BJoKJ8Lr6hwPfOsLhmfkWKv99zfbUDOvKo+t6jKPmcZR3YN+ZpU0tcsMztOl
+ YxeEo6+iKYsOKdR3T/pNK0EbucjqREEueoB+U26pBw8iicBpd0dvNGaWTWM7H42V6k4Sbp4twyqi9
+ H8qnmJscMf4IqatWdJh1YHhH8OOMCzMzf//lKseCe4fd3Bsh9DZAQcWwLeNTBu7iGohJOMSYkDIew
+ VkB07QUW4FzdI6WC6YEiq9+7EVd0Bxp7PyadMxM/vhcPcVFvEtKXql2AM9SDZ3r/P45hfISSHv1YX
+ US4gOoFg==;
+Received: from 089144199244.atnat0008.highway.a1.net ([89.144.199.244]
+ helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1lMBsf-000FwZ-DA; Tue, 16 Mar 2021 15:45:16 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH 02/18] iommu/fsl_pamu: remove fsl_pamu_get_domain_attr
+Date: Tue, 16 Mar 2021 16:38:08 +0100
+Message-Id: <20210316153825.135976-3-hch@lst.de>
+X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210316153825.135976-1-hch@lst.de>
+References: <20210316153825.135976-1-hch@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <20210316152901.70662-1-wangkefeng.wang@huawei.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,106 +76,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
- Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Jonas Bonn <jonas@southpole.se>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, Huacai Chen <chenhuacai@kernel.org>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Heiko Carstens <hca@linux.ibm.com>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, linux-parisc@vger.kernel.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: freedreno@lists.freedesktop.org, kvm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
+ Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+None of the values returned by this function are ever queried.  Also
+remove the DOMAIN_ATTR_FSL_PAMUV1 enum value that is not otherwise used.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Li Yang <leoyang.li@nxp.com>
+---
+ drivers/iommu/fsl_pamu_domain.c | 30 ------------------------------
+ include/linux/iommu.h           |  4 ----
+ 2 files changed, 34 deletions(-)
 
-Le 16/03/2021 à 16:29, Kefeng Wang a écrit :
-> mem_init_print_info() is called in mem_init() on each architecture,
-> and pass NULL argument, so using void argument and move it into mm_init().
-> 
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-> ---
-> 
-> Resend with 'str' line cleanup, and only test on ARM64 qemu.
-> 
->   arch/alpha/mm/init.c             | 1 -
->   arch/arc/mm/init.c               | 1 -
->   arch/arm/mm/init.c               | 2 --
->   arch/arm64/mm/init.c             | 2 --
->   arch/csky/mm/init.c              | 1 -
->   arch/h8300/mm/init.c             | 2 --
->   arch/hexagon/mm/init.c           | 1 -
->   arch/ia64/mm/init.c              | 1 -
->   arch/m68k/mm/init.c              | 1 -
->   arch/microblaze/mm/init.c        | 1 -
->   arch/mips/loongson64/numa.c      | 1 -
->   arch/mips/mm/init.c              | 1 -
->   arch/mips/sgi-ip27/ip27-memory.c | 1 -
->   arch/nds32/mm/init.c             | 1 -
->   arch/nios2/mm/init.c             | 1 -
->   arch/openrisc/mm/init.c          | 2 --
->   arch/parisc/mm/init.c            | 2 --
->   arch/powerpc/mm/mem.c            | 1 -
->   arch/riscv/mm/init.c             | 1 -
->   arch/s390/mm/init.c              | 2 --
->   arch/sh/mm/init.c                | 1 -
->   arch/sparc/mm/init_32.c          | 2 --
->   arch/sparc/mm/init_64.c          | 1 -
->   arch/um/kernel/mem.c             | 1 -
->   arch/x86/mm/init_32.c            | 2 --
->   arch/x86/mm/init_64.c            | 2 --
->   arch/xtensa/mm/init.c            | 1 -
->   include/linux/mm.h               | 2 +-
->   init/main.c                      | 1 +
->   mm/page_alloc.c                  | 6 +++---
->   30 files changed, 5 insertions(+), 40 deletions(-)
-> 
+diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
+index 53380cf1fa452f..e587ec43f7e750 100644
+--- a/drivers/iommu/fsl_pamu_domain.c
++++ b/drivers/iommu/fsl_pamu_domain.c
+@@ -832,35 +832,6 @@ static int fsl_pamu_set_domain_attr(struct iommu_domain *domain,
+ 	return ret;
+ }
+ 
+-static int fsl_pamu_get_domain_attr(struct iommu_domain *domain,
+-				    enum iommu_attr attr_type, void *data)
+-{
+-	struct fsl_dma_domain *dma_domain = to_fsl_dma_domain(domain);
+-	int ret = 0;
+-
+-	switch (attr_type) {
+-	case DOMAIN_ATTR_FSL_PAMU_STASH:
+-		memcpy(data, &dma_domain->dma_stash,
+-		       sizeof(struct pamu_stash_attribute));
+-		break;
+-	case DOMAIN_ATTR_FSL_PAMU_ENABLE:
+-		*(int *)data = dma_domain->enabled;
+-		break;
+-	case DOMAIN_ATTR_FSL_PAMUV1:
+-		*(int *)data = DOMAIN_ATTR_FSL_PAMUV1;
+-		break;
+-	case DOMAIN_ATTR_WINDOWS:
+-		*(u32 *)data = dma_domain->win_cnt;
+-		break;
+-	default:
+-		pr_debug("Unsupported attribute type\n");
+-		ret = -EINVAL;
+-		break;
+-	}
+-
+-	return ret;
+-}
+-
+ static struct iommu_group *get_device_iommu_group(struct device *dev)
+ {
+ 	struct iommu_group *group;
+@@ -987,7 +958,6 @@ static const struct iommu_ops fsl_pamu_ops = {
+ 	.domain_window_enable = fsl_pamu_window_enable,
+ 	.iova_to_phys	= fsl_pamu_iova_to_phys,
+ 	.domain_set_attr = fsl_pamu_set_domain_attr,
+-	.domain_get_attr = fsl_pamu_get_domain_attr,
+ 	.probe_device	= fsl_pamu_probe_device,
+ 	.release_device	= fsl_pamu_release_device,
+ 	.device_group   = fsl_pamu_device_group,
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index 47c8b318d8f523..52874ae164dd60 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -104,9 +104,6 @@ enum iommu_cap {
+  *  -the actual size of the mapped region of a window must be power
+  *   of 2 starting with 4KB and physical address must be naturally
+  *   aligned.
+- * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned contraints.
+- * The caller can invoke iommu_domain_get_attr to check if the underlying
+- * iommu implementation supports these constraints.
+  */
+ 
+ enum iommu_attr {
+@@ -115,7 +112,6 @@ enum iommu_attr {
+ 	DOMAIN_ATTR_WINDOWS,
+ 	DOMAIN_ATTR_FSL_PAMU_STASH,
+ 	DOMAIN_ATTR_FSL_PAMU_ENABLE,
+-	DOMAIN_ATTR_FSL_PAMUV1,
+ 	DOMAIN_ATTR_NESTING,	/* two stages of translation */
+ 	DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
+ 	DOMAIN_ATTR_IO_PGTABLE_CFG,
+-- 
+2.30.1
 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 55d938297ce6..cf5a2114c6d4 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -7728,7 +7728,7 @@ unsigned long free_reserved_area(void *start, void *end, int poison, const char
->   	return pages;
->   }
->   
-> -void __init mem_init_print_info(const char *str)
-> +void __init mem_init_print_info(void)
->   {
->   	unsigned long physpages, codesize, datasize, rosize, bss_size;
->   	unsigned long init_code_size, init_data_size;
-> @@ -7767,7 +7767,7 @@ void __init mem_init_print_info(const char *str)
->   #ifdef	CONFIG_HIGHMEM
->   		", %luK highmem"
->   #endif
-> -		"%s%s)\n",
-> +		"%s)\n",
->   		nr_free_pages() << (PAGE_SHIFT - 10),
->   		physpages << (PAGE_SHIFT - 10),
->   		codesize >> 10, datasize >> 10, rosize >> 10,
-> @@ -7777,7 +7777,7 @@ void __init mem_init_print_info(const char *str)
->   #ifdef	CONFIG_HIGHMEM
->   		totalhigh_pages() << (PAGE_SHIFT - 10),
->   #endif
-> -		str ? ", " : "", str ? str : "");
-> +		"");
->   }
->   
->   /**
-> 
-
-What is the benefit of a %s to print a constant "" ?
-
-You should tidy up completely.
-
-Christophe
