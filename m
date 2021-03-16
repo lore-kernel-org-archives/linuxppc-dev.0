@@ -2,60 +2,65 @@ Return-Path: <SRS0=5tyt=IO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 093A7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 17:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21C70C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 18:00:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DA8A6511D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 17:52:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DA8A6511D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id B1059650D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Mar 2021 18:00:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1059650D9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F0LTZ0b7xz3c3Z
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 04:52:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F0Lg31XCSz3bnS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 05:00:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=nHI0P9Xt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oPFo3HEm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1234::107; helo=merlin.infradead.org;
- envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=merlin.20170209 header.b=nHI0P9Xt; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=oPFo3HEm; 
  dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1234::107])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0LSK2sX6z30CD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 04:51:12 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:Message-Id:
- Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=vzYJFOzEb1NIe97QoacZwsNCoaEoErPswDtLLsJodoE=; b=nHI0P9XtVczaiwy5Rpf4wbFsUy
- 1c3Y/vCblIOOo0gditrYx11ZTLAeRvbG7/5zKWQcD3h8YGyRo1Gvsmq8KCP7Th4dfXTQ1r+KUlTvg
- 2YLbujuecTxQK6FkD+e9Ln7HAseuf8XnCUE714I2s0g8AwPb4+UH4evBRC+6IKR2+1NhzX2VJb98s
- NhCsmWu3xifM6xAAcAz3EkABmnqfdsOAK89ZHAuac0JY8Av2FOhQR7r817dRMLcYjjMxCNpPPfU8W
- U+ODpB3W/bx9hECVIfydELMm2zrXYlBkvfg7KPLQgWzvdWsfWCLX9k7sM7W5ssilmCI5CewhciB1P
- cAbi4Cmg==;
-Received: from geoff by merlin.infradead.org with local (Exim 4.94 #2 (Red Hat
- Linux)) id 1lMDqU-001UqU-L3; Tue, 16 Mar 2021 17:51:06 +0000
-Message-Id: <cover.1615916650.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Patch-Date: Mon, 15 Mar 2021 19:14:10 -0700
-Subject: [PATCH v1 0/2] PS3 Updates
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 16 Mar 2021 17:51:06 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F0LfZ4lGnz303q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 05:00:05 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 87EEA65133;
+ Tue, 16 Mar 2021 18:00:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1615917604;
+ bh=HoSgMtiIiSAkVpHOLGFLlZiBQhF3CTEX630pkOg0tF8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=oPFo3HEmTj7fXwVlPAbg2/67boHFQ5fn1riyjzHQVTcmIIJrMvgNBFL7gMO3M/3gk
+ OhqnVkWUr+LxO1vWgXl56pTnORZXAzS9SBHed9ZnJVw3uHxKvzIx5MtJeBGY2AObkB
+ NlB9edqAUyhPMwjlRdYk653y+ScwnxxDQxSwhoechPZlTpdHXCL5UD8KgPuCgtsjKd
+ JjqIlm+yajsnVIjEup91KXVa8fD5P75eo7POnhMqVL7FJCG6tu5RzVUVM92re0+iCL
+ 0HKUT8AL0T/w3ZwcBBE2QYiKp643CctO1emtQ7vYaG2ecAy2GlVqZkSAaQ6xIex1Uk
+ QbCD9IE5jc9NQ==
+From: Mark Brown <broonie@kernel.org>
+To: Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, perex@perex.cz,
+ timur@kernel.org, linuxppc-dev@lists.ozlabs.org, tiwai@suse.com,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, festevam@gmail.com,
+ lgirdwood@gmail.com, nicoleotsuka@gmail.com, alsa-devel@alsa-project.org
+Subject: Re: [PATCH] ASoC: fsl_spdif: use snd_ctl_boolean_mono_info
+Date: Tue, 16 Mar 2021 17:59:43 +0000
+Message-Id: <161591744696.13544.5081763572355349115.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <1615887736-31217-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1615887736-31217-1-git-send-email-shengjiu.wang@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,40 +72,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Brown <broonie@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+On Tue, 16 Mar 2021 17:42:16 +0800, Shengjiu Wang wrote:
+> Remove redundant code and use snd_ctl_boolean_mono_info
+> instead.
 
-Here are two minor updates for PS3.  The first exports the firmware version to
-the proc FS, and the second re-aligns the DTB to save a little space in the
-PS3's limited flash memory.
+Applied to
 
--Geoff
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-The following changes since commit f40ddce88593482919761f74910f42f4b84c004b:
+Thanks!
 
-  Linux 5.11 (2021-02-14 14:32:24 -0800)
+[1/1] ASoC: fsl_spdif: use snd_ctl_boolean_mono_info
+      commit: 6ad864ed6ac50f11a6d8575fda79991cca8f245c
 
-are available in the Git repository at:
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-powerpc
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-for you to fetch changes up to 7bee1153671a3ec71775246887894eefbfcb4b25:
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-  powerpc/ps3: Re-align DTB in image (2021-03-13 18:43:16 -0800)
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-----------------------------------------------------------------
-Geoff Levand (2):
-      powerpc/ps3: Add firmware version to proc
-      powerpc/ps3: Re-align DTB in image
-
- arch/powerpc/boot/zImage.ps3.lds.S |  2 +-
- arch/powerpc/platforms/ps3/setup.c | 62 ++++++++++++++++++++++++++++++++++++--
- 2 files changed, 60 insertions(+), 4 deletions(-)
-
--- 
-2.25.1
-
+Thanks,
+Mark
