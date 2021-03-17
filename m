@@ -2,106 +2,87 @@ Return-Path: <SRS0=EYxI=IP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8F3AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 18:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13961C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 22:42:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34DF764EBD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 18:50:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34DF764EBD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3CA2564F2A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 22:42:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CA2564F2A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F0zk94vv4z3bn5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 05:50:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F14sh3xsgz3bwH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 09:42:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=hIclouWk;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 64 seconds by postgrey-1.36 at boromir;
- Thu, 18 Mar 2021 05:50:05 AEDT
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b;
+ helo=mail-pj1-x102b.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=hIclouWk; dkim-atps=neutral
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com
+ [IPv6:2607:f8b0:4864:20::102b])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0zjn6Y9Dz3045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 05:50:05 +1100 (AEDT)
-IronPort-SDR: RCFZDjeaI7ZIvUh+EvRzWOujsyHIcblgZddBwZ8tgVIc438me7FyGOhf4o9k+DUwMXVK8Gcfpk
- f/d/9IFIn+eg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9926"; a="253537442"
-X-IronPort-AV: E=Sophos;i="5.81,257,1610438400"; d="scan'208";a="253537442"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Mar 2021 11:48:51 -0700
-IronPort-SDR: p/cSR5ulZFFd9H+i41M6HIHkogJZKBFJt/D8W5rmiysz+I/eOXhnwpKvJG3+3BPjs//QdUlzyH
- OHhL8ciCbw6g==
-X-IronPort-AV: E=Sophos;i="5.81,257,1610438400"; d="scan'208";a="605831558"
-Received: from mtpearso-mobl4.amr.corp.intel.com (HELO [10.213.190.14])
- ([10.213.190.14])
- by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Mar 2021 11:48:50 -0700
-Subject: Re: [PATCH v2] mm: Move mem_init_print_info() into mm_init()
-To: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>
-References: <4d488195-7281-9238-b30d-9f89a6100fb9@csgroup.eu>
- <20210317015210.33641-1-wangkefeng.wang@huawei.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
- z5cecg==
-Message-ID: <2a7d6e39-b293-7422-87b0-741f1ab0c22c@intel.com>
-Date: Wed, 17 Mar 2021 11:48:50 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F14s96HkXz302X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 09:41:48 +1100 (AEDT)
+Received: by mail-pj1-x102b.google.com with SMTP id s21so1902262pjq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 15:41:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=5qKr02K2bVnhllOe/YqQUhLLbS1J4T73+XfowCUwmbA=;
+ b=hIclouWkKwCuj4QwesNd+0mocymmv26Je+stRMT6oAgJTH+bZWM+YIuJsnqHB4wOyG
+ elC1UUrOANGredWQM0wtBWuepfloL/NSZFOnYs7HBUrvKvk85mBnh/PhZ81imOxWYOkb
+ kbYS452r+i6BKM0pocqzGpeGxQVwGjD8LS7bFA5nDAm1ltMChq2VwQOZbPRQdn0Q4P9o
+ kxjIdZ+wr0Je/UxfsgEXSgI+s+ZigjB1SkJCP0/nTNNgBYI+eTnea1QoWLxOdZp0KDwq
+ zyxurQDoybtslzgc7KBXO0BsUBo88PCPF9tjJKxhkL3NACWK/+1ScD+1RztGldCye2P+
+ apIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=5qKr02K2bVnhllOe/YqQUhLLbS1J4T73+XfowCUwmbA=;
+ b=Ta1tYFlwFRD5LZ0dk11PqAA6Lw0MoCbgRa6jAWgZg6dJ1aDUiGNIE39AfVbp1S7Crl
+ 0a2L7N2C58Lp/f5yOJLqYe6hWyHRyOY9ht1ZpIwEhSBRPViK6WLCRDJIuHL0Ix9fa+rN
+ +48j+ioUkShBmwIGMlKeIHzaRF6jS/40v6j5wQq5KzQKRv2z1/hiNKmSYyInVN8xwyK+
+ SWluVH0NWEq2CEbVIDeBcu1/6eIp+ReN+LVyrI2XimXD4b43BugbK2gI3Zo0cDmdCLJc
+ G4VbmVQpquCnDKGwxX4n/V+semfsBIJtpm++9MSemhfrukNmu59iYlkF+wbh/NGij6a2
+ 51qA==
+X-Gm-Message-State: AOAM532kWP7nFaLjLfcfl4rnY8eX7CM85G2l0FKv86pcB99LdiCgdiep
+ 4VQ3ds+8Pezwu/GRFwr5tuE=
+X-Google-Smtp-Source: ABdhPJx6Vv1i7uXKO5DM5+94Xn4Njg4d8rF3eAIABwO7ZB5MAjgOxtvQuzZ3FRljqxpTAXAeG0/Lpg==
+X-Received: by 2002:a17:902:9894:b029:e5:ce48:5808 with SMTP id
+ s20-20020a1709029894b02900e5ce485808mr6471434plp.31.1616020903609; 
+ Wed, 17 Mar 2021 15:41:43 -0700 (PDT)
+Received: from localhost ([58.84.78.96])
+ by smtp.gmail.com with ESMTPSA id z1sm116831pfn.127.2021.03.17.15.41.41
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 17 Mar 2021 15:41:42 -0700 (PDT)
+Date: Thu, 18 Mar 2021 08:41:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 19/41] KVM: PPC: Book3S HV P9: Stop handling hcalls in
+ real-mode in the P9 path
+To: Fabiano Rosas <farosas@linux.ibm.com>, kvm-ppc@vger.kernel.org
+References: <20210305150638.2675513-1-npiggin@gmail.com>
+ <20210305150638.2675513-20-npiggin@gmail.com> <87o8fh21iq.fsf@linux.ibm.com>
+In-Reply-To: <87o8fh21iq.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20210317015210.33641-1-wangkefeng.wang@huawei.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Message-Id: <1616019796.miv3so0mq8.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,35 +94,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
- Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Jonas Bonn <jonas@southpole.se>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, Huacai Chen <chenhuacai@kernel.org>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Heiko Carstens <hca@linux.ibm.com>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, linux-parisc@vger.kernel.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/16/21 6:52 PM, Kefeng Wang wrote:
-> mem_init_print_info() is called in mem_init() on each architecture,
-> and pass NULL argument, so using void argument and move it into mm_init().
-> 
-> Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+Excerpts from Fabiano Rosas's message of March 18, 2021 2:22 am:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>=20
+>> In the interest of minimising the amount of code that is run in
+>> "real-mode", don't handle hcalls in real mode in the P9 path.
+>>
+>> POWER8 and earlier are much more expensive to exit from HV real mode
+>> and switch to host mode, because on those processors HV interrupts get
+>> to the hypervisor with the MMU off, and the other threads in the core
+>> need to be pulled out of the guest, and SLBs all need to be saved,
+>> ERATs invalidated, and host SLB reloaded before the MMU is re-enabled
+>> in host mode. Hash guests also require a lot of hcalls to run. The
+>> XICS interrupt controller requires hcalls to run.
+>>
+>> By contrast, POWER9 has independent thread switching, and in radix mode
+>> the hypervisor is already in a host virtual memory mode when the HV
+>> interrupt is taken. Radix + xive guests don't need hcalls to handle
+>> interrupts or manage translations.
+>>
+>> So it's much less important to handle hcalls in real mode in P9.
+>>
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>=20
+> <snip>
+>=20
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 497f216ad724..1f2ba8955c6a 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -1147,7 +1147,7 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>>   * This has to be done early, not in kvmppc_pseries_do_hcall(), so
+>>   * that the cede logic in kvmppc_run_single_vcpu() works properly.
+>>   */
+>> -static void kvmppc_nested_cede(struct kvm_vcpu *vcpu)
+>> +static void kvmppc_cede(struct kvm_vcpu *vcpu)
+>=20
+> The comment above needs to be updated I think.
+>=20
+>>  {
+>>  	vcpu->arch.shregs.msr |=3D MSR_EE;
+>>  	vcpu->arch.ceded =3D 1;
+>> @@ -1403,9 +1403,15 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu =
+*vcpu,
+>>  		/* hcall - punt to userspace */
+>>  		int i;
+>>
+>> -		/* hypercall with MSR_PR has already been handled in rmode,
+>> -		 * and never reaches here.
+>> -		 */
+>> +		if (unlikely(vcpu->arch.shregs.msr & MSR_PR)) {
+>> +			/*
+>> +			 * Guest userspace executed sc 1, reflect it back as a
+>> +			 * privileged program check interrupt.
+>> +			 */
+>> +			kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
+>> +			r =3D RESUME_GUEST;
+>> +			break;
+>> +		}
+>>
+>>  		run->papr_hcall.nr =3D kvmppc_get_gpr(vcpu, 3);
+>>  		for (i =3D 0; i < 9; ++i)
+>> @@ -3740,15 +3746,36 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu =
+*vcpu, u64 time_limit,
+>>  		/* H_CEDE has to be handled now, not later */
+>>  		if (trap =3D=3D BOOK3S_INTERRUPT_SYSCALL && !vcpu->arch.nested &&
+>>  		    kvmppc_get_gpr(vcpu, 3) =3D=3D H_CEDE) {
+>> -			kvmppc_nested_cede(vcpu);
+>> +			kvmppc_cede(vcpu);
+>>  			kvmppc_set_gpr(vcpu, 3, 0);
+>>  			trap =3D 0;
+>>  		}
+>>  	} else {
+>>  		kvmppc_xive_push_vcpu(vcpu);
+>>  		trap =3D kvmhv_load_hv_regs_and_go(vcpu, time_limit, lpcr);
+>> -		kvmppc_xive_pull_vcpu(vcpu);
+>> +		/* H_CEDE has to be handled now, not later */
+>> +		/* XICS hcalls must be handled before xive is pulled */
+>> +		if (trap =3D=3D BOOK3S_INTERRUPT_SYSCALL &&
+>> +		    !(vcpu->arch.shregs.msr & MSR_PR)) {
+>> +			unsigned long req =3D kvmppc_get_gpr(vcpu, 3);
+>>
+>> +			if (req =3D=3D H_CEDE) {
+>> +				kvmppc_cede(vcpu);
+>> +				kvmppc_xive_cede_vcpu(vcpu); /* may un-cede */
+>> +				kvmppc_set_gpr(vcpu, 3, 0);
+>> +				trap =3D 0;
+>> +			}
+>> +			if (req =3D=3D H_EOI || req =3D=3D H_CPPR ||
+>> +			    req =3D=3D H_IPI || req =3D=3D H_IPOLL ||
+>> +			    req =3D=3D H_XIRR || req =3D=3D H_XIRR_X) {
+>> +				unsigned long ret;
+>> +
+>> +				ret =3D kvmppc_xive_xics_hcall(vcpu, req);
+>> +				kvmppc_set_gpr(vcpu, 3, ret);
+>> +				trap =3D 0;
+>> +			}
+>> +		}
+>=20
+> I tried running L2 with xive=3Doff and this code slows down the boot
+> considerably. I think we're missing a !vcpu->arch.nested in the
+> conditional.
 
-It's not a big deal but you might want to say something like:
+You might be right, the real mode handlers never run if nested is set
+so none of these should run I think.
 
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com> # x86 bits
+>=20
+> This may also be missing these checks from kvmppc_pseries_do_hcall:
+>=20
+> 		if (kvmppc_xics_enabled(vcpu)) {
+> 			if (xics_on_xive()) {
+> 				ret =3D H_NOT_AVAILABLE;
+> 				return RESUME_GUEST;
+> 			}
+> 			ret =3D kvmppc_xics_hcall(vcpu, req);
+>                         (...)
 
-Just to make it clear that I didn't look at the alpha bits at all. :)
+Well this is the formerly real-mode part of the hcall, whereas=20
+pseries_do_hcall is the virt-mode handler so it expects the real mode=20
+has already run.
+
+Hmm, probably it shouldn't be setting trap =3D 0 if it did not handle the
+hcall. I don't know if that's the problem you have or if it's the nested
+test but probably should test for this anyway.
+
+> For H_CEDE there might be a similar situation since we're shadowing the
+> code above that runs after H_ENTER_NESTED by setting trap to 0 here.
+
+Yes.
+
+Thanks,
+Nick
