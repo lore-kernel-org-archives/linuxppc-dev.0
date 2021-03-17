@@ -2,181 +2,83 @@ Return-Path: <SRS0=EYxI=IP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D317C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 02:17:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C38C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 03:05:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41ED064F91
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 02:17:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41ED064F91
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id 14E8564F89
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 03:05:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14E8564F89
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F0YhY3q4Rz30MF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 13:17:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F0Zlb27hZz3brQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Mar 2021 14:05:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2020-01-29 header.b=EpvOgOYO;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=hRz2Xbka;
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=gB8Ihhzu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
- envelope-from=konrad.wilk@oracle.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=EpvOgOYO; 
- dkim=pass (1024-bit key;
- unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com
- header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com
- header.b=hRz2Xbka; dkim-atps=neutral
-X-Greylist: delayed 6359 seconds by postgrey-1.36 at boromir;
- Wed, 17 Mar 2021 13:17:02 AEDT
-Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::52e;
+ helo=mail-pg1-x52e.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=gB8Ihhzu; dkim-atps=neutral
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com
+ [IPv6:2607:f8b0:4864:20::52e])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0Ygy4TF4z2yRH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 13:17:01 +1100 (AEDT)
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
- by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 12H0TvvK055859;
- Wed, 17 Mar 2021 00:30:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : references : content-type : in-reply-to :
- mime-version; s=corp-2020-01-29;
- bh=MqhKdxUI8LwYf06J6INY/KXNITf0zAV9/TtiHVgje8I=;
- b=EpvOgOYOq9MDCVf+4duRwpNXV5kdn92V4+d5wAll9Bi0p50dpeKumykYvYXssXF6qZrW
- g6PQAECkGZ8cywTD/aUTYpLMYvITJjdCDfEjjqWPlutXt94yTX/vSCfkKLsrXbxPiLIJ
- 0Prd3cKPKe1vamvGlDxfIxFWWxtXEd/1jtnBtoZRqoc1lhnVizip8VvUEiGpK1yc3RB7
- yCo7k6ijGgf9K5pKffAA0QRI7ewbw9zkS5MiIP8uj2+ltmV8dqwOJzTx+SJz+r1rv+1A
- V2JLoeEoZm8x8Jcayu3gLONFqSo6M2JJufce2AG1LjPnxLFeIsP1BbM24SHDy5kXAeob oA== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by aserp2130.oracle.com with ESMTP id 378jwbjfus-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 17 Mar 2021 00:30:52 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 12H0Tl9J141958;
- Wed, 17 Mar 2021 00:30:52 GMT
-Received: from nam12-mw2-obe.outbound.protection.outlook.com
- (mail-mw2nam12lp2048.outbound.protection.outlook.com [104.47.66.48])
- by aserp3020.oracle.com with ESMTP id 3797a1wnmj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 17 Mar 2021 00:30:52 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=hWdgJ6YZgOYDCU16tiroiMBD+6aPoZz+0IeAQf+ob4Efi6/ro6aBcPlJuPzL5loBJLeVgTd4hSpZ/2C2thkseDNYbc1BPFx/5y3yG7b9FMaGqx+Rvg2iGi8oC2tOEB5CfJ1L1wKTHggO8+eft/SyxtodljI8SplPwugUyw5n7unpdTgZFCwDjHdkX/csOkdunVtGc2IjWDeLUWjmPecZrJucqfnKQaei6cA5/jBzj2mOJLiBlRSB11qKWTkw1HTV5ZOWbMrDl09np4UE5Qyj3ppyDQHVfyIxl/ixNukwyuFd50TJ+6oOofQngi6iChHSSiQb0SIY69+UMwGa7zeDsA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MqhKdxUI8LwYf06J6INY/KXNITf0zAV9/TtiHVgje8I=;
- b=XixOG/Fxi+d6hoPrC3H2ST6CXpYNLSr49AbTOh6yoL2CB8dsBD4hS/inn8/LAu5eJtb2r5tXCAKr3fyut1oXgDWxBvtz3s0tugmcGFReCh5Rp3NbqNIh+GkG0sZlJmbV6gFcvHMRQ/txLULxig94dMI4+Cea6vKlJqoRcysZzsNS0LVDBNkIrK2c/D8ld2WfFIBSn19RTeoVzmUut38/ci8hzu1jtDXwfJT6pTU/PJffwhSfbnEutyjZU1mEjnpQG/OiTgsz7zcsbws8mPpN69m5Hal/a3PCT2Dmd3ywzGOfoNv68obMi7JOfj5Dq+FzNswtGvzdARqRGhg81kBJhQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MqhKdxUI8LwYf06J6INY/KXNITf0zAV9/TtiHVgje8I=;
- b=hRz2XbkaNc4S5gMGVSoehCpK4sBLeXkKmlEm8AT6gozqwOZNPPxQEKvcqHmCCl90eZxAA6v8kUYioixGOeCKseGop9uSNVntfew4X9er41TldPoXOz9e5Nlz2eQB7Ph4C16ysYeOqsu4RfLHSisDo11AKg7wE7RVpm7FQSAdEAM=
-Authentication-Results: lst.de; dkim=none (message not signed)
- header.d=none;lst.de; dmarc=none action=none header.from=oracle.com;
-Received: from BYAPR10MB2999.namprd10.prod.outlook.com (2603:10b6:a03:85::27)
- by SJ0PR10MB4445.namprd10.prod.outlook.com (2603:10b6:a03:2ae::9)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18; Wed, 17 Mar
- 2021 00:30:50 +0000
-Received: from BYAPR10MB2999.namprd10.prod.outlook.com
- ([fe80::50f2:e203:1cc5:d4f7]) by BYAPR10MB2999.namprd10.prod.outlook.com
- ([fe80::50f2:e203:1cc5:d4f7%6]) with mapi id 15.20.3955.018; Wed, 17 Mar 2021
- 00:30:50 +0000
-Date: Wed, 17 Mar 2021 00:30:47 +0000
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 03/14] swiotlb: move orig addr and size validation into
- swiotlb_bounce
-Message-ID: <20210317003037.GB80752@konrad-char-us-oracle-com.allregionaliads.osdevelopmeniad.oraclevcn.com>
-References: <20210301074436.919889-1-hch@lst.de>
- <20210301074436.919889-4-hch@lst.de>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210301074436.919889-4-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Originating-IP: [209.17.40.37]
-X-ClientProxiedBy: BL0PR02CA0035.namprd02.prod.outlook.com
- (2603:10b6:207:3c::48) To BYAPR10MB2999.namprd10.prod.outlook.com
- (2603:10b6:a03:85::27)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F0Zl13tXkz2xMw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Mar 2021 14:04:42 +1100 (AEDT)
+Received: by mail-pg1-x52e.google.com with SMTP id p21so23920477pgl.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Mar 2021 20:04:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=ArISpaVR5NftLHA/UO2Rb3+d6mO7ozCvgCFkvz0VkaU=;
+ b=gB8IhhzuEXE0MWZPR8gGgSnLLxT40ijvLPcJjobBxTOh7v+wqAn/EtahpgVWj8EAMl
+ 6cHsC/CpO9ttpUNdFm9uD7SudafgtprFotv94lVisWfSWYWv29hWuFCfRWkCLnp/UQGI
+ GH7Awg0PrkcshDKjiJUutXKgvjDFHHHfMOyho=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=ArISpaVR5NftLHA/UO2Rb3+d6mO7ozCvgCFkvz0VkaU=;
+ b=Lqh4F0QmQZmmPNIqgGhD8QQxSh7m4dSljvEMKy8FOGZolxymKobT3FK7w09Yn2W1i+
+ b2OAVfKGd/x9kGo/eQU7sl2GuUilp+Wmt6wZy0ZyxV7k6FocrY69hKNyQdkYVkKaHmkJ
+ wZK8S170O0DYbL2tcgVQzP8gP9iAQJFqLrPMlt9DrJEytDgbG44Eh5dll775IhnBwxGB
+ ow9FbWEfXNgBRJ2AzWEzYCF7+ZpzYiN/lNAMrVLYhBW+wNJbWE0cD9WYlG/wcJ671dA2
+ 45lzsgHi8f1fRceGGyXuP582fpzsgSuzuLavOk17t9oPnnx4WEw0z/Y8d02vgOTbhkJa
+ nrIQ==
+X-Gm-Message-State: AOAM530Z+4j9XJZxLuBtZL1y1QznhLPtOkfvJ8mUUiUGUFqmWUEm0MVM
+ PYgSWGtZTkEdviwolvZZ0c+X3A==
+X-Google-Smtp-Source: ABdhPJwY1VwCaeicuUaF81DtyNHoytPnwg1ChKYNRaLZMBOfmfRGpwZrDQOfSYMT+wziMZUympMZGg==
+X-Received: by 2002:a65:4508:: with SMTP id n8mr745832pgq.294.1615950277599;
+ Tue, 16 Mar 2021 20:04:37 -0700 (PDT)
+Received: from localhost
+ (2001-44b8-1113-6700-b14c-f6f0-24fb-9b97.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:b14c:f6f0:24fb:9b97])
+ by smtp.gmail.com with ESMTPSA id z27sm16670536pff.111.2021.03.16.20.04.36
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 16 Mar 2021 20:04:37 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: He Ying <heying24@huawei.com>, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com, akpm@linux-foundation.org,
+ aneesh.kumar@linux.ibm.com, rppt@kernel.org, ardb@kernel.org, clg@kaod.org,
+ christophe.leroy@csgroup.eu
+Subject: Re: [PATCH] powerpc: arch/powerpc/kernel/setup_64.c - cleanup warnings
+In-Reply-To: <20210316041148.29694-1-heying24@huawei.com>
+References: <20210316041148.29694-1-heying24@huawei.com>
+Date: Wed, 17 Mar 2021 14:04:33 +1100
+Message-ID: <87wnu6bhvi.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from
- konrad-char-us-oracle-com.allregionaliads.osdevelopmeniad.oraclevcn.com
- (209.17.40.37) by BL0PR02CA0035.namprd02.prod.outlook.com
- (2603:10b6:207:3c::48) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18 via Frontend
- Transport; Wed, 17 Mar 2021 00:30:49 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 968f3c57-0a09-4974-a33c-08d8e8dbea78
-X-MS-TrafficTypeDiagnostic: SJ0PR10MB4445:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <SJ0PR10MB4445A058551AE675C4DF1D93896A9@SJ0PR10MB4445.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:4941;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: vKQuzYNrl6utvhHUKHrC6FC8ZfOirMpmDQ9KoeH+NFxcVThGkvBqdOvAc3RGjqUfm6ubhWasXw+7G/TQKnqE6dZz1yd++ryEeF6G9wtacYWRf5gRGu6G4NDYREGutAiVgo0s+eal/PnSLeoNozpta15kkb1C2ibu+8S4vxMYoOc8dtu4Gvhnao3vYWkJgj22vbmTxNNdCF6d5QIuR2ArdOSE3dOUPmvd5kxZf+BpDMwjMfAvlEcLO1zJzpPTqeRg9ZuUK4MxCeo5huufzX8aMp8s3K11KQtaSo2IbTOfbJt6uwJK/giIaXjOuWBEgiz0RoIYB0U0Vx4eWxcTja3Awy8Jx9U6OBJQb6ns7eik5JVwQAwFgxY1X75O2yRVpn2rmAGGkMkI/NtEOS0b4o1wV1lxpP2CItVrcxJjIzA5Fkyuqc9gSY7c1OJDLOBvY7yx+MKfdLEtABWBO7TTuZUZ90xez2kOUZOK74fsgs3lAm2EL3+YHF6m26uGjKLGBAcwDbbLUZJT/EqmPGh2J2ooB8JaLm9rs7WIbPO4t4NksE5Yft24Uw+otcwSpiYBwTze
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BYAPR10MB2999.namprd10.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(396003)(39860400002)(366004)(136003)(376002)(346002)(1076003)(9686003)(2906002)(316002)(26005)(54906003)(16526019)(186003)(8676002)(86362001)(55016002)(5660300002)(6506007)(107886003)(6916009)(33656002)(8936002)(52116002)(478600001)(4744005)(956004)(66476007)(83380400001)(66556008)(66946007)(7696005)(4326008);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?4IiTvCGZ+9dN/yDNl9WPIUdKPgvJuGaeQe/6PexKQpozRbyuTzDFg6S4vOwk?=
- =?us-ascii?Q?mLGBwX8gpoIKda9Axb2RpnO3eEmq5JAjHduCwW1RkspO3pwHUUy/01Oybjza?=
- =?us-ascii?Q?Q+PDF25eXQCmzV7UxZOx9Wl1Gd8/A0vIVRKeHmZd4864WN4ol3K5k9gPt3ZD?=
- =?us-ascii?Q?dpreqmAikiDMGJwYVIHRfMPZpnz4372+93ApksBWzmaEGqodBiTRRiFZMlKt?=
- =?us-ascii?Q?jjMiFhSi1FbAcyTKLfsDB0NrotJxn6gYT0KIQBuDci+LfxfEtJkd0OC/sbGn?=
- =?us-ascii?Q?yEkJWQ2lFg4SWbJsATIGlZ8bjuJz4cz8WH9h8FaHgRVLEHz/darcezw4a19S?=
- =?us-ascii?Q?zOfZS6HBGXv0vnlPpv8Lrpx1Cwc75qVZPm5cMemI395uUVBijZrFWq6qYWpv?=
- =?us-ascii?Q?fPcNZ3Jtg1r6kRgGxrljVzxxeRShBmNlM3LMrkw0opnGcTyQ4PRRqMeBoDbj?=
- =?us-ascii?Q?AGY0Vjqk346nsoiEO9A0bjcTfr/DEKEUN88BDMUBfOIOS2VkLQXku5WPZAf2?=
- =?us-ascii?Q?PvTfgZNSyoOEoNcrgjceTiig6awswrJM9iLRrhcYQUPcoQVcIJ1bLbGD1Pts?=
- =?us-ascii?Q?5LdXHX07lWb2TFyvwGe41TtvLdNuIPmBDfLv46+ewfHxkhub59vJub7BY0OR?=
- =?us-ascii?Q?Zh+/ca1bxNZVlLIIsmL2qDxg+hT7ufzmrXJSNI+qNbTENxNt7GgUv3DPTcb2?=
- =?us-ascii?Q?CQrKYbP70H7xY63/XHXdVYs2HVt3V1haZTPez0iKlCAGQ5Ln+h5PtBsL31ic?=
- =?us-ascii?Q?NkzTwcVoKyPrbf2jFSbQZ8mveeM2vYNvzSTfDx9gOc6hl0f5Z0i1Zi8V652M?=
- =?us-ascii?Q?XQl9p2Occ+ikCbkzIULwxpHbijiFdDU1jdSKHsu+DEVKD+gtro1XpvSxksyk?=
- =?us-ascii?Q?4TX7kQ7dWUwHgsJ2u7dKbjDGkVLZwqpQf/lMKC/z/Mt+JXAFnh5uY/yzHaV5?=
- =?us-ascii?Q?FSN7q2FhhrvITSJkSa1E1/9PWnyheaNtQi/fqm7LcbflhAwwI200U2e6oXT4?=
- =?us-ascii?Q?k+Hsc50HrF3FCkH5PZQEecMPUYtahiznLYc9dCNfXmZiWbtEG/F38cBgCwaA?=
- =?us-ascii?Q?k8VFp/FXkng2DA4EdfqPnjCMIqnkZkuKTaitTR8LUBIu4oU21svjKD7nMo9Z?=
- =?us-ascii?Q?/H8htBkvneCdcMT1wuAzuZitdmPDKJ/TdtODbPWOSlsYzEH9jKylNypqommy?=
- =?us-ascii?Q?jU6l07Yax7WD9LTaxfUfdL4pu+MAovXI324Qm7WtGxNF90vPRerqx9zedLVw?=
- =?us-ascii?Q?tWoMi9XWJ3b8EYDU2iV5VsTy51KvaSNab+MxV9iujUoE+IONl4wtMJv+tG+v?=
- =?us-ascii?Q?7BYp9GBnYEK9Brp8Mft9GwMD?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 968f3c57-0a09-4974-a33c-08d8e8dbea78
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB2999.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2021 00:30:50.5030 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: go2eOFypX5B9nVPRMIQmYMGrOdhGuNBT2DeGDJYygZrdUN2XAp7Y02uj3YLn5X34YB/p+UL9m75QO6kGfuQk1w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB4445
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9925
- signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- adultscore=0 spamscore=0
- mlxlogscore=999 bulkscore=0 malwarescore=0 phishscore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2103170001
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9925
- signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
- mlxlogscore=999
- spamscore=0 mlxscore=0 bulkscore=0 suspectscore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 adultscore=0 phishscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2103170001
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -188,18 +90,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: xen-devel@lists.xenproject.org, iommu@lists.linux-foundation.org,
- Dongli Zhang <dongli.zhang@oracle.com>, Claire Chang <tientzu@chromium.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: johnny.chenyi@huawei.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 01, 2021 at 08:44:25AM +0100, Christoph Hellwig wrote:
-> Move the code to find and validate the original buffer address and size
-> from the callers into swiotlb_bounce.  This means a tiny bit of extra
-> work in the swiotlb_map path, but avoids code duplication and a leads to
-> a better code structure.
+Hi He Ying,
 
+Thank you for this patch.
 
-Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+I'm not sure what the precise rules for Fixes are, but I wonder if this
+should have:
+
+Fixes: 9a32a7e78bd0 ("powerpc/64s: flush L1D after user accesses")
+Fixes: f79643787e0a ("powerpc/64s: flush L1D on kernel entry")
+
+Those are the commits that added the entry_flush and uaccess_flush
+symbols. Perhaps one for rfi_flush too but I'm not sure what commit
+introduced that.
+
+Kind regards,
+Daniel
+
+> warning: symbol 'rfi_flush' was not declared.
+> warning: symbol 'entry_flush' was not declared.
+> warning: symbol 'uaccess_flush' was not declared.
+> We found warnings above in arch/powerpc/kernel/setup_64.c by using
+> sparse tool.
+>
+> Define 'entry_flush' and 'uaccess_flush' as static because they are not
+> referenced outside the file. Include asm/security_features.h in which
+> 'rfi_flush' is declared.
+>
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: He Ying <heying24@huawei.com>
+> ---
+>  arch/powerpc/kernel/setup_64.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 560ed8b975e7..f92d72a7e7ce 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -68,6 +68,7 @@
+>  #include <asm/early_ioremap.h>
+>  #include <asm/pgalloc.h>
+>  #include <asm/asm-prototypes.h>
+> +#include <asm/security_features.h>
+>  
+>  #include "setup.h"
+>  
+> @@ -949,8 +950,8 @@ static bool no_rfi_flush;
+>  static bool no_entry_flush;
+>  static bool no_uaccess_flush;
+>  bool rfi_flush;
+> -bool entry_flush;
+> -bool uaccess_flush;
+> +static bool entry_flush;
+> +static bool uaccess_flush;
+>  DEFINE_STATIC_KEY_FALSE(uaccess_flush_key);
+>  EXPORT_SYMBOL(uaccess_flush_key);
+>  
+> -- 
+> 2.17.1
