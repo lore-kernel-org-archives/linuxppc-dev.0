@@ -2,54 +2,63 @@ Return-Path: <SRS0=ebT8=IQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CD77C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29125C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:25:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78F3064EF2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:22:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78F3064EF2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mansr.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1F96464EF2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:25:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F96464EF2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F1Yjl5rg1z3c1F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 04:22:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F1Ynn2cHHz3bvW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 04:25:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mansr.com (client-ip=81.2.72.234; helo=unicorn.mansr.com;
- envelope-from=mans@mansr.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 745 seconds by postgrey-1.36 at boromir;
- Fri, 19 Mar 2021 04:21:43 AEDT
-Received: from unicorn.mansr.com (unicorn.mansr.com [81.2.72.234])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F1YjM724Dz30GT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 04:21:43 +1100 (AEDT)
-Received: from raven.mansr.com (raven.mansr.com [81.2.72.235])
- by unicorn.mansr.com (Postfix) with ESMTPS id 194A215360;
- Thu, 18 Mar 2021 17:09:03 +0000 (GMT)
-Received: by raven.mansr.com (Postfix, from userid 51770)
- id 952E4219C32; Thu, 18 Mar 2021 17:09:02 +0000 (GMT)
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 01/10] alpha: use libata instead of the legacy ide driver
-References: <20210318045706.200458-1-hch@lst.de>
- <20210318045706.200458-2-hch@lst.de>
- <YFLrLwjZubWUvA2J@zeniv-ca.linux.org.uk>
- <20210318060724.GA29117@lst.de>
-Date: Thu, 18 Mar 2021 17:09:02 +0000
-In-Reply-To: <20210318060724.GA29117@lst.de> (Christoph Hellwig's message of
- "Thu, 18 Mar 2021 07:07:24 +0100")
-Message-ID: <yw1x1rccie35.fsf@mansr.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1YnR316Bz2yRV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 04:25:13 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4F1YnG3lFRz9txP3;
+ Thu, 18 Mar 2021 18:25:06 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id u80HYhNJ5DZG; Thu, 18 Mar 2021 18:25:06 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F1YnG2zDnz9txP1;
+ Thu, 18 Mar 2021 18:25:06 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 269F98B937;
+ Thu, 18 Mar 2021 18:25:08 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 8FXdzuDWxXsB; Thu, 18 Mar 2021 18:25:08 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E70868B92D;
+ Thu, 18 Mar 2021 18:25:07 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B7B17675F0; Thu, 18 Mar 2021 17:25:07 +0000 (UTC)
+Message-Id: <19e57d16692dcd1ca67ba880d7273a57fab416aa.1616085654.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <9c2952bcfaec3b1789909eaa36bbce2afbfab7ab.1616085654.git.christophe.leroy@csgroup.eu>
+References: <9c2952bcfaec3b1789909eaa36bbce2afbfab7ab.1616085654.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/embedded6xx: Remove CONFIG_MV64X60
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Wolfram Sang <wsa@kernel.org>
+Date: Thu, 18 Mar 2021 17:25:07 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,39 +70,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
- linux-mips@vger.kernel.org, linux-ide@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Al Viro <viro@zeniv.linux.org.uk>, linux-alpha@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-i2c@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christoph Hellwig <hch@lst.de> writes:
+Commit 92c8c16f3457 ("powerpc/embedded6xx: Remove C2K board support")
+moved the last selector of CONFIG_MV64X60.
 
-> On Thu, Mar 18, 2021 at 05:54:55AM +0000, Al Viro wrote:
->> On Thu, Mar 18, 2021 at 05:56:57AM +0100, Christoph Hellwig wrote:
->> > Switch the alpha defconfig from the legacy ide driver to libata.
->>=20
->> Umm...  I don't have an IDE alpha box in a usable shape (fans on
->> CPU module shat themselves), and it would take a while to resurrect
->> it, but I remember the joy it used to cause in some versions.
->>=20
->> Do you have reports of libata variants of drivers actually tested on
->> those?
->
-> No, I haven't.  The whole point is that we're not going to keep 40000
-> lines of code around despite notice for users that don't exist or
-> care.  If there is a regression we'll fix it, but we're not going to
-> make life miserable just because we can.
+As it is not a user selectable config, it can be removed.
 
-The pata_ali driver works fine on my UP1500 machine, unless something
-broke recently.  I'll build the latest kernel and report back.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/platforms/embedded6xx/Kconfig | 5 -----
+ drivers/i2c/busses/Kconfig                 | 2 +-
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
---=20
-M=E5ns Rullg=E5rd
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index c1920961f410..4c6d703a4284 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -71,11 +71,6 @@ config MPC10X_BRIDGE
+ 	bool
+ 	select PPC_INDIRECT_PCI
+ 
+-config MV64X60
+-	bool
+-	select PPC_INDIRECT_PCI
+-	select CHECK_CACHE_COHERENCY
+-
+ config GAMECUBE_COMMON
+ 	bool
+ 
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index 05ebf7546e3f..20edcda1c6f4 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -776,7 +776,7 @@ config I2C_MT7621
+ 
+ config I2C_MV64XXX
+ 	tristate "Marvell mv64xxx I2C Controller"
+-	depends on MV64X60 || PLAT_ORION || ARCH_SUNXI || ARCH_MVEBU || COMPILE_TEST
++	depends on PLAT_ORION || ARCH_SUNXI || ARCH_MVEBU || COMPILE_TEST
+ 	help
+ 	  If you say yes to this option, support will be included for the
+ 	  built-in I2C interface on the Marvell 64xxx line of host bridges.
+-- 
+2.25.0
+
