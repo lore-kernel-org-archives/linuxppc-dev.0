@@ -2,82 +2,83 @@ Return-Path: <SRS0=ebT8=IQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E847FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 12:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E6B9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 12:46:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C48A64F59
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 12:45:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C48A64F59
+	by mail.kernel.org (Postfix) with ESMTPS id B0CB164F59
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 12:46:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0CB164F59
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F1RZn4l9gz3bdG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 23:45:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F1RbG0xLsz3cBm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 23:46:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=xLCEVWKk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=u1uybo/3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32b;
- helo=mail-wm1-x32b.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::432;
+ helo=mail-wr1-x432.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=xLCEVWKk; dkim-atps=neutral
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com
- [IPv6:2a00:1450:4864:20::32b])
+ header.s=google header.b=u1uybo/3; dkim-atps=neutral
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com
+ [IPv6:2a00:1450:4864:20::432])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F1RYk69Ttz2yQx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 23:44:40 +1100 (AEDT)
-Received: by mail-wm1-x32b.google.com with SMTP id
- b2-20020a7bc2420000b029010be1081172so3293859wmj.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 05:44:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1RYk6zXnz2yQv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 23:44:42 +1100 (AEDT)
+Received: by mail-wr1-x432.google.com with SMTP id z2so5378208wrl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 05:44:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AJQO8bVI3b81mb68PB08R/oOF3ooV8dt2QQLb5Ex6Hw=;
- b=xLCEVWKkh857JtBePvYh95mpILww1ayRgcQloNKeaL50VqqgjDok4abtvvZuFJWyfw
- dnRyPtwBhPgmGzki0AqxfG2sSSG9B9avGDZDMVKPuxnkv8kf9HjCZbBNsuXIG0kW67D0
- 7pKKWVpVt5eSAQKVisuUbMIixNVBlo2/fbE+ZvGSs2611TTmd/yYh2113XLB0mJhA7lS
- gBkOdh/lWFeTpkSWDRUeE90GLO2Isqcusm8lVACorWp5T6FCOP2830dL3UT3ljAw9jpz
- wtjWsIW27awROUFuS5LMJ6B8gtXI2OqOaaLIDVDBxp//GWNNPvucgHnco3AaTdyOHKZG
- ufyQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=zaL0nEsFAcBhqqjVU0O9HWEXuIfJLm4ctcMaPZZ2Fv8=;
+ b=u1uybo/3FAiXPDTpmZbhBVHRlCyMsvBiUVr1KAvKPW/DdL0v2F3sz3aE7rCh9B0/Le
+ RhXj8JlOQu6ABxbUgMbvk1ThGTUYdZxSOzQDxKtLxJGHVSSR7Y3FbnziMeJD2pscp5YE
+ PXNc30MtxRnWOQORn2ijZxgqSSepMjnOJ4It8tGdYoTBFlKAZO/815gsueRm0M4uZHU/
+ jcUnbDyyyrmBvnVBvdi4/PioB1vuvbHs14VrSoBzUDMfKDZOukoeTgMU/lCJRceY/sud
+ NofUP7YfGoSyhb/jtbSfFNqRkJ7HbdkH90gZO0pXAu2VgHuJItjKA/NXnzRAibHwKcz7
+ XFRw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AJQO8bVI3b81mb68PB08R/oOF3ooV8dt2QQLb5Ex6Hw=;
- b=Cu2NWe0OWpWWVIBtGEJnYjHRE9tcWnbvPSuc4Nho1v9M7mL1fcKTqU5rREFhX7sL26
- 6F/38kY/+SRV6SzLjyS0YTqbwUCZC6OAl2yul8iAWDWU4nmut4z/RdpQcnDSAeFcp3ap
- uEBtNDcSyn+eHlsW12jPnQzF29hPJ684LwbPPHu8IonvpcpkahUK7LlGuifvfrEwFd7e
- /FLpWbhPIUT+O3Seu0Oh9tdHsPHRbTz0N4at0R73S97uJ5PQPplx7NEQSUYvm3+mBtPB
- B4Ek4BxTfYN0iVqkWv+ft/biT9b1HedbpaTaAHgnm++mVUdLRpdUCnpimhZg7tn0cn40
- 62DQ==
-X-Gm-Message-State: AOAM530w9vmQdv7XZwlkrP2exF7MfkGPwk4GD3IOboOhE2fSimmXyIqX
- Y29N9+3uxFGfaLC64SABNnZoZA==
-X-Google-Smtp-Source: ABdhPJxnk1k0Mb4aNBzX643EoSOfVjoAuKNDuwWX1gNK4cFB4T9rip/OdnykKJk57tfoH66Iy1z1YQ==
-X-Received: by 2002:a7b:c759:: with SMTP id w25mr3467410wmk.139.1616071470493; 
- Thu, 18 Mar 2021 05:44:30 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=zaL0nEsFAcBhqqjVU0O9HWEXuIfJLm4ctcMaPZZ2Fv8=;
+ b=Rei/UBHFhE7bcATg/LoEBy7wzXw4xC9jWhrwj9k5+JU1YmUiMbOjQNRDK2Ua11ZN9i
+ TXLQd4c8v32C1LIJ1sWUKXofHaYaQ10+BNWKvoPBxJtA7RZr6KM+LrWFtvNnqeJz/Wa2
+ pn2EZM4NTLYjoqhEfTPWDmY3prOvTlIbU15/BTcMOYGjP/WAXbbho4IPor98KOkirH8F
+ fkbJQ945ff2u1jOWQ+RrAy/54GKcHqcahWobpnLusLKdIZGTArkwj1nS5Vhd1GUgFDBx
+ cvZ0VP6nxwMHMLhy6BGhBPhmCKsu5XOPSQS2OHPPOaMpiyKG7OVtupobLbH67hyJicuq
+ hv0w==
+X-Gm-Message-State: AOAM530rqgOe8JNj4Q5dwc/y74eJCkqzcVjtEdeSPqkE0pYRFgtkl6WB
+ a++VPwFweIaZK/9D2E0T8mMb9Q==
+X-Google-Smtp-Source: ABdhPJyjLfIa9YueaDjBRXGN+wEAk47szCZUoN6lqkyrN05yel9okdpLdt34EXFVhs28uVSpXSBIxQ==
+X-Received: by 2002:adf:c587:: with SMTP id m7mr9362514wrg.369.1616071479028; 
+ Thu, 18 Mar 2021 05:44:39 -0700 (PDT)
 Received: from dell.default ([91.110.221.194])
- by smtp.gmail.com with ESMTPSA id q15sm2813900wrx.56.2021.03.18.05.44.29
+ by smtp.gmail.com with ESMTPSA id q15sm2813900wrx.56.2021.03.18.05.44.38
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 18 Mar 2021 05:44:30 -0700 (PDT)
+ Thu, 18 Mar 2021 05:44:38 -0700 (PDT)
 From: Lee Jones <lee.jones@linaro.org>
 To: lee.jones@linaro.org
-Subject: [PATCH v3 00/10] Rid W=1 warnings in Crypto
-Date: Thu, 18 Mar 2021 12:44:12 +0000
-Message-Id: <20210318124422.3200180-1-lee.jones@linaro.org>
+Subject: [PATCH 09/10] crypto: nx: nx-aes-cbc: Repair some kernel-doc problems
+Date: Thu, 18 Mar 2021 12:44:21 +0000
+Message-Id: <20210318124422.3200180-10-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210318124422.3200180-1-lee.jones@linaro.org>
+References: <20210318124422.3200180-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -90,118 +91,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Aymen Sghaier <aymen.sghaier@nxp.com>, Kent Yoder <yoder1@us.ibm.com>,
- Ayush Sawal <ayush.sawal@chelsio.com>,
- Joakim Bech <joakim.xx.bech@stericsson.com>,
- Nicolas Ferre <nicolas.ferre@microchip.com>, Paul Mackerras <paulus@samba.org>,
- Andreas Westin <andreas.westin@stericsson.com>,
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Kent Yoder <yoder1@us.ibm.com>,
+ Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org,
  =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
- Atul Gupta <atul.gupta@chelsio.com>,
- Niklas Hernaeus <niklas.hernaeus@stericsson.com>,
- M R Gowda <yeshaswi@chelsio.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>,
- Rohit Maheshwari <rohitm@chelsio.com>, Nayna Jain <nayna@linux.ibm.com>,
- Manoj Malviya <manojmalviya@chelsio.com>,
- Ludovic Desroches <ludovic.desroches@microchip.com>,
- Jonas Linde <jonas.linde@stericsson.com>, Rob Rice <rob.rice@broadcom.com>,
- Zaibo Xu <xuzaibo@huawei.com>, Harsh Jain <harsh@chelsio.com>,
- Declan Murphy <declan.murphy@intel.com>,
- Tudor Ambarus <tudor.ambarus@microchip.com>,
- Vinay Kumar Yadav <vinay.yadav@chelsio.com>,
- Shujuan Chen <shujuan.chen@stericsson.com>,
- Henrique Cerri <mhcerri@br.ibm.com>,
- Daniele Alessandrelli <daniele.alessandrelli@intel.com>,
- linux-arm-kernel@lists.infradead.org,
- Jonathan Cameron <jonathan.cameron@huawei.com>, linux-kernel@vger.kernel.org,
- Berne Hebark <berne.herbark@stericsson.com>, linux-crypto@vger.kernel.org,
- Jitendra Lulla <jlulla@chelsio.com>,
- Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is set 1 of 2 sets required to fully clean Crypto.
+Fixes the following W=1 kernel build warning(s):
 
-v2: No functional changes since v1.
-v3: Description change and additional struct header fix
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'tfm' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'in_key' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: Function parameter or member 'key_len' not described in 'cbc_aes_nx_set_key'
+ drivers/crypto/nx/nx-aes-cbc.c:24: warning: expecting prototype for Nest Accelerators driver(). Prototype was for cbc_aes_nx_set_key() instead
+ drivers/crypto/nx/nx_debugfs.c:34: warning: Function parameter or member 'drv' not described in 'nx_debugfs_init'
+ drivers/crypto/nx/nx_debugfs.c:34: warning: expecting prototype for Nest Accelerators driver(). Prototype was for nx_debugfs_init() instead
+ drivers/crypto/nx/nx.c:31: warning: Incorrect use of kernel-doc format:  * nx_hcall_sync - make an H_COP_OP hcall for the passed in op structure
+ drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'nx_ctx' not described in 'nx_hcall_sync'
+ drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'op' not described in 'nx_hcall_sync'
+ drivers/crypto/nx/nx.c:43: warning: Function parameter or member 'may_sleep' not described in 'nx_hcall_sync'
+ drivers/crypto/nx/nx.c:43: warning: expecting prototype for Nest Accelerators driver(). Prototype was for nx_hcall_sync() instead
+ drivers/crypto/nx/nx.c:209: warning: Function parameter or member 'nbytes' not described in 'trim_sg_list'
 
-Lee Jones (10):
-  crypto: hisilicon: sec_drv: Supply missing description for
-    'sec_queue_empty()'s 'queue' param
-  crypto: bcm: Fix a whole host of kernel-doc misdemeanours
-  crypto: chelsio: chcr_core: Fix some kernel-doc issues
-  crypto: ux500: hash: hash_core: Fix worthy kernel-doc headers and
-    remove others
-  crypto: keembay: ocs-hcu: Fix incorrectly named functions/structs
-  crypto: atmel-ecc: Struct headers need to start with keyword 'struct'
-  crypto: caam: caampkc: Provide the name of the function and provide
-    missing descriptions
-  crypto: vmx: Source headers are not good kernel-doc candidates
-  crypto: nx: nx-aes-cbc: Repair some kernel-doc problems
-  crypto: cavium: nitrox_isr: Demote non-compliant kernel-doc headers
-
- drivers/crypto/atmel-ecc.c                |  2 +-
- drivers/crypto/bcm/cipher.c               |  7 ++--
- drivers/crypto/bcm/spu.c                  | 16 ++++-----
- drivers/crypto/bcm/spu2.c                 | 43 +++++++++++++----------
- drivers/crypto/bcm/util.c                 |  4 +--
- drivers/crypto/caam/caamalg_qi2.c         |  3 ++
- drivers/crypto/caam/caampkc.c             |  3 +-
- drivers/crypto/cavium/nitrox/nitrox_isr.c |  4 +--
- drivers/crypto/chelsio/chcr_algo.c        |  8 ++---
- drivers/crypto/chelsio/chcr_core.c        |  2 +-
- drivers/crypto/hisilicon/sec/sec_drv.c    |  1 +
- drivers/crypto/keembay/ocs-hcu.c          |  8 ++---
- drivers/crypto/nx/nx-aes-cbc.c            |  2 +-
- drivers/crypto/nx/nx.c                    |  5 +--
- drivers/crypto/nx/nx_debugfs.c            |  2 +-
- drivers/crypto/ux500/cryp/cryp.c          |  5 +--
- drivers/crypto/ux500/cryp/cryp_core.c     |  5 +--
- drivers/crypto/ux500/cryp/cryp_irq.c      |  2 +-
- drivers/crypto/ux500/hash/hash_core.c     | 15 +++-----
- drivers/crypto/vmx/vmx.c                  |  2 +-
- 20 files changed, 73 insertions(+), 66 deletions(-)
-
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Andreas Westin <andreas.westin@stericsson.com>
-Cc: Atul Gupta <atul.gupta@chelsio.com>
-Cc: Aymen Sghaier <aymen.sghaier@nxp.com>
-Cc: Ayush Sawal <ayush.sawal@chelsio.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Berne Hebark <berne.herbark@stericsson.com>
 Cc: "Breno Leitão" <leitao@debian.org>
-Cc: Daniele Alessandrelli <daniele.alessandrelli@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Declan Murphy <declan.murphy@intel.com>
-Cc: Harsh Jain <harsh@chelsio.com>
-Cc: Henrique Cerri <mhcerri@br.ibm.com>
+Cc: Nayna Jain <nayna@linux.ibm.com>
+Cc: Paulo Flabiano Smorigo <pfsmorigo@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Horia Geantă" <horia.geanta@nxp.com>
-Cc: Jitendra Lulla <jlulla@chelsio.com>
-Cc: Joakim Bech <joakim.xx.bech@stericsson.com>
-Cc: Jonas Linde <jonas.linde@stericsson.com>
-Cc: Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Kent Yoder <yoder1@us.ibm.com>
-Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-crypto@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
-Cc: Manoj Malviya <manojmalviya@chelsio.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: M R Gowda <yeshaswi@chelsio.com>
-Cc: Nayna Jain <nayna@linux.ibm.com>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: Niklas Hernaeus <niklas.hernaeus@stericsson.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Paulo Flabiano Smorigo <pfsmorigo@gmail.com>
-Cc: Rob Rice <rob.rice@broadcom.com>
-Cc: Rohit Maheshwari <rohitm@chelsio.com>
-Cc: Shujuan Chen <shujuan.chen@stericsson.com>
-Cc: Tudor Ambarus <tudor.ambarus@microchip.com>
-Cc: Vinay Kumar Yadav <vinay.yadav@chelsio.com>
-Cc: Zaibo Xu <xuzaibo@huawei.com>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/crypto/nx/nx-aes-cbc.c | 2 +-
+ drivers/crypto/nx/nx.c         | 5 +++--
+ drivers/crypto/nx/nx_debugfs.c | 2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/crypto/nx/nx-aes-cbc.c b/drivers/crypto/nx/nx-aes-cbc.c
+index 92e921eceed75..d6314ea9ae896 100644
+--- a/drivers/crypto/nx/nx-aes-cbc.c
++++ b/drivers/crypto/nx/nx-aes-cbc.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+-/**
++/*
+  * AES CBC routines supporting the Power 7+ Nest Accelerators driver
+  *
+  * Copyright (C) 2011-2012 International Business Machines Inc.
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index 1d0e8a1ba1605..010e87d9da36b 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+-/**
++/*
+  * Routines supporting the Power 7+ Nest Accelerators driver
+  *
+  * Copyright (C) 2011-2012 International Business Machines Inc.
+@@ -200,7 +200,8 @@ struct nx_sg *nx_walk_and_build(struct nx_sg       *nx_dst,
+  * @sg: sg list head
+  * @end: sg lisg end
+  * @delta:  is the amount we need to crop in order to bound the list.
+- *
++ * @nbytes: length of data in the scatterlists or data length - whichever
++ *          is greater.
+  */
+ static long int trim_sg_list(struct nx_sg *sg,
+ 			     struct nx_sg *end,
+diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
+index 1975bcbee9974..ee7cd88bb10a7 100644
+--- a/drivers/crypto/nx/nx_debugfs.c
++++ b/drivers/crypto/nx/nx_debugfs.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+-/**
++/*
+  * debugfs routines supporting the Power 7+ Nest Accelerators driver
+  *
+  * Copyright (C) 2011-2012 International Business Machines Inc.
 -- 
 2.27.0
 
