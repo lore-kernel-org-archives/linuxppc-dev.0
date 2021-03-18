@@ -2,88 +2,84 @@ Return-Path: <SRS0=qtcn=IR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F77C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C829AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:25:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFF3B614A7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:16:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFF3B614A7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CF63164F11
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:25:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF63164F11
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F1nYr0bv6z3c38
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 13:16:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F1nmy0p4Fz3c2g
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 13:25:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Pa8NHg97;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WRe8C6Ug;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d;
- helo=mail-pj1-x102d.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::52d;
+ helo=mail-pg1-x52d.google.com; envelope-from=drinkcat@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Pa8NHg97; dkim-atps=neutral
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com
- [IPv6:2607:f8b0:4864:20::102d])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=WRe8C6Ug; dkim-atps=neutral
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com
+ [IPv6:2607:f8b0:4864:20::52d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F1nYK3WQ8z2y6F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 13:15:32 +1100 (AEDT)
-Received: by mail-pj1-x102d.google.com with SMTP id
- kk2-20020a17090b4a02b02900c777aa746fso4080084pjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 19:15:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=5Ku1iLHmVJKs9JYVZH7W21UFerjKVCttF9nIckB9gao=;
- b=Pa8NHg97dPAvvdMilIRJAAiB677IMee0DeGyTk6MkLLfR7uYxzzMKb/fl5xv+qMQZs
- Sx/1+XM/R0fpE10/6s+9fiPgFELIcjcm3Hib0KEmJR8Aw5xtCPR4P/T/VbOS+ZxGVVhj
- ohKYKfxXVHPiLLZdB9rNTpf5PxmE7nizYLZTQzgSJitKc3yCl4x1ehKLT9ChZczALaqo
- NdrLH2qAgQpsLhPjVpMAAjcATkRhikD6wFW/5y7f+PCLwlBNzgwX8jNp+Z5dGLxCadeE
- dQIc1mmBDN4JBr8I8XOOF3hZXq7mAlvz/hPDKznzlPyGJEA8uB3oA1MyRdJag+DJ3nOz
- n4qg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1kQw4WfWz2yRB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 10:54:47 +1100 (AEDT)
+Received: by mail-pg1-x52d.google.com with SMTP id u19so2483865pgh.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 16:54:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=OCWO8N3ciaDG5tRci/9OOSktf6u6kKfWPDbEI5DCf7o=;
+ b=WRe8C6UgMjCfEYGM8A9qqEXszowP4m9MBxRvDIUSLFv4+7D/vPSuAfvwQ8D+CcuV9I
+ iIAqGPSHiAwejcRDHGoRA9F7iKAt8FFYglqwP8SxZK5dd9pp2Lw4uH5004n/w7f8jcmN
+ YJwsypl5g2M32rFTG1OjPRNTmApUN4NoEfI7E=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=5Ku1iLHmVJKs9JYVZH7W21UFerjKVCttF9nIckB9gao=;
- b=WsAVbVN30CGwECCu3yvCMq0PSkhh14p8z9uOObO4QVz+mn9Q57InNjP/NHrVvpbfoc
- bhwC1s6cJJgSN+NkVGxy2Hop0YHqy/OxsOJXnJH7E5gh5/RuSmVcgmgWBcdX56MjcQiu
- 0XOGeeyX09mfXutgNr9rYKpvb34x3n4ITkBacHwAuy6cbI1TzU0yFrkl6CJgZwap6Kpz
- CV/9LhEUFqTd4NbvAB+x9ZDfC9p79It4d8xQHgEVOXnYlxaawEcOfyiBLJi1ouUzfym2
- 3OWuHAhi2tm6wDNNUc0I+mesxeSmSusSZXW13KbdRN595f3HrReUaqVN2RZpJe53kgfo
- 8vGQ==
-X-Gm-Message-State: AOAM533b6M8Zs/0IGfTp2HytiXllhWUHCoWqu77PB0MFiMVrGnAMf90o
- q0rvvMGfpw2iPSeQsnTj68Z3IJ3/nFI=
-X-Google-Smtp-Source: ABdhPJxSNeeOVtoOtv9C7rJACxYlOSLSkxkjaFFWrSTNoTyO6OclLruD55HmxX5CfIcnmCRgw18Prw==
-X-Received: by 2002:a17:90b:686:: with SMTP id m6mr7173059pjz.26.1616120129604; 
- Thu, 18 Mar 2021 19:15:29 -0700 (PDT)
-Received: from localhost ([58.84.78.96])
- by smtp.gmail.com with ESMTPSA id i4sm3714144pfo.14.2021.03.18.19.15.27
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=OCWO8N3ciaDG5tRci/9OOSktf6u6kKfWPDbEI5DCf7o=;
+ b=j5gCl75OtbOrCH4dVn6cMotCGHBq5LNFS2wS8tmruGnGJAy/laMA0kGVXzrnriyIlw
+ g9BxuUMzINMDRr0ql+ZNyZXUKsHQ1XYm1Q3C1MXuqBuvNtpQCD9Avvs+Qr0OeIOwS3i3
+ aznzOw8xmqLpAVUukAr3uPHK6ZVlUk7Nt928HWtiiDRhdd5KYHSRh14wkb+WIuopWGHZ
+ DNoZWQ5uaqoysxnpmFL2d8Wt/FoxiPd9dH1S9/MC8As02qUOavy79XY9TyaplFWi73A2
+ jpXVIEp4PMA0UIIH+m+NCFtqxI/j2FrgTDF9wlKCyH+9tSiA19KyqhhUwTebrELPlMKd
+ NQhA==
+X-Gm-Message-State: AOAM531PDhX/gMT9p89+K4xP77CsMW47l7g1OaRb3uHIwLPMcZV/X7/3
+ kTATppAzaNFA7ksWmW2zSCi1fg==
+X-Google-Smtp-Source: ABdhPJwcmwgERjcGCtyxeXhaLRfeMUh3vGXJXsd4rwk0cO3KLmx0J2DGiKfq15S3JcQU6GkrQ5NBdQ==
+X-Received: by 2002:a62:7ecc:0:b029:1ee:f61b:a63f with SMTP id
+ z195-20020a627ecc0000b02901eef61ba63fmr6276804pfc.57.1616111686051; 
+ Thu, 18 Mar 2021 16:54:46 -0700 (PDT)
+Received: from drinkcat2.tpe.corp.google.com
+ ([2401:fa00:1:b:dc70:2def:a801:e21b])
+ by smtp.gmail.com with ESMTPSA id t7sm3295816pfg.69.2021.03.18.16.54.42
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 18 Mar 2021 19:15:29 -0700 (PDT)
-Date: Fri, 19 Mar 2021 12:15:23 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH 8/8] powerpc/64/asm: don't reassign labels
-To: Daniel Axtens <dja@axtens.net>, Segher Boessenkool
- <segher@kernel.crashing.org>
-References: <20210225031006.1204774-1-dja@axtens.net>
- <20210225031006.1204774-9-dja@axtens.net>
- <20210225160857.GH28121@gate.crashing.org>
- <87lfbboeo9.fsf@dja-thinkpad.axtens.net>
-In-Reply-To: <87lfbboeo9.fsf@dja-thinkpad.axtens.net>
+ Thu, 18 Mar 2021 16:54:45 -0700 (PDT)
+From: Nicolas Boichat <drinkcat@chromium.org>
+To: stable@vger.kernel.org
+Subject: [for-stable-4.19 PATCH 1/2] vmlinux.lds.h: Create section for
+ protection against instrumentation
+Date: Fri, 19 Mar 2021 07:54:15 +0800
+Message-Id: <20210319075410.for-stable-4.19.1.I222f801866f71be9f7d85e5b10665cd4506d78ec@changeid>
+X-Mailer: git-send-email 2.31.0.rc2.261.g7f71774620-goog
+In-Reply-To: <20210318235416.794798-1-drinkcat@chromium.org>
+References: <20210318235416.794798-1-drinkcat@chromium.org>
 MIME-Version: 1.0
-Message-Id: <1616119819.nbj5blkf7y.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 19 Mar 2021 13:25:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,99 +91,224 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: llvmlinux@lists.linuxfoundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-arch@vger.kernel.org,
+ Nicolas Boichat <drinkcat@chromium.org>,
+ Alexandre Chartre <alexandre.chartre@oracle.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, Christopher Li <sparse@chrisli.org>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, linux-sparse@vger.kernel.org,
+ Michal Marek <michal.lkml@markovi.net>, Paul Mackerras <paulus@samba.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Daniel Axtens's message of February 26, 2021 10:28 am:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
->=20
->> On Thu, Feb 25, 2021 at 02:10:06PM +1100, Daniel Axtens wrote:
->>> The assembler really does not like us reassigning things to the same
->>> label:
->>>=20
->>> <instantiation>:7:9: error: invalid reassignment of non-absolute variab=
-le 'fs_label'
->>>=20
->>> This happens across a bunch of platforms:
->>> https://github.com/ClangBuiltLinux/linux/issues/1043
->>> https://github.com/ClangBuiltLinux/linux/issues/1008
->>> https://github.com/ClangBuiltLinux/linux/issues/920
->>> https://github.com/ClangBuiltLinux/linux/issues/1050
->>>=20
->>> There is no hope of getting this fixed in LLVM, so if we want to build
->>> with LLVM_IAS, we need to hack around it ourselves.
->>>=20
->>> For us the big problem comes from this:
->>>=20
->>> \#define USE_FIXED_SECTION(sname)				\
->>> 	fs_label =3D start_##sname;				\
->>> 	fs_start =3D sname##_start;				\
->>> 	use_ftsec sname;
->>>=20
->>> \#define USE_TEXT_SECTION()
->>> 	fs_label =3D start_text;					\
->>> 	fs_start =3D text_start;					\
->>> 	.text
->>>=20
->>> and in particular fs_label.
->>
->> The "Setting Symbols" super short chapter reads:
->>
->> "A symbol can be given an arbitrary value by writing a symbol, followed
->> by an equals sign '=3D', followed by an expression.  This is equivalent
->> to using the '.set' directive."
->>
->> And ".set" has
->>
->> "Set the value of SYMBOL to EXPRESSION.  This changes SYMBOL's value and
->> type to conform to EXPRESSION.  If SYMBOL was flagged as external, it
->> remains flagged.
->>
->> You may '.set' a symbol many times in the same assembly provided that
->> the values given to the symbol are constants.  Values that are based on
->> expressions involving other symbols are allowed, but some targets may
->> restrict this to only being done once per assembly.  This is because
->> those targets do not set the addresses of symbols at assembly time, but
->> rather delay the assignment until a final link is performed.  This
->> allows the linker a chance to change the code in the files, changing the
->> location of, and the relative distance between, various different
->> symbols.
->>
->> If you '.set' a global symbol, the value stored in the object file is
->> the last value stored into it."
->>
->> So this really should be fixed in clang: it is basic assembler syntax.
->=20
-> No doubt I have explained this poorly.
->=20
-> LLVM does allow some things, this builds fine for example:
->=20
-> .set foo, 8192
-> addi %r3, %r3, foo
-> .set foo, 1234
-> addi %r3, %r3, foo
->=20
-> However, this does not:
->=20
-> a:
-> .set foo, a
-> addi %r3, %r3, foo@l
-> b:
-> .set foo, b
-> addi %r3, %r3, foo-a
->=20
-> clang -target ppc64le -integrated-as  foo.s -o foo.o -c
-> foo.s:5:11: error: invalid reassignment of non-absolute variable 'foo' in=
- '.set' directive
-> .set foo, b
->           ^
+From: Thomas Gleixner <tglx@linutronix.de>
 
-So that does seem to be allowed by the specification.
+commit 6553896666433e7efec589838b400a2a652b3ffa upstream.
 
-I don't have a huge problem with the patch actually, doesn't seem too=20
-bad.
+Some code pathes, especially the low level entry code, must be protected
+against instrumentation for various reasons:
 
-Thanks,
-Nick
+ - Low level entry code can be a fragile beast, especially on x86.
+
+ - With NO_HZ_FULL RCU state needs to be established before using it.
+
+Having a dedicated section for such code allows to validate with tooling
+that no unsafe functions are invoked.
+
+Add the .noinstr.text section and the noinstr attribute to mark
+functions. noinstr implies notrace. Kprobes will gain a section check
+later.
+
+Provide also a set of markers: instrumentation_begin()/end()
+
+These are used to mark code inside a noinstr function which calls
+into regular instrumentable text section as safe.
+
+The instrumentation markers are only active when CONFIG_DEBUG_ENTRY is
+enabled as the end marker emits a NOP to prevent the compiler from merging
+the annotation points. This means the objtool verification requires a
+kernel compiled with this option.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Alexandre Chartre <alexandre.chartre@oracle.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/20200505134100.075416272@linutronix.de
+
+[Nicolas: context conflicts in:
+	arch/powerpc/kernel/vmlinux.lds.S
+	include/asm-generic/vmlinux.lds.h
+	include/linux/compiler.h
+	include/linux/compiler_types.h]
+Signed-off-by: Nicolas Boichat <drinkcat@chromium.org>
+
+---
+
+ arch/powerpc/kernel/vmlinux.lds.S |  1 +
+ include/asm-generic/sections.h    |  3 ++
+ include/asm-generic/vmlinux.lds.h | 10 ++++++
+ include/linux/compiler.h          | 54 +++++++++++++++++++++++++++++++
+ include/linux/compiler_types.h    |  4 +++
+ scripts/mod/modpost.c             |  2 +-
+ 6 files changed, 73 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 695432965f20..9b346f3d2814 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -99,6 +99,7 @@ SECTIONS
+ #endif
+ 		/* careful! __ftr_alt_* sections need to be close to .text */
+ 		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
++		NOINSTR_TEXT
+ 		SCHED_TEXT
+ 		CPUIDLE_TEXT
+ 		LOCK_TEXT
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 849cd8eb5ca0..ea5987bb0b84 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -53,6 +53,9 @@ extern char __ctors_start[], __ctors_end[];
+ /* Start and end of .opd section - used for function descriptors. */
+ extern char __start_opd[], __end_opd[];
+ 
++/* Start and end of instrumentation protected text section */
++extern char __noinstr_text_start[], __noinstr_text_end[];
++
+ extern __visible const void __nosave_begin, __nosave_end;
+ 
+ /* Function descriptor handling (if any).  Override in asm/sections.h */
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 2d632a74cc5e..88484ee023ca 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -482,6 +482,15 @@
+ 		__security_initcall_end = .;				\
+ 	}
+ 
++/*
++ * Non-instrumentable text section
++ */
++#define NOINSTR_TEXT							\
++		ALIGN_FUNCTION();					\
++		__noinstr_text_start = .;				\
++		*(.noinstr.text)					\
++		__noinstr_text_end = .;
++
+ /*
+  * .text section. Map to function alignment to avoid address changes
+  * during second ld run in second ld pass when generating System.map
+@@ -496,6 +505,7 @@
+ 		*(TEXT_MAIN .text.fixup)				\
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
++		NOINSTR_TEXT						\
+ 		*(.text..refcount)					\
+ 		*(.ref.text)						\
+ 	MEM_KEEP(init.text*)						\
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 6b6505e3b2c7..6a53300cbd1e 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -129,11 +129,65 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+ 	".pushsection .discard.unreachable\n\t"				\
+ 	".long 999b - .\n\t"						\
+ 	".popsection\n\t"
++
++#ifdef CONFIG_DEBUG_ENTRY
++/* Begin/end of an instrumentation safe region */
++#define instrumentation_begin() ({					\
++	asm volatile("%c0:\n\t"						\
++		     ".pushsection .discard.instr_begin\n\t"		\
++		     ".long %c0b - .\n\t"				\
++		     ".popsection\n\t" : : "i" (__COUNTER__));		\
++})
++
++/*
++ * Because instrumentation_{begin,end}() can nest, objtool validation considers
++ * _begin() a +1 and _end() a -1 and computes a sum over the instructions.
++ * When the value is greater than 0, we consider instrumentation allowed.
++ *
++ * There is a problem with code like:
++ *
++ * noinstr void foo()
++ * {
++ *	instrumentation_begin();
++ *	...
++ *	if (cond) {
++ *		instrumentation_begin();
++ *		...
++ *		instrumentation_end();
++ *	}
++ *	bar();
++ *	instrumentation_end();
++ * }
++ *
++ * If instrumentation_end() would be an empty label, like all the other
++ * annotations, the inner _end(), which is at the end of a conditional block,
++ * would land on the instruction after the block.
++ *
++ * If we then consider the sum of the !cond path, we'll see that the call to
++ * bar() is with a 0-value, even though, we meant it to happen with a positive
++ * value.
++ *
++ * To avoid this, have _end() be a NOP instruction, this ensures it will be
++ * part of the condition block and does not escape.
++ */
++#define instrumentation_end() ({					\
++	asm volatile("%c0: nop\n\t"					\
++		     ".pushsection .discard.instr_end\n\t"		\
++		     ".long %c0b - .\n\t"				\
++		     ".popsection\n\t" : : "i" (__COUNTER__));		\
++})
++#endif /* CONFIG_DEBUG_ENTRY */
++
+ #else
+ #define annotate_reachable()
+ #define annotate_unreachable()
+ #endif
+ 
++#ifndef instrumentation_begin
++#define instrumentation_begin()		do { } while(0)
++#define instrumentation_end()		do { } while(0)
++#endif
++
+ #ifndef ASM_UNREACHABLE
+ # define ASM_UNREACHABLE
+ #endif
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index 2b8ed70c4c77..a9b0495051a3 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -234,6 +234,10 @@ struct ftrace_likely_data {
+ #define notrace			__attribute__((no_instrument_function))
+ #endif
+ 
++/* Section for code which can't be instrumented at all */
++#define noinstr								\
++	noinline notrace __attribute((__section__(".noinstr.text")))
++
+ /*
+  * it doesn't make sense on ARM (currently the only user of __naked)
+  * to trace naked functions because then mcount is called without
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 91a80036c05d..7c693bd775c1 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -895,7 +895,7 @@ static void check_section(const char *modname, struct elf_info *elf,
+ 
+ #define DATA_SECTIONS ".data", ".data.rel"
+ #define TEXT_SECTIONS ".text", ".text.unlikely", ".sched.text", \
+-		".kprobes.text", ".cpuidle.text"
++		".kprobes.text", ".cpuidle.text", ".noinstr.text"
+ #define OTHER_TEXT_SECTIONS ".ref.text", ".head.text", ".spinlock.text", \
+ 		".fixup", ".entry.text", ".exception.text", ".text.*", \
+ 		".coldtext"
+-- 
+2.31.0.rc2.261.g7f71774620-goog
+
