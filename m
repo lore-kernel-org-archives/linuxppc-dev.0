@@ -2,46 +2,46 @@ Return-Path: <SRS0=ebT8=IQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73A9AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 06:07:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 314C7C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 06:08:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46D2B64D9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 06:07:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46D2B64D9F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id ED45064F10
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 06:08:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED45064F10
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F1Gll4qZSz3brh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:07:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=142.44.231.140;
- helo=zeniv-ca.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F1Gm66kzSz30RR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Mar 2021 17:08:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Received: from zeniv-ca.linux.org.uk (zeniv-ca.linux.org.uk [142.44.231.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F1GlN68gKz2yym
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 17:07:22 +1100 (AEDT)
-Received: from viro by zeniv-ca.linux.org.uk with local (Exim 4.94 #2 (Red Hat
- Linux)) id 1lMlcV-0073HK-IW; Thu, 18 Mar 2021 05:54:55 +0000
-Date: Thu, 18 Mar 2021 05:54:55 +0000
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Christoph Hellwig <hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1GlS5hBpz3bpT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 17:07:31 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 5735768C4E; Thu, 18 Mar 2021 07:07:25 +0100 (CET)
+Date: Thu, 18 Mar 2021 07:07:24 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Al Viro <viro@zeniv.linux.org.uk>
 Subject: Re: [PATCH 01/10] alpha: use libata instead of the legacy ide driver
-Message-ID: <YFLrLwjZubWUvA2J@zeniv-ca.linux.org.uk>
+Message-ID: <20210318060724.GA29117@lst.de>
 References: <20210318045706.200458-1-hch@lst.de>
- <20210318045706.200458-2-hch@lst.de>
+ <20210318045706.200458-2-hch@lst.de> <YFLrLwjZubWUvA2J@zeniv-ca.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210318045706.200458-2-hch@lst.de>
+In-Reply-To: <YFLrLwjZubWUvA2J@zeniv-ca.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,23 +55,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Jens Axboe <axboe@kernel.dk>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-doc@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>,
  linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
  Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+ Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
  Richard Henderson <rth@twiddle.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 18, 2021 at 05:56:57AM +0100, Christoph Hellwig wrote:
-> Switch the alpha defconfig from the legacy ide driver to libata.
+On Thu, Mar 18, 2021 at 05:54:55AM +0000, Al Viro wrote:
+> On Thu, Mar 18, 2021 at 05:56:57AM +0100, Christoph Hellwig wrote:
+> > Switch the alpha defconfig from the legacy ide driver to libata.
+> 
+> Umm...  I don't have an IDE alpha box in a usable shape (fans on
+> CPU module shat themselves), and it would take a while to resurrect
+> it, but I remember the joy it used to cause in some versions.
+> 
+> Do you have reports of libata variants of drivers actually tested on
+> those?
 
-Umm...  I don't have an IDE alpha box in a usable shape (fans on
-CPU module shat themselves), and it would take a while to resurrect
-it, but I remember the joy it used to cause in some versions.
-
-Do you have reports of libata variants of drivers actually tested on
-those?
+No, I haven't.  The whole point is that we're not going to keep 40000
+lines of code around despite notice for users that don't exist or
+care.  If there is a regression we'll fix it, but we're not going to
+make life miserable just because we can.
