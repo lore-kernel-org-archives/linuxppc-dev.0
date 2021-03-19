@@ -2,86 +2,89 @@ Return-Path: <SRS0=qtcn=IR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AB91C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 20:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C617BC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 20:51:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 070F96197A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 20:51:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 070F96197A
+	by mail.kernel.org (Postfix) with ESMTPS id D99A06197A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 20:51:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D99A06197A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F2GJV1FKRz3c21
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 07:51:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F2GJy47y4z3cCr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 07:51:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r6b/XBa4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UM1ZDOvp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=r6b/XBa4; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=UM1ZDOvp; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F2GHz05N9z2yss
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Mar 2021 07:50:38 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12JKXJDf147972; Fri, 19 Mar 2021 16:50:33 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F2GHy737qz2yqD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Mar 2021 07:50:37 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12JKX5Hw107235; Fri, 19 Mar 2021 16:50:34 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=tnFusXzx6sJTpHmQw01cJ2VLMwSVY4vqv2UYSf3JMEc=;
- b=r6b/XBa4tuTwh5AqH72VzgFzWqycrNm+kmsaK06/m/4Bhd4QWxjjaj/IWgpbRO1fwu+7
- 47F/u0KhftQNMpYscPeM/xMbD22WPyPGDy8T8RL0EmrW7GO3Dy/X7dLa5P8ZhNLnlJQB
- vihQeoLUXeTp0hcLUnveko4D2wXvagO9wy8GHDzuP12Ikodyb9y0btVE5cpsPDFfACsk
- mp4tXxOXJr31dLKZIjLVvdIVF10+9MAUd6Nu6wnClGmhThXnelPSX9RZiNSfB64PuF3L
- kcRV6uqxLk1vsT8cGqhSNsnPtvm92H/4usE9FrRmnMDgx1GuSytsfik8+fQRY1xpHE38 TQ== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=5nc+PQngE6lzm5zp/Hxo1++AIj63sWSpfvhPQP6Ke4w=;
+ b=UM1ZDOvpdgRglxow24e4CbSdc/UCSKaJHrw/BUDHFRqLoaR8+CRSKDr0EW1BuK6X0dRY
+ lCb0WE3dgmMtWn4oBV6yqlpd6uNZK2p52rlBuVVAgIIWMSTTDSo9n+AqOUpbYeWLtd2V
+ 3M9mHMat6FUJPTfENcBSY8IBxOjZ4wsllceoFEgjJ8N3x3F0o5kNx2aIGoNterWtAmy0
+ 2pV1CUgxT98I1dIpo6QhZVfc719EfcWvazMmrQFSbWsHKn8xcmRXnXbcb8gXmTItM+tH
+ r8qSYUuMHXcVL/Unh/mgc10uw6rY8E56Ze8uPNF5YKB8ruebif8ppYcJ5gcVDWsFhZF3 ng== 
 Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
  [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37c10h1qx1-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37c7m762ct-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 19 Mar 2021 16:50:33 -0400
+ Fri, 19 Mar 2021 16:50:34 -0400
 Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12JKlD8m005150;
- Fri, 19 Mar 2021 20:50:32 GMT
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12JKlDpp005276;
+ Fri, 19 Mar 2021 20:50:33 GMT
 Received: from b03cxnp08026.gho.boulder.ibm.com
  (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma04dal.us.ibm.com with ESMTP id 37a3gdbtu7-1
+ by ppma04dal.us.ibm.com with ESMTP id 37a3gdbtu8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 19 Mar 2021 20:50:32 +0000
+ Fri, 19 Mar 2021 20:50:33 +0000
 Received: from b03ledav001.gho.boulder.ibm.com
  (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
  by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12JKoV0019071434
+ 12JKoWtb14483870
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 19 Mar 2021 20:50:31 GMT
+ Fri, 19 Mar 2021 20:50:32 GMT
 Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 146AC6E04C;
+ by IMSVA (Postfix) with ESMTP id E32FF6E054;
  Fri, 19 Mar 2021 20:50:31 +0000 (GMT)
 Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B1E4E6E050;
- Fri, 19 Mar 2021 20:50:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 972F36E04C;
+ Fri, 19 Mar 2021 20:50:31 +0000 (GMT)
 Received: from vios4361.aus.stglabs.ibm.com (unknown [9.3.43.61])
  by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 19 Mar 2021 20:50:30 +0000 (GMT)
+ Fri, 19 Mar 2021 20:50:31 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com
-Subject: [PATCH 0/2] Fix EH race and MQ support
-Date: Fri, 19 Mar 2021 14:50:27 -0600
-Message-Id: <20210319205029.312969-1-tyreld@linux.ibm.com>
+Subject: [PATCH 2/2] ibmvfc: make ibmvfc_wait_for_ops MQ aware
+Date: Fri, 19 Mar 2021 14:50:29 -0600
+Message-Id: <20210319205029.312969-3-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210319205029.312969-1-tyreld@linux.ibm.com>
+References: <20210319205029.312969-1-tyreld@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -89,11 +92,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-19_10:2021-03-19,
  2021-03-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 mlxscore=0
- malwarescore=0 bulkscore=0 clxscore=1015 suspectscore=0 mlxlogscore=999
- adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2103190140
+ phishscore=0 spamscore=0
+ suspectscore=0 adultscore=0 mlxlogscore=999 lowpriorityscore=0
+ priorityscore=1501 clxscore=1015 bulkscore=0 impostorscore=0
+ malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2103190140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,24 +115,105 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changes to the locking pattern protecting the event lists and handling of scsi
-command completion introduced a race where an ouststanding command that EH is
-waiting ifor to complete is no longer identifiable by being on the sent list, but
-instead as a command that is not on the free list. This is a result of moving
-commands to be completed off the sent list to a private list to be completed
-outside the list lock.
+During MQ enablement of the ibmvfc driver ibmvfc_wait_for_ops() was
+missed. This function is responsible for waiting on commands to complete
+that match a certain criteria such as LUN or cancel key. The
+implementation as is only scans the CRQ for events ignoring any
+sub-queues and as a result will exit successfully without doing
+anything when operating in MQ channelized mode.
 
-Second, during MQ enablement the ibmvfc_wait_for_ops helper used during EH to
-ensure commands were properely completed failed to be converted to check for
-commands on the sub-queues isntead of the primary CRQ.
+Check the mq and channel use flags to determine which queues are
+applicable, and scan each queue accordingly. Note in MQ mode scsi
+commands are only issued down sub-queues and the CRQ is only used for
+driver specific management commands. As such the CRQ events are ignored
+when operating in MQ mode with channels.
 
-Tyrel Datwyler (2):
-  ibmvfc: fix potential race in ibmvfc_wait_for_ops
-  ibmvfc: make ibmvfc_wait_for_ops MQ aware
+Fixes: 9000cb998bcf ("scsi: ibmvfc: Enable MQ and set reasonable defaults")
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 51 ++++++++++++++++++++++------------
+ 1 file changed, 34 insertions(+), 17 deletions(-)
 
- drivers/scsi/ibmvscsi/ibmvfc.c | 67 +++++++++++++++++++++++++++-------
- 1 file changed, 54 insertions(+), 13 deletions(-)
-
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 5414b465a92f..61831f2fdb30 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -2403,41 +2403,58 @@ static int ibmvfc_wait_for_ops(struct ibmvfc_host *vhost, void *device,
+ {
+ 	struct ibmvfc_event *evt;
+ 	DECLARE_COMPLETION_ONSTACK(comp);
+-	int wait, i;
++	int wait, i, q_index, q_size;
+ 	unsigned long flags;
+ 	signed long timeout = IBMVFC_ABORT_WAIT_TIMEOUT * HZ;
++	struct ibmvfc_queue *queues;
+ 
+ 	ENTER;
++	if (vhost->mq_enabled && vhost->using_channels) {
++		queues = vhost->scsi_scrqs.scrqs;
++		q_size = vhost->scsi_scrqs.active_queues;
++	} else {
++		queues = &vhost->crq;
++		q_size = 1;
++	}
++
+ 	do {
+ 		wait = 0;
+-		spin_lock_irqsave(&vhost->crq.l_lock, flags);
+-		for (i = 0; i < vhost->crq.evt_pool.size; i++) {
+-			evt = &vhost->crq.evt_pool.events[i];
+-			if (!ibmvfc_event_is_free(evt)) {
+-				if (match(evt, device)) {
+-					evt->eh_comp = &comp;
+-					wait++;
++		spin_lock_irqsave(vhost->host->host_lock, flags);
++		for (q_index = 0; q_index < q_size; q_index++) {
++			spin_lock(&queues[q_index].l_lock);
++			for (i = 0; i < queues[q_index].evt_pool.size; i++) {
++				evt = &queues[q_index].evt_pool.events[i];
++				if (!ibmvfc_event_is_free(evt)) {
++					if (match(evt, device)) {
++						evt->eh_comp = &comp;
++						wait++;
++					}
+ 				}
+ 			}
++			spin_unlock(&queues[q_index].l_lock);
+ 		}
+-		spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
++		spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 
+ 		if (wait) {
+ 			timeout = wait_for_completion_timeout(&comp, timeout);
+ 
+ 			if (!timeout) {
+ 				wait = 0;
+-				spin_lock_irqsave(&vhost->crq.l_lock, flags);
+-				for (i = 0; i < vhost->crq.evt_pool.size; i++) {
+-					evt = &vhost->crq.evt_pool.events[i];
+-					if (!ibmvfc_event_is_free(evt)) {
+-						if (match(evt, device)) {
+-							evt->eh_comp = NULL;
+-							wait++;
++				spin_lock_irqsave(vhost->host->host_lock, flags);
++				for (q_index = 0; q_index < q_size; q_index++) {
++					spin_lock(&queues[q_index].l_lock);
++					for (i = 0; i < queues[q_index].evt_pool.size; i++) {
++						evt = &queues[q_index].evt_pool.events[i];
++						if (!ibmvfc_event_is_free(evt)) {
++							if (match(evt, device)) {
++								evt->eh_comp = NULL;
++								wait++;
++							}
+ 						}
+ 					}
++					spin_unlock(&queues[q_index].l_lock);
+ 				}
+-				spin_unlock_irqrestore(&vhost->crq.l_lock, flags);
++				spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 				if (wait)
+ 					dev_err(vhost->dev, "Timed out waiting for aborted commands\n");
+ 				LEAVE;
 -- 
 2.27.0
 
