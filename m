@@ -2,81 +2,49 @@ Return-Path: <SRS0=qtcn=IR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B56AC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A79CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:26:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6B3864DE2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:26:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6B3864DE2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1363064DE2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 02:26:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1363064DE2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F1nnR2TrHz3c92
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 13:26:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F1nnp4fZ4z3cFd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 13:26:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=CdkMN8s1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::52f;
- helo=mail-pg1-x52f.google.com; envelope-from=drinkcat@chromium.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=CdkMN8s1; dkim-atps=neutral
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com
- [IPv6:2607:f8b0:4864:20::52f])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F1kQw4S7Nz2yR3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 10:54:45 +1100 (AEDT)
-Received: by mail-pg1-x52f.google.com with SMTP id e33so2480081pgm.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Mar 2021 16:54:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=8WJ6qFjujuk84HtZNxKJ3XhHk2SJ/KWCJ14sG1Kz83s=;
- b=CdkMN8s18bbHU7BWYnXpDrRJmP+p4loTeWJJyqcx4HuZvW1Vda8z98Y2ASlcHTIJGT
- kfGOknuMJnd5wDtVN36rhZHHw/YqtK0aGw06udFaXsPxfcgyueVtA7HHrkGtkhobE5G7
- 5dNTO5PUp7Y4vbrkQ5AISjIAmImTZQcvd/6NA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=8WJ6qFjujuk84HtZNxKJ3XhHk2SJ/KWCJ14sG1Kz83s=;
- b=aOar0drT8mhzM3LQuVkQ3uys13kDk/YgqIsdugW/fEwTnwGl8el4EchKrWnEWd+0eD
- Skj1oYi3aD8a1cWBQnapbVGClkQf43XM5cFW2x5RUgNtBzQnfNmD6Qtw9wCfqpgXAwGN
- ONy3YI3rWJgIaigvCoIQu9sIFR/s6ExzDRDmHyzU+MEuM2n3YBo2kZht0Ab6R04RaMO/
- T05hKSAwKjk9aasqnjzmEmtaLB+b1YzaQHYiSkgmWYyvcmpkM2e077VsPk9D2vZc0IQT
- Ig5nYYNP5UL8aspLQbPiNF83Okh8Ls/+C2djVeZpGqs92wLBzm9EqJiNVMS3N/PX4ywS
- C5Yg==
-X-Gm-Message-State: AOAM533q69gW2sdEvcqvfRBp8LoB5s5JsfZcKBE8s+uzLPqqdH8upQrP
- F4vvCNzQDnz/vsdq5eFxMRZZ/g==
-X-Google-Smtp-Source: ABdhPJxXmm1o5PbpOMlqhlmpnaK9uuEh/v/JENGCPwg/wnedfsiovOHRc3DPwhGQCHSShTfkWFXJGg==
-X-Received: by 2002:a62:e119:0:b029:1f8:9345:a099 with SMTP id
- q25-20020a62e1190000b02901f89345a099mr6618116pfh.21.1616111682271; 
- Thu, 18 Mar 2021 16:54:42 -0700 (PDT)
-Received: from drinkcat2.tpe.corp.google.com
- ([2401:fa00:1:b:dc70:2def:a801:e21b])
- by smtp.gmail.com with ESMTPSA id t7sm3295816pfg.69.2021.03.18.16.54.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 18 Mar 2021 16:54:41 -0700 (PDT)
-From: Nicolas Boichat <drinkcat@chromium.org>
-To: stable@vger.kernel.org
-Subject: [for-stable-4.19 PATCH 0/2] Backport patches to fix KASAN+LKDTM with
- recent clang on ARM64
-Date: Fri, 19 Mar 2021 07:54:14 +0800
-Message-Id: <20210318235416.794798-1-drinkcat@chromium.org>
-X-Mailer: git-send-email 2.31.0.rc2.261.g7f71774620-goog
+ spf=none (no SPF record) smtp.mailfrom=orcam.me.uk
+ (client-ip=157.25.102.26; helo=angie.orcam.me.uk;
+ envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
+X-Greylist: delayed 376 seconds by postgrey-1.36 at boromir;
+ Fri, 19 Mar 2021 11:19:08 AEDT
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [157.25.102.26])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4F1kz01zyRz30NB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 11:19:08 +1100 (AEDT)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+ id 0DF1592009C; Fri, 19 Mar 2021 01:12:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by angie.orcam.me.uk (Postfix) with ESMTP id F30ED92009B;
+ Fri, 19 Mar 2021 01:12:38 +0100 (CET)
+Date: Fri, 19 Mar 2021 01:12:38 +0100 (CET)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 04/10] MIPS: disable CONFIG_IDE in sb1250_swarm_defconfig
+In-Reply-To: <20210318045706.200458-5-hch@lst.de>
+Message-ID: <alpine.DEB.2.21.2103190042210.21463@angie.orcam.me.uk>
+References: <20210318045706.200458-1-hch@lst.de>
+ <20210318045706.200458-5-hch@lst.de>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 X-Mailman-Approved-At: Fri, 19 Mar 2021 13:25:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -89,51 +57,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Chartre <alexandre.chartre@oracle.com>,
- Peter Zijlstra <peterz@infradead.org>, Christopher Li <sparse@chrisli.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, Sasha Levin <sashal@kernel.org>,
- Nicolas Boichat <drinkcat@chromium.org>, clang-built-linux@googlegroups.com,
- linux-sparse@vger.kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, linux-arch@vger.kernel.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-kbuild@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Daniel Axtens <dja@axtens.net>,
- Michal Marek <michal.lkml@markovi.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-doc@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, 18 Mar 2021, Christoph Hellwig wrote:
 
-Backport 2 patches that are required to make KASAN+LKDTM work
-with recent clang (patch 2/2 has a complete description).
-Tested on our chromeos-4.19 branch.
+> sb1250_swarm_defconfig enables CONFIG_IDE but no actual host controller
+> driver, so just drop CONFIG_IDE, CONFIG_BLK_DEV_IDECD and
+> CONFIG_BLK_DEV_IDETAPE as they are useless.
 
-Patch 1/2 is context conflict only, and 2/2 is a clean backport.
+ Actually BLK_DEV_PLATFORM would handle the SWARM's platform driver as an 
+IDE device, however the driver has supported libata ever since commit 
+2fef357cf391 ("IDE: Fix platform device registration in Swarm IDE driver 
+(v2)") back in 2008, so this is good to go.  We should probably enable 
+PATA_PLATFORM in the defconfig instead.
 
-These patches have been merged to 5.4 stable already. We might
-need to backport to older stable branches, but this is what I
-could test for now.
+ The printed name of the driver could be improved I suppose though:
 
+scsi host0: pata_platform
+ata1: PATA max PIO0 mmio cmd 0x100b3e00 ctl 0x100b7ec0 irq 36
 
-Mark Rutland (1):
-  lkdtm: don't move ctors to .rodata
+(PIO3 is actually hardwired; it's an odd interface and people reported 
+issues with it, but I have never had any myself be it with IDE or libata).
 
-Thomas Gleixner (1):
-  vmlinux.lds.h: Create section for protection against instrumentation
+Acked-by: Maciej W. Rozycki <macro@orcam.me.uk>
 
- arch/powerpc/kernel/vmlinux.lds.S |  1 +
- drivers/misc/lkdtm/Makefile       |  2 +-
- drivers/misc/lkdtm/rodata.c       |  2 +-
- include/asm-generic/sections.h    |  3 ++
- include/asm-generic/vmlinux.lds.h | 10 ++++++
- include/linux/compiler.h          | 54 +++++++++++++++++++++++++++++++
- include/linux/compiler_types.h    |  4 +++
- scripts/mod/modpost.c             |  2 +-
- 8 files changed, 75 insertions(+), 3 deletions(-)
-
--- 
-2.31.0.rc2.261.g7f71774620-goog
-
+  Maciej
