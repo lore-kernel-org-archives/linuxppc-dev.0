@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A9B1C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 11:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50CABC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 11:08:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0978E64F04
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 11:08:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0978E64F04
+	by mail.kernel.org (Postfix) with ESMTPS id B65D364F04
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 11:08:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B65D364F04
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F21NG5YvDz3bwH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 22:08:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F21Nk3Xc5z3dCp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Mar 2021 22:08:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F21LW4B4jz302r
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 22:06:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F21LZ3lZRz3bwW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Mar 2021 22:07:02 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F21LQ0rPfz9tx8y;
- Fri, 19 Mar 2021 12:06:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4F21LV1R6Dz9tx92;
+ Fri, 19 Mar 2021 12:06:58 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0VCYq4XgH91C; Fri, 19 Mar 2021 12:06:54 +0100 (CET)
+ with ESMTP id 6jWfJQRsBY2E; Fri, 19 Mar 2021 12:06:58 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F21LP6nRPz9tx8s;
- Fri, 19 Mar 2021 12:06:53 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F21LV0gp5z9tx91;
+ Fri, 19 Mar 2021 12:06:58 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 83E5C8B975;
- Fri, 19 Mar 2021 12:06:54 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3F8748B975;
+ Fri, 19 Mar 2021 12:06:58 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VTg0wwmbtZAW; Fri, 19 Mar 2021 12:06:54 +0100 (CET)
+ with ESMTP id bAj5KcmCNjIk; Fri, 19 Mar 2021 12:06:58 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F14668B974;
- Fri, 19 Mar 2021 12:06:53 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 984DD8B974;
+ Fri, 19 Mar 2021 12:06:56 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id CD3EA675FB; Fri, 19 Mar 2021 11:06:53 +0000 (UTC)
-Message-Id: <8cef43607e5b35a7fd0829dec812d88beb570df2.1616151715.git.christophe.leroy@csgroup.eu>
+ id DBFD0675FB; Fri, 19 Mar 2021 11:06:55 +0000 (UTC)
+Message-Id: <c106eb2f37c3040f1fd38b40e50c670feb7cb835.1616151715.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1616151715.git.christophe.leroy@csgroup.eu>
 References: <cover.1616151715.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 04/10] powerpc/signal32: Rename save_user_regs_unsafe() and
- save_general_regs_unsafe()
+Subject: [PATCH 06/10] powerpc/signal32: Perform access_ok() inside
+ restore_user_regs()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  cmr@codefail.de
-Date: Fri, 19 Mar 2021 11:06:53 +0000 (UTC)
+Date: Fri, 19 Mar 2021 11:06:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,88 +76,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convention is to prefix functions with __unsafe_ instead of
-suffixing it with _unsafe.
+In preparation of using user_access_begin/end in restore_user_regs(),
+move the access_ok() inside the function.
 
-Rename save_user_regs_unsafe() and save_general_regs_unsafe()
-accordingly, that is respectively __unsafe_save_general_regs() and
-__unsafe_save_user_regs().
+It makes no difference as the behaviour on a failed access_ok() is
+the same as on failed restore_user_regs().
 
-Suggested-by: Christopher M. Riedl <cmr@codefail.de>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal_32.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/signal_32.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index c505b444a613..3b78748d6d85 100644
+index 8dfe4fe77706..e2b1d2a0abad 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -94,7 +94,7 @@ static inline int get_sigset_t(sigset_t *set,
- #define from_user_ptr(p)	compat_ptr(p)
- 
- static __always_inline int
--save_general_regs_unsafe(struct pt_regs *regs, struct mcontext __user *frame)
-+__unsafe_save_general_regs(struct pt_regs *regs, struct mcontext __user *frame)
- {
- 	elf_greg_t64 *gregs = (elf_greg_t64 *)regs;
- 	int val, i;
-@@ -151,7 +151,7 @@ static inline int get_sigset_t(sigset_t *set, const sigset_t __user *uset)
- #define from_user_ptr(p)	((void __user *)(p))
- 
- static __always_inline int
--save_general_regs_unsafe(struct pt_regs *regs, struct mcontext __user *frame)
-+__unsafe_save_general_regs(struct pt_regs *regs, struct mcontext __user *frame)
- {
- 	WARN_ON(!FULL_REGS(regs));
- 	unsafe_copy_to_user(&frame->mc_gregs, regs, GP_REGS_SIZE, failed);
-@@ -177,7 +177,7 @@ static inline int restore_general_regs(struct pt_regs *regs,
+@@ -492,6 +492,8 @@ static long restore_user_regs(struct pt_regs *regs,
+ 	int i;
  #endif
  
- #define unsafe_save_general_regs(regs, frame, label) do {	\
--	if (save_general_regs_unsafe(regs, frame))	\
-+	if (__unsafe_save_general_regs(regs, frame))		\
- 		goto label;					\
- } while (0)
- 
-@@ -260,8 +260,8 @@ static void prepare_save_user_regs(int ctx_has_vsx_region)
++	if (!access_ok(sr, sizeof(*sr)))
++		return 1;
+ 	/*
+ 	 * restore general registers but not including MSR or SOFTE. Also
+ 	 * take care of keeping r2 (TLS) intact if not a signal
+@@ -963,13 +965,10 @@ static int do_setcontext(struct ucontext __user *ucp, struct pt_regs *regs, int
+ 		if (__get_user(cmcp, &ucp->uc_regs))
+ 			return -EFAULT;
+ 		mcp = (struct mcontext __user *)(u64)cmcp;
+-		/* no need to check access_ok(mcp), since mcp < 4GB */
+ 	}
+ #else
+ 	if (__get_user(mcp, &ucp->uc_regs))
+ 		return -EFAULT;
+-	if (!access_ok(mcp, sizeof(*mcp)))
+-		return -EFAULT;
  #endif
- }
+ 	set_current_blocked(&set);
+ 	if (restore_user_regs(regs, mcp, sig))
+@@ -1362,8 +1361,7 @@ SYSCALL_DEFINE0(sigreturn)
+ 	} else {
+ 		sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
+ 		addr = sr;
+-		if (!access_ok(sr, sizeof(*sr))
+-		    || restore_user_regs(regs, sr, 1))
++		if (restore_user_regs(regs, sr, 1))
+ 			goto badframe;
+ 	}
  
--static int save_user_regs_unsafe(struct pt_regs *regs, struct mcontext __user *frame,
--				 struct mcontext __user *tm_frame, int ctx_has_vsx_region)
-+static int __unsafe_save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
-+				   struct mcontext __user *tm_frame, int ctx_has_vsx_region)
- {
- 	unsigned long msr = regs->msr;
- 
-@@ -338,7 +338,7 @@ static int save_user_regs_unsafe(struct pt_regs *regs, struct mcontext __user *f
- }
- 
- #define unsafe_save_user_regs(regs, frame, tm_frame, has_vsx, label) do { \
--	if (save_user_regs_unsafe(regs, frame, tm_frame, has_vsx))	\
-+	if (__unsafe_save_user_regs(regs, frame, tm_frame, has_vsx))	\
- 		goto label;						\
- } while (0)
- 
-@@ -350,7 +350,7 @@ static int save_user_regs_unsafe(struct pt_regs *regs, struct mcontext __user *f
-  * We also save the transactional registers to a second ucontext in the
-  * frame.
-  *
-- * See save_user_regs_unsafe() and signal_64.c:setup_tm_sigcontexts().
-+ * See __unsafe_save_user_regs() and signal_64.c:setup_tm_sigcontexts().
-  */
- static void prepare_save_tm_user_regs(void)
- {
-@@ -441,7 +441,7 @@ static int save_tm_user_regs_unsafe(struct pt_regs *regs, struct mcontext __user
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_SPE
- 	/* SPE regs are not checkpointed with TM, so this section is
--	 * simply the same as in save_user_regs_unsafe().
-+	 * simply the same as in __unsafe_save_user_regs().
- 	 */
- 	if (current->thread.used_spe) {
- 		unsafe_copy_to_user(&frame->mc_vregs, current->thread.evr,
 -- 
 2.25.0
 
