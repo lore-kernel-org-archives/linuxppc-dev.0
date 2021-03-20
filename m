@@ -6,39 +6,42 @@ X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F314C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 03:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 141B6C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 04:05:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A58261967
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 03:45:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A58261967
+	by mail.kernel.org (Postfix) with ESMTPS id 129F461966
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 04:05:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 129F461966
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F2RVP36Hsz3c8X
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 14:45:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F2Rxf4NLDz3c87
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Mar 2021 15:05:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=orcam.me.uk
- (client-ip=157.25.102.26; helo=angie.orcam.me.uk;
+ (client-ip=2001:4190:8020::4; helo=angie.orcam.me.uk;
  envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [157.25.102.26])
- by lists.ozlabs.org (Postfix) with ESMTP id 4F2RTx5Zyyz30Dp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Mar 2021 14:44:51 +1100 (AEDT)
+X-Greylist: delayed 100339 seconds by postgrey-1.36 at boromir;
+ Sat, 20 Mar 2021 15:05:07 AEDT
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::4])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4F2RxH0qkFz2yYp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Mar 2021 15:05:05 +1100 (AEDT)
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
- id 26B2092009C; Sat, 20 Mar 2021 04:44:46 +0100 (CET)
+ id BAA7A92009C; Sat, 20 Mar 2021 05:04:57 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by angie.orcam.me.uk (Postfix) with ESMTP id 1F63392009B;
- Sat, 20 Mar 2021 04:44:46 +0100 (CET)
-Date: Sat, 20 Mar 2021 04:44:46 +0100 (CET)
+ by angie.orcam.me.uk (Postfix) with ESMTP id AC6A092009B;
+ Sat, 20 Mar 2021 05:04:57 +0100 (CET)
+Date: Sat, 20 Mar 2021 05:04:57 +0100 (CET)
 From: "Maciej W. Rozycki" <macro@orcam.me.uk>
 To: Christoph Hellwig <hch@lst.de>
 Subject: Re: [PATCH 10/10] ide: remove the legacy ide driver
-In-Reply-To: <20210318045706.200458-11-hch@lst.de>
-Message-ID: <alpine.DEB.2.21.2103200425360.21463@angie.orcam.me.uk>
+In-Reply-To: <alpine.DEB.2.21.2103200425360.21463@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2103200455410.21463@angie.orcam.me.uk>
 References: <20210318045706.200458-1-hch@lst.de>
  <20210318045706.200458-11-hch@lst.de>
+ <alpine.DEB.2.21.2103200425360.21463@angie.orcam.me.uk>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -66,18 +69,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 18 Mar 2021, Christoph Hellwig wrote:
+On Sat, 20 Mar 2021, Maciej W. Rozycki wrote:
 
-> The legay ide driver has been replace with libata startin in 2003 and has
+> > been scheduled for removal for a while.  Finally kill it off so that we
+> > can start cleaning up various bits of cruft it forced on the block layer.
+> 
+>  You need to adjust Documentation/admin-guide/kernel-parameters.txt too, 
+> i.e. remove all the `ide*' options, possibly more (I haven't checked in 
+> detail).
 
- s/legay/legacy/;s/replace/replaced/;s/startin/startin/ (though I'd say 
-"back in" instead in the latter case).
-
-> been scheduled for removal for a while.  Finally kill it off so that we
-> can start cleaning up various bits of cruft it forced on the block layer.
-
- You need to adjust Documentation/admin-guide/kernel-parameters.txt too, 
-i.e. remove all the `ide*' options, possibly more (I haven't checked in 
-detail).
+ And also Documentation/ide/ide.rst.  Also do we have all the necessary 
+`hdparm' features supported in libata nowadays for PATA devices?
 
   Maciej
