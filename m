@@ -2,100 +2,136 @@ Return-Path: <SRS0=7u3Q=IU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FC6DC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF7EBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:00:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 681E1619AA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 681E1619AA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1C7F7619A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:00:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C7F7619A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yMh5DjKz3c2j
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:59:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yNN1fBlz302r
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:00:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J2n4eIu/;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=n6aI9t5n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=J2n4eIu/; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Void lookup limit
+ of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe1e::604;
+ helo=eur01-he1-obe.outbound.protection.outlook.com;
+ envelope-from=roy.zang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=n6aI9t5n; 
+ dkim-atps=neutral
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0604.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe1e::604])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yKh6GJPz2xg5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 01:58:00 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12MEeTdL061314; Mon, 22 Mar 2021 10:57:51 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references; s=pp1;
- bh=5I72gfY1CkqXZ/dmnZ2LEbV/TGzmcLdz1lokkzbqJvA=;
- b=J2n4eIu/k5sSMArxa68Z4DUBzXtv+DoPjck7c8kYd5ScpVzIz+yU3tQ2HGmW4vPV0ivr
- jG5L4YBrhpnZr/LGxX/tEG0ABLKLpB+2oKP99tVBpQM3qz+GpRd+q5E5/kvJCu2l68Uv
- M2FS0+pZy1H7pYB9iE9YuehcYjdtleX6EX0zk7aIz+WDZ6A88TP6LRxbeuFMl6cu3HK4
- nzMPLF0pZ/5XYd7jY+XmHtpHqIldJIWDJkc1RZjwLBGMNwTAfV5v32wgNydwJVgclOKx
- l6q7iKVs27+XU9ljkdS966qGm8FfR/ebul4cFsHcOhAJYW4EF//5PT/D0hMRwr5VfB69 lA== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37dx3vv3t2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Mar 2021 10:57:51 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12MEh4Ct012511;
- Mon, 22 Mar 2021 14:57:48 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 37d99raf0q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Mar 2021 14:57:48 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 12MEvR1l32899350
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 22 Mar 2021 14:57:28 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9117B4C046;
- Mon, 22 Mar 2021 14:57:45 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E0FC94C04A;
- Mon, 22 Mar 2021 14:57:42 +0000 (GMT)
-Received: from localhost.localdomain.localdomain (unknown [9.124.209.79])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 22 Mar 2021 14:57:42 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, mpe@ellerman.id.au, acme@kernel.org,
- jolsa@kernel.org
-Subject: [PATCH V2 4/5] tools/perf: Support pipeline stage cycles for powerpc
-Date: Mon, 22 Mar 2021 10:57:26 -0400
-Message-Id: <1616425047-1666-5-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-22_07:2021-03-22,
- 2021-03-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- impostorscore=0 spamscore=0 adultscore=0 malwarescore=0 suspectscore=0
- mlxlogscore=999 priorityscore=1501 phishscore=0 lowpriorityscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2103220107
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yLZ51Spz30gW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 01:58:45 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hJ5++i5L6TKPOA7/cHrxVWGAORm8NV5hQ6mpztR5b0gYfkD8cdkFXciEPnMhkgct629NCAVDpSHT3q+OOw+lzaPWWYkg7YdV6TVRpIG+Of1BNpmogAwevjPk3d1mPFPybQB8sTc2g/ljsK3IE9TtxRhmleK1n3rT71PfkOxrSfozcC9b2DMe0wMLMZeiz906gOEzg1fIzR91RhieDejO/HkPiVjeu3gvRmtYQhUzDTWYEzFJfABc/WaqWyNn1QjyMsgKJatJc2AY4bc30iyhPexbTdvjHB9Ng1A30ZFW5GrJ6FqPx5WNf2gGhrI5YrIuiezdRI3xpPKBYi5jBlmnKQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=wPxM0XiNyofeGK65x+MzN5o83WpAWYqk3msuCRpaj58=;
+ b=LMr3XHh+qtT9i80i+TcbQQljEwMD5bKKy0/4CfeCBsgzdWAUVyiWY7iY2L+p2L4N4nIh5mDVAwK8sx/OF4x0yDkQDuyYsj4BRPK//x+oe/HPpas9Ss5tX0pQGvy9B7E87W+m5UqjzIZRuhFXUKv5SCtPJBojl7pozfyQYk7WffoMHdvUk+RcVwzsuSdEKJMCZz5UfRWdHnON04OCTsbwze0O9i47EFoSJWC065fnmxLB6skkFnrdhjeaAy9YSCpkaeEILEiiicyoKoqWjQL0gW2iP9/+q86W5C7bWGStoPunENZ/y3JoXmDb0bWHcEXQTy4apT5YoEPRDAZw6tQsfg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=wPxM0XiNyofeGK65x+MzN5o83WpAWYqk3msuCRpaj58=;
+ b=n6aI9t5nGdO9NnMzKXK6cGHNHrJIyUqa+IIrl8VM3PXGTDhPx/CxF1Lq9j/aBMYOqRgBvEOcKpNi8kEGGeS3xVajcZGmUAvZBW0fGnH3/WPE3ThCFstVindbI59VG80WTAFzLPU357aKfWSq4agTVqeleaEdRiWZTaETqhQeDIY=
+Received: from VI1PR04MB5967.eurprd04.prod.outlook.com (2603:10a6:803:cc::27)
+ by VI1PR04MB4832.eurprd04.prod.outlook.com (2603:10a6:803:54::13)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18; Mon, 22 Mar
+ 2021 14:58:35 +0000
+Received: from VI1PR04MB5967.eurprd04.prod.outlook.com
+ ([fe80::d1cb:cbf8:2e78:8826]) by VI1PR04MB5967.eurprd04.prod.outlook.com
+ ([fe80::d1cb:cbf8:2e78:8826%2]) with mapi id 15.20.3955.025; Mon, 22 Mar 2021
+ 14:58:35 +0000
+From: Roy Zang <roy.zang@nxp.com>
+To: =?iso-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kw@linux.com>, Bjorn Helgaas
+ <helgaas@kernel.org>
+Subject: RE: [PATCH] PCI: layerscape: Correct syntax by changing comma to
+ semicolon
+Thread-Topic: [PATCH] PCI: layerscape: Correct syntax by changing comma to
+ semicolon
+Thread-Index: AQHXFifqc+ug5G3wy0WmEdHDbcdViKqQKiag
+Date: Mon, 22 Mar 2021 14:58:35 +0000
+Message-ID: <VI1PR04MB596784C0447CF16BC84051C78B659@VI1PR04MB5967.eurprd04.prod.outlook.com>
+References: <20210311033745.1547044-1-kw@linux.com>
+In-Reply-To: <20210311033745.1547044-1-kw@linux.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: linux.com; dkim=none (message not signed)
+ header.d=none;linux.com; dmarc=none action=none header.from=nxp.com;
+x-originating-ip: [72.177.85.142]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: da9c544d-11b1-46b6-d0a9-08d8ed42f7b7
+x-ms-traffictypediagnostic: VI1PR04MB4832:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VI1PR04MB4832A1EA5E0DE8034C20A8718B659@VI1PR04MB4832.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:418;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: ReotNsbiGy0ujEJQrHIWlDgqbP47SIYWvoGVIcSkrSDCVhPJGAYbhVhwNDUAJyUbfs2ANlbGGQF0LZFwgnoY3biQ5dqiC/tzwUKsaEFfhZKIC7J+lbN/XzK7lu7DC5tE61KBUyJefQCZ2HXstffpmVJ38M8ORD8MT7vrzs7xrKaDR/Nlk/B47MsVNHxEd/FKzbrn/S2S/CZo5MNe5hLOCUkMd7BgOclcz+HRqGp1IaFbJ25WqHoZCnLUl5c5V6iqq5uDfPm34M2aLA45p0t5W7v7mEzQUiKDHLgYBj7cAGUmnELmOoTgAHiRNYuDUh2dhuyOOQfD7kAvK+/3JkniLWZMoLxmmhLlNd7gsFV9e+UsLbAj0rWfUwxyCEMH6rOifvJSnhmwGJQLde/z6SqMFgkznZC5kiSkRjKscA83LxRtWc8h11XYMYDybGKu1GafPcm2UeiYURHrvVf9+aCL/7bbHGb/ZEiu0oBrcRI03A84Kcj2ME/Deif7eLX2Xk7gz+3xBz/3EyVpsmH82hfh06uvAFy0FlX001+/XgxuS79GFwryoX/G0bsUbzbnIpgFkJh10gKHNyex26NKUQpZhS7Xh+HiOWragGrorxjVaKKk4TD/yyt5lQBXNJyU9W23HGacuBCLaShWss7Q63Wf60xsXVDToSUV237pnx/QR1Iw6TSUH7Ot1pJAukGO9wrtwL8RI6UmaZRydR2tJNhKCkHmonytWLWEghsAhOLNmUr9H7b4XewZb9f7SRrz7vOz
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:VI1PR04MB5967.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(396003)(346002)(376002)(136003)(39850400004)(7696005)(83380400001)(45080400002)(86362001)(55016002)(6506007)(44832011)(966005)(8936002)(110136005)(66556008)(66574015)(52536014)(66446008)(8676002)(478600001)(2906002)(38100700001)(316002)(9686003)(54906003)(186003)(66946007)(66476007)(26005)(64756008)(76116006)(5660300002)(4326008)(71200400001)(33656002);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata: =?iso-8859-2?Q?Fzv1aSMOzzsq1xqRz7uOUuRh3JltVB2P14/lpCqDQnjGcgUtdYZgdvKhbP?=
+ =?iso-8859-2?Q?utBAwLjlPDjxIe4AfxJq6UcFTBpcJgltS6iPZ1Z6QBUTEPPOiqRW3fSgeR?=
+ =?iso-8859-2?Q?1laZ4hbedn5TT7eBpTkNXe/BhZHzMs4B2b7/syyAyAPiB++8EVGds5qvJx?=
+ =?iso-8859-2?Q?FeOXmoDDY1HWVFXdbIl8ySIdnFyZXjQwBNnVJiNMhXfO/r+enlLTM0OrJH?=
+ =?iso-8859-2?Q?r9Nce/ZCeVIteSORTnyJI2VXNVFcp20Hsh7jDqB30E5pb5hPz3p3yJSlpB?=
+ =?iso-8859-2?Q?isGgTIfhTNL5ug/LSHf5C/wyshdc1FbR1Uqx1pCrscxc8+U939bQ2/rldg?=
+ =?iso-8859-2?Q?bLMCr9KBg1WaAfHLwJ/X19wfl3m6GaxKnSB8palvZ7rTyaFTPAYVct1U2w?=
+ =?iso-8859-2?Q?fwsNbTiM3N0Ewsexqx37CRCoG+sPmo8ZTOfsYLrAYRurUwDaHYakwvPgI1?=
+ =?iso-8859-2?Q?NSkb4hEaUYDobHAJPX+uQWljLgAm95WKUmNWFM//wBu4K8z9NTTqRFHO0d?=
+ =?iso-8859-2?Q?bnXP3NGfvE5lPlQKdceEBXYeSq4zhWfT+Pi7i/evvLk3Kbx70M7/K+NGhf?=
+ =?iso-8859-2?Q?J+b3jv9Yzr9LPyDzd82+a8e/rFVH0LynKMDF6iSuGUVb4+jtsSfex0QLUt?=
+ =?iso-8859-2?Q?ogQyrjybQaM8DG8yRf3u0d8+lxu2hrCOhaviAzjD8TOpUfZQy4kKJ99oO6?=
+ =?iso-8859-2?Q?fyw83cKP990ZHrhk1aGJXvUiO2Otu5xwnQ4N0wHLXGtLH473H4NJFbeyKg?=
+ =?iso-8859-2?Q?gW/yH8wKzjIpsOeuexFdJNrbYJy3/JvV8JYuxxELIzwDcUn3gyAQsDbm6H?=
+ =?iso-8859-2?Q?U0qyEi91p9ql2X+njyf3mQVbhMaYzadT5OQxUnLQcnUFE3l78W9JN3m/on?=
+ =?iso-8859-2?Q?+nd+UA5w3nHRZRi6mGH6guhSyzEFkfvvudIUYTRuTthRtUEXn6g97RbsN0?=
+ =?iso-8859-2?Q?N+TDF1HzaNmfb90QLDQlj/H3kHIb9rCgzBvlV6NZ0ZIDZWfVPVi7zPtIQY?=
+ =?iso-8859-2?Q?0cuGRqNanm8MTvw2w7vJjRxUXaAd1jwW5UCCCo3asK1IYeh5l7u+55v6lZ?=
+ =?iso-8859-2?Q?ZvaXGEJ2Qfhz1lh+owz9w+9m8KIJLKwQcGJqGtSJZgwwBa3vZVKJC3aNc3?=
+ =?iso-8859-2?Q?LCfxtqNQ2dO4x4qtXHpMMUblO2VBtDyC+IjSzeUmad1Qb1RsRTyTZ4PJz5?=
+ =?iso-8859-2?Q?B8+p6ghOUBYosnpT6d9TaEcm9bOsLxkWYVUR0cENI25QncHgnII4R6PWrq?=
+ =?iso-8859-2?Q?GnMsXAu0dtl3ipfDTqIaklMmCwtZ+Kmnuhdl5MxIMXs6y3A4J4TV8YOWSv?=
+ =?iso-8859-2?Q?vCiJduJch3GFfrp9E9dxSLKPzqekvgfTH+40qu5s4Fd+kSfRfwWWytTlm1?=
+ =?iso-8859-2?Q?lX8j6QOjBU?=
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5967.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: da9c544d-11b1-46b6-d0a9-08d8ed42f7b7
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Mar 2021 14:58:35.1688 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 1+od69FmQZWeYBlUC6ZaFQQ/pT3xImnF2y67ShAhHqQLMHvtQQip/3U5oXzITFgJr/ZiDoZ3LYEPyHZwb00Mcg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB4832
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,272 +143,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kan.liang@linux.intel.com, ravi.bangoria@linux.ibm.com,
- peterz@infradead.org, maddy@linux.ibm.com, kjain@linux.ibm.com
+Cc: Rob Herring <robh@kernel.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ "M.h. Lian" <minghuan.lian@nxp.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Zheng Yongjun <zhengyongjun3@huawei.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mingkai Hu <mingkai.hu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pipeline stage cycles details can be recorded on powerpc from
-the contents of Performance Monitor Unit (PMU) registers. On
-ISA v3.1 platform, sampling registers exposes the cycles spent in
-different pipeline stages. Patch adds perf tools support to present
-two of the cycle counter information along with memory latency (weight).
+Acked-by: Roy Zang <roy.zang@nxp.com>
 
-Re-use the field 'ins_lat' for storing the first pipeline stage cycle.
-This is stored in 'var2_w' field of 'perf_sample_weight'.
+Roy
+-----Original Message-----
+From: Krzysztof Wilczy=F1ski <kw@linux.com>=20
+Sent: Wednesday, March 10, 2021 9:38 PM
 
-Add a new field 'p_stage_cyc' to store the second pipeline stage cycle
-which is stored in 'var3_w' field of perf_sample_weight.
+Replace command with a semicolon to correct syntax and to prevent potential=
+ unspecified behaviour and/or unintended side effects.
 
-Add new sort function 'Pipeline Stage Cycle' and include this in
-default_mem_sort_order[]. This new sort function may be used to denote
-some other pipeline stage in another architecture. So add this to
-list of sort entries that can have dynamic header string.
+Related:
+  https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flore.=
+kernel.org%2Flinux-pci%2F20201216131944.14990-1-zhengyongjun3%40huawei.com%=
+2F&amp;data=3D04%7C01%7Croy.zang%40nxp.com%7C8bc03d11ee3f47753d7e08d8e43f0c=
+15%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C1%7C637510306719022629%7CUnknow=
+n%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI=
+6Mn0%3D%7C2000&amp;sdata=3DcoDaErstzzBiGcJUykscD38ogbGXQyvrxt7ZI8cBk%2Fs%3D=
+&amp;reserved=3D0
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Co-authored-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+Signed-off-by: Krzysztof Wilczy=F1ski <kw@linux.com>
 ---
- tools/perf/Documentation/perf-report.txt |  2 ++
- tools/perf/arch/powerpc/util/event.c     | 18 ++++++++++++++++--
- tools/perf/util/event.h                  |  1 +
- tools/perf/util/hist.c                   | 11 ++++++++---
- tools/perf/util/hist.h                   |  1 +
- tools/perf/util/session.c                |  4 +++-
- tools/perf/util/sort.c                   | 24 ++++++++++++++++++++++--
- tools/perf/util/sort.h                   |  2 ++
- 8 files changed, 55 insertions(+), 8 deletions(-)
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
-index f546b5e9db05..563fb01a9b8d 100644
---- a/tools/perf/Documentation/perf-report.txt
-+++ b/tools/perf/Documentation/perf-report.txt
-@@ -112,6 +112,8 @@ OPTIONS
- 	- ins_lat: Instruction latency in core cycles. This is the global instruction
- 	  latency
- 	- local_ins_lat: Local instruction latency version
-+	- p_stage_cyc: On powerpc, this presents the number of cycles spent in a
-+	  pipeline stage. And currently supported only on powerpc.
- 
- 	By default, comm, dso and symbol keys are used.
- 	(i.e. --sort comm,dso,symbol)
-diff --git a/tools/perf/arch/powerpc/util/event.c b/tools/perf/arch/powerpc/util/event.c
-index f49d32c2c8ae..22521bc9481a 100644
---- a/tools/perf/arch/powerpc/util/event.c
-+++ b/tools/perf/arch/powerpc/util/event.c
-@@ -18,8 +18,11 @@ void arch_perf_parse_sample_weight(struct perf_sample *data,
- 	weight.full = *array;
- 	if (type & PERF_SAMPLE_WEIGHT)
- 		data->weight = weight.full;
--	else
-+	else {
- 		data->weight = weight.var1_dw;
-+		data->ins_lat = weight.var2_w;
-+		data->p_stage_cyc = weight.var3_w;
-+	}
- }
- 
- void arch_perf_synthesize_sample_weight(const struct perf_sample *data,
-@@ -27,6 +30,17 @@ void arch_perf_synthesize_sample_weight(const struct perf_sample *data,
- {
- 	*array = data->weight;
- 
--	if (type & PERF_SAMPLE_WEIGHT_STRUCT)
-+	if (type & PERF_SAMPLE_WEIGHT_STRUCT) {
- 		*array &= 0xffffffff;
-+		*array |= ((u64)data->ins_lat << 32);
-+	}
-+}
-+
-+const char *arch_perf_header_entry(const char *se_header)
-+{
-+	if (!strcmp(se_header, "Local INSTR Latency"))
-+		return "Finish Cyc";
-+	else if (!strcmp(se_header, "Pipeline Stage Cycle"))
-+		return "Dispatch Cyc";
-+	return se_header;
- }
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 6106a9c134c9..e5da4a695ff2 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -147,6 +147,7 @@ struct perf_sample {
- 	u8  cpumode;
- 	u16 misc;
- 	u16 ins_lat;
-+	u16 p_stage_cyc;
- 	bool no_hw_idx;		/* No hw_idx collected in branch_stack */
- 	char insn[MAX_INSN];
- 	void *raw_data;
-diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
-index c82f5fc26af8..9299ee535518 100644
---- a/tools/perf/util/hist.c
-+++ b/tools/perf/util/hist.c
-@@ -211,6 +211,7 @@ void hists__calc_col_len(struct hists *hists, struct hist_entry *h)
- 	hists__new_col_len(hists, HISTC_MEM_BLOCKED, 10);
- 	hists__new_col_len(hists, HISTC_LOCAL_INS_LAT, 13);
- 	hists__new_col_len(hists, HISTC_GLOBAL_INS_LAT, 13);
-+	hists__new_col_len(hists, HISTC_P_STAGE_CYC, 13);
- 	if (symbol_conf.nanosecs)
- 		hists__new_col_len(hists, HISTC_TIME, 16);
- 	else
-@@ -289,13 +290,14 @@ static long hist_time(unsigned long htime)
- }
- 
- static void he_stat__add_period(struct he_stat *he_stat, u64 period,
--				u64 weight, u64 ins_lat)
-+				u64 weight, u64 ins_lat, u64 p_stage_cyc)
- {
- 
- 	he_stat->period		+= period;
- 	he_stat->weight		+= weight;
- 	he_stat->nr_events	+= 1;
- 	he_stat->ins_lat	+= ins_lat;
-+	he_stat->p_stage_cyc	+= p_stage_cyc;
- }
- 
- static void he_stat__add_stat(struct he_stat *dest, struct he_stat *src)
-@@ -308,6 +310,7 @@ static void he_stat__add_stat(struct he_stat *dest, struct he_stat *src)
- 	dest->nr_events		+= src->nr_events;
- 	dest->weight		+= src->weight;
- 	dest->ins_lat		+= src->ins_lat;
-+	dest->p_stage_cyc		+= src->p_stage_cyc;
- }
- 
- static void he_stat__decay(struct he_stat *he_stat)
-@@ -597,6 +600,7 @@ static struct hist_entry *hists__findnew_entry(struct hists *hists,
- 	u64 period = entry->stat.period;
- 	u64 weight = entry->stat.weight;
- 	u64 ins_lat = entry->stat.ins_lat;
-+	u64 p_stage_cyc = entry->stat.p_stage_cyc;
- 	bool leftmost = true;
- 
- 	p = &hists->entries_in->rb_root.rb_node;
-@@ -615,11 +619,11 @@ static struct hist_entry *hists__findnew_entry(struct hists *hists,
- 
- 		if (!cmp) {
- 			if (sample_self) {
--				he_stat__add_period(&he->stat, period, weight, ins_lat);
-+				he_stat__add_period(&he->stat, period, weight, ins_lat, p_stage_cyc);
- 				hist_entry__add_callchain_period(he, period);
- 			}
- 			if (symbol_conf.cumulate_callchain)
--				he_stat__add_period(he->stat_acc, period, weight, ins_lat);
-+				he_stat__add_period(he->stat_acc, period, weight, ins_lat, p_stage_cyc);
- 
- 			/*
- 			 * This mem info was allocated from sample__resolve_mem
-@@ -731,6 +735,7 @@ static void hists__res_sample(struct hist_entry *he, struct perf_sample *sample)
- 			.period	= sample->period,
- 			.weight = sample->weight,
- 			.ins_lat = sample->ins_lat,
-+			.p_stage_cyc = sample->p_stage_cyc,
- 		},
- 		.parent = sym_parent,
- 		.filtered = symbol__parent_filter(sym_parent) | al->filtered,
-diff --git a/tools/perf/util/hist.h b/tools/perf/util/hist.h
-index 3c537232294b..e2faa745c8d6 100644
---- a/tools/perf/util/hist.h
-+++ b/tools/perf/util/hist.h
-@@ -75,6 +75,7 @@ enum hist_column {
- 	HISTC_MEM_BLOCKED,
- 	HISTC_LOCAL_INS_LAT,
- 	HISTC_GLOBAL_INS_LAT,
-+	HISTC_P_STAGE_CYC,
- 	HISTC_NR_COLS, /* Last entry */
- };
- 
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 859832a82496..a6fed96d783d 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -1302,8 +1302,10 @@ static void dump_sample(struct evsel *evsel, union perf_event *event,
- 
- 	if (sample_type & PERF_SAMPLE_WEIGHT_TYPE) {
- 		printf("... weight: %" PRIu64 "", sample->weight);
--			if (sample_type & PERF_SAMPLE_WEIGHT_STRUCT)
-+			if (sample_type & PERF_SAMPLE_WEIGHT_STRUCT) {
- 				printf(",0x%"PRIx16"", sample->ins_lat);
-+				printf(",0x%"PRIx16"", sample->p_stage_cyc);
-+			}
- 		printf("\n");
- 	}
- 
-diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
-index eeb03e749181..d262261ad1a6 100644
---- a/tools/perf/util/sort.c
-+++ b/tools/perf/util/sort.c
-@@ -37,7 +37,7 @@
- const char	*parent_pattern = default_parent_pattern;
- const char	*default_sort_order = "comm,dso,symbol";
- const char	default_branch_sort_order[] = "comm,dso_from,symbol_from,symbol_to,cycles";
--const char	default_mem_sort_order[] = "local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,local_ins_lat";
-+const char	default_mem_sort_order[] = "local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,local_ins_lat,p_stage_cyc";
- const char	default_top_sort_order[] = "dso,symbol";
- const char	default_diff_sort_order[] = "dso,symbol";
- const char	default_tracepoint_sort_order[] = "trace";
-@@ -46,7 +46,7 @@
- regex_t		ignore_callees_regex;
- int		have_ignore_callees = 0;
- enum sort_mode	sort__mode = SORT_MODE__NORMAL;
--const char	*dynamic_headers[] = {"local_ins_lat"};
-+const char	*dynamic_headers[] = {"local_ins_lat", "p_stage_cyc"};
- 
- /*
-  * Replaces all occurrences of a char used with the:
-@@ -1410,6 +1410,25 @@ struct sort_entry sort_global_ins_lat = {
- 	.se_width_idx	= HISTC_GLOBAL_INS_LAT,
- };
- 
-+static int64_t
-+sort__global_p_stage_cyc_cmp(struct hist_entry *left, struct hist_entry *right)
-+{
-+	return left->stat.p_stage_cyc - right->stat.p_stage_cyc;
-+}
-+
-+static int hist_entry__p_stage_cyc_snprintf(struct hist_entry *he, char *bf,
-+					size_t size, unsigned int width)
-+{
-+	return repsep_snprintf(bf, size, "%-*u", width, he->stat.p_stage_cyc);
-+}
-+
-+struct sort_entry sort_p_stage_cyc = {
-+	.se_header      = "Pipeline Stage Cycle",
-+	.se_cmp         = sort__global_p_stage_cyc_cmp,
-+	.se_snprintf	= hist_entry__p_stage_cyc_snprintf,
-+	.se_width_idx	= HISTC_P_STAGE_CYC,
-+};
-+
- struct sort_entry sort_mem_daddr_sym = {
- 	.se_header	= "Data Symbol",
- 	.se_cmp		= sort__daddr_cmp,
-@@ -1853,6 +1872,7 @@ static void sort_dimension_add_dynamic_header(struct sort_dimension *sd)
- 	DIM(SORT_CODE_PAGE_SIZE, "code_page_size", sort_code_page_size),
- 	DIM(SORT_LOCAL_INS_LAT, "local_ins_lat", sort_local_ins_lat),
- 	DIM(SORT_GLOBAL_INS_LAT, "ins_lat", sort_global_ins_lat),
-+	DIM(SORT_PIPELINE_STAGE_CYC, "p_stage_cyc", sort_p_stage_cyc),
- };
- 
- #undef DIM
-diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
-index 63f67a3f3630..d9795ca0d676 100644
---- a/tools/perf/util/sort.h
-+++ b/tools/perf/util/sort.h
-@@ -51,6 +51,7 @@ struct he_stat {
- 	u64			period_guest_us;
- 	u64			weight;
- 	u64			ins_lat;
-+	u64			p_stage_cyc;
- 	u32			nr_events;
- };
- 
-@@ -234,6 +235,7 @@ enum sort_type {
- 	SORT_CODE_PAGE_SIZE,
- 	SORT_LOCAL_INS_LAT,
- 	SORT_GLOBAL_INS_LAT,
-+	SORT_PIPELINE_STAGE_CYC,
- 
- 	/* branch stack specific sort keys */
- 	__SORT_BRANCH_STACK,
--- 
-1.8.3.1
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/c=
+ontroller/dwc/pci-layerscape-ep.c
+index 39fe2ed5a6a2..39f4664bd84c 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -154,7 +154,7 @@ static int __init ls_pcie_ep_probe(struct platform_devi=
+ce *pdev)
+ 	pci->dev =3D dev;
+ 	pci->ops =3D pcie->drvdata->dw_pcie_ops;
+=20
+-	ls_epc->bar_fixed_64bit =3D (1 << BAR_2) | (1 << BAR_4),
++	ls_epc->bar_fixed_64bit =3D (1 << BAR_2) | (1 << BAR_4);
+=20
+ 	pcie->pci =3D pci;
+ 	pcie->ls_epc =3D ls_epc;
+--
+2.30.1
 
