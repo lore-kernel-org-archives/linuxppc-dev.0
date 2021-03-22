@@ -2,66 +2,69 @@ Return-Path: <SRS0=7u3Q=IU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA741C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 16:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 659EBC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 16:50:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FD9361990
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 16:40:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FD9361990
+	by mail.kernel.org (Postfix) with ESMTPS id B44C46191D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 16:50:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B44C46191D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F40cB5RxBz3dGP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 03:40:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F40qP25t7z30FM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 03:50:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F40Y05L0mz30CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 03:37:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F40q23YTkz2xfm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 03:50:03 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F40Xr5Fx9z9txkW;
- Mon, 22 Mar 2021 17:37:48 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4F40pq3YHkz9txkX;
+ Mon, 22 Mar 2021 17:49:55 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zWvLbAnzNoRO; Mon, 22 Mar 2021 17:37:48 +0100 (CET)
+ with ESMTP id g_KnKQSA1Ofv; Mon, 22 Mar 2021 17:49:55 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F40Xr4CyTz9txkT;
- Mon, 22 Mar 2021 17:37:48 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F40pq2JdCz9txkB;
+ Mon, 22 Mar 2021 17:49:55 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 47B1F8B7A3;
- Mon, 22 Mar 2021 17:37:54 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 03E5F8B7A3;
+ Mon, 22 Mar 2021 17:50:01 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id V1A9prPKdHQN; Mon, 22 Mar 2021 17:37:54 +0100 (CET)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E5C4A8B79C;
- Mon, 22 Mar 2021 17:37:53 +0100 (CET)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C8C3D675F4; Mon, 22 Mar 2021 16:37:53 +0000 (UTC)
-Message-Id: <b94562d7d2bb21aec89de0c40bb3cd91054b65a2.1616430991.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1616430991.git.christophe.leroy@csgroup.eu>
-References: <cover.1616430991.git.christophe.leroy@csgroup.eu>
+ with ESMTP id xBNVr42Tsd28; Mon, 22 Mar 2021 17:50:00 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 77CE98B79C;
+ Mon, 22 Mar 2021 17:50:00 +0100 (CET)
+Subject: Re: [RFC PATCH 6/8] powerpc/mm/book3s64/hash: drop pre 2.06 tlbiel
+ for clang
+To: Nicholas Piggin <npiggin@gmail.com>, Daniel Axtens <dja@axtens.net>,
+ linuxppc-dev@lists.ozlabs.org, llvmlinux@lists.linuxfoundation.org
+References: <20210225031006.1204774-1-dja@axtens.net>
+ <20210225031006.1204774-7-dja@axtens.net>
+ <1616118111.i881ydq4h2.astroid@bobo.none>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 8/8] powerpc/bpf: Reallocate BPF registers to volatile
- registers when possible on PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org, kafai@fb.com,
- songliubraving@fb.com, yhs@fb.com, john.fastabend@gmail.com,
- kpsingh@chromium.org, naveen.n.rao@linux.ibm.com, sandipan@linux.ibm.com
-Date: Mon, 22 Mar 2021 16:37:53 +0000 (UTC)
+Message-ID: <7f7cafb5-e6c4-5015-5285-9f9ca25e52fb@csgroup.eu>
+Date: Mon, 22 Mar 2021 17:49:59 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
+MIME-Version: 1.0
+In-Reply-To: <1616118111.i881ydq4h2.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,222 +76,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the BPF routine doesn't call any function, the non volatile
-registers can be reallocated to volatile registers in order to
-avoid having to save them/restore on the stack.
 
-Before this patch, the test #359 ADD default X is:
 
-   0:	7c 64 1b 78 	mr      r4,r3
-   4:	38 60 00 00 	li      r3,0
-   8:	94 21 ff b0 	stwu    r1,-80(r1)
-   c:	60 00 00 00 	nop
-  10:	92 e1 00 2c 	stw     r23,44(r1)
-  14:	93 01 00 30 	stw     r24,48(r1)
-  18:	93 21 00 34 	stw     r25,52(r1)
-  1c:	93 41 00 38 	stw     r26,56(r1)
-  20:	39 80 00 00 	li      r12,0
-  24:	39 60 00 00 	li      r11,0
-  28:	3b 40 00 00 	li      r26,0
-  2c:	3b 20 00 00 	li      r25,0
-  30:	7c 98 23 78 	mr      r24,r4
-  34:	7c 77 1b 78 	mr      r23,r3
-  38:	39 80 00 42 	li      r12,66
-  3c:	39 60 00 00 	li      r11,0
-  40:	7d 8c d2 14 	add     r12,r12,r26
-  44:	39 60 00 00 	li      r11,0
-  48:	7d 83 63 78 	mr      r3,r12
-  4c:	82 e1 00 2c 	lwz     r23,44(r1)
-  50:	83 01 00 30 	lwz     r24,48(r1)
-  54:	83 21 00 34 	lwz     r25,52(r1)
-  58:	83 41 00 38 	lwz     r26,56(r1)
-  5c:	38 21 00 50 	addi    r1,r1,80
-  60:	4e 80 00 20 	blr
+Le 19/03/2021 à 03:01, Nicholas Piggin a écrit :
+> Excerpts from Daniel Axtens's message of February 25, 2021 1:10 pm:
+>> The llvm integrated assembler does not recognise the ISA 2.05 tlbiel
+>> version. Eventually do this more smartly.
+> 
+> The whole thing with TLBIE and TLBIEL in this file seems a bit too
+> clever. We should have PPC_TLBIE* macros for all of them.
 
-After this patch, the same test has become:
+I was expecting to drop PPC_* macros as much as possible taking into account the later binutils 
+support most of them (https://github.com/linuxppc/issues/issues/350). Was not expecting to go the 
+other direction.
 
-   0:	7c 64 1b 78 	mr      r4,r3
-   4:	38 60 00 00 	li      r3,0
-   8:	94 21 ff b0 	stwu    r1,-80(r1)
-   c:	60 00 00 00 	nop
-  10:	39 80 00 00 	li      r12,0
-  14:	39 60 00 00 	li      r11,0
-  18:	39 00 00 00 	li      r8,0
-  1c:	38 e0 00 00 	li      r7,0
-  20:	7c 86 23 78 	mr      r6,r4
-  24:	7c 65 1b 78 	mr      r5,r3
-  28:	39 80 00 42 	li      r12,66
-  2c:	39 60 00 00 	li      r11,0
-  30:	7d 8c 42 14 	add     r12,r12,r8
-  34:	39 60 00 00 	li      r11,0
-  38:	7d 83 63 78 	mr      r3,r12
-  3c:	38 21 00 50 	addi    r1,r1,80
-  40:	4e 80 00 20 	blr
+See following series for an exemple of why we would want to get rid of PPC_* macros.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/net/bpf_jit.h        | 16 ++++++++++++++++
- arch/powerpc/net/bpf_jit64.h      |  2 +-
- arch/powerpc/net/bpf_jit_comp.c   |  2 ++
- arch/powerpc/net/bpf_jit_comp32.c | 30 ++++++++++++++++++++++++++++--
- arch/powerpc/net/bpf_jit_comp64.c |  4 ++++
- 5 files changed, 51 insertions(+), 3 deletions(-)
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=231583&state=*
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index a45b8266355d..776abef4d2a0 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -116,6 +116,15 @@ static inline bool is_nearbranch(int offset)
- #define SEEN_STACK	0x40000000 /* uses BPF stack */
- #define SEEN_TAILCALL	0x80000000 /* uses tail calls */
- 
-+#define SEEN_VREG_MASK	0x1ff80000 /* Volatile registers r3-r12 */
-+#define SEEN_NVREG_MASK	0x0003ffff /* Non volatile registers r14-r31 */
-+
-+#ifdef CONFIG_PPC64
-+extern const int b2p[MAX_BPF_JIT_REG + 2];
-+#else
-+extern const int b2p[MAX_BPF_JIT_REG + 1];
-+#endif
-+
- struct codegen_context {
- 	/*
- 	 * This is used to track register usage as well
-@@ -129,6 +138,7 @@ struct codegen_context {
- 	unsigned int seen;
- 	unsigned int idx;
- 	unsigned int stack_size;
-+	int b2p[ARRAY_SIZE(b2p)];
- };
- 
- static inline void bpf_flush_icache(void *start, void *end)
-@@ -147,11 +157,17 @@ static inline void bpf_set_seen_register(struct codegen_context *ctx, int i)
- 	ctx->seen |= 1 << (31 - i);
- }
- 
-+static inline void bpf_clear_seen_register(struct codegen_context *ctx, int i)
-+{
-+	ctx->seen &= ~(1 << (31 - i));
-+}
-+
- void bpf_jit_emit_func_call_rel(u32 *image, struct codegen_context *ctx, u64 func);
- int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *ctx,
- 		       u32 *addrs, bool extra_pass);
- void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx);
- void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx);
-+void bpf_jit_realloc_regs(struct codegen_context *ctx);
- 
- #endif
- 
-diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
-index b05f2e67bba1..7b713edfa7e2 100644
---- a/arch/powerpc/net/bpf_jit64.h
-+++ b/arch/powerpc/net/bpf_jit64.h
-@@ -39,7 +39,7 @@
- #define TMP_REG_2	(MAX_BPF_JIT_REG + 1)
- 
- /* BPF to ppc register mappings */
--static const int b2p[] = {
-+const int b2p[MAX_BPF_JIT_REG + 2] = {
- 	/* function return value */
- 	[BPF_REG_0] = 8,
- 	/* function arguments */
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index efac89964873..798ac4350a82 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -143,6 +143,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	}
- 
- 	memset(&cgctx, 0, sizeof(struct codegen_context));
-+	memcpy(cgctx.b2p, b2p, sizeof(cgctx.b2p));
- 
- 	/* Make sure that the stack is quadword aligned. */
- 	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
-@@ -167,6 +168,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 		}
- 	}
- 
-+	bpf_jit_realloc_regs(&cgctx);
- 	/*
- 	 * Pretend to build prologue, given the features we've seen.  This will
- 	 * update ctgtx.idx as it pretends to output instructions, then we can
-diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index 29ce802d7534..003843273b43 100644
---- a/arch/powerpc/net/bpf_jit_comp32.c
-+++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -37,7 +37,7 @@
- #define TMP_REG	(MAX_BPF_JIT_REG + 0)
- 
- /* BPF to ppc register mappings */
--static const int b2p[] = {
-+const int b2p[MAX_BPF_JIT_REG + 1] = {
- 	/* function return value */
- 	[BPF_REG_0] = 12,
- 	/* function arguments */
-@@ -60,7 +60,7 @@ static const int b2p[] = {
- 
- static int bpf_to_ppc(struct codegen_context *ctx, int reg)
- {
--	return b2p[reg];
-+	return ctx->b2p[reg];
- }
- 
- /* PPC NVR range -- update this if we ever use NVRs below r17 */
-@@ -77,6 +77,32 @@ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
- 	return BPF_PPC_STACKFRAME(ctx) - 4;
- }
- 
-+void bpf_jit_realloc_regs(struct codegen_context *ctx)
-+{
-+	if (ctx->seen & SEEN_FUNC)
-+		return;
-+
-+	while (ctx->seen & SEEN_NVREG_MASK &&
-+	      (ctx->seen & SEEN_VREG_MASK) != SEEN_VREG_MASK) {
-+		int old = 32 - fls(ctx->seen & (SEEN_NVREG_MASK & 0xaaaaaaab));
-+		int new = 32 - fls(~ctx->seen & (SEEN_VREG_MASK & 0xaaaaaaaa));
-+		int i;
-+
-+		for (i = BPF_REG_0; i <= TMP_REG; i++) {
-+			if (ctx->b2p[i] != old)
-+				continue;
-+			ctx->b2p[i] = new;
-+			bpf_set_seen_register(ctx, new);
-+			bpf_clear_seen_register(ctx, old);
-+			if (i != TMP_REG) {
-+				bpf_set_seen_register(ctx, new - 1);
-+				bpf_clear_seen_register(ctx, old - 1);
-+			}
-+			break;
-+		}
-+	}
-+}
-+
- void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- {
- 	int i;
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 8a1f9fb00e78..57a8c1153851 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -64,6 +64,10 @@ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
- 	BUG();
- }
- 
-+void bpf_jit_realloc_regs(struct codegen_context *ctx)
-+{
-+}
-+
- void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- {
- 	int i;
--- 
-2.25.0
+Christophe
 
+> 
+> Thanks,
+> Nick
+> 
+>>
+>> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>> ---
+>>   arch/powerpc/mm/book3s64/hash_native.c | 10 ++++++++++
+>>   1 file changed, 10 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
+>> index 52e170bd95ae..c5937f69a452 100644
+>> --- a/arch/powerpc/mm/book3s64/hash_native.c
+>> +++ b/arch/powerpc/mm/book3s64/hash_native.c
+>> @@ -267,9 +267,14 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+>>   		va |= ssize << 8;
+>>   		sllp = get_sllp_encoding(apsize);
+>>   		va |= sllp << 5;
+>> +#if 0
+>>   		asm volatile(ASM_FTR_IFSET("tlbiel %0", "tlbiel %0,0", %1)
+>>   			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
+>>   			     : "memory");
+>> +#endif
+>> +		asm volatile("tlbiel %0"
+>> +			     : : "r" (va)
+>> +			     : "memory");
+>>   		break;
+>>   	default:
+>>   		/* We need 14 to 14 + i bits of va */
+>> @@ -286,9 +291,14 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+>>   		 */
+>>   		va |= (vpn & 0xfe);
+>>   		va |= 1; /* L */
+>> +#if 0
+>>   		asm volatile(ASM_FTR_IFSET("tlbiel %0", "tlbiel %0,1", %1)
+>>   			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
+>>   			     : "memory");
+>> +#endif
+>> +		asm volatile("tlbiel %0"
+>> +			     : : "r" (va)
+>> +			     : "memory");
+>>   		break;
+>>   	}
+>>   	trace_tlbie(0, 1, va, 0, 0, 0, 0);
+>> -- 
+>> 2.27.0
+>>
+>>
