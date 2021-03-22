@@ -2,87 +2,106 @@ Return-Path: <SRS0=7u3Q=IU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3F2BC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 03:27:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08430C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:01:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DBEA61939
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 03:27:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DBEA61939
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C16C361966
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:01:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C16C361966
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F3g1D5fRfz30BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:27:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F3gm36x5wz309r
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:01:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=YrsobDmX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JUNCD2Gp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e;
- helo=mail-pl1-x62e.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=YrsobDmX; dkim-atps=neutral
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=JUNCD2Gp; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3g0n2Jlsz2xxn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 14:27:18 +1100 (AEDT)
-Received: by mail-pl1-x62e.google.com with SMTP id f17so5813813plr.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Mar 2021 20:27:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=G/MrW95o3wTpkGn3xBSw1QV9Ky7pWJ39YmqwrFHA0kE=;
- b=YrsobDmXdbZYfK5pANFSFVISLsbol5RaLwiqY0BID97Issa2mmCzMfqj53xQS6bou/
- iH9xlStOPyRd7f6ikx9I/AquNTaARyWwYC+XTj0tq6Ya0+/pgSpWC77C2BD+0awvA6+b
- EsNKg11DKqIAxQFXafnzKbWH9NZ4S/zehUe6QgcHxHsqZ27aXAd/kzK+Sylg9av0FECQ
- HLbGRJ5aLoIjXWsNjeMlKdPtOfw82nJ5wih987tH1HaEvVl0GVP/c/2IhRYIOYIfEWsi
- 4Zd+snqGn+9bhNd4qgnYocVHASI7yZRi8/qw0/nfjRLIqyAUHSXiBRn9WuQgbKJIzlv/
- D90Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=G/MrW95o3wTpkGn3xBSw1QV9Ky7pWJ39YmqwrFHA0kE=;
- b=MjvLinvbbA6fZTCL+y6HAMzUDWmL9APwIP/tzffQRG7N6R/d/9ZzN+1KDhV+wl69ri
- 3U3FXkAKVgYb8vuPWryB0VbBA12CvRYlY93tQTT/4ldoRFMuJ2KfKNdpers+Mx8hl49h
- qBCDcK03xySDzi77sHugzSwVpeRCXJ23Zc5T5/u6na+pMl5Tk3FXm85Mz7Fs5EYExjLb
- /kC1i0UGkgVaRt7ksWdJzEV6vYVC41HSJLyenawbqnZ78lFygG2bpGH9nqYQBYST/juF
- Y7/X18buf2hnSemOZxjvG6f6oUnZH0ENRbj43yCRgqCma5K03/bRbqni1bC/ZDT8oWn5
- lLuA==
-X-Gm-Message-State: AOAM53071d9Isrhd4HtospmCUiICuEwcHpiga8jQvZVcZTjZuOKk8v51
- 5C6a5jbbkRGKV3y7bY1+8VM=
-X-Google-Smtp-Source: ABdhPJyI7hkhuRRyFmuikHycx7qL5FUFckW3Lw//9yrzFtlVzh49hYOs3AVH4Qs9Ug7hl9htoZh8Bg==
-X-Received: by 2002:a17:902:c382:b029:e4:7015:b646 with SMTP id
- g2-20020a170902c382b02900e47015b646mr25634069plg.83.1616383635752; 
- Sun, 21 Mar 2021 20:27:15 -0700 (PDT)
-Received: from localhost ([58.84.78.96])
- by smtp.gmail.com with ESMTPSA id gz4sm12631722pjb.0.2021.03.21.20.27.14
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 21 Mar 2021 20:27:15 -0700 (PDT)
-Date: Mon, 22 Mar 2021 13:27:09 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 34/41] KVM: PPC: Book3S HV: Remove support for
- dependent threads mode on P9
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, kvm-ppc@vger.kernel.org
-References: <20210305150638.2675513-1-npiggin@gmail.com>
- <20210305150638.2675513-35-npiggin@gmail.com> <87ft0tzug8.fsf@linux.ibm.com>
-In-Reply-To: <87ft0tzug8.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3glW65gRz2xZk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 15:00:54 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12M3X1ok075170; Mon, 22 Mar 2021 00:00:46 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=YGqqlRic/6maE5ZzLjwihChU+zgQl7RjBkW207Q/pZA=;
+ b=JUNCD2Gp8nSusvw5qLAJ3qSgqmClppnslO3NP/g8w8zHH4qtYXKVKWV20DR6keMSOuAx
+ 4DsTE2D2Wnw8LYBQ36yP3VCXXGFShU/Qeoi6D1/kpHuI986BcxLQhcz8gLOlhb3IHzNb
+ SHn2/EC7bKxTIi2MELQzONA6bm5iCTKMvnxi67H6SzPpEqB17HRP6fLf3CERXcxDK31V
+ AY5vwiy291FXdPgRqIzlH4qcZhghVBKlkivki9MkAm1MSTfgJ0+72EBNBfY0Hi/w4Eaq
+ X+l9mDWXqPSAjBba+XGT0QV5RmVaEfPxCGkRJIJYpqqfCG0xc685kAUdXdgTUwrH78ky Zw== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37dx49kk18-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Mar 2021 00:00:46 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12M3vCuL005352;
+ Mon, 22 Mar 2021 04:00:44 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 37d9bmhxk3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Mar 2021 04:00:43 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 12M40fGr51118438
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 22 Mar 2021 04:00:41 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8A570AE04D;
+ Mon, 22 Mar 2021 04:00:41 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E72EBAE067;
+ Mon, 22 Mar 2021 04:00:40 +0000 (GMT)
+Received: from [9.199.62.230] (unknown [9.199.62.230])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 22 Mar 2021 04:00:40 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/mm: Revert "powerpc/mm: Remove DEBUG_VM_PGTABLE
+ support on powerpc"
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20210318034855.74513-1-aneesh.kumar@linux.ibm.com>
+ <87lfak54lx.fsf@mpe.ellerman.id.au>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Message-ID: <27846653-67e9-7516-3730-00651def1942@linux.ibm.com>
+Date: Mon, 22 Mar 2021 09:30:39 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-Message-Id: <1616383211.2tllx3llud.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <87lfak54lx.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-22_01:2021-03-19,
+ 2021-03-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 impostorscore=0
+ spamscore=0 suspectscore=0 mlxlogscore=999 priorityscore=1501 mlxscore=0
+ adultscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2103220025
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,81 +113,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Aneesh Kumar K.V's message of March 18, 2021 1:11 am:
-> Nicholas Piggin <npiggin@gmail.com> writes:
->=20
->> Radix guest support will be removed from the P7/8 path, so disallow
->> dependent threads mode on P9.
+On 3/19/21 6:42 AM, Michael Ellerman wrote:
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+>> This reverts commit 675bceb097e6 ("powerpc/mm: Remove DEBUG_VM_PGTABLE support on powerpc")
 >>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> All the related issues are fixed by the series
+>> https://lore.kernel.org/linux-mm/20200902114222.181353-1-aneesh.kumar@linux.ibm.com
+> 
+> Was that series merged?
+> 
+> If so this seems like this could be tagged as a Fix for the last commit
+> in that series.
+
+commit f14312e1ed1e ("mm/debug_vm_pgtable: avoid doing memory allocation 
+with pgtable_t mapped.")
+
+
+> 
+> cheers
+> 
+>> Hence enable it back
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 >> ---
->>  arch/powerpc/include/asm/kvm_host.h |  1 -
->>  arch/powerpc/kvm/book3s_hv.c        | 27 +++++----------------------
->>  2 files changed, 5 insertions(+), 23 deletions(-)
+>>   Documentation/features/debug/debug-vm-pgtable/arch-support.txt | 2 +-
+>>   arch/powerpc/Kconfig                                           | 1 +
+>>   2 files changed, 2 insertions(+), 1 deletion(-)
 >>
->> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/=
-asm/kvm_host.h
->> index 05fb00d37609..dd017dfa4e65 100644
->> --- a/arch/powerpc/include/asm/kvm_host.h
->> +++ b/arch/powerpc/include/asm/kvm_host.h
->> @@ -304,7 +304,6 @@ struct kvm_arch {
->>  	u8 fwnmi_enabled;
->>  	u8 secure_guest;
->>  	u8 svm_enabled;
->> -	bool threads_indep;
->>  	bool nested_enable;
->>  	bool dawr1_enabled;
->>  	pgd_t *pgtable;
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index cb428e2f7140..928ed8180d9d 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -103,13 +103,9 @@ static int target_smt_mode;
->>  module_param(target_smt_mode, int, 0644);
->>  MODULE_PARM_DESC(target_smt_mode, "Target threads per core (0 =3D max)"=
-);
->> =20
->> -static bool indep_threads_mode =3D true;
->> -module_param(indep_threads_mode, bool, S_IRUGO | S_IWUSR);
->> -MODULE_PARM_DESC(indep_threads_mode, "Independent-threads mode (only on=
- POWER9)");
->> -
->>  static bool one_vm_per_core;
->>  module_param(one_vm_per_core, bool, S_IRUGO | S_IWUSR);
->> -MODULE_PARM_DESC(one_vm_per_core, "Only run vCPUs from the same VM on a=
- core (requires indep_threads_mode=3DN)");
->> +MODULE_PARM_DESC(one_vm_per_core, "Only run vCPUs from the same VM on a=
- core (requires POWER8 or older)");
->=20
-> Isn't this also a security feature, where there was an ask to make sure
-> threads/vCPU from other VM won't run on this core? In that context isn't
-> this applicable also for P9?
+>> diff --git a/Documentation/features/debug/debug-vm-pgtable/arch-support.txt b/Documentation/features/debug/debug-vm-pgtable/arch-support.txt
+>> index 7aff505af706..fa83403b4aec 100644
+>> --- a/Documentation/features/debug/debug-vm-pgtable/arch-support.txt
+>> +++ b/Documentation/features/debug/debug-vm-pgtable/arch-support.txt
+>> @@ -21,7 +21,7 @@
+>>       |       nios2: | TODO |
+>>       |    openrisc: | TODO |
+>>       |      parisc: | TODO |
+>> -    |     powerpc: | TODO |
+>> +    |     powerpc: |  ok  |
+>>       |       riscv: |  ok  |
+>>       |        s390: |  ok  |
+>>       |          sh: | TODO |
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 386ae12d8523..982c87d5c051 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -119,6 +119,7 @@ config PPC
+>>   	#
+>>   	select ARCH_32BIT_OFF_T if PPC32
+>>   	select ARCH_HAS_DEBUG_VIRTUAL
+>> +	select ARCH_HAS_DEBUG_VM_PGTABLE
+>>   	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>>   	select ARCH_HAS_ELF_RANDOMIZE
+>>   	select ARCH_HAS_FORTIFY_SOURCE
+>> -- 
+>> 2.30.2
 
-I'm not sure about an ask, but it is a possible security feature that=20
-would be relevant to all SMT CPUs running KVM guests.
-
-It doesn't make much sense to plumb P9 support all through the P8 path=20
-just for that though, in my opinion? Is it tested? Who uses it? It's
-lacking features of the P9 path.
-
-It would be better added to KVM/QEMU in general (or until that is=20
-available, disable SMT, or use CPU pinning and isolcpus to prevent host=20
-code running on secondaries, and isolating VMs from one another, etc).
-
-I think it's quite possible to rendezvous threads in kernel, move them
-onto the threads of a core, and then have them all running in KVM code=20
-before they enter the guest, without disabling SMT in the host.
-
-You could do it with kernel threads on the secondaries even, but I=20
-wouldn't like to have to plumb the vcore concept entirely through=20
-everywhere so I would actually prefer to see QEMU grow an understanding=20
-of it so it would know it has to call the ioctl on every guest SMT=20
-thread.
-
-Thanks,
-Nick
