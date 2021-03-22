@@ -2,61 +2,92 @@ Return-Path: <SRS0=7u3Q=IU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9553C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8641DC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:25:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2E4161967
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:12:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2E4161967
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0D27A61930
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 04:25:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D27A61930
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F3h0W39LCz30BT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:12:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F3hHZ0fLlz30BM
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:25:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=ds0qXO/U;
+	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=uL11HUWQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=ds0qXO/U; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::42d;
+ helo=mail-pf1-x42d.google.com; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=uL11HUWQ; dkim-atps=neutral
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
+ [IPv6:2607:f8b0:4864:20::42d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3h004ccpz2xfy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 15:11:44 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4F3gzy5RYZz9sWP; Mon, 22 Mar 2021 15:11:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1616386302;
- bh=TsNgmPc5HgYKht2yfqHiEWtT+HMFouFqzPy8FQOXUto=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ds0qXO/UslCThqaCJ+kgTKQvLbdPRSDLc2TIURV0AqSCl1FAqZkXiDMGdA7Mr/xbK
- WcrF5eO1BNDpSWpmqCEs0xwThjo3VHJaZo8iwlQpJCdXfaYux9M/I0cmDtlA3AXiM1
- AnYHQ3ksvcfmE1p+4LjhjrPWnsEH9i9WgKuRy/u4=
-Date: Mon, 22 Mar 2021 14:16:13 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Daniel Henrique Barboza <danielhb413@gmail.com>
-Subject: Re: Advice needed on SMP regression after cpu_core_mask change
-Message-ID: <YFgL/TT6onMKA3c/@yekko.fritz.box>
-References: <daa5d05f-dbd0-05ad-7395-5d5a3d364fc6@gmail.com>
- <4569097d-ce89-5a13-33a9-2a4ca10be7bd@kaod.org>
- <04bf6d12-a806-d417-3d95-b6d315c44b58@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3hH12927z2y0K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 15:24:42 +1100 (AEDT)
+Received: by mail-pf1-x42d.google.com with SMTP id x126so10087854pfc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Mar 2021 21:24:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=message-id:date:mime-version:user-agent:subject:content-language:to
+ :cc:references:from:in-reply-to:content-transfer-encoding;
+ bh=Jk/UWUBTuek25gcQf24w6j3TceVnzQwrN0sozkH+Waw=;
+ b=uL11HUWQs1TG7BouVaWfuk5JJw8rnibWEaFol58YX68TGaw87bg0xtmsLs+vpt9SZE
+ g54JAaEnJY83sx6dZ9oWXsSUunCZxJF9UFQLIpyqaTO0Gwy56YhwSCiQgdUZqvqSX/5U
+ HkYqD4WJ+ggNIC0/w+WEzYRSX9YQGblhUINRlOMxVjWe9esyL3tdB6XZEs9MSZn1N543
+ ne6MN0ccvmNzFEsmY2ej5NoLEZkZOmCxnK2MX4xiu2YquyCwyYAsQ9HbwC1fYBsmMj2t
+ teHIO7aPYVv6apfJnQhWfXW0wgFFxvST5FkNHC/zptDZr7RtRZt96A1l91Go2+ahpS+p
+ d8EA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=Jk/UWUBTuek25gcQf24w6j3TceVnzQwrN0sozkH+Waw=;
+ b=p/I4XiocXxAcBom3/u10HxyHuyzgYdYcKrLEIEGXe0mDTMdx074Eh5ECRGne9KkTjt
+ Fmn9xDVrjCFmCt9XEsogYgOiHX4GKnpxk89+w9PX6b0Dpah5WbscDybBURifd9bmCsdB
+ KbYnvgRp3rHxlsLhELAaKPxNv9UvEKpt5yoEvH+NjhiJXQc2Z/B9UBe7Mtoawy+2nrII
+ eCuI/GRHWv8qHMczgkN0JVBBf7KRmHLHlkIk4Cw94/KcYi+PvmHGX4/Q7BEmbEW1XsfJ
+ WM8UHJXs0pdvYblxbQwsG9WEqgd49FYzPGOiLlBiWkod9e9BxFS+XEGgf4F1xrNjl1l1
+ n2nQ==
+X-Gm-Message-State: AOAM532iWncGVK1HdYRDax+Sfq6M9Nfixxw7DGEXJST4L0DvgFuIPlzu
+ FblUl2iguTaSZNlwroYOAk5cOVYqNq0AzYB0
+X-Google-Smtp-Source: ABdhPJzlm+eN9ZsqQHWRsgkUDD4D61FDKWnpkvNXnM4754KsmWa40BR5F/hzUFntII4amj99IIWjyg==
+X-Received: by 2002:a63:db10:: with SMTP id e16mr21370248pgg.234.1616387076755; 
+ Sun, 21 Mar 2021 21:24:36 -0700 (PDT)
+Received: from [192.168.10.23] (124-171-107-241.dyn.iinet.net.au.
+ [124.171.107.241])
+ by smtp.gmail.com with UTF8SMTPSA id g7sm10412878pgb.10.2021.03.21.21.24.34
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Sun, 21 Mar 2021 21:24:36 -0700 (PDT)
+Message-ID: <47284fdd-51ef-5ba7-487b-dfb46ec2816e@ozlabs.ru>
+Date: Mon, 22 Mar 2021 15:24:32 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SXRDY0Yte4J0sW1u"
-Content-Disposition: inline
-In-Reply-To: <04bf6d12-a806-d417-3d95-b6d315c44b58@gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101
+ Thunderbird/87.0
+Subject: Re: [PATCH v3 16/41] KVM: PPC: Book3S HV P9: Move radix MMU switching
+ instructions together
+Content-Language: en-US
+To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
+References: <20210305150638.2675513-1-npiggin@gmail.com>
+ <20210305150638.2675513-17-npiggin@gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <20210305150638.2675513-17-npiggin@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,246 +99,185 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@in.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Greg Kurz <groug@kaod.org>, =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---SXRDY0Yte4J0sW1u
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 17, 2021 at 01:05:21PM -0300, Daniel Henrique Barboza wrote:
->=20
->=20
-> On 3/17/21 12:30 PM, C=E9dric Le Goater wrote:
-> > On 3/17/21 2:00 PM, Daniel Henrique Barboza wrote:
-> > > Hello,
-> > >=20
-> > > Patch 4bce545903fa ("powerpc/topology: Update topology_core_cpumask")=
- introduced
-> > > a regression in both upstream and RHEL downstream kernels [1]. The as=
-sumption made
-> > > in the commit:
-> > >=20
-> > > "Further analysis shows that cpu_core_mask and cpu_cpu_mask for any C=
-PU would be
-> > > equal on Power"
-> > >=20
-> > > Doesn't seem to be true. After this commit, QEMU is now unable to set=
- single NUMA
-> > > node SMP topologies such as:
-> > >=20
-> > > -smp 8,maxcpus=3D8,cores=3D2,threads=3D2,sockets=3D2
-> > >=20
-> > > lscpu will give the following output in this case:
-> > >=20
-> > > # lscpu
-> > > Architecture:=A0=A0=A0=A0=A0=A0=A0 ppc64le
-> > > Byte Order:=A0=A0=A0=A0=A0=A0=A0=A0=A0 Little Endian
-> > > CPU(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 8
-> > > On-line CPU(s) list: 0-7
-> > > Thread(s) per core:=A0 2
-> > > Core(s) per socket:=A0 4
-> > > Socket(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 1
-> > > NUMA node(s):=A0=A0=A0=A0=A0=A0=A0 1
-> > > Model:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2.2 (pvr 004e 1202)
-> > > Model name:=A0=A0=A0=A0=A0=A0=A0=A0=A0 POWER9 (architected), altivec =
-supported
-> > > Hypervisor vendor:=A0=A0 KVM
-> > > Virtualization type: para
-> > > L1d cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > L1i cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > NUMA node0 CPU(s):=A0=A0 0-7
-> > >=20
-> > >=20
-> > > This is happening because the macro cpu_cpu_mask(cpu) expands to
-> > > cpumask_of_node(cpu_to_node(cpu)), which in turn expands to node_to_c=
-pumask_map[node].
-> > > node_to_cpumask_map is a NUMA array that maps CPUs to NUMA nodes (Ane=
-esh is on CC to
-> > > correct me if I'm wrong). We're now associating sockets to NUMA nodes=
- directly.
-> > >=20
-> > > If I add a second NUMA node then I can get the intended smp topology:
-> > >=20
-> > > -smp 8,maxcpus=3D8,cores=3D2,threads=3D2,sockets=3D2
-> > > -numa node,memdev=3Dmem0,cpus=3D0-3,nodeid=3D0 \
-> > > -numa node,memdev=3Dmem1,cpus=3D4-7,nodeid=3D1 \
-> > >=20
-> > > # lscpu
-> > > Architecture:=A0=A0=A0=A0=A0=A0=A0 ppc64le
-> > > Byte Order:=A0=A0=A0=A0=A0=A0=A0=A0=A0 Little Endian
-> > > CPU(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 8
-> > > On-line CPU(s) list: 0-7
-> > > Thread(s) per core:=A0 2
-> > > Core(s) per socket:=A0 2
-> > > Socket(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2
-> > > NUMA node(s):=A0=A0=A0=A0=A0=A0=A0 2
-> > > Model:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2.2 (pvr 004e 1202)
-> > > Model name:=A0=A0=A0=A0=A0=A0=A0=A0=A0 POWER9 (architected), altivec =
-supported
-> > > Hypervisor vendor:=A0=A0 KVM
-> > > Virtualization type: para
-> > > L1d cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > L1i cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > NUMA node0 CPU(s):=A0=A0 0-3
-> > > NUMA node1 CPU(s):=A0=A0 4-7
-> > >=20
-> > >=20
-> > > However, if I try a single socket with multiple NUMA nodes topology, =
-which is the case
-> > > of Power10, e.g.:
-> > >=20
-> > >=20
-> > > -smp 8,maxcpus=3D8,cores=3D4,threads=3D2,sockets=3D1
-> > > -numa node,memdev=3Dmem0,cpus=3D0-3,nodeid=3D0 \
-> > > -numa node,memdev=3Dmem1,cpus=3D4-7,nodeid=3D1 \
-> > >=20
-> > >=20
-> > > This is the result:
-> > >=20
-> > > # lscpu
-> > > Architecture:=A0=A0=A0=A0=A0=A0=A0 ppc64le
-> > > Byte Order:=A0=A0=A0=A0=A0=A0=A0=A0=A0 Little Endian
-> > > CPU(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 8
-> > > On-line CPU(s) list: 0-7
-> > > Thread(s) per core:=A0 2
-> > > Core(s) per socket:=A0 2
-> > > Socket(s):=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2
-> > > NUMA node(s):=A0=A0=A0=A0=A0=A0=A0 2
-> > > Model:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2.2 (pvr 004e 1202)
-> > > Model name:=A0=A0=A0=A0=A0=A0=A0=A0=A0 POWER9 (architected), altivec =
-supported
-> > > Hypervisor vendor:=A0=A0 KVM
-> > > Virtualization type: para
-> > > L1d cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > L1i cache:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 32K
-> > > NUMA node0 CPU(s):=A0=A0 0-3
-> > > NUMA node1 CPU(s):=A0=A0 4-7
-> > >=20
-> > >=20
-> > > This confirms my suspicions that, at this moment, we're making socket=
-s =3D=3D NUMA nodes.
-> >=20
-> > Yes. I don't think we can do better on PAPR and the above examples
-> > seem to confirm that the "sockets" definition is simply ignored.
-> > > Cedric, the reason I'm CCing you is because this is related to ibm,ch=
-ip-id. The commit
-> > > after the one that caused the regression, 4ca234a9cbd7c3a65 ("powerpc=
-/smp: Stop updating
-> > > cpu_core_mask"), is erasing the code that calculated cpu_core_mask. c=
-pu_core_mask, despite
-> > > its shortcomings that caused its removal, was giving a precise SMP to=
-pology. And it was
-> > > using physical_package_id/'ibm,chip-id' for that.
-> >=20
-> > ibm,chip-id is a no-no on pSeries. I guess this is inherent to PAPR whi=
-ch
-> > is hiding a lot of the underlying HW and topology. May be we are trying
-> > to reconcile two orthogonal views of machine virtualization ...
-> >=20
-> > > Checking in QEMU I can say that the ibm,chip-id calculation is the on=
-ly place in the code
-> > > that cares about cores per socket information. The kernel is now igno=
-ring that, starting
-> > > on 4bce545903fa, and now QEMU is unable to provide this info to the g=
-uest.
-> > >=20
-> > > If we're not going to use ibm,chip-id any longer, which seems sensibl=
-e given that PAPR does
-> > > not declare it, we need another way of letting the guest know how muc=
-h cores per socket
-> > > we want.
-> > The RTAS call "ibm,get-system-parameter" with token "Processor Module
-> > Information" returns that kind of information :
-> >=20
-> >    2 byte binary number (N) of module types followed by N module specif=
-iers of the form:
-> >    2 byte binary number (M) of sockets of this module type
-> >    2 byte binary number (L) of chips per this module type
-> >    2 byte binary number (K) of cores per chip in this module type.
-> >=20
-> > See the values in these sysfs files :
-> >=20
-> >    cat /sys/devices/hv_24x7/interface/{sockets,chipspersocket,coresperc=
-hip}
-> >=20
-> > But I am afraid these are host level information and not guest/LPAR.
->=20
->=20
-> I believe there might be some sort of reasoning behind not having this on
-> PAPR, but I'll say in advance that the virtual machine should act as the
-> real hardware, as close as possible. This is the kind of hcall that could
-> be used in this situation.
+On 06/03/2021 02:06, Nicholas Piggin wrote:
+> Switching the MMU from radix<->radix mode is tricky particularly as the
+> MMU can remain enabled and requires a certain sequence of SPR updates.
+> Move these together into their own functions.
+> 
+> This also includes the radix TLB check / flush because it's tied in to
+> MMU switching due to tlbiel getting LPID from LPIDR.
+> 
+> (XXX: isync / hwsync synchronisation TBD)
 
-In the case of POWER, that's pretty much a lost battle.  The
-virtualization features of the CPU don't really permit full hardware
-virtualization - it has to be a paravirtualized environment.  Once
-that's the case, the value of keeping secondary things the same
-between the bare metal and paravirt environments isn't that compelling
-any more.
 
-> > I didn't find any LPAR level properties or hcalls in the PAPR document.
-> > They need to be specified.
-> >=20
-> > or
-> >=20
-> > We can add extra properties like ibm,chip-id but making sure it's only
-> > used under the KVM hypervisor. My understanding is that's something we
-> > are trying to avoid.
->=20
-> We can change PAPR to add ibm,chip-id. Problem is that ibm,chip-id today,=
- with
-> the current kernel codebase, does not fix the issue because the code is
-> ignoring it hehehe
->=20
->=20
-> If we're going to change PAPR -  and I believe we should, there's a clear
-> lack of proper support for SMP topologies - we're better make sure that w=
-hatever
-> attribute/hcall we add there fixes it in a robust way for the long term.
->=20
->=20
-> Thanks,
->=20
->=20
-> DHB
->=20
->=20
-> >=20
-> > C.
-> >=20
->=20
+Looks alright but what is this comment about? Is something missing or 
+just sub optimal?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
 
---SXRDY0Yte4J0sW1u
-Content-Type: application/pgp-signature; name="signature.asc"
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBYC/oACgkQbDjKyiDZ
-s5JphA//Wr8JSoOpW1Q3Cy0QXPHMCC97YmEoB2+dUlRr3kB662eg5gOJhu7Z/axu
-S2AiMZ0MUy4M5JGkLZE1OM6hXYto3e5k7TaRJ9xp5bEPLs/r6fRR96truRn9eR/0
-U3vtW/85RS6naYT6tLM4UQn8byQ1hzEjbipr5L7fr9VQ9uMk6DPCQe6BudwtQDo8
-VAQ8RcsNAkGHVB6BUYBf8+8BcCPBarcTPCcJ0rvJV+5YgJEp5UDjMS1RVwasYezz
-Ww05JrEb4hzSJ2psQG/D2ON/VKoESjDO7jUuEjyCbDIxmptKu+DqO4k55MMUhoMB
-n/q9enPESRTvEPKyPiZW6s9UptSVJNWIVnTjXwPU8lQH4MAScADHrKk22XwRQZRa
-u+wbUE7S2K2u5KDTwJAYcfkk2zvp5q7EGT57giX1opbF99iwICdjq246nG2j7UfF
-M8r2N5KzCSqBKUFIN6NTOXac6EU0cAlxFV75dPDmeWzfU2/ci594iL5WTl32Uxlx
-XMkVm0oAtBrWEwsvmCTsbdAl7dQwqPK6Le7um4sZAm06EYq2xDyr8NK8e2WQ2t5I
-i1qydFwC83Ya9zFz4yZjQJ0ujaWZYVS3rWtUzBgAFhTTgO6J36oL7ylcu5NS2MmP
-yPn6PsgaopGqsHGDtJ5YW9L4LM615iriYmIa9jjh7KjCJnZTFp0=
-=ir5e
------END PGP SIGNATURE-----
+> ---
+>   arch/powerpc/kvm/book3s_hv.c | 55 +++++++++++++++++++++---------------
+>   1 file changed, 32 insertions(+), 23 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index f1230f9d98ba..b9cae42b9cd5 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3449,12 +3449,38 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+>   	trace_kvmppc_run_core(vc, 1);
+>   }
+>   
+> +static void switch_mmu_to_guest_radix(struct kvm *kvm, struct kvm_vcpu *vcpu, u64 lpcr)
+> +{
+> +	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+> +	struct kvm_nested_guest *nested = vcpu->arch.nested;
+> +	u32 lpid;
+> +
+> +	lpid = nested ? nested->shadow_lpid : kvm->arch.lpid;
+> +
+> +	mtspr(SPRN_LPID, lpid);
+> +	mtspr(SPRN_LPCR, lpcr);
+> +	mtspr(SPRN_PID, vcpu->arch.pid);
+> +	isync();
+> +
+> +	/* TLBIEL must have LPIDR set, so set guest LPID before flushing. */
+> +	kvmppc_check_need_tlb_flush(kvm, vc->pcpu, nested);
+> +}
+> +
+> +static void switch_mmu_to_host_radix(struct kvm *kvm, u32 pid)
+> +{
+> +	mtspr(SPRN_PID, pid);
+> +	mtspr(SPRN_LPID, kvm->arch.host_lpid);
+> +	mtspr(SPRN_LPCR, kvm->arch.host_lpcr);
+> +	isync();
+> +}
+> +
+>   /*
+>    * Load up hypervisor-mode registers on P9.
+>    */
+>   static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   				     unsigned long lpcr)
+>   {
+> +	struct kvm *kvm = vcpu->kvm;
+>   	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+>   	s64 hdec;
+>   	u64 tb, purr, spurr;
+> @@ -3477,12 +3503,12 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	 * P8 and P9 suppress the HDEC exception when LPCR[HDICE] = 0,
+>   	 * so set HDICE before writing HDEC.
+>   	 */
+> -	mtspr(SPRN_LPCR, vcpu->kvm->arch.host_lpcr | LPCR_HDICE);
+> +	mtspr(SPRN_LPCR, kvm->arch.host_lpcr | LPCR_HDICE);
+>   	isync();
+>   
+>   	hdec = time_limit - mftb();
+>   	if (hdec < 0) {
+> -		mtspr(SPRN_LPCR, vcpu->kvm->arch.host_lpcr);
+> +		mtspr(SPRN_LPCR, kvm->arch.host_lpcr);
+>   		isync();
+>   		return BOOK3S_INTERRUPT_HV_DECREMENTER;
+>   	}
+> @@ -3517,7 +3543,6 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	}
+>   	mtspr(SPRN_CIABR, vcpu->arch.ciabr);
+>   	mtspr(SPRN_IC, vcpu->arch.ic);
+> -	mtspr(SPRN_PID, vcpu->arch.pid);
+>   
+>   	mtspr(SPRN_PSSCR, vcpu->arch.psscr | PSSCR_EC |
+>   	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
+> @@ -3531,8 +3556,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   
+>   	mtspr(SPRN_AMOR, ~0UL);
+>   
+> -	mtspr(SPRN_LPCR, lpcr);
+> -	isync();
+> +	switch_mmu_to_guest_radix(kvm, vcpu, lpcr);
+>   
+>   	kvmppc_xive_push_vcpu(vcpu);
+>   
+> @@ -3571,7 +3595,6 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   		mtspr(SPRN_DAWR1, host_dawr1);
+>   		mtspr(SPRN_DAWRX1, host_dawrx1);
+>   	}
+> -	mtspr(SPRN_PID, host_pidr);
+>   
+>   	/*
+>   	 * Since this is radix, do a eieio; tlbsync; ptesync sequence in
+> @@ -3586,9 +3609,6 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	if (cpu_has_feature(CPU_FTR_ARCH_31))
+>   		asm volatile(PPC_CP_ABORT);
+>   
+> -	mtspr(SPRN_LPID, vcpu->kvm->arch.host_lpid);	/* restore host LPID */
+> -	isync();
+> -
+>   	vc->dpdes = mfspr(SPRN_DPDES);
+>   	vc->vtb = mfspr(SPRN_VTB);
+>   	mtspr(SPRN_DPDES, 0);
+> @@ -3605,7 +3625,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	}
+>   
+>   	mtspr(SPRN_HDEC, 0x7fffffff);
+> -	mtspr(SPRN_LPCR, vcpu->kvm->arch.host_lpcr);
+> +
+> +	switch_mmu_to_host_radix(kvm, host_pidr);
+>   
+>   	return trap;
+>   }
+> @@ -4138,7 +4159,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   {
+>   	struct kvm_run *run = vcpu->run;
+>   	int trap, r, pcpu;
+> -	int srcu_idx, lpid;
+> +	int srcu_idx;
+>   	struct kvmppc_vcore *vc;
+>   	struct kvm *kvm = vcpu->kvm;
+>   	struct kvm_nested_guest *nested = vcpu->arch.nested;
+> @@ -4212,13 +4233,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	vc->vcore_state = VCORE_RUNNING;
+>   	trace_kvmppc_run_core(vc, 0);
+>   
+> -	if (cpu_has_feature(CPU_FTR_HVMODE)) {
 
---SXRDY0Yte4J0sW1u--
+
+The new location of mtspr(SPRN_LPID, lpid) does not check for 
+CPU_FTR_HVMODE anymore, is this going to work with HV KVM on pseries? 
+Thanks,
+
+
+
+
+> -		lpid = nested ? nested->shadow_lpid : kvm->arch.lpid;
+> -		mtspr(SPRN_LPID, lpid);
+> -		isync();
+> -		kvmppc_check_need_tlb_flush(kvm, pcpu, nested);
+> -	}
+> -
+>   	guest_enter_irqoff();
+>   
+>   	srcu_idx = srcu_read_lock(&kvm->srcu);
+> @@ -4237,11 +4251,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   
+>   	srcu_read_unlock(&kvm->srcu, srcu_idx);
+>   
+> -	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> -		mtspr(SPRN_LPID, kvm->arch.host_lpid);
+> -		isync();
+> -	}
+> -
+>   	set_irq_happened(trap);
+>   
+>   	kvmppc_set_host_core(pcpu);
+> 
+
+-- 
+Alexey
