@@ -7,83 +7,82 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D49EC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FC6DC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EA93619AA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EA93619AA
+	by mail.kernel.org (Postfix) with ESMTPS id 681E1619AA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 14:59:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 681E1619AA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yM55g80z3bsq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:59:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yMh5DjKz3c2j
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:59:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m3dg7URz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J2n4eIu/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=m3dg7URz; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=J2n4eIu/; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yKg6GCPz2yhm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 01:57:59 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yKh6GJPz2xg5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 01:58:00 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12MEZ0re059203; Mon, 22 Mar 2021 10:57:41 -0400
+ 12MEeTdL061314; Mon, 22 Mar 2021 10:57:51 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references; s=pp1;
- bh=+GqHQhf8OyUnsv+kdTerOJlYkWDl0kyEBdWmq5wMqkE=;
- b=m3dg7URzBNHn5VdVkWgRHAUl7+yGGnTgz/pkwZS3fe+1jOhmRipDZWiiWEVqdCwekezC
- sG0B6dQILInO9bYVE/r5khfV+READ1P6jn5cGuqjXP4n7aLc/iBozwU44WpyVI29DhhP
- 6dJIwEgV5107qGVl3xW1Fv6YJZ2Pv+6LBEDVMCZSzeWklkGVxqkUMRGqoy0Olxn5m1i6
- vlTO9KWcM8+9PVZPjFlI8FlX3+fH3RyrIXFi4oIPYmUStwNRUbsHJThPPYoYlDuPy0Ma
- hpDhgs2d69c/izVFH0UCsoM02YOMyPYhokY8NRl+KUKuqeiC0vJiarHU2kTPw/McgUS7 8Q== 
+ bh=5I72gfY1CkqXZ/dmnZ2LEbV/TGzmcLdz1lokkzbqJvA=;
+ b=J2n4eIu/k5sSMArxa68Z4DUBzXtv+DoPjck7c8kYd5ScpVzIz+yU3tQ2HGmW4vPV0ivr
+ jG5L4YBrhpnZr/LGxX/tEG0ABLKLpB+2oKP99tVBpQM3qz+GpRd+q5E5/kvJCu2l68Uv
+ M2FS0+pZy1H7pYB9iE9YuehcYjdtleX6EX0zk7aIz+WDZ6A88TP6LRxbeuFMl6cu3HK4
+ nzMPLF0pZ/5XYd7jY+XmHtpHqIldJIWDJkc1RZjwLBGMNwTAfV5v32wgNydwJVgclOKx
+ l6q7iKVs27+XU9ljkdS966qGm8FfR/ebul4cFsHcOhAJYW4EF//5PT/D0hMRwr5VfB69 lA== 
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37ef8b4bx9-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37dx3vv3t2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Mar 2021 10:57:40 -0400
+ Mon, 22 Mar 2021 10:57:51 -0400
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12MEgh86012462;
- Mon, 22 Mar 2021 14:57:39 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 37d99raf0j-1
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12MEh4Ct012511;
+ Mon, 22 Mar 2021 14:57:48 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 37d99raf0q-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Mar 2021 14:57:39 +0000
+ Mon, 22 Mar 2021 14:57:48 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12MEvaL632965048
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 12MEvR1l32899350
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 22 Mar 2021 14:57:36 GMT
+ Mon, 22 Mar 2021 14:57:28 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 382994C040;
- Mon, 22 Mar 2021 14:57:36 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9117B4C046;
+ Mon, 22 Mar 2021 14:57:45 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 844074C044;
- Mon, 22 Mar 2021 14:57:33 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E0FC94C04A;
+ Mon, 22 Mar 2021 14:57:42 +0000 (GMT)
 Received: from localhost.localdomain.localdomain (unknown [9.124.209.79])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 22 Mar 2021 14:57:33 +0000 (GMT)
+ Mon, 22 Mar 2021 14:57:42 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-perf-users@vger.kernel.org, mpe@ellerman.id.au, acme@kernel.org,
  jolsa@kernel.org
-Subject: [PATCH V2 1/5] powerpc/perf: Expose processor pipeline stage cycles
- using PERF_SAMPLE_WEIGHT_STRUCT
-Date: Mon, 22 Mar 2021 10:57:23 -0400
-Message-Id: <1616425047-1666-2-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 4/5] tools/perf: Support pipeline stage cycles for powerpc
+Date: Mon, 22 Mar 2021 10:57:26 -0400
+Message-Id: <1616425047-1666-5-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
@@ -92,11 +91,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-22_07:2021-03-22,
  2021-03-22 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- priorityscore=1501 phishscore=0 impostorscore=0 lowpriorityscore=0
- bulkscore=0 adultscore=0 mlxscore=0 mlxlogscore=999 spamscore=0
- malwarescore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2103220107
+ mlxscore=0 bulkscore=0
+ impostorscore=0 spamscore=0 adultscore=0 malwarescore=0 suspectscore=0
+ mlxlogscore=999 priorityscore=1501 phishscore=0 lowpriorityscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2103220107
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,137 +113,266 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Performance Monitoring Unit (PMU) registers in powerpc provides
-information on cycles elapsed between different stages in the
-pipeline. This can be used for application tuning. On ISA v3.1
-platform, this information is exposed by sampling registers.
-Patch adds kernel support to capture two of the cycle counters
-as part of perf sample using the sample type:
-PERF_SAMPLE_WEIGHT_STRUCT.
+The pipeline stage cycles details can be recorded on powerpc from
+the contents of Performance Monitor Unit (PMU) registers. On
+ISA v3.1 platform, sampling registers exposes the cycles spent in
+different pipeline stages. Patch adds perf tools support to present
+two of the cycle counter information along with memory latency (weight).
 
-The power PMU function 'get_mem_weight' currently uses 64 bit weight
-field of perf_sample_data to capture memory latency. But following the
-introduction of PERF_SAMPLE_WEIGHT_TYPE, weight field could contain
-64-bit or 32-bit value depending on the architexture support for
-PERF_SAMPLE_WEIGHT_STRUCT. Patches uses WEIGHT_STRUCT to expose the
-pipeline stage cycles info. Hence update the ppmu functions to work for
-64-bit and 32-bit weight values.
+Re-use the field 'ins_lat' for storing the first pipeline stage cycle.
+This is stored in 'var2_w' field of 'perf_sample_weight'.
 
-If the sample type is PERF_SAMPLE_WEIGHT, use the 64-bit weight field.
-if the sample type is PERF_SAMPLE_WEIGHT_STRUCT, memory subsystem
-latency is stored in the low 32bits of perf_sample_weight structure.
-Also for CPU_FTR_ARCH_31, capture the two cycle counter information in
-two 16 bit fields of perf_sample_weight structure.
+Add a new field 'p_stage_cyc' to store the second pipeline stage cycle
+which is stored in 'var3_w' field of perf_sample_weight.
+
+Add new sort function 'Pipeline Stage Cycle' and include this in
+default_mem_sort_order[]. This new sort function may be used to denote
+some other pipeline stage in another architecture. So add this to
+list of sort entries that can have dynamic header string.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/perf_event_server.h |  2 +-
- arch/powerpc/perf/core-book3s.c              |  4 ++--
- arch/powerpc/perf/isa207-common.c            | 29 +++++++++++++++++++++++++---
- arch/powerpc/perf/isa207-common.h            |  6 +++++-
- 4 files changed, 34 insertions(+), 7 deletions(-)
+ tools/perf/Documentation/perf-report.txt |  2 ++
+ tools/perf/arch/powerpc/util/event.c     | 18 ++++++++++++++++--
+ tools/perf/util/event.h                  |  1 +
+ tools/perf/util/hist.c                   | 11 ++++++++---
+ tools/perf/util/hist.h                   |  1 +
+ tools/perf/util/session.c                |  4 +++-
+ tools/perf/util/sort.c                   | 24 ++++++++++++++++++++++--
+ tools/perf/util/sort.h                   |  2 ++
+ 8 files changed, 55 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 00e7e671bb4b..112cf092d7b3 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -43,7 +43,7 @@ struct power_pmu {
- 				u64 alt[]);
- 	void		(*get_mem_data_src)(union perf_mem_data_src *dsrc,
- 				u32 flags, struct pt_regs *regs);
--	void		(*get_mem_weight)(u64 *weight);
-+	void		(*get_mem_weight)(u64 *weight, u64 type);
- 	unsigned long	group_constraint_mask;
- 	unsigned long	group_constraint_val;
- 	u64             (*bhrb_filter_map)(u64 branch_sample_type);
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 766f064f00fb..6936763246bd 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -2206,9 +2206,9 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 						ppmu->get_mem_data_src)
- 			ppmu->get_mem_data_src(&data.data_src, ppmu->flags, regs);
+diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+index f546b5e9db05..563fb01a9b8d 100644
+--- a/tools/perf/Documentation/perf-report.txt
++++ b/tools/perf/Documentation/perf-report.txt
+@@ -112,6 +112,8 @@ OPTIONS
+ 	- ins_lat: Instruction latency in core cycles. This is the global instruction
+ 	  latency
+ 	- local_ins_lat: Local instruction latency version
++	- p_stage_cyc: On powerpc, this presents the number of cycles spent in a
++	  pipeline stage. And currently supported only on powerpc.
  
--		if (event->attr.sample_type & PERF_SAMPLE_WEIGHT &&
-+		if (event->attr.sample_type & PERF_SAMPLE_WEIGHT_TYPE &&
- 						ppmu->get_mem_weight)
--			ppmu->get_mem_weight(&data.weight.full);
-+			ppmu->get_mem_weight(&data.weight.full, event->attr.sample_type);
- 
- 		if (perf_event_overflow(event, &data, regs))
- 			power_pmu_stop(event, 0);
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index e4f577da33d8..5dcbdbd54598 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -284,8 +284,10 @@ void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
- 	}
- }
- 
--void isa207_get_mem_weight(u64 *weight)
-+void isa207_get_mem_weight(u64 *weight, u64 type)
- {
-+	union perf_sample_weight *weight_fields;
-+	u64 weight_lat;
- 	u64 mmcra = mfspr(SPRN_MMCRA);
- 	u64 exp = MMCRA_THR_CTR_EXP(mmcra);
- 	u64 mantissa = MMCRA_THR_CTR_MANT(mmcra);
-@@ -296,9 +298,30 @@ void isa207_get_mem_weight(u64 *weight)
- 		mantissa = P10_MMCRA_THR_CTR_MANT(mmcra);
- 
- 	if (val == 0 || val == 7)
--		*weight = 0;
-+		weight_lat = 0;
- 	else
--		*weight = mantissa << (2 * exp);
-+		weight_lat = mantissa << (2 * exp);
-+
-+	/*
-+	 * Use 64 bit weight field (full) if sample type is
-+	 * WEIGHT.
-+	 *
-+	 * if sample type is WEIGHT_STRUCT:
-+	 * - store memory latency in the lower 32 bits.
-+	 * - For ISA v3.1, use remaining two 16 bit fields of
-+	 *   perf_sample_weight to store cycle counter values
-+	 *   from sier2.
-+	 */
-+	weight_fields = (union perf_sample_weight *)weight;
-+	if (type & PERF_SAMPLE_WEIGHT)
-+		weight_fields->full = weight_lat;
+ 	By default, comm, dso and symbol keys are used.
+ 	(i.e. --sort comm,dso,symbol)
+diff --git a/tools/perf/arch/powerpc/util/event.c b/tools/perf/arch/powerpc/util/event.c
+index f49d32c2c8ae..22521bc9481a 100644
+--- a/tools/perf/arch/powerpc/util/event.c
++++ b/tools/perf/arch/powerpc/util/event.c
+@@ -18,8 +18,11 @@ void arch_perf_parse_sample_weight(struct perf_sample *data,
+ 	weight.full = *array;
+ 	if (type & PERF_SAMPLE_WEIGHT)
+ 		data->weight = weight.full;
+-	else
 +	else {
-+		weight_fields->var1_dw = (u32)weight_lat;
-+		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-+			weight_fields->var2_w = P10_SIER2_FINISH_CYC(mfspr(SPRN_SIER2));
-+			weight_fields->var3_w = P10_SIER2_DISPATCH_CYC(mfspr(SPRN_SIER2));
-+		}
+ 		data->weight = weight.var1_dw;
++		data->ins_lat = weight.var2_w;
++		data->p_stage_cyc = weight.var3_w;
 +	}
  }
  
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp, u64 event_config1)
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 1af0e8c97ac7..fc30d43c4d0c 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -265,6 +265,10 @@
- #define ISA207_SIER_DATA_SRC_SHIFT	53
- #define ISA207_SIER_DATA_SRC_MASK	(0x7ull << ISA207_SIER_DATA_SRC_SHIFT)
+ void arch_perf_synthesize_sample_weight(const struct perf_sample *data,
+@@ -27,6 +30,17 @@ void arch_perf_synthesize_sample_weight(const struct perf_sample *data,
+ {
+ 	*array = data->weight;
  
-+/* Bits in SIER2/SIER3 for Power10 */
-+#define P10_SIER2_FINISH_CYC(sier2)	(((sier2) >> (63 - 37)) & 0x7fful)
-+#define P10_SIER2_DISPATCH_CYC(sier2)	(((sier2) >> (63 - 13)) & 0x7fful)
+-	if (type & PERF_SAMPLE_WEIGHT_STRUCT)
++	if (type & PERF_SAMPLE_WEIGHT_STRUCT) {
+ 		*array &= 0xffffffff;
++		*array |= ((u64)data->ins_lat << 32);
++	}
++}
 +
- #define P(a, b)				PERF_MEM_S(a, b)
- #define PH(a, b)			(P(LVL, HIT) | P(a, b))
- #define PM(a, b)			(P(LVL, MISS) | P(a, b))
-@@ -278,6 +282,6 @@ int isa207_get_alternatives(u64 event, u64 alt[], int size, unsigned int flags,
- 					const unsigned int ev_alt[][MAX_ALT]);
- void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
- 							struct pt_regs *regs);
--void isa207_get_mem_weight(u64 *weight);
-+void isa207_get_mem_weight(u64 *weight, u64 type);
++const char *arch_perf_header_entry(const char *se_header)
++{
++	if (!strcmp(se_header, "Local INSTR Latency"))
++		return "Finish Cyc";
++	else if (!strcmp(se_header, "Pipeline Stage Cycle"))
++		return "Dispatch Cyc";
++	return se_header;
+ }
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index 6106a9c134c9..e5da4a695ff2 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -147,6 +147,7 @@ struct perf_sample {
+ 	u8  cpumode;
+ 	u16 misc;
+ 	u16 ins_lat;
++	u16 p_stage_cyc;
+ 	bool no_hw_idx;		/* No hw_idx collected in branch_stack */
+ 	char insn[MAX_INSN];
+ 	void *raw_data;
+diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
+index c82f5fc26af8..9299ee535518 100644
+--- a/tools/perf/util/hist.c
++++ b/tools/perf/util/hist.c
+@@ -211,6 +211,7 @@ void hists__calc_col_len(struct hists *hists, struct hist_entry *h)
+ 	hists__new_col_len(hists, HISTC_MEM_BLOCKED, 10);
+ 	hists__new_col_len(hists, HISTC_LOCAL_INS_LAT, 13);
+ 	hists__new_col_len(hists, HISTC_GLOBAL_INS_LAT, 13);
++	hists__new_col_len(hists, HISTC_P_STAGE_CYC, 13);
+ 	if (symbol_conf.nanosecs)
+ 		hists__new_col_len(hists, HISTC_TIME, 16);
+ 	else
+@@ -289,13 +290,14 @@ static long hist_time(unsigned long htime)
+ }
  
- #endif
+ static void he_stat__add_period(struct he_stat *he_stat, u64 period,
+-				u64 weight, u64 ins_lat)
++				u64 weight, u64 ins_lat, u64 p_stage_cyc)
+ {
+ 
+ 	he_stat->period		+= period;
+ 	he_stat->weight		+= weight;
+ 	he_stat->nr_events	+= 1;
+ 	he_stat->ins_lat	+= ins_lat;
++	he_stat->p_stage_cyc	+= p_stage_cyc;
+ }
+ 
+ static void he_stat__add_stat(struct he_stat *dest, struct he_stat *src)
+@@ -308,6 +310,7 @@ static void he_stat__add_stat(struct he_stat *dest, struct he_stat *src)
+ 	dest->nr_events		+= src->nr_events;
+ 	dest->weight		+= src->weight;
+ 	dest->ins_lat		+= src->ins_lat;
++	dest->p_stage_cyc		+= src->p_stage_cyc;
+ }
+ 
+ static void he_stat__decay(struct he_stat *he_stat)
+@@ -597,6 +600,7 @@ static struct hist_entry *hists__findnew_entry(struct hists *hists,
+ 	u64 period = entry->stat.period;
+ 	u64 weight = entry->stat.weight;
+ 	u64 ins_lat = entry->stat.ins_lat;
++	u64 p_stage_cyc = entry->stat.p_stage_cyc;
+ 	bool leftmost = true;
+ 
+ 	p = &hists->entries_in->rb_root.rb_node;
+@@ -615,11 +619,11 @@ static struct hist_entry *hists__findnew_entry(struct hists *hists,
+ 
+ 		if (!cmp) {
+ 			if (sample_self) {
+-				he_stat__add_period(&he->stat, period, weight, ins_lat);
++				he_stat__add_period(&he->stat, period, weight, ins_lat, p_stage_cyc);
+ 				hist_entry__add_callchain_period(he, period);
+ 			}
+ 			if (symbol_conf.cumulate_callchain)
+-				he_stat__add_period(he->stat_acc, period, weight, ins_lat);
++				he_stat__add_period(he->stat_acc, period, weight, ins_lat, p_stage_cyc);
+ 
+ 			/*
+ 			 * This mem info was allocated from sample__resolve_mem
+@@ -731,6 +735,7 @@ static void hists__res_sample(struct hist_entry *he, struct perf_sample *sample)
+ 			.period	= sample->period,
+ 			.weight = sample->weight,
+ 			.ins_lat = sample->ins_lat,
++			.p_stage_cyc = sample->p_stage_cyc,
+ 		},
+ 		.parent = sym_parent,
+ 		.filtered = symbol__parent_filter(sym_parent) | al->filtered,
+diff --git a/tools/perf/util/hist.h b/tools/perf/util/hist.h
+index 3c537232294b..e2faa745c8d6 100644
+--- a/tools/perf/util/hist.h
++++ b/tools/perf/util/hist.h
+@@ -75,6 +75,7 @@ enum hist_column {
+ 	HISTC_MEM_BLOCKED,
+ 	HISTC_LOCAL_INS_LAT,
+ 	HISTC_GLOBAL_INS_LAT,
++	HISTC_P_STAGE_CYC,
+ 	HISTC_NR_COLS, /* Last entry */
+ };
+ 
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 859832a82496..a6fed96d783d 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -1302,8 +1302,10 @@ static void dump_sample(struct evsel *evsel, union perf_event *event,
+ 
+ 	if (sample_type & PERF_SAMPLE_WEIGHT_TYPE) {
+ 		printf("... weight: %" PRIu64 "", sample->weight);
+-			if (sample_type & PERF_SAMPLE_WEIGHT_STRUCT)
++			if (sample_type & PERF_SAMPLE_WEIGHT_STRUCT) {
+ 				printf(",0x%"PRIx16"", sample->ins_lat);
++				printf(",0x%"PRIx16"", sample->p_stage_cyc);
++			}
+ 		printf("\n");
+ 	}
+ 
+diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
+index eeb03e749181..d262261ad1a6 100644
+--- a/tools/perf/util/sort.c
++++ b/tools/perf/util/sort.c
+@@ -37,7 +37,7 @@
+ const char	*parent_pattern = default_parent_pattern;
+ const char	*default_sort_order = "comm,dso,symbol";
+ const char	default_branch_sort_order[] = "comm,dso_from,symbol_from,symbol_to,cycles";
+-const char	default_mem_sort_order[] = "local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,local_ins_lat";
++const char	default_mem_sort_order[] = "local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,local_ins_lat,p_stage_cyc";
+ const char	default_top_sort_order[] = "dso,symbol";
+ const char	default_diff_sort_order[] = "dso,symbol";
+ const char	default_tracepoint_sort_order[] = "trace";
+@@ -46,7 +46,7 @@
+ regex_t		ignore_callees_regex;
+ int		have_ignore_callees = 0;
+ enum sort_mode	sort__mode = SORT_MODE__NORMAL;
+-const char	*dynamic_headers[] = {"local_ins_lat"};
++const char	*dynamic_headers[] = {"local_ins_lat", "p_stage_cyc"};
+ 
+ /*
+  * Replaces all occurrences of a char used with the:
+@@ -1410,6 +1410,25 @@ struct sort_entry sort_global_ins_lat = {
+ 	.se_width_idx	= HISTC_GLOBAL_INS_LAT,
+ };
+ 
++static int64_t
++sort__global_p_stage_cyc_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	return left->stat.p_stage_cyc - right->stat.p_stage_cyc;
++}
++
++static int hist_entry__p_stage_cyc_snprintf(struct hist_entry *he, char *bf,
++					size_t size, unsigned int width)
++{
++	return repsep_snprintf(bf, size, "%-*u", width, he->stat.p_stage_cyc);
++}
++
++struct sort_entry sort_p_stage_cyc = {
++	.se_header      = "Pipeline Stage Cycle",
++	.se_cmp         = sort__global_p_stage_cyc_cmp,
++	.se_snprintf	= hist_entry__p_stage_cyc_snprintf,
++	.se_width_idx	= HISTC_P_STAGE_CYC,
++};
++
+ struct sort_entry sort_mem_daddr_sym = {
+ 	.se_header	= "Data Symbol",
+ 	.se_cmp		= sort__daddr_cmp,
+@@ -1853,6 +1872,7 @@ static void sort_dimension_add_dynamic_header(struct sort_dimension *sd)
+ 	DIM(SORT_CODE_PAGE_SIZE, "code_page_size", sort_code_page_size),
+ 	DIM(SORT_LOCAL_INS_LAT, "local_ins_lat", sort_local_ins_lat),
+ 	DIM(SORT_GLOBAL_INS_LAT, "ins_lat", sort_global_ins_lat),
++	DIM(SORT_PIPELINE_STAGE_CYC, "p_stage_cyc", sort_p_stage_cyc),
+ };
+ 
+ #undef DIM
+diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
+index 63f67a3f3630..d9795ca0d676 100644
+--- a/tools/perf/util/sort.h
++++ b/tools/perf/util/sort.h
+@@ -51,6 +51,7 @@ struct he_stat {
+ 	u64			period_guest_us;
+ 	u64			weight;
+ 	u64			ins_lat;
++	u64			p_stage_cyc;
+ 	u32			nr_events;
+ };
+ 
+@@ -234,6 +235,7 @@ enum sort_type {
+ 	SORT_CODE_PAGE_SIZE,
+ 	SORT_LOCAL_INS_LAT,
+ 	SORT_GLOBAL_INS_LAT,
++	SORT_PIPELINE_STAGE_CYC,
+ 
+ 	/* branch stack specific sort keys */
+ 	__SORT_BRANCH_STACK,
 -- 
 1.8.3.1
 
