@@ -7,77 +7,77 @@ X-Spam-Status: No, score=2.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F810C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B82BBC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 81BB261923
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81BB261923
+	by mail.kernel.org (Postfix) with ESMTPS id 06D1661923
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06D1661923
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4CQR3xqMz30CK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 11:47:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4CQy6trdz30G9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 11:48:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=JPyw4UZw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=SRMRmjJR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=cyborgyn@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=cyborgyn@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=JPyw4UZw; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
+ header.s=20161025 header.b=SRMRmjJR; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3zMx1vPFz3004
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 02:45:00 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id y200so11199052pfb.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 08:44:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F40gR0YG5z2xgQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 03:43:29 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id y200so11322814pfb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 09:43:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=zTBufNw4i/2n7snfGRiAb8kqCxwWobWjwTB6oKESZ0M=;
- b=JPyw4UZw2XwOct90taF3URGMHz1LhhZ9jbMRPbZnTq2rdbZYvet2VmhekAnLYqS8TZ
- 9fgKg8mg2eGcwmnbpxEejFZq2ot0eB3RggThBEXrelNA/RjoLxGHrm7pLCwQW35+O+db
- MoHPHctNpYV3kfKhUBxgPHz3I18LgaC3FqB5Hy8MRZV1vEQ6zpa46Jrimhy0lwiMtN3n
- F8lg7EmEefEEwQ6cPVEpEMcwWqErOAp7cRjlyik3lmyqSHb66RklRvApTpZrk8DxHLvu
- 0Q1uQxXH0yyLl2tRp1lzgR62YpcK1CmFSlNgZohKnaO1u1meCjWqaUzNLn+JCdW4yXR6
- 4ZvQ==
+ :cc; bh=gwquwXRPklzMHw+r3uwVbgzAP27IF7susOXw11SNkK4=;
+ b=SRMRmjJRi2hGjF6XXTjCX8QaOPIVxg0nv0gAKl1R3UcNny/EdP/jyzwsx0JJ15bFOh
+ CfDsiVYzd2EogFtp7Bo5su9o42UhF/ScaHyP1WFF92ooDgvQGei6h+qG2PMlkzLNOgKi
+ MiMSmE+YIhLm9azuD6TECxtg/Q+ZkctiML3s/O1eMdqQGpOM6GmljvZEfY37IqhVIsxs
+ N0+BTijHkEPY0/y6lQk2C4DwPhYmSpOqNm7vOjvVgwHwgwWbBYdEWb+crdwSLi+SO1tq
+ NzQUHA0nd7/2qgiBl3bolNIkUzy5odAZHSKP5Kt0Cz5Pt77/ua+cz6livZhtrPGLXYIy
+ GNZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=zTBufNw4i/2n7snfGRiAb8kqCxwWobWjwTB6oKESZ0M=;
- b=nxPixpFWD7hv2P7qoD78SytQV7N2dokOFgmVJqQ5LInQJDEcaPiASj2UfmOhNFs4Ko
- /vbdYTf1/5+nZrMji9Gfkdqx+2cTdiaB3EcldFxCUleUZLXI+dR3pJ9HlXvqGh12ZBvs
- YeDG6VlidxzN51FnRttRyy5tT9+7ygO8GIv7u0aPTzWq9a6dtJUn6jRrMP+NN8SOVQHr
- trGaq4k6B87OLRI0zjwSu1wn6mKvF28r/IaogTrHPmfKe74lapZ+hvjo1L/3y9LSzRSC
- s3QG2BXq86no/seaI0lSo+W2nMRj3fc5NHFXUG/iBJlmeVDjPZPswv4vbkNVkZaF3AkP
- ZiQQ==
-X-Gm-Message-State: AOAM533VbPpISnoCowhIMCqng8920darnxc3Cv1sVmJyGc8ZrikCIzEU
- Sqs8lDcM/aHUBJLP8J+43qEqC/gzvbu7ICp9Kd4=
-X-Google-Smtp-Source: ABdhPJxALWHZB2PtMzZaEbPK6S6PVlILvoGWfgXJu9E6wwY8bZOwWmhspTqu+N4D6slQMd3+CUy2zkw5C7aP1iHLaLo=
-X-Received: by 2002:a63:cc:: with SMTP id 195mr212636pga.282.1616427895067;
- Mon, 22 Mar 2021 08:44:55 -0700 (PDT)
+ bh=gwquwXRPklzMHw+r3uwVbgzAP27IF7susOXw11SNkK4=;
+ b=BcNH2dMJ6Bpoyh9BaPgHmBaldqkDEA3nmKJMVwWV6A5USje1FCt+4ToSsRe3DzQr2q
+ 9ZU3eopkLSctgM9QZ1MWHvUhWA4xCv+Z8F3LJG8yVbkdUnLy9WoIHe/iDdEGlKf+6uhK
+ q2hRVZDfokXw3vNETZMFzTPTDoQafvJ0epEtFys5Sl7JmyOsdSzk8Gpt+Ynj1seWjfy9
+ IybjRRtkcTv6f/qRNZiC1vFKlZf8lsxkmAszzc1Fc4uyZorffNIC2WFIokX7S/qWfIg3
+ dDOUgw7zmM6nrF7VmwwJr+70Ob8RwLeqvwbJXBoiX0uP1sieNdgpcBQWV0TWZjFwZiIF
+ 0xvw==
+X-Gm-Message-State: AOAM533SsIZxl4Ga/lt8m/nlHVPsIX0dVVosod1gIunOepTSiTHhZ4yx
+ tUoOefhSdRmdemkpOeCD9ujnjqhrQSL5EgJztTg=
+X-Google-Smtp-Source: ABdhPJyOMruKCtGl1kwUlldAizGCRArhYNS5CQU/jzmBfkpExb11lr7JzyJyBqwFZtt+ouqT+fqw3rs92cDjiQKzKoQ=
+X-Received: by 2002:a63:545e:: with SMTP id e30mr406125pgm.13.1616431407892;
+ Mon, 22 Mar 2021 09:43:27 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210318045706.200458-1-hch@lst.de>
  <20210318045706.200458-3-hch@lst.de>
  <20210319170753.GV1463@shell.armlinux.org.uk>
  <20210319175311.GW1463@shell.armlinux.org.uk>
  <20210322145403.GA30942@lst.de> <20210322151503.GX1463@shell.armlinux.org.uk>
- <20210322151823.GA2764@lst.de>
-In-Reply-To: <20210322151823.GA2764@lst.de>
+ <224b110e-7c42-4e19-800e-e0fa23d3bf7f@physik.fu-berlin.de>
+In-Reply-To: <224b110e-7c42-4e19-800e-e0fa23d3bf7f@physik.fu-berlin.de>
 From: Cye Borg <cyborgyn@gmail.com>
-Date: Mon, 22 Mar 2021 16:44:43 +0100
-Message-ID: <CAD4NMuaasexgWUmYD0CwhxuFS760Pj4GVuBpJNp+g0YBXpSPnw@mail.gmail.com>
+Date: Mon, 22 Mar 2021 17:43:16 +0100
+Message-ID: <CAD4NMuY1s5kORzeYbHXNBnzb82nZobz6BqwufFqPpsLjvttnYw@mail.gmail.com>
 Subject: Re: [PATCH 02/10] ARM: disable CONFIG_IDE in footbridge_defconfig
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: multipart/alternative; boundary="0000000000007d960b05be21f2a0"
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Content-Type: multipart/alternative; boundary="000000000000df0d4105be22c352"
 X-Mailman-Approved-At: Tue, 23 Mar 2021 11:47:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,87 +93,111 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Jens Axboe <axboe@kernel.dk>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-doc@vger.kernel.org,
  Russell King - ARM Linux admin <linux@armlinux.org.uk>,
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linux-alpha@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>
+ Christoph Hellwig <hch@lst.de>, linux-ide@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---0000000000007d960b05be21f2a0
+--000000000000df0d4105be22c352
 Content-Type: text/plain; charset="UTF-8"
 
-I use pata_cypress on Alpha, and for the above mentioned problems,
-it always restricted me to use only one IDE channel out of the two
-available. Also, not forcing it to use PIO mode, it always failed to
-operate. I would love to test on Alpha, and give you feedback about
-a fix/finished implementation of the driver. I have both Alpha Server DS20E
-and Alpha Personal Workstation 500 including that freak chipset.
+And lspci from Compaq PWS 500au:
+snow / # lspci
+00:03.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43
+(rev 30)
+00:07.0 ISA bridge: Contaq Microsystems 82c693
+00:07.1 IDE interface: Contaq Microsystems 82c693
+00:07.2 IDE interface: Contaq Microsystems 82c693
+00:07.3 USB controller: Contaq Microsystems 82c693
+00:0b.0 Multimedia video controller: 3Dfx Interactive, Inc. Voodoo 2 (rev
+02)
+00:0c.0 PCI bridge: Digital Equipment Corporation DECchip 21052 (rev 01)
+00:14.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev 02)
+01:04.0 VGA compatible controller: Cirrus Logic GD 5430/40 [Alpine] (rev 47)
+01:05.0 Display controller: Intergraph Corporation Device 00eb (rev 40)
+02:04.0 SCSI storage controller: QLogic Corp. ISP1020 Fast-wide SCSI (rev
+05)
+02:0a.0 SCSI storage controller: Broadcom / LSI 53c810 (rev 01)
 
-Let me know if/when I can help with my limited capabilities.
+It's also using pata_cypress.
 
-Thanks, best regards,
 Barnabas Viragh
 
-On Mon, Mar 22, 2021 at 4:19 PM Christoph Hellwig <hch@lst.de> wrote:
+On Mon, Mar 22, 2021 at 5:10 PM John Paul Adrian Glaubitz <
+glaubitz@physik.fu-berlin.de> wrote:
 
-> On Mon, Mar 22, 2021 at 03:15:03PM +0000, Russell King - ARM Linux admin
-> wrote:
-> > It gets worse than that though - due to a change to remove
-> > pcibios_min_io from the generic code, moving it into the ARM
-> > architecture code, this has caused a regression that prevents the
-> > legacy resources being registered against the bus resource. So even
-> > if they are there, they cause probe failures. I haven't found a
-> > reasonable way to solve this yet, but until there is, there is no
-> > way that the PATA driver can be used as the "legacy mode" support
-> > is effectively done via the PCI code assigning virtual IO port
-> > resources.
-> >
+> On 3/22/21 4:15 PM, Russell King - ARM Linux admin wrote:
 > > I'm quite surprised that the CY82C693 even works on Alpha - I've
 > > asked for a lspci for that last week but nothing has yet been
 > > forthcoming from whoever responded to your patch for Alpha - so I
 > > can't compare what I'm seeing with what's happening with Alpha.
 >
-> That sounds like something we could fix with a quirk for function 2
-> in the PCI resource assignment code.  Can you show what vendor and
-> device ID function 2 has so that I could try to come up with one?
+> Here is lspci on my DEC Alpha XP-1000:
+>
+> root@tsunami:~> lspci
+> 0000:00:07.0 ISA bridge: Contaq Microsystems 82c693
+> 0000:00:07.1 IDE interface: Contaq Microsystems 82c693
+> 0000:00:07.2 IDE interface: Contaq Microsystems 82c693
+> 0000:00:07.3 USB controller: Contaq Microsystems 82c693
+> 0000:00:0d.0 VGA compatible controller: Texas Instruments TVP4020
+> [Permedia 2] (rev 01)
+> 0001:01:03.0 Ethernet controller: Digital Equipment Corporation DECchip
+> 21142/43 (rev 41)
+> 0001:01:06.0 SCSI storage controller: QLogic Corp. ISP1020 Fast-wide SCSI
+> (rev 06)
+> 0001:01:08.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev
+> 03)
+> 0001:02:09.0 Ethernet controller: Intel Corporation 82541PI Gigabit
+> Ethernet Controller (rev 05)
+> root@tsunami:~>
+>
+> It's using pata_cypress:
+>
+> root@tsunami:~> lsmod|grep cypress
+> pata_cypress            3595  3
+> libata                235071  2 ata_generic,pata_cypress
+> root@tsunami:~
+>
+> Adrian
+>
+> --
+>  .''`.  John Paul Adrian Glaubitz
+> : :' :  Debian Developer - glaubitz@debian.org
+> `. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+>   `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+>
 >
 
---0000000000007d960b05be21f2a0
+--000000000000df0d4105be22c352
 Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><div>I use pata_cypress on Alpha, and for the above mentio=
-ned problems, <br></div><div>it always restricted me to use only one IDE ch=
-annel out of the two</div><div>available. Also, not forcing it to use PIO m=
-ode, it always failed to</div><div>operate. I would love to test on Alpha, =
-and give you feedback about</div><div>a fix/finished implementation of the =
-driver. I have both Alpha Server DS20E</div><div>and Alpha Personal Worksta=
-tion 500 including that freak chipset.</div><div><br></div><div>Let me know=
- if/when I can help with my limited capabilities.</div><div><br></div><div>=
-Thanks, best regards,</div><div>Barnabas Viragh<br></div></div><br><div cla=
-ss=3D"gmail_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, Mar 22, 20=
-21 at 4:19 PM Christoph Hellwig &lt;<a href=3D"mailto:hch@lst.de">hch@lst.d=
-e</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin=
-:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"=
->On Mon, Mar 22, 2021 at 03:15:03PM +0000, Russell King - ARM Linux admin w=
-rote:<br>
-&gt; It gets worse than that though - due to a change to remove<br>
-&gt; pcibios_min_io from the generic code, moving it into the ARM<br>
-&gt; architecture code, this has caused a regression that prevents the<br>
-&gt; legacy resources being registered against the bus resource. So even<br=
->
-&gt; if they are there, they cause probe failures. I haven&#39;t found a<br=
->
-&gt; reasonable way to solve this yet, but until there is, there is no<br>
-&gt; way that the PATA driver can be used as the &quot;legacy mode&quot; su=
-pport<br>
-&gt; is effectively done via the PCI code assigning virtual IO port<br>
-&gt; resources.<br>
-&gt; <br>
+<div dir=3D"ltr"><div>And lspci from Compaq PWS 500au:</div><div>snow / # l=
+spci<br>00:03.0 Ethernet controller: Digital Equipment Corporation DECchip =
+21142/43 (rev 30)<br>00:07.0 ISA bridge: Contaq Microsystems 82c693<br>00:0=
+7.1 IDE interface: Contaq Microsystems 82c693<br>00:07.2 IDE interface: Con=
+taq Microsystems 82c693<br>00:07.3 USB controller: Contaq Microsystems 82c6=
+93<br>00:0b.0 Multimedia video controller: 3Dfx Interactive, Inc. Voodoo 2 =
+(rev 02)<br>00:0c.0 PCI bridge: Digital Equipment Corporation DECchip 21052=
+ (rev 01)<br>00:14.0 PCI bridge: Digital Equipment Corporation DECchip 2115=
+2 (rev 02)<br>01:04.0 VGA compatible controller: Cirrus Logic GD 5430/40 [A=
+lpine] (rev 47)<br>01:05.0 Display controller: Intergraph Corporation Devic=
+e 00eb (rev 40)<br>02:04.0 SCSI storage controller: QLogic Corp. ISP1020 Fa=
+st-wide SCSI (rev 05)<br>02:0a.0 SCSI storage controller: Broadcom / LSI 53=
+c810 (rev 01)</div><div><br></div><div>It&#39;s also using pata_cypress.</d=
+iv><div><br></div><div>Barnabas Viragh<br></div></div><br><div class=3D"gma=
+il_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, Mar 22, 2021 at 5:1=
+0 PM John Paul Adrian Glaubitz &lt;<a href=3D"mailto:glaubitz@physik.fu-ber=
+lin.de">glaubitz@physik.fu-berlin.de</a>&gt; wrote:<br></div><blockquote cl=
+ass=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid=
+ rgb(204,204,204);padding-left:1ex">On 3/22/21 4:15 PM, Russell King - ARM =
+Linux admin wrote:<br>
 &gt; I&#39;m quite surprised that the CY82C693 even works on Alpha - I&#39;=
 ve<br>
 &gt; asked for a lspci for that last week but nothing has yet been<br>
@@ -181,9 +205,45 @@ ve<br>
 &gt; can&#39;t compare what I&#39;m seeing with what&#39;s happening with A=
 lpha.<br>
 <br>
-That sounds like something we could fix with a quirk for function 2<br>
-in the PCI resource assignment code.=C2=A0 Can you show what vendor and<br>
-device ID function 2 has so that I could try to come up with one?<br>
+Here is lspci on my DEC Alpha XP-1000:<br>
+<br>
+root@tsunami:~&gt; lspci<br>
+0000:00:07.0 ISA bridge: Contaq Microsystems 82c693<br>
+0000:00:07.1 IDE interface: Contaq Microsystems 82c693<br>
+0000:00:07.2 IDE interface: Contaq Microsystems 82c693<br>
+0000:00:07.3 USB controller: Contaq Microsystems 82c693<br>
+0000:00:0d.0 VGA compatible controller: Texas Instruments TVP4020 [Permedia=
+ 2] (rev 01)<br>
+0001:01:03.0 Ethernet controller: Digital Equipment Corporation DECchip 211=
+42/43 (rev 41)<br>
+0001:01:06.0 SCSI storage controller: QLogic Corp. ISP1020 Fast-wide SCSI (=
+rev 06)<br>
+0001:01:08.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev 0=
+3)<br>
+0001:02:09.0 Ethernet controller: Intel Corporation 82541PI Gigabit Etherne=
+t Controller (rev 05)<br>
+root@tsunami:~&gt;<br>
+<br>
+It&#39;s using pata_cypress:<br>
+<br>
+root@tsunami:~&gt; lsmod|grep cypress<br>
+pata_cypress=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 3595=C2=A0 3<br>
+libata=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 235071=C2=A0 =
+2 ata_generic,pata_cypress<br>
+root@tsunami:~<br>
+<br>
+Adrian<br>
+<br>
+-- <br>
+=C2=A0.&#39;&#39;`.=C2=A0 John Paul Adrian Glaubitz<br>
+: :&#39; :=C2=A0 Debian Developer - <a href=3D"mailto:glaubitz@debian.org" =
+target=3D"_blank">glaubitz@debian.org</a><br>
+`. `&#39;=C2=A0 =C2=A0Freie Universitaet Berlin - <a href=3D"mailto:glaubit=
+z@physik.fu-berlin.de" target=3D"_blank">glaubitz@physik.fu-berlin.de</a><b=
+r>
+=C2=A0 `-=C2=A0 =C2=A0 GPG: 62FF 8A75 84E0 2956 9546=C2=A0 0006 7426 3B37 F=
+5B5 F913<br>
+<br>
 </blockquote></div>
 
---0000000000007d960b05be21f2a0--
+--000000000000df0d4105be22c352--
