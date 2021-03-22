@@ -2,65 +2,118 @@ Return-Path: <SRS0=7u3Q=IU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BA1CC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31423C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:26:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F78061972
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:26:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F78061972
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 4E43661992
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Mar 2021 15:26:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E43661992
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yxz4Jrfz30Md
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:25:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F3yyT50kRz3br2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:26:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nShhujtw;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=nShhujtw; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yxN37mhz30Cy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 02:25:25 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F3yx93j9Tz9tyQm;
- Mon, 22 Mar 2021 16:25:17 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id C6Gl5N5PG0H7; Mon, 22 Mar 2021 16:25:17 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F3yx92ctLz9tyQR;
- Mon, 22 Mar 2021 16:25:17 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DCAF38B7A5;
- Mon, 22 Mar 2021 16:25:22 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pG7t4HJR04sX; Mon, 22 Mar 2021 16:25:22 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 774118B79C;
- Mon, 22 Mar 2021 16:25:22 +0100 (CET)
-Subject: Re: [PATCH v7] powerpc/irq: Inline call_do_irq() and call_do_softirq()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20210320122227.345427-1-mpe@ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <d2217b4e-718b-674d-c6a0-2cb69e3fd81c@csgroup.eu>
-Date: Mon, 22 Mar 2021 16:25:16 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3yxT3Sx6z30Dj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 02:25:33 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12MF42og097905; Mon, 22 Mar 2021 11:25:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=QMpxk0Nq7Qz393K1QjsySKFZuPDm1IX26bDlAVSgukM=;
+ b=nShhujtwrv7XIWzX7YON9GvDWzquNLGGpvQAAZzKqKaNnwL/r3kz4Nhmhmi9aPxtC43P
+ mxckvL3oar4UvEnq0oWapHe7bWmf2gCyPQ5lAjBv0XEwwYdPHNb2y5UeYyM7DlWDCWxB
+ 5Ir3sX53Rosk0utIuO+JICLFtDi6lH8RBp7pQE1xoXQ6l+cnY7E1V8FlYisKr5IPpOoW
+ 5Mu8eXOASLVfD0qV6clOEVXZrW7lOsBVOGlXRlCc8c1vAWlHyL9823wYyh5HWp09PVF/
+ M8ILgPwvemMHpY28HxqyE6hG+TycKO6jYPmPJoGE7yOo00qrYkJzc1cvLAgG/rJ26VdS 3Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37dwy5mxyw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Mar 2021 11:25:17 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12MF6R97109185;
+ Mon, 22 Mar 2021 11:25:16 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37dwy5mxxu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Mar 2021 11:25:16 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12MFIqia001384;
+ Mon, 22 Mar 2021 15:25:14 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma06fra.de.ibm.com with ESMTP id 37d9a619kc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 22 Mar 2021 15:25:13 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 12MFOrhD14614980
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 22 Mar 2021 15:24:54 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9465EA4072;
+ Mon, 22 Mar 2021 15:25:10 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 48FC0A4065;
+ Mon, 22 Mar 2021 15:25:10 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 22 Mar 2021 15:25:10 +0000 (GMT)
+Received: from [9.102.36.130] (unknown [9.102.36.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B70EE601F4;
+ Tue, 23 Mar 2021 02:25:06 +1100 (AEDT)
+Subject: Re: [PATCH] cxl: Fix couple of spellings
+To: Bhaskar Chowdhury <unixbhaskar@gmail.com>, fbarrat@linux.ibm.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20210322023307.168754-1-unixbhaskar@gmail.com>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Message-ID: <744eb25f-c043-dcb0-b711-4d16c776835f@linux.ibm.com>
+Date: Tue, 23 Mar 2021 02:24:58 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-In-Reply-To: <20210320122227.345427-1-mpe@ellerman.id.au>
+In-Reply-To: <20210322023307.168754-1-unixbhaskar@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-22_07:2021-03-22,
+ 2021-03-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ bulkscore=0 mlxscore=0 suspectscore=0 clxscore=1011 phishscore=0
+ impostorscore=0 mlxlogscore=999 malwarescore=0 adultscore=0
+ priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2103220109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,202 +125,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: rdunlap@infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 20/03/2021 à 13:22, Michael Ellerman a écrit :
-> From: Christophe Leroy <christophe.leroy@csgroup.eu>
+On 22/3/21 1:33 pm, Bhaskar Chowdhury wrote:
 > 
-> call_do_irq() and call_do_softirq() are simple enough to be
-> worth inlining.
+> s/filesytem/filesystem/
+> s/symantics/semantics/
 > 
-> Inlining them avoids an mflr/mtlr pair plus a save/reload on stack. It
-> also allows GCC to keep the saved ksp_limit in an nonvolatile reg.
+> Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 
-We don't have the ksp_limit anymore, I forgot to remove the above text.
+Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-> 
-> This is inspired from S390 arch. Several other arches do more or
-> less the same. The way sparc arch does seems odd thought.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
+>   drivers/misc/cxl/context.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> v2: no change.
-> v3: no change.
-> v4:
-> - comment reminding the purpose of the inline asm block.
-> - added r2 as clobbered reg
-> v5:
-> - Limiting the change to PPC32 for now.
-> - removed r2 from the clobbered regs list (on PPC32 r2 points to current all the time)
-> - Removed patch 1 and merged ksp_limit handling in here.
-> v6:
-> - Rebase on top of merge-test (ca6e327fefb2).
-> - Remove the ksp_limit stuff as it's doesn't exist anymore.
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index fb2eff69e449..e627b4056623 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -52,7 +52,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+>   		 * can always access it when dereferenced from IDR. For the same
+>   		 * reason, the segment table is only destroyed after the context is
+>   		 * removed from the IDR.  Access to this in the IOCTL is protected by
+> -		 * Linux filesytem symantics (can't IOCTL until open is complete).
+> +		 * Linux filesystem semantics (can't IOCTL until open is complete).
+>   		 */
+>   		i = cxl_alloc_sst(ctx);
+>   		if (i)
+> --
+> 2.31.0
 > 
-> v7:
-> mpe:
-> - Enable for 64-bit too. This all in-kernel code calling in-kernel
->    code, and must use the kernel TOC.
 
-Great.
-
-> - Use named parameters for the inline asm.
-
-Hmm. It is the first time we use named parameters in powerpc assembly, isn't it ?
-I saw when investigating userspace access that x86 is using named parameters widely.
-
-Wondering, how would the below look like with named parameters (from __put_user_asm2_goto) ?
-
-	stw%X1 %L0, %L1
-
-> - Reformat inline asm.
-> - Mark as always_inline.
-> - Drop unused ret from call_do_softirq(), add r3 as clobbered.
-> ---
->   arch/powerpc/include/asm/irq.h |  2 --
->   arch/powerpc/kernel/irq.c      | 41 ++++++++++++++++++++++++++++++++++
->   arch/powerpc/kernel/misc_32.S  | 25 ---------------------
->   arch/powerpc/kernel/misc_64.S  | 22 ------------------
->   4 files changed, 41 insertions(+), 49 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> index f3f264e441a7..b2bd58830430 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -53,8 +53,6 @@ extern void *mcheckirq_ctx[NR_CPUS];
->   extern void *hardirq_ctx[NR_CPUS];
->   extern void *softirq_ctx[NR_CPUS];
->   
-> -void call_do_softirq(void *sp);
-> -void call_do_irq(struct pt_regs *regs, void *sp);
->   extern void do_IRQ(struct pt_regs *regs);
->   extern void __init init_IRQ(void);
->   extern void __do_irq(struct pt_regs *regs);
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 5b72abbff96c..260effc0a435 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -667,6 +667,47 @@ static inline void check_stack_overflow(void)
->   	}
->   }
->   
-> +static __always_inline void call_do_softirq(const void *sp)
-> +{
-> +	/* Temporarily switch r1 to sp, call __do_softirq() then restore r1. */
-> +	asm volatile (
-> +		 PPC_STLU "	%%r1, %[offset](%[sp])	;"
-> +		"mr		%%r1, %[sp]		;"
-> +		"bl		%[callee]		;"
-> +		 PPC_LL "	%%r1, 0(%%r1)		;"
-> +		 : // Outputs
-> +		 : // Inputs
-> +		   [sp] "b" (sp), [offset] "i" (THREAD_SIZE - STACK_FRAME_OVERHEAD),
-> +		   [callee] "i" (__do_softirq)
-> +		 : // Clobbers
-> +		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
-> +		   "cr7", "r0", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> +		   "r11", "r12"
-> +	);
-> +}
-> +
-> +static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
-> +{
-> +	register unsigned long r3 asm("r3") = (unsigned long)regs;
-> +
-> +	/* Temporarily switch r1 to sp, call __do_irq() then restore r1. */
-> +	asm volatile (
-> +		 PPC_STLU "	%%r1, %[offset](%[sp])	;"
-> +		"mr		%%r1, %[sp]		;"
-> +		"bl		%[callee]		;"
-> +		 PPC_LL "	%%r1, 0(%%r1)		;"
-> +		 : // Outputs
-> +		   "+r" (r3)
-> +		 : // Inputs
-> +		   [sp] "b" (sp), [offset] "i" (THREAD_SIZE - STACK_FRAME_OVERHEAD),
-> +		   [callee] "i" (__do_irq)
-> +		 : // Clobbers
-> +		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
-> +		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> +		   "r11", "r12"
-> +	);
-> +}
-> +
->   void __do_irq(struct pt_regs *regs)
->   {
->   	unsigned int irq;
-> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-> index acc410043b96..6a076bef2932 100644
-> --- a/arch/powerpc/kernel/misc_32.S
-> +++ b/arch/powerpc/kernel/misc_32.S
-> @@ -27,31 +27,6 @@
->   
->   	.text
->   
-> -_GLOBAL(call_do_softirq)
-> -	mflr	r0
-> -	stw	r0,4(r1)
-> -	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
-> -	mr	r1,r3
-> -	bl	__do_softirq
-> -	lwz	r1,0(r1)
-> -	lwz	r0,4(r1)
-> -	mtlr	r0
-> -	blr
-> -
-> -/*
-> - * void call_do_irq(struct pt_regs *regs, void *sp);
-> - */
-> -_GLOBAL(call_do_irq)
-> -	mflr	r0
-> -	stw	r0,4(r1)
-> -	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
-> -	mr	r1,r4
-> -	bl	__do_irq
-> -	lwz	r1,0(r1)
-> -	lwz	r0,4(r1)
-> -	mtlr	r0
-> -	blr
-> -
->   /*
->    * This returns the high 64 bits of the product of two 64-bit numbers.
->    */
-> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-> index 070465825c21..4b761a18a74d 100644
-> --- a/arch/powerpc/kernel/misc_64.S
-> +++ b/arch/powerpc/kernel/misc_64.S
-> @@ -27,28 +27,6 @@
->   
->   	.text
->   
-> -_GLOBAL(call_do_softirq)
-> -	mflr	r0
-> -	std	r0,16(r1)
-> -	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
-> -	mr	r1,r3
-> -	bl	__do_softirq
-> -	ld	r1,0(r1)
-> -	ld	r0,16(r1)
-> -	mtlr	r0
-> -	blr
-> -
-> -_GLOBAL(call_do_irq)
-> -	mflr	r0
-> -	std	r0,16(r1)
-> -	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
-> -	mr	r1,r4
-> -	bl	__do_irq
-> -	ld	r1,0(r1)
-> -	ld	r0,16(r1)
-> -	mtlr	r0
-> -	blr
-> -
->   _GLOBAL(__bswapdi2)
->   EXPORT_SYMBOL(__bswapdi2)
->   	srdi	r8,r3,32
-> 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
