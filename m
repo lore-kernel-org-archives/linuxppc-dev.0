@@ -2,84 +2,84 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9C66C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C742CC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:03:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 094986199F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 00:49:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 094986199F
+	by mail.kernel.org (Postfix) with ESMTPS id ED9EB6192E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:03:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED9EB6192E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4CRw1BDPz3c2d
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 11:49:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4Cmh0TXyz30BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 12:03:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=QKCSek14;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=dqv4J9xv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534;
- helo=mail-pg1-x534.google.com; envelope-from=cyborgyn@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430;
+ helo=mail-pf1-x430.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=QKCSek14; dkim-atps=neutral
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com
- [IPv6:2607:f8b0:4864:20::534])
+ header.s=20161025 header.b=dqv4J9xv; dkim-atps=neutral
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com
+ [IPv6:2607:f8b0:4864:20::430])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F41GL1Knrz2xg6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 04:10:16 +1100 (AEDT)
-Received: by mail-pg1-x534.google.com with SMTP id u19so9027709pgh.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 10:10:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4CmB2HW6z300J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 12:03:21 +1100 (AEDT)
+Received: by mail-pf1-x430.google.com with SMTP id c17so5624918pfn.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 18:03:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=fiyXOeQWEig0s6UT1FT5pCXalIidRHvGHYc/I0I86U4=;
- b=QKCSek145JEuRPcVGh+jry7eSFRT7rDliJdVjjDPerK0DFdLuxLHuth+sgT617W5Mm
- jecfEAMmOTZUwEtOT3NVkAuqnrRYhKJ/CPAWXtEAfpcv5KG+ByG0IJxfzUFn3hGP6OsW
- oPWtBEalIpy+zv0CWGZlMW8GxXXGV7ADUru4p65y9tx2V70fFVPGVCDw2XknH9W9/seH
- rGXSeCTpJaVlOEifvnGhW30lT6qTGVC8HeDy6eR1kA3bHZjb4uNfitWtT0tuQ4nhlZPN
- JOrlTpcixGngqPjLmXcVOVdlhvxtSuD9Os696fAhe93PNbZoIWZPQiMeHjELruNKLkUN
- u7Rw==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=tZHtPO3wWKSqC/qnqcJjhEr+RkQP39f2aZpYfAH3gUw=;
+ b=dqv4J9xvuftBluNH7bc3smVKjjJyOER+FdAQilrdjWuYxciDLXbnyD8olkh3P98f4+
+ MYnTVNv1yDYMeWJxkKIJiH7yXbgrZxPJTHDdpVn5AvQtWdmEhKFfEPVwz8JU3P0tpD4X
+ ZrqP3WeXMekcnK6b99GxjxQa/4Qn36XibNRO4eIlDNZW1lxKyFdIKS9tus1kaBHHFPhN
+ eP7nNoaq9egdW25chUpZ1RZ5TdOQacnKwqXWNIAke4j5NOOP9wQ0G91SmdjCKWanNWWC
+ XEZeqTCAEc/7jEVIBsgdDAK8374qY21JENb3u861ZgLv9SsUBpK+/FWs0YzFSmlLRROI
+ bmDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=fiyXOeQWEig0s6UT1FT5pCXalIidRHvGHYc/I0I86U4=;
- b=YUBwAUCI2JPump/29ZbNpmErnn8PF6w+ITUyhncJTYREO/O8Y9PTHJPWbINBEumnIL
- ia1luxkdc9yeFcXttFwCGV6LjoaPBcSYcazrY8XgPho2vWRWMnYos3zPRzeJ124t5lCQ
- f8tAMUiKuTu0qbNO4SPXRU+aKQsKoIYcYm/1kuTQ99vnVK1AGyEdDQ4iyC9CZb2cbhx2
- S3Y/rUqWbcQOBkBCcCCcs6fwmi4b1PcsjPo6tyRm9c0PpwSSxrsb/Mlk4poUQRNSg7RW
- kYrz5UQ5F4VixbtQMgVUaI/+Q0FftydNkmj6MJNSTrLUJTZFYVVLqVuVKA5rsyv0JAW2
- MFHQ==
-X-Gm-Message-State: AOAM531SKcanNJAR+P7UVUp4PyLNP/+tCtp6AoMH4VlZoKf21b3Uf192
- LxxxRYfuMzYtdgTkftbWJFwsw31yfDyc66fZ7JY=
-X-Google-Smtp-Source: ABdhPJyo1TSVtrx9+IOM2nIeFXCEIk7pxXeayGexYBlLGasNOgy9jn+8roBBPwJzj7t1TMvI/kT0tl7xmg8I5hxgK3k=
-X-Received: by 2002:a63:cc:: with SMTP id 195mr493605pga.282.1616433012697;
- Mon, 22 Mar 2021 10:10:12 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=tZHtPO3wWKSqC/qnqcJjhEr+RkQP39f2aZpYfAH3gUw=;
+ b=r5RZEyENEQE4SLqsjL5ERNfHuwpRtFzkQygHrzFhaDYYczuBl35lssl33HkTxCP9f5
+ MAxrrV56E4Bl05slcMwn3Igqi/Oorvcp98oY7wGlXUCnqYjba6CYmR4rWBYHcnWDNs8y
+ CmYk1INvvyQm7jWhTQPNKiCgUudj28twmqJWszjO+gqPR9WPu3dVRomqvpakyiVTPd7x
+ 5gufIAF+hM8IBCuL0GeRS1zm8h9U/fPWjJRhGK0urKUHSnAnRlS1UiIQM9NGQ1KP0bXX
+ wVbRNFQKqywhZdb+9vkUVNhC8Y/Gu17jJcUfk8GDAHGiRpXEdGurf+eY4H74VnEEwl00
+ +wxg==
+X-Gm-Message-State: AOAM530Rbbw9XG+ZSdv+Y7mVlkNNEmeSLmPj+71fWu+nxH+wsQKTfp1T
+ D9pxStsnAaPyJwT8cXvz+dI=
+X-Google-Smtp-Source: ABdhPJycq3q8QhKCBC7Bvh41VKfj+QgMWa3qQv5xOXkr3SjcvyYAT7pErMzFRE9zyMjr18W9ZsqsrQ==
+X-Received: by 2002:a17:902:bd96:b029:e6:3d73:f90e with SMTP id
+ q22-20020a170902bd96b02900e63d73f90emr2219862pls.63.1616461398271; 
+ Mon, 22 Mar 2021 18:03:18 -0700 (PDT)
+Received: from bobo.ibm.com ([58.84.78.96])
+ by smtp.gmail.com with ESMTPSA id e7sm14491894pfc.88.2021.03.22.18.03.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 22 Mar 2021 18:03:17 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v4 00/46] KVM: PPC: Book3S: C-ify the P9 entry/exit code
+Date: Tue, 23 Mar 2021 11:02:19 +1000
+Message-Id: <20210323010305.1045293-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-References: <20210318045706.200458-1-hch@lst.de>
- <20210318045706.200458-3-hch@lst.de>
- <20210319170753.GV1463@shell.armlinux.org.uk>
- <20210319175311.GW1463@shell.armlinux.org.uk>
- <20210322145403.GA30942@lst.de> <20210322151503.GX1463@shell.armlinux.org.uk>
- <224b110e-7c42-4e19-800e-e0fa23d3bf7f@physik.fu-berlin.de>
- <20210322170338.GZ1463@shell.armlinux.org.uk>
-In-Reply-To: <20210322170338.GZ1463@shell.armlinux.org.uk>
-From: Cye Borg <cyborgyn@gmail.com>
-Date: Mon, 22 Mar 2021 18:10:01 +0100
-Message-ID: <CAD4NMuZWoV0m85OyBDHLt+J8NYCV5wYx7fFZaivBNEgDnrN5xw@mail.gmail.com>
-Subject: Re: [PATCH 02/10] ARM: disable CONFIG_IDE in footbridge_defconfig
-To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Tue, 23 Mar 2021 11:47:31 +1100
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,94 +91,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-doc@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-ide@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PWS 500au:
+I think enough changes and fixes have gone in since last round
+to repost.
 
-snow / # lspci -vvx -s 7.1
-00:07.1 IDE interface: Contaq Microsystems 82c693 (prog-if 80 [ISA
-Compatibility mode-only controller, supports bus mastering])
-        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr+ Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
->TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 0
-        Region 0: I/O ports at 01f0 [size=8]
-        Region 1: I/O ports at 03f4
-        Region 4: I/O ports at 9080 [size=16]
-        Kernel driver in use: pata_cypress
-        Kernel modules: pata_cypress
-00: 80 10 93 c6 45 00 80 02 00 80 01 01 00 00 80 00
-10: f1 01 00 00 f5 03 00 00 00 00 00 00 00 00 00 00
-20: 81 90 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00
+I put a git tree here to make things easier to get.
 
-snow / # lspci -vvx -s 7.2
-00:07.2 IDE interface: Contaq Microsystems 82c693 (prog-if 00 [ISA
-Compatibility mode-only controller])
-        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr+ Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
->TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin B routed to IRQ 0
-        Region 0: I/O ports at 0170 [size=8]
-        Region 1: I/O ports at 0374
-        Region 4: Memory at 0c240000 (32-bit, non-prefetchable)
-[disabled] [size=64K]
-        Kernel modules: pata_cypress
-00: 80 10 93 c6 45 00 80 02 00 00 01 01 00 00 80 00
-10: 71 01 00 00 75 03 00 00 00 00 00 00 00 00 00 00
-20: 00 00 24 0c 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00
+https://github.com/npiggin/linux/tree/kvm-in-c-2
 
-On Mon, Mar 22, 2021 at 6:04 PM Russell King - ARM Linux admin
-<linux@armlinux.org.uk> wrote:
->
-> On Mon, Mar 22, 2021 at 05:09:13PM +0100, John Paul Adrian Glaubitz wrote:
-> > On 3/22/21 4:15 PM, Russell King - ARM Linux admin wrote:
-> > > I'm quite surprised that the CY82C693 even works on Alpha - I've
-> > > asked for a lspci for that last week but nothing has yet been
-> > > forthcoming from whoever responded to your patch for Alpha - so I
-> > > can't compare what I'm seeing with what's happening with Alpha.
-> >
-> > Here is lspci on my DEC Alpha XP-1000:
-> >
-> > root@tsunami:~> lspci
-> > 0000:00:07.0 ISA bridge: Contaq Microsystems 82c693
-> > 0000:00:07.1 IDE interface: Contaq Microsystems 82c693
-> > 0000:00:07.2 IDE interface: Contaq Microsystems 82c693
-> > 0000:00:07.3 USB controller: Contaq Microsystems 82c693
-> > 0000:00:0d.0 VGA compatible controller: Texas Instruments TVP4020 [Permedia 2] (rev 01)
-> > 0001:01:03.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-> > 0001:01:06.0 SCSI storage controller: QLogic Corp. ISP1020 Fast-wide SCSI (rev 06)
-> > 0001:01:08.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev 03)
-> > 0001:02:09.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
-> > root@tsunami:~>
->
-> This is no good. What I asked last Thursday was:
->
-> "Could you send me the output of lspci -vvx -s 7.1 and lspci -vvx -s 7.2
-> please?"
->
-> so I can see the resources the kernel is using and a dump of the PCI
-> config space to see what the hardware is using.
->
-> Thanks.
->
-> --
-> RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-> FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+Main changes since v3:
+- Hopefully fixed LPCR sanising [from Fabiano review]
+- Added MSR[HV] clearing of guest MSR (like MSR[ME] setting).
+- Restored a lost comment about PPR saving, improved comments a bit
+  [Daniel review]
+- Added isyncs, removed XXX isync comment.
+- Fixed cede comment [Fabiano]
+- In stop handling real mode handlers patch, fixed problem of nested
+  hcall handler calling cede and xics hcalls and consuming them
+  [Fabiano]
+- Filter xics hcalls from being consumed if !kvmppc_xics_enabled
+  [Fabiano, Alexey noticed and Cedric provided the right recipe and
+   comment]
+- Removed some more of radix, nested, and virt mode paths from the
+  P7/8 code [noticed by Alexey].
+- Rebased on 5.12-rc4
+- Hopefully I responded to all reviews and collected all reviewed-bys.
+
+Thanks,
+Nick
+
+Nicholas Piggin (46):
+  KVM: PPC: Book3S HV: Nested move LPCR sanitising to sanitise_hv_regs
+  KVM: PPC: Book3S HV: Add a function to filter guest LPCR bits
+  KVM: PPC: Book3S HV: Disallow LPCR[AIL] to be set to 1 or 2
+  KVM: PPC: Book3S HV: Prevent radix guests from setting LPCR[TC]
+  KVM: PPC: Book3S HV: Remove redundant mtspr PSPB
+  KVM: PPC: Book3S HV: remove unused kvmppc_h_protect argument
+  KVM: PPC: Book3S HV: Fix CONFIG_SPAPR_TCE_IOMMU=n default hcalls
+  powerpc/64s: Remove KVM handler support from CBE_RAS interrupts
+  powerpc/64s: remove KVM SKIP test from instruction breakpoint handler
+  KVM: PPC: Book3S HV: Ensure MSR[ME] is always set in guest MSR
+  KVM: PPC: Book3S HV: Ensure MSR[HV] is always clear in guest MSR
+  KVM: PPC: Book3S 64: move KVM interrupt entry to a common entry point
+  KVM: PPC: Book3S 64: Move GUEST_MODE_SKIP test into KVM
+  KVM: PPC: Book3S 64: add hcall interrupt handler
+  KVM: PPC: Book3S 64: Move hcall early register setup to KVM
+  KVM: PPC: Book3S 64: Move interrupt early register setup to KVM
+  KVM: PPC: Book3S 64: move bad_host_intr check to HV handler
+  KVM: PPC: Book3S 64: Minimise hcall handler calling convention
+    differences
+  KVM: PPC: Book3S HV P9: Move radix MMU switching instructions together
+  KVM: PPC: Book3S HV P9: implement kvmppc_xive_pull_vcpu in C
+  KVM: PPC: Book3S HV P9: Move xive vcpu context management into
+    kvmhv_p9_guest_entry
+  KVM: PPC: Book3S HV P9: Stop handling hcalls in real-mode in the P9
+    path
+  KVM: PPC: Book3S HV P9: Move setting HDEC after switching to guest
+    LPCR
+  KVM: PPC: Book3S HV P9: Use large decrementer for HDEC
+  KVM: PPC: Book3S HV P9: Use host timer accounting to avoid decrementer
+    read
+  KVM: PPC: Book3S HV P9: Reduce mftb per guest entry/exit
+  powerpc: add set_dec_or_work API for safely updating decrementer
+  KVM: PPC: Book3S HV P9: Reduce irq_work vs guest decrementer races
+  KVM: PPC: Book3S HV P9: Implement the rest of the P9 path in C
+  KVM: PPC: Book3S HV P9: inline kvmhv_load_hv_regs_and_go into
+    __kvmhv_vcpu_entry_p9
+  KVM: PPC: Book3S HV P9: Read machine check registers while MSR[RI] is
+    0
+  KVM: PPC: Book3S HV P9: Improve exit timing accounting coverage
+  KVM: PPC: Book3S HV P9: Move SPR loading after expiry time check
+  KVM: PPC: Book3S HV P9: Add helpers for OS SPR handling
+  KVM: PPC: Book3S HV P9: Switch to guest MMU context as late as
+    possible
+  KVM: PPC: Book3S HV: Implement radix prefetch workaround by disabling
+    MMU
+  KVM: PPC: Book3S HV: Remove support for dependent threads mode on P9
+  KVM: PPC: Book3S HV: Remove radix guest support from P7/8 path
+  KVM: PPC: Book3S HV: Remove virt mode checks from real mode handlers
+  KVM: PPC: Book3S HV: Remove unused nested HV tests in XICS emulation
+  KVM: PPC: Book3S HV P9: Allow all P9 processors to enable nested HV
+  KVM: PPC: Book3S HV: small pseries_do_hcall cleanup
+  KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page
+    faults
+  KVM: PPC: Book3S HV P9: implement hash guest support
+  KVM: PPC: Book3S HV P9: implement hash host / hash guest support
+  KVM: PPC: Book3S HV: remove ISA v3.0 and v3.1 support from P7/8 path
+
+ arch/powerpc/include/asm/asm-prototypes.h |   3 +-
+ arch/powerpc/include/asm/exception-64s.h  |  13 +
+ arch/powerpc/include/asm/kvm_asm.h        |   3 +-
+ arch/powerpc/include/asm/kvm_book3s.h     |   2 +
+ arch/powerpc/include/asm/kvm_book3s_64.h  |   8 +
+ arch/powerpc/include/asm/kvm_host.h       |   1 -
+ arch/powerpc/include/asm/kvm_ppc.h        |  20 +-
+ arch/powerpc/include/asm/mmu_context.h    |   6 -
+ arch/powerpc/include/asm/time.h           |  16 +
+ arch/powerpc/kernel/exceptions-64s.S      | 257 ++------
+ arch/powerpc/kernel/security.c            |   5 +-
+ arch/powerpc/kernel/time.c                |  21 +-
+ arch/powerpc/kvm/Makefile                 |   6 +
+ arch/powerpc/kvm/book3s.c                 |  11 +-
+ arch/powerpc/kvm/book3s_64_entry.S        | 394 ++++++++++++
+ arch/powerpc/kvm/book3s_64_vio_hv.c       |  12 -
+ arch/powerpc/kvm/book3s_hv.c              | 730 ++++++++++++----------
+ arch/powerpc/kvm/book3s_hv_builtin.c      | 138 +---
+ arch/powerpc/kvm/book3s_hv_interrupt.c    | 528 ++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_interrupts.S   |   9 +-
+ arch/powerpc/kvm/book3s_hv_nested.c       |  22 +-
+ arch/powerpc/kvm/book3s_hv_ras.c          |   2 +
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  15 +-
+ arch/powerpc/kvm/book3s_hv_rm_xics.c      |  15 -
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 641 +------------------
+ arch/powerpc/kvm/book3s_segment.S         |   7 +
+ arch/powerpc/kvm/book3s_xive.c            | 119 +++-
+ arch/powerpc/kvm/book3s_xive.h            |   7 -
+ arch/powerpc/kvm/book3s_xive_native.c     |  10 -
+ arch/powerpc/mm/book3s64/radix_pgtable.c  |  27 +-
+ arch/powerpc/mm/book3s64/radix_tlb.c      |  46 --
+ arch/powerpc/mm/mmu_context.c             |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     |  52 +-
+ 33 files changed, 1632 insertions(+), 1518 deletions(-)
+ create mode 100644 arch/powerpc/kvm/book3s_64_entry.S
+ create mode 100644 arch/powerpc/kvm/book3s_hv_interrupt.c
+
+-- 
+2.23.0
+
