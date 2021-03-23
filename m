@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33E19C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:14:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39428C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:36:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D87761920
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:14:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D87761920
+	by mail.kernel.org (Postfix) with ESMTPS id 3468B619A9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:36:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3468B619A9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4FL90NTvz3bq7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:14:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4FqX3zglz30gk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:36:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=gryQmbGN;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=Esf5Frie;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=gryQmbGN; 
+ header.a=rsa-sha256 header.s=201602 header.b=Esf5Frie; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4FKF0bqBz2yRS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 13:13:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4Fq419XSz30Bp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 13:35:59 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4F4FKD3WGGz9sVS; Tue, 23 Mar 2021 13:13:36 +1100 (AEDT)
+ id 4F4Fq30dTwz9sW4; Tue, 23 Mar 2021 13:35:59 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1616465616;
- bh=BOuWa8UaE7ECNbJjXx2pAKCGGhQFwDrno0GolRKA3tY=;
+ d=gibson.dropbear.id.au; s=201602; t=1616466959;
+ bh=aIuuvymdi0TVzASxL/UJIQ31bE22tiQ2QrDrSDMOOWc=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=gryQmbGNnM+eICmH6gcaPFrTGPObJJRRRaVwlNzbf45Qdb0e/7mdQzVVRYr+Q7pbB
- zZ8Kv2wFreSSe8C45J0qcDcU1a2TsvOtZE+UroS+qLoFuaCIy4BpCmFWSvMj4dAeHF
- 8llPGXbbLioyNgO+hHvSGaXiZCG96lHcSdE60+BE=
-Date: Tue, 23 Mar 2021 12:24:36 +1100
+ b=Esf5FriergMN/ijUKXtJg2IAxOEOC2sYKYuHOwFk+vETVAXVjovCek28OkuPm3Q9/
+ RbS6c1sRnmulnNKoPInlNcmWDNLZTL8O5DsGXZVRwzvV/zCyMCqPsywbtXBF7SrF2h
+ mzbviKhKdCHcwBseyMU2Xs6o5pTi9jXoKtRFR1/c=
+Date: Tue, 23 Mar 2021 13:35:53 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v6 2/6] powerpc/book3s64/radix: Add H_RPT_INVALIDATE
- pgsize encodings to mmu_psize_def
-Message-ID: <YFlDVCMpMW4ofP7D@yekko.fritz.box>
+Subject: Re: [PATCH v6 6/6] KVM: PPC: Book3S HV: Use H_RPT_INVALIDATE in
+ nested KVM
+Message-ID: <YFlUCdMQezdPg9LJ@yekko.fritz.box>
 References: <20210311083939.595568-1-bharata@linux.ibm.com>
- <20210311083939.595568-3-bharata@linux.ibm.com>
+ <20210311083939.595568-7-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ZBgd1eIUYKsIz9Dp"
+ protocol="application/pgp-signature"; boundary="nNWWeyy0OjAtXMD1"
 Content-Disposition: inline
-In-Reply-To: <20210311083939.595568-3-bharata@linux.ibm.com>
+In-Reply-To: <20210311083939.595568-7-bharata@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,73 +76,113 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---ZBgd1eIUYKsIz9Dp
+--nNWWeyy0OjAtXMD1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 11, 2021 at 02:09:35PM +0530, Bharata B Rao wrote:
-> Add a field to mmu_psize_def to store the page size encodings
-> of H_RPT_INVALIDATE hcall. Initialize this while scanning the radix
-> AP encodings. This will be used when invalidating with required
-> page size encoding in the hcall.
+On Thu, Mar 11, 2021 at 02:09:39PM +0530, Bharata B Rao wrote:
+> In the nested KVM case, replace H_TLB_INVALIDATE by the new hcall
+> H_RPT_INVALIDATE if available. The availability of this hcall
+> is determined from "hcall-rpt-invalidate" string in ibm,hypertas-functions
+> DT property.
 >=20
 > Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
 
-Having the table be the source of truth and implementing
-psize_to_rpti_pgsize() in terms of it would be nicer.  But... I guess
-you can't really do that, because you're dynamically initializing the
-table from the device tree, but the device tree doesn't include the
-RPTI encodings.  Oh well.
-
-Reveiwed-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
->  arch/powerpc/include/asm/book3s/64/mmu.h | 1 +
->  arch/powerpc/mm/book3s64/radix_pgtable.c | 5 +++++
->  2 files changed, 6 insertions(+)
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c | 27 +++++++++++++++++++++-----
+>  arch/powerpc/kvm/book3s_hv_nested.c    | 12 ++++++++++--
+>  2 files changed, 32 insertions(+), 7 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/incl=
-ude/asm/book3s/64/mmu.h
-> index eace8c3f7b0a..c02f42d1031e 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -19,6 +19,7 @@ struct mmu_psize_def {
->  	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
->  	unsigned int	tlbiel;	/* tlbiel supported for that page size */
->  	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
-> +	unsigned long   h_rpt_pgsize; /* H_RPT_INVALIDATE page size encoding */
->  	union {
->  		unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
->  		unsigned long ap;	/* Ap encoding used by PowerISA 3.0 */
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/b=
-ook3s64/radix_pgtable.c
-> index 98f0b243c1ab..1b749899016b 100644
-> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -486,6 +486,7 @@ static int __init radix_dt_scan_page_sizes(unsigned l=
-ong node,
->  		def =3D &mmu_psize_defs[idx];
->  		def->shift =3D shift;
->  		def->ap  =3D ap;
-> +		def->h_rpt_pgsize =3D psize_to_rpti_pgsize(idx);
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
+ok3s_64_mmu_radix.c
+> index e603de7ade52..1e1e55fd0ee5 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> @@ -21,6 +21,7 @@
+>  #include <asm/pte-walk.h>
+>  #include <asm/ultravisor.h>
+>  #include <asm/kvm_book3s_uvmem.h>
+> +#include <asm/plpar_wrappers.h>
+> =20
+>  /*
+>   * Supported radix tree geometry.
+> @@ -318,9 +319,19 @@ void kvmppc_radix_tlbie_page(struct kvm *kvm, unsign=
+ed long addr,
 >  	}
 > =20
->  	/* needed ? */
-> @@ -560,9 +561,13 @@ void __init radix__early_init_devtree(void)
->  		 */
->  		mmu_psize_defs[MMU_PAGE_4K].shift =3D 12;
->  		mmu_psize_defs[MMU_PAGE_4K].ap =3D 0x0;
-> +		mmu_psize_defs[MMU_PAGE_4K].h_rpt_pgsize =3D
-> +			psize_to_rpti_pgsize(MMU_PAGE_4K);
-> =20
->  		mmu_psize_defs[MMU_PAGE_64K].shift =3D 16;
->  		mmu_psize_defs[MMU_PAGE_64K].ap =3D 0x5;
-> +		mmu_psize_defs[MMU_PAGE_64K].h_rpt_pgsize =3D
-> +			psize_to_rpti_pgsize(MMU_PAGE_64K);
+>  	psi =3D shift_to_mmu_psize(pshift);
+> -	rb =3D addr | (mmu_get_ap(psi) << PPC_BITLSHIFT(58));
+> -	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(0, 0, 1),
+> -				lpid, rb);
+> +
+> +	if (!firmware_has_feature(FW_FEATURE_RPT_INVALIDATE)) {
+> +		rb =3D addr | (mmu_get_ap(psi) << PPC_BITLSHIFT(58));
+> +		rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(0, 0, 1),
+> +					lpid, rb);
+> +	} else {
+> +		rc =3D pseries_rpt_invalidate(lpid, H_RPTI_TARGET_CMMU,
+> +					    H_RPTI_TYPE_NESTED |
+> +					    H_RPTI_TYPE_TLB,
+> +					    psize_to_rpti_pgsize(psi),
+> +					    addr, addr + psize);
+> +	}
+> +
+>  	if (rc)
+>  		pr_err("KVM: TLB page invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
+> @@ -334,8 +345,14 @@ static void kvmppc_radix_flush_pwc(struct kvm *kvm, =
+unsigned int lpid)
+>  		return;
 >  	}
 > =20
->  	/*
+> -	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(1, 0, 1),
+> -				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (!firmware_has_feature(FW_FEATURE_RPT_INVALIDATE))
+> +		rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(1, 0, 1),
+> +					lpid, TLBIEL_INVAL_SET_LPID);
+> +	else
+> +		rc =3D pseries_rpt_invalidate(lpid, H_RPTI_TARGET_CMMU,
+> +					    H_RPTI_TYPE_NESTED |
+> +					    H_RPTI_TYPE_PWC, H_RPTI_PAGE_ALL,
+> +					    0, -1UL);
+>  	if (rc)
+>  		pr_err("KVM: TLB PWC invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
+s_hv_nested.c
+> index adcc8e26ef22..5601b7eb9b89 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -19,6 +19,7 @@
+>  #include <asm/pgalloc.h>
+>  #include <asm/pte-walk.h>
+>  #include <asm/reg.h>
+> +#include <asm/plpar_wrappers.h>
+> =20
+>  static struct patb_entry *pseries_partition_tb;
+> =20
+> @@ -444,8 +445,15 @@ static void kvmhv_flush_lpid(unsigned int lpid)
+>  		return;
+>  	}
+> =20
+> -	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(2, 0, 1),
+> -				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (!firmware_has_feature(FW_FEATURE_RPT_INVALIDATE))
+> +		rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(2, 0, 1),
+> +					lpid, TLBIEL_INVAL_SET_LPID);
+> +	else
+> +		rc =3D pseries_rpt_invalidate(lpid, H_RPTI_TARGET_CMMU,
+> +					    H_RPTI_TYPE_NESTED |
+> +					    H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC |
+> +					    H_RPTI_TYPE_PAT,
+> +					    H_RPTI_PAGE_ALL, 0, -1UL);
+>  	if (rc)
+>  		pr_err("KVM: TLB LPID invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -150,24 +190,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---ZBgd1eIUYKsIz9Dp
+--nNWWeyy0OjAtXMD1
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBZQ1MACgkQbDjKyiDZ
-s5JFRRAA0oOFK9Q84n+MtxUJ7MAHvqkQaqSlF76S3JMuUqh2zpZJRZHmESXo2ZBL
-1ZkpZUlHXbUo3yJYmVPQ9j8WPFegkyai+dvIuMFxc/DmB3WHEmHZfvfqsV5k4iy0
-FceHtu1jtln45MQA1L/yqm6nCoCHMfan/rE12rt+q8wyf+3CHH0iccAFUoTZGguz
-iOtw7ud4LxhpCGmSiiy2K9HsPSdhacraHXTIqrjuUw+wxfYSG0+R6DqWkByeAgK2
-VQVGrEX0uzL/woRTuaFrcI8BnSVICofuyfaZH1mIDQabLYnk4eAhvNSPwY44xWUS
-LpYAcMkNe/E6dnMqhbhcfn9xTzpWEAfKzLjGfoaAq8xsZCNAUIQQIqWgc+cceXX0
-OWhaJPH4EvHPzdtGRvRotNsPXjyYf+qKL47y9TgHOxPYye4BSS6eGbW9Ecj2T2by
-XNo+auFgR+BjtxaC1C/ewSMVAggB9NkARDhDCrpaI5D5rK/SMoSBSLm0AoFJVmID
-T32cqyPh7zg69/CSMy5GLyfRclTSfVUfDmixg/yzr5z745/b84lGU9h9v7kLD0z6
-f6fKWqDh/yKb7B9giM27wmW4IzI8+mwQNO4cMkyFGoafkTC4uNR/ddbFf/X9yfCu
-HNZypYJpfsfIKXvtNKnkrC/MfAcLlWSUcLjCx3mCAZ66+jwMVGc=
-=tCbh
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBZVAkACgkQbDjKyiDZ
+s5KCYxAAvbX2KvujBQtx/xZsQHgUDAHv0CA5dMjMEN0FlAB0QqbcpVJCJGFreyhY
+AzXh6foFMl6hD9QSjQw56JkxddJeXiYwFtj0BJumGboBweDe8hVDiy5HZUV9JpY0
+p+IldPEuqYf/RkvPmCEzM2Vwk67vyXpSTiW/sxanIP20Yz/GnE5z0ooF74ifWJfU
+P1tLFxw+jGuigQjm3LCpEmel3dXiZuT2X5gD52465VC2KbeBMBKvWFqkqX2jgi0J
+1GSfMQwn6g2TDD5HYWKJ7BwRhs+bradhb+wuHrymgXg8csEz6xVGVtKEYMSCCmZ2
+TOiY9lJFD4GU5ahGxtST8MOY1FyFjgmQTFo3d8SSCL6Vc0CbcNx5YPwQZ6RmpsSp
+y/vzqX767wzlnaMDIXSGhKoYcd9qOjx462ZshKn/CLJBYr7SbVILb+LXwaYJn7Cy
+SpjmTWUMc3u9zcCFTObgQ5Qrm4K2t+CUnBOrI7TQ3zw6PSAFLP969GqM5pMRCrQG
+5/tyGwH30QuxPxfmOA2h9MD1fkVuF4bqWFB5eCsQFffCocb0Ov10j/U536BHvbbF
+JT36ZEzGRlwVODLoP1w9vUk2WJ6JNRfD9ngHZlThdGVmg9auSpMHXndTHcO2eM2S
+MSpbiylj+9TekFgDmsVBHMrLVChyOEVNCnMY2OC1Zxe0DuLgYbU=
+=qYMy
 -----END PGP SIGNATURE-----
 
---ZBgd1eIUYKsIz9Dp--
+--nNWWeyy0OjAtXMD1--
