@@ -2,93 +2,62 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E97C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 045AFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:14:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63FD861994
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:44:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63FD861994
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 2DDD36188B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:14:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DDD36188B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4DgX6fgRz3bsP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 12:44:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4FKj1DRsz30Pf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:14:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=M5S+OSXK;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=NSWVowc5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::52b;
- helo=mail-pg1-x52b.google.com; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=M5S+OSXK; dkim-atps=neutral
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com
- [IPv6:2607:f8b0:4864:20::52b])
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=NSWVowc5; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4Dg10kLYz2xZ0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 12:43:55 +1100 (AEDT)
-Received: by mail-pg1-x52b.google.com with SMTP id e33so10128705pgm.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 18:43:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=message-id:date:mime-version:user-agent:subject:content-language:to
- :cc:references:from:in-reply-to:content-transfer-encoding;
- bh=hQmoN07pSxYuHOAET0vCC+e70OLR6jAQK2ogz5XslTs=;
- b=M5S+OSXKqv93PwyBNbYD5UxWAV+NsHE5gDpaMZMtsYsPzjHlTLNRJfStYMbULfTe8w
- ZCe6G3b8ow6RNCp5T7tTrc5menbYPDJe6aftxMSFyKMvXL8t9D5mBMt527j8+s8tH1M+
- XCsTuJLpx1Qrz0ekL52XysbWR5pSEWjdt61iNeX8gfPMGxG7xqi4HGfEXgnvtLTExGdN
- in57FgR8OGOeB+PVsquW+15aPUg9q1jRy3JYqlF3C2VCIZb+0RWdOb3sR3QjgKQRlyYv
- JZ3StA1SvScSxejq7T0uU9xOEQ3qAynFafgTdqP7ozgC34sYng0WLgub7+QnDJQFI1LF
- JNCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=hQmoN07pSxYuHOAET0vCC+e70OLR6jAQK2ogz5XslTs=;
- b=RpRFlhk9z7sk6mcsPVskqGcigceJr/oqjSq+bPg+/jX19cZUypNQUKAcdNcbcxcNqr
- yn6ZhKacbugTe8dFP8VxaliMfd8tWvSrMbdIKW7JugTyE52LJw4pCiPa7dAY5JDIUhwX
- EJrvxOopV5KtuAZE0/AaJXyM6yWpdEOFtzR2GaWU3VxERFmjmeZYHtsvRac/x2JgiZ7u
- I5RrEfutBP20weMkkiuUoIPowb7rX9XK91TqCe36f0RCAMRChFKBK77Wsa7Jx0LsveYO
- Iai2yh1dIhcaYctSRFULZI2K+xXPGhxyzZrHdPSPT25cxh264Rh55nutOvw0b9pQIkri
- u/eQ==
-X-Gm-Message-State: AOAM532sqk+VA1BLM1D0Xj9k2kiaGk6NkeNz92L7vNWPaMkuOA3lpNu2
- L9watwj7f3PIi2AjpNCg0WrEuxrDaJneo3Mq
-X-Google-Smtp-Source: ABdhPJwy9WcJo/lqUHdK3yHAVQZiv7UD6U0EvvIjZf/ueJk5zzV3P4fzpiYZiBoeWwYnuH8SfsyeLg==
-X-Received: by 2002:a62:1c93:0:b029:1fd:2216:fb45 with SMTP id
- c141-20020a621c930000b02901fd2216fb45mr2426230pfc.13.1616463832818; 
- Mon, 22 Mar 2021 18:43:52 -0700 (PDT)
-Received: from [192.168.10.23] (124-171-107-241.dyn.iinet.net.au.
- [124.171.107.241])
- by smtp.gmail.com with UTF8SMTPSA id z2sm15621848pfq.198.2021.03.22.18.43.49
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 22 Mar 2021 18:43:52 -0700 (PDT)
-Message-ID: <869f47fd-efc7-3cf8-25b6-6aee18f4f082@ozlabs.ru>
-Date: Tue, 23 Mar 2021 12:43:46 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4FKF45CCz2yRy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 13:13:36 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 4F4FKD3GnTz9sRf; Tue, 23 Mar 2021 13:13:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1616465616;
+ bh=OA5ZAsCs5+L71lR4bQzy7HQX2Ve6DCQaBayBcwXORi0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NSWVowc5LNdQsgwuw68YycyiPTww+qIjxeia8571z9zNSmTur6cCr6wm2K7+XJ55z
+ 88F0Rqb7TKPlPuXls6Ha90XNBFi1Yf4G2IpZy/essNOyWv9D4DH32T3cYSXHI4Ju/5
+ JbgJlh6fl3QAhzgoBFClVmZGGErJ7pLq1m+OaI6Y=
+Date: Tue, 23 Mar 2021 12:19:28 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v6 1/6] KVM: PPC: Book3S HV: Fix comments of
+ H_RPT_INVALIDATE arguments
+Message-ID: <YFlCICYsADa+OrG/@yekko.fritz.box>
+References: <20210311083939.595568-1-bharata@linux.ibm.com>
+ <20210311083939.595568-2-bharata@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101
- Thunderbird/87.0
-Subject: Re: [PATCH v3 25/41] KVM: PPC: Book3S HV P9: Reduce irq_work vs guest
- decrementer races
-Content-Language: en-US
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-References: <20210305150638.2675513-1-npiggin@gmail.com>
- <20210305150638.2675513-26-npiggin@gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <20210305150638.2675513-26-npiggin@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="2cpqFItxP4BNoyVD"
+Content-Disposition: inline
+In-Reply-To: <20210311083939.595568-2-bharata@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,65 +69,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--2cpqFItxP4BNoyVD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 06/03/2021 02:06, Nicholas Piggin wrote:
-> irq_work's use of the DEC SPR is racy with guest<->host switch and guest
-> entry which flips the DEC interrupt to guest, which could lose a host
-> work interrupt.
-> 
-> This patch closes one race, and attempts to comment another class of
-> races.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Thu, Mar 11, 2021 at 02:09:34PM +0530, Bharata B Rao wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+>=20
+> The type values H_RPTI_TYPE_PRT and H_RPTI_TYPE_PAT indicate
+> invalidating the caching of process and partition scoped entries
+> respectively.
+>=20
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+
+Not sure the change really clarifies that much, but whatever
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
 > ---
->   arch/powerpc/kvm/book3s_hv.c | 15 ++++++++++++++-
->   1 file changed, 14 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 6f3e3aed99aa..b7a88960ac49 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -3704,6 +3704,18 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
->   	if (!(vcpu->arch.ctrl & 1))
->   		mtspr(SPRN_CTRLT, mfspr(SPRN_CTRLF) & ~1);
->   
-> +	/*
-> +	 * When setting DEC, we must always deal with irq_work_raise via NMI vs
-> +	 * setting DEC. The problem occurs right as we switch into guest mode
-> +	 * if a NMI hits and sets pending work and sets DEC, then that will
-> +	 * apply to the guest and not bring us back to the host.
-> +	 *
-> +	 * irq_work_raise could check a flag (or possibly LPCR[HDICE] for
-> +	 * example) and set HDEC to 1? That wouldn't solve the nested hv
-> +	 * case which needs to abort the hcall or zero the time limit.
-> +	 *
-> +	 * XXX: Another day's problem.
-> +	 */
->   	mtspr(SPRN_DEC, vcpu->arch.dec_expires - tb);
->   
->   	if (kvmhv_on_pseries()) {
-> @@ -3838,7 +3850,8 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
->   	vc->entry_exit_map = 0x101;
->   	vc->in_guest = 0;
->   
-> -	mtspr(SPRN_DEC, local_paca->kvm_hstate.dec_expires - tb);
-> +	set_dec_or_work(local_paca->kvm_hstate.dec_expires - tb);
+>  arch/powerpc/include/asm/hvcall.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm=
+/hvcall.h
+> index ed6086d57b22..6af7bb3c9121 100644
+> --- a/arch/powerpc/include/asm/hvcall.h
+> +++ b/arch/powerpc/include/asm/hvcall.h
+> @@ -411,9 +411,9 @@
+>  #define H_RPTI_TYPE_NESTED	0x0001	/* Invalidate nested guest partition-s=
+cope */
+>  #define H_RPTI_TYPE_TLB		0x0002	/* Invalidate TLB */
+>  #define H_RPTI_TYPE_PWC		0x0004	/* Invalidate Page Walk Cache */
+> -/* Invalidate Process Table Entries if H_RPTI_TYPE_NESTED is clear */
+> +/* Invalidate caching of Process Table Entries if H_RPTI_TYPE_NESTED is =
+clear */
+>  #define H_RPTI_TYPE_PRT		0x0008
+> -/* Invalidate Partition Table Entries if H_RPTI_TYPE_NESTED is set */
+> +/* Invalidate caching of Partition Table Entries if H_RPTI_TYPE_NESTED i=
+s set */
+>  #define H_RPTI_TYPE_PAT		0x0008
+>  #define H_RPTI_TYPE_ALL		(H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC | \
+>  				 H_RPTI_TYPE_PRT)
 
-set_dec_or_work() will write local_paca->kvm_hstate.dec_expires - tb - 1 
-to SPRN_DEC which is not exactly the same, is this still alright?
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
+--2cpqFItxP4BNoyVD
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> +
->   	mtspr(SPRN_SPRG_VDSO_WRITE, local_paca->sprg_vdso);
->   
->   	kvmhv_load_host_pmu();
-> 
+-----BEGIN PGP SIGNATURE-----
 
--- 
-Alexey
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBZQiAACgkQbDjKyiDZ
+s5IDrxAAshdC1SOjx3acRTuepXPgDDgKNDXdt6CjzNwC1fdPHB1i+S5SOC/YyJWe
+nmFKP/p0/Y3vZwaLIirEgxjkiseO7tTWmtI9wVzDdZcrcyDmu08OySV678aqPeJg
+oucn/rzkSiLb9sqvB9JjouCEXbaJHXA4M3IMHNSD23qdKsU50zxVHZa9y557UPEN
+NPN3JoUVRBawIUOBCkmHW8bNRnWWGKRczCtHCrAQPQuqHSvXBP71BYt2YzYCHvWT
+1iN5DFC9W/E3r/aHGnRs3EGjugTGZW2V3TH3/AL/rwsfydSFUls/mBUJQi8O870f
++TB08tNns5pM+nMm9JP5pXAtQTVQGtWT+T41wV/vZRVN7yMSfwPQAYDjWIdTf+nr
+DJWjxZPdAhuVDY//aGnbVs0XCUkf3x+eIrBE1+zJ1SU19d8e9B/p1PDsmQ/G3q46
+3+nlwBPtJjWovZ6X+A5HCHX24Q/JNiHSZbiJ1I/EYr6eBLU+usDZhbKI1fY86NcP
+NpB4eF30iymHkkavRNoc6nGcPE6DULXQnTiVEGzUTcsxTvDimWeN2c2NVncg86Tc
+dB5QL0GdpJu2HJRZmhmtOcCc8nyiL96pNVQdQiwlZem6NXz4XErFRA52Hj4NKEnS
+y380f8Y0uNuK0sU1pGeCDuibXYTZ3RVTJxDCXCxSgsfSFYCJ7CA=
+=ZQjV
+-----END PGP SIGNATURE-----
+
+--2cpqFItxP4BNoyVD--
