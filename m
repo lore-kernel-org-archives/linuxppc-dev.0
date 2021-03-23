@@ -2,57 +2,63 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7180CC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 06:22:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5267DC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 06:29:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AB8A61972
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 06:22:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AB8A61972
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 75349619A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 06:29:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75349619A0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4Lqx3xtLz3bdG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 17:22:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4M0z54W6z3bPJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 17:29:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
- envelope-from=heying24@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4LqY3Pnxz30Bt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 17:21:44 +1100 (AEDT)
-Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.58])
- by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4F4Ln22KhSzwPtR;
- Tue, 23 Mar 2021 14:19:34 +0800 (CST)
-Received: from [10.67.110.136] (10.67.110.136) by
- DGGEMS411-HUB.china.huawei.com (10.3.19.211) with Microsoft SMTP Server id
- 14.3.498.0; Tue, 23 Mar 2021 14:21:27 +0800
-Subject: Re: [PATCH -next] powerpc: kernel/time.c - cleanup warnings
-From: "heying (H)" <heying24@huawei.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, <mpe@ellerman.id.au>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <msuchanek@suse.de>, <peterz@infradead.org>, <geert+renesas@glider.be>,
- <kernelfans@gmail.com>, <frederic@kernel.org>
-References: <20210317103438.177428-1-heying24@huawei.com>
- <3f4d196b-0a8e-d4c9-cabe-591f5916a2b9@csgroup.eu>
- <5ee06736-7fc4-7993-a8b5-042e1890a6de@huawei.com>
-Message-ID: <c6908c07-1814-a7f8-5f48-a4c316fb567c@huawei.com>
-Date: Tue, 23 Mar 2021 14:21:27 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ smtp.mailfrom=vivo.com (client-ip=59.111.176.37; helo=mail-m17637.qiye.163.com;
+ envelope-from=wanjiabing@vivo.com; receiver=<UNKNOWN>)
+Received: from mail-m17637.qiye.163.com (mail-m17637.qiye.163.com
+ [59.111.176.37])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4M0d6XK6z2xZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 17:29:34 +1100 (AEDT)
+Received: from wanjb-virtual-machine.localdomain (unknown [36.152.145.182])
+ by mail-m17637.qiye.163.com (Hmail) with ESMTPA id EB8429804E9;
+ Tue, 23 Mar 2021 14:29:26 +0800 (CST)
+From: Wan Jiabing <wanjiabing@vivo.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Wan Jiabing <wanjiabing@vivo.com>,
+ Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michal Suchanek <msuchanek@suse.de>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Pingfan Liu <kernelfans@gmail.com>,
+ Frederic Weisbecker <frederic@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] [v2] arch: powerpc: Remove duplicate includes
+Date: Tue, 23 Mar 2021 14:29:05 +0800
+Message-Id: <20210323062916.295346-1-wanjiabing@vivo.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <5ee06736-7fc4-7993-a8b5-042e1890a6de@huawei.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.110.136]
-X-CFilter-Loop: Reflected
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZS1VLWVdZKFlBSE83V1ktWUFJV1kPCR
+ oVCBIfWUFZGRkYTxlNQh8dQ0tCVkpNSk1PQ0tCTUxIQ0tVEwETFhoSFyQUDg9ZV1kWGg8SFR0UWU
+ FZT0tIVUpKSkNITVVLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OU06ASo4FT8RNDpNCCs2DyI*
+ EVYaCzVVSlVKTUpNT0NLQk1MTEhKVTMWGhIXVQwaFRESGhkSFRw7DRINFFUYFBZFWVdZEgtZQVlI
+ TVVKTklVSk9OVUpDSVlXWQgBWUFIQkJDNwY+
+X-HM-Tid: 0a785dc61a84d992kuwseb8429804e9
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,97 +70,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kael_w@yeah.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dear Christophe,
+mmu-hash.h: asm/bug.h has been included at line 12, so remove 
+the duplicate one at line 21.
+interrupt.c: asm/interrupt.h has been included at line 12, so 
+remove the duplicate one at line 10. 
+time.c: linux/sched/clock.h has been included at line 33,so 
+remove the duplicate one at line 56 and move sched/cputime.h 
+under sched including segament.
 
+Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 1 -
+ arch/powerpc/kernel/interrupt.c               | 1 -
+ arch/powerpc/kernel/time.c                    | 3 +--
+ 3 files changed, 1 insertion(+), 4 deletions(-)
 
-在 2021/3/18 10:28, heying (H) 写道:
->
-> 在 2021/3/17 19:16, Christophe Leroy 写道:
->>
->>
->> Le 17/03/2021 à 11:34, He Ying a écrit :
->>> We found these warnings in arch/powerpc/kernel/time.c as follows:
->>> warning: symbol 'decrementer_max' was not declared. Should it be 
->>> static?
->>> warning: symbol 'rtc_lock' was not declared. Should it be static?
->>> warning: symbol 'dtl_consumer' was not declared. Should it be static?
->>>
->>> Declare 'decrementer_max' in arch/powerpc/include/asm/time.h. And 
->>> include
->>> proper header in which 'rtc_lock' is declared. Move 'dtl_consumer'
->>> definition behind "include <asm/dtl.h>" because 'dtl_consumer' is 
->>> declared
->>> there.
->>>
->>> Reported-by: Hulk Robot <hulkci@huawei.com>
->>> Signed-off-by: He Ying <heying24@huawei.com>
->>> ---
->>>   arch/powerpc/include/asm/time.h | 1 +
->>>   arch/powerpc/kernel/time.c      | 7 +++----
->>>   2 files changed, 4 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/time.h 
->>> b/arch/powerpc/include/asm/time.h
->>> index 8dd3cdb25338..2cd2b50bedda 100644
->>> --- a/arch/powerpc/include/asm/time.h
->>> +++ b/arch/powerpc/include/asm/time.h
->>> @@ -22,6 +22,7 @@ extern unsigned long tb_ticks_per_jiffy;
->>>   extern unsigned long tb_ticks_per_usec;
->>>   extern unsigned long tb_ticks_per_sec;
->>>   extern struct clock_event_device decrementer_clockevent;
->>> +extern u64 decrementer_max;
->>>       extern void generic_calibrate_decr(void);
->>> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
->>> index b67d93a609a2..409967713ca6 100644
->>> --- a/arch/powerpc/kernel/time.c
->>> +++ b/arch/powerpc/kernel/time.c
->>> @@ -55,6 +55,7 @@
->>>   #include <linux/sched/cputime.h>
->>>   #include <linux/sched/clock.h>
->>>   #include <linux/processor.h>
->>> +#include <linux/mc146818rtc.h>
->>
->> I don't think that's the good place. It has no link to powerpc, it is 
->> only by chance that it has the same name.
->>
->> As rtc_lock is defined in powerpc time.c, I think you should declare 
->> it in powerpc asm/time.h
->
-> My first thought was the same as yours. I tried to add declaration in 
-> powerpc asm/time.h, but got a compiling error:
->
-> drivers/rtc/rtc-vr41xx.c:75:24: error: static declaration of 
-> ‘rtc_lock’ follows non-static declaration
->  static DEFINE_SPINLOCK(rtc_lock);
->
-> In file included from ./arch/powerpc/include/asm/delay.h:7:0,
->                  from ./arch/powerpc/include/asm/io.h:33,
->                  from ./include/linux/io.h:13,
->                  from drivers/rtc/rtc-vr41xx.c:11:
-> ./arch/powerpc/include/asm/time.h:25:19: note: previous declaration of 
-> ‘rtc_lock’ was here
->  extern spinlock_t rtc_lock;
->
-> There's a conflict. Perhaps I can rename it in drivers/rtc/rtc-vr41xx.c.
->
->
-> But I find an existing declaration in linux/mc146818rtc.h and there's 
-> only one definition for 'rtc_lock' in powerpc.
->
-> There's some includes of mc146818rtc.h in powperc. I wonder they point 
-> to the same thing. But I'm not very sure
->
-> because the header's name looks a bit strange.
-
-How about including mc146818rtc.h in powperpc kernel/time.c? May I have 
-your opinions please?
-
-
-Thanks.
-
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index f911bdb68d8b..3004f3323144 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -18,7 +18,6 @@
+  * complete pgtable.h but only a portion of it.
+  */
+ #include <asm/book3s/64/pgtable.h>
+-#include <asm/bug.h>
+ #include <asm/task_size_64.h>
+ #include <asm/cpu_has_feature.h>
+ 
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index c475a229a42a..11d456896772 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -7,7 +7,6 @@
+ #include <asm/asm-prototypes.h>
+ #include <asm/kup.h>
+ #include <asm/cputime.h>
+-#include <asm/interrupt.h>
+ #include <asm/hw_irq.h>
+ #include <asm/interrupt.h>
+ #include <asm/kprobes.h>
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index b67d93a609a2..e2766e0e2a3a 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -31,6 +31,7 @@
+ #include <linux/export.h>
+ #include <linux/sched.h>
+ #include <linux/sched/clock.h>
++#include <linux/sched/cputime.h>
+ #include <linux/kernel.h>
+ #include <linux/param.h>
+ #include <linux/string.h>
+@@ -52,8 +53,6 @@
+ #include <linux/irq_work.h>
+ #include <linux/of_clk.h>
+ #include <linux/suspend.h>
+-#include <linux/sched/cputime.h>
+-#include <linux/sched/clock.h>
+ #include <linux/processor.h>
+ #include <asm/trace.h>
+ 
+-- 
+2.25.1
 
