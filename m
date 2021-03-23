@@ -2,70 +2,88 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E71C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 10:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C2CDC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 10:37:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8711161993
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 10:14:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8711161993
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=163.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7A1C1619B7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 10:37:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A1C1619B7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4S0X22Hqz3brm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 21:14:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4SVP6c2qz3bmY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 21:37:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=ckSKexqu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=J0EXEIMG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=163.com
- (client-ip=220.181.12.15; helo=m12-15.163.com;
- envelope-from=tomstomsczc@163.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256
- header.s=s110527 header.b=ckSKexqu; dkim-atps=neutral
-X-Greylist: delayed 1043 seconds by postgrey-1.36 at boromir;
- Tue, 23 Mar 2021 20:15:04 AEDT
-Received: from m12-15.163.com (m12-15.163.com [220.181.12.15])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035;
+ helo=mail-pj1-x1035.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=J0EXEIMG; dkim-atps=neutral
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4QgX66CZz2xZ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 20:15:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
- s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=8X1qg
- gjYrOr60RWTjePpjNY4Tvz0un9W9c9kxBNZccc=; b=ckSKexquUmMdAbMwdw1pK
- Vu4dQ/H88GnRk1kOkKZJfLEFhHN4l7jfpYuIDrjsq4IGN1ZkpT8pe+XvSv5XXQR5
- kB9/XIuAhHKVQVvHkUdV6kWB89Y534sK5tU0BNxKckL9QByjqGSfWOXkz8NR7zlT
- +jD+ZRhapu+gnU7sZqVMKw=
-Received: from caizhichao.ccdomain.com (unknown [218.94.48.178])
- by smtp11 (Coremail) with SMTP id D8CowADHDAEDrVlgKAJaGA--.51S2;
- Tue, 23 Mar 2021 16:55:48 +0800 (CST)
-From: caizhichao <tomstomsczc@163.com>
-To: geoff@infradead.org,
-	perex@perex.cz,
-	tiwai@suse.com
-Subject: [PATCH] sound:ppc: fix spelling typo of values
-Date: Tue, 23 Mar 2021 16:55:43 +0800
-Message-Id: <20210323085543.741-1-tomstomsczc@163.com>
-X-Mailer: git-send-email 2.30.0.windows.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4STy3ntMz3022
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 21:36:53 +1100 (AEDT)
+Received: by mail-pj1-x1035.google.com with SMTP id gb6so9901376pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 03:36:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=Zy4Lsebf4U9tDEG2NTT8UKOvjnIFpxNqf841zIhhRxs=;
+ b=J0EXEIMGFMlRPQ2VNtjXkh7O71Y4v+eWToFpaAZ8q5ZQ0uaCwdL7BIDk8NMZtuBmXV
+ kp1bi6rMGobTw5eyp2sn9yKGMBUJ19EGSaCg7D9SD/yZH45D2KeG62tsKNf2KSdiOa60
+ yAWQCQEOTokTSBCm9sQPA+wRNH5JBdP0XqVIZiHY2eP5zvnFOoVwLGMpoFgLwv8XF9qH
+ TIc4hhUS9/hWTx9IQvlz+Bs4ff9ViRzQH5JJJpdMYFrlY24umOYCeO4fOl9ymawNdyXH
+ XLMFhLGSUEehJlm6GB/2UAEFmk5BRmODsqzhbKI8gGaJeL9R7AegBW+zxd9ROXZULVLf
+ Gang==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=Zy4Lsebf4U9tDEG2NTT8UKOvjnIFpxNqf841zIhhRxs=;
+ b=tQRCNvI3L0NBDf5QWLWBC+Et2gsP5dFqCMf/TYkFVyQqzrRFnZz7yJ/sAyEAVYmJu8
+ clHHIQUWZSKd/aCmSklTXNfUz932acXDjT8062N4BEFW64tB/ipXMpK2Vm2dgWxmAk3Q
+ D+RUaLsZqOXKwgdwjd85tJrOl9UvfVCh/wh6plJnKtkzGWQ4M3xfu/kNJwWsnTJe4D/k
+ /IyYVmtunxrbyjqVbQwJ9UTZEepeC6Hni+hchYinyZVf64XDijVPDYALTKdb33btiQ59
+ J7itIgVfh0xksyVRBdYHqwLcbJJVGBLv1Wv6mg4Dm5WA4rFYtTYnoQF+o+fHXlnh2uiL
+ 7oYg==
+X-Gm-Message-State: AOAM532q6o1yckiaOenChit4uRaNaJdJFzusa7UT9OW021wZ65XNlNOe
+ AVfbGWvcZ6hWa9Y9Fcy7L00=
+X-Google-Smtp-Source: ABdhPJyENyyZjqyChHgnp5OQUD4sJWDRB5LVETYT8qYS1zyh363VbQ7c9ouAgbrVV+ngn4SVE3z7Sg==
+X-Received: by 2002:a17:90a:fd0a:: with SMTP id
+ cv10mr3756762pjb.167.1616495811395; 
+ Tue, 23 Mar 2021 03:36:51 -0700 (PDT)
+Received: from localhost ([1.132.171.141])
+ by smtp.gmail.com with ESMTPSA id v27sm16536610pfi.89.2021.03.23.03.36.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 23 Mar 2021 03:36:50 -0700 (PDT)
+Date: Tue, 23 Mar 2021 20:36:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 28/46] KVM: PPC: Book3S HV P9: Reduce irq_work vs guest
+ decrementer races
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org
+References: <20210323010305.1045293-1-npiggin@gmail.com>
+ <20210323010305.1045293-29-npiggin@gmail.com>
+ <3ca0e504-70df-2a25-12af-a1addac842b6@ozlabs.ru>
+In-Reply-To: <3ca0e504-70df-2a25-12af-a1addac842b6@ozlabs.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: D8CowADHDAEDrVlgKAJaGA--.51S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Gr1DZw4rAF4kuFW5GF45Wrg_yoWxCwbE9a
- ykArW8WF95XFsrCr1YyF1rGr4Yqas8Cr929r47KF1DGw4Yvrs5G3yrAry7Jr92gF1vvry5
- WF9YgrnxKr92kjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU0RBTUUUUUU==
-X-Originating-IP: [218.94.48.178]
-X-CM-SenderInfo: pwrp23prpvu6rf6rljoofrz/xtbBdRReilaD+k4Q8wAAs3
-X-Mailman-Approved-At: Tue, 23 Mar 2021 21:14:29 +1100
+Message-Id: <1616495617.6070udmp89.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,35 +95,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, caizhichao <caizhichao@yulong.com>,
- linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: caizhichao <caizhichao@yulong.com>
+Excerpts from Alexey Kardashevskiy's message of March 23, 2021 8:13 pm:
+>=20
+>=20
+> On 23/03/2021 12:02, Nicholas Piggin wrote:
+>> irq_work's use of the DEC SPR is racy with guest<->host switch and guest
+>> entry which flips the DEC interrupt to guest, which could lose a host
+>> work interrupt.
+>>=20
+>> This patch closes one race, and attempts to comment another class of
+>> races.
+>>=20
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>   arch/powerpc/kvm/book3s_hv.c | 15 ++++++++++++++-
+>>   1 file changed, 14 insertions(+), 1 deletion(-)
+>>=20
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 1f38a0abc611..989a1ff5ad11 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -3745,6 +3745,18 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *=
+vcpu, u64 time_limit,
+>>   	if (!(vcpu->arch.ctrl & 1))
+>>   		mtspr(SPRN_CTRLT, mfspr(SPRN_CTRLF) & ~1);
+>>  =20
+>> +	/*
+>> +	 * When setting DEC, we must always deal with irq_work_raise via NMI v=
+s
+>> +	 * setting DEC. The problem occurs right as we switch into guest mode
+>> +	 * if a NMI hits and sets pending work and sets DEC, then that will
+>> +	 * apply to the guest and not bring us back to the host.
+>> +	 *
+>> +	 * irq_work_raise could check a flag (or possibly LPCR[HDICE] for
+>> +	 * example) and set HDEC to 1? That wouldn't solve the nested hv
+>> +	 * case which needs to abort the hcall or zero the time limit.
+>> +	 *
+>> +	 * XXX: Another day's problem.
+>> +	 */
+>>   	mtspr(SPRN_DEC, vcpu->arch.dec_expires - tb);
+>>  =20
+>>   	if (kvmhv_on_pseries()) {
+>> @@ -3879,7 +3891,8 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *v=
+cpu, u64 time_limit,
+>>   	vc->entry_exit_map =3D 0x101;
+>>   	vc->in_guest =3D 0;
+>>  =20
+>> -	mtspr(SPRN_DEC, local_paca->kvm_hstate.dec_expires - tb);
+>> +	set_dec_or_work(local_paca->kvm_hstate.dec_expires - tb);
+>=20
+>=20
+> set_dec_or_work() will write local_paca->kvm_hstate.dec_expires - tb - 1=20
+> to SPRN_DEC which is not exactly the same, is this still alright?
+>=20
+> I asked in v3 but it is probably lost :)
 
-vaules -> values
+Oh I did see that then forgot.
 
-Signed-off-by: caizhichao <caizhichao@yulong.com>
----
- sound/ppc/snd_ps3_reg.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It will write dec_expires - tb, then it will write 1 if it found irq_work
+was pending.
 
-diff --git a/sound/ppc/snd_ps3_reg.h b/sound/ppc/snd_ps3_reg.h
-index 566a318..e2212b7 100644
---- a/sound/ppc/snd_ps3_reg.h
-+++ b/sound/ppc/snd_ps3_reg.h
-@@ -308,7 +308,7 @@
- each interrupt in this register.
- Writing 1b to a field containing 1b clears field and de-asserts interrupt.
- Writing 0b to a field has no effect.
--Field vaules are the following:
-+Field values are the following:
- 0 - Interrupt hasn't occurred.
- 1 - Interrupt has occurred.
- 
--- 
-1.9.1
+The change is intentional to fixes one of the lost irq_work races.
 
-
+Thanks,
+Nick
