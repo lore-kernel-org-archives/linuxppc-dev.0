@@ -2,62 +2,60 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF8D7C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21964C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 03:27:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 330D6619A9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 02:37:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 330D6619A9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id DD3E0619AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 03:26:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD3E0619AB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4Frx65vxz30Jh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:37:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4Gxt01Phz3bM7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 14:26:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=JqVG9Oh2;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=oQGAnmzY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=JqVG9Oh2; 
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=oQGAnmzY; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4Fq41J6Sz30Bw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 13:35:59 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4F4Fq309lCz9sW1; Tue, 23 Mar 2021 13:35:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1616466959;
- bh=2kfSreEfH+nJfxXsLlaxLYjo4wAQxD2RREwfr0zjpFw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=JqVG9Oh2f2CXMez/zZjE68LyCMKvWlgO8VuVu/Ib6QG7foxFyPohqeX+igs7T9n7q
- f4mix3uf4m8mhf+nC6u1ZPN6cokMMvHCeiUiWREXCWda3g4X0EW5HFFlDX26TDjPmM
- 9jAqDQ3zBI5v/YyLd/qN8jEcVlZ/vdBXG3IaS10Y=
-Date: Tue, 23 Mar 2021 13:34:27 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v6 5/6] KVM: PPC: Book3S HV: Add
- KVM_CAP_PPC_RPT_INVALIDATE capability
-Message-ID: <YFlTs/G9oKqJbBKN@yekko.fritz.box>
-References: <20210311083939.595568-1-bharata@linux.ibm.com>
- <20210311083939.595568-6-bharata@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4GxQ38yjz303P
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 14:26:34 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4F4GxP55GZz9sVS; Tue, 23 Mar 2021 14:26:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1616469993;
+ bh=luoYRjEruzGoNTMcHDnAhPGA47xA6Ulc15Avqfk01J8=;
+ h=From:To:Cc:Subject:Date:From;
+ b=oQGAnmzY0HjM+Q4yXaMXQfsk3RC4ZPFin2EgXr95lgxi+wrLjPn97PQYJbpu8Ab9Y
+ tg345G0Tbhd8heplfvrlZoC34djGfgfZXCw53n2Vg2DjM9d8a/FtyOyNMSVMlYiQG5
+ 2SKfOJLZMtom/ud90FpGnOs4mXOD+ERmvw87XAbkmsJfhOA7AD7RNS80Cxhoj9Pnkh
+ WJU7WG9H/Bcj8vMn+yzd7X1QK9mhdmW9HMLcp50E74FLvdnZ39pdc9yHP0FAVP0HDY
+ G+X7TbwVRwG86aq+G4yn+9SztyysL4rEk5xM4jjE1HJb0VkKE2ksD2eeM+/9wwAGqA
+ 5/U162KNPhlug==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: rust-for-linux@vger.kernel.org
+Subject: [PATCH 0/4] Rust for Linux for ppc64le
+Date: Tue, 23 Mar 2021 14:26:20 +1100
+Message-Id: <20210323032624.1039422-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="R/F4QHJkQivBKsaB"
-Content-Disposition: inline
-In-Reply-To: <20210311083939.595568-6-bharata@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,115 +67,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi all,
 
---R/F4QHJkQivBKsaB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here's a first attempt at getting the kernel Rust support building on powerpc.
 
-On Thu, Mar 11, 2021 at 02:09:38PM +0530, Bharata B Rao wrote:
-> Now that we have H_RPT_INVALIDATE fully implemented, enable
-> support for the same via KVM_CAP_PPC_RPT_INVALIDATE KVM capability
->=20
-> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+It's powerpc64le only for now, as that's what I can easily test given the
+distros I have installed. Though powerpc and powerpc64 are also Tier 2 platforms
+so in theory should work. Supporting those would require something more
+complicated than just pointing rustc at arch/$(ARCH)/rust/target.json.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+This is based on 832575d934a2 from the Rust-for-Linux tree. Anything newer gives
+me errors about symbol name lengths. I figured I'd send this anyway, as it seems
+like those errors are probably not powerpc specific.
 
-> ---
->  Documentation/virt/kvm/api.rst | 18 ++++++++++++++++++
->  arch/powerpc/kvm/powerpc.c     |  3 +++
->  include/uapi/linux/kvm.h       |  1 +
->  3 files changed, 22 insertions(+)
->=20
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.=
-rst
-> index 1a2b5210cdbf..d769cef5f904 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6227,6 +6227,24 @@ KVM_RUN_BUS_LOCK flag is used to distinguish betwe=
-en them.
->  This capability can be used to check / enable 2nd DAWR feature provided
->  by POWER10 processor.
-> =20
-> +7.24 KVM_CAP_PPC_RPT_INVALIDATE
-> +------------------------------
-> +
-> +:Capability: KVM_CAP_PPC_RPT_INVALIDATE
-> +:Architectures: ppc
-> +:Type: vm
-> +
-> +This capability indicates that the kernel is capable of handling
-> +H_RPT_INVALIDATE hcall.
-> +
-> +In order to enable the use of H_RPT_INVALIDATE in the guest,
-> +user space might have to advertise it for the guest. For example,
-> +IBM pSeries (sPAPR) guest starts using it if "hcall-rpt-invalidate" is
-> +present in the "ibm,hypertas-functions" device-tree property.
-> +
-> +This capability is enabled for hypervisors on platforms like POWER9
-> +that support radix MMU.
-> +
->  8. Other capabilities.
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =20
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index a2a68a958fa0..be33b5321a76 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -682,6 +682,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lon=
-g ext)
->  		r =3D !!(hv_enabled && kvmppc_hv_ops->enable_dawr1 &&
->  		       !kvmppc_hv_ops->enable_dawr1(NULL));
->  		break;
-> +	case KVM_CAP_PPC_RPT_INVALIDATE:
-> +		r =3D 1;
-> +		break;
->  #endif
->  	default:
->  		r =3D 0;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index f6afee209620..2b2370475cec 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -1078,6 +1078,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_DIRTY_LOG_RING 192
->  #define KVM_CAP_X86_BUS_LOCK_EXIT 193
->  #define KVM_CAP_PPC_DAWR1 194
-> +#define KVM_CAP_PPC_RPT_INVALIDATE 195
-> =20
->  #ifdef KVM_CAP_IRQ_ROUTING
-> =20
+I'm not sure that all the values in target.json are correct, or required (or if
+any are missing), but what I have there seems to work. Would be happy for
+someone to scrutinise it though.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Example output:
 
---R/F4QHJkQivBKsaB
-Content-Type: application/pgp-signature; name="signature.asc"
+  # uname -r
+  5.12.0-rc3-47689-ge4e12dd7cb75
+  # uname -m
+  ppc64le
+  # modprobe rust_example
+   Rust Example (init)
+   Am I built-in? false
+   Parameters:
+     my_bool:    true
+     my_i32:     42
+     my_str:     default str val
+     my_usize:   42
+     my_array:   [0, 1]
+   Value: 10
+   Value: 10
+   Large array has length: 514
+   modprobe (1589) used greatest stack depth: 6800 bytes left
+  # modprobe rust_example_2
+   [2] Rust Example (init)
+   [2] Am I built-in? false
+   [2] Parameters:
+   [2]   my_bool:    true
+   [2]   my_i32:     42
+   [2]   my_str:     default str val
+   [2]   my_usize:   42
+   [2]   my_array:   [0, 1]
+   Large array has length: 1028
+   modprobe (1593) used greatest stack depth: 3680 bytes left
+  # modprobe rust_example_3
+   [3] Rust Example (init)
+   [3] Am I built-in? false
+   [3] Parameters:
+   [3]   my_bool:    true
+   [3]   my_i32:     42
+   [3]   my_str:     default str val
+   [3]   my_usize:   42
+   [3]   my_array:   [0, 1]
+   Large array has length: 1028
+  # modprobe rust_example_4
+   [4] Rust Example (init)
+   [4] Am I built-in? false
+   [4] Parameters:
+   [4]   my_bool:    true
+   [4]   my_i32:     42
+   [4]   my_str:     default str val
+   [4]   my_usize:   42
+   [4]   my_array:   [0, 1]
+   Large array has length: 1028
 
------BEGIN PGP SIGNATURE-----
+cheers
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBZU7MACgkQbDjKyiDZ
-s5JhIhAAz+EYMl6D7R/Sq629K/gEpJd5rxo0oL5r/Sc+R1c5cU28JcsYsPp3LIt2
-6ivj3BJmMytPTbLINEQsO07D/6JrpxSvDwpuDn9LnB7YlQxE5H+9Qod+fZjvVY7D
-Q81FaWpWjGC1IUecPAortygI2jTff+2k4KbnceuwPo5mBNP/ej2oYxELsHkbWIUd
-MhlCLcK/n6MUX24XlcnhmKVN0ymNBSt6WLIb94kE4Oxz4d29IaWKWNXY1z+uOYyJ
-0fIfjn+JnHKM3wEiutUpT6Sxf2Dr0FdFVRZtOHuxJsOk152FBDIjohPHGPsA2BLj
-vo5rzWialNHFsqVjRIm5QeOMMAPBNVZ8zmJFr3SkAfHw8Kra2z91BLuDBF6fddKe
-GK4nxHYf+STJx1DE8xWbMaDjz0bQPu8/uJ5+lg3OGlRyLqRhS/82BLeJ5LgJpMxA
-lflMa78/Cct5a5n6LYVH7mej2jzzjhq8AZrz08eS5FISetVtLa6Mnqbi3sF8twcF
-5F9/Lys/tW54ACCEulXEEQl7u/kMqLmzhZyWZOfs4UrzhmvGCnisQp+xjhjzLqx5
-OuosdjyjaB/TyOixxtX2aVD0jgBSMV80CPbs8oHAabvPrmOnrApd0It1zA7NZtZZ
-CIM1fM3Eb8CSniZSgO3kuEGKrBMtHg2z27FpzZY6MjqDDoSdQF8=
-=rB5k
------END PGP SIGNATURE-----
 
---R/F4QHJkQivBKsaB--
+Michael Ellerman (4):
+  rust: Export symbols in initialized data section
+  rust: Add powerpc64 as a 64-bit target_arch in c_types.rs
+  powerpc/rust: Add target.json for ppc64le
+  rust: Enable for ppc64le
+
+ arch/powerpc/rust/target.json | 30 ++++++++++++++++++++++++++++++
+ init/Kconfig                  |  2 +-
+ rust/Makefile                 |  2 +-
+ rust/kernel/c_types.rs        |  2 +-
+ 4 files changed, 33 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/rust/target.json
+
+
+base-commit: 832575d934a2bc5e2fd0aa881d8e6b64bf062fd2
+-- 
+2.25.1
+
