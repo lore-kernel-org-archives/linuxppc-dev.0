@@ -2,59 +2,67 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEAE5C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:16:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5718EC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:28:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE78961990
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:16:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE78961990
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 83D956191E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 13:28:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83D956191E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4X1Z6cktz3bn9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 00:16:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JsUC3pbw;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4XHh3smrz3bq7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 00:28:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=JsUC3pbw; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4X165Brbz30Dd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 00:15:38 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7001261984;
- Tue, 23 Mar 2021 13:15:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1616505335;
- bh=mrlm0oDlOwv23D8hsr1CVyK/ZOFyC0hrwBy3dJk/ysA=;
- h=From:To:List-Id:Cc:Subject:Date:From;
- b=JsUC3pbweaqN5nmQ9B8OzW219fmNpEX0iNg6qfe1CabmUAdrJob4ukggXwkvYiW1N
- fGfMHsfeZ/giyVMlBN8/liYFvKOf1Q+vKgaweRaga3+NoIjykw3tw3750oJ4ZTcNp5
- AzeYcSur8nRKEthFdA+Yugipke0zf8Gni6MpJZ+z19s5YcM/x8w14+rnehqDwXfgjB
- QJXHBfUArmrY+snO8U6vyP/W4Fbf2rvLBEeJ5Ae/dahy2w28qGjligsR3wsYKUIcri
- 39X6XOjM8t0yFK9WWZ9/Ma2wkitkRdXcdbVfPEpiFYyCYTeUBH7AlMlI7BHPtpXDoh
- rTpMIAQEb087A==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Li Yang <leoyang.li@nxp.com>, Roy Pledge <roy.pledge@nxp.com>,
- Claudiu Manoil <claudiu.manoil@nxp.com>, Scott Wood <oss@buserror.net>
-Subject: [PATCH] soc/fsl: qbman: fix conflicting alignment attributes
-Date: Tue, 23 Mar 2021 14:15:23 +0100
-Message-Id: <20210323131530.2619900-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.29.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4XHH65LZz2ywx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 00:27:51 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4F4XH70jjqz9v1GL;
+ Tue, 23 Mar 2021 14:27:47 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id RzqWHqF5nznC; Tue, 23 Mar 2021 14:27:47 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F4XH66lWHz9v1GJ;
+ Tue, 23 Mar 2021 14:27:46 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4CFA18B7F7;
+ Tue, 23 Mar 2021 14:27:48 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id TWHHaF8PUfFg; Tue, 23 Mar 2021 14:27:48 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B4B0A8B7F4;
+ Tue, 23 Mar 2021 14:27:47 +0100 (CET)
+Subject: Re: [PATCH v11 0/6] KASAN for powerpc64 radix
+To: Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ kasan-dev@googlegroups.com, aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
+References: <20210319144058.772525-1-dja@axtens.net>
+ <5a3b5952-b31f-42bf-eaf4-ea24444f8df6@csgroup.eu>
+ <87ft0mbr6r.fsf@dja-thinkpad.axtens.net>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <a5e1d7c5-3ebc-283c-2c9d-55d36d03cf48@csgroup.eu>
+Date: Tue, 23 Mar 2021 14:27:45 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
+In-Reply-To: <87ft0mbr6r.fsf@dja-thinkpad.axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,47 +75,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-List-Id: <soc.lore.kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- YueHaibing <yuehaibing@huawei.com>, linux-kernel@vger.kernel.org,
- soc@kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
 
-When building with W=1, gcc points out that the __packed attribute
-on struct qm_eqcr_entry conflicts with the 8-byte alignment
-attribute on struct qm_fd inside it:
 
-drivers/soc/fsl/qbman/qman.c:189:1: error: alignment 1 of 'struct qm_eqcr_entry' is less than 8 [-Werror=packed-not-aligned]
+Le 23/03/2021 à 02:21, Daniel Axtens a écrit :
+> Hi Christophe,
+> 
+>> In the discussion we had long time ago,
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20190806233827.16454-5-dja@axtens.net/#2321067
+>> , I challenged you on why it was not possible to implement things the same way as other
+>> architectures, in extenso with an early mapping.
+>>
+>> Your first answer was that too many things were done in real mode at startup. After some discussion
+>> you said that finally there was not that much things at startup but the issue was KVM.
+>>
+>> Now you say that instrumentation on KVM is fully disabled.
+>>
+>> So my question is, if KVM is not a problem anymore, why not go the standard way with an early shadow
+>> ? Then you could also support inline instrumentation.
+> 
+> Fair enough, I've had some trouble both understanding the problem myself
+> and clearly articulating it. Let me try again.
+> 
+> We need translations on to access the shadow area.
+> 
+> We reach setup_64.c::early_setup() with translations off. At this point
+> we don't know what MMU we're running under, or our CPU features.
 
-I assume that the alignment attribute is the correct one, and
-that qm_eqcr_entry cannot actually be unaligned in memory,
-so add the same alignment on the outer struct.
+What do you need to know ? Whether it is Hash or Radix, or more/different details ?
 
-Fixes: c535e923bb97 ("soc/fsl: Introduce DPAA 1.x QMan device driver")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/soc/fsl/qbman/qman.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+IIUC, today we only support KASAN on Radix. Would it make sense to say that a kernel built with 
+KASAN can only run on processors having Radix capacility ? Then select CONFIG_PPC_RADIX_MMU_DEFAULT 
+when KASAN is set, and accept that the kernel crashes if Radix is not available ?
 
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index a1b9be1d105a..fde4edd83c14 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -186,7 +186,7 @@ struct qm_eqcr_entry {
- 	__be32 tag;
- 	struct qm_fd fd;
- 	u8 __reserved3[32];
--} __packed;
-+} __packed __aligned(8);
- #define QM_EQCR_VERB_VBIT		0x80
- #define QM_EQCR_VERB_CMD_MASK		0x61	/* but only one value; */
- #define QM_EQCR_VERB_CMD_ENQUEUE	0x01
--- 
-2.29.2
+> 
+> To determine our MMU and CPU features, early_setup() calls functions
+> (dt_cpu_ftrs_init, early_init_devtree) that call out to generic code
+> like of_scan_flat_dt. We need to do this before we turn on translations
+> because we can't set up the MMU until we know what MMU we have.
+> 
+> So this puts us in a bind:
+> 
+>   - We can't set up an early shadow until we have translations on, which
+>     requires that the MMU is set up.
+> 
+>   - We can't set up an MMU until we call out to generic code for FDT
+>     parsing.
+> 
+> So there will be calls to generic FDT parsing code that happen before the
+> early shadow is set up.
 
+I see some logic in kernel/prom_init.c for detecting MMU. Can we get the information from there in 
+order to setup the MMU ?
+
+> 
+> The setup code also prints a bunch of information about the platform
+> with printk() while translations are off, so it wouldn't even be enough
+> to disable instrumentation for bits of the generic DT code on ppc64.
+
+I'm sure the printk() stuff can be avoided or delayed without much problems, I guess the main 
+problem is the DT code, isn't it ?
+
+As far as I can see the code only use udbg_printf() before MMU is on, and this could be simply 
+skipped when KASAN is selected, I see no situation where you need early printk together with KASAN.
+
+> 
+> Does that make sense? If you can figure out how to 'square the circle'
+> here I'm all ears.
+
+Yes it is a lot more clear now, thanks you. Gave a few ideas above, does it help ?
+
+> 
+> Other notes:
+> 
+>   - There's a comment about printk() being 'safe' in early_setup(), that
+>     refers to having a valid PACA, it doesn't mean that it's safe in any
+>     other sense.
+> 
+>   - KVM does indeed also run stuff with translations off but we can catch
+>     all of that by disabling instrumentation on the real-mode handlers:
+>     it doesn't seem to leak out to generic code. So you are right that
+>     KVM is no longer an issue.
+> 
+
+Christophe
