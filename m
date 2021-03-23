@@ -2,84 +2,93 @@ Return-Path: <SRS0=XXYE=IV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 249CDC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E97C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:44:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4506461974
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:24:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4506461974
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 63FD861994
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 01:44:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63FD861994
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F4DDk5phHz3hfs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 12:24:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F4DgX6fgRz3bsP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Mar 2021 12:44:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=VliLkGKl;
+	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=M5S+OSXK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::52b;
+ helo=mail-pg1-x52b.google.com; envelope-from=aik@ozlabs.ru;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=VliLkGKl; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=M5S+OSXK; dkim-atps=neutral
+Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com
+ [IPv6:2607:f8b0:4864:20::52b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F4D9H5nhmz3h7R
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 12:21:38 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id y5so12570355pfn.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 18:21:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:subject:in-reply-to:references:date:message-id:mime-version;
- bh=D6/t64GWTSvYj3tg/pZ5Ic42OSmLCS9eM7+HxTJh7bY=;
- b=VliLkGKlUFWXjHYPHKhIoC9T8J/tXbQBlLhNPRFKpcSDmcYqAJwrSP1aEMERW9alSF
- +/C6VVdeBGrMAl6EuoauewV9NOcKnut05ZmeYuZQkmsrz6WSWGaB1xefKkXg/LWSUhtz
- 54ZrfHpYG6uA/l01ZR+VOyiPyQIwl6EVfUCf8=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4Dg10kLYz2xZ0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Mar 2021 12:43:55 +1100 (AEDT)
+Received: by mail-pg1-x52b.google.com with SMTP id e33so10128705pgm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Mar 2021 18:43:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=message-id:date:mime-version:user-agent:subject:content-language:to
+ :cc:references:from:in-reply-to:content-transfer-encoding;
+ bh=hQmoN07pSxYuHOAET0vCC+e70OLR6jAQK2ogz5XslTs=;
+ b=M5S+OSXKqv93PwyBNbYD5UxWAV+NsHE5gDpaMZMtsYsPzjHlTLNRJfStYMbULfTe8w
+ ZCe6G3b8ow6RNCp5T7tTrc5menbYPDJe6aftxMSFyKMvXL8t9D5mBMt527j8+s8tH1M+
+ XCsTuJLpx1Qrz0ekL52XysbWR5pSEWjdt61iNeX8gfPMGxG7xqi4HGfEXgnvtLTExGdN
+ in57FgR8OGOeB+PVsquW+15aPUg9q1jRy3JYqlF3C2VCIZb+0RWdOb3sR3QjgKQRlyYv
+ JZ3StA1SvScSxejq7T0uU9xOEQ3qAynFafgTdqP7ozgC34sYng0WLgub7+QnDJQFI1LF
+ JNCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=D6/t64GWTSvYj3tg/pZ5Ic42OSmLCS9eM7+HxTJh7bY=;
- b=B+BfzrXKvievLcimbFIkrzOJxgx3srtgPw8hyXFwC6UZ7nQfOPWkX3J7YOtqhenPGg
- /p7ynkk/pSwKVcx8AhMHbf61cCbt56xlJtxNstrTqJPirRap3dJh8freuRkT73x5dKAm
- SSlMUoiCaSzVkqRLSooa+Ajx61z3/4M6tPXQKTggUg10bQfHpsfVASlVXA99S/2g/HrC
- cgKjnTHW2A366OGufImhUwXrUKLjhyuj7AZkIlKZcKA48Epr4poTO16mHC3/qJhxb0SB
- AeR/HJYq3S6gayUQYx4f+B29UQcLEzxDXkSRqxA+HjJc/F5oH/f2w3U6Nrxo1Xszb4A5
- b6mw==
-X-Gm-Message-State: AOAM53132QXVq8uMq6s6KUU27JvlET1+RqceE7g12EP2UOiPz4Pgn/b5
- izxj2m+lxShTVLD0zqemQl4Vbg==
-X-Google-Smtp-Source: ABdhPJw2Qp+2mIKNhFX1I+6sZk2cFgPwhAQgZTyBkhIWBJDj29kcgwl2c2YRP52g3ltzroCn2P4Oag==
-X-Received: by 2002:a17:902:6ac3:b029:e6:c6a3:a697 with SMTP id
- i3-20020a1709026ac3b02900e6c6a3a697mr2657330plt.2.1616462496621; 
- Mon, 22 Mar 2021 18:21:36 -0700 (PDT)
-Received: from localhost
- (2001-44b8-1113-6700-ab57-754e-edac-e091.static.ipv6.internode.on.net.
- [2001:44b8:1113:6700:ab57:754e:edac:e091])
- by smtp.gmail.com with ESMTPSA id j188sm15051642pfd.64.2021.03.22.18.21.35
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 22 Mar 2021 18:21:36 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
- aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
-Subject: Re: [PATCH v11 0/6] KASAN for powerpc64 radix
-In-Reply-To: <5a3b5952-b31f-42bf-eaf4-ea24444f8df6@csgroup.eu>
-References: <20210319144058.772525-1-dja@axtens.net>
- <5a3b5952-b31f-42bf-eaf4-ea24444f8df6@csgroup.eu>
-Date: Tue, 23 Mar 2021 12:21:32 +1100
-Message-ID: <87ft0mbr6r.fsf@dja-thinkpad.axtens.net>
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=hQmoN07pSxYuHOAET0vCC+e70OLR6jAQK2ogz5XslTs=;
+ b=RpRFlhk9z7sk6mcsPVskqGcigceJr/oqjSq+bPg+/jX19cZUypNQUKAcdNcbcxcNqr
+ yn6ZhKacbugTe8dFP8VxaliMfd8tWvSrMbdIKW7JugTyE52LJw4pCiPa7dAY5JDIUhwX
+ EJrvxOopV5KtuAZE0/AaJXyM6yWpdEOFtzR2GaWU3VxERFmjmeZYHtsvRac/x2JgiZ7u
+ I5RrEfutBP20weMkkiuUoIPowb7rX9XK91TqCe36f0RCAMRChFKBK77Wsa7Jx0LsveYO
+ Iai2yh1dIhcaYctSRFULZI2K+xXPGhxyzZrHdPSPT25cxh264Rh55nutOvw0b9pQIkri
+ u/eQ==
+X-Gm-Message-State: AOAM532sqk+VA1BLM1D0Xj9k2kiaGk6NkeNz92L7vNWPaMkuOA3lpNu2
+ L9watwj7f3PIi2AjpNCg0WrEuxrDaJneo3Mq
+X-Google-Smtp-Source: ABdhPJwy9WcJo/lqUHdK3yHAVQZiv7UD6U0EvvIjZf/ueJk5zzV3P4fzpiYZiBoeWwYnuH8SfsyeLg==
+X-Received: by 2002:a62:1c93:0:b029:1fd:2216:fb45 with SMTP id
+ c141-20020a621c930000b02901fd2216fb45mr2426230pfc.13.1616463832818; 
+ Mon, 22 Mar 2021 18:43:52 -0700 (PDT)
+Received: from [192.168.10.23] (124-171-107-241.dyn.iinet.net.au.
+ [124.171.107.241])
+ by smtp.gmail.com with UTF8SMTPSA id z2sm15621848pfq.198.2021.03.22.18.43.49
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 22 Mar 2021 18:43:52 -0700 (PDT)
+Message-ID: <869f47fd-efc7-3cf8-25b6-6aee18f4f082@ozlabs.ru>
+Date: Tue, 23 Mar 2021 12:43:46 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101
+ Thunderbird/87.0
+Subject: Re: [PATCH v3 25/41] KVM: PPC: Book3S HV P9: Reduce irq_work vs guest
+ decrementer races
+Content-Language: en-US
+To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
+References: <20210305150638.2675513-1-npiggin@gmail.com>
+ <20210305150638.2675513-26-npiggin@gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <20210305150638.2675513-26-npiggin@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,71 +100,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-
-> In the discussion we had long time ago, 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20190806233827.16454-5-dja@axtens.net/#2321067 
-> , I challenged you on why it was not possible to implement things the same way as other 
-> architectures, in extenso with an early mapping.
->
-> Your first answer was that too many things were done in real mode at startup. After some discussion 
-> you said that finally there was not that much things at startup but the issue was KVM.
->
-> Now you say that instrumentation on KVM is fully disabled.
->
-> So my question is, if KVM is not a problem anymore, why not go the standard way with an early shadow 
-> ? Then you could also support inline instrumentation.
-
-Fair enough, I've had some trouble both understanding the problem myself
-and clearly articulating it. Let me try again.
-
-We need translations on to access the shadow area.
-
-We reach setup_64.c::early_setup() with translations off. At this point
-we don't know what MMU we're running under, or our CPU features.
-
-To determine our MMU and CPU features, early_setup() calls functions
-(dt_cpu_ftrs_init, early_init_devtree) that call out to generic code
-like of_scan_flat_dt. We need to do this before we turn on translations
-because we can't set up the MMU until we know what MMU we have.
-
-So this puts us in a bind:
-
- - We can't set up an early shadow until we have translations on, which
-   requires that the MMU is set up.
-
- - We can't set up an MMU until we call out to generic code for FDT
-   parsing.
-
-So there will be calls to generic FDT parsing code that happen before the
-early shadow is set up.
-
-The setup code also prints a bunch of information about the platform
-with printk() while translations are off, so it wouldn't even be enough
-to disable instrumentation for bits of the generic DT code on ppc64.
-
-Does that make sense? If you can figure out how to 'square the circle'
-here I'm all ears.
-
-Other notes:
-
- - There's a comment about printk() being 'safe' in early_setup(), that
-   refers to having a valid PACA, it doesn't mean that it's safe in any
-   other sense.
-
- - KVM does indeed also run stuff with translations off but we can catch
-   all of that by disabling instrumentation on the real-mode handlers:
-   it doesn't seem to leak out to generic code. So you are right that
-   KVM is no longer an issue.
-
-Kind regards,
-Daniel
 
 
->
-> Christophe
+On 06/03/2021 02:06, Nicholas Piggin wrote:
+> irq_work's use of the DEC SPR is racy with guest<->host switch and guest
+> entry which flips the DEC interrupt to guest, which could lose a host
+> work interrupt.
+> 
+> This patch closes one race, and attempts to comment another class of
+> races.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>   arch/powerpc/kvm/book3s_hv.c | 15 ++++++++++++++-
+>   1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 6f3e3aed99aa..b7a88960ac49 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3704,6 +3704,18 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	if (!(vcpu->arch.ctrl & 1))
+>   		mtspr(SPRN_CTRLT, mfspr(SPRN_CTRLF) & ~1);
+>   
+> +	/*
+> +	 * When setting DEC, we must always deal with irq_work_raise via NMI vs
+> +	 * setting DEC. The problem occurs right as we switch into guest mode
+> +	 * if a NMI hits and sets pending work and sets DEC, then that will
+> +	 * apply to the guest and not bring us back to the host.
+> +	 *
+> +	 * irq_work_raise could check a flag (or possibly LPCR[HDICE] for
+> +	 * example) and set HDEC to 1? That wouldn't solve the nested hv
+> +	 * case which needs to abort the hcall or zero the time limit.
+> +	 *
+> +	 * XXX: Another day's problem.
+> +	 */
+>   	mtspr(SPRN_DEC, vcpu->arch.dec_expires - tb);
+>   
+>   	if (kvmhv_on_pseries()) {
+> @@ -3838,7 +3850,8 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	vc->entry_exit_map = 0x101;
+>   	vc->in_guest = 0;
+>   
+> -	mtspr(SPRN_DEC, local_paca->kvm_hstate.dec_expires - tb);
+> +	set_dec_or_work(local_paca->kvm_hstate.dec_expires - tb);
 
+set_dec_or_work() will write local_paca->kvm_hstate.dec_expires - tb - 1 
+to SPRN_DEC which is not exactly the same, is this still alright?
+
+
+> +
+>   	mtspr(SPRN_SPRG_VDSO_WRITE, local_paca->sprg_vdso);
+>   
+>   	kvmhv_load_host_pmu();
+> 
+
+-- 
+Alexey
