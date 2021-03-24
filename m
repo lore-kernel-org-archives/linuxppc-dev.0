@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1669FC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 406BCC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35822619BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35822619BB
+	by mail.kernel.org (Postfix) with ESMTPS id D6E00619FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6E00619FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F53xQ5X5xz3cmF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:14:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F53xm41z0z3d8N
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:14:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
  envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F53w40hFfz302c
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F53w4020hz2xyB
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 21:13:06 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 840281A27E6;
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B17DB202743;
  Wed, 24 Mar 2021 11:13:03 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7CBA61A27E1;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7526202740;
  Wed, 24 Mar 2021 11:12:59 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id ECDE64033E;
- Wed, 24 Mar 2021 11:12:33 +0100 (CET)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 63D8040341;
+ Wed, 24 Mar 2021 11:12:36 +0100 (CET)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
  alsa-devel@alsa-project.org
-Subject: [PATCH 4/6] ASoC: fsl_easrc: Don't use devm_regmap_init_mmio_clk
-Date: Wed, 24 Mar 2021 17:58:46 +0800
-Message-Id: <1616579928-22428-5-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 6/6] ASoC: fsl_micfil: Don't use devm_regmap_init_mmio_clk
+Date: Wed, 24 Mar 2021 17:58:48 +0800
+Message-Id: <1616579928-22428-7-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1616579928-22428-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1616579928-22428-1-git-send-email-shengjiu.wang@nxp.com>
@@ -67,11 +67,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When there is power domain bind with mem clock,
+When there is power domain bind with ipg_clk clock,
 
 The call flow:
 devm_regmap_init_mmio_clk
-  - clk_prepare()
+   - clk_prepare()
       - clk_pm_runtime_get()
 
 cause the power domain of clock always be enabled after
@@ -82,24 +82,84 @@ devm_regmap_init_mmio_clk,but explicitly enable
 clock when it is used.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Reviewed-by: Viorel Suman <viorel.suman@nxp.com>
 ---
- sound/soc/fsl/fsl_easrc.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ sound/soc/fsl/fsl_micfil.c | 25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index 600e0d670ca6..5e33afe87c4a 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -1896,8 +1896,7 @@ static int fsl_easrc_probe(struct platform_device *pdev)
+diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
+index 2b9edd4bb94d..3cf789ed6cbe 100644
+--- a/sound/soc/fsl/fsl_micfil.c
++++ b/sound/soc/fsl/fsl_micfil.c
+@@ -31,6 +31,7 @@ struct fsl_micfil {
+ 	struct platform_device *pdev;
+ 	struct regmap *regmap;
+ 	const struct fsl_micfil_soc_data *soc;
++	struct clk *busclk;
+ 	struct clk *mclk;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	unsigned int dataline;
+@@ -660,16 +661,22 @@ static int fsl_micfil_probe(struct platform_device *pdev)
+ 		return PTR_ERR(micfil->mclk);
+ 	}
  
- 	easrc->paddr = res->start;
++	micfil->busclk = devm_clk_get(&pdev->dev, "ipg_clk");
++	if (IS_ERR(micfil->busclk)) {
++		dev_err(&pdev->dev, "failed to get ipg clock: %ld\n",
++			PTR_ERR(micfil->busclk));
++		return PTR_ERR(micfil->busclk);
++	}
++
+ 	/* init regmap */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	regs = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
  
--	easrc->regmap = devm_regmap_init_mmio_clk(dev, "mem", regs,
--						  &fsl_easrc_regmap_config);
-+	easrc->regmap = devm_regmap_init_mmio(dev, regs, &fsl_easrc_regmap_config);
- 	if (IS_ERR(easrc->regmap)) {
- 		dev_err(dev, "failed to init regmap");
- 		return PTR_ERR(easrc->regmap);
+-	micfil->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
+-						   "ipg_clk",
+-						   regs,
+-						   &fsl_micfil_regmap_config);
++	micfil->regmap = devm_regmap_init_mmio(&pdev->dev,
++					       regs,
++					       &fsl_micfil_regmap_config);
+ 	if (IS_ERR(micfil->regmap)) {
+ 		dev_err(&pdev->dev, "failed to init MICFIL regmap: %ld\n",
+ 			PTR_ERR(micfil->regmap));
+@@ -729,6 +736,7 @@ static int fsl_micfil_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, micfil);
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	regcache_cache_only(micfil->regmap, true);
+ 
+ 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_micfil_component,
+ 					      &fsl_micfil_dai, 1);
+@@ -752,6 +760,7 @@ static int __maybe_unused fsl_micfil_runtime_suspend(struct device *dev)
+ 	regcache_cache_only(micfil->regmap, true);
+ 
+ 	clk_disable_unprepare(micfil->mclk);
++	clk_disable_unprepare(micfil->busclk);
+ 
+ 	return 0;
+ }
+@@ -761,10 +770,16 @@ static int __maybe_unused fsl_micfil_runtime_resume(struct device *dev)
+ 	struct fsl_micfil *micfil = dev_get_drvdata(dev);
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(micfil->mclk);
++	ret = clk_prepare_enable(micfil->busclk);
+ 	if (ret < 0)
+ 		return ret;
+ 
++	ret = clk_prepare_enable(micfil->mclk);
++	if (ret < 0) {
++		clk_disable_unprepare(micfil->busclk);
++		return ret;
++	}
++
+ 	regcache_cache_only(micfil->regmap, false);
+ 	regcache_mark_dirty(micfil->regmap);
+ 	regcache_sync(micfil->regmap);
 -- 
 2.27.0
 
