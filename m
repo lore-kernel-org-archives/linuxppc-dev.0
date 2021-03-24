@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 406BCC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F385C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6E00619FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6E00619FD
+	by mail.kernel.org (Postfix) with ESMTPS id 922B361A02
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:14:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 922B361A02
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F53xm41z0z3d8N
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:14:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F53y62Mxtz3dJT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:14:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -27,26 +27,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F53w4020hz2xyB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F53w40NyQz301j
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 21:13:06 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B17DB202743;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B1CC5202742;
  Wed, 24 Mar 2021 11:13:03 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7526202740;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6F108202739;
  Wed, 24 Mar 2021 11:12:59 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 63D8040341;
- Wed, 24 Mar 2021 11:12:36 +0100 (CET)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C910D40339;
+ Wed, 24 Mar 2021 11:12:30 +0100 (CET)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
  alsa-devel@alsa-project.org
-Subject: [PATCH 6/6] ASoC: fsl_micfil: Don't use devm_regmap_init_mmio_clk
-Date: Wed, 24 Mar 2021 17:58:48 +0800
-Message-Id: <1616579928-22428-7-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 1/6] ASoC: fsl_esai: Don't use devm_regmap_init_mmio_clk
+Date: Wed, 24 Mar 2021 17:58:43 +0800
+Message-Id: <1616579928-22428-2-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1616579928-22428-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1616579928-22428-1-git-send-email-shengjiu.wang@nxp.com>
@@ -67,12 +67,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When there is power domain bind with ipg_clk clock,
+When there is power domain bind with bus clock,
 
 The call flow:
 devm_regmap_init_mmio_clk
-   - clk_prepare()
-      - clk_pm_runtime_get()
+    - clk_prepare()
+       - clk_pm_runtime_get()
 
 cause the power domain of clock always be enabled after
 regmap_init(). which impact the power consumption.
@@ -82,84 +82,126 @@ devm_regmap_init_mmio_clk,but explicitly enable
 clock when it is used.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Reviewed-by: Viorel Suman <viorel.suman@nxp.com>
 ---
- sound/soc/fsl/fsl_micfil.c | 25 ++++++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
+ sound/soc/fsl/fsl_esai.c | 48 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 36 insertions(+), 12 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
-index 2b9edd4bb94d..3cf789ed6cbe 100644
---- a/sound/soc/fsl/fsl_micfil.c
-+++ b/sound/soc/fsl/fsl_micfil.c
-@@ -31,6 +31,7 @@ struct fsl_micfil {
- 	struct platform_device *pdev;
- 	struct regmap *regmap;
- 	const struct fsl_micfil_soc_data *soc;
-+	struct clk *busclk;
- 	struct clk *mclk;
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	unsigned int dataline;
-@@ -660,16 +661,22 @@ static int fsl_micfil_probe(struct platform_device *pdev)
- 		return PTR_ERR(micfil->mclk);
- 	}
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 41b154417b92..c0d4f3c5dbb1 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -945,6 +945,9 @@ static const struct regmap_config fsl_esai_regmap_config = {
+ 	.cache_type = REGCACHE_FLAT,
+ };
  
-+	micfil->busclk = devm_clk_get(&pdev->dev, "ipg_clk");
-+	if (IS_ERR(micfil->busclk)) {
-+		dev_err(&pdev->dev, "failed to get ipg clock: %ld\n",
-+			PTR_ERR(micfil->busclk));
-+		return PTR_ERR(micfil->busclk);
-+	}
++static int fsl_esai_runtime_resume(struct device *dev);
++static int fsl_esai_runtime_suspend(struct device *dev);
 +
- 	/* init regmap */
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	regs = devm_ioremap_resource(&pdev->dev, res);
+ static int fsl_esai_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -969,8 +972,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
  	if (IS_ERR(regs))
  		return PTR_ERR(regs);
  
--	micfil->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
--						   "ipg_clk",
--						   regs,
--						   &fsl_micfil_regmap_config);
-+	micfil->regmap = devm_regmap_init_mmio(&pdev->dev,
-+					       regs,
-+					       &fsl_micfil_regmap_config);
- 	if (IS_ERR(micfil->regmap)) {
- 		dev_err(&pdev->dev, "failed to init MICFIL regmap: %ld\n",
- 			PTR_ERR(micfil->regmap));
-@@ -729,6 +736,7 @@ static int fsl_micfil_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, micfil);
+-	esai_priv->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
+-			"core", regs, &fsl_esai_regmap_config);
++	esai_priv->regmap = devm_regmap_init_mmio(&pdev->dev, regs, &fsl_esai_regmap_config);
+ 	if (IS_ERR(esai_priv->regmap)) {
+ 		dev_err(&pdev->dev, "failed to init regmap: %ld\n",
+ 				PTR_ERR(esai_priv->regmap));
+@@ -1039,11 +1041,23 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 	}
  
- 	pm_runtime_enable(&pdev->dev);
-+	regcache_cache_only(micfil->regmap, true);
+ 	dev_set_drvdata(&pdev->dev, esai_priv);
+-
+ 	spin_lock_init(&esai_priv->lock);
++	pm_runtime_enable(&pdev->dev);
++	if (!pm_runtime_enabled(&pdev->dev)) {
++		ret = fsl_esai_runtime_resume(&pdev->dev);
++		if (ret)
++			goto err_pm_disable;
++	}
++
++	ret = pm_runtime_get_sync(&pdev->dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(&pdev->dev);
++		goto err_pm_get_sync;
++	}
++
+ 	ret = fsl_esai_hw_init(esai_priv);
+ 	if (ret)
+-		return ret;
++		goto err_pm_get_sync;
  
- 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_micfil_component,
- 					      &fsl_micfil_dai, 1);
-@@ -752,6 +760,7 @@ static int __maybe_unused fsl_micfil_runtime_suspend(struct device *dev)
- 	regcache_cache_only(micfil->regmap, true);
+ 	esai_priv->tx_mask = 0xFFFFFFFF;
+ 	esai_priv->rx_mask = 0xFFFFFFFF;
+@@ -1054,24 +1068,33 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 	regmap_write(esai_priv->regmap, REG_ESAI_RSMA, 0);
+ 	regmap_write(esai_priv->regmap, REG_ESAI_RSMB, 0);
  
- 	clk_disable_unprepare(micfil->mclk);
-+	clk_disable_unprepare(micfil->busclk);
++	ret = pm_runtime_put_sync(&pdev->dev);
++	if (ret < 0)
++		goto err_pm_get_sync;
++
+ 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
+ 					      &fsl_esai_dai, 1);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);
+-		return ret;
++		goto err_pm_get_sync;
+ 	}
+ 
+ 	INIT_WORK(&esai_priv->work, fsl_esai_hw_reset);
+ 
+-	pm_runtime_enable(&pdev->dev);
+-
+-	regcache_cache_only(esai_priv->regmap, true);
+-
+ 	ret = imx_pcm_dma_init(pdev, IMX_ESAI_DMABUF_SIZE);
+-	if (ret)
++	if (ret) {
+ 		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
++		goto err_pm_get_sync;
++	}
+ 
+ 	return ret;
++
++err_pm_get_sync:
++	if (!pm_runtime_status_suspended(&pdev->dev))
++		fsl_esai_runtime_suspend(&pdev->dev);
++err_pm_disable:
++	pm_runtime_disable(&pdev->dev);
++	return ret;
+ }
+ 
+ static int fsl_esai_remove(struct platform_device *pdev)
+@@ -1079,6 +1102,9 @@ static int fsl_esai_remove(struct platform_device *pdev)
+ 	struct fsl_esai *esai_priv = platform_get_drvdata(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
++	if (!pm_runtime_status_suspended(&pdev->dev))
++		fsl_esai_runtime_suspend(&pdev->dev);
++
+ 	cancel_work_sync(&esai_priv->work);
+ 
+ 	return 0;
+@@ -1092,7 +1118,6 @@ static const struct of_device_id fsl_esai_dt_ids[] = {
+ };
+ MODULE_DEVICE_TABLE(of, fsl_esai_dt_ids);
+ 
+-#ifdef CONFIG_PM
+ static int fsl_esai_runtime_resume(struct device *dev)
+ {
+ 	struct fsl_esai *esai = dev_get_drvdata(dev);
+@@ -1160,7 +1185,6 @@ static int fsl_esai_runtime_suspend(struct device *dev)
  
  	return 0;
  }
-@@ -761,10 +770,16 @@ static int __maybe_unused fsl_micfil_runtime_resume(struct device *dev)
- 	struct fsl_micfil *micfil = dev_get_drvdata(dev);
- 	int ret;
+-#endif /* CONFIG_PM */
  
--	ret = clk_prepare_enable(micfil->mclk);
-+	ret = clk_prepare_enable(micfil->busclk);
- 	if (ret < 0)
- 		return ret;
- 
-+	ret = clk_prepare_enable(micfil->mclk);
-+	if (ret < 0) {
-+		clk_disable_unprepare(micfil->busclk);
-+		return ret;
-+	}
-+
- 	regcache_cache_only(micfil->regmap, false);
- 	regcache_mark_dirty(micfil->regmap);
- 	regcache_sync(micfil->regmap);
+ static const struct dev_pm_ops fsl_esai_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(fsl_esai_runtime_suspend,
 -- 
 2.27.0
 
