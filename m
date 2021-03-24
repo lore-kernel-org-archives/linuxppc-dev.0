@@ -2,47 +2,52 @@ Return-Path: <SRS0=xBJK=IW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98973C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:10:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02923C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:13:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C727B60295
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:10:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C727B60295
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+	by mail.kernel.org (Postfix) with ESMTPS id 848BD60295
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 10:13:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 848BD60295
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F53rx2gNcz3cRJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:10:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
- envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
- by lists.ozlabs.org (Postfix) with ESMTP id 4F53q45RdBz302p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 21:08:46 +1100 (AEDT)
-Received: from uucp (helo=alpha)
- by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
- id 1lP0RM-0008Sw-06; Wed, 24 Mar 2021 11:08:40 +0100
-Received: by alpha.franken.de (Postfix, from userid 1000)
- id F06F4C1C69; Wed, 24 Mar 2021 11:01:07 +0100 (CET)
-Date: Wed, 24 Mar 2021 11:01:07 +0100
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 08/10] MIPS: disable CONFIG_IDE in malta*_defconfig
-Message-ID: <20210324100107.GG2378@alpha.franken.de>
-References: <20210318045706.200458-1-hch@lst.de>
- <20210318045706.200458-9-hch@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210318045706.200458-9-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F53wQ04Fzz3c0f
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Mar 2021 21:13:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F53w371MFz2xxp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Mar 2021 21:13:06 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8140A1A27DC;
+ Wed, 24 Mar 2021 11:13:03 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6F98E1A1D0A;
+ Wed, 24 Mar 2021 11:12:59 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C03284029B;
+ Wed, 24 Mar 2021 11:12:29 +0100 (CET)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org
+Subject: [PATCH 0/6] ASoC: fsl: Don't use devm_regmap_init_mmio_clk
+Date: Wed, 24 Mar 2021 17:58:42 +0800
+Message-Id: <1616579928-22428-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,35 +59,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-doc@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 18, 2021 at 05:57:04AM +0100, Christoph Hellwig wrote:
-> Various malta defconfigs enable CONFIG_IDE for the tc86c001 ide driver,
-> hich is a Toshiba plug in card that does not make much sense to use on
-> bigsur platforms.  For all other ATA cards libata support is already
-> enabled.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/mips/configs/malta_kvm_defconfig       | 3 ---
->  arch/mips/configs/malta_kvm_guest_defconfig | 3 ---
->  arch/mips/configs/maltaup_xpa_defconfig     | 3 ---
->  3 files changed, 9 deletions(-)
+When there is power domain bind with ipg clock,
 
-applied to mips-next.
+The call flow:
+devm_regmap_init_mmio_clk
+    - clk_prepare()
+        - clk_pm_runtime_get()
 
-Thomas.
+cause the power domain of clock always be enabled after
+regmap_init(). which impact the power consumption.
+
+So use devm_regmap_init_mmio instead of
+devm_regmap_init_mmio_clk.
+
+Shengjiu Wang (6):
+  ASoC: fsl_esai: Don't use devm_regmap_init_mmio_clk
+  ASoC: fsl_spdif: Don't use devm_regmap_init_mmio_clk
+  ASoC: fsl_asrc: Don't use devm_regmap_init_mmio_clk
+  ASoC: fsl_easrc: Don't use devm_regmap_init_mmio_clk
+  ASoC: fsl_audmix: Don't use devm_regmap_init_mmio_clk
+  ASoC: fsl_micfil: Don't use devm_regmap_init_mmio_clk
+
+ sound/soc/fsl/fsl_asrc.c   | 57 +++++++++++++++++++++++++++++---------
+ sound/soc/fsl/fsl_audmix.c |  3 +-
+ sound/soc/fsl/fsl_easrc.c  |  3 +-
+ sound/soc/fsl/fsl_esai.c   | 48 ++++++++++++++++++++++++--------
+ sound/soc/fsl/fsl_micfil.c | 25 +++++++++++++----
+ sound/soc/fsl/fsl_spdif.c  |  3 +-
+ 6 files changed, 103 insertions(+), 36 deletions(-)
 
 -- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+2.27.0
+
