@@ -2,65 +2,101 @@ Return-Path: <SRS0=KFk7=IX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99918C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA514C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:54:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 075A46023F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:28:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 075A46023F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1F961619FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:54:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F961619FE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F5jY5342Hz3cMv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 22:28:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F5k6P2YPLz3bcw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 22:54:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EvGS+gP3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OsoC352k;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=EvGS+gP3; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=OsoC352k; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F5jXS6qFzz3cBp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 22:28:24 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id AC00661A69;
- Thu, 25 Mar 2021 11:28:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1616671702;
- bh=T8twyrasx4l19CUuEcFnhOqaYQqq+ba8U0BTnRQo/ds=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=EvGS+gP3qjyzUoFQo77K05O53eeoVErncA9Py+vSWqLnxiRwItK7FgVywgTeAgD5d
- xsCH8tl53/VCj8+ZNkFlK+3H9Iiv0ZLIASS5nOb+8c/bYzaon3j5JTaDGdZo/iRuOo
- 3ou3oYp/6CuCY24/347+hRSZROVyCqmT08x6CXxBO8K7wAou/9QXBhE+PwWJXRDJnI
- QUR5OycqHyIcdtwj6KeGRjul5LUnYPSudLEl+8VEmgxnt3FgJS6gde7cmIlPLDdvYh
- rNJtluXqk00htkjCHpRX4zV7RPzLDTX3v23rZWHze6kHyWLOiCMqWZ6IZKToQndAzt
- dEiK/Z6035E8Q==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 06/13] powerpc: Force inlining of
- cpu_has_feature() to avoid build failure
-Date: Thu, 25 Mar 2021 07:28:06 -0400
-Message-Id: <20210325112814.1928637-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210325112814.1928637-1-sashal@kernel.org>
-References: <20210325112814.1928637-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F5k5v5frdz309g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 22:53:54 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12PBYCJX185643; Thu, 25 Mar 2021 07:53:46 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=zrSIz8GosWAM7DICp1qJ9iezdU42BVPSIaREmROt8YY=;
+ b=OsoC352kmZEcKBQkyTIuDMaQpFUhTB3P9nLA5CaM5YCJdKtqitxyJ4u1qzUPiRSR8qKG
+ j8O1YvTL+c9Uv87iCLSvvgmErsAa73NcxthUU+x/mKQdFaRzf90vhyeAPd/1Y/KL/J/H
+ so4XlNGSOPMv3owHc1gGy5cVBDtitAyBIpHiijrq0vJdD7ZCgYZxrfYaEQ6S/Dy2pkXt
+ SoNlQTbyeupG1TdY/ampq+gSdVHhwhd29LiLNA0+2PZ6DNCRERer0ELrc/wM0vLh6p0a
+ tboXDKI6YBd0+SEwQreWSvCL9RPqA86FVDKFTthzDv92/dYsbC/Xs5cXEgv7ekoa2xOh TA== 
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37gpjv6367-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 25 Mar 2021 07:53:46 -0400
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12PBplNL028278;
+ Thu, 25 Mar 2021 11:53:44 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma01fra.de.ibm.com with ESMTP id 37d99xjt21-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 25 Mar 2021 11:53:44 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 12PBrNQ338011358
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 25 Mar 2021 11:53:23 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4B299AE045;
+ Thu, 25 Mar 2021 11:53:41 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BA0D0AE04D;
+ Thu, 25 Mar 2021 11:53:39 +0000 (GMT)
+Received: from Madhavan.PrimaryTP (unknown [9.85.167.233])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 25 Mar 2021 11:53:39 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v3 2/2] powerpc/perf: Add platform specific check_attr_config
+Date: Thu, 25 Mar 2021 17:23:26 +0530
+Message-Id: <20210325115326.143151-2-maddy@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210325115326.143151-1-maddy@linux.ibm.com>
+References: <20210325115326.143151-1-maddy@linux.ibm.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-25_02:2021-03-24,
+ 2021-03-25 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxlogscore=999
+ suspectscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0
+ spamscore=0 mlxscore=0 phishscore=0 adultscore=0 malwarescore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2103250086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,61 +108,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Add platform specific attr.config value checks. Patch
+includes checks for both power9 and power10.
 
-[ Upstream commit eed5fae00593ab9d261a0c1ffc1bdb786a87a55a ]
-
-The code relies on constant folding of cpu_has_feature() based
-on possible and always true values as defined per
-CPU_FTRS_ALWAYS and CPU_FTRS_POSSIBLE.
-
-Build failure is encountered with for instance
-book3e_all_defconfig on kisskb in the AMDGPU driver which uses
-cpu_has_feature(CPU_FTR_VSX_COMP) to decide whether calling
-kernel_enable_vsx() or not.
-
-The failure is due to cpu_has_feature() not being inlined with
-that configuration with gcc 4.9.
-
-In the same way as commit acdad8fb4a15 ("powerpc: Force inlining of
-mmu_has_feature to fix build failure"), for inlining of
-cpu_has_feature().
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/b231dfa040ce4cc37f702f5c3a595fdeabfe0462.1615378209.git.christophe.leroy@csgroup.eu
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 ---
- arch/powerpc/include/asm/cpu_has_feature.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Changelog v2:
+- Changed function name as suggested.
+- Added name of source document referred for reserved values
 
-diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
-index 6e834caa3720..7b10b3ef7739 100644
---- a/arch/powerpc/include/asm/cpu_has_feature.h
-+++ b/arch/powerpc/include/asm/cpu_has_feature.h
-@@ -6,7 +6,7 @@
- #include <linux/bug.h>
- #include <asm/cputable.h>
+Changelog v1:
+- No changes
+ arch/powerpc/perf/isa207-common.c | 42 +++++++++++++++++++++++++++++++
+ arch/powerpc/perf/isa207-common.h |  2 ++
+ arch/powerpc/perf/power10-pmu.c   | 13 ++++++++++
+ arch/powerpc/perf/power9-pmu.c    | 13 ++++++++++
+ 4 files changed, 70 insertions(+)
+
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index e4f577da33d8..358a0e95ba5f 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -694,3 +694,45 @@ int isa207_get_alternatives(u64 event, u64 alt[], int size, unsigned int flags,
  
--static inline bool early_cpu_has_feature(unsigned long feature)
-+static __always_inline bool early_cpu_has_feature(unsigned long feature)
- {
- 	return !!((CPU_FTRS_ALWAYS & feature) ||
- 		  (CPU_FTRS_POSSIBLE & cur_cpu_spec->cpu_features & feature));
-@@ -45,7 +45,7 @@ static __always_inline bool cpu_has_feature(unsigned long feature)
- 	return static_branch_likely(&cpu_feature_keys[i]);
+ 	return num_alt;
  }
- #else
--static inline bool cpu_has_feature(unsigned long feature)
-+static __always_inline bool cpu_has_feature(unsigned long feature)
- {
- 	return early_cpu_has_feature(feature);
++
++int isa3XX_check_attr_config(struct perf_event *ev)
++{
++	u64 val, sample_mode;
++	u64 event = ev->attr.config;
++
++	val = (event >> EVENT_SAMPLE_SHIFT) & EVENT_SAMPLE_MASK;
++	sample_mode = val & 0x3;
++
++	/*
++	 * MMCRA[61:62] is Random Sampling Mode (SM).
++	 * value of 0b11 is reserved.
++	 */
++	if (sample_mode == 0x3)
++		return -EINVAL;
++
++	/*
++	 * Check for all reserved value
++	 * Source: Performance Monitoring Unit User Guide
++	 */
++	switch (val) {
++	case 0x5:
++	case 0x9:
++	case 0xD:
++	case 0x19:
++	case 0x1D:
++	case 0x1A:
++	case 0x1E:
++		return -EINVAL;
++	}
++
++	/*
++	 * MMCRA[48:51]/[52:55]) Threshold Start/Stop
++	 * Events Selection.
++	 * 0b11110000/0b00001111 is reserved.
++	 */
++	val = (event >> EVENT_THR_CTL_SHIFT) & EVENT_THR_CTL_MASK;
++	if (((val & 0xF0) == 0xF0) || ((val & 0xF) == 0xF))
++		return -EINVAL;
++
++	return 0;
++}
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 1af0e8c97ac7..b4d2a2b2b346 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -280,4 +280,6 @@ void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
+ 							struct pt_regs *regs);
+ void isa207_get_mem_weight(u64 *weight);
+ 
++int isa3XX_check_attr_config(struct perf_event *ev);
++
+ #endif
+diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c
+index a901c1348cad..f9d64c63bb4a 100644
+--- a/arch/powerpc/perf/power10-pmu.c
++++ b/arch/powerpc/perf/power10-pmu.c
+@@ -106,6 +106,18 @@ static int power10_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	return num_alt;
  }
+ 
++static int power10_check_attr_config(struct perf_event *ev)
++{
++	u64 val;
++	u64 event = ev->attr.config;
++
++	val = (event >> EVENT_SAMPLE_SHIFT) & EVENT_SAMPLE_MASK;
++	if (val == 0x10 || isa3XX_check_attr_config(ev))
++		return -EINVAL;
++
++	return 0;
++}
++
+ GENERIC_EVENT_ATTR(cpu-cycles,			PM_RUN_CYC);
+ GENERIC_EVENT_ATTR(instructions,		PM_RUN_INST_CMPL);
+ GENERIC_EVENT_ATTR(branch-instructions,		PM_BR_CMPL);
+@@ -559,6 +571,7 @@ static struct power_pmu power10_pmu = {
+ 	.attr_groups		= power10_pmu_attr_groups,
+ 	.bhrb_nr		= 32,
+ 	.capabilities           = PERF_PMU_CAP_EXTENDED_REGS,
++	.check_attr_config	= power10_check_attr_config,
+ };
+ 
+ int init_power10_pmu(void)
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 2a57e93a79dc..ff3382140d7e 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -151,6 +151,18 @@ static int power9_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	return num_alt;
+ }
+ 
++static int power9_check_attr_config(struct perf_event *ev)
++{
++	u64 val;
++	u64 event = ev->attr.config;
++
++	val = (event >> EVENT_SAMPLE_SHIFT) & EVENT_SAMPLE_MASK;
++	if (val == 0xC || isa3XX_check_attr_config(ev))
++		return -EINVAL;
++
++	return 0;
++}
++
+ GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
+ GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_ICT_NOSLOT_CYC);
+ GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
+@@ -437,6 +449,7 @@ static struct power_pmu power9_pmu = {
+ 	.attr_groups		= power9_pmu_attr_groups,
+ 	.bhrb_nr		= 32,
+ 	.capabilities           = PERF_PMU_CAP_EXTENDED_REGS,
++	.check_attr_config	= power9_check_attr_config,
+ };
+ 
+ int init_power9_pmu(void)
 -- 
-2.30.1
+2.26.2
 
