@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F93C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:27:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45614C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:28:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1023461A56
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:27:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1023461A56
+	by mail.kernel.org (Postfix) with ESMTPS id 894B161A75
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:28:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 894B161A75
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F5jWW4Tz5z3bpY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 22:27:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F5jX30lF6z3c6p
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 22:28:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ny8VuovB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YCC8S7vo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Ny8VuovB; 
+ header.s=k20201202 header.b=YCC8S7vo; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F5jW56MgXz2xfT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 22:27:13 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B851861A5E;
- Thu, 25 Mar 2021 11:27:10 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F5jWd3cZBz309g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 22:27:41 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 64D3061A65;
+ Thu, 25 Mar 2021 11:27:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1616671631;
+ s=k20201202; t=1616671659;
  bh=MvspNmx/BQ2U6lxFhhm7YQJAvRh6QOInlWJfeIGGQP8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Ny8VuovBr3ANoFfcLtGd9aDdytRpWvwlCxbG6F9R/cSHlrMD58Px10sY2HbjIdpp4
- 1Hyik/szoRMoXTjmRZ+iCHxc95uWtGrQoM5q+UZx4XTJs+i5sD1Bjsw2R4lsqMZHKf
- JdudvtZx5GJFim8PzPznTy8eICcRv3d5ssLIFBJ7JOST2L+LsA5NFF8Q2RAqb/0Z32
- FNiMLvmWx5A/FXZK5Ri3UAVBP4HqzwtW3BKVO3ueeTJfkPeOBKCeZFRPKtcpt4rhGS
- FdGw67QhP2x7yqI0hhsrAZ/99LVpL5tZIcJyXKPuZHjFZClPbHhx4W3E+SZh7qghVc
- LMGqkNcxcJ5oA==
+ b=YCC8S7voxbD1DEMbrTmHffXPSyo08lJpFkPvThWYIJIA8u8VsmLRT2cSibFYAjOBC
+ VyluaQuNdSfbjiM8V2As4sJclmnre3w6EJKLAFUCKonOzRPFg5pZRXNvZU2RsqVSkg
+ IG1NbTAyOPDx5oZvp0GV5XggAozWmwSG6ZC8II0Hf5ujDo6DyZv8AQexnebFvZmGMr
+ b2c4SbFwUA9L6jPYNdFPCqC+GKYGyfgHUC3/fVIUqhRbMR6S7v9SwPLsmRasyq1PSy
+ dK9KcaHON1EZFDXNUB9JH/Y5KgFhC+GknjQ8exl0JG31ZF4KOWiwLgcrNfg6+qnRlj
+ H3qTRrYDXjaOA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 15/24] powerpc: Force inlining of
+Subject: [PATCH AUTOSEL 4.19 11/20] powerpc: Force inlining of
  cpu_has_feature() to avoid build failure
-Date: Thu, 25 Mar 2021 07:26:41 -0400
-Message-Id: <20210325112651.1927828-15-sashal@kernel.org>
+Date: Thu, 25 Mar 2021 07:27:15 -0400
+Message-Id: <20210325112724.1928174-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210325112651.1927828-1-sashal@kernel.org>
-References: <20210325112651.1927828-1-sashal@kernel.org>
+In-Reply-To: <20210325112724.1928174-1-sashal@kernel.org>
+References: <20210325112724.1928174-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
