@@ -2,99 +2,68 @@ Return-Path: <SRS0=KFk7=IX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D737C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D4B8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 12:06:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C17CF619EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 11:54:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C17CF619EC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 92C3B61A1B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 12:06:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92C3B61A1B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F5k6s1JK9z3c1P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 22:54:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XsHng9sA;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F5kNh1xfmz3bt3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Mar 2021 23:06:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=XsHng9sA; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F5k5v4QSsz304Q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 22:53:54 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12PBYidO017737; Thu, 25 Mar 2021 07:53:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=km2/i3iP+dNWrGImBe+nGm4B2o0+2wucsl59yOdNYwE=;
- b=XsHng9sACXyTf7CujVBnRgmqMKJtoF59tInXbd+CmY6J+MDv7dilVfc8S9NfzsFeoiH5
- N7nEZ1JbfAbiwBqoXyrBALDqUEp8ZUG+/a3vmc8zmTreTPoxUmpGv/AVy7zZQY3GZRlO
- Z87d2B42QZY204mf4CQe70msqw89kN7LsSHFIiz8rSuYkJWxAm9yGC8EwvpjHL9eRVEb
- r2ypF5ECLSXrvdIzvjoIWy461uUjzMTcY83WINypkR8zeABWkBQ9FisdVRxBWNWENbSk
- xqq0b+Ua5GK3yZq438W5ZL8PWYC8c3iDdmNZkxr7HcsKqzyMwlZddyb9n+99UhyMxfhQ zw== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37ggpkp6ha-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 25 Mar 2021 07:53:43 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12PBq4hJ007672;
- Thu, 25 Mar 2021 11:53:41 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 37d9bmnapu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 25 Mar 2021 11:53:41 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12PBrcTi35193106
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 25 Mar 2021 11:53:38 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 55DB7AE045;
- Thu, 25 Mar 2021 11:53:38 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C78F0AE04D;
- Thu, 25 Mar 2021 11:53:36 +0000 (GMT)
-Received: from Madhavan.PrimaryTP (unknown [9.85.167.233])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 25 Mar 2021 11:53:36 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v3 1/2] powerpc/perf: Infrastructure to support checking of
- attr.config*
-Date: Thu, 25 Mar 2021 17:23:25 +0530
-Message-Id: <20210325115326.143151-1-maddy@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F5kNK5sZ9z2yxd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 23:06:22 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4F5kNB1nf0z9v0GZ;
+ Thu, 25 Mar 2021 13:06:18 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id JkNGHrWfVGIB; Thu, 25 Mar 2021 13:06:18 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F5kNB0wKHz9v07g;
+ Thu, 25 Mar 2021 13:06:18 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B0988B853;
+ Thu, 25 Mar 2021 13:06:19 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id bAlm_IeUvyN3; Thu, 25 Mar 2021 13:06:19 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9491B8B849;
+ Thu, 25 Mar 2021 13:06:18 +0100 (CET)
+Subject: Re: [PATCH v2 3/7] powerpc: convert config files to generic cmdline
+To: Rob Herring <robh@kernel.org>
+References: <20210309000247.2989531-4-danielwa@cisco.com>
+ <5f865584-09c9-d21f-ffb7-23cf07cf058e@csgroup.eu>
+ <20210309212944.GR109100@zorba>
+ <e4899874-1684-fa1b-443e-f4e478e05e31@csgroup.eu>
+ <CAL_JsqKm76jRQYDcu3rGyUWKPLspoO=EZW_WFy=zAK+m_JYCTg@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <20fd7d44-8c39-48bc-25c3-990be9d9d911@csgroup.eu>
+Date: Thu, 25 Mar 2021 13:03:55 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.0
 MIME-Version: 1.0
+In-Reply-To: <CAL_JsqKm76jRQYDcu3rGyUWKPLspoO=EZW_WFy=zAK+m_JYCTg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-25_02:2021-03-24,
- 2021-03-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- priorityscore=1501 mlxscore=0 lowpriorityscore=0 mlxlogscore=999
- bulkscore=0 suspectscore=0 malwarescore=0 phishscore=0 adultscore=0
- clxscore=1015 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2103250086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,81 +75,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, X86 ML <x86@kernel.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, xe-linux-external@cisco.com,
+ Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>,
+ Daniel Walker <danielwa@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce code to support the checking of attr.config* for
-values which are reserved for a given platform.
-Performance Monitoring Unit (PMU) configuration registers
-have fields that are reserved and some specific values for
-bit fields are reserved. For ex., MMCRA[61:62] is
-Random Sampling Mode (SM) and value of 0b11 for this field
-is reserved.
 
-Writing non-zero or invalid values in these fields will
-have unknown behaviours.
 
-Patch adds a generic call-back function "check_attr_config"
-in "struct power_pmu", to be called in event_init to
-check for attr.config* values for a given platform.
-"check_attr_config" is valid only for raw event type.
+Le 24/03/2021 à 18:32, Rob Herring a écrit :
+> On Wed, Mar 24, 2021 at 11:01 AM Christophe Leroy
+> <christophe.leroy@csgroup.eu> wrote:
+>>
+>>
+>>
+>> Le 09/03/2021 à 22:29, Daniel Walker a écrit :
+>>> On Tue, Mar 09, 2021 at 08:47:09AM +0100, Christophe Leroy wrote:
+>>>>
+>>>>
+>>>> Le 09/03/2021 à 01:02, Daniel Walker a écrit :
+>>>>> This is a scripted mass convert of the config files to use
+>>>>> the new generic cmdline. There is a bit of a trim effect here.
+>>>>> It would seems that some of the config haven't been trimmed in
+>>>>> a while.
+>>>>
+>>>> If you do that in a separate patch, you loose bisectability.
+>>>>
+>>>> I think it would have been better to do things in a different way, more or less like I did in my series:
+>>>> 1/ Provide GENERIC cmdline at the same functionnality level as what is
+>>>> spread in the different architectures
+>>>> 2/ Convert architectures to the generic with least churn.
+>>>> 3/ Add new features to the generic
+>>>
+>>> You have to have the churn eventually, no matter how you do it. The only way you
+>>> don't have churn is if you never upgrade the feature set.
+>>>
+>>>
+>>>>>
+>>>>> The bash script used to convert is as follows,
+>>>>>
+>>>>> if [[ -z "$1" || -z "$2" ]]; then
+>>>>>            echo "Two arguments are needed."
+>>>>>            exit 1
+>>>>> fi
+>>>>> mkdir $1
+>>>>> cp $2 $1/.config
+>>>>> sed -i 's/CONFIG_CMDLINE=/CONFIG_CMDLINE_BOOL=y\nCONFIG_CMDLINE_PREPEND=/g' $1/.config
+>>>>
+>>>> This is not correct.
+>>>>
+>>>> By default, on powerpc the provided command line is used only if the bootloader doesn't provide one.
+>>>>
+>>>> Otherwise:
+>>>> - the builtin command line is appended to the one provided by the bootloader
+>>>> if CONFIG_CMDLINE_EXTEND is selected
+>>>> - the builtin command line replaces to the one provided by the bootloader if
+>>>> CONFIG_CMDLINE_FORCE is selected
+>>>
+>>> I think my changes maintain most of this due to the override of
+>>> CONFIG_CMDLINE_PREPEND. This is an upgrade and the inflexibility in powerpc is
+>>> an example of why these changes were created in the first place.
+>>
+>> "inflexibility in powerpc" : Can you elaborate ?
+>>
+>>>
+>>> For example , say the default command line is "root=/dev/issblk0" from iss476
+>>> platform. And the bootloader adds "root=/dev/sda1"
+>>>
+>>> The result is <prepend><bootloader><append>.
+>>
+>>
+>> I'm still having hard time understanding the benefit of having both <prepend> and <append>.
+>> Could you please provide a complete exemple from real life, ie what exactly the problem is and what
+>> it solves ?
+> 
+> It doesn't matter. We already have both cases and 'extend' has meant either one.
+> 
+> What someone wants is policy and the kernel shouldn't be defining the policy.
+> 
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
-Changelog v2:
--Fixed commit message
+Ok, so you agree we don't need to provide two CMDLINE, one to be appended and one to be prepended.
 
-Changelog v1:
--Fixed commit message and in-code comments
+Let's only provide once CMDLINE as of today, and ask the user to select whether he wants it appended 
+or prepended or replacee. Then no need to change all existing config to rename CONFIG_CMDLINE into 
+either of the new ones.
 
- arch/powerpc/include/asm/perf_event_server.h |  6 ++++++
- arch/powerpc/perf/core-book3s.c              | 14 ++++++++++++++
- 2 files changed, 20 insertions(+)
+That's the main difference between my series and Daniel's series. So I'll finish taking Will's 
+comment into account and we'll send out a v3 soon.
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 00e7e671bb4b..dde97d7d9253 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -67,6 +67,12 @@ struct power_pmu {
- 	 * the pmu supports extended perf regs capability
- 	 */
- 	int		capabilities;
-+	/*
-+	 * Function to check event code for values which are
-+	 * reserved. Function takes struct perf_event as input,
-+	 * since event code could be spread in attr.config*
-+	 */
-+	int		(*check_attr_config)(struct perf_event *ev);
- };
- 
- /*
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 6817331e22ff..c6eeb4fdc5fd 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1958,6 +1958,20 @@ static int power_pmu_event_init(struct perf_event *event)
- 
- 		if (ppmu->blacklist_ev && is_event_blacklisted(ev))
- 			return -EINVAL;
-+		/*
-+		 * PMU config registers have fields that are
-+		 * reserved and specific value to bit field as reserved.
-+		 * For ex., MMCRA[61:62] is Randome Sampling Mode (SM)
-+		 * and value of 0b11 to this field is reserved.
-+		 *
-+		 * This check is needed only for raw event type,
-+		 * since tools like fuzzer use raw event type to
-+		 * provide randomized event code values for test.
-+		 *
-+		 */
-+		if (ppmu->check_attr_config &&
-+		    ppmu->check_attr_config(event))
-+			return -EINVAL;
- 		break;
- 	default:
- 		return -ENOENT;
--- 
-2.26.2
-
+Thanks
+Christophe
