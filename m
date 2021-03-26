@@ -2,106 +2,123 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,MIME_HTML_ONLY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B40AC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 983EDC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:47:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD64461A0D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:40:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD64461A0D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0F46861A18
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:47:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F46861A18
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6Yl21yQnz3bp0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 07:40:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6Yvc1q0Xz3c15
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 07:47:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z9BrV8Eu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k379yqok;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=muriloo@linux.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Z9BrV8Eu; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=k379yqok; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6YkX5TLRz30Cb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 07:40:03 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12QKWsDp081357; Fri, 26 Mar 2021 16:39:55 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6Qlf5Ml7z2yxl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 02:25:33 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12QF4kbc054118; Fri, 26 Mar 2021 11:25:13 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : reply-to :
- cc : subject : date : message-id : in-reply-to : references : content-type
- : content-transfer-encoding : mime-version; s=pp1;
- bh=BHZoSNW9qmgtNXmNPJRG2LKwwg1rquCENaW6zCF//Yw=;
- b=Z9BrV8Eunrj/C393HtWukyThEYbjE5LIHjLpaQKJ9q4hkntGqXcFvFXhUxvgMQJn4kJe
- +jh/WyDozU0VmobEk/95aw8Q3XZQZGvRZXtUcGw68HtKYWXGBHWgmIpbuaIjrV+TtjYh
- PO3zMa5wFnx55lxw+9GcHvbV6yOOndoTvQrKVOBb2FLGx5NCHnrkm6vpGAJuKpc7UISH
- IHPB0lquQ2VKVcQS8VWA8sAf7JlopS05C5M+tEtRwoaiu+2IRgWDWPOEjssU61Xxyemz
- 2zVFRzmY25EELdhJaLQOKqZU4h6srd3M3A/KiSCHjtqYz26POooL8Mlxh30rXHMQp/3X sg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37hhp0ruxt-1
+ h=subject : mime-version :
+ content-type : from : in-reply-to : date : cc : content-transfer-encoding
+ : message-id : references : to; s=pp1;
+ bh=Gm+ijsFl4p3uMAan0H33QCN2mxd9l3KpwnR/Z1F/jPQ=;
+ b=k379yqokN8kyo9DBcT91evKesqHGR1Tuwdkcj1Kn4BrYSsUe8+tpmq5lX9bwT0Z2KeSM
+ EZXHH8PBs8MoQaYuAz4WXRSuba+NyMlPUrlFawDae4LkJmgbUFL9qlu0Kq1+LHuULvnW
+ yKZoBfrtHSVLo07wVP2u+ABUMnZGRjCXU8vvUOKNrteUE8aSt1sSwnbIXfN6rc+RpUkA
+ uPPjFBCByjOkIdBPDlN3B748dPMu2XMy5lHy5DpCajrZ/lemL4QggoGEt43b0l/H+6XK
+ jziQgZqRruAJrvKsu4nnDjlu2WCpRVeFTAvDHkzWyRbKrInEbFgcO3SLAM5n1rMGJqFX Aw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37hhghshnn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 16:39:55 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12QKZlIZ007475;
- Fri, 26 Mar 2021 20:39:55 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma01wdc.us.ibm.com with ESMTP id 37h14wquc6-1
+ Fri, 26 Mar 2021 11:25:12 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12QF4tDN054939;
+ Fri, 26 Mar 2021 11:25:12 -0400
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37hhghshmv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 20:39:55 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12QKdsQb34013456
+ Fri, 26 Mar 2021 11:25:12 -0400
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12QF7vJN008216;
+ Fri, 26 Mar 2021 15:25:10 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma01fra.de.ibm.com with ESMTP id 37h1518dex-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Mar 2021 15:25:10 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 12QFOmeJ19399124
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Mar 2021 20:39:54 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A94A4AC067;
- Fri, 26 Mar 2021 20:39:54 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DEF0DAC05F;
- Fri, 26 Mar 2021 20:39:53 +0000 (GMT)
-Received: from localhost (unknown [9.160.98.127])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTPS;
- Fri, 26 Mar 2021 20:39:53 +0000 (GMT)
-From: Murilo Opsfelder =?ISO-8859-1?Q?Ara=FAjo?= <muriloo@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/book3s64: Use the correct storage key value
- when calling H_PROTECT
-Date: Fri, 26 Mar 2021 17:39:26 -0300
-Message-ID: <11736956.O9o76ZdvQC@localhost.localdomain>
-Organization: IBM
-In-Reply-To: <20210326070755.304625-1-aneesh.kumar@linux.ibm.com>
-References: <20210326070755.304625-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
+ Fri, 26 Mar 2021 15:24:48 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3FBBD11C064;
+ Fri, 26 Mar 2021 15:25:07 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3E45C11C050;
+ Fri, 26 Mar 2021 15:24:43 +0000 (GMT)
+Received: from [9.124.223.127] (unknown [9.124.223.127])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri, 26 Mar 2021 15:24:41 +0000 (GMT)
+Subject: Re: [PATCH V2 3/5] tools/perf: Add powerpc support for
+ PERF_SAMPLE_WEIGHT_STRUCT
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
+Content-Type: text/html;
+	charset=us-ascii
+X-Apple-Auto-Saved: 1
+X-Apple-Mail-Plain-Text-Draft: yes
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+X-Apple-Mail-Remote-Attachments: YES
+X-Apple-Base-Url: x-msg://2/
+In-Reply-To: <YFuWb3S8p0ZGjmGu@krava>
+X-Apple-Windows-Friendly: 1
+Date: Fri, 26 Mar 2021 20:53:04 +0530
+X-Apple-Mail-Signature: SKIP_SIGNATURE
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <80EE46ED-9007-4CB7-9A52-A7A2ADC616C6@linux.vnet.ibm.com>
+References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1616425047-1666-4-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <YFuWb3S8p0ZGjmGu@krava>
+X-Uniform-Type-Identifier: com.apple.mail-draft
+To: Jiri Olsa <jolsa@redhat.com>
+X-Mailer: Apple Mail (2.3608.120.23.2.4)
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: EnHtTyABP8Vr-4VbSJqfNa-UTYIO_6kK
-X-Proofpoint-GUID: EnHtTyABP8Vr-4VbSJqfNa-UTYIO_6kK
-Content-Transfer-Encoding: 7Bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
-MIME-Version: 1.0
+X-Proofpoint-ORIG-GUID: kF_aDhmMcV66rL06HTmTXBSzna55EN-c
+X-Proofpoint-GUID: hsb2U2DAWpG6y9BKGotENgADXLOkjyHj
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-26_11:2021-03-26,
+ definitions=2021-03-26_06:2021-03-26,
  2021-03-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0
- malwarescore=0 priorityscore=1501 lowpriorityscore=0 mlxscore=0
- clxscore=1011 suspectscore=0 phishscore=0 mlxlogscore=999 spamscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2103250000 definitions=main-2103260152
+ suspectscore=0 spamscore=0
+ lowpriorityscore=0 malwarescore=0 adultscore=0 clxscore=1015
+ priorityscore=1501 phishscore=0 mlxscore=0 impostorscore=0 bulkscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103250000 definitions=main-2103260115
+X-Mailman-Approved-At: Sat, 27 Mar 2021 07:47:30 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,97 +130,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: muriloo@linux.ibm.com
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: ravi.bangoria@linux.ibm.com, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ peterz@infradead.org, linux-kernel@vger.kernel.org, acme@kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org, kjain@linux.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Friday, March 26, 2021 4:07:55 AM -03 Aneesh Kumar K.V wrote:
-> H_PROTECT expect the flag value to include
-> flags: AVPN, pp0, pp1, pp2, key0-key4, Noexec, CMO Option flags
->
-> This patch updates hpte_updatepp() to fetch the storage key value from the
-> linux page table and use the same in H_PROTECT hcall.
->
-> native_hpte_updatepp() is not updated because the kernel doesn't clear the
-> existing storage key value there. The kernel also doesn't use
-> hpte_updatepp() callback for updating storage keys.
->
-> This fixes the below kernel crash observed with KUAP enabled.
->
->  BUG: Unable to handle kernel data access on write at 0xc009fffffc440000
->  Faulting instruction address: 0xc0000000000b7030
->  Key fault AMR: 0xfcffffffffffffff IAMR: 0xc0000077bc498100
->  Found HPTE: v = 0x40070adbb6fffc05 r = 0x1ffffffffff1194
->  Oops: Kernel access of bad area, sig: 11 [#1]
->  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-> .........
->  CFAR: c000000000010100 DAR: c009fffffc440000 DSISR: 02200000 IRQMASK: 0
-> ..........
->  NIP [c0000000000b7030] memset+0x68/0x104
->  LR [c0000000003ef00c] pcpu_alloc+0x54c/0xb50
->  Call Trace:
->  [c00000001c7534f0] [c0000000003ef01c] pcpu_alloc+0x55c/0xb50 (unreliable)
->  [c00000001c753600] [c0000000008bb214] blk_stat_alloc_callback+0x94/0x150
->  [c00000001c753650] [c0000000008b7a04]
-> blk_mq_init_allocated_queue+0x64/0x560 [c00000001c7536b0]
-> [c0000000008b8024] blk_mq_init_queue+0x54/0xb0 [c00000001c7536e0]
-> [c000000000b87650] scsi_mq_alloc_queue+0x30/0xa0 [c00000001c753710]
-> [c000000000b88b2c] scsi_alloc_sdev+0x1cc/0x300 [c00000001c7537b0]
-> [c000000000b897b0] scsi_probe_and_add_lun+0xb50/0x1020 [c00000001c753950]
-> [c000000000b8a35c] __scsi_scan_target+0x17c/0x790 [c00000001c753a80]
-> [c000000000b8ab90] scsi_scan_channel+0x90/0xe0 [c00000001c753ad0]
-> [c000000000b8ae48] scsi_scan_host_selected+0x148/0x1f0 [c00000001c753b60]
-> [c000000000b8b31c] do_scan_async+0x2c/0x2a0
->  [c00000001c753be0] [c000000000187a18] async_run_entry_fn+0x78/0x220
->  [c00000001c753c70] [c000000000176a74] process_one_work+0x264/0x540
->  [c00000001c753d10] [c000000000177338] worker_thread+0xa8/0x600
->  [c00000001c753da0] [c0000000001807b0] kthread+0x190/0x1a0
->  [c00000001c753e10] [c00000000000d8f0] ret_from_kernel_thread+0x5c/0x6c
->
-> With KUAP enabled the kernel uses storage key 3 for all its translations.
-> But as shown by the debug print, in this specific case we have the hash
-> page table entry created with key value 0.
->
-> [    2.249497] Found HPTE: v = 0x40070adbb6fffc05 r = 0x1ffffffffff1194
->
-> and DSISR indicates a key fault.
->
-> This can happen due to parallel fault on the same EA by different CPUs
->
-> CPU 0					CPU 1
-> fault on X
->
-> H_PAGE_BUSY set
-> 					fault on X
->
-> finish fault handling and
-> clear H_PAGE_BUSY
-> 					check for H_PAGE_BUSY
-> 					continue with fault 
-handling.
->
-> This implies CPU1 will end up calling hpte_updatepp for address X
-> and the kernel updated the hash pte entry with key 0
->
-> Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping
-> with hash translation")
->
-> Debugged-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reported-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
-
-I've tested this on top of commit db24726bfefa68c606947a86132591568a06bfb4
-("Merge tag 'integrity-v5.12-fix' of git://git.kernel.org/pub/scm/linux/
-kernel/git/zohar/linux-integrity"),
-and the reported issue did not manifest.
-
-Thank you, Michael and Aneesh, for the help.
-
-Tested-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-
---
-Murilo
-
+<html><head></head><body dir=3D"auto" style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div =
+class=3D"ApplePlainTextBody"><br><br><blockquote type=3D"cite">On =
+25-Mar-2021, at 1:13 AM, Jiri Olsa &lt;jolsa@redhat.com&gt; =
+wrote:<br><br>On Mon, Mar 22, 2021 at 10:57:25AM -0400, Athira Rajeev =
+wrote:<br><blockquote type=3D"cite">Add arch specific =
+arch_evsel__set_sample_weight() to set the new<br>sample type for =
+powerpc.<br><br>Add arch specific arch_perf_parse_sample_weight() to =
+store the<br>sample-&gt;weight values depending on the sample type =
+applied.<br>if the new sample type (PERF_SAMPLE_WEIGHT_STRUCT) is =
+applied,<br>store only the lower 32 bits to sample-&gt;weight. If sample =
+type<br>is 'PERF_SAMPLE_WEIGHT', store the full 64-bit to =
+sample-&gt;weight.<br><br>Signed-off-by: Athira Rajeev =
+&lt;atrajeev@linux.vnet.ibm.com&gt;<br>---<br>tools/perf/arch/powerpc/util=
+/Build &nbsp;&nbsp;| &nbsp;2 ++<br>tools/perf/arch/powerpc/util/event.c =
+| 32 =
+++++++++++++++++++++++++++++++++<br>tools/perf/arch/powerpc/util/evsel.c =
+| &nbsp;8 ++++++++<br>3 files changed, 42 insertions(+)<br>create mode =
+100644 tools/perf/arch/powerpc/util/event.c<br>create mode 100644 =
+tools/perf/arch/powerpc/util/evsel.c<br><br>diff --git =
+a/tools/perf/arch/powerpc/util/Build =
+b/tools/perf/arch/powerpc/util/Build<br>index b7945e5a543b..8a79c4126e5b =
+100644<br>--- a/tools/perf/arch/powerpc/util/Build<br>+++ =
+b/tools/perf/arch/powerpc/util/Build<br>@@ -4,6 +4,8 @@ perf-y +=3D =
+kvm-stat.o<br>perf-y +=3D perf_regs.o<br>perf-y +=3D =
+mem-events.o<br>perf-y +=3D sym-handling.o<br>+perf-y +=3D =
+evsel.o<br>+perf-y +=3D event.o<br><br>perf-$(CONFIG_DWARF) +=3D =
+dwarf-regs.o<br>perf-$(CONFIG_DWARF) +=3D skip-callchain-idx.o<br>diff =
+--git a/tools/perf/arch/powerpc/util/event.c =
+b/tools/perf/arch/powerpc/util/event.c<br>new file mode 100644<br>index =
+000000000000..f49d32c2c8ae<br>--- /dev/null<br>+++ =
+b/tools/perf/arch/powerpc/util/event.c<br>@@ -0,0 +1,32 @@<br>+// =
+SPDX-License-Identifier: GPL-2.0<br>+#include =
+&lt;linux/types.h&gt;<br>+#include &lt;linux/string.h&gt;<br>+#include =
+&lt;linux/zalloc.h&gt;<br>+<br>+#include =
+"../../../util/event.h"<br>+#include =
+"../../../util/synthetic-events.h"<br>+#include =
+"../../../util/machine.h"<br>+#include =
+"../../../util/tool.h"<br>+#include "../../../util/map.h"<br>+#include =
+"../../../util/debug.h"<br></blockquote><br>nit, just #include =
+"utils/...h" should work no?<br><br>other than that, the patchset looks =
+ok to me<br><br>Acked-by: Jiri Olsa =
+&lt;jolsa@redhat.com&gt;<br></blockquote><br><br>Hi Jiri, =
+Arnaldo<br><br>Thanks for reviewing the patch set.<br>I checked that, =
+just using "utils/...h" also works.<br>Below is the change which I =
+verified. Since the patches are presently merged in =
+<br>https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/log/?h=3D=
+tmp.perf/core, <br>can you please suggest how can we go about this =
+change ?<br><br>diff --git a/tools/perf/arch/powerpc/util/event.c =
+b/tools/perf/arch/powerpc/util/event.c<br>index =
+3bf441257466..c479d0a0e696 100644<br>--- =
+a/tools/perf/arch/powerpc/util/event.c<br>+++ =
+b/tools/perf/arch/powerpc/util/event.c<br>@@ -3,12 +3,12 @@<br> #include =
+&lt;linux/string.h&gt;<br> #include =
+&lt;linux/zalloc.h&gt;<br><br>-#include =
+"../../../util/event.h"<br>-#include =
+"../../../util/synthetic-events.h"<br>-#include =
+"../../../util/machine.h"<br>-#include =
+"../../../util/tool.h"<br>-#include "../../../util/map.h"<br>-#include =
+"../../../util/debug.h"<br>+#include "util/event.h"<br>+#include =
+"util/synthetic-events.h"<br>+#include "util/machine.h"<br>+#include =
+"util/tool.h"<br>+#include "util/map.h"<br>+#include =
+"util/debug.h"<br><br> void arch_perf_parse_sample_weight(struct =
+perf_sample *data,<br> <span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span> &nbsp;&nbsp;const __u64 *array, =
+u64 type)<br><br><br>Thanks<br>Athira<br><br><blockquote =
+type=3D"cite"><br>thanks,<br>jirka<br><br><blockquote =
+type=3D"cite">+<br>+void arch_perf_parse_sample_weight(struct =
+perf_sample *data,<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span> &nbsp;&nbsp;const __u64 *array, =
+u64 type)<br>+{<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>union perf_sample_weight =
+weight;<br>+<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">=
+	</span>weight.full =3D *array;<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>if (type &amp; =
+PERF_SAMPLE_WEIGHT)<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>data-&gt;weight =3D =
+weight.full;<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">=
+	</span>else<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>data-&gt;weight =3D =
+weight.var1_dw;<br>+}<br>+<br>+void =
+arch_perf_synthesize_sample_weight(const struct perf_sample =
+*data,<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>__u64 *array, u64 type)<br>+{<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>*array =3D =
+data-&gt;weight;<br>+<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>if (type &amp; =
+PERF_SAMPLE_WEIGHT_STRUCT)<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>*array &amp;=3D =
+0xffffffff;<br>+}<br>diff --git a/tools/perf/arch/powerpc/util/evsel.c =
+b/tools/perf/arch/powerpc/util/evsel.c<br>new file mode 100644<br>index =
+000000000000..2f733cdc8dbb<br>--- /dev/null<br>+++ =
+b/tools/perf/arch/powerpc/util/evsel.c<br>@@ -0,0 +1,8 @@<br>+// =
+SPDX-License-Identifier: GPL-2.0<br>+#include =
+&lt;stdio.h&gt;<br>+#include "util/evsel.h"<br>+<br>+void =
+arch_evsel__set_sample_weight(struct evsel *evsel)<br>+{<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>evsel__set_sample_bit(evsel, WEIGHT_STRUCT);<br>+}<br>-- =
+<br>1.8.3.1<br></blockquote></blockquote><br></div></body></html>=
