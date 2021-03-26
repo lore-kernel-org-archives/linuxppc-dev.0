@@ -2,123 +2,65 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,MIME_HTML_ONLY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 983EDC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:47:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A375C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 21:50:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F46861A18
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:47:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F46861A18
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D163961976
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 21:50:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D163961976
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6Yvc1q0Xz3c15
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 07:47:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k379yqok;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6bJD1S31z3c7Z
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 08:50:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
+ helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=k379yqok; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6Qlf5Ml7z2yxl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 02:25:33 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12QF4kbc054118; Fri, 26 Mar 2021 11:25:13 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : mime-version :
- content-type : from : in-reply-to : date : cc : content-transfer-encoding
- : message-id : references : to; s=pp1;
- bh=Gm+ijsFl4p3uMAan0H33QCN2mxd9l3KpwnR/Z1F/jPQ=;
- b=k379yqokN8kyo9DBcT91evKesqHGR1Tuwdkcj1Kn4BrYSsUe8+tpmq5lX9bwT0Z2KeSM
- EZXHH8PBs8MoQaYuAz4WXRSuba+NyMlPUrlFawDae4LkJmgbUFL9qlu0Kq1+LHuULvnW
- yKZoBfrtHSVLo07wVP2u+ABUMnZGRjCXU8vvUOKNrteUE8aSt1sSwnbIXfN6rc+RpUkA
- uPPjFBCByjOkIdBPDlN3B748dPMu2XMy5lHy5DpCajrZ/lemL4QggoGEt43b0l/H+6XK
- jziQgZqRruAJrvKsu4nnDjlu2WCpRVeFTAvDHkzWyRbKrInEbFgcO3SLAM5n1rMGJqFX Aw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37hhghshnn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 11:25:12 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12QF4tDN054939;
- Fri, 26 Mar 2021 11:25:12 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37hhghshmv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 11:25:12 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12QF7vJN008216;
- Fri, 26 Mar 2021 15:25:10 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma01fra.de.ibm.com with ESMTP id 37h1518dex-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 15:25:10 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 12QFOmeJ19399124
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Mar 2021 15:24:48 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3FBBD11C064;
- Fri, 26 Mar 2021 15:25:07 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3E45C11C050;
- Fri, 26 Mar 2021 15:24:43 +0000 (GMT)
-Received: from [9.124.223.127] (unknown [9.124.223.127])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri, 26 Mar 2021 15:24:41 +0000 (GMT)
-Subject: Re: [PATCH V2 3/5] tools/perf: Add powerpc support for
- PERF_SAMPLE_WEIGHT_STRUCT
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
-Content-Type: text/html;
-	charset=us-ascii
-X-Apple-Auto-Saved: 1
-X-Apple-Mail-Plain-Text-Draft: yes
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-X-Apple-Mail-Remote-Attachments: YES
-X-Apple-Base-Url: x-msg://2/
-In-Reply-To: <YFuWb3S8p0ZGjmGu@krava>
-X-Apple-Windows-Friendly: 1
-Date: Fri, 26 Mar 2021 20:53:04 +0530
-X-Apple-Mail-Signature: SKIP_SIGNATURE
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <80EE46ED-9007-4CB7-9A52-A7A2ADC616C6@linux.vnet.ibm.com>
-References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1616425047-1666-4-git-send-email-atrajeev@linux.vnet.ibm.com>
- <YFuWb3S8p0ZGjmGu@krava>
-X-Uniform-Type-Identifier: com.apple.mail-draft
-To: Jiri Olsa <jolsa@redhat.com>
-X-Mailer: Apple Mail (2.3608.120.23.2.4)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: kF_aDhmMcV66rL06HTmTXBSzna55EN-c
-X-Proofpoint-GUID: hsb2U2DAWpG6y9BKGotENgADXLOkjyHj
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
- definitions=2021-03-26_06:2021-03-26,
- 2021-03-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0
- lowpriorityscore=0 malwarescore=0 adultscore=0 clxscore=1015
- priorityscore=1501 phishscore=0 mlxscore=0 impostorscore=0 bulkscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2103250000 definitions=main-2103260115
-X-Mailman-Approved-At: Sat, 27 Mar 2021 07:47:30 +1100
+X-Greylist: delayed 1608 seconds by postgrey-1.36 at boromir;
+ Sat, 27 Mar 2021 08:50:32 AEDT
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6bHr5Mpqz3bwG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 08:50:32 +1100 (AEDT)
+Received: from in01.mta.xmission.com ([166.70.13.51])
+ by out03.mta.xmission.com with esmtps (TLS1.2) tls
+ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1lPtvb-000SOd-No; Fri, 26 Mar 2021 15:23:35 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=fess.xmission.com) by in01.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1lPtva-00074S-1a; Fri, 26 Mar 2021 15:23:35 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@lst.de>
+References: <20210326143831.1550030-1-hch@lst.de>
+ <20210326143831.1550030-4-hch@lst.de>
+Date: Fri, 26 Mar 2021 16:22:33 -0500
+In-Reply-To: <20210326143831.1550030-4-hch@lst.de> (Christoph Hellwig's
+ message of "Fri, 26 Mar 2021 15:38:30 +0100")
+Message-ID: <m1y2e9vcdi.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
+X-XM-SPF: eid=1lPtva-00074S-1a; ; ; mid=<m1y2e9vcdi.fsf@fess.ebiederm.org>; ; ;
+ hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
+ ; ; spf=neutral
+X-XM-AID: U2FsdGVkX18JI1x3OTuGSmP1SAxwgJUKnILVVDmHpGw=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 3/4] exec: simplify the compat syscall handling
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,124 +72,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, Madhavan Srinivasan <maddy@linux.ibm.com>,
- peterz@infradead.org, linux-kernel@vger.kernel.org, acme@kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org, kjain@linux.ibm.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kan.liang@linux.intel.com
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Brian Gerst <brgerst@gmail.com>, x86@kernel.org, linux-mips@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-<html><head></head><body dir=3D"auto" style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; line-break: after-white-space;" =
-class=3D"ApplePlainTextBody"><div =
-class=3D"ApplePlainTextBody"><br><br><blockquote type=3D"cite">On =
-25-Mar-2021, at 1:13 AM, Jiri Olsa &lt;jolsa@redhat.com&gt; =
-wrote:<br><br>On Mon, Mar 22, 2021 at 10:57:25AM -0400, Athira Rajeev =
-wrote:<br><blockquote type=3D"cite">Add arch specific =
-arch_evsel__set_sample_weight() to set the new<br>sample type for =
-powerpc.<br><br>Add arch specific arch_perf_parse_sample_weight() to =
-store the<br>sample-&gt;weight values depending on the sample type =
-applied.<br>if the new sample type (PERF_SAMPLE_WEIGHT_STRUCT) is =
-applied,<br>store only the lower 32 bits to sample-&gt;weight. If sample =
-type<br>is 'PERF_SAMPLE_WEIGHT', store the full 64-bit to =
-sample-&gt;weight.<br><br>Signed-off-by: Athira Rajeev =
-&lt;atrajeev@linux.vnet.ibm.com&gt;<br>---<br>tools/perf/arch/powerpc/util=
-/Build &nbsp;&nbsp;| &nbsp;2 ++<br>tools/perf/arch/powerpc/util/event.c =
-| 32 =
-++++++++++++++++++++++++++++++++<br>tools/perf/arch/powerpc/util/evsel.c =
-| &nbsp;8 ++++++++<br>3 files changed, 42 insertions(+)<br>create mode =
-100644 tools/perf/arch/powerpc/util/event.c<br>create mode 100644 =
-tools/perf/arch/powerpc/util/evsel.c<br><br>diff --git =
-a/tools/perf/arch/powerpc/util/Build =
-b/tools/perf/arch/powerpc/util/Build<br>index b7945e5a543b..8a79c4126e5b =
-100644<br>--- a/tools/perf/arch/powerpc/util/Build<br>+++ =
-b/tools/perf/arch/powerpc/util/Build<br>@@ -4,6 +4,8 @@ perf-y +=3D =
-kvm-stat.o<br>perf-y +=3D perf_regs.o<br>perf-y +=3D =
-mem-events.o<br>perf-y +=3D sym-handling.o<br>+perf-y +=3D =
-evsel.o<br>+perf-y +=3D event.o<br><br>perf-$(CONFIG_DWARF) +=3D =
-dwarf-regs.o<br>perf-$(CONFIG_DWARF) +=3D skip-callchain-idx.o<br>diff =
---git a/tools/perf/arch/powerpc/util/event.c =
-b/tools/perf/arch/powerpc/util/event.c<br>new file mode 100644<br>index =
-000000000000..f49d32c2c8ae<br>--- /dev/null<br>+++ =
-b/tools/perf/arch/powerpc/util/event.c<br>@@ -0,0 +1,32 @@<br>+// =
-SPDX-License-Identifier: GPL-2.0<br>+#include =
-&lt;linux/types.h&gt;<br>+#include &lt;linux/string.h&gt;<br>+#include =
-&lt;linux/zalloc.h&gt;<br>+<br>+#include =
-"../../../util/event.h"<br>+#include =
-"../../../util/synthetic-events.h"<br>+#include =
-"../../../util/machine.h"<br>+#include =
-"../../../util/tool.h"<br>+#include "../../../util/map.h"<br>+#include =
-"../../../util/debug.h"<br></blockquote><br>nit, just #include =
-"utils/...h" should work no?<br><br>other than that, the patchset looks =
-ok to me<br><br>Acked-by: Jiri Olsa =
-&lt;jolsa@redhat.com&gt;<br></blockquote><br><br>Hi Jiri, =
-Arnaldo<br><br>Thanks for reviewing the patch set.<br>I checked that, =
-just using "utils/...h" also works.<br>Below is the change which I =
-verified. Since the patches are presently merged in =
-<br>https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/log/?h=3D=
-tmp.perf/core, <br>can you please suggest how can we go about this =
-change ?<br><br>diff --git a/tools/perf/arch/powerpc/util/event.c =
-b/tools/perf/arch/powerpc/util/event.c<br>index =
-3bf441257466..c479d0a0e696 100644<br>--- =
-a/tools/perf/arch/powerpc/util/event.c<br>+++ =
-b/tools/perf/arch/powerpc/util/event.c<br>@@ -3,12 +3,12 @@<br> #include =
-&lt;linux/string.h&gt;<br> #include =
-&lt;linux/zalloc.h&gt;<br><br>-#include =
-"../../../util/event.h"<br>-#include =
-"../../../util/synthetic-events.h"<br>-#include =
-"../../../util/machine.h"<br>-#include =
-"../../../util/tool.h"<br>-#include "../../../util/map.h"<br>-#include =
-"../../../util/debug.h"<br>+#include "util/event.h"<br>+#include =
-"util/synthetic-events.h"<br>+#include "util/machine.h"<br>+#include =
-"util/tool.h"<br>+#include "util/map.h"<br>+#include =
-"util/debug.h"<br><br> void arch_perf_parse_sample_weight(struct =
-perf_sample *data,<br> <span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span> &nbsp;&nbsp;const __u64 *array, =
-u64 type)<br><br><br>Thanks<br>Athira<br><br><blockquote =
-type=3D"cite"><br>thanks,<br>jirka<br><br><blockquote =
-type=3D"cite">+<br>+void arch_perf_parse_sample_weight(struct =
-perf_sample *data,<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span> &nbsp;&nbsp;const __u64 *array, =
-u64 type)<br>+{<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>union perf_sample_weight =
-weight;<br>+<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">=
-	</span>weight.full =3D *array;<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>if (type &amp; =
-PERF_SAMPLE_WEIGHT)<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>data-&gt;weight =3D =
-weight.full;<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">=
-	</span>else<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>data-&gt;weight =3D =
-weight.var1_dw;<br>+}<br>+<br>+void =
-arch_perf_synthesize_sample_weight(const struct perf_sample =
-*data,<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>__u64 *array, u64 type)<br>+{<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>*array =3D =
-data-&gt;weight;<br>+<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>if (type &amp; =
-PERF_SAMPLE_WEIGHT_STRUCT)<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>*array &amp;=3D =
-0xffffffff;<br>+}<br>diff --git a/tools/perf/arch/powerpc/util/evsel.c =
-b/tools/perf/arch/powerpc/util/evsel.c<br>new file mode 100644<br>index =
-000000000000..2f733cdc8dbb<br>--- /dev/null<br>+++ =
-b/tools/perf/arch/powerpc/util/evsel.c<br>@@ -0,0 +1,8 @@<br>+// =
-SPDX-License-Identifier: GPL-2.0<br>+#include =
-&lt;stdio.h&gt;<br>+#include "util/evsel.h"<br>+<br>+void =
-arch_evsel__set_sample_weight(struct evsel *evsel)<br>+{<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>evsel__set_sample_bit(evsel, WEIGHT_STRUCT);<br>+}<br>-- =
-<br>1.8.3.1<br></blockquote></blockquote><br></div></body></html>=
+Christoph Hellwig <hch@lst.de> writes:
+
+
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 06e07278b456fa..b34c1eb9e7ad8e 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -391,47 +391,34 @@ static int bprm_mm_init(struct linux_binprm *bprm)
+>  	return err;
+>  }
+>  
+> -struct user_arg_ptr {
+> -#ifdef CONFIG_COMPAT
+> -	bool is_compat;
+> -#endif
+> -	union {
+> -		const char __user *const __user *native;
+> -#ifdef CONFIG_COMPAT
+> -		const compat_uptr_t __user *compat;
+> -#endif
+> -	} ptr;
+> -};
+> -
+> -static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
+> +static const char __user *
+> +get_user_arg_ptr(const char __user *const __user *argv, int nr)
+>  {
+> -	const char __user *native;
+> -
+> -#ifdef CONFIG_COMPAT
+> -	if (unlikely(argv.is_compat)) {
+> +	if (in_compat_syscall()) {
+> +		const compat_uptr_t __user *compat_argv =
+> +			compat_ptr((unsigned long)argv);
+
+Ouch!  Passing a pointer around as the wrong type through the kernel!
+
+Perhaps we should reduce everything to do_execveat and
+do_execveat_compat.  Then there would be no need for anything
+to do anything odd with the pointer types.
+
+I think the big change would be to factor out a copy_string out
+of copy_strings, that performs all of the work once we know the proper
+pointer value.
+
+Casting pointers from one type to another scares me as one mistake means
+we are doing something wrong and probably exploitable.
+
+
+Eric
+
+
+
+
+>  		compat_uptr_t compat;
+>  
+> -		if (get_user(compat, argv.ptr.compat + nr))
+> +		if (get_user(compat, compat_argv + nr))
+>  			return ERR_PTR(-EFAULT);
+> -
+>  		return compat_ptr(compat);
+> -	}
+> -#endif
+> -
+> -	if (get_user(native, argv.ptr.native + nr))
+> -		return ERR_PTR(-EFAULT);
+> +	} else {
+> +		const char __user *native;
+>  
+> -	return native;
+> +		if (get_user(native, argv + nr))
+> +			return ERR_PTR(-EFAULT);
+> +		return native;
+> +	}
+>  }
+>  
