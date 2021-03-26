@@ -2,67 +2,62 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63BE5C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 11:55:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9512EC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:45:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5714061585
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 11:55:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5714061585
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=163.com
+	by mail.kernel.org (Postfix) with ESMTPS id 008B461949
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:45:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 008B461949
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6L5930vpz3c2x
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 22:55:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=OE282vqP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=163.com
- (client-ip=220.181.12.12; helo=m12-12.163.com;
- envelope-from=dingsenjie@163.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256
- header.s=s110527 header.b=OE282vqP; dkim-atps=neutral
-Received: from m12-12.163.com (m12-12.163.com [220.181.12.12])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6NWx23kSz3c2p
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 00:45:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6L4g0m5Cz2yy5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 22:54:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
- s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=qmOVU
- bBT6UUgOqC+nqtqAfxo5EXyRbjGxCrrXHUkSkY=; b=OE282vqPxehvpHcP6Jnt0
- vHSIkxXunmFunj6W+2fuUnDATpyvtlgT4Kr9GJ+XkLACOwJnJquDnIVmkpNT3wLJ
- 0o1jZfOSeYG71T1uy8RMrnMM9gxR7MQ6lfsZkFKYOToCCV0pTcI17BaN372LlrUL
- m/mmoiVvuyeNFdKQLiPFxE=
-Received: from COOL-20201222LC.ccdomain.com (unknown [218.94.48.178])
- by smtp8 (Coremail) with SMTP id DMCowACXG5hNy11gTlIqWg--.38911S2;
- Fri, 26 Mar 2021 19:53:52 +0800 (CST)
-From: dingsenjie@163.com
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org,
-	paulus@samba.org
-Subject: [PATCH] powerpc: powernv: Remove unneeded variable: "rc"
-Date: Fri, 26 Mar 2021 19:53:56 +0800
-Message-Id: <20210326115356.12444-1-dingsenjie@163.com>
-X-Mailer: git-send-email 2.21.0.windows.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DMCowACXG5hNy11gTlIqWg--.38911S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Gw1kJw4kAFykWr1UAw4UXFb_yoWkuFg_Jw
- 48t3yYkrs7trWqy3s8Cw1fXryDA39agr1Utr1aga1akrnxKasxGrWDury3ZayxXr1jyFWD
- GFn8GrZ0kFyxAjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU8imRUUUUUU==
-X-Originating-IP: [218.94.48.178]
-X-CM-SenderInfo: 5glqw25hqmxvi6rwjhhfrp/1tbiThFhyFUDIa1M6gAAsK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6NWV4lNBz2yxl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 00:44:52 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4F6NWN2bwmz9tyyY;
+ Fri, 26 Mar 2021 14:44:48 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id WXR477eJDIpw; Fri, 26 Mar 2021 14:44:48 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F6NWN1k0Gz9tyyV;
+ Fri, 26 Mar 2021 14:44:48 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 196218B8C9;
+ Fri, 26 Mar 2021 14:44:49 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id um4ZFYXC0Irt; Fri, 26 Mar 2021 14:44:49 +0100 (CET)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CD9DC8B8C7;
+ Fri, 26 Mar 2021 14:44:48 +0100 (CET)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5A96B67611; Fri, 26 Mar 2021 13:44:49 +0000 (UTC)
+Message-Id: <f57bc57d4032a1893b22c39adcd671297610b31c.1616765869.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1616765869.git.christophe.leroy@csgroup.eu>
+References: <cover.1616765869.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 02/17] drivers: of: use cmdline building function
+To: will@kernel.org, danielwa@cisco.com, robh@kernel.org,
+ daniel@gimpelevich.san-francisco.ca.us
+Date: Fri, 26 Mar 2021 13:44:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,46 +69,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dingsenjie <dingsenjie@yulong.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, devicetree@vger.kernel.org,
+ microblaze <monstr@monstr.eu>, linux-xtensa@linux-xtensa.org,
+ linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, nios2 <ley.foon.tan@intel.com>,
+ linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: dingsenjie <dingsenjie@yulong.com>
+This patch uses the new cmdline building function to
+concatenate the of provided cmdline with built-in parts
+based on compile-time options.
 
-Remove unneeded variable: "rc".
-
-Signed-off-by: dingsenjie <dingsenjie@yulong.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/powernv/opal-prd.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/of/fdt.c | 23 ++++-------------------
+ 1 file changed, 4 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
-index deddaeb..a191f4c 100644
---- a/arch/powerpc/platforms/powernv/opal-prd.c
-+++ b/arch/powerpc/platforms/powernv/opal-prd.c
-@@ -105,7 +105,6 @@ static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	size_t addr, size;
- 	pgprot_t page_prot;
--	int rc;
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index dcc1dd96911a..cf2b95b8f298 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -25,6 +25,7 @@
+ #include <linux/serial_core.h>
+ #include <linux/sysfs.h>
+ #include <linux/random.h>
++#include <linux/cmdline.h>
  
- 	pr_devel("opal_prd_mmap(0x%016lx, 0x%016lx, 0x%lx, 0x%lx)\n",
- 			vma->vm_start, vma->vm_end, vma->vm_pgoff,
-@@ -121,10 +120,8 @@ static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
- 	page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
- 					 size, vma->vm_page_prot);
+ #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+ #include <asm/page.h>
+@@ -1050,26 +1051,10 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
  
--	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
-+	return remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
- 				page_prot);
--
--	return rc;
- }
+ 	/* Retrieve command line */
+ 	p = of_get_flat_dt_prop(node, "bootargs", &l);
+-	if (p != NULL && l > 0)
+-		strlcpy(data, p, min(l, COMMAND_LINE_SIZE));
++	if (l <= 0)
++		p = NULL;
  
- static bool opal_msg_queue_empty(void)
+-	/*
+-	 * CONFIG_CMDLINE is meant to be a default in case nothing else
+-	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
+-	 * is set in which case we override whatever was found earlier.
+-	 */
+-#ifdef CONFIG_CMDLINE
+-#if defined(CONFIG_CMDLINE_EXTEND)
+-	strlcat(data, " ", COMMAND_LINE_SIZE);
+-	strlcat(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+-#elif defined(CONFIG_CMDLINE_FORCE)
+-	strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+-#else
+-	/* No arguments from boot loader, use kernel's  cmdl*/
+-	if (!((char *)data)[0])
+-		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+-#endif
+-#endif /* CONFIG_CMDLINE */
++	cmdline_build(data, p, COMMAND_LINE_SIZE);
+ 
+ 	pr_debug("Command line is: %s\n", (char *)data);
+ 
 -- 
-1.9.1
-
+2.25.0
 
