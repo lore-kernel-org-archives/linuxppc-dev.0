@@ -2,82 +2,67 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9BE6C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 06:13:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8318AC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 06:14:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0135561A0A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 06:13:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0135561A0A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 030E961A0F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 06:14:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 030E961A0F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6BVR2jjNz3bxM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 17:13:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6BWD2ctBz3c3L
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 17:14:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=BN177VN4;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=2+gf1yHr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1031;
- helo=mail-pj1-x1031.google.com; envelope-from=dja@axtens.net;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+31783f3a8021f30233dc+6424+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=BN177VN4; dkim-atps=neutral
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
- [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=2+gf1yHr; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6BTz0wYPz30HV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 17:12:52 +1100 (AEDT)
-Received: by mail-pj1-x1031.google.com with SMTP id s21so2080780pjq.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Mar 2021 23:12:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=HVffRheGZvUm096i8rL3qZdYAPWZa2jcLg62qh4EMbg=;
- b=BN177VN4tIki5x7mq197cJpgGWmB/tDhiLj5PpVbW40dTDlstqyj7/uB0+ZhaiN21g
- I7v0gN6JcwN1MgwK2tedFC1HTPpxiphCtz8xY9bk2hM54Z6Ju8Z+Xe0Aty8lqcrtdrxK
- SgKSnZxr2DfpvYwnjTLteEdgC4wSmExC0ATxU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=HVffRheGZvUm096i8rL3qZdYAPWZa2jcLg62qh4EMbg=;
- b=OstNYpSwy/t1QrO31BSTNNdV4neuVwyCkQzw0V6WIBhXca9ZPw4Scdy/ATIJtcW3lp
- omcQGdvG7UczsKRb50GJjSnx/bqScaAh2P8nJ+KQG8iymbewwfswptrmLwBAJ0x6qlyA
- 7hZ89hUMcgWLSRqSb398GE+jWsKPPgo6d9R4+WiubG/FWWNsvjxmsIY1xwk4ZfokNxM3
- Jh0648RyP5s9X7hTsJyuUwhKz/70Zvwq0/bfAaIskIrpMDbGxR7DvxPSqz91K9zo1r/S
- aOWo7d2ISwZSe4gNBB4tHImeiIYQ8Zuxv9sNZRsJ+T769cI4cJ50lsqKxBwWvITwIEaS
- CyBA==
-X-Gm-Message-State: AOAM530xxG8hv2oi3jIVjb4oieZ1zXXfvZmT1cM1DQgByMnvmzwKn8h1
- 5ucuXWKgZ/xVxsZdH2QLIZqjNQ==
-X-Google-Smtp-Source: ABdhPJznKFGDHVIciDMw0fp2LT9xK3z4ixOcU51t08f2cxF1LZ/qGOqz6Ubsp1k9rldJ9Yal+YCtBQ==
-X-Received: by 2002:a17:90b:307:: with SMTP id
- ay7mr12146056pjb.110.1616739168822; 
- Thu, 25 Mar 2021 23:12:48 -0700 (PDT)
-Received: from localhost
- (2001-44b8-111e-5c00-39c5-e677-fdb8-5d64.static.ipv6.internode.on.net.
- [2001:44b8:111e:5c00:39c5:e677:fdb8:5d64])
- by smtp.gmail.com with ESMTPSA id m5sm8157716pfd.96.2021.03.25.23.12.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 25 Mar 2021 23:12:48 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/iommu/debug: Remove redundant NULL check
-In-Reply-To: <87r1k2795x.fsf@linkitivity.dja.id.au>
-References: <1616406217-94635-1-git-send-email-jiapeng.chong@linux.alibaba.com>
- <87r1k2795x.fsf@linkitivity.dja.id.au>
-Date: Fri, 26 Mar 2021 17:12:45 +1100
-Message-ID: <87lfaa789u.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6BVk083rz30hc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 17:13:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:In-Reply-To:References;
+ bh=vZFXjwDFBlt15FbbxH8vQOkVklkvteOsEp/Orr07Xyg=; b=2+gf1yHr8gEbFj+N4OJDIkdOzH
+ 1hQ95DPpzv3ZV+HEoKdNqXg1LoZ/CZVyfn4kmwrMnyoF92NltPaIDzQemqvl47ydc38iAx5Xc9duE
+ SvWdyKp6ZrZRqD35Q0w0eC5i6W5jQZqmhSJlzxgBRvt1Rcmu1cPsyAvstO6ROjCwoO8am6QiSFLfu
+ Cvgk+lZwd2qb8ecjiKy88HEl0TgZ2L3ZsqAH1s0jTYknSqwuCsSXU98JpAKH/rJyVYShCPQ0tPBaj
+ 0fr1QXjR0kY18M1p/JiD2YRtpSybZ04Y/KL2rwTFNYKARMEJBrr0cpVgB+98QT2re7IbJ76v2XQEt
+ ZGzOfSzQ==;
+Received: from [2001:4bb8:191:f692:97ff:1e47:aee2:c7e5] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1lPfib-005AmU-19; Fri, 26 Mar 2021 06:13:13 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: remove the nvlink2 pci_vfio subdriver v2
+Date: Fri, 26 Mar 2021 07:13:09 +0100
+Message-Id: <20210326061311.1497642-1-hch@lst.de>
+X-Mailer: git-send-email 2.30.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,37 +74,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Jason Gunthorpe <jgg@nvidia.com>, kvm@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>,
+ Daniel Vetter <daniel@ffwll.ch>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Axtens <dja@axtens.net> writes:
+Hi all,
 
-It looks like the kernel test robot also reported this:
-"[PATCH] powerpc/iommu/debug: fix ifnullfree.cocci warnings"
-Weirdly I don't see it in patchwork.
+the nvlink2 vfio subdriver is a weird beast.  It supports a hardware
+feature without any open source component - what would normally be
+the normal open source userspace that we require for kernel drivers,
+although in this particular case user space could of course be a
+kernel driver in a VM.  It also happens to be a complete mess that
+does not properly bind to PCI IDs, is hacked into the vfio_pci driver
+and also pulles in over 1000 lines of code always build into powerpc
+kernels that have Power NV support enabled.  Because of all these
+issues and the lack of breaking userspace when it is removed I think
+the best idea is to simply kill.
 
-I'm not sure which one mpe will want to take but either would do.
+Changes since v1:
+ - document the removed subtypes as reserved
+ - add the ACK from Greg
 
->> Fix the following coccicheck warnings:
->>
->> ./fs/io_uring.c:5989:4-9: WARNING: NULL check before some freeing
->> functions is not needed.
-
-(Also, while unimportant, that's technically not the error you fix here
-as it's for a different file!)
-
->
-> This looks correct to me, and matches the description of debugfs_remove
-> in Documentation/filesystems/debugfs.rst.
->
-> If you have a number of similar fixes it might be helpful to do them in
-> a single bigger patch, but I'm not sure if coccicheck reports much else
-> as I don't have coccinelle installed at the moment.
->
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
->
-> Kind regards,
-> Daniel
+Diffstat:
+ arch/powerpc/platforms/powernv/npu-dma.c     |  705 ---------------------------
+ b/arch/powerpc/include/asm/opal.h            |    3 
+ b/arch/powerpc/include/asm/pci-bridge.h      |    1 
+ b/arch/powerpc/include/asm/pci.h             |    7 
+ b/arch/powerpc/platforms/powernv/Makefile    |    2 
+ b/arch/powerpc/platforms/powernv/opal-call.c |    2 
+ b/arch/powerpc/platforms/powernv/pci-ioda.c  |  185 -------
+ b/arch/powerpc/platforms/powernv/pci.c       |   11 
+ b/arch/powerpc/platforms/powernv/pci.h       |   17 
+ b/arch/powerpc/platforms/pseries/pci.c       |   23 
+ b/drivers/vfio/pci/Kconfig                   |    6 
+ b/drivers/vfio/pci/Makefile                  |    1 
+ b/drivers/vfio/pci/vfio_pci.c                |   18 
+ b/drivers/vfio/pci/vfio_pci_private.h        |   14 
+ b/include/uapi/linux/vfio.h                  |   38 -
+ drivers/vfio/pci/vfio_pci_nvlink2.c          |  490 ------------------
+ 16 files changed, 12 insertions(+), 1511 deletions(-)
