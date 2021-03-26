@@ -2,102 +2,110 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4D87C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 07:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AB92C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 08:33:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C52261A3F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 07:08:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C52261A3F
+	by mail.kernel.org (Postfix) with ESMTPS id 80C3061477
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 08:33:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80C3061477
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6CkJ2NfWz3c1Y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 18:08:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6Fcc0Wdnz3c2D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 19:33:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iMqbAlEZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rfj/lJxp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=iMqbAlEZ; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=rfj/lJxp; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6Cjp23Jpz2yQl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 18:08:13 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12Q74Jpg087287; Fri, 26 Mar 2021 03:08:06 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6Fc51JvFz302X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 19:33:24 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12Q85fR3026754; Fri, 26 Mar 2021 04:33:07 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=+G/Ymzhk9m84NQvYgdHIdRFUPzHEShB/124u3s/UBDY=;
- b=iMqbAlEZtB5zcUfkyhjPTRKdkXw1o2A/VvSeOeVyN4qZ3uNMZZMUphrfms7FQDfEoPnN
- WzVOH1EQVkU8u1JGs7SxT/pxKx3kfKQBDAOTC5lNl98W76uf9iKBQS8eP9mdC1Cgqc5N
- jUBoijw1ClGiHJyWoocxQFPTVxqrHqzAitho5ekrnVo3iNeBB5BuzYi+P5res/XziUmv
- BaoH3iRnHh+mZvIKaL4YjNhTxg8asl6GGSAyLLIAf4YMqJoTpgLz1zKhcDoabzM7WEAZ
- oRyvmZKXX3bDSkmR/KinQkIULgcuQs2e8Mfcr0avEb/7HteAzHfMmLf9nDxBvz13p7kx UQ== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37h6rgw9d9-1
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=cChZkv+v3RHZi9hahy+PJZFUm7hR0ITMKjeluEp3Cr4=;
+ b=rfj/lJxp+ifesKphm4RHO2szVX2wzfbBl+KUY0SQxrX5ty1er6JZi5sZ8E5DnKMZrAz5
+ NAG22Ke2+v1yNHMyeBLVPQ5p64hgjnznJdJ4EV7aEXOnVnpPoZ7FC88ziH/IOlwHjJmH
+ ZXGEEpGoLYwgzn5xTGjRxnVziViS+tnafKWKSW1GVDVKDxHmj8mCD16pQrpjk4T/YMww
+ oi7rQhJE4pjrDZ7PkZCFRGU0LpbQD88M3/oxXviT5DgG7V7eDsXb/Fc6RLKN4UvzLE0P
+ 01UDCxVWbVP0/Q5KgLA5qM2keRLuBLHDOP2zr2H3/jyp3Dyc7d+Yay7vutEB53Z4wmIl Hw== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37h9vuk76s-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 03:08:06 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12Q72nbd028645;
- Fri, 26 Mar 2021 07:08:05 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma01wdc.us.ibm.com with ESMTP id 37h14wkf28-1
+ Fri, 26 Mar 2021 04:33:07 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12Q8X36d029427;
+ Fri, 26 Mar 2021 08:33:03 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03ams.nl.ibm.com with ESMTP id 37h15a8f3q-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Mar 2021 07:08:05 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12Q7843W24314360
+ Fri, 26 Mar 2021 08:33:03 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 12Q8WBWB41222650
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Mar 2021 07:08:04 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DADFD6E05D;
- Fri, 26 Mar 2021 07:08:03 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 39D096E058;
- Fri, 26 Mar 2021 07:08:02 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.50.91])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 26 Mar 2021 07:08:01 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/mm/book3s64: Use the correct storage key value when
- calling H_PROTECT
-Date: Fri, 26 Mar 2021 12:37:55 +0530
-Message-Id: <20210326070755.304625-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.30.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: SBKa9KgHSkl-IbVOvFDZ3DhllBHvH_c4
-X-Proofpoint-GUID: SBKa9KgHSkl-IbVOvFDZ3DhllBHvH_c4
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ Fri, 26 Mar 2021 08:32:11 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3B94E11C058;
+ Fri, 26 Mar 2021 08:32:11 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F3ABF11C04A;
+ Fri, 26 Mar 2021 08:32:04 +0000 (GMT)
+Received: from Madhavan.PrimaryTP (unknown [9.85.205.23])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 26 Mar 2021 08:32:04 +0000 (GMT)
+Subject: Re: [PATCH V2 1/5] powerpc/perf: Expose processor pipeline stage
+ cycles using PERF_SAMPLE_WEIGHT_STRUCT
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1616425047-1666-2-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <d7dd633b-e28a-155a-a8e2-0e5a83b4eead@linux.ibm.com>
+ <YFyKw1ezDio0z9yM@kernel.org>
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Message-ID: <f9f4ff0a-35dc-7adf-2470-d5172e1b4629@linux.ibm.com>
+Date: Fri, 26 Mar 2021 14:02:02 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
+In-Reply-To: <YFyKw1ezDio0z9yM@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: oZ3ANj_MBJoGv-l7S4yYDP3GjXvdGTJx
+X-Proofpoint-GUID: oZ3ANj_MBJoGv-l7S4yYDP3GjXvdGTJx
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-26_02:2021-03-25,
  2021-03-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 suspectscore=0 lowpriorityscore=0 mlxlogscore=999 mlxscore=0
- adultscore=0 bulkscore=0 malwarescore=0 clxscore=1015 spamscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2103250000 definitions=main-2103260048
+ clxscore=1015 mlxscore=0
+ suspectscore=0 adultscore=0 impostorscore=0 malwarescore=0 phishscore=0
+ priorityscore=1501 bulkscore=0 spamscore=0 mlxlogscore=999
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103250000 definitions=main-2103260058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,104 +117,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Cc: ravi.bangoria@linux.ibm.com, Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ peterz@infradead.org, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org, kjain@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-H_PROTECT expect the flag value to include
-flags: AVPN, pp0, pp1, pp2, key0-key4, Noexec, CMO Option flags
 
-This patch updates hpte_updatepp() to fetch the storage key value from the linux page
-table and use the same in H_PROTECT hcall.
+On 3/25/21 6:36 PM, Arnaldo Carvalho de Melo wrote:
+> Em Wed, Mar 24, 2021 at 10:05:23AM +0530, Madhavan Srinivasan escreveu:
+>> On 3/22/21 8:27 PM, Athira Rajeev wrote:
+>>> Performance Monitoring Unit (PMU) registers in powerpc provides
+>>> information on cycles elapsed between different stages in the
+>>> pipeline. This can be used for application tuning. On ISA v3.1
+>>> platform, this information is exposed by sampling registers.
+>>> Patch adds kernel support to capture two of the cycle counters
+>>> as part of perf sample using the sample type:
+>>> PERF_SAMPLE_WEIGHT_STRUCT.
+>>>
+>>> The power PMU function 'get_mem_weight' currently uses 64 bit weight
+>>> field of perf_sample_data to capture memory latency. But following the
+>>> introduction of PERF_SAMPLE_WEIGHT_TYPE, weight field could contain
+>>> 64-bit or 32-bit value depending on the architexture support for
+>>> PERF_SAMPLE_WEIGHT_STRUCT. Patches uses WEIGHT_STRUCT to expose the
+>>> pipeline stage cycles info. Hence update the ppmu functions to work for
+>>> 64-bit and 32-bit weight values.
+>>>
+>>> If the sample type is PERF_SAMPLE_WEIGHT, use the 64-bit weight field.
+>>> if the sample type is PERF_SAMPLE_WEIGHT_STRUCT, memory subsystem
+>>> latency is stored in the low 32bits of perf_sample_weight structure.
+>>> Also for CPU_FTR_ARCH_31, capture the two cycle counter information in
+>>> two 16 bit fields of perf_sample_weight structure.
+>> Changes looks fine to me.
+> You mean just the kernel part or can I add your Reviewed-by to all the
+> patchset?
 
-native_hpte_updatepp() is not updated because the kernel doesn't clear the existing
-storage key value there. The kernel also doesn't use hpte_updatepp() callback for
-updating storage keys.
 
-This fixes the below kernel crash observed with KUAP enabled.
+Yes, kindly add it, I did review the patchset. My bad, i should have 
+mentioned it here
 
- BUG: Unable to handle kernel data access on write at 0xc009fffffc440000
- Faulting instruction address: 0xc0000000000b7030
- Key fault AMR: 0xfcffffffffffffff IAMR: 0xc0000077bc498100
- Found HPTE: v = 0x40070adbb6fffc05 r = 0x1ffffffffff1194
- Oops: Kernel access of bad area, sig: 11 [#1]
- LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-.........
- CFAR: c000000000010100 DAR: c009fffffc440000 DSISR: 02200000 IRQMASK: 0
-..........
- NIP [c0000000000b7030] memset+0x68/0x104
- LR [c0000000003ef00c] pcpu_alloc+0x54c/0xb50
- Call Trace:
- [c00000001c7534f0] [c0000000003ef01c] pcpu_alloc+0x55c/0xb50 (unreliable)
- [c00000001c753600] [c0000000008bb214] blk_stat_alloc_callback+0x94/0x150
- [c00000001c753650] [c0000000008b7a04] blk_mq_init_allocated_queue+0x64/0x560
- [c00000001c7536b0] [c0000000008b8024] blk_mq_init_queue+0x54/0xb0
- [c00000001c7536e0] [c000000000b87650] scsi_mq_alloc_queue+0x30/0xa0
- [c00000001c753710] [c000000000b88b2c] scsi_alloc_sdev+0x1cc/0x300
- [c00000001c7537b0] [c000000000b897b0] scsi_probe_and_add_lun+0xb50/0x1020
- [c00000001c753950] [c000000000b8a35c] __scsi_scan_target+0x17c/0x790
- [c00000001c753a80] [c000000000b8ab90] scsi_scan_channel+0x90/0xe0
- [c00000001c753ad0] [c000000000b8ae48] scsi_scan_host_selected+0x148/0x1f0
- [c00000001c753b60] [c000000000b8b31c] do_scan_async+0x2c/0x2a0
- [c00000001c753be0] [c000000000187a18] async_run_entry_fn+0x78/0x220
- [c00000001c753c70] [c000000000176a74] process_one_work+0x264/0x540
- [c00000001c753d10] [c000000000177338] worker_thread+0xa8/0x600
- [c00000001c753da0] [c0000000001807b0] kthread+0x190/0x1a0
- [c00000001c753e10] [c00000000000d8f0] ret_from_kernel_thread+0x5c/0x6c
+or should have replied to the cover letter.
 
-With KUAP enabled the kernel uses storage key 3 for all its translations. But as
-shown by the debug print, in this specific case we have the hash page table
-entry created with key value 0.
 
-[    2.249497] Found HPTE: v = 0x40070adbb6fffc05 r = 0x1ffffffffff1194
+Maddy
 
-and DSISR indicates a key fault.
 
-This can happen due to parallel fault on the same EA by different CPUs
-
-CPU 0					CPU 1
-fault on X
-
-H_PAGE_BUSY set
-					fault on X
-
-finish fault handling and
-clear H_PAGE_BUSY
-					check for H_PAGE_BUSY
-					continue with fault handling.
-
-This implies CPU1 will end up calling hpte_updatepp for address X
-and the kernel updated the hash pte entry with key 0
-
-Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation")
-
-Debugged-by: Michael Ellerman <mpe@ellerman.id.au>
-Reported-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
-
-Similar change for bolted hash pte entries was done by
-https://lore.kernel.org/linuxppc-dev/20210211135130.3474832-2-mpe@ellerman.id.au/
-
- arch/powerpc/platforms/pseries/lpar.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 764170fdb0f7..3805519a6469 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -887,7 +887,8 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 
- 	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
--	flags = (newpp & 7) | H_AVPN;
-+	flags = (newpp & (HPTE_R_PP | HPTE_R_N | HPTE_R_KEY_LO)) | H_AVPN;
-+	flags |= (newpp & HPTE_R_KEY_HI) >> 48;
- 	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
- 		/* Move pp0 into bit 8 (IBM 55) */
- 		flags |= (newpp & HPTE_R_PP0) >> 55;
--- 
-2.30.2
-
+>   
+>> Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+>>
+>>
+>>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+>>> ---
+>>>    arch/powerpc/include/asm/perf_event_server.h |  2 +-
+>>>    arch/powerpc/perf/core-book3s.c              |  4 ++--
+>>>    arch/powerpc/perf/isa207-common.c            | 29 +++++++++++++++++++++++++---
+>>>    arch/powerpc/perf/isa207-common.h            |  6 +++++-
+>>>    4 files changed, 34 insertions(+), 7 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+>>> index 00e7e671bb4b..112cf092d7b3 100644
+>>> --- a/arch/powerpc/include/asm/perf_event_server.h
+>>> +++ b/arch/powerpc/include/asm/perf_event_server.h
+>>> @@ -43,7 +43,7 @@ struct power_pmu {
+>>>    				u64 alt[]);
+>>>    	void		(*get_mem_data_src)(union perf_mem_data_src *dsrc,
+>>>    				u32 flags, struct pt_regs *regs);
+>>> -	void		(*get_mem_weight)(u64 *weight);
+>>> +	void		(*get_mem_weight)(u64 *weight, u64 type);
+>>>    	unsigned long	group_constraint_mask;
+>>>    	unsigned long	group_constraint_val;
+>>>    	u64             (*bhrb_filter_map)(u64 branch_sample_type);
+>>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+>>> index 766f064f00fb..6936763246bd 100644
+>>> --- a/arch/powerpc/perf/core-book3s.c
+>>> +++ b/arch/powerpc/perf/core-book3s.c
+>>> @@ -2206,9 +2206,9 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+>>>    						ppmu->get_mem_data_src)
+>>>    			ppmu->get_mem_data_src(&data.data_src, ppmu->flags, regs);
+>>> -		if (event->attr.sample_type & PERF_SAMPLE_WEIGHT &&
+>>> +		if (event->attr.sample_type & PERF_SAMPLE_WEIGHT_TYPE &&
+>>>    						ppmu->get_mem_weight)
+>>> -			ppmu->get_mem_weight(&data.weight.full);
+>>> +			ppmu->get_mem_weight(&data.weight.full, event->attr.sample_type);
+>>>    		if (perf_event_overflow(event, &data, regs))
+>>>    			power_pmu_stop(event, 0);
+>>> diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+>>> index e4f577da33d8..5dcbdbd54598 100644
+>>> --- a/arch/powerpc/perf/isa207-common.c
+>>> +++ b/arch/powerpc/perf/isa207-common.c
+>>> @@ -284,8 +284,10 @@ void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
+>>>    	}
+>>>    }
+>>> -void isa207_get_mem_weight(u64 *weight)
+>>> +void isa207_get_mem_weight(u64 *weight, u64 type)
+>>>    {
+>>> +	union perf_sample_weight *weight_fields;
+>>> +	u64 weight_lat;
+>>>    	u64 mmcra = mfspr(SPRN_MMCRA);
+>>>    	u64 exp = MMCRA_THR_CTR_EXP(mmcra);
+>>>    	u64 mantissa = MMCRA_THR_CTR_MANT(mmcra);
+>>> @@ -296,9 +298,30 @@ void isa207_get_mem_weight(u64 *weight)
+>>>    		mantissa = P10_MMCRA_THR_CTR_MANT(mmcra);
+>>>    	if (val == 0 || val == 7)
+>>> -		*weight = 0;
+>>> +		weight_lat = 0;
+>>>    	else
+>>> -		*weight = mantissa << (2 * exp);
+>>> +		weight_lat = mantissa << (2 * exp);
+>>> +
+>>> +	/*
+>>> +	 * Use 64 bit weight field (full) if sample type is
+>>> +	 * WEIGHT.
+>>> +	 *
+>>> +	 * if sample type is WEIGHT_STRUCT:
+>>> +	 * - store memory latency in the lower 32 bits.
+>>> +	 * - For ISA v3.1, use remaining two 16 bit fields of
+>>> +	 *   perf_sample_weight to store cycle counter values
+>>> +	 *   from sier2.
+>>> +	 */
+>>> +	weight_fields = (union perf_sample_weight *)weight;
+>>> +	if (type & PERF_SAMPLE_WEIGHT)
+>>> +		weight_fields->full = weight_lat;
+>>> +	else {
+>>> +		weight_fields->var1_dw = (u32)weight_lat;
+>>> +		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+>>> +			weight_fields->var2_w = P10_SIER2_FINISH_CYC(mfspr(SPRN_SIER2));
+>>> +			weight_fields->var3_w = P10_SIER2_DISPATCH_CYC(mfspr(SPRN_SIER2));
+>>> +		}
+>>> +	}
+>>>    }
+>>>    int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp, u64 event_config1)
+>>> diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+>>> index 1af0e8c97ac7..fc30d43c4d0c 100644
+>>> --- a/arch/powerpc/perf/isa207-common.h
+>>> +++ b/arch/powerpc/perf/isa207-common.h
+>>> @@ -265,6 +265,10 @@
+>>>    #define ISA207_SIER_DATA_SRC_SHIFT	53
+>>>    #define ISA207_SIER_DATA_SRC_MASK	(0x7ull << ISA207_SIER_DATA_SRC_SHIFT)
+>>> +/* Bits in SIER2/SIER3 for Power10 */
+>>> +#define P10_SIER2_FINISH_CYC(sier2)	(((sier2) >> (63 - 37)) & 0x7fful)
+>>> +#define P10_SIER2_DISPATCH_CYC(sier2)	(((sier2) >> (63 - 13)) & 0x7fful)
+>>> +
+>>>    #define P(a, b)				PERF_MEM_S(a, b)
+>>>    #define PH(a, b)			(P(LVL, HIT) | P(a, b))
+>>>    #define PM(a, b)			(P(LVL, MISS) | P(a, b))
+>>> @@ -278,6 +282,6 @@ int isa207_get_alternatives(u64 event, u64 alt[], int size, unsigned int flags,
+>>>    					const unsigned int ev_alt[][MAX_ALT]);
+>>>    void isa207_get_mem_data_src(union perf_mem_data_src *dsrc, u32 flags,
+>>>    							struct pt_regs *regs);
+>>> -void isa207_get_mem_weight(u64 *weight);
+>>> +void isa207_get_mem_weight(u64 *weight, u64 type);
+>>>    #endif
