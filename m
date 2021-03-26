@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DBAC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9F1AC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:47:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 261D861A1E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:46:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 261D861A1E
+	by mail.kernel.org (Postfix) with ESMTPS id 2DFE16193C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 13:47:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DFE16193C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6NYq2rZ5z3dBD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 00:46:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6NZ95yXXz3c7Z
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 00:47:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6NWY1ftkz3bsG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6NWY1gHdz3bsK
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 00:44:57 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F6NWR6RK3z9v03F;
- Fri, 26 Mar 2021 14:44:51 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4F6NWS60pgz9v03C;
+ Fri, 26 Mar 2021 14:44:52 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id e4Ftj0Jvyaj1; Fri, 26 Mar 2021 14:44:51 +0100 (CET)
+ with ESMTP id ua4xnFB1IzAD; Fri, 26 Mar 2021 14:44:52 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F6NWR4zwtz9v03B;
- Fri, 26 Mar 2021 14:44:51 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6D8748B8CD;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F6NWS560hz9v03B;
  Fri, 26 Mar 2021 14:44:52 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 702B98B8CB;
+ Fri, 26 Mar 2021 14:44:53 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NpujWXqfQku1; Fri, 26 Mar 2021 14:44:52 +0100 (CET)
+ with ESMTP id nQgQ-Ws-8ZQe; Fri, 26 Mar 2021 14:44:53 +0100 (CET)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E574D8B8C9;
- Fri, 26 Mar 2021 14:44:51 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EC3738B8C7;
+ Fri, 26 Mar 2021 14:44:52 +0100 (CET)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 71E7E67611; Fri, 26 Mar 2021 13:44:52 +0000 (UTC)
-Message-Id: <7362e4f6a5f5b79e6ad3fd3cec3183a4a283f7fc.1616765870.git.christophe.leroy@csgroup.eu>
+ id 78A0A67611; Fri, 26 Mar 2021 13:44:53 +0000 (UTC)
+Message-Id: <29e44feb9254a462e23513cc4279dae6af0f2ae6.1616765870.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1616765869.git.christophe.leroy@csgroup.eu>
 References: <cover.1616765869.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 05/17] arm: Convert to GENERIC_CMDLINE
+Subject: [PATCH v3 06/17] arm64: Convert to GENERIC_CMDLINE
 To: will@kernel.org, danielwa@cisco.com, robh@kernel.org,
  daniel@gimpelevich.san-francisco.ca.us
-Date: Fri, 26 Mar 2021 13:44:52 +0000 (UTC)
+Date: Fri, 26 Mar 2021 13:44:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,40 +84,40 @@ This converts the architecture to GENERIC_CMDLINE.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/arm/Kconfig              | 38 +----------------------------------
- arch/arm/kernel/atags_parse.c | 15 +++++---------
- 2 files changed, 6 insertions(+), 47 deletions(-)
+ arch/arm64/Kconfig                 | 33 +-----------------------------
+ arch/arm64/kernel/idreg-override.c |  9 ++++----
+ 2 files changed, 5 insertions(+), 37 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 5da96f5df48f..67bc75f2da81 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -50,6 +50,7 @@ config ARM
- 	select GENERIC_ARCH_TOPOLOGY if ARM_CPU_TOPOLOGY
- 	select GENERIC_ATOMIC64 if CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI
- 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
-+	select GENERIC_CMDLINE if ATAGS
- 	select GENERIC_IRQ_IPI if SMP
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 5656e7aacd69..eeff7730ccf0 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -105,6 +105,7 @@ config ARM64
+ 	select GENERIC_ALLOCATOR
+ 	select GENERIC_ARCH_TOPOLOGY
+ 	select GENERIC_CLOCKEVENTS_BROADCAST
++	select GENERIC_CMDLINE
  	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_CPU_VULNERABILITIES
  	select GENERIC_EARLY_IOREMAP
-@@ -1740,43 +1741,6 @@ config ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
- 
- endchoice
+@@ -1831,38 +1832,6 @@ config ARM64_ACPI_PARKING_PROTOCOL
+ 	  protocol even if the corresponding data is present in the ACPI
+ 	  MADT table.
  
 -config CMDLINE
 -	string "Default kernel command string"
 -	default ""
 -	help
--	  On some architectures (e.g. CATS), there is currently no way
--	  for the boot loader to pass arguments to the kernel. For these
--	  architectures, you should supply some command-line options at build
--	  time by entering them here. As a minimum, you should specify the
--	  memory size and the root device (e.g., mem=64M root=/dev/nfs).
+-	  Provide a set of default command-line options at build time by
+-	  entering them here. As a minimum, you should specify the the
+-	  root device (e.g. root=/dev/nfs).
 -
 -choice
 -	prompt "Kernel command line type" if CMDLINE != ""
 -	default CMDLINE_FROM_BOOTLOADER
--	depends on ATAGS
+-	help
+-	  Choose how the kernel will handle the provided default kernel
+-	  command line string.
 -
 -config CMDLINE_FROM_BOOTLOADER
 -	bool "Use bootloader kernel arguments if available"
@@ -126,12 +126,6 @@ index 5da96f5df48f..67bc75f2da81 100644
 -	  the boot loader doesn't provide any, the default kernel command
 -	  string provided in CMDLINE will be used.
 -
--config CMDLINE_EXTEND
--	bool "Extend bootloader kernel arguments"
--	help
--	  The command-line arguments provided by the boot loader will be
--	  appended to the default kernel command string.
--
 -config CMDLINE_FORCE
 -	bool "Always use the default kernel command string"
 -	help
@@ -139,44 +133,40 @@ index 5da96f5df48f..67bc75f2da81 100644
 -	  loader passes other arguments to the kernel.
 -	  This is useful if you cannot or don't want to change the
 -	  command-line options your boot loader passes to the kernel.
+-
 -endchoice
 -
- config XIP_KERNEL
- 	bool "Kernel Execute-In-Place from ROM"
- 	depends on !ARM_LPAE && !ARCH_MULTIPLATFORM
-diff --git a/arch/arm/kernel/atags_parse.c b/arch/arm/kernel/atags_parse.c
-index 373b61f9a4f0..3d5bd52ee458 100644
---- a/arch/arm/kernel/atags_parse.c
-+++ b/arch/arm/kernel/atags_parse.c
-@@ -14,6 +14,7 @@
-  * is not parsed in any way).
-  */
+ config EFI_STUB
+ 	bool
  
-+#include <linux/cmdline.h>
- #include <linux/init.h>
- #include <linux/initrd.h>
+diff --git a/arch/arm64/kernel/idreg-override.c b/arch/arm64/kernel/idreg-override.c
+index 83f1c4b92095..8bc955cdcf82 100644
+--- a/arch/arm64/kernel/idreg-override.c
++++ b/arch/arm64/kernel/idreg-override.c
+@@ -9,6 +9,7 @@
+ #include <linux/ctype.h>
  #include <linux/kernel.h>
-@@ -120,16 +121,10 @@ __tagtable(ATAG_REVISION, parse_tag_revision);
+ #include <linux/libfdt.h>
++#include <linux/cmdline.h>
  
- static int __init parse_tag_cmdline(const struct tag *tag)
+ #include <asm/cacheflush.h>
+ #include <asm/cpufeature.h>
+@@ -187,12 +188,10 @@ static __init const u8 *get_bootargs_cmdline(void)
+ static __init void parse_cmdline(void)
  {
--#if defined(CONFIG_CMDLINE_EXTEND)
--	strlcat(default_command_line, " ", COMMAND_LINE_SIZE);
--	strlcat(default_command_line, tag->u.cmdline.cmdline,
--		COMMAND_LINE_SIZE);
--#elif defined(CONFIG_CMDLINE_FORCE)
--	pr_warn("Ignoring tag cmdline (using the default kernel command line)\n");
--#else
--	strlcpy(default_command_line, tag->u.cmdline.cmdline,
--		COMMAND_LINE_SIZE);
--#endif
-+	cmdline_build(default_command_line, tag->u.cmdline.cmdline, COMMAND_LINE_SIZE);
-+
-+	if IS_ENABLED(CONFIG_CMDLINE_FORCE)
-+		pr_warn("Ignoring tag cmdline (using the default kernel command line)\n");
- 	return 0;
+ 	const u8 *prop = get_bootargs_cmdline();
++	static char __initdata cmdline[COMMAND_LINE_SIZE];
+ 
+-	if (IS_ENABLED(CONFIG_CMDLINE_FORCE) || !prop)
+-		__parse_cmdline(CONFIG_CMDLINE, true);
+-
+-	if (!IS_ENABLED(CONFIG_CMDLINE_FORCE) && prop)
+-		__parse_cmdline(prop, true);
++	cmdline_build(cmdline, prop, COMMAND_LINE_SIZE);
++	__parse_cmdline(cmdline, true);
  }
  
+ /* Keep checkers quiet */
 -- 
 2.25.0
 
