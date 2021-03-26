@@ -2,51 +2,70 @@ Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9931DC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 09:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B127C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 09:47:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B58A61A38
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 09:35:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B58A61A38
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id A533461A0F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 09:47:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A533461A0F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=163.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6Gzw4jtgz3c9p
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:35:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
- helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6HF40HBNz3c23
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 20:47:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=PQmvp/oj;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=163.com
+ (client-ip=220.181.12.18; helo=m12-18.163.com; envelope-from=zuoqilin1@163.com;
  receiver=<UNKNOWN>)
-Received: from fornost.hmeau.com (helcar.hmeau.com [216.24.177.18])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256
+ header.s=s110527 header.b=PQmvp/oj; dkim-atps=neutral
+X-Greylist: delayed 946 seconds by postgrey-1.36 at boromir;
+ Fri, 26 Mar 2021 19:12:39 AEDT
+Received: from m12-18.163.com (m12-18.163.com [220.181.12.18])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6GzZ694cz3bp8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 20:35:22 +1100 (AEDT)
-Received: from gwarestrin.arnor.me.apana.org.au ([192.168.103.7])
- by fornost.hmeau.com with smtp (Exim 4.92 #5 (Debian))
- id 1lPiro-0003ea-N5; Fri, 26 Mar 2021 20:34:57 +1100
-Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
- Fri, 26 Mar 2021 20:34:56 +1100
-Date: Fri, 26 Mar 2021 20:34:56 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Aditya Srivastava <yashsri421@gmail.com>
-Subject: Re: [PATCH] crypto: nx: fix incorrect kernel-doc comment syntax in
- files
-Message-ID: <20210326093456.GS12658@gondor.apana.org.au>
-References: <20210321123007.15505-1-yashsri421@gmail.com>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6F8769LGz2yxB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2021 19:12:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+ s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=d3l6H
+ qGdyJXY93wZ73zXzrAiqfPlJxIIN1klaPDJxw8=; b=PQmvp/ojhEwMfGvFMP27Y
+ v79+PgqiivEL5jBs9TYlnLEx70KDHRGyc5eqnIHwh3p5+Xsh+Zsto4/4Slbtiv3B
+ GMC1KXoGgaUEzcIeOV09PWLnA25iqAWSc4NMu2L8JUwcPSdB0mBUo6KGg6XXVHmZ
+ bWdOv0LU6PbhdmkqjzjDLQ=
+Received: from COOL-20201210PM.ccdomain.com (unknown [218.94.48.178])
+ by smtp14 (Coremail) with SMTP id EsCowACnpfOZk11gDMb7ag--.3852S2;
+ Fri, 26 Mar 2021 15:56:12 +0800 (CST)
+From: zuoqilin1@163.com
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH] arch/powerpc: Remove unneeded variable: "ret"
+Date: Fri, 26 Mar 2021 15:56:19 +0800
+Message-Id: <20210326075619.48-1-zuoqilin1@163.com>
+X-Mailer: git-send-email 2.28.0.windows.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210321123007.15505-1-yashsri421@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: EsCowACnpfOZk11gDMb7ag--.3852S2
+X-Coremail-Antispam: 1Uf129KBjvdXoWrur43XF48Aw47Ar1xAFyrJFb_yoWftFXEyw
+ n7Gw48Canaqrs3AFnrAr13CFnaqr4kGrs8KFnF9a47X3s8Ja98WwsrGrW7JF48Xw1FyrW3
+ WFn8KrnIka4SkjkaLaAFLSUrUUUUnb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUYtKsUUUUUU==
+X-Originating-IP: [218.94.48.178]
+X-CM-SenderInfo: 52xr1xpolqiqqrwthudrp/xtbBRRxhiVPAKukWbAAAsb
+X-Mailman-Approved-At: Fri, 26 Mar 2021 20:46:40 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,52 +77,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, corbet@lwn.net, rdunlap@infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- pfsmorigo@gmail.com, linux-crypto@vger.kernel.org, leitao@debian.org,
- lukas.bulwahn@gmail.com, linux-kernel-mentees@lists.linuxfoundation.org,
- davem@davemloft.net, paulus@samba.org
+Cc: zuoqilin <zuoqilin@yulong.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Mar 21, 2021 at 06:00:07PM +0530, Aditya Srivastava wrote:
-> The opening comment mark '/**' is used for highlighting the beginning of
-> kernel-doc comments.
-> There are certain files in drivers/crypto/nx, which follow this syntax,
-> but the content inside does not comply with kernel-doc.
-> Such lines were probably not meant for kernel-doc parsing, but are parsed
-> due to the presence of kernel-doc like comment syntax(i.e, '/**'), which
-> causes unexpected warnings from kernel-doc.
-> 
-> E.g., presence of kernel-doc like comment in the header lines for
-> drivers/crypto/nx/nx-sha256.c at header causes these warnings:
-> "warning: Function parameter or member 'tfm' not described in 'nx_crypto_ctx_sha256_init'"
-> "warning: expecting prototype for SHA(). Prototype was for nx_crypto_ctx_sha256_init() instead"
-> 
-> Similarly for other files too.
-> 
-> Provide a simple fix by replacing such occurrences with general comment
-> format, i.e. '/*', to prevent kernel-doc from parsing it.
-> 
-> Signed-off-by: Aditya Srivastava <yashsri421@gmail.com>
-> ---
-> * Applies perfectly on next-20210319
-> 
->  drivers/crypto/nx/nx-aes-cbc.c  | 2 +-
->  drivers/crypto/nx/nx-aes-ccm.c  | 2 +-
->  drivers/crypto/nx/nx-aes-ctr.c  | 2 +-
->  drivers/crypto/nx/nx-aes-ecb.c  | 2 +-
->  drivers/crypto/nx/nx-aes-gcm.c  | 2 +-
->  drivers/crypto/nx/nx-aes-xcbc.c | 2 +-
->  drivers/crypto/nx/nx-sha256.c   | 2 +-
->  drivers/crypto/nx/nx-sha512.c   | 2 +-
->  drivers/crypto/nx/nx.c          | 2 +-
->  drivers/crypto/nx/nx_debugfs.c  | 2 +-
->  10 files changed, 10 insertions(+), 10 deletions(-)
+From: zuoqilin <zuoqilin@yulong.com>
 
-Patch applied.  Thanks.
+Remove unneeded variable: "ret".
+
+Signed-off-by: zuoqilin <zuoqilin@yulong.com>
+---
+ arch/powerpc/platforms/pseries/cmm.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+index 45a3a30..95ebb0c 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -475,8 +475,6 @@ static int cmm_reboot_notifier(struct notifier_block *nb,
+ static int cmm_memory_cb(struct notifier_block *self,
+ 			unsigned long action, void *arg)
+ {
+-	int ret = 0;
+-
+ 	switch (action) {
+ 	case MEM_GOING_OFFLINE:
+ 		mutex_lock(&hotplug_mutex);
+@@ -493,7 +491,7 @@ static int cmm_memory_cb(struct notifier_block *self,
+ 		break;
+ 	}
+ 
+-	return notifier_from_errno(ret);
++	return notifier_from_errno(0);
+ }
+ 
+ static struct notifier_block cmm_mem_nb = {
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.9.1
+
+
