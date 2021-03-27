@@ -1,66 +1,73 @@
-Return-Path: <SRS0=j/g1=IY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Fioy=IZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A375C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 21:50:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 594EFC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 13:15:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D163961976
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Mar 2021 21:50:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D163961976
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3FB5B61926
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 13:15:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FB5B61926
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F6bJD1S31z3c7Z
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 08:50:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F6zq71X7qz3c3m
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 00:15:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nABiofRL;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
- helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 1608 seconds by postgrey-1.36 at boromir;
- Sat, 27 Mar 2021 08:50:32 AEDT
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=nABiofRL; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6zpd2Fbqz2xy7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Mar 2021 00:15:03 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6bHr5Mpqz3bwG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 08:50:32 +1100 (AEDT)
-Received: from in01.mta.xmission.com ([166.70.13.51])
- by out03.mta.xmission.com with esmtps (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.93)
- (envelope-from <ebiederm@xmission.com>)
- id 1lPtvb-000SOd-No; Fri, 26 Mar 2021 15:23:35 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
- helo=fess.xmission.com) by in01.mta.xmission.com with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
- (envelope-from <ebiederm@xmission.com>)
- id 1lPtva-00074S-1a; Fri, 26 Mar 2021 15:23:35 -0600
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christoph Hellwig <hch@lst.de>
-References: <20210326143831.1550030-1-hch@lst.de>
- <20210326143831.1550030-4-hch@lst.de>
-Date: Fri, 26 Mar 2021 16:22:33 -0500
-In-Reply-To: <20210326143831.1550030-4-hch@lst.de> (Christoph Hellwig's
- message of "Fri, 26 Mar 2021 15:38:30 +0100")
-Message-ID: <m1y2e9vcdi.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4F6zpX6Zfwz9sRf;
+ Sun, 28 Mar 2021 00:15:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1616850902;
+ bh=xls+amKq9a2UqqHe5tYvXJf76OIDuOI+WrJU2CpUwE8=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=nABiofRL4eKiuEcFKd/EuCctuw2IxIF5R9r0jvwB74JUobLq3Pg/S2ke2Ob+LBGST
+ 45L+BlSd5NkLsx4ZhXe6iZsjbpS9BUgpW/r8gdr8x4qbBhAiCWNnPANtDgRLvsnwMe
+ 3mQCwCHDmY+VGQFKMMh1UeNUGAbae213I6DshWJ1A63W/2PCbDikAGaozMRsUZuEKi
+ 7EN51eNO/F+XuLDcV9qBk5kw2VQRWyjMPLldIg6M5VUooYsCD1b0kdnxBoC8nFXr2S
+ IxZSpijIHnplQ1mHrpdCiZ1uTwKCoZtzafBpSe5IszwgfB/8r4KMCj247fK63h4JBZ
+ 7XoR2SZ9Z56/w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnaldo <arnaldo.melo@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+Subject: Re: [PATCH V2 1/5] powerpc/perf: Expose processor pipeline stage
+ cycles using PERF_SAMPLE_WEIGHT_STRUCT
+In-Reply-To: <2BAC42AE-6BD3-45EF-8867-1A15F25FE80B@gmail.com>
+References: <1616425047-1666-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1616425047-1666-2-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <d7dd633b-e28a-155a-a8e2-0e5a83b4eead@linux.ibm.com>
+ <YFyJr+R24TlrMNrC@kernel.org>
+ <YFygSdFOT5B0DwRU@hirez.programming.kicks-ass.net>
+ <2BAC42AE-6BD3-45EF-8867-1A15F25FE80B@gmail.com>
+Date: Sun, 28 Mar 2021 00:14:56 +1100
+Message-ID: <874kgwhh67.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-XM-SPF: eid=1lPtva-00074S-1a; ; ; mid=<m1y2e9vcdi.fsf@fess.ebiederm.org>; ; ;
- hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
- ; ; spf=neutral
-X-XM-AID: U2FsdGVkX18JI1x3OTuGSmP1SAxwgJUKnILVVDmHpGw=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH 3/4] exec: simplify the compat syscall handling
-X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,90 +79,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Brian Gerst <brgerst@gmail.com>, x86@kernel.org, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Luis Chamberlain <mcgrof@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: ravi.bangoria@linux.ibm.com, Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ kjain@linux.ibm.com, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christoph Hellwig <hch@lst.de> writes:
+Arnaldo <arnaldo.melo@gmail.com> writes:
+> On March 25, 2021 11:38:01 AM GMT-03:00, Peter Zijlstra <peterz@infradead.org> wrote:
+>>On Thu, Mar 25, 2021 at 10:01:35AM -0300, Arnaldo Carvalho de Melo
+>>wrote:.
+>>> > > Also for CPU_FTR_ARCH_31, capture the two cycle counter
+>>information in
+>>> > > two 16 bit fields of perf_sample_weight structure.
+>>> > 
+>>> > Changes looks fine to me.
+>>> > 
+>>> > Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+>>> 
+>>> So who will process the kernel bits? I'm merging the tooling parts,
+>>
+>>I was sorta expecting these to go through the powerpc tree. Let me know
+>>if you want them in tip/perf/core instead.
+>
+> Shouldn't matter by which tree it gets upstream, as long as it gets picked :-)
 
+I plan to take them, just haven't got around to it yet :}
 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 06e07278b456fa..b34c1eb9e7ad8e 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -391,47 +391,34 @@ static int bprm_mm_init(struct linux_binprm *bprm)
->  	return err;
->  }
->  
-> -struct user_arg_ptr {
-> -#ifdef CONFIG_COMPAT
-> -	bool is_compat;
-> -#endif
-> -	union {
-> -		const char __user *const __user *native;
-> -#ifdef CONFIG_COMPAT
-> -		const compat_uptr_t __user *compat;
-> -#endif
-> -	} ptr;
-> -};
-> -
-> -static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
-> +static const char __user *
-> +get_user_arg_ptr(const char __user *const __user *argv, int nr)
->  {
-> -	const char __user *native;
-> -
-> -#ifdef CONFIG_COMPAT
-> -	if (unlikely(argv.is_compat)) {
-> +	if (in_compat_syscall()) {
-> +		const compat_uptr_t __user *compat_argv =
-> +			compat_ptr((unsigned long)argv);
-
-Ouch!  Passing a pointer around as the wrong type through the kernel!
-
-Perhaps we should reduce everything to do_execveat and
-do_execveat_compat.  Then there would be no need for anything
-to do anything odd with the pointer types.
-
-I think the big change would be to factor out a copy_string out
-of copy_strings, that performs all of the work once we know the proper
-pointer value.
-
-Casting pointers from one type to another scares me as one mistake means
-we are doing something wrong and probably exploitable.
-
-
-Eric
-
-
-
-
->  		compat_uptr_t compat;
->  
-> -		if (get_user(compat, argv.ptr.compat + nr))
-> +		if (get_user(compat, compat_argv + nr))
->  			return ERR_PTR(-EFAULT);
-> -
->  		return compat_ptr(compat);
-> -	}
-> -#endif
-> -
-> -	if (get_user(native, argv.ptr.native + nr))
-> -		return ERR_PTR(-EFAULT);
-> +	} else {
-> +		const char __user *native;
->  
-> -	return native;
-> +		if (get_user(native, argv + nr))
-> +			return ERR_PTR(-EFAULT);
-> +		return native;
-> +	}
->  }
->  
+cheers
