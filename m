@@ -2,90 +2,53 @@ Return-Path: <SRS0=Fioy=IZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93237C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 19:57:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED6CDC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 21:19:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A36A61993
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 19:57:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A36A61993
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 13DD66193D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 21:19:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13DD66193D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F78kT4brNz3bnJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 06:57:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=oTcDvUNV;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F7BY11yzKz30HF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 08:19:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22e;
- helo=mail-lj1-x22e.google.com; envelope-from=sergei.shtylyov@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oTcDvUNV; dkim-atps=neutral
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com
- [IPv6:2a00:1450:4864:20::22e])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F78jy4CDqz2xZ5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Mar 2021 06:56:37 +1100 (AEDT)
-Received: by mail-lj1-x22e.google.com with SMTP id f26so11293685ljp.8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 12:56:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=bQsYw1ulUIO0dY5gSmv/3K4yj4XoeNoUj5DbKPEh9Qw=;
- b=oTcDvUNVUKy9l34jnk2Y6fGNlsSkpob0U6AudT8Jb4AZQ8OeHPq+nUwasmV8okfR2M
- sR+8behyvuMSz9G1EzjXiQj6LC23cs5XP3Vtcv+ivzmEp+gJdLhO3WJ40Yu3TtD1au7A
- T2jV+Uq24Bl7S6ZHZM5oSMX9h9l/f1+MOn3mPiOLuzagBTUVMcux0Bnq5Xe4bP3kjH5q
- cOfrKoS7RFKuRrrys834C8IvbAfjTmLd3SoJ3gcxp2e3UMkXWjaDO2oyj+t/e0vR3RWH
- GnqgmytnivfuzoKSm30v5UZFTROIHD61oXNxfqGvB1wgJHok2AYNnD/KhZd0qbUWpVgO
- h/5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=bQsYw1ulUIO0dY5gSmv/3K4yj4XoeNoUj5DbKPEh9Qw=;
- b=WDqba/D/hFMyx8E7jauMOAXpXTL9CryfiTP1Wv9NNMP+DNwIl0zt1Q5F8BPaLAcgPG
- 5CNW/ehGz07IJKr0dVKgvDYaw324WmllpRD/1VLLEVvt5yNUtry0QUOHAMdn8hwWE+EA
- E3wvDECYsSlzFqsI4StMmx5Eb+AtrULCI3np48sydmLfBmKDrWahZ8Jztwr3Wtzocv7B
- rZHzVC2at4f2K5ePjb7NpfYzEdFi5fRry6iXF33vkMtuZTpXtpLgTw3uEvsQop/2Jdbe
- wIy6ALWI5AVgVPJ3UEWBt7mbgvcPzpLZG9dSdJroR6tEjWyjir6xj2vuRzCOezieP5Kd
- AJQQ==
-X-Gm-Message-State: AOAM531L00WoHojrQU3JadxkEATHPDO8/X7jkM8ZRZYldUgqef1oqVB6
- zsrlmIYo4y8hb8s/yKJ12gc=
-X-Google-Smtp-Source: ABdhPJxLBeDCGTGncf7vPJx9segmdfmBAwHxFr43PJcjHagfyVIArjRrzp4osMA8qrzDEZfwYnOCVQ==
-X-Received: by 2002:a2e:981a:: with SMTP id a26mr12854352ljj.204.1616874991681; 
- Sat, 27 Mar 2021 12:56:31 -0700 (PDT)
-Received: from [192.168.1.101] ([31.173.82.142])
- by smtp.gmail.com with ESMTPSA id u14sm1345822lfl.40.2021.03.27.12.56.30
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sat, 27 Mar 2021 12:56:31 -0700 (PDT)
-Subject: Re: [PATCH 2/4] exec: remove compat_do_execve
-To: Christoph Hellwig <hch@lst.de>, "Eric W. Biederman"
- <ebiederm@xmission.com>, Al Viro <viro@zeniv.linux.org.uk>
-References: <20210326143831.1550030-1-hch@lst.de>
- <20210326143831.1550030-3-hch@lst.de>
-From: Sergei Shtylyov <sergei.shtylyov@gmail.com>
-Message-ID: <596ca191-0176-e991-7318-f9a0f3361cb3@gmail.com>
-Date: Sat, 27 Mar 2021 22:56:29 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
+ envelope-from=chenhuang5@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 1070 seconds by postgrey-1.36 at boromir;
+ Sat, 27 Mar 2021 20:59:41 AEDT
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6vT94qMcz2y0K
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 20:59:38 +1100 (AEDT)
+Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.60])
+ by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4F6v272fyhz1BHf1;
+ Sat, 27 Mar 2021 17:39:43 +0800 (CST)
+Received: from localhost.localdomain (10.175.112.125) by
+ DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
+ 14.3.498.0; Sat, 27 Mar 2021 17:41:34 +0800
+From: Chen Huang <chenhuang5@huawei.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build configuration
+Date: Sat, 27 Mar 2021 09:49:00 +0000
+Message-ID: <20210327094900.938555-1-chenhuang5@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20210326143831.1550030-3-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.175.112.125]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Sun, 28 Mar 2021 08:18:42 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,40 +60,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Brian Gerst <brgerst@gmail.com>, x86@kernel.org, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Don Zickus <dzickus@redhat.com>, Chen Huang <chenhuang5@huawei.com>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Hulk Robot <hulkci@huawei.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/26/21 5:38 PM, Christoph Hellwig wrote:
+When compiling the powerpc with the SMP disabled, it shows the issue:
 
-> Just call compat_do_execve instead.
+arch/powerpc/kernel/watchdog.c: In function ‘watchdog_smp_panic’:
+arch/powerpc/kernel/watchdog.c:177:4: error: implicit declaration of function ‘smp_send_nmi_ipi’; did you mean ‘smp_send_stop’? [-Werror=implicit-function-declaration]
+  177 |    smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
+      |    ^~~~~~~~~~~~~~~~
+      |    smp_send_stop
+cc1: all warnings being treated as errors
+make[2]: *** [scripts/Makefile.build:273: arch/powerpc/kernel/watchdog.o] Error 1
+make[1]: *** [scripts/Makefile.build:534: arch/powerpc/kernel] Error 2
+make: *** [Makefile:1980: arch/powerpc] Error 2
+make: *** Waiting for unfinished jobs....
 
-   compat_do_execveat(), maybe?
+We found that powerpc used ipi to implement hardlockup watchdog, so the
+HAVE_HARDLOCKUP_DETECTOR_ARCH should depend on the SMP.
 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  fs/exec.c | 17 +----------------
->  1 file changed, 1 insertion(+), 16 deletions(-)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index b63fb020909075..06e07278b456fa 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-[...]
-> @@ -2072,7 +2057,7 @@ COMPAT_SYSCALL_DEFINE3(execve, const char __user *, filename,
->  	const compat_uptr_t __user *, argv,
->  	const compat_uptr_t __user *, envp)
->  {
-> -	return compat_do_execve(getname(filename), argv, envp);
-> +	return compat_do_execveat(AT_FDCWD, getname(filename), argv, envp, 0);
->  }
->  
->  COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
+Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Chen Huang <chenhuang5@huawei.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-MBR, Sergei
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 764df010baee..2d4f37b117ce 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -225,7 +225,7 @@ config PPC
+ 	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_MOD_ARCH_SPECIFIC
+ 	select HAVE_NMI				if PERF_EVENTS || (PPC64 && PPC_BOOK3S)
+-	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if (PPC64 && PPC_BOOK3S)
++	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if PPC64 && PPC_BOOK3S && SMP
+ 	select HAVE_OPTPROBES			if PPC64
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_EVENTS_NMI		if PPC64
+-- 
+2.17.1
+
