@@ -8,75 +8,75 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26223C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 00:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EA2C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 00:09:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B39CE6187E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 00:08:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B39CE6187E
+	by mail.kernel.org (Postfix) with ESMTPS id E65196192E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 00:09:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E65196192E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F7tGY2ylQz3g69
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 11:08:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F7tH04hSFz3gBJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Mar 2021 11:09:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=r9e3a2wK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=PIw7C1Bk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
- helo=mail-qk1-x735.google.com; envelope-from=unixbhaskar@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::82d;
+ helo=mail-qt1-x82d.google.com; envelope-from=unixbhaskar@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=r9e3a2wK; dkim-atps=neutral
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
- [IPv6:2607:f8b0:4864:20::735])
+ header.s=20161025 header.b=PIw7C1Bk; dkim-atps=neutral
+Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com
+ [IPv6:2607:f8b0:4864:20::82d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F7t2S0yBKz30L1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Mar 2021 10:58:24 +1100 (AEDT)
-Received: by mail-qk1-x735.google.com with SMTP id z10so10909675qkz.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Mar 2021 16:58:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F7t2X4Kz0z30D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Mar 2021 10:58:28 +1100 (AEDT)
+Received: by mail-qt1-x82d.google.com with SMTP id 1so7586762qtb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Mar 2021 16:58:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=OzLTjr1QMwsBd8ul22IMj5qh7q/mkchMq8nJkxCkqyY=;
- b=r9e3a2wKOgpXCJCo+aWL5/d9M1nteMw5u0JfcT5v+U1WeLlFsUdTJtF08TixWpxMKN
- YOD1u3JG8FP2VSPHIxLAz8eyeTW7mKistUjRXRPuJmpwD4BMio2K3MX1BHXh30tgr+HS
- WkzGAULz8HC3J2TiK1vBwO2PBVjrMfhok856SYM9QI5K2u/kKIUyC6gGKYdErlSpXQ4X
- n5ywUcSi2xtng/Z0W39xMqETvdlLlYlXLhEnBKsLgR7MX8S21rvncu5XNVqEvqtPGWsi
- BDbqqdTj0jxa+LbMW45UGa5pH81aWPydRGGHPaGxa/5YSoAfD3YkO5GRqeKV5jDkYTwr
- 0RTg==
+ bh=pZY3iifrv8ClFucjg75wWqbWgmlD1U3QmF4uzbWxtyk=;
+ b=PIw7C1Bk/eGWQKsGvWCr0S8TPn8QvRWOhl6hvWK4VjoMFupeY5/g8s7kzwhMScA5Yu
+ 3e7Rj/bjvS2b85U9+k88WGtsKgUTPvzzvdFJYC0k/RqLPZFS/3GhHjMqD5kK+e7jKM/6
+ 53Fvs6gxrbJFiC1u/dgFp8bxTyuVzLD/Tpou7SHHqSFadmyNPt3U4CU58tt95gASNQQ7
+ xYX4ULcW05MCOpvlLfFnzFEUNX3Yp7+RhdNBet8s+BvsIMTWUkgy4Nq5pTpS8LNP/fAV
+ /fA+htsmtHzgRatr0oZ5k5rLTOnxU0BoqA8YYmMtTbokFKvFZL0GLX13Zdgx+VbiqJTc
+ ioTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=OzLTjr1QMwsBd8ul22IMj5qh7q/mkchMq8nJkxCkqyY=;
- b=cqaY9FFchAAqgY483CkdUD+8z1CitrVuEq0obFvfNmse0TDMnUCBvpwgcI6drC1kI7
- PAP85/+SxRzky/tNW7B0538x8tdF1aBJHpsISxv4jt0Ow6I/Sa2+aVBkciJncb+GhpOP
- yeEHzT2nMmGzew4ihiD9dBjoInavwePBDK3ALTVIOq1xFeC/FSvxfSeRHhBL/WxPBTms
- nTyBS9b6QV6OdyZgD8HNJC84QC/8xdHOKIAdchr893IdGLMDRhEBoBdbCr28zVfj7YJ9
- mjn+zNzM1p+cdP7l6hZQdk2EfdJ2VE6bQUXKCg7cIfTyGldPwLYoRGH3V4a4UnyCPY7P
- bLYQ==
-X-Gm-Message-State: AOAM533NlkV4PC6f58jmtDGXNuy4AI2dFxx3VKXR5t6rF9SFWN0oQXQS
- GPuoyL52a9Gfzf8lRvRmwKQ=
-X-Google-Smtp-Source: ABdhPJzZMvKYIloLfO2fexs1vtEuZv6khlYZUkE/hvVvZgpuiguBiwDPE1c2rtdyr/QBSVJvO+1KkQ==
-X-Received: by 2002:a37:6a47:: with SMTP id f68mr23321069qkc.12.1616975901742; 
- Sun, 28 Mar 2021 16:58:21 -0700 (PDT)
+ bh=pZY3iifrv8ClFucjg75wWqbWgmlD1U3QmF4uzbWxtyk=;
+ b=APDAAw3S8q9l+im5HqVzDkX1gNwrrlN1lSO/WX/91AkRHblg3OLgrc/cG/fhzfJzwF
+ S3tYEwoqK+UuB3CjkJiAPK7f2TjokdzbhSO9C2XZ6o2MgLZvZObE7AvDoROEfy+eBLDG
+ zbXeZTu/pSHKRiIvwkkYInmUo6aJv9qntgqpOee9hT6lBo6WOs9bHW1VpJTzOrGKeTll
+ yYAnWhhIKWcjHlMhdivjuqNh7HWapbto0z2cedzSHlLbjYCMZrC9FZN4z0Em1EigClP3
+ ZiOFyKgLChCoifBjyndakkcfInumAXEXzP2EFj9NJkSEZx3cyLjJQVi1SXw6VboKWgBR
+ VYhg==
+X-Gm-Message-State: AOAM5322sQD/UuNqXCfdUbn5AX98ue4FKmrDf0CpZuDSlnn62JIKAJOv
+ pU/Vo3ITN/XpZOjLjn85GUTHOX8Ns63qGAuJ
+X-Google-Smtp-Source: ABdhPJzrXaJ3NFEfLw/ORFLnH6cpcNnBby0kvFM8FYj18PlBci3BiuYNuENXsp4hnCZmTj7qcXXSOw==
+X-Received: by 2002:ac8:dcc:: with SMTP id t12mr13998503qti.219.1616975906780; 
+ Sun, 28 Mar 2021 16:58:26 -0700 (PDT)
 Received: from localhost.localdomain ([156.146.58.24])
- by smtp.gmail.com with ESMTPSA id y19sm12153061qky.111.2021.03.28.16.58.17
+ by smtp.gmail.com with ESMTPSA id y19sm12153061qky.111.2021.03.28.16.58.22
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 28 Mar 2021 16:58:21 -0700 (PDT)
+ Sun, 28 Mar 2021 16:58:26 -0700 (PDT)
 From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 To: dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org, hch@lst.de,
  iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
  dave.jiang@intel.com, dan.j.williams@intel.com
-Subject: [PATCH 29/30] edma.c: Fix a typo
-Date: Mon, 29 Mar 2021 05:23:25 +0530
-Message-Id: <28685183e34f3ae6839eb73265f9055f554ad6f1.1616971780.git.unixbhaskar@gmail.com>
+Subject: [PATCH 30/30] xilinx_dma.c: Fix a typo
+Date: Mon, 29 Mar 2021 05:23:26 +0530
+Message-Id: <4613951fd51572e8c152d07c402d30a13f19a917.1616971780.git.unixbhaskar@gmail.com>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <cover.1616971780.git.unixbhaskar@gmail.com>
 References: <cover.1616971780.git.unixbhaskar@gmail.com>
@@ -99,26 +99,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-s/transfering/transferring/
+s/interace/interface/
 
 Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 ---
- drivers/dma/ti/edma.c | 2 +-
+ drivers/dma/xilinx/xilinx_dma.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/dma/ti/edma.c b/drivers/dma/ti/edma.c
-index 35d81bd857f1..5ad771e34457 100644
---- a/drivers/dma/ti/edma.c
-+++ b/drivers/dma/ti/edma.c
-@@ -1815,7 +1815,7 @@ static void edma_issue_pending(struct dma_chan *chan)
-  * This limit exists to avoid a possible infinite loop when waiting for proof
-  * that a particular transfer is completed. This limit can be hit if there
-  * are large bursts to/from slow devices or the CPU is never able to catch
-- * the DMA hardware idle. On an AM335x transfering 48 bytes from the UART
-+ * the DMA hardware idle. On an AM335x transferring 48 bytes from the UART
-  * RX-FIFO, as many as 55 loops have been seen.
-  */
- #define EDMA_MAX_TR_WAIT_LOOPS 1000
+diff --git a/drivers/dma/xilinx/xilinx_dma.c b/drivers/dma/xilinx/xilinx_dma.c
+index 3aded7861fef..63d2f447ad79 100644
+--- a/drivers/dma/xilinx/xilinx_dma.c
++++ b/drivers/dma/xilinx/xilinx_dma.c
+@@ -483,7 +483,7 @@ struct xilinx_dma_config {
+  * @ext_addr: Indicates 64 bit addressing is supported by dma device
+  * @pdev: Platform device structure pointer
+  * @dma_config: DMA config structure
+- * @axi_clk: DMA Axi4-lite interace clock
++ * @axi_clk: DMA Axi4-lite interface clock
+  * @tx_clk: DMA mm2s clock
+  * @txs_clk: DMA mm2s stream clock
+  * @rx_clk: DMA s2mm clock
 --
 2.26.3
 
