@@ -1,54 +1,57 @@
-Return-Path: <SRS0=Fioy=IZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=+9Gk=I2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED6CDC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 21:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 524B0C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 06:31:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13DD66193D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Mar 2021 21:19:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13DD66193D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9CF606197C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 06:31:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CF606197C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F7BY11yzKz30HF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 08:19:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F7Qpl6WnRz304J
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Mar 2021 17:31:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TZ3ei7zB;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
- envelope-from=chenhuang5@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 1070 seconds by postgrey-1.36 at boromir;
- Sat, 27 Mar 2021 20:59:41 AEDT
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6vT94qMcz2y0K
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Mar 2021 20:59:38 +1100 (AEDT)
-Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.60])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4F6v272fyhz1BHf1;
- Sat, 27 Mar 2021 17:39:43 +0800 (CST)
-Received: from localhost.localdomain (10.175.112.125) by
- DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
- 14.3.498.0; Sat, 27 Mar 2021 17:41:34 +0800
-From: Chen Huang <chenhuang5@huawei.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build configuration
-Date: Sat, 27 Mar 2021 09:49:00 +0000
-Message-ID: <20210327094900.938555-1-chenhuang5@huawei.com>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.175.112.125]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Sun, 28 Mar 2021 08:18:42 +1100
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=guoren@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=TZ3ei7zB; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F7QpJ5M2pz2yR8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Mar 2021 17:31:20 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id A43E36197C;
+ Sun, 28 Mar 2021 06:31:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1616913076;
+ bh=fIYmtiiVahTZKgHaQD+jDuMxYY5AvOy62Q+boojOK1E=;
+ h=From:To:Cc:Subject:Date:From;
+ b=TZ3ei7zBeAgVBpKeSMgUIfT7cFEsCeH1gjJAc1Xka+xh1tEnN6M+Juhcxj4cMHSJ6
+ WmILreZnGkimmxPtbMXMLKfedRa/wD37UVBmGCsKO3FB75rnREvgypwcEkfIe51j4u
+ /lAcvsk3EEHh9Hg1GmHcvDQb7ilTxctp3FsxA13LHoejLlR7k2ECSFxo9LF+OTle7G
+ sS1dndQX+pK0CxgW0gsgWvaFbWNF+lH/vurb0mQGAd1dG3eq4gg6flYOpQa4HmQrua
+ 0CR5asMfgeWZ1rL4qzvhyivvy1moujsSCNT4SCYn4sfSp0zU71oleIAtjphFxp9yb1
+ MVZVtA9yLHxfA==
+From: guoren@kernel.org
+To: guoren@kernel.org
+Subject: [PATCH v5 0/7] riscv: Add qspinlock/qrwlock
+Date: Sun, 28 Mar 2021 06:30:21 +0000
+Message-Id: <1616913028-83376-1-git-send-email-guoren@kernel.org>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,50 +63,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Don Zickus <dzickus@redhat.com>, Chen Huang <chenhuang5@huawei.com>,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Hulk Robot <hulkci@huawei.com>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Guo Ren <guoren@linux.alibaba.com>, linux-kernel@vger.kernel.org,
+ linux-csky@vger.kernel.org, openrisc@lists.librecores.org,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When compiling the powerpc with the SMP disabled, it shows the issue:
+From: Guo Ren <guoren@linux.alibaba.com>
 
-arch/powerpc/kernel/watchdog.c: In function ‘watchdog_smp_panic’:
-arch/powerpc/kernel/watchdog.c:177:4: error: implicit declaration of function ‘smp_send_nmi_ipi’; did you mean ‘smp_send_stop’? [-Werror=implicit-function-declaration]
-  177 |    smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
-      |    ^~~~~~~~~~~~~~~~
-      |    smp_send_stop
-cc1: all warnings being treated as errors
-make[2]: *** [scripts/Makefile.build:273: arch/powerpc/kernel/watchdog.o] Error 1
-make[1]: *** [scripts/Makefile.build:534: arch/powerpc/kernel] Error 2
-make: *** [Makefile:1980: arch/powerpc] Error 2
-make: *** Waiting for unfinished jobs....
+Current riscv is still using baby spinlock implementation. It'll cause
+fairness and cache line bouncing problems. Many people are involved
+and pay the efforts to improve it:
 
-We found that powerpc used ipi to implement hardlockup watchdog, so the
-HAVE_HARDLOCKUP_DETECTOR_ARCH should depend on the SMP.
+ - The first version of patch was made in 2019.1:
+   https://lore.kernel.org/linux-riscv/20190211043829.30096-1-michaeljclark@mac.com/#r
 
-Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Chen Huang <chenhuang5@huawei.com>
----
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ - The second version was made in 2020.11:
+   https://lore.kernel.org/linux-riscv/1606225437-22948-2-git-send-email-guoren@kernel.org/
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 764df010baee..2d4f37b117ce 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -225,7 +225,7 @@ config PPC
- 	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
- 	select HAVE_MOD_ARCH_SPECIFIC
- 	select HAVE_NMI				if PERF_EVENTS || (PPC64 && PPC_BOOK3S)
--	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if (PPC64 && PPC_BOOK3S)
-+	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if PPC64 && PPC_BOOK3S && SMP
- 	select HAVE_OPTPROBES			if PPC64
- 	select HAVE_PERF_EVENTS
- 	select HAVE_PERF_EVENTS_NMI		if PPC64
+ - A good discussion at Platform HSC.2021-03-08:
+   https://drive.google.com/drive/folders/1ooqdnIsYx7XKor5O1XTtM6D1CHp4hc0p
+
+Hope your comments and Tested-by or Co-developed-by or Reviewed-by ...
+
+Let's kick the qspinlock into riscv right now (Also for the
+architecture which hasn't xchg16 atomic instruction.)
+
+Change V5:
+ - Fixup #endif comment typo by Waiman
+ - Remove cmpxchg coding convention patches which will get into a
+   separate patchset later by Arnd's advice
+ - Try to involve more architectures in the discussion
+
+Change V4:
+ - Remove custom sub-word xchg implementation
+ - Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32 in locking/qspinlock
+
+Change V3:
+ - Coding convention by Peter Zijlstra's advices
+
+Change V2:
+ - Coding convention in cmpxchg.h
+ - Re-implement short xchg
+ - Remove char & cmpxchg implementations
+
+Guo Ren (6):
+  locking/qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
+  csky: Convert custom spinlock/rwlock to generic qspinlock/qrwlock
+  powerpc/qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
+  openrisc: qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
+  sparc: qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
+  xtensa: qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
+
+Michael Clark (1):
+  riscv: Convert custom spinlock/rwlock to generic qspinlock/qrwlock
+
+ arch/csky/Kconfig                       |   2 +
+ arch/csky/include/asm/Kbuild            |   2 +
+ arch/csky/include/asm/spinlock.h        |  82 +--------------
+ arch/csky/include/asm/spinlock_types.h  |  16 +--
+ arch/openrisc/Kconfig                   |   1 +
+ arch/powerpc/Kconfig                    |   1 +
+ arch/riscv/Kconfig                      |   3 +
+ arch/riscv/include/asm/Kbuild           |   3 +
+ arch/riscv/include/asm/spinlock.h       | 126 +-----------------------
+ arch/riscv/include/asm/spinlock_types.h |  15 +--
+ arch/sparc/Kconfig                      |   1 +
+ arch/xtensa/Kconfig                     |   1 +
+ kernel/Kconfig.locks                    |   3 +
+ kernel/locking/qspinlock.c              |  46 +++++----
+ 14 files changed, 49 insertions(+), 253 deletions(-)
+
 -- 
 2.17.1
 
