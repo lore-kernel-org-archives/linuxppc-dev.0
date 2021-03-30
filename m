@@ -2,26 +2,26 @@ Return-Path: <SRS0=u7Bz=I4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B90DAC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6467C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:09:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA65D61919
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:09:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA65D61919
+	by mail.kernel.org (Postfix) with ESMTPS id 4004C61919
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:09:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4004C61919
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F8fCt3lqXz30Cq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 17:09:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F8fDM5mJBz3c0L
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 17:09:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AN7lqaqc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HMYlXZ8Y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -29,82 +29,83 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AN7lqaqc; dkim-atps=neutral
+ header.s=pp1 header.b=HMYlXZ8Y; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F8fBr0w3Fz302Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Mar 2021 17:08:19 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F8fBv11Lcz3049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Mar 2021 17:08:22 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 12U64mTV093734; Tue, 30 Mar 2021 02:08:10 -0400
+ 12U63nDi130355; Tue, 30 Mar 2021 02:08:17 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-type :
+ : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=rFQM7fsimgr9Ylj4h6HFbc7R9Z/kTwuMFpS5iG+ZDws=;
- b=AN7lqaqcGWz2pf6MYvZX5/soRa90a6R+WgpY80IEm8IPhlkusAC+t6lmvoKuKrRBjZ8P
- qktz2fC6uGMlyop+nvWu5/GgHU9xD7/erX8VoPko0VSzF5E1s/1kpuSSQjuj/wbrR8GM
- ZNErXYvJgSvPKMUiue/N8few0dQpj/x6+SdZPnNXD4tngXRkx6D4we7XCRtG/71bvbTY
- anXTQs+rUPUT6bFMNCVTLO7kAukP3oUMl4kMITtinDGDctXSu53GCg9xLOag6yQZ6+7f
- Xr07tb5HST1QITNtu6dJezdw3lrL1fGsCaW0y85XUhaZZaHbhxyQ6bqH58y8FAPdn6vp GQ== 
+ bh=Nj/PeXrMsn7jJczuDYjkphu4ag9Srq3A97paU3UCoOI=;
+ b=HMYlXZ8YtldOLfMJcPeO91UZyAzmNDeYlHJvARFraIkgT9KqQRHGvAMzq0GEK2K+q3iY
+ Wh2avNElIRlTvAXydkV+C8YNiJ86TVHQWyrhc3WmWoVZL+kODLpUDpaXC8IddxnRtV+R
+ OmxzYd/YvE8NlHrUrxss2fcUhMAb9NRt0lOfqYTK75leyj1qdceaduQY+u2oEs0X6x7/
+ NCJs8ENRe0BxrTs1WRDVCdxh289vQStzs41kZcjm6wgJ3mJZGYJ81mcskqu/X7nvgeYp
+ rVcONl6upI44zc+fthgsKzrsjeptgz2Es7hHSPbYkZFLPrGOTLhN7Sbd3uu8ZryNDy6S Eg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37jhm5dp0h-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37jhnm59rg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Mar 2021 02:08:10 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12U65Lif096110;
- Tue, 30 Mar 2021 02:08:10 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37jhm5dp06-1
+ Tue, 30 Mar 2021 02:08:17 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12U641CA131560;
+ Tue, 30 Mar 2021 02:08:16 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37jhnm59q6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Mar 2021 02:08:10 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12U64Ggx026105;
- Tue, 30 Mar 2021 06:08:09 GMT
+ Tue, 30 Mar 2021 02:08:16 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12U65fPd030889;
+ Tue, 30 Mar 2021 06:08:15 GMT
 Received: from b03cxnp08027.gho.boulder.ibm.com
  (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01dal.us.ibm.com with ESMTP id 37hvb98c06-1
+ by ppma01wdc.us.ibm.com with ESMTP id 37hvb8ugcp-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Mar 2021 06:08:09 +0000
+ Tue, 30 Mar 2021 06:08:15 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 12U687Rr11010484
+ 12U68E3d5898606
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 30 Mar 2021 06:08:07 GMT
+ Tue, 30 Mar 2021 06:08:14 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 89D127805C;
- Tue, 30 Mar 2021 06:08:07 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8BBA17805C;
+ Tue, 30 Mar 2021 06:08:14 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A55227805F;
- Tue, 30 Mar 2021 06:08:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9CDD37805F;
+ Tue, 30 Mar 2021 06:08:11 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.52.226])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 30 Mar 2021 06:08:04 +0000 (GMT)
+ Tue, 30 Mar 2021 06:08:11 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v3 0/9] Speedup mremap on ppc64
-Date: Tue, 30 Mar 2021 11:37:43 +0530
-Message-Id: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v3 2/9] selftest/mremap_test: Avoid crash with static build
+Date: Tue, 30 Mar 2021 11:37:45 +0530
+Message-Id: <20210330060752.592769-3-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
+References: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: KwCS-9UYJqKKs2DclbcoxCC9jd9-UbKU
-X-Proofpoint-ORIG-GUID: vrdGPCRtER4shtzO14AEEdCt6_Qdh_Vf
+X-Proofpoint-GUID: YvSHRVS70LYWKtY4pdctKI4osdg080P5
+X-Proofpoint-ORIG-GUID: -6GSHs9ZCSkD2MGcVxXUBxH2G_NMnD8X
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
  definitions=2021-03-30_01:2021-03-26,
  2021-03-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1015
- spamscore=0 lowpriorityscore=0 phishscore=0 impostorscore=0 suspectscore=0
- priorityscore=1501 mlxlogscore=999 malwarescore=0 bulkscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2103250000
- definitions=main-2103300043
+ adultscore=0 clxscore=1015
+ mlxscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ mlxlogscore=999 bulkscore=0 phishscore=0 spamscore=0 impostorscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103250000 definitions=main-2103300043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,45 +124,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset enables MOVE_PMD/MOVE_PUD support on power. This requires
-the platform to support updating higher-level page tables without
-updating page table entries. This also needs to invalidate the Page Walk
-Cache on architecture supporting the same.
+With a large mmap map size, we can overlap with the text area and using
+MAP_FIXED results in unmapping that area. Switch to MAP_FIXED_NOREPLACE
+and handle the EEXIST error.
 
-Changes from v2:
-* switch from using mmu_gather to flush_pte_tlb_pwc_range() 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ tools/testing/selftests/vm/mremap_test.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Changes from v1:
-* Rebase to recent upstream
-* Fix build issues with tlb_gather_mmu changes
-
-
-
-Aneesh Kumar K.V (9):
-  selftest/mremap_test: Update the test to handle pagesize other than 4K
-  selftest/mremap_test: Avoid crash with static build
-  mm/mremap: Use pmd/pud_poplulate to update page table entries
-  powerpc/mm/book3s64: Fix possible build error
-  powerpc/mm/book3s64: Update tlb flush routines to take a page walk
-    cache flush argument
-  mm/mremap: Use range flush that does TLB and page walk cache flush
-  mm/mremap: Move TLB flush outside page table lock
-  mm/mremap: Allow arch runtime override
-  powerpc/mm: Enable move pmd/pud
-
- arch/arc/include/asm/tlb.h                    |   5 +
- arch/arm64/include/asm/tlb.h                  |   6 +
- .../include/asm/book3s/64/tlbflush-radix.h    |  19 +--
- arch/powerpc/include/asm/book3s/64/tlbflush.h |  30 ++++-
- arch/powerpc/include/asm/tlb.h                |   6 +
- arch/powerpc/mm/book3s64/radix_hugetlbpage.c  |   4 +-
- arch/powerpc/mm/book3s64/radix_tlb.c          |  49 ++++----
- arch/powerpc/platforms/Kconfig.cputype        |   2 +
- arch/x86/include/asm/tlb.h                    |   5 +
- mm/mremap.c                                   |  40 ++++--
- tools/testing/selftests/vm/mremap_test.c      | 118 ++++++++++--------
- 11 files changed, 187 insertions(+), 97 deletions(-)
-
+diff --git a/tools/testing/selftests/vm/mremap_test.c b/tools/testing/selftests/vm/mremap_test.c
+index c9a5461eb786..0624d1bd71b5 100644
+--- a/tools/testing/selftests/vm/mremap_test.c
++++ b/tools/testing/selftests/vm/mremap_test.c
+@@ -75,9 +75,10 @@ static void *get_source_mapping(struct config c)
+ retry:
+ 	addr += c.src_alignment;
+ 	src_addr = mmap((void *) addr, c.region_size, PROT_READ | PROT_WRITE,
+-			MAP_FIXED | MAP_ANONYMOUS | MAP_SHARED, -1, 0);
++			MAP_FIXED_NOREPLACE | MAP_ANONYMOUS | MAP_SHARED,
++			-1, 0);
+ 	if (src_addr == MAP_FAILED) {
+-		if (errno == EPERM)
++		if (errno == EPERM || errno == EEXIST)
+ 			goto retry;
+ 		goto error;
+ 	}
 -- 
 2.30.2
 
