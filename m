@@ -2,57 +2,111 @@ Return-Path: <SRS0=u7Bz=I4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA009C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 05:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39CCDC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:08:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 29C0D61874
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 05:58:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29C0D61874
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 726ED6191B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 06:08:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 726ED6191B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F8dzf3bvzz30Ng
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 16:58:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F8fCM5sj9z30Lf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 17:08:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SxiBPdG+;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=SxiBPdG+; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F8dzH2hDFz2yxm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Mar 2021 16:58:17 +1100 (AEDT)
-IronPort-SDR: HFJgEYm0RrsqjhJB+zFhUH9liGUPqSoyhxd0vu8AL9WDNPp9ly1klsraJAa8cVMEX20PYm/JBs
- dKhfMBW0fxHA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9938"; a="191166012"
-X-IronPort-AV: E=Sophos;i="5.81,289,1610438400"; d="scan'208";a="191166012"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2021 22:58:15 -0700
-IronPort-SDR: iFhqCAteiPmLuxqm5VZoVhbtYBhyAp8E1NA94h7L/as1rG7uv83AV6jUWtowrchz9RzI3a0SqR
- NAEG+Kbcg1kw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,289,1610438400"; d="scan'208";a="609985549"
-Received: from lkp-server01.sh.intel.com (HELO 69d8fcc516b7) ([10.239.97.150])
- by fmsmga005.fm.intel.com with ESMTP; 29 Mar 2021 22:58:14 -0700
-Received: from kbuild by 69d8fcc516b7 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lR7OH-00054t-EL; Tue, 30 Mar 2021 05:58:13 +0000
-Date: Tue, 30 Mar 2021 13:57:27 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 69931cc387cca289e0415c79ce5389119670066d
-Message-ID: <6062bdc7./86/hyqaRSDsUY1t%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F8fBr42DNz302c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Mar 2021 17:08:20 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12U63n3q130385; Tue, 30 Mar 2021 02:08:14 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=B9iM2DcuS08Wh+tMCYm74RU9UJaU0PTZ8EaGG4He4Co=;
+ b=SxiBPdG+96D3jWbSnNG3+WpSzQZmJZGnrD/kalFd/HpMUWmN6JvSKnpZa7LmK9helphq
+ oSlWl4sywwpj6Ewy2U92OqCMgIpb04D4P11e4QHcoLbMuLFCrsISf0FKgF1fVvLAqdBN
+ P5SCEKuv17vf9FvjnEoHPKGURQl/B9ss6xDwjT5jGcCaHYio1QHmuLoN3msUxII51NAm
+ iU0duVCjhzGFX5yUUdg3+MwE9M4g8+mHZ7zPmd8eqPzQC4uH/qMyr+XRhTRIrinIdq7k
+ rYPuk/GP2GFhuya0LWxtR7FTBMGPxXgvCtthXzMRNvONALxxRPnLY0APl7HYFVn0y9Kp ig== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37jhnm59p2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 30 Mar 2021 02:08:14 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 12U63o50130488;
+ Tue, 30 Mar 2021 02:08:13 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37jhnm59n9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 30 Mar 2021 02:08:13 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12U620EK027464;
+ Tue, 30 Mar 2021 06:08:12 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04dal.us.ibm.com with ESMTP id 37hvb98b11-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 30 Mar 2021 06:08:12 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 12U68BKC27787690
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 30 Mar 2021 06:08:11 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0130B78064;
+ Tue, 30 Mar 2021 06:08:11 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26F827805F;
+ Tue, 30 Mar 2021 06:08:08 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.52.226])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 30 Mar 2021 06:08:07 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: [PATCH v3 1/9] selftest/mremap_test: Update the test to handle
+ pagesize other than 4K
+Date: Tue, 30 Mar 2021 11:37:44 +0530
+Message-Id: <20210330060752.592769-2-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
+References: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: _qGHz-oL-INvsVUlNTXhtQCk0awXZyMh
+X-Proofpoint-ORIG-GUID: vy_QWtw-_hgY3v4N7IevYBJOnU88PK8u
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-30_01:2021-03-26,
+ 2021-03-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 clxscore=1015
+ mlxscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ mlxlogscore=999 bulkscore=0 phishscore=0 spamscore=0 impostorscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103250000 definitions=main-2103300043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,232 +118,171 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: kaleshsingh@google.com, npiggin@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, joel@joelfernandes.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: 69931cc387cca289e0415c79ce5389119670066d  powerpc/powernv: Remove unneeded variable: "rc"
+Instead of hardcoding 4K page size fetch it using sysconf(). For the performance
+measurements test still assume 2M and 1G are hugepage sizes.
 
-elapsed time: 969m
-
-configs tested: 206
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-arm64                            alldefconfig
-xtensa                              defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                      pcm030_defconfig
-powerpc                    socrates_defconfig
-mips                       lemote2f_defconfig
-powerpc                      ppc44x_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arc                            hsdk_defconfig
-sh                            hp6xx_defconfig
-powerpc                      makalu_defconfig
-m68k                            q40_defconfig
-mips                     loongson1c_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                mpc7448_hpc2_defconfig
-sh                            migor_defconfig
-mips                         cobalt_defconfig
-powerpc                      walnut_defconfig
-parisc                generic-32bit_defconfig
-sh                         ecovec24_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                       versatile_defconfig
-arm                         mv78xx0_defconfig
-sh                                  defconfig
-m68k                          atari_defconfig
-arm                      pxa255-idp_defconfig
-arm                          iop32x_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                    sam440ep_defconfig
-powerpc                  storcenter_defconfig
-parisc                           allyesconfig
-arm                          simpad_defconfig
-m68k                        stmark2_defconfig
-xtensa                generic_kc705_defconfig
-powerpc                 mpc8540_ads_defconfig
-m68k                        mvme16x_defconfig
-mips                    maltaup_xpa_defconfig
-powerpc                      ppc40x_defconfig
-sh                   rts7751r2dplus_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                       ebony_defconfig
-sh                            titan_defconfig
-sparc64                             defconfig
-powerpc                 mpc834x_itx_defconfig
-mips                         tb0219_defconfig
-mips                            ar7_defconfig
-arm                     am200epdkit_defconfig
-arm                          pxa910_defconfig
-arm                          collie_defconfig
-m68k                       m5475evb_defconfig
-sparc                            allyesconfig
-sh                ecovec24-romimage_defconfig
-arm                        vexpress_defconfig
-arm                         lpc18xx_defconfig
-powerpc                     rainier_defconfig
-riscv                    nommu_virt_defconfig
-powerpc                        cell_defconfig
-powerpc                   motionpro_defconfig
-mips                           gcw0_defconfig
-arm                          gemini_defconfig
-powerpc                     ppa8548_defconfig
-arm                      tct_hammer_defconfig
-powerpc                       holly_defconfig
-m68k                            mac_defconfig
-powerpc64                        alldefconfig
-arm                         hackkit_defconfig
-m68k                             alldefconfig
-parisc                generic-64bit_defconfig
-alpha                               defconfig
-xtensa                  cadence_csp_defconfig
-arm                  colibri_pxa300_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arc                          axs101_defconfig
-powerpc                      chrp32_defconfig
-mips                           xway_defconfig
-powerpc                 canyonlands_defconfig
-sh                           se7724_defconfig
-m68k                        m5407c3_defconfig
-arm                          pcm027_defconfig
-mips                           rs90_defconfig
-sh                        dreamcast_defconfig
-arm                        clps711x_defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                          pxa3xx_defconfig
-powerpc                 mpc8272_ads_defconfig
-sh                          kfr2r09_defconfig
-arm                        neponset_defconfig
-arm                       omap2plus_defconfig
-arm                          exynos_defconfig
-sh                            shmin_defconfig
-sh                        edosk7705_defconfig
-powerpc                     mpc5200_defconfig
-powerpc                  mpc885_ads_defconfig
-mips                     loongson1b_defconfig
-mips                     decstation_defconfig
-sh                         apsh4a3a_defconfig
-arm                         assabet_defconfig
-sh                               alldefconfig
-arm                         s3c6400_defconfig
-xtensa                       common_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                      ppc64e_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                         wii_defconfig
-arc                        nsimosci_defconfig
-powerpc                         ps3_defconfig
-arm                       mainstone_defconfig
-arm                           omap1_defconfig
-arc                      axs103_smp_defconfig
-arm                           spitz_defconfig
-arm                         s3c2410_defconfig
-arm                      jornada720_defconfig
-mips                      pic32mzda_defconfig
-mips                        jmr3927_defconfig
-m68k                       m5275evb_defconfig
-mips                        nlm_xlp_defconfig
-sh                           se7206_defconfig
-mips                     cu1830-neo_defconfig
-nios2                         10m50_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-xtensa                           allyesconfig
-sh                               allmodconfig
-s390                                defconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20210329
-x86_64               randconfig-a003-20210329
-x86_64               randconfig-a006-20210329
-x86_64               randconfig-a001-20210329
-x86_64               randconfig-a005-20210329
-x86_64               randconfig-a004-20210329
-i386                 randconfig-a003-20210329
-i386                 randconfig-a004-20210329
-i386                 randconfig-a001-20210329
-i386                 randconfig-a002-20210329
-i386                 randconfig-a006-20210329
-i386                 randconfig-a005-20210329
-i386                 randconfig-a004-20210330
-i386                 randconfig-a006-20210330
-i386                 randconfig-a003-20210330
-i386                 randconfig-a002-20210330
-i386                 randconfig-a001-20210330
-i386                 randconfig-a005-20210330
-i386                 randconfig-a011-20210329
-i386                 randconfig-a016-20210329
-i386                 randconfig-a013-20210329
-i386                 randconfig-a012-20210329
-i386                 randconfig-a014-20210329
-i386                 randconfig-a015-20210329
-i386                 randconfig-a015-20210330
-i386                 randconfig-a011-20210330
-i386                 randconfig-a014-20210330
-i386                 randconfig-a013-20210330
-i386                 randconfig-a016-20210330
-i386                 randconfig-a012-20210330
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a015-20210329
-x86_64               randconfig-a012-20210329
-x86_64               randconfig-a013-20210329
-x86_64               randconfig-a014-20210329
-x86_64               randconfig-a011-20210329
-x86_64               randconfig-a016-20210329
-
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ tools/testing/selftests/vm/mremap_test.c | 113 ++++++++++++-----------
+ 1 file changed, 61 insertions(+), 52 deletions(-)
+
+diff --git a/tools/testing/selftests/vm/mremap_test.c b/tools/testing/selftests/vm/mremap_test.c
+index 9c391d016922..c9a5461eb786 100644
+--- a/tools/testing/selftests/vm/mremap_test.c
++++ b/tools/testing/selftests/vm/mremap_test.c
+@@ -45,14 +45,15 @@ enum {
+ 	_4MB = 4ULL << 20,
+ 	_1GB = 1ULL << 30,
+ 	_2GB = 2ULL << 30,
+-	PTE = _4KB,
+ 	PMD = _2MB,
+ 	PUD = _1GB,
+ };
+ 
++#define PTE page_size
++
+ #define MAKE_TEST(source_align, destination_align, size,	\
+ 		  overlaps, should_fail, test_name)		\
+-{								\
++(struct test){							\
+ 	.name = test_name,					\
+ 	.config = {						\
+ 		.src_alignment = source_align,			\
+@@ -252,12 +253,17 @@ static int parse_args(int argc, char **argv, unsigned int *threshold_mb,
+ 	return 0;
+ }
+ 
++#define MAX_TEST 13
++#define MAX_PERF_TEST 3
+ int main(int argc, char **argv)
+ {
+ 	int failures = 0;
+ 	int i, run_perf_tests;
+ 	unsigned int threshold_mb = VALIDATION_DEFAULT_THRESHOLD;
+ 	unsigned int pattern_seed;
++	struct test test_cases[MAX_TEST];
++	struct test perf_test_cases[MAX_PERF_TEST];
++	int page_size;
+ 	time_t t;
+ 
+ 	pattern_seed = (unsigned int) time(&t);
+@@ -268,56 +274,59 @@ int main(int argc, char **argv)
+ 	ksft_print_msg("Test configs:\n\tthreshold_mb=%u\n\tpattern_seed=%u\n\n",
+ 		       threshold_mb, pattern_seed);
+ 
+-	struct test test_cases[] = {
+-		/* Expected mremap failures */
+-		MAKE_TEST(_4KB, _4KB, _4KB, OVERLAPPING, EXPECT_FAILURE,
+-		  "mremap - Source and Destination Regions Overlapping"),
+-		MAKE_TEST(_4KB, _1KB, _4KB, NON_OVERLAPPING, EXPECT_FAILURE,
+-		  "mremap - Destination Address Misaligned (1KB-aligned)"),
+-		MAKE_TEST(_1KB, _4KB, _4KB, NON_OVERLAPPING, EXPECT_FAILURE,
+-		  "mremap - Source Address Misaligned (1KB-aligned)"),
+-
+-		/* Src addr PTE aligned */
+-		MAKE_TEST(PTE, PTE, _8KB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "8KB mremap - Source PTE-aligned, Destination PTE-aligned"),
+-
+-		/* Src addr 1MB aligned */
+-		MAKE_TEST(_1MB, PTE, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2MB mremap - Source 1MB-aligned, Destination PTE-aligned"),
+-		MAKE_TEST(_1MB, _1MB, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2MB mremap - Source 1MB-aligned, Destination 1MB-aligned"),
+-
+-		/* Src addr PMD aligned */
+-		MAKE_TEST(PMD, PTE, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "4MB mremap - Source PMD-aligned, Destination PTE-aligned"),
+-		MAKE_TEST(PMD, _1MB, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "4MB mremap - Source PMD-aligned, Destination 1MB-aligned"),
+-		MAKE_TEST(PMD, PMD, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "4MB mremap - Source PMD-aligned, Destination PMD-aligned"),
+-
+-		/* Src addr PUD aligned */
+-		MAKE_TEST(PUD, PTE, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2GB mremap - Source PUD-aligned, Destination PTE-aligned"),
+-		MAKE_TEST(PUD, _1MB, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2GB mremap - Source PUD-aligned, Destination 1MB-aligned"),
+-		MAKE_TEST(PUD, PMD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2GB mremap - Source PUD-aligned, Destination PMD-aligned"),
+-		MAKE_TEST(PUD, PUD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "2GB mremap - Source PUD-aligned, Destination PUD-aligned"),
+-	};
+-
+-	struct test perf_test_cases[] = {
+-		/*
+-		 * mremap 1GB region - Page table level aligned time
+-		 * comparison.
+-		 */
+-		MAKE_TEST(PTE, PTE, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "1GB mremap - Source PTE-aligned, Destination PTE-aligned"),
+-		MAKE_TEST(PMD, PMD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "1GB mremap - Source PMD-aligned, Destination PMD-aligned"),
+-		MAKE_TEST(PUD, PUD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+-		  "1GB mremap - Source PUD-aligned, Destination PUD-aligned"),
+-	};
++	page_size = sysconf(_SC_PAGESIZE);
++
++	/* Expected mremap failures */
++	test_cases[0] =	MAKE_TEST(page_size, page_size, page_size,
++				  OVERLAPPING, EXPECT_FAILURE,
++				  "mremap - Source and Destination Regions Overlapping");
++
++	test_cases[1] = MAKE_TEST(page_size, page_size/4, page_size,
++				  NON_OVERLAPPING, EXPECT_FAILURE,
++				  "mremap - Destination Address Misaligned (1KB-aligned)");
++	test_cases[2] = MAKE_TEST(page_size/4, page_size, page_size,
++				  NON_OVERLAPPING, EXPECT_FAILURE,
++				  "mremap - Source Address Misaligned (1KB-aligned)");
++
++	/* Src addr PTE aligned */
++	test_cases[3] = MAKE_TEST(PTE, PTE, PTE * 2,
++				  NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "8KB mremap - Source PTE-aligned, Destination PTE-aligned");
++
++	/* Src addr 1MB aligned */
++	test_cases[4] = MAKE_TEST(_1MB, PTE, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "2MB mremap - Source 1MB-aligned, Destination PTE-aligned");
++	test_cases[5] = MAKE_TEST(_1MB, _1MB, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "2MB mremap - Source 1MB-aligned, Destination 1MB-aligned");
++
++	/* Src addr PMD aligned */
++	test_cases[6] = MAKE_TEST(PMD, PTE, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "4MB mremap - Source PMD-aligned, Destination PTE-aligned");
++	test_cases[7] =	MAKE_TEST(PMD, _1MB, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "4MB mremap - Source PMD-aligned, Destination 1MB-aligned");
++	test_cases[8] = MAKE_TEST(PMD, PMD, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "4MB mremap - Source PMD-aligned, Destination PMD-aligned");
++
++	/* Src addr PUD aligned */
++	test_cases[9] = MAKE_TEST(PUD, PTE, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				  "2GB mremap - Source PUD-aligned, Destination PTE-aligned");
++	test_cases[10] = MAKE_TEST(PUD, _1MB, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				   "2GB mremap - Source PUD-aligned, Destination 1MB-aligned");
++	test_cases[11] = MAKE_TEST(PUD, PMD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				   "2GB mremap - Source PUD-aligned, Destination PMD-aligned");
++	test_cases[12] = MAKE_TEST(PUD, PUD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				   "2GB mremap - Source PUD-aligned, Destination PUD-aligned");
++
++	perf_test_cases[0] =  MAKE_TEST(page_size, page_size, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++					"1GB mremap - Source PTE-aligned, Destination PTE-aligned");
++	/*
++	 * mremap 1GB region - Page table level aligned time
++	 * comparison.
++	 */
++	perf_test_cases[1] = MAKE_TEST(PMD, PMD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				       "1GB mremap - Source PMD-aligned, Destination PMD-aligned");
++	perf_test_cases[2] = MAKE_TEST(PUD, PUD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
++				       "1GB mremap - Source PUD-aligned, Destination PUD-aligned");
+ 
+ 	run_perf_tests =  (threshold_mb == VALIDATION_NO_THRESHOLD) ||
+ 				(threshold_mb * _1MB >= _1GB);
+-- 
+2.30.2
+
