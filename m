@@ -2,71 +2,66 @@ Return-Path: <SRS0=u7Bz=I4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 821A8C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 15:36:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFA29C433E8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 16:18:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6B3A619BC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 15:36:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6B3A619BC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id DE437619D2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 16:18:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE437619D2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F8tpd2Gdhz3cLm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 02:36:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=qQDflIkA;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=DAWOFKfB;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F8vl44scHz3bsr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 03:18:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
- helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=qQDflIkA; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=DAWOFKfB; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kaod.org (client-ip=188.165.32.156; helo=3.mo51.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 3.mo51.mail-out.ovh.net (3.mo51.mail-out.ovh.net
+ [188.165.32.156])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F8tn84Fgwz3bpP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 02:35:23 +1100 (AEDT)
-From: John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1617118514;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=YPYdY00O6y5AyCUxqpuYCSP5+y//XPdG6L9507cj5Ic=;
- b=qQDflIkAz51LrvGLUrPwJwlERwWmT6hRYLbUtz0Trgd18/qLrOCW3YJxVb2jNAurM81TyI
- 3AsXxivkW9AuZRb35RUNhV/DFicFLJm/ny52MZHlxV7nYaB82D7yRtI4eJOR3/A6GZI+4W
- Oj90Fp+qLdueXya9Nqaj7zUEgUAq3I566RihuuDiupy7dG0M1LBtHXzJHIUGFj2fBotjoc
- m2sdVo64AJACocszlTWXWkB3zjWrA7HaH4WgN9u85YOkFnQ/JYc9BcjSaehTMGu0Tieka6
- Qum9ld/CWbuBmTjG8QIJS2kuF/+SwuV/YneE4CHchkQF8b8DmaCwDpcuT+u3QQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1617118514;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=YPYdY00O6y5AyCUxqpuYCSP5+y//XPdG6L9507cj5Ic=;
- b=DAWOFKfBAuSGqLOlxY962SnoWviQuD0AGtEm319HtzpL33OlIzgLcrRMou9nKTPDT+oWj6
- VfRxVIoORXq20wCQ==
-To: Petr Mladek <pmladek@suse.com>
-Subject: [PATCH printk v2 0/5] printk: remove safe buffers
-Date: Tue, 30 Mar 2021 17:35:07 +0200
-Message-Id: <20210330153512.1182-1-john.ogness@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F8vkj1tnjz2xgL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 03:18:18 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.146.221])
+ by mo51.mail-out.ovh.net (Postfix) with ESMTPS id 9E1D627A6C7;
+ Tue, 30 Mar 2021 18:18:12 +0200 (CEST)
+Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Tue, 30 Mar
+ 2021 18:18:11 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-100R0031ab479b5-61ac-4c8b-a111-359497f25be2,
+ BD393B37FFA6B31F87E0C0B882DE4EAD25EC4818) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 86.210.153.104
+Subject: Re: [PATCH v2 8/8] powerpc/xive: Map one IPI interrupt per node
+To: <linuxppc-dev@lists.ozlabs.org>
+References: <20210303174857.1760393-1-clg@kaod.org>
+ <20210303174857.1760393-9-clg@kaod.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <2eccd988-a017-7b61-5dc2-08589b9ff26e@kaod.org>
+Date: Tue, 30 Mar 2021 18:18:10 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
+In-Reply-To: <20210303174857.1760393-9-clg@kaod.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.100]
+X-ClientProxiedBy: DAG7EX2.mxp5.local (172.16.2.62) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: e97cc467-89a9-40ca-a968-56051296b2bf
+X-Ovh-Tracer-Id: 5711690229700463581
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudeitddgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehuedtheeghfdvhedtueelteegvdefueektdefiefhffffieduuddtudfhgfevtdenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,108 +73,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Alexei Starovoitov <ast@kernel.org>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Tiezhu Yang <yangtiezhu@loongson.cn>, Will Deacon <will@kernel.org>,
- Rafael Aquini <aquini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Masahiro Yamada <masahiroy@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Peter Zijlstra <peterz@infradead.org>, Yue Hu <huyue2@yulong.com>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Jordan Niethe <jniethe5@gmail.com>,
- Valentin Schneider <valentin.schneider@arm.com>,
- Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Alistair Popple <alistair@popple.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- "Guilherme G. Piccoli" <gpiccoli@canonical.com>,
- Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>,
- Nick Terrell <terrelln@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
- Andy Lutomirski <luto@kernel.org>, Leonardo Bras <leobras.c@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Johannes Weiner <hannes@cmpxchg.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>
+Cc: Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 3/3/21 6:48 PM, Cédric Le Goater wrote:
+> ipistorm [*] can be used to benchmark the raw interrupt rate of an
+> interrupt controller by measuring the number of IPIs a system can
+> sustain. When applied to the XIVE interrupt controller of POWER9 and
+> POWER10 systems, a significant drop of the interrupt rate can be
+> observed when crossing the second node boundary.
+> 
+> This is due to the fact that a single IPI interrupt is used for all
+> CPUs of the system. The structure is shared and the cache line updates
+> impact greatly the traffic between nodes and the overall IPI
+> performance.
+> 
+> As a workaround, the impact can be reduced by deactivating the IRQ
+> lockup detector ("noirqdebug") which does a lot of accounting in the
+> Linux IRQ descriptor structure and is responsible for most of the
+> performance penalty.
+> 
+> As a fix, this proposal allocates an IPI interrupt per node, to be
+> shared by all CPUs of that node. It solves the scaling issue, the IRQ
+> lockup detector still has an impact but the XIVE interrupt rate scales
+> linearly. It also improves the "noirqdebug" case as showed in the
+> tables below.
+> 
+>  * P9 DD2.2 - 2s * 64 threads
+> 
+>                                                "noirqdebug"
+>                         Mint/s                    Mint/s
+>  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys
+>  --------------------------------------------------------------
+>  1      0-15     4.984023   4.875405       4.996536   5.048892
+>         0-31    10.879164  10.544040      10.757632  11.037859
+>         0-47    15.345301  14.688764      14.926520  15.310053
+>         0-63    17.064907  17.066812      17.613416  17.874511
+>  2      0-79    11.768764  21.650749      22.689120  22.566508
+>         0-95    10.616812  26.878789      28.434703  28.320324
+>         0-111   10.151693  31.397803      31.771773  32.388122
+>         0-127    9.948502  33.139336      34.875716  35.224548
+> 
+>  * P10 DD1 - 4s (not homogeneous) 352 threads
+> 
+>                                                "noirqdebug"
+>                         Mint/s                    Mint/s
+>  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys
+>  --------------------------------------------------------------
+>  1      0-15     2.409402   2.364108       2.383303   2.395091
+>         0-31     6.028325   6.046075       6.089999   6.073750
+>         0-47     8.655178   8.644531       8.712830   8.724702
+>         0-63    11.629652  11.735953      12.088203  12.055979
+>         0-79    14.392321  14.729959      14.986701  14.973073
+>         0-95    12.604158  13.004034      17.528748  17.568095
+>  2      0-111    9.767753  13.719831      19.968606  20.024218
+>         0-127    6.744566  16.418854      22.898066  22.995110
+>         0-143    6.005699  19.174421      25.425622  25.417541
+>         0-159    5.649719  21.938836      27.952662  28.059603
+>         0-175    5.441410  24.109484      31.133915  31.127996
+>  3      0-191    5.318341  24.405322      33.999221  33.775354
+>         0-207    5.191382  26.449769      36.050161  35.867307
+>         0-223    5.102790  29.356943      39.544135  39.508169
+>         0-239    5.035295  31.933051      42.135075  42.071975
+>         0-255    4.969209  34.477367      44.655395  44.757074
+>  4      0-271    4.907652  35.887016      47.080545  47.318537
+>         0-287    4.839581  38.076137      50.464307  50.636219
+>         0-303    4.786031  40.881319      53.478684  53.310759
+>         0-319    4.743750  43.448424      56.388102  55.973969
+>         0-335    4.709936  45.623532      59.400930  58.926857
+>         0-351    4.681413  45.646151      62.035804  61.830057
+> 
+> [*] https://github.com/antonblanchard/ipistorm
+> 
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> ---
+>  arch/powerpc/sysdev/xive/xive-internal.h |  2 --
+>  arch/powerpc/sysdev/xive/common.c        | 39 ++++++++++++++++++------
+>  2 files changed, 30 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
+> index 9cf57c722faa..b3a456fdd3a5 100644
+> --- a/arch/powerpc/sysdev/xive/xive-internal.h
+> +++ b/arch/powerpc/sysdev/xive/xive-internal.h
+> @@ -5,8 +5,6 @@
+>  #ifndef __XIVE_INTERNAL_H
+>  #define __XIVE_INTERNAL_H
+>  
+> -#define XIVE_IPI_HW_IRQ		0 /* interrupt source # for IPIs */
+> -
+>  /*
+>   * A "disabled" interrupt should never fire, to catch problems
+>   * we set its logical number to this
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index 8eefd152b947..c27f7bb0494b 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -65,8 +65,16 @@ static struct irq_domain *xive_irq_domain;
+>  #ifdef CONFIG_SMP
+>  static struct irq_domain *xive_ipi_irq_domain;
+>  
+> -/* The IPIs all use the same logical irq number */
+> -static u32 xive_ipi_irq;
+> +/* The IPIs use the same logical irq number when on the same chip */
+> +static struct xive_ipi_desc {
+> +	unsigned int irq;
+> +	char name[8]; /* enough bytes to fit IPI-XXX */
+> +} *xive_ipis;
+> +
+> +static unsigned int xive_ipi_cpu_to_irq(unsigned int cpu)
+> +{
+> +	return xive_ipis[cpu_to_node(cpu)].irq;
 
-Here is v2 of a series to remove the safe buffers. v1 can be
-found here [0]. The safe buffers are no longer needed because
-messages can be stored directly into the log buffer from any
-context.
+This should be using early_cpu_to_node() for hotplugged CPU, else the CPU IPI 
+will be mapped on default node 0. Still works but this is not what we want. 
 
-However, the safe buffers also provided a form of recursion
-protection. For that reason, explicit recursion protection is
-also implemented for this series.
+> +}
+>  #endif
+>  
+>  /* Xive state for each CPU */
+> @@ -1106,25 +1114,36 @@ static const struct irq_domain_ops xive_ipi_irq_domain_ops = {
+>  
+>  static void __init xive_request_ipi(void)
+>  {
+> -	unsigned int virq;
+> +	unsigned int node;
+>  
+> -	xive_ipi_irq_domain = irq_domain_add_linear(NULL, 1,
+> +	xive_ipi_irq_domain = irq_domain_add_linear(NULL, nr_node_ids,
+>  						    &xive_ipi_irq_domain_ops, NULL);
+>  	if (WARN_ON(xive_ipi_irq_domain == NULL))
+>  		return;
+>  
+> -	/* Initialize it */
+> -	virq = irq_create_mapping(xive_ipi_irq_domain, XIVE_IPI_HW_IRQ);
+> -	xive_ipi_irq = virq;
+> +	xive_ipis = kcalloc(nr_node_ids, sizeof(*xive_ipis), GFP_KERNEL | __GFP_NOFAIL);
+> +	for_each_node(node) {
+> +		struct xive_ipi_desc *xid = &xive_ipis[node];
+> +		irq_hw_number_t node_ipi_hwirq = node;
 
-And finally, with the removal of the safe buffers, there is no
-need for extra NMI enter/exit tracking. So this is also removed
-(which includes removing config option CONFIG_PRINTK_NMI).
+There, we need to filter cpu-less nodes. There is no need to allocate IPIs
+for these.
 
-This series is based on the printk-rework branch of
-printk/linux.git:
+> +		/*
+> +		 * Map one IPI interrupt per node for all cpus of that node.
+> +		 * Since the HW interrupt number doesn't have any meaning,
+> +		 * simply use the node number.
+> +		 */
+> +		xid->irq = irq_create_mapping(xive_ipi_irq_domain, node_ipi_hwirq);
+> +		snprintf(xid->name, sizeof(xid->name), "IPI-%d", node);
 
-    commit acebb5597ff1 ("kernel/printk.c: Fixed mundane typos")
+and this mapping needs some modernization. If we use a domain allocator, the 
+IPI irq descriptor will be allocated on the node it is serving which is even 
+better for cache performance.
 
-Changes since v1:
+I will send a v3 with these changes.
 
-- remove the printk nmi enter/exit tracking
+C.
 
-- remove CONFIG_PRINTK_NMI config option
-
-- use in_nmi() to detect NMI context
-
-- remove unused printk_safe_enter/exit macros
-
-- after switching to the dynamic buffer, copy over NMI records
-  that may have arrived during the switch window
-
-- use local_irq_*() instead of printk_safe_*() for console
-  spinning
-
-- use separate variables rather than arrays for the per-cpu
-  recursion tracking
-
-- make @syslog_lock a mutex instead of a spin_lock
-
-- close the wait-read window for SYSLOG_ACTION_READ
-
-- adjust various comments and commit messages as requested
-
-John Ogness
-
-[0] https://lore.kernel.org/lkml/20210316233326.10778-1-john.ogness@linutronix.de
-
-John Ogness (5):
-  printk: track/limit recursion
-  printk: remove safe buffers
-  printk: remove NMI tracking
-  printk: convert @syslog_lock to mutex
-  printk: syslog: close window between wait and read
-
- arch/arm/kernel/smp.c          |   2 -
- arch/powerpc/kernel/traps.c    |   1 -
- arch/powerpc/kernel/watchdog.c |   5 -
- arch/powerpc/kexec/crash.c     |   3 -
- include/linux/hardirq.h        |   2 -
- include/linux/printk.h         |  22 --
- init/Kconfig                   |   5 -
- kernel/kexec_core.c            |   1 -
- kernel/panic.c                 |   3 -
- kernel/printk/internal.h       |  23 ---
- kernel/printk/printk.c         | 281 +++++++++++++++----------
- kernel/printk/printk_safe.c    | 362 +--------------------------------
- kernel/trace/trace.c           |   2 -
- lib/nmi_backtrace.c            |   6 -
- 14 files changed, 171 insertions(+), 547 deletions(-)
-
--- 
-2.20.1
+> -	WARN_ON(request_irq(virq, xive_muxed_ipi_action,
+> -			    IRQF_PERCPU | IRQF_NO_THREAD, "IPI", NULL));
+> +		WARN_ON(request_irq(xid->irq, xive_muxed_ipi_action,
+> +				    IRQF_PERCPU | IRQF_NO_THREAD, xid->name, NULL));
+> +	}
+>  }
+>  
+>  static int xive_setup_cpu_ipi(unsigned int cpu)
+>  {
+>  	struct xive_cpu *xc;
+>  	int rc;
+> +	unsigned int xive_ipi_irq = xive_ipi_cpu_to_irq(cpu);
+>  
+>  	pr_debug("Setting up IPI for CPU %d\n", cpu);
+>  
+> @@ -1165,6 +1184,8 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
+>  
+>  static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
+>  {
+> +	unsigned int xive_ipi_irq = xive_ipi_cpu_to_irq(cpu);
+> +
+>  	/* Disable the IPI and free the IRQ data */
+>  
+>  	/* Already cleaned up ? */
+> 
 
