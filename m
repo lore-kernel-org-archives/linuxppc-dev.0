@@ -6,39 +6,43 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42359C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E358DC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ACE92619D6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACE92619D6
+	by mail.kernel.org (Postfix) with ESMTPS id 815C8619CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 815C8619CB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97YP2WHmz3cXs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:11:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97Ym03Bsz3d2V
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:11:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XJ5033z3bc4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XK0qFZz3brJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:09 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XJ1RzQz9sWT; Wed, 31 Mar 2021 12:10:08 +1100 (AEDT)
+ id 4F97XJ5Y7Cz9sWd; Wed, 31 Mar 2021 12:10:08 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Chen Huang <chenhuang5@huawei.com>,
- Paul Mackerras <paulus@samba.org>,
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Chen Huang <chenhuang5@huawei.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20210327094900.938555-1-chenhuang5@huawei.com>
+In-Reply-To: <4b8f8335-0a29-93fc-7943-b4dc16efb908@huawei.com>
 References: <20210327094900.938555-1-chenhuang5@huawei.com>
-Subject: Re: [PATCH] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build
+ <dd6b25d3-006b-be1e-9c4f-89e66aefb519@csgroup.eu>
+ <e8eddfd4-ca07-f2ba-42de-19e636dc2ce9@huawei.com>
+ <4b8f8335-0a29-93fc-7943-b4dc16efb908@huawei.com>
+Subject: Re: [PATCH v2] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build
  configuration
-Message-Id: <161715298133.226945.2164349156598477834.b4-ty@ellerman.id.au>
+Message-Id: <161715298165.226945.12702425269351759002.b4-ty@ellerman.id.au>
 Date: Wed, 31 Mar 2021 12:09:41 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -61,7 +65,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 27 Mar 2021 09:49:00 +0000, Chen Huang wrote:
+On Mon, 29 Mar 2021 10:27:00 +0800, Chen Huang wrote:
 > When compiling the powerpc with the SMP disabled, it shows the issue:
 > 
 > arch/powerpc/kernel/watchdog.c: In function ‘watchdog_smp_panic’:
