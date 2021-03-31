@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE32C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3C60C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:12:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D263F619CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:12:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D263F619CB
+	by mail.kernel.org (Postfix) with ESMTPS id 233FB619CA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:12:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 233FB619CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97Zp47qrz3ddY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:12:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97b75cz5z3dhf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:12:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,19 +26,19 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XM3XXWz3bx6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XM6DpRz3bxj
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:11 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XL5cZdz9sWQ; Wed, 31 Mar 2021 12:10:10 +1100 (AEDT)
+ id 4F97XM1Wjnz9sWK; Wed, 31 Mar 2021 12:10:10 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <a1e552006b8c51f23edd2f6cabdd9a986c631146.1615380184.git.christophe.leroy@csgroup.eu>
-References: <a1e552006b8c51f23edd2f6cabdd9a986c631146.1615380184.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/Makefile: Remove workaround for gcc versions
- below 4.9
-Message-Id: <161715297701.226945.17440071466886747895.b4-ty@ellerman.id.au>
+In-Reply-To: <e4d1aae7604d89c98a52dfd8ce8443462e595670.1615809591.git.christophe.leroy@csgroup.eu>
+References: <e4d1aae7604d89c98a52dfd8ce8443462e595670.1615809591.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/math: Fix missing __user qualifier for get_user()
+ and other sparse warnings
+Message-Id: <161715297749.226945.13016701345166471627.b4-ty@ellerman.id.au>
 Date: Wed, 31 Mar 2021 12:09:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -59,15 +59,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 10 Mar 2021 12:43:12 +0000 (UTC), Christophe Leroy wrote:
-> Commit 6ec4476ac825 ("Raise gcc version requirement to 4.9")
-> made it impossible to build with gcc 4.8 and under.
+On Mon, 15 Mar 2021 12:00:09 +0000 (UTC), Christophe Leroy wrote:
+> Sparse reports the following problems:
 > 
-> Remove related workaround.
+> arch/powerpc/math-emu/math.c:228:21: warning: Using plain integer as NULL pointer
+> arch/powerpc/math-emu/math.c:228:31: warning: Using plain integer as NULL pointer
+> arch/powerpc/math-emu/math.c:228:41: warning: Using plain integer as NULL pointer
+> arch/powerpc/math-emu/math.c:228:51: warning: Using plain integer as NULL pointer
+> arch/powerpc/math-emu/math.c:237:13: warning: incorrect type in initializer (different address spaces)
+> arch/powerpc/math-emu/math.c:237:13:    expected unsigned int [noderef] __user *_gu_addr
+> arch/powerpc/math-emu/math.c:237:13:    got unsigned int [usertype] *
+> arch/powerpc/math-emu/math.c:226:1: warning: symbol 'do_mathemu' was not declared. Should it be static?
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/Makefile: Remove workaround for gcc versions below 4.9
-      https://git.kernel.org/powerpc/c/802b5560393423166e436c7914b565f3cda9e6b9
+[1/1] powerpc/math: Fix missing __user qualifier for get_user() and other sparse warnings
+      https://git.kernel.org/powerpc/c/e448e1e774dc0ca307c17e961daf7ede2e635c57
 
 cheers
