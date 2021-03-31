@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 199AFC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51472C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:20:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B7B4619CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:20:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B7B4619CB
+	by mail.kernel.org (Postfix) with ESMTPS id DE7DE619CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:20:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE7DE619CB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97lz22pHz3gwV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:20:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97mR4SNNz3dhw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:20:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Xn3t1wz3cCy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Xr3WpPz3cD7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:36 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97Xn1dSBz9t0Y; Wed, 31 Mar 2021 12:10:30 +1100 (AEDT)
+ id 4F97Xr1xYXz9sf9; Wed, 31 Mar 2021 12:10:34 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210320122227.345427-1-mpe@ellerman.id.au>
-References: <20210320122227.345427-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH v7] powerpc/irq: Inline call_do_irq() and call_do_softirq()
-Message-Id: <161715298076.226945.18087034706444554452.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:40 +1100
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210223070227.2916871-1-ruscur@russell.cc>
+References: <20210223070227.2916871-1-ruscur@russell.cc>
+Subject: Re: [PATCH v2] selftests/powerpc: Fix L1D flushing tests for Power10
+Message-Id: <161715296533.226945.16801823044490927141.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:25 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,23 +51,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 20 Mar 2021 23:22:27 +1100, Michael Ellerman wrote:
-> call_do_irq() and call_do_softirq() are simple enough to be
-> worth inlining.
+On Tue, 23 Feb 2021 17:02:27 +1000, Russell Currey wrote:
+> The rfi_flush and entry_flush selftests work by using the PM_LD_MISS_L1
+> perf event to count L1D misses.  The value of this event has changed
+> over time:
 > 
-> Inlining them avoids an mflr/mtlr pair plus a save/reload on stack. It
-> also allows GCC to keep the saved ksp_limit in an nonvolatile reg.
+> - Power7 uses 0x400f0
+> - Power8 and Power9 use both 0x400f0 and 0x3e054
+> - Power10 uses only 0x3e054
 > 
-> This is inspired from S390 arch. Several other arches do more or
-> less the same. The way sparc arch does seems odd thought.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/irq: Inline call_do_irq() and call_do_softirq()
-      https://git.kernel.org/powerpc/c/48cf12d88969bd4238b8769767eb476970319d93
+[1/1] selftests/powerpc: Fix L1D flushing tests for Power10
+      https://git.kernel.org/powerpc/c/3a72c94ebfb1f171eba0715998010678a09ec796
 
 cheers
