@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 390D8C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 16:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFBE7C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 16:49:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5DEEB61019
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 16:49:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DEEB61019
+	by mail.kernel.org (Postfix) with ESMTPS id 396136101A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 16:49:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 396136101A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F9XN80Mt9z3c4S
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 03:49:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F9XNT5Xkxz3cBQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 03:49:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F9XMR0Bbkz2xfT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 03:48:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9XMR0Jvxz2xgN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 03:48:47 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F9XMK1TsBz9txhf;
- Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4F9XMJ0htpz9txhh;
+ Wed, 31 Mar 2021 18:48:44 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ELWGhG3Z_Itz; Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
+ with ESMTP id rUNfHAYkFI1O; Wed, 31 Mar 2021 18:48:44 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F9XMK0lYcz9txhd;
- Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4F9XMH6xDxz9txhd;
+ Wed, 31 Mar 2021 18:48:43 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E4738B828;
- Wed, 31 Mar 2021 18:48:46 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1316E8B828;
+ Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wSrNiVss83ou; Wed, 31 Mar 2021 18:48:46 +0200 (CEST)
+ with ESMTP id yqdnjLv44r9p; Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CF3078B80D;
- Wed, 31 Mar 2021 18:48:45 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C0ED58B80D;
+ Wed, 31 Mar 2021 18:48:44 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A659967641; Wed, 31 Mar 2021 16:48:45 +0000 (UTC)
-Message-Id: <539c4204b1baa77c55f758904a1ea239abbc7a5c.1617209142.git.christophe.leroy@csgroup.eu>
+ id 9F60067641; Wed, 31 Mar 2021 16:48:44 +0000 (UTC)
+Message-Id: <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1617209141.git.christophe.leroy@csgroup.eu>
 References: <cover.1617209141.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH RESEND v1 2/4] lib/vdso: Add vdso_data pointer as input to
- __arch_get_timens_vdso_data()
+Subject: [PATCH RESEND v1 1/4] lib/vdso: Mark do_hres_timens() and
+ do_coarse_timens() __always_inline()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 31 Mar 2021 16:48:45 +0000 (UTC)
+Date: Wed, 31 Mar 2021 16:48:44 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,145 +77,77 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For the same reason as commit e876f0b69dc9 ("lib/vdso: Allow
-architectures to provide the vdso data pointer"), powerpc wants to
-avoid calculation of relative position to code.
+In the same spirit as commit c966533f8c6c ("lib/vdso: Mark do_hres()
+and do_coarse() as __always_inline"), mark do_hres_timens() and
+do_coarse_timens() __always_inline.
 
-As the timens_vdso_data is next page to vdso_data, provide
-vdso_data pointer to __arch_get_timens_vdso_data() in order
-to ease the calculation on powerpc in following patches.
+The measurement below in on a non timens process, ie on the fastest path.
+
+On powerpc32, without the patch:
+
+clock-gettime-monotonic-raw:    vdso: 1155 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 813 nsec/call
+clock-gettime-monotonic:    vdso: 1076 nsec/call
+
+With the patch:
+
+clock-gettime-monotonic-raw:    vdso: 1100 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 667 nsec/call
+clock-gettime-monotonic:    vdso: 1025 nsec/call
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/arm64/include/asm/vdso/compat_gettimeofday.h |  3 ++-
- arch/arm64/include/asm/vdso/gettimeofday.h        |  2 +-
- arch/s390/include/asm/vdso/gettimeofday.h         |  3 ++-
- arch/x86/include/asm/vdso/gettimeofday.h          |  3 ++-
- lib/vdso/gettimeofday.c                           | 15 +++++++++------
- 5 files changed, 16 insertions(+), 10 deletions(-)
+ lib/vdso/gettimeofday.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/include/asm/vdso/compat_gettimeofday.h b/arch/arm64/include/asm/vdso/compat_gettimeofday.h
-index 7508b0ac1d21..ecb6fd4c3c64 100644
---- a/arch/arm64/include/asm/vdso/compat_gettimeofday.h
-+++ b/arch/arm64/include/asm/vdso/compat_gettimeofday.h
-@@ -155,7 +155,8 @@ static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
- }
- 
- #ifdef CONFIG_TIME_NS
--static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
-+static __always_inline
-+const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
- {
- 	const struct vdso_data *ret;
- 
-diff --git a/arch/arm64/include/asm/vdso/gettimeofday.h b/arch/arm64/include/asm/vdso/gettimeofday.h
-index 631ab1281633..de86230a9436 100644
---- a/arch/arm64/include/asm/vdso/gettimeofday.h
-+++ b/arch/arm64/include/asm/vdso/gettimeofday.h
-@@ -100,7 +100,7 @@ const struct vdso_data *__arch_get_vdso_data(void)
- 
- #ifdef CONFIG_TIME_NS
- static __always_inline
--const struct vdso_data *__arch_get_timens_vdso_data(void)
-+const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
- {
- 	return _timens_data;
- }
-diff --git a/arch/s390/include/asm/vdso/gettimeofday.h b/arch/s390/include/asm/vdso/gettimeofday.h
-index ed89ef742530..383c53c3dddd 100644
---- a/arch/s390/include/asm/vdso/gettimeofday.h
-+++ b/arch/s390/include/asm/vdso/gettimeofday.h
-@@ -68,7 +68,8 @@ long clock_getres_fallback(clockid_t clkid, struct __kernel_timespec *ts)
- }
- 
- #ifdef CONFIG_TIME_NS
--static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
-+static __always_inline
-+const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
- {
- 	return _timens_data;
- }
-diff --git a/arch/x86/include/asm/vdso/gettimeofday.h b/arch/x86/include/asm/vdso/gettimeofday.h
-index df01d7349d79..1936f21ed8cd 100644
---- a/arch/x86/include/asm/vdso/gettimeofday.h
-+++ b/arch/x86/include/asm/vdso/gettimeofday.h
-@@ -58,7 +58,8 @@ extern struct ms_hyperv_tsc_page hvclock_page
+diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
+index 2919f1698140..c6f6dee08746 100644
+--- a/lib/vdso/gettimeofday.c
++++ b/lib/vdso/gettimeofday.c
+@@ -46,8 +46,8 @@ static inline bool vdso_cycles_ok(u64 cycles)
  #endif
  
  #ifdef CONFIG_TIME_NS
--static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
-+static __always_inline
-+const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
+-static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
+-			  struct __kernel_timespec *ts)
++static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
++					  struct __kernel_timespec *ts)
  {
- 	return __timens_vdso_data;
- }
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index c6f6dee08746..ce2f69552003 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -49,13 +49,15 @@ static inline bool vdso_cycles_ok(u64 cycles)
- static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
- 					  struct __kernel_timespec *ts)
- {
--	const struct vdso_data *vd = __arch_get_timens_vdso_data();
-+	const struct vdso_data *vd;
+ 	const struct vdso_data *vd = __arch_get_timens_vdso_data();
  	const struct timens_offset *offs = &vdns->offset[clk];
- 	const struct vdso_timestamp *vdso_ts;
- 	u64 cycles, last, ns;
- 	u32 seq;
- 	s64 sec;
+@@ -97,8 +97,8 @@ static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
+ 	return NULL;
+ }
  
-+	vd = vdns - (clk == CLOCK_MONOTONIC_RAW ? CS_RAW : CS_HRES_COARSE);
-+	vd = __arch_get_timens_vdso_data(vd);
- 	if (clk != CLOCK_MONOTONIC_RAW)
- 		vd = &vd[CS_HRES_COARSE];
- 	else
-@@ -92,7 +94,8 @@ static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_
+-static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
+-			  struct __kernel_timespec *ts)
++static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
++					  struct __kernel_timespec *ts)
+ {
+ 	return -EINVAL;
+ }
+@@ -159,8 +159,8 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
+ }
+ 
+ #ifdef CONFIG_TIME_NS
+-static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
+-			    struct __kernel_timespec *ts)
++static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
++					    struct __kernel_timespec *ts)
+ {
+ 	const struct vdso_data *vd = __arch_get_timens_vdso_data();
+ 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
+@@ -188,8 +188,8 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
  	return 0;
  }
  #else
--static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
-+static __always_inline
-+const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
+-static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
+-			    struct __kernel_timespec *ts)
++static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
++					    struct __kernel_timespec *ts)
  {
- 	return NULL;
+ 	return -1;
  }
-@@ -162,7 +165,7 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
- static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
- 					    struct __kernel_timespec *ts)
- {
--	const struct vdso_data *vd = __arch_get_timens_vdso_data();
-+	const struct vdso_data *vd = __arch_get_timens_vdso_data(vdns);
- 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
- 	const struct timens_offset *offs = &vdns->offset[clk];
- 	u64 nsec;
-@@ -310,7 +313,7 @@ __cvdso_gettimeofday_data(const struct vdso_data *vd,
- 	if (unlikely(tz != NULL)) {
- 		if (IS_ENABLED(CONFIG_TIME_NS) &&
- 		    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--			vd = __arch_get_timens_vdso_data();
-+			vd = __arch_get_timens_vdso_data(vd);
- 
- 		tz->tz_minuteswest = vd[CS_HRES_COARSE].tz_minuteswest;
- 		tz->tz_dsttime = vd[CS_HRES_COARSE].tz_dsttime;
-@@ -333,7 +336,7 @@ __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
- 
- 	if (IS_ENABLED(CONFIG_TIME_NS) &&
- 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--		vd = __arch_get_timens_vdso_data();
-+		vd = __arch_get_timens_vdso_data(vd);
- 
- 	t = READ_ONCE(vd[CS_HRES_COARSE].basetime[CLOCK_REALTIME].sec);
- 
-@@ -363,7 +366,7 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
- 
- 	if (IS_ENABLED(CONFIG_TIME_NS) &&
- 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--		vd = __arch_get_timens_vdso_data();
-+		vd = __arch_get_timens_vdso_data(vd);
- 
- 	/*
- 	 * Convert the clockid to a bitmask and use it to check which
 -- 
 2.25.0
 
