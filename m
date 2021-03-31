@@ -2,68 +2,49 @@ Return-Path: <SRS0=B9f/=I5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99A55C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:04:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE511C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:57:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BEF3E6198F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:04:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEF3E6198F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id B7D4C6195D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:57:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7D4C6195D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F9Q2n6ggBz3bvs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 23:04:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F9RDy6g1Yz3c2M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 23:57:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com;
+ envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F9Q2Q2nKLz2xxw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 23:03:38 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4F9Q2D0smKz9v32D;
- Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id g_Nn_xv_uLdm; Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4F9Q2D04czz9v32B;
- Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DB5BA8B7FF;
- Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Z-TpVAvpf8s5; Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EC668B75B;
- Wed, 31 Mar 2021 14:03:32 +0200 (CEST)
-Subject: Re: [PATCH v10 01/10] powerpc/mm: Implement set_memory() routines
-To: Michael Ellerman <mpe@ellerman.id.au>, Jordan Niethe
- <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20210330045132.722243-1-jniethe5@gmail.com>
- <20210330045132.722243-2-jniethe5@gmail.com>
- <87lfa37euw.fsf@mpe.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <17c3a18b-9bfb-15e6-fc09-63d6226f1879@csgroup.eu>
-Date: Wed, 31 Mar 2021 14:03:23 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9RDb5MB2z2yy7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 23:57:31 +1100 (AEDT)
+Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.60])
+ by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4F9R9s10JLz9thw;
+ Wed, 31 Mar 2021 20:55:13 +0800 (CST)
+Received: from localhost (10.174.179.96) by DGGEMS409-HUB.china.huawei.com
+ (10.3.19.209) with Microsoft SMTP Server id 14.3.498.0; Wed, 31 Mar 2021
+ 20:57:12 +0800
+From: YueHaibing <yuehaibing@huawei.com>
+To: <ruscur@russell.cc>, <oohall@gmail.com>, <mpe@ellerman.id.au>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <sbobroff@linux.ibm.com>
+Subject: [PATCH -next] powerpc/eeh: Add correct inline functions
+Date: Wed, 31 Mar 2021 20:53:13 +0800
+Message-ID: <20210331125313.24036-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.10.2.windows.1
 MIME-Version: 1.0
-In-Reply-To: <87lfa37euw.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.174.179.96]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,89 +56,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, npiggin@gmail.com, cmr@codefail.de,
- naveen.n.rao@linux.ibm.com, dja@axtens.net
+Cc: YueHaibing <yuehaibing@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+pseries_eeh_add_device_early()/pseries_eeh_add_device_tree_early() is
+never used since adding, however pseries_eeh_init_edev() and
+pseries_eeh_init_edev_recursive() need their inline versions.
 
+Fixes: b6eebb093cad ("powerpc/eeh: Make early EEH init pseries specific")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ arch/powerpc/include/asm/eeh.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Le 31/03/2021 à 13:16, Michael Ellerman a écrit :
-> Hi Jordan,
-> 
-> A few nits below ...
-> 
-> Jordan Niethe <jniethe5@gmail.com> writes:
->> From: Russell Currey <ruscur@russell.cc>
->>
->> The set_memory_{ro/rw/nx/x}() functions are required for STRICT_MODULE_RWX,
->> and are generally useful primitives to have.  This implementation is
->> designed to be completely generic across powerpc's many MMUs.
->>
->> It's possible that this could be optimised to be faster for specific
->> MMUs, but the focus is on having a generic and safe implementation for
->> now.
->>
->> This implementation does not handle cases where the caller is attempting
->> to change the mapping of the page it is executing from, or if another
->> CPU is concurrently using the page being altered.  These cases likely
->> shouldn't happen, but a more complex implementation with MMU-specific code
->> could safely handle them, so that is left as a TODO for now.
->>
->> On hash the linear mapping is not kept in the linux pagetable, so this
->> will not change the protection if used on that range. Currently these
->> functions are not used on the linear map so just WARN for now.
->>
->> These functions do nothing if STRICT_KERNEL_RWX is not enabled.
->>
->> Reviewed-by: Daniel Axtens <dja@axtens.net>
->> Signed-off-by: Russell Currey <ruscur@russell.cc>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> [jpn: -rebase on next plus "powerpc/mm/64s: Allow STRICT_KERNEL_RWX again"
->>        - WARN on hash linear map]
->> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
->> ---
->> v10: WARN if trying to change the hash linear map
->> ---
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index b1a5bba2e0b9..0b6c2a6711d3 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -357,8 +357,8 @@ static inline int eeh_phb_pe_create(struct pci_controller *phb) { return 0; }
+ void pseries_eeh_init_edev(struct pci_dn *pdn);
+ void pseries_eeh_init_edev_recursive(struct pci_dn *pdn);
+ #else
+-static inline void pseries_eeh_add_device_early(struct pci_dn *pdn) { }
+-static inline void pseries_eeh_add_device_tree_early(struct pci_dn *pdn) { }
++static inline void pseries_eeh_init_edev(struct pci_dn *pdn) { }
++static inline void pseries_eeh_init_edev_recursive(struct pci_dn *pdn) { }
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+-- 
+2.17.1
 
-> 
-> This ↓ should have a comment explaining what it's doing:
-> 
->> +#ifdef CONFIG_PPC_BOOK3S_64
->> +	if (WARN_ON_ONCE(!radix_enabled() &&
->> +		     get_region_id(addr) == LINEAR_MAP_REGION_ID)) {
->> +		return -1;
->> +	}
->> +#endif
-> 
-> Maybe:
-> 
-> 	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&
-> 	    WARN_ON_ONCE(!radix_enabled() && get_region_id(addr) == LINEAR_MAP_REGION_ID)) {
-> 		return -1;
-> 	}
-
-get_region_id() only exists for book3s/64 at the time being, and LINEAR_MAP_REGION_ID as well.
-
-
-> 
-> But then Aneesh pointed out that we should also block VMEMMAP_REGION_ID.
-> 
-> It might be better to just check for the permitted regions.
-> 
-> 	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !radix_enabled()) {
->          	int region = get_region_id(addr);
-> 
-> 	    	if (WARN_ON_ONCE(region != VMALLOC_REGION_ID && region != IO_REGION_ID))
->                  	return -1;
-> 	}
-> 
->> +
->> +	return apply_to_existing_page_range(&init_mm, start, sz,
->> +					    change_page_attr, (void *)action);
->> +}
-> 
-> 
-> cheers
-> 
