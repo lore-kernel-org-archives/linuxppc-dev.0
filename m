@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60DAAC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD47CC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:13:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE0EF619CA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:13:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE0EF619CA
+	by mail.kernel.org (Postfix) with ESMTPS id 3F209619CA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:13:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F209619CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97bp51GSz3dvV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:13:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97c802gqz3dpJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:13:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XN6vDXz3c19
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XQ224Pz3c2B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:14 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XN4Y8gz9sXh; Wed, 31 Mar 2021 12:10:12 +1100 (AEDT)
+ id 4F97XQ0j7hz9shx; Wed, 31 Mar 2021 12:10:14 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1615398498.git.christophe.leroy@csgroup.eu>
-References: <cover.1615398498.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 0/8] Miscellaneous user access improvement
-Message-Id: <161715296775.226945.5121364536588519701.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:27 +1100
+In-Reply-To: <955248c6423cb068c5965923121ba31d4dd2fdde.1615881400.git.christophe.leroy@csgroup.eu>
+References: <955248c6423cb068c5965923121ba31d4dd2fdde.1615881400.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 1/4] powerpc: Activate HAVE_RELIABLE_STACKTRACE for all
+Message-Id: <161715297988.226945.14373125287629011053.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:39 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,34 +58,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 10 Mar 2021 17:56:59 +0000 (UTC), Christophe Leroy wrote:
-> Patches 1-3 are cleaning parts of uaccess.h not related
-> to put_user/get_user
-> Patch 4 removes some usage of consecutives __get_user
-> Patches 5 rewrite __patch_instruction to not use uaccess.h internals.
-> Patches 6-8 switch some parts of code to user_access_begin/end blocks
-> 
-> All patches are independant.
-> 
-> [...]
+On Tue, 16 Mar 2021 07:57:13 +0000 (UTC), Christophe Leroy wrote:
+> CONFIG_HAVE_RELIABLE_STACKTRACE is applicable to all, no
+> reason to limit it to book3s/64le
 
 Applied to powerpc/next.
 
-[1/8] powerpc/uaccess: Also perform 64 bits copies in unsafe_copy_to_user() on ppc32
-      https://git.kernel.org/powerpc/c/c6adc835c68b713360f918d21372c2f34fc228e2
-[2/8] powerpc/uaccess: Swap clear_user() and __clear_user()
-      https://git.kernel.org/powerpc/c/7472199a6eda6a79f9e3b126f52f67f9ce3e1f77
-[3/8] powerpc/uaccess: Move copy_mc_xxx() functions down
-      https://git.kernel.org/powerpc/c/4b8cda58812c1e1bf79d37f2ddff3cf03b7025da
-[4/8] powerpc/syscalls: Use sys_old_select() in ppc_select()
-      https://git.kernel.org/powerpc/c/fd69d544b0e785b11699675154bdfe01a04538cd
-[5/8] powerpc/lib: Don't use __put_user_asm_goto() outside of uaccess.h
-      https://git.kernel.org/powerpc/c/e63ceebdad82f85e48b018abfc6af4ed6958179e
-[6/8] powerpc/net: Switch csum_and_copy_{to/from}_user to user_access block
-      https://git.kernel.org/powerpc/c/164dc6ce368fa23b0aae0e5d12883fff9bf80458
-[7/8] powerpc/futex: Switch to user_access block
-      https://git.kernel.org/powerpc/c/870779f40e99c795ddfafa0dfc43318e51f15127
-[8/8] powerpc/ptrace: Convert gpr32_set_common() to user access block
-      https://git.kernel.org/powerpc/c/93c043e393af7fa218c928d8c62396ba28f1bb84
+[1/4] powerpc: Activate HAVE_RELIABLE_STACKTRACE for all
+      https://git.kernel.org/powerpc/c/accdd093f260bc8c8a8f580ee48e49ad5c5f91b2
+[2/4] powerpc: Rename 'tsk' parameter into 'task'
+      https://git.kernel.org/powerpc/c/826a307b0a11e605b4be0b2727550b510c4a88cd
+[3/4] powerpc: Convert stacktrace to generic ARCH_STACKWALK
+      https://git.kernel.org/powerpc/c/a1cdef04f22dd5ad9e1ccf5d05a549c697b7f52d
+[4/4] powerpc: Fix arch_stack_walk() to have running function as first entry
+      https://git.kernel.org/powerpc/c/a2308836880bf1501ff9373c611dc2970247d42b
 
 cheers
