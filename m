@@ -2,59 +2,92 @@ Return-Path: <SRS0=B9f/=I5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0EC9C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 14:35:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60056C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 14:45:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 506CA60FF4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 14:35:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 506CA60FF4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D76E361003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 14:45:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D76E361003
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F9TPr4p55z3dby
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 01:35:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F9TdX3DfDz302c
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 01:45:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K4mj3Ucq;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=guoren@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=K4mj3Ucq; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F9TLf45Ppz3c9K
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 01:32:58 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 012EC60FF1;
- Wed, 31 Mar 2021 14:32:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1617201176;
- bh=Ot/5PmXwS11uulWq3qWA2topEHV4IQyVTJcB7EIJEto=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=K4mj3Ucq0o81O2XyVG3hmXxx3WMjl1D+IiWQy6y3glymXCyXz7HvUH0Y/fnYr9f1h
- 1wUUw0fx8O0SKe53NjW/bj/Ou5QXwaPc1g1UvmKUHfz4nwx525LvJmbfcYf5RgZhWk
- XZR9y8fM+4DYoaAJXNL2jgLdlXBwoOnIc/jSJ3r/9sKttJ2VVol/puJBKAjtvOtqgj
- YTwPsq2+RWCppmBEqhKeWazUtN2PGYkR30QcO8bTOPCiOzxjHuAOCNJtEBr/pnFukQ
- 2743V9mO+HynrrCRbhsuAOsY5f1+RMF3zawK3FR7K+l/QgZF57ChVKoxlykrytyZNk
- r7q5BWtdFi1iw==
-From: guoren@kernel.org
-To: guoren@kernel.org
-Subject: [PATCH v6 9/9] powerpc/qspinlock: Add ARCH_USE_QUEUED_SPINLOCKS_XCHG32
-Date: Wed, 31 Mar 2021 14:30:40 +0000
-Message-Id: <1617201040-83905-10-git-send-email-guoren@kernel.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1617201040-83905-1-git-send-email-guoren@kernel.org>
-References: <1617201040-83905-1-git-send-email-guoren@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9Td81G1mz2xg5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 01:45:29 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 12VEYP6T101351; Wed, 31 Mar 2021 10:45:23 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37mb3hghvx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 31 Mar 2021 10:45:23 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 12VEhlD9006798;
+ Wed, 31 Mar 2021 14:45:21 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 37mawjrnv5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 31 Mar 2021 14:45:21 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 12VEix6D24772996
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 31 Mar 2021 14:44:59 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1A9DF11C052;
+ Wed, 31 Mar 2021 14:45:19 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC3F211C04A;
+ Wed, 31 Mar 2021 14:45:18 +0000 (GMT)
+Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed, 31 Mar 2021 14:45:18 +0000 (GMT)
+Received: from yukon.ibmuc.com (unknown [9.171.70.101])
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 2D1C1220190;
+ Wed, 31 Mar 2021 16:45:18 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 3/9] powerpc/xive: Remove useless check on XIVE_IPI_HW_IRQ
+Date: Wed, 31 Mar 2021 16:45:08 +0200
+Message-Id: <20210331144514.892250-4-clg@kaod.org>
+X-Mailer: git-send-email 2.26.3
+In-Reply-To: <20210331144514.892250-1-clg@kaod.org>
+References: <20210331144514.892250-1-clg@kaod.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: dmt3vmJW3NGLqH-vGhyhPTgeQ2IbPvrj
+X-Proofpoint-GUID: dmt3vmJW3NGLqH-vGhyhPTgeQ2IbPvrj
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369, 18.0.761
+ definitions=2021-03-31_03:2021-03-31,
+ 2021-03-31 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=978 spamscore=0
+ mlxscore=0 phishscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0
+ suspectscore=0 clxscore=1034 adultscore=0 impostorscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103300000 definitions=main-2103310105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,50 +99,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Guo Ren <guoren@linux.alibaba.com>, linux-kernel@vger.kernel.org,
- linux-csky@vger.kernel.org, openrisc@lists.librecores.org,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Cc: Greg Kurz <groug@kaod.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Guo Ren <guoren@linux.alibaba.com>
+The IPI interrupt has its own domain now. Testing the HW interrupt
+number is not needed anymore.
 
-We don't have native hw xchg16 instruction, so let qspinlock
-generic code to deal with it.
-
-Using the full-word atomic xchg instructions implement xchg16 has
-the semantic risk for atomic operations.
-
-This patch cancels the dependency of on qspinlock generic code on
-architecture's xchg16.
-
-Also no need when PPC_LBARX_LWARX is enabled, see the link below.
-
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Link: https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20201107032328.2454582-1-npiggin@gmail.com/
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Reviewed-by: Greg Kurz <groug@kaod.org>
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/sysdev/xive/common.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 386ae12d8523..6133ad51690e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -151,6 +151,7 @@ config PPC
- 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
- 	select ARCH_USE_QUEUED_RWLOCKS		if PPC_QUEUED_SPINLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
-+	select ARCH_USE_QUEUED_SPINLOCKS_XCHG32	if PPC_QUEUED_SPINLOCKS && !PPC_LBARX_LWARX
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
--- 
-2.17.1
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 98f4dc916fa1..8bca9aca0607 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1417,13 +1417,12 @@ static void xive_flush_cpu_queue(unsigned int cpu=
+, struct xive_cpu *xc)
+ 		struct irq_desc *desc =3D irq_to_desc(irq);
+ 		struct irq_data *d =3D irq_desc_get_irq_data(desc);
+ 		struct xive_irq_data *xd;
+-		unsigned int hw_irq =3D (unsigned int)irqd_to_hwirq(d);
+=20
+ 		/*
+ 		 * Ignore anything that isn't a XIVE irq and ignore
+ 		 * IPIs, so can just be dropped.
+ 		 */
+-		if (d->domain !=3D xive_irq_domain || hw_irq =3D=3D XIVE_IPI_HW_IRQ)
++		if (d->domain !=3D xive_irq_domain)
+ 			continue;
+=20
+ 		/*
+--=20
+2.26.3
 
