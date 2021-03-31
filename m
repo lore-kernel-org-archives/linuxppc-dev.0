@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82F5EC433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F38BC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:40:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED5F3619BD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED5F3619BD
+	by mail.kernel.org (Postfix) with ESMTPS id 96F82619CA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:40:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96F82619CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F96sT4fQ4z3cTl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 11:39:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F96t56njzz3cm1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 11:40:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qZ8/jfIf;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CI+wrZlx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=qZ8/jfIf; 
+ header.a=rsa-sha256 header.s=201909 header.b=CI+wrZlx; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F96rD4p7Rz2xxh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 11:38:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F96rF6hVZz3brq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 11:38:53 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F96rD38Gkz9sWK; Wed, 31 Mar 2021 11:38:52 +1100 (AEDT)
+ id 4F96rC1YFRz9sWP; Wed, 31 Mar 2021 11:38:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617151132;
- bh=gxJsmLuwT67BXGUJjlp9ICglo/rJOuCvpPbC8jBZQdU=;
+ s=201909; t=1617151131;
+ bh=FWLikmqZe+OoMmiv9wpj26zh22UFEqSYhhpH4zXT32A=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=qZ8/jfIft/DV/VMTbto1MWzRJzK0nzqChMbVLHA/nZOveKYQKiOPr9w1hqhOVBXzy
- 2lAPxKq3MwnEw/Agz8MGudJWoohUDkic8uz5/aBtVH5kPpLDOp2nEsHkOEZ0D9NCdA
- /VbW4fe1/68wLUrjBoi3TkD8iRzSOp0IT9C+NaKH0D7okqUBQYj+jm2Sin81khh7iK
- XK7hZWydgGxRzRuZmwzc8MzwttdXjl0NcrXaw7eun6zMw+hzVnkkwB6PnLzccIZCb0
- 8/I1GecUEgSa6CWvlK++TNKrMv4aiF9Bps1/+VLPiix79ukknDn6xawCey8eFv79lB
- OFWP/PA6ucHyQ==
+ b=CI+wrZlxycvIEZhWBoKDsVAypNNrwR9tlbyxPiNtsUs8s+ML2RZKFxl6kLvrLLn1J
+ +tpP0PGeIzFqYzo4QKNGUuU1nd8gBsii11i/nX7ZnFyR8fe/tjLZKqqie2aztvf6kY
+ Y9bSAKPI5sBK/H19HsMBv26f0c46hkmV+25/WGrs9USt7mTNR4CRS0ffwLiUIUAVaI
+ fLCjeUYaPpG9NqKZwlZ2it+X/E7NagscCsp59YnEz6JhJdORFvebjLI92Nv4RKJW+f
+ 4P+i28nIRbXylc0gusnXvWV0r4Vk9T6VDwSy9InWQgFRG05FhBNTQ+cvtcXERvTYCd
+ N1f8y6nHCw5vg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 6/6] powerpc/mm/64s: Allow STRICT_KERNEL_RWX again
-Date: Wed, 31 Mar 2021 11:38:45 +1100
-Message-Id: <20210331003845.216246-6-mpe@ellerman.id.au>
+Subject: [PATCH v2 4/6] powerpc/mm/64s/hash: Factor out change_memory_range()
+Date: Wed, 31 Mar 2021 11:38:43 +1100
+Message-Id: <20210331003845.216246-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210331003845.216246-1-mpe@ellerman.id.au>
 References: <20210331003845.216246-1-mpe@ellerman.id.au>
@@ -73,30 +73,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have now fixed the known bugs in STRICT_KERNEL_RWX for Book3S
-64-bit Hash and Radix MMUs, see preceding commits, so allow the
-option to be selected again.
+Pull the loop calling hpte_updateboltedpp() out of
+hash__change_memory_range() into a helper function. We need it to be a
+separate function for the next patch.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/book3s64/hash_pgtable.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
 v2: Unchanged.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c1344c05226c..2a99ca409117 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -135,7 +135,7 @@ config PPC
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
--	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC32 && !HIBERNATION)
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !HIBERNATION)
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
- 	select ARCH_HAS_COPY_MC			if PPC64
+diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
+index 03819c259f0a..3663d3cdffac 100644
+--- a/arch/powerpc/mm/book3s64/hash_pgtable.c
++++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
+@@ -400,10 +400,23 @@ EXPORT_SYMBOL_GPL(hash__has_transparent_hugepage);
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
+ #ifdef CONFIG_STRICT_KERNEL_RWX
++static void change_memory_range(unsigned long start, unsigned long end,
++				unsigned int step, unsigned long newpp)
++{
++	unsigned long idx;
++
++	pr_debug("Changing page protection on range 0x%lx-0x%lx, to 0x%lx, step 0x%x\n",
++		 start, end, newpp, step);
++
++	for (idx = start; idx < end; idx += step)
++		/* Not sure if we can do much with the return value */
++		mmu_hash_ops.hpte_updateboltedpp(newpp, idx, mmu_linear_psize,
++							mmu_kernel_ssize);
++}
++
+ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+ 				      unsigned long newpp)
+ {
+-	unsigned long idx;
+ 	unsigned int step, shift;
+ 
+ 	shift = mmu_psize_defs[mmu_linear_psize].shift;
+@@ -415,13 +428,7 @@ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+ 	if (start >= end)
+ 		return false;
+ 
+-	pr_debug("Changing page protection on range 0x%lx-0x%lx, to 0x%lx, step 0x%x\n",
+-		 start, end, newpp, step);
+-
+-	for (idx = start; idx < end; idx += step)
+-		/* Not sure if we can do much with the return value */
+-		mmu_hash_ops.hpte_updateboltedpp(newpp, idx, mmu_linear_psize,
+-							mmu_kernel_ssize);
++	change_memory_range(start, end, step, newpp);
+ 
+ 	return true;
+ }
 -- 
 2.25.1
 
