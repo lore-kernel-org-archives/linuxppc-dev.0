@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4F79C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E29BAC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1D46619C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1D46619C0
+	by mail.kernel.org (Postfix) with ESMTPS id 0129E619C5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0129E619C5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F96rf72H9z3c7t
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 11:39:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F96s44WBQz3cG3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 11:39:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=H+Wpo8CV;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XOFiVmJW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=H+Wpo8CV; 
+ header.a=rsa-sha256 header.s=201909 header.b=XOFiVmJW; 
  dkim-atps=neutral
 Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F96rC2fKzz2xxh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 11:38:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F96rD2MbWz2xxh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 11:38:52 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F96rB5WTQz9sWK; Wed, 31 Mar 2021 11:38:50 +1100 (AEDT)
+ id 4F96rC6mjCz9sWQ; Wed, 31 Mar 2021 11:38:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617151130;
- bh=eGcuo+SD2AvVHdYRAA0vthZg4dPZ8I+d8e7qIwbiN9Q=;
+ s=201909; t=1617151131;
+ bh=OH7gob9rAXaTSBgBG7GaGrUGCm+LY31sbCKliSDQ4yQ=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=H+Wpo8CVQTOheZYCOoj1uxCMQ7MKIEU3mCxaaJnS81h4bozc4yBO1v8C2laSvONIJ
- 6vjNXhBUmI9eCf/CiVNoSRg1avyggry9zGRsW/l2RhbdbYqyQFXi1lwVmZYz8leM7M
- 5eG3iGtJSmSybHuQ2vYEwIbVAgnaTdbR+cLSzSW4eXfwpTs2IDivjYXcJGcNfvHLmT
- hHuBuyZmFbP1wJ25YrEHJInUXYIIkkH/Pn7bHXloXrJ2NK5K8TCgx2KeT7R3eD/V27
- cjJgV51QP3PUBzMJjS5XHERb0+Oyu2fQrnmhTfugaMxFgX2ySA2KrMhOlDomgn5//L
- s/K0Pg+xB3/Aw==
+ b=XOFiVmJWSVknBiGCt5GsDkpHFRCpmYxx0JTevMqBtdOLefgPFzpcTdgQQb/p8m29X
+ 0p8S7xC65SpaA5fESEtKqSU3B1y6fGTyjBLLIY3P0qzFaJXDGogNnkRNR1ueOsVoR7
+ spYr4TK50/lSwsWDy7IJvQOu3OtugfYJjy8o1pPOnA3nROppWVdmvAoXdlS8DDuuMr
+ hbOiG/WXojeYUKBrgar6odlovdAUjFVObVzL4gRTZXemfb4Se7icHgSituh7R9GT55
+ dl9ngWfos59UASRC5CdjdWhGfIv61nZzQ0If3iKLSV4cBAXyoOzJKoJePk9Mg0TaEp
+ 4NwjBgohsrm4w==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/6] powerpc/64s: Use htab_convert_pte_flags() in
- hash__mark_rodata_ro()
-Date: Wed, 31 Mar 2021 11:38:42 +1100
-Message-Id: <20210331003845.216246-3-mpe@ellerman.id.au>
+Subject: [PATCH v2 5/6] powerpc/mm/64s/hash: Add real-mode
+ change_memory_range() for hash LPAR
+Date: Wed, 31 Mar 2021 11:38:44 +1100
+Message-Id: <20210331003845.216246-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210331003845.216246-1-mpe@ellerman.id.au>
 References: <20210331003845.216246-1-mpe@ellerman.id.au>
@@ -74,43 +74,208 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In hash__mark_rodata_ro() we pass the raw PP_RXXX value to
-hash__change_memory_range(). That has the effect of setting the key to
-zero, because PP_RXXX contains no key value.
+When we enabled STRICT_KERNEL_RWX we received some reports of boot
+failures when using the Hash MMU and running under phyp. The crashes
+are intermittent, and often exhibit as a completely unresponsive
+system, or possibly an oops.
 
-Fix it by using htab_convert_pte_flags(), which knows how to convert a
-pgprot into a pp value, including the key.
+One example, which was caught in xmon:
 
-Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation")
+  [   14.068327][    T1] devtmpfs: mounted
+  [   14.069302][    T1] Freeing unused kernel memory: 5568K
+  [   14.142060][  T347] BUG: Unable to handle kernel instruction fetch
+  [   14.142063][    T1] Run /sbin/init as init process
+  [   14.142074][  T347] Faulting instruction address: 0xc000000000004400
+  cpu 0x2: Vector: 400 (Instruction Access) at [c00000000c7475e0]
+      pc: c000000000004400: exc_virt_0x4400_instruction_access+0x0/0x80
+      lr: c0000000001862d4: update_rq_clock+0x44/0x110
+      sp: c00000000c747880
+     msr: 8000000040001031
+    current = 0xc00000000c60d380
+    paca    = 0xc00000001ec9de80   irqmask: 0x03   irq_happened: 0x01
+      pid   = 347, comm = kworker/2:1
+  ...
+  enter ? for help
+  [c00000000c747880] c0000000001862d4 update_rq_clock+0x44/0x110 (unreliable)
+  [c00000000c7478f0] c000000000198794 update_blocked_averages+0xb4/0x6d0
+  [c00000000c7479f0] c000000000198e40 update_nohz_stats+0x90/0xd0
+  [c00000000c747a20] c0000000001a13b4 _nohz_idle_balance+0x164/0x390
+  [c00000000c747b10] c0000000001a1af8 newidle_balance+0x478/0x610
+  [c00000000c747be0] c0000000001a1d48 pick_next_task_fair+0x58/0x480
+  [c00000000c747c40] c000000000eaab5c __schedule+0x12c/0x950
+  [c00000000c747cd0] c000000000eab3e8 schedule+0x68/0x120
+  [c00000000c747d00] c00000000016b730 worker_thread+0x130/0x640
+  [c00000000c747da0] c000000000174d50 kthread+0x1a0/0x1b0
+  [c00000000c747e10] c00000000000e0f0 ret_from_kernel_thread+0x5c/0x6c
+
+This shows that CPU 2, which was idle, woke up and then appears to
+randomly take an instruction fault on a completely valid area of
+kernel text.
+
+The cause turns out to be the call to hash__mark_rodata_ro(), late in
+boot. Due to the way we layout text and rodata, that function actually
+changes the permissions for all of text and rodata to read-only plus
+execute.
+
+To do the permission change we use a hypervisor call, H_PROTECT. On
+phyp that appears to be implemented by briefly removing the mapping of
+the kernel text, before putting it back with the updated permissions.
+If any other CPU is executing during that window, it will see spurious
+faults on the kernel text and/or data, leading to crashes.
+
+To fix it we use stop machine to collect all other CPUs, and then have
+them drop into real mode (MMU off), while we change the mapping. That
+way they are unaffected by the mapping temporarily disappearing.
+
+We don't see this bug on KVM because KVM always use VPM=1, where
+faults are directed to the hypervisor, and the fault will be
+serialised vs the h_protect() by HPTE_V_HVLOCK.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/mm/book3s64/hash_pgtable.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/book3s64/hash_pgtable.c | 105 +++++++++++++++++++++++-
+ 1 file changed, 104 insertions(+), 1 deletion(-)
 
-v2: Unchanged.
+v2: Add mention of why we don't see the issue on KVM.
+    Use hard_irq_disable() not __hard_EE_RI_disable() as noticed by Nick.
 
 diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
-index 567e0c6b3978..03819c259f0a 100644
+index 3663d3cdffac..ad5eff097d31 100644
 --- a/arch/powerpc/mm/book3s64/hash_pgtable.c
 +++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
-@@ -428,12 +428,14 @@ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+@@ -8,6 +8,7 @@
+ #include <linux/sched.h>
+ #include <linux/mm_types.h>
+ #include <linux/mm.h>
++#include <linux/stop_machine.h>
  
- void hash__mark_rodata_ro(void)
- {
--	unsigned long start, end;
-+	unsigned long start, end, pp;
+ #include <asm/sections.h>
+ #include <asm/mmu.h>
+@@ -400,6 +401,19 @@ EXPORT_SYMBOL_GPL(hash__has_transparent_hugepage);
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
  
- 	start = (unsigned long)_stext;
- 	end = (unsigned long)__init_begin;
- 
--	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
-+	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL_ROX), HPTE_USE_KERNEL_KEY);
+ #ifdef CONFIG_STRICT_KERNEL_RWX
 +
-+	WARN_ON(!hash__change_memory_range(start, end, pp));
++struct change_memory_parms {
++	unsigned long start, end, newpp;
++	unsigned int step, nr_cpus, master_cpu;
++	atomic_t cpu_counter;
++};
++
++// We'd rather this was on the stack but it has to be in the RMO
++static struct change_memory_parms chmem_parms;
++
++// And therefore we need a lock to protect it from concurrent use
++static DEFINE_MUTEX(chmem_lock);
++
+ static void change_memory_range(unsigned long start, unsigned long end,
+ 				unsigned int step, unsigned long newpp)
+ {
+@@ -414,6 +428,73 @@ static void change_memory_range(unsigned long start, unsigned long end,
+ 							mmu_kernel_ssize);
  }
  
- void hash__mark_initmem_nx(void)
++static int notrace chmem_secondary_loop(struct change_memory_parms *parms)
++{
++	unsigned long msr, tmp, flags;
++	int *p;
++
++	p = &parms->cpu_counter.counter;
++
++	local_irq_save(flags);
++	hard_irq_disable();
++
++	asm volatile (
++	// Switch to real mode and leave interrupts off
++	"mfmsr	%[msr]			;"
++	"li	%[tmp], %[MSR_IR_DR]	;"
++	"andc	%[tmp], %[msr], %[tmp]	;"
++	"mtmsrd %[tmp]			;"
++
++	// Tell the master we are in real mode
++	"1:				"
++	"lwarx	%[tmp], 0, %[p]		;"
++	"addic	%[tmp], %[tmp], -1	;"
++	"stwcx.	%[tmp], 0, %[p]		;"
++	"bne-	1b			;"
++
++	// Spin until the counter goes to zero
++	"2:				;"
++	"lwz	%[tmp], 0(%[p])		;"
++	"cmpwi	%[tmp], 0		;"
++	"bne-	2b			;"
++
++	// Switch back to virtual mode
++	"mtmsrd %[msr]			;"
++
++	: // outputs
++	  [msr] "=&r" (msr), [tmp] "=&b" (tmp), "+m" (*p)
++	: // inputs
++	  [p] "b" (p), [MSR_IR_DR] "i" (MSR_IR | MSR_DR)
++	: // clobbers
++	  "cc", "xer"
++	);
++
++	local_irq_restore(flags);
++
++	return 0;
++}
++
++static int change_memory_range_fn(void *data)
++{
++	struct change_memory_parms *parms = data;
++
++	if (parms->master_cpu != smp_processor_id())
++		return chmem_secondary_loop(parms);
++
++	// Wait for all but one CPU (this one) to call-in
++	while (atomic_read(&parms->cpu_counter) > 1)
++		barrier();
++
++	change_memory_range(parms->start, parms->end, parms->step, parms->newpp);
++
++	mb();
++
++	// Signal the other CPUs that we're done
++	atomic_dec(&parms->cpu_counter);
++
++	return 0;
++}
++
+ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+ 				      unsigned long newpp)
+ {
+@@ -428,7 +509,29 @@ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+ 	if (start >= end)
+ 		return false;
+ 
+-	change_memory_range(start, end, step, newpp);
++	if (firmware_has_feature(FW_FEATURE_LPAR)) {
++		mutex_lock(&chmem_lock);
++
++		chmem_parms.start = start;
++		chmem_parms.end = end;
++		chmem_parms.step = step;
++		chmem_parms.newpp = newpp;
++		chmem_parms.master_cpu = smp_processor_id();
++
++		cpus_read_lock();
++
++		atomic_set(&chmem_parms.cpu_counter, num_online_cpus());
++
++		// Ensure state is consistent before we call the other CPUs
++		mb();
++
++		stop_machine_cpuslocked(change_memory_range_fn, &chmem_parms,
++					cpu_online_mask);
++
++		cpus_read_unlock();
++		mutex_unlock(&chmem_lock);
++	} else
++		change_memory_range(start, end, step, newpp);
+ 
+ 	return true;
+ }
 -- 
 2.25.1
 
