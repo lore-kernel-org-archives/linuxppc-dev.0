@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71700C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF1BCC433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:18:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFEE6619CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:17:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFEE6619CB
+	by mail.kernel.org (Postfix) with ESMTPS id 3B3F1619CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:18:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B3F1619CD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97j94YQlz3gGG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:17:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97jX6k9Jz3gLf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:18:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Xd5vbYz3c7J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Xg0srvz3bsP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:27 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97Xd4Tm5z9sXh; Wed, 31 Mar 2021 12:10:25 +1100 (AEDT)
+ id 4F97Xf4KNvz9shx; Wed, 31 Mar 2021 12:10:26 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Lee Jones <lee.jones@linaro.org>
-In-Reply-To: <20210303124603.3150175-1-lee.jones@linaro.org>
-References: <20210303124603.3150175-1-lee.jones@linaro.org>
-Subject: Re: [RESEND 1/1] powerpc: asm: hvconsole: Move 'hvc_vio_init_early's
- prototype to shared location
-Message-Id: <161715296598.226945.6217795321816645614.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:25 +1100
+To: kernel test robot <lkp@intel.com>, Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <20210318234441.GA63469@f8e20a472e81>
+References: <202103190721.joUfcBzf-lkp@intel.com>
+ <20210318234441.GA63469@f8e20a472e81>
+Subject: Re: [PATCH] powerpc/iommu/debug: fix ifnullfree.cocci warnings
+Message-Id: <161715298004.226945.14572289924746154784.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:40 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -52,22 +52,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: kbuild-all@lists.01.org, Niklas Schnelle <schnelle@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Mar 2021 12:46:03 +0000, Lee Jones wrote:
-> Fixes the following W=1 kernel build warning(s):
+On Fri, 19 Mar 2021 07:44:41 +0800, kernel test robot wrote:
+> arch/powerpc/kernel/iommu.c:76:2-16: WARNING: NULL check before some freeing functions is not needed.
 > 
->  drivers/tty/hvc/hvc_vio.c:385:13: warning: no previous prototype for ‘hvc_vio_init_early’ [-Wmissing-prototypes]
->  385 | void __init hvc_vio_init_early(void)
->  | ^~~~~~~~~~~~~~~~~~
+>  NULL check before some freeing functions is not needed.
+> 
+>  Based on checkpatch warning
+>  "kfree(NULL) is safe this check is probably not required"
+>  and kfreeaddr.cocci by Julia Lawall.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: asm: hvconsole: Move 'hvc_vio_init_early's prototype to shared location
-      https://git.kernel.org/powerpc/c/13b8219bd00d953cad60431cb47db96eb835c71d
+[1/1] powerpc/iommu/debug: fix ifnullfree.cocci warnings
+      https://git.kernel.org/powerpc/c/bbbe563f8490958861777d98871e16960163ea1b
 
 cheers
