@@ -4,41 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F240C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42359C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B522619CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:10:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B522619CB
+	by mail.kernel.org (Postfix) with ESMTPS id ACE92619D6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:11:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACE92619D6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97Y05zgPz3cMc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:10:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97YP2WHmz3cXs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:11:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XJ1l5Dz3bc7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XJ5033z3bc4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:08 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XH4lt3z9sWP; Wed, 31 Mar 2021 12:10:07 +1100 (AEDT)
+ id 4F97XJ1RzQz9sWT; Wed, 31 Mar 2021 12:10:08 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-In-Reply-To: <20210219165648.2505482-1-bigeasy@linutronix.de>
-References: <20210219165648.2505482-1-bigeasy@linutronix.de>
-Subject: Re: [PATCH] powerpc/mm: Move the linear_mapping_mutex to the ifdef
- where it is used
-Message-Id: <161715296468.226945.5751757638013929328.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:24 +1100
+To: Michael Ellerman <mpe@ellerman.id.au>, Chen Huang <chenhuang5@huawei.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20210327094900.938555-1-chenhuang5@huawei.com>
+References: <20210327094900.938555-1-chenhuang5@huawei.com>
+Subject: Re: [PATCH] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build
+ configuration
+Message-Id: <161715298133.226945.2164349156598477834.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:41 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,23 +54,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
+Cc: Don Zickus <dzickus@redhat.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Hulk Robot <hulkci@huawei.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 19 Feb 2021 17:56:48 +0100, Sebastian Andrzej Siewior wrote:
-> The mutex linear_mapping_mutex is defined at the of the file while its
-> only two user are within the CONFIG_MEMORY_HOTPLUG block.
-> A compile without CONFIG_MEMORY_HOTPLUG set fails on PREEMPT_RT because
-> its mutex implementation is smart enough to realize that it is unused.
+On Sat, 27 Mar 2021 09:49:00 +0000, Chen Huang wrote:
+> When compiling the powerpc with the SMP disabled, it shows the issue:
 > 
-> Move the definition of linear_mapping_mutex to ifdef block where it is
-> used.
+> arch/powerpc/kernel/watchdog.c: In function ‘watchdog_smp_panic’:
+> arch/powerpc/kernel/watchdog.c:177:4: error: implicit declaration of function ‘smp_send_nmi_ipi’; did you mean ‘smp_send_stop’? [-Werror=implicit-function-declaration]
+>   177 |    smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
+>       |    ^~~~~~~~~~~~~~~~
+>       |    smp_send_stop
+> cc1: all warnings being treated as errors
+> make[2]: *** [scripts/Makefile.build:273: arch/powerpc/kernel/watchdog.o] Error 1
+> make[1]: *** [scripts/Makefile.build:534: arch/powerpc/kernel] Error 2
+> make: *** [Makefile:1980: arch/powerpc] Error 2
+> make: *** Waiting for unfinished jobs....
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm: Move the linear_mapping_mutex to the ifdef where it is used
-      https://git.kernel.org/powerpc/c/9be77e11dade414d2fa63750aa5c754fac49d619
+[1/1] powerpc: Fix HAVE_HARDLOCKUP_DETECTOR_ARCH build configuration
+      https://git.kernel.org/powerpc/c/4fe529449d85e78972fa327999961ecc83a0b6db
 
 cheers
