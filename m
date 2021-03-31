@@ -6,38 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F148C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5FE9C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:15:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B72C9619CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:15:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B72C9619CD
+	by mail.kernel.org (Postfix) with ESMTPS id 81EA1619CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:15:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81EA1619CD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97fP3CVwz3fXN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:15:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97fm1XxRz3cnL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:15:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XX3xtRz3byG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XX5Xnzz3c71
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:20 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XW0qCZz9sXV; Wed, 31 Mar 2021 12:10:18 +1100 (AEDT)
+ id 4F97XX3LLNz9sjD; Wed, 31 Mar 2021 12:10:20 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: dingsenjie@163.com, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org
-In-Reply-To: <20210326115356.12444-1-dingsenjie@163.com>
-References: <20210326115356.12444-1-dingsenjie@163.com>
-Subject: Re: [PATCH] powerpc: powernv: Remove unneeded variable: "rc"
-Message-Id: <161715298149.226945.16845685799658420054.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:41 +1100
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Oliver O'Halloran <oohall@gmail.com>
+In-Reply-To: <20210223095345.2139416-1-geert@linux-m68k.org>
+References: <20210223095345.2139416-1-geert@linux-m68k.org>
+Subject: Re: [PATCH] powerpc/chrp: Make hydra_init() static
+Message-Id: <161715296484.226945.13799552710776744820.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:24 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -52,18 +54,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dingsenjie <dingsenjie@yulong.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Mar 2021 19:53:56 +0800, dingsenjie@163.com wrote:
-> Remove unneeded variable: "rc".
+On Tue, 23 Feb 2021 10:53:45 +0100, Geert Uytterhoeven wrote:
+> Commit 407d418f2fd4c20a ("powerpc/chrp: Move PHB discovery") moved the
+> sole call to hydra_init() to the source file where it is defined, so it
+> can be made static.
 
 Applied to powerpc/next.
 
-[1/1] powerpc: powernv: Remove unneeded variable: "rc"
-      https://git.kernel.org/powerpc/c/69931cc387cca289e0415c79ce5389119670066d
+[1/1] powerpc/chrp: Make hydra_init() static
+      https://git.kernel.org/powerpc/c/9634afa67bfd933b231405d05dda37ffa169f32c
 
 cheers
