@@ -6,39 +6,41 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D591CC433DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ECD4C433C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:23:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A396619CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:22:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A396619CB
+	by mail.kernel.org (Postfix) with ESMTPS id 977E7619C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:23:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 977E7619C1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97q10r1yz3hZ4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:22:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97qM2Jllz3hpB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:23:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Y01nZcz3cMH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97Y021Mtz3cMP
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:44 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97Xw5YgKz9svs; Wed, 31 Mar 2021 12:10:38 +1100 (AEDT)
+ id 4F97Xy6VhCz9sXh; Wed, 31 Mar 2021 12:10:39 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>,
- mpe@ellerman.id.au, jniethe5@gmail.com, benh@kernel.crashing.org,
- alistair@popple.id.au, linux-kernel@vger.kernel.org, paulus@samba.org
-In-Reply-To: <20210317090413.120891-1-unixbhaskar@gmail.com>
-References: <20210317090413.120891-1-unixbhaskar@gmail.com>
-Subject: Re: [PATCH] powerpc: kernel: Trivial typo fix in the file kgdb.c
-Message-Id: <161715297909.226945.16053131712102580026.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:39 +1100
+To: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Bhaskar Chowdhury <unixbhaskar@gmail.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, aneesh.kumar@linux.ibm.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org
+In-Reply-To: <20210312112537.4585-1-unixbhaskar@gmail.com>
+References: <20210312112537.4585-1-unixbhaskar@gmail.com>
+Subject: Re: [PATCH] powerpc: mm: book3s64: Fix a typo in the file
+ mmu_context.c
+Message-Id: <161715297733.226945.14751652600143342873.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,12 +60,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 17 Mar 2021 14:34:13 +0530, Bhaskar Chowdhury wrote:
-> s/procesing/processing/
+On Fri, 12 Mar 2021 16:55:37 +0530, Bhaskar Chowdhury wrote:
+> s/detalis/details/
 
 Applied to powerpc/next.
 
-[1/1] powerpc: kernel: Trivial typo fix in the file kgdb.c
-      https://git.kernel.org/powerpc/c/89f7d2927ae16ea470d29234447763826e40c6cf
+[1/1] powerpc: mm: book3s64: Fix a typo in the file mmu_context.c
+      https://git.kernel.org/powerpc/c/7a7d744ffe87ae10ab98004d1a6ca1f691af58e1
 
 cheers
