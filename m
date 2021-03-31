@@ -1,90 +1,64 @@
-Return-Path: <SRS0=u7Bz=I4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=B9f/=I5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55DC7C433DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 23:32:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4F79C433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D97E3619B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Mar 2021 23:32:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D97E3619B1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id C1D46619C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 00:39:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1D46619C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F95ML18f1z3c5x
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 10:32:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F96rf72H9z3c7t
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 11:39:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=AHjsZv0R;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=H+Wpo8CV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cisco.com (client-ip=173.37.142.88; helo=alln-iport-1.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
- header.s=iport header.b=AHjsZv0R; dkim-atps=neutral
-Received: from alln-iport-1.cisco.com (alln-iport-1.cisco.com [173.37.142.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F95Lr1q4Bz2xxp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 10:31:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=2587; q=dns/txt; s=iport;
- t=1617147108; x=1618356708;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=20ZZL5t0OMdFzBeC8QVdex+kSd6hhKRqsatjmyKFFgA=;
- b=AHjsZv0ReDC94u2N9Ef+7zqWNKjnWTPyHHqBDoxcZNTg7EDmWsStYayr
- +XYMUV1wAWzO9BYvWj5ww0y7JIBnIdWvipawJfgZgAnvWtSnaWkAvtVbm
- QZpk/tSW+EOi1Cl1x2ZUoB1ZONXOqM3KsMFNFg+QMai49dnFsC7rOC38I I=;
-X-IPAS-Result: =?us-ascii?q?A0AUAABmtGNgmJxdJa1aGwEBAQEBAQEBBQEBARIBAQEDA?=
- =?us-ascii?q?wEBAUCBPgQBAQELAYN2ATkxlhEDkAgWikUUgWgLAQEBDQEBNAQBAYRQAoF6A?=
- =?us-ascii?q?iU2Bw4CAwEBAQMCAwEBAQEBBQEBAQIBBgQUAQEBAQEBAQGGQ4ZFAQU6PxALE?=
- =?us-ascii?q?gYVGTwNDgYTgnCDCKsVdYE0iQuBRBQOgRcBjUkmHIFJQoQuPoN5gQaDDIIJI?=
- =?us-ascii?q?gSBZVsGgRBagSpYFAItkH2CQIpMmw6BFIMRgSObNjEQgziKb5YbuBICBAYFA?=
- =?us-ascii?q?haBWwongVszGggbFYMkUBkNjjiOTyEDLzgCBgoBAQMJjnkBAQ?=
-IronPort-HdrOrdr: A9a23:0OR3jKkQkEUngZc1jpNFK2fPV1rpDfN3imdD5ilNYBxZY6Wkvu
- ql9c516TbfjjENVHY83f2BIrCHW3PA9ZhziLNhWIuKdg/gpWeuMcVe/ZLvqgeQeRHW2+ZB2c
- 5bGZRWJ8b3CTFB4PrSwA79KNo4xcnCzabAv5a7815IbSVHL55t9B14DAHzKDwUeCBjCYAiHJ
- SRouprzgDARV0tYs62BmYIUoH4zrWhqLvcbRELHBIh4gWV5AnJ1JfBDxOa0h0COgkg/Z4e9w
- H+/zDR1+GKr+y8jiTRzXbU6I5b3OH808JZCNaX4/JlTQnEu0KPeJlrXaGEsXQTpuyigWxa6e
- XkklMHI9l57W/XcyWOhSbVnyPk0Doo9hbZuDmlvUc=
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-AV: E=Sophos;i="5.81,291,1610409600"; d="scan'208";a="668463184"
-Received: from rcdn-core-5.cisco.com ([173.37.93.156])
- by alln-iport-1.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
- 30 Mar 2021 23:31:40 +0000
-Received: from zorba ([10.24.9.230])
- by rcdn-core-5.cisco.com (8.15.2/8.15.2) with ESMTPS id 12UNVcQt021992
- (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Tue, 30 Mar 2021 23:31:39 GMT
-Date: Tue, 30 Mar 2021 16:31:37 -0700
-From: Daniel Walker <danielwa@cisco.com>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 3/7] powerpc: convert config files to generic cmdline
-Message-ID: <20210330233137.GB2469518@zorba>
-References: <20210309000247.2989531-4-danielwa@cisco.com>
- <5f865584-09c9-d21f-ffb7-23cf07cf058e@csgroup.eu>
- <20210309212944.GR109100@zorba>
- <e4899874-1684-fa1b-443e-f4e478e05e31@csgroup.eu>
- <CAL_JsqKm76jRQYDcu3rGyUWKPLspoO=EZW_WFy=zAK+m_JYCTg@mail.gmail.com>
- <20fd7d44-8c39-48bc-25c3-990be9d9d911@csgroup.eu>
- <20210325195956.GM109100@zorba>
- <CAL_Jsq+10nucQSRkrTKe9BD5wBScqEb7-Rdg=9TsPiKuiuPG7w@mail.gmail.com>
- <20210330173254.GS109100@zorba>
- <CAL_JsqJKBeAgaHQJwOL9G2qLbQSh32L5LtN+cSUgn5sV_P8How@mail.gmail.com>
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=H+Wpo8CV; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F96rC2fKzz2xxh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 11:38:50 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4F96rB5WTQz9sWK; Wed, 31 Mar 2021 11:38:50 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1617151130;
+ bh=eGcuo+SD2AvVHdYRAA0vthZg4dPZ8I+d8e7qIwbiN9Q=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=H+Wpo8CVQTOheZYCOoj1uxCMQ7MKIEU3mCxaaJnS81h4bozc4yBO1v8C2laSvONIJ
+ 6vjNXhBUmI9eCf/CiVNoSRg1avyggry9zGRsW/l2RhbdbYqyQFXi1lwVmZYz8leM7M
+ 5eG3iGtJSmSybHuQ2vYEwIbVAgnaTdbR+cLSzSW4eXfwpTs2IDivjYXcJGcNfvHLmT
+ hHuBuyZmFbP1wJ25YrEHJInUXYIIkkH/Pn7bHXloXrJ2NK5K8TCgx2KeT7R3eD/V27
+ cjJgV51QP3PUBzMJjS5XHERb0+Oyu2fQrnmhTfugaMxFgX2ySA2KrMhOlDomgn5//L
+ s/K0Pg+xB3/Aw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 3/6] powerpc/64s: Use htab_convert_pte_flags() in
+ hash__mark_rodata_ro()
+Date: Wed, 31 Mar 2021 11:38:42 +1100
+Message-Id: <20210331003845.216246-3-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210331003845.216246-1-mpe@ellerman.id.au>
+References: <20210331003845.216246-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqJKBeAgaHQJwOL9G2qLbQSh32L5LtN+cSUgn5sV_P8How@mail.gmail.com>
-X-Auto-Response-Suppress: DR, OOF, AutoReply
-X-Outbound-SMTP-Client: 10.24.9.230, [10.24.9.230]
-X-Outbound-Node: rcdn-core-5.cisco.com
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,62 +70,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, X86 ML <x86@kernel.org>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, xe-linux-external@cisco.com,
- Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 30, 2021 at 03:13:04PM -0500, Rob Herring wrote:
-> On Tue, Mar 30, 2021 at 12:33 PM Daniel Walker <danielwa@cisco.com> wrote:
-> >
-> > On Thu, Mar 25, 2021 at 05:29:44PM -0600, Rob Herring wrote:
-> > > On Thu, Mar 25, 2021 at 2:00 PM Daniel Walker <danielwa@cisco.com> wrote:
-> > > >
-> > > > On Thu, Mar 25, 2021 at 01:03:55PM +0100, Christophe Leroy wrote:
-> > > > >
-> > > > > Ok, so you agree we don't need to provide two CMDLINE, one to be appended and one to be prepended.
-> > > > >
-> > > > > Let's only provide once CMDLINE as of today, and ask the user to select
-> > > > > whether he wants it appended or prepended or replacee. Then no need to
-> > > > > change all existing config to rename CONFIG_CMDLINE into either of the new
-> > > > > ones.
-> > > > >
-> > > > > That's the main difference between my series and Daniel's series. So I'll
-> > > > > finish taking Will's comment into account and we'll send out a v3 soon.
-> > > >
-> > > > It doesn't solve the needs of Cisco, I've stated many times your changes have
-> > > > little value. Please stop submitting them.
-> > >
-> > > Can you please outline what those needs are which aren't met?
-> >
-> > append AND prepend at the same time on all architectures. Christophe doesn't
-> > understand the need, and hence tries to minimize the feature set which is
-> > incompatible with Cisco needs and all the other out of tree users.
-> 
-> Okay, but that's never been a feature in upstream. For upstream, we
-> refactor first and add features 2nd. In this case, the difference is
-> largely the kconfig and it would be better to not change the options
-> twice, but that's not a blocker for taking the refactoring. You won't
-> find a maintainer that's going to take adding a feature over cleanups
-> and unification.
+In hash__mark_rodata_ro() we pass the raw PP_RXXX value to
+hash__change_memory_range(). That has the effect of setting the key to
+zero, because PP_RXXX contains no key value.
 
-It kind of is a feature in upstream, it's a matter of opinion. Some platform
-used append and some use prepend, and it's likely because the maintainers needed
-one or the other for development.
+Fix it by using htab_convert_pte_flags(), which knows how to convert a
+pgprot into a pp value, including the key.
 
-I'm not sure why you think I can't add the features in one go. It would be
-horrid to take Christophe's changes, then have to do basically all the same work
-a second time which is what Christophe's changes would force me to do.
+Fixes: d94b827e89dc ("powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash translation")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+---
+ arch/powerpc/mm/book3s64/hash_pgtable.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Say for example I implement this change only on one architecture. In that case
-the maintainer would be accepting a feature enhancement , but there would be no
-stopping it. I shouldn't have to go two strokes on one architecture, but each
-change I'm making is essentially a single architecture. They can go in all
-together or one at a time.
+v2: Unchanged.
 
-Daniel
+diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
+index 567e0c6b3978..03819c259f0a 100644
+--- a/arch/powerpc/mm/book3s64/hash_pgtable.c
++++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
+@@ -428,12 +428,14 @@ static bool hash__change_memory_range(unsigned long start, unsigned long end,
+ 
+ void hash__mark_rodata_ro(void)
+ {
+-	unsigned long start, end;
++	unsigned long start, end, pp;
+ 
+ 	start = (unsigned long)_stext;
+ 	end = (unsigned long)__init_begin;
+ 
+-	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
++	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL_ROX), HPTE_USE_KERNEL_KEY);
++
++	WARN_ON(!hash__change_memory_range(start, end, pp));
+ }
+ 
+ void hash__mark_initmem_nx(void)
+-- 
+2.25.1
+
