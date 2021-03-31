@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A990C433C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA27FC433DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:14:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17D64619CA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:14:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17D64619CA
+	by mail.kernel.org (Postfix) with ESMTPS id 42362619CA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 01:14:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42362619CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F97dH5f1Dz3f6F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:14:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F97dd0Hknz3cjr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Mar 2021 12:14:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,17 +26,18 @@ Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XT2zf5z3bc7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F97XV0nhDz3c5N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Mar 2021 12:10:18 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4F97XS5lrTz9shn; Wed, 31 Mar 2021 12:10:16 +1100 (AEDT)
+ id 4F97XT5f6Sz9sj0; Wed, 31 Mar 2021 12:10:17 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, "Christopher M. Riedl" <cmr@codefail.de>
-In-Reply-To: <20210227011259.11992-1-cmr@codefail.de>
-References: <20210227011259.11992-1-cmr@codefail.de>
-Subject: Re: [PATCH v7 00/10] Improve signal performance on PPC64 with KUAP
-Message-Id: <161715296986.226945.2679761173827862086.b4-ty@ellerman.id.au>
-Date: Wed, 31 Mar 2021 12:09:29 +1100
+To: linuxppc-dev@lists.ozlabs.org,
+ Daniel Henrique Barboza <danielhb413@gmail.com>
+In-Reply-To: <20210323205056.52768-1-danielhb413@gmail.com>
+References: <20210323205056.52768-1-danielhb413@gmail.com>
+Subject: Re: [PATCH v2 0/1] show 'last online CPU' error in dlpar_cpu_offline()
+Message-Id: <161715298116.226945.13918560930368268088.b4-ty@ellerman.id.au>
+Date: Wed, 31 Mar 2021 12:09:41 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,41 +56,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Feb 2021 19:12:49 -0600, Christopher M. Riedl wrote:
-> As reported by Anton, there is a large penalty to signal handling
-> performance on radix systems using KUAP. The signal handling code
-> performs many user access operations, each of which needs to switch the
-> KUAP permissions bit to open and then close user access. This involves a
-> costly 'mtspr' operation [0].
-> 
-> There is existing work done on x86 and by Christophe Leroy for PPC32 to
-> instead open up user access in "blocks" using user_*_access_{begin,end}.
-> We can do the same in PPC64 to bring performance back up on KUAP-enabled
-> radix and now also hash MMU systems [1].
+On Tue, 23 Mar 2021 17:50:55 -0300, Daniel Henrique Barboza wrote:
+> changes in v2 after Michael Ellerman review:
+> - moved the verification code from dlpar_cpu_remove() to
+>   dlpar_cpu_offline(), while holding cpu_add_remove_lock
+> - reworded the commit message and code comment
+> v1 link:
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20210305173845.451158-1-danielhb413@gmail.com/
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[01/10] powerpc/uaccess: Add unsafe_copy_from_user()
-        https://git.kernel.org/powerpc/c/9466c1799fa2acb68e505a264dcdf53779101ac6
-[02/10] powerpc/signal: Add unsafe_copy_{vsx, fpr}_from_user()
-        https://git.kernel.org/powerpc/c/609355dfc88e2921bfcbd879300d482a9a33378e
-[03/10] powerpc/signal64: Remove non-inline calls from setup_sigcontext()
-        https://git.kernel.org/powerpc/c/c6c9645e37483444ec5182373455b2f22e4b1535
-[04/10] powerpc: Reference parameter in MSR_TM_ACTIVE() macro
-        https://git.kernel.org/powerpc/c/1a130b67c682be9842f188f593c2080786de4204
-[05/10] powerpc/signal64: Remove TM ifdefery in middle of if/else block
-        https://git.kernel.org/powerpc/c/2d19630e20fe5fbd5813f73fd5b1c81ddec61369
-[06/10] powerpc/signal64: Replace setup_sigcontext() w/ unsafe_setup_sigcontext()
-        https://git.kernel.org/powerpc/c/7bb081c8f043ab166f8c6f26fca744821217dad7
-[07/10] powerpc/signal64: Replace restore_sigcontext() w/ unsafe_restore_sigcontext()
-        https://git.kernel.org/powerpc/c/193323e1009437c0885240e75ca71f7963e4a006
-[08/10] powerpc/signal64: Rewrite handle_rt_signal64() to minimise uaccess switches
-        https://git.kernel.org/powerpc/c/96d7a4e06fab9fbc4f67c563af65b073902f3e61
-[09/10] powerpc/signal64: Rewrite rt_sigreturn() to minimise uaccess switches
-        https://git.kernel.org/powerpc/c/0f92433b8f9f76608528101e7a81cd3bfd00e236
-[10/10] powerpc/signal: Use __get_user() to copy sigset_t
-        https://git.kernel.org/powerpc/c/d3ccc9781560af051554017c702631560bdc0811
+[1/1] hotplug-cpu.c: show 'last online CPU' error in dlpar_cpu_offline()
+      https://git.kernel.org/powerpc/c/d19b3ad02c2d1a9a697b7059e32fa2d97a420b15
 
 cheers
