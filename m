@@ -6,62 +6,57 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E55DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 02:40:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95AADC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 03:04:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17A4861059
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 02:40:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17A4861059
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B6C8E6052B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 03:04:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6C8E6052B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F9nTh1ngrz3bs8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 13:40:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F9p1k1fTmz3bth
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 14:04:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DqclO1Od;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=QLqhXbwo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=DqclO1Od; 
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=QLqhXbwo; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F9nT75Ls6z2yZL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 13:39:39 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4F9nT03JYsz9sWw;
- Thu,  1 Apr 2021 13:39:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617244778;
- bh=jF35UQXWV9ftup/kWbiFuhxrt8LNtzRK24u+5NfY62w=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=DqclO1OdkHC0HIyU55+U/3XcCUj81LZgSGICQJPeG655bzU+Kfn7sgMhOXVk588kr
- /RNXh7SMzPQg9w+ycpvXiJYPzSMsUPXgTNaq+lLam/2Hi6NoAhKyAipl8Pn9qoSLDk
- qA1j7sQL6q1sSnRcCQHQ2ml1w+YPDpUP8KsQC4MqrTP+xBcHnSr+VneuRaWCJ/c9sO
- JQS2YPJNnuIJ8CvhMpXwLplqRqcTByd40L476kgI5KDf/q3Z+7uScinxejVBJ++xxD
- l//mTD2CWZARwb1Z+kVGSfooQ/uFVb7Rj8QtZPUxt6A7Q+e87O+Jl8WQ1e29ewe7TA
- 0AjEBrKse/ySA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/traps: Enhance readability for trap types
-In-Reply-To: <20210331212550.GD13863@gate.crashing.org>
-References: <20210330150425.10145-1-sxwjean@me.com>
- <875z17y79i.fsf@mpe.ellerman.id.au>
- <20210331212550.GD13863@gate.crashing.org>
-Date: Thu, 01 Apr 2021 13:39:28 +1100
-Message-ID: <87im5620f3.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9p1D3kSbz2xy8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 14:04:00 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 4F9p1C0yjmz9sX5; Thu,  1 Apr 2021 14:03:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1617246239;
+ bh=LsRo4RCfK4SgaqyQ4QrrXxeiSUCHlcc5rCwtktXpUM4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=QLqhXbwor4pIONs/3gFl+m9buGNDd6IspClb/3Mn52RLTSJ4iCa3sNRkQ45fK5IbQ
+ 5zXecJje2ry2jpYtx2Pbfa5YZ+83cCkqm2h6Q4pSPyvaWYr8EQpxnf0YOfSSZ9ZR9b
+ 8hO4ks9S8MCM+Qcz9uXm3p1WrYd0nY3F8h9y0RN0=
+Date: Thu, 1 Apr 2021 13:49:31 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v3 1/9] powerpc/xive: Use cpu_to_node() instead of
+ "ibm,chip-id" property
+Message-ID: <YGU0u4v2GVWBCrWw@yekko.fritz.box>
+References: <20210331144514.892250-1-clg@kaod.org>
+ <20210331144514.892250-2-clg@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="GRUBHJCUKunfo+Bk"
+Content-Disposition: inline
+In-Reply-To: <20210331144514.892250-2-clg@kaod.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,53 +68,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pmladek@suse.com, peterz@infradead.org, peterx@redhat.com,
- linux-kernel@vger.kernel.org, paulus@samba.org, kan.liang@linux.intel.com,
- leobras.c@gmail.com, mikey@neuling.org, maddy@linux.ibm.com,
- aneesh.kumar@linux.ibm.com, haren@linux.ibm.com, aik@ozlabs.ru,
- kjain@linux.ibm.com, msuchanek@suse.de, ravi.bangoria@linux.ibm.com,
- john.ogness@linutronix.de, alistair@popple.id.au, npiggin@gmail.com,
- kvm-ppc@vger.kernel.org, jniethe5@gmail.com, atrajeev@linux.vnet.ibm.com,
- Xiongwei Song <sxwjean@me.com>, Xiongwei Song <sxwjean@gmail.com>,
- oleg@redhat.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- rppt@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-> On Wed, Mar 31, 2021 at 08:58:17PM +1100, Michael Ellerman wrote:
->> So perhaps:
->> 
->>   EXC_SYSTEM_RESET
->>   EXC_MACHINE_CHECK
->>   EXC_DATA_STORAGE
->>   EXC_DATA_SEGMENT
->>   EXC_INST_STORAGE
->>   EXC_INST_SEGMENT
->>   EXC_EXTERNAL_INTERRUPT
->>   EXC_ALIGNMENT
->>   EXC_PROGRAM_CHECK
->>   EXC_FP_UNAVAILABLE
->>   EXC_DECREMENTER
->>   EXC_HV_DECREMENTER
->>   EXC_SYSTEM_CALL
->>   EXC_HV_DATA_STORAGE
->>   EXC_PERF_MONITOR
->
-> These are interrupt (vectors), not exceptions.  It doesn't matter all
-> that much, but confusing things more isn't useful either!  There can be
-> multiple exceptions that all can trigger the same interrupt.
 
-Yeah I know, but I think that ship has already sailed as far as the
-naming we have in the kernel.
+--GRUBHJCUKunfo+Bk
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We have over 250 uses of "exc", and several files called "exception"
-something.
+On Wed, Mar 31, 2021 at 04:45:06PM +0200, C=E9dric Le Goater wrote:
+> The 'chip_id' field of the XIVE CPU structure is used to choose a
+> target for a source located on the same chip when possible. The XIVE
+> driver queries the chip id value from the "ibm,chip-id" DT property
+> but this property is not available on all platforms. It was first
+> introduced on the PowerNV platform and later, under QEMU for pseries.
+> However, the property does not exist under PowerVM since it is not
+> specified in PAPR.
+>=20
+> cpu_to_node() is a better alternative. On the PowerNV platform, the
+> node id is computed from the "ibm,associativity" property of the CPU.
+> Its value is built in the OPAL firmware from the physical chip id and
+> is equivalent to "ibm,chip-id".
 
-Using "interrupt" can also be confusing because Linux uses that to mean
-"external interrupt".
+Hrm... I mean, for powernv this is certainly correct, but seems to be
+relying on pretty specific specifics of the OPAL / chip behaviour,
+namely that the NUMA id =3D=3D chip ID.
 
-But I dunno, maybe INT or VEC is clearer? .. or TRAP :)
+> On pSeries, the hcall
+> H_HOME_NODE_ASSOCIATIVITY returns the node id.
 
-cheers
+AFAICT, the chip_id field is never actually used in the PAPR version
+of XIVE.  The only access to the field outside native.c is in
+xive_pick_irq_target(), and it only looks at chip_id if src_chip is
+valid.  But src_chip is initialized to XIVE_INVALID_CHIP_ID in papr.c
+
+So it would make more sense to me to also initialize chip_id to
+XIVE_INVALID_CHIP_ID for PAPR to make it clearer that it's not
+relevant.
+
+> Also to be noted that under QEMU/KVM "ibm,chip-id" is badly calculated
+> with unusual SMT configuration. This leads to a bogus chip id value
+> being returned by of_get_ibm_chip_id().
+
+I *still* don't clearly understand what you think is bogus about the
+chip id value that qemu generates.  It's clearly not a problem for
+XIVE, since PAPR XIVE never uses it.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--GRUBHJCUKunfo+Bk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmBlNLkACgkQbDjKyiDZ
+s5LhWxAApJbKhZYuYbAAT6uKDEabGUgTWiSOh8/Osz9xfA/ycn30u4drhQwNeZN5
+whNX3kQbM/NIkzXjNDgcdRGNsroKDTxX1L+tdD1eKPIHxORoO0l6aSHuILzdh1HF
+EVM8sQKAU0SN8LFZZAjB/dYEfpmWD7uhy1XOls3DJYn3xWhaBxX2MVZ4RhAEgqKM
+B6o75EZz5bPVpGG0PpI7+ifiVkhhNHp5RGZn1YY01f/HbDQYu4V2R5jDMJWUv1Pc
+Qnq30qR7gyDyqPFAOqw8ulh7YtHP5L6RZBe07cMMIx/XCREYexx/W5MDEhlmpHaW
+Tyh6vlepbo9KKJ5wLj1OS+PJHv6eCagqPGuQzhh8bgcd6KG019TtJ7m1v2SZ9ooj
+X/X/H8t1ryb1sWY3aJF5hYExNG4oXLhWTrDxxiuXSPcbyi5Em09C37ahiqVTkB/h
+2d2aRXWuByH9xz9dsB6yhP2lD8y1zVSdeQt4HCFO6Ql9vQ+SJFmWPMsW7ANtNxAl
+sOrMh5Ue308iWJX3nkULK/2i38vPW6nkiPc0jCJJhjg9iR0vFVMKhM3cPW585zVY
+TIMh57GDcstvDgdc+bLRo+z0p5szdbYuMhQ+Kd6+kQ/a0mmRpoERZd9JFBuCKkQC
+x20VY7TeuvJThV2BnOOEsfHBWzWzKUaDWv4ycuke3MXlMRFc+00=
+=ZyWV
+-----END PGP SIGNATURE-----
+
+--GRUBHJCUKunfo+Bk--
