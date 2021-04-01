@@ -2,64 +2,66 @@ Return-Path: <SRS0=m4lh=I6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7274C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 08:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B6FC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 08:42:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E924C60FD9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 08:04:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E924C60FD9
+	by mail.kernel.org (Postfix) with ESMTPS id 0C74060190
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 08:42:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C74060190
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4F9whB4HtRz3btY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 19:04:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4F9xWl2Pnfz3bxm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 19:42:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=groug@kaod.org;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Received: from smtpout1.mo529.mail-out.ovh.net
  (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F9wgr15J4z2xZP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 19:04:22 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.143.236])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id A15479673B56;
- Thu,  1 Apr 2021 10:04:17 +0200 (CEST)
-Received: from kaod.org (37.59.142.99) by DAG8EX1.mxp5.local (172.16.2.71)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9xWL4Llwz2yxd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Apr 2021 19:42:04 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.16.173])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 0BE5196774D9;
+ Thu,  1 Apr 2021 10:42:01 +0200 (CEST)
+Received: from kaod.org (37.59.142.99) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2106.2; Thu, 1 Apr 2021
- 10:04:16 +0200
+ 10:42:00 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-99G0038ccee2e8-4305-49a0-aee7-6e781a5c8f3d,
- A2907451AC51A4EFF4C4D6DD6E02A54F207D12BE) smtp.auth=groug@kaod.org
-X-OVh-ClientIp: 78.197.208.248
-Date: Thu, 1 Apr 2021 10:04:15 +0200
-From: Greg Kurz <groug@kaod.org>
-To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+ (GARM-99G003960d28ec-608b-48c4-919b-15cd09a32f1b,
+ CB1DFE2733DABF7F0B1A836A5F31017E824F9DC1) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 86.210.153.104
 Subject: Re: [PATCH v3 0/9] powerpc/xive: Map one IPI interrupt per node
-Message-ID: <20210401100415.28eb9967@bahia.lan>
-In-Reply-To: <20210331144514.892250-1-clg@kaod.org>
+To: <linuxppc-dev@lists.ozlabs.org>
 References: <20210331144514.892250-1-clg@kaod.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <19d76b80-fa73-2bfc-b48b-818f26c0951a@kaod.org>
+Date: Thu, 1 Apr 2021 10:42:00 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20210331144514.892250-1-clg@kaod.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.99]
-X-ClientProxiedBy: DAG4EX2.mxp5.local (172.16.2.32) To DAG8EX1.mxp5.local
- (172.16.2.71)
-X-Ovh-Tracer-GUID: d958df5b-ee9c-4de1-96c7-8bc79641beec
-X-Ovh-Tracer-Id: 9115567124170775005
+X-ClientProxiedBy: DAG2EX2.mxp5.local (172.16.2.12) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 0dce5dbb-38f8-481a-a376-37c69c01e992
+X-Ovh-Tracer-Id: 9752826468486777824
 X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudeifedguddvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepfffhvffukfgjfhfogggtgfhisehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefffetvdegudeugfehledttdeigeehjefhkeeluddutdffjeffueelfffgvedtkeenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudeigedgtddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheeutdehgefhvdehtdeuleetgedvfeeukedtfeeihfffffeiuddutdduhffgvedtnecuffhomhgrihhnpehgihhthhhusgdrtghomhenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,60 +73,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Greg Kurz <groug@kaod.org>, David Gibson <dgibson@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 31 Mar 2021 16:45:05 +0200
-C=C3=A9dric Le Goater <clg@kaod.org> wrote:
+Hello,
 
->=20
+
+On 3/31/21 4:45 PM, Cédric Le Goater wrote:
+> 
 > Hello,
->=20
+> 
 > ipistorm [*] can be used to benchmark the raw interrupt rate of an
 > interrupt controller by measuring the number of IPIs a system can
 > sustain. When applied to the XIVE interrupt controller of POWER9 and
 > POWER10 systems, a significant drop of the interrupt rate can be
 > observed when crossing the second node boundary.
->=20
+> 
 > This is due to the fact that a single IPI interrupt is used for all
 > CPUs of the system. The structure is shared and the cache line updates
 > impact greatly the traffic between nodes and the overall IPI
 > performance.
->=20
+> 
 > As a workaround, the impact can be reduced by deactivating the IRQ
 > lockup detector ("noirqdebug") which does a lot of accounting in the
 > Linux IRQ descriptor structure and is responsible for most of the
 > performance penalty.
->=20
+> 
 > As a fix, this proposal allocates an IPI interrupt per node, to be
 > shared by all CPUs of that node. It solves the scaling issue, the IRQ
 > lockup detector still has an impact but the XIVE interrupt rate scales
 > linearly. It also improves the "noirqdebug" case as showed in the
-> tables below.=20
->=20
+> tables below. Hello,
 
-As explained by David and others, NUMA nodes happen to match sockets
-with current POWER CPUs but these are really different concepts. NUMA
-is about CPU memory accesses latency, while in the case of XIVE you
-really need to identify a XIVE chip localized in a given socket.
+From the comments, I received on different email threads. It seems 
+I am doing some wrong assumption on the code and concepts. We canpostpone this patchset. It's an optimization and there are some 
+more cleanups that can be done before. 
 
-PAPR doesn't know about sockets, only cores. In other words, a PAPR
-compliant guest sees all vCPUs like they all sit in a single socket.
-Same for the XIVE. Trying to introduce a concept of socket, either
-by hijacking OPAL's ibm,chip-id or NUMA node ids, is a kind of
-spec violation in this context. If the user cares for locality of
-the vCPUs and XIVE on the same socket, then it should bind vCPU
-threads to host CPUs from the same socket in the first place.
-Isn't this enough to solve the performance issues this series
-want to fix, without the need for virtual socket ids ?
+Thanks for the time and the shared expertise,
 
+C.
+
+> 
 >  * P9 DD2.2 - 2s * 64 threads
->=20
+> 
 >                                                "noirqdebug"
->                         Mint/s                    Mint/s  =20
->  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys    =20
+>                         Mint/s                    Mint/s   
+>  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys     
 >  --------------------------------------------------------------
 >  1      0-15     4.984023   4.875405       4.996536   5.048892
 >         0-31    10.879164  10.544040      10.757632  11.037859
@@ -134,13 +130,13 @@ want to fix, without the need for virtual socket ids ?
 >         0-95    10.616812  26.878789      28.434703  28.320324
 >         0-111   10.151693  31.397803      31.771773  32.388122
 >         0-127    9.948502  33.139336      34.875716  35.224548
->=20
->=20
+> 
+> 
 >  * P10 DD1 - 4s (not homogeneous) 352 threads
->=20
+> 
 >                                                "noirqdebug"
->                         Mint/s                    Mint/s  =20
->  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys    =20
+>                         Mint/s                    Mint/s   
+>  chips  cpus      IPI/sys   IPI/chip       IPI/chip    IPI/sys     
 >  --------------------------------------------------------------
 >  1      0-15     2.409402   2.364108       2.383303   2.395091
 >         0-31     6.028325   6.046075       6.089999   6.073750
@@ -164,28 +160,28 @@ want to fix, without the need for virtual socket ids ?
 >         0-319    4.743750  43.448424      56.388102  55.973969
 >         0-335    4.709936  45.623532      59.400930  58.926857
 >         0-351    4.681413  45.646151      62.035804  61.830057
->=20
+> 
 > [*] https://github.com/antonblanchard/ipistorm
->=20
+> 
 > Thanks,
->=20
+> 
 > C.
->=20
+> 
 > Changes in v3:
->=20
+> 
 >   - improved commit log for the misuse of "ibm,chip-id"
 >   - better error handling of xive_request_ipi()
->   - use of a fwnode_handle to name the new domain=20
+>   - use of a fwnode_handle to name the new domain 
 >   - increased IPI name length
 >   - use of early_cpu_to_node() for hotplugged CPUs
 >   - filter CPU-less nodes
->=20
+> 
 > Changes in v2:
->=20
+> 
 >   - extra simplification on xmon
 >   - fixes on issues reported by the kernel test robot
->=20
-> C=C3=A9dric Le Goater (9):
+> 
+> Cédric Le Goater (9):
 >   powerpc/xive: Use cpu_to_node() instead of "ibm,chip-id" property
 >   powerpc/xive: Introduce an IPI interrupt domain
 >   powerpc/xive: Remove useless check on XIVE_IPI_HW_IRQ
@@ -195,11 +191,11 @@ want to fix, without the need for virtual socket ids ?
 >   powerpc/xive: Fix xmon command "dxi"
 >   powerpc/xive: Map one IPI interrupt per node
 >   powerpc/xive: Modernize XIVE-IPI domain with an 'alloc' handler
->=20
+> 
 >  arch/powerpc/include/asm/xive.h          |   1 +
 >  arch/powerpc/sysdev/xive/xive-internal.h |   2 -
 >  arch/powerpc/sysdev/xive/common.c        | 211 +++++++++++++++--------
 >  arch/powerpc/xmon/xmon.c                 |  28 +--
 >  4 files changed, 139 insertions(+), 103 deletions(-)
->=20
+> 
 
