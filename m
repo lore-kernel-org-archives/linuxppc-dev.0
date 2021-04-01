@@ -2,26 +2,26 @@ Return-Path: <SRS0=m4lh=I6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87194C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 15:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BC38C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 15:57:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B52361221
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 15:56:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B52361221
+	by mail.kernel.org (Postfix) with ESMTPS id 3AD7A61247
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 15:57:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AD7A61247
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FB78s2xpPz3fMR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 02:56:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FB79M6fSGz3fTD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 02:57:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=HFkBoDC2;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=bc7+2QCy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -30,35 +30,38 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=HFkBoDC2; 
+ header.s=bombadil.20210309 header.b=bc7+2QCy; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FB75F21L8z30GR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Apr 2021 02:53:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FB75H2TPfz309X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Apr 2021 02:53:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=F/At/y3YpRYA0xMifJb6WYaRvzw/qWs4U1Utp3fOA3I=; b=HFkBoDC2gQqzR0/BMkABluFzVb
- 3gakMZuzB5XR+6BX0Aj1OytKg2i4hAn10GfCqqYygamx5QBLvyvglTO+CwociDtgFFHoBElQl2z9C
- 8vSKoiBIAW3F6tqOLYPp5fiGR2bP6vbJGLE7cWb6BixFCeOSNvJ4K1maSU3n4g1Q7mpPZT2T07c35
- IOMTZ0zeIeEGgKA2dxIZ8EK0kU0QMV3JhqqKyPs1AV8kBZN19SvvyFxFLUzRFNH5pIb+XJhARJbkW
- zRtou/lbZms6YtiTWLVyM7tCMX4ldsM7ZmafF6EhBjKGqEfhr9PhwxC99sSvMht8lYVuOOmKk4W3l
- pxTq5pyQ==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=udq0JdvBbX84i7ozGZWSL+Az3QA2sCkCGzkNz2ygPXY=; b=bc7+2QCy3+Dp0DFOPrep0pfaZE
+ 8GiK4yu0ZRT2cKv5LJQ9s9t7jEv/6e5LZVi/ljrnwJPh5aNMOf4VdB6yNu4aVuzaPiQ+i2q1Mj+SL
+ XN+x5Et27TLIJmondEwR6qU5Z3tfQh5tNcPdfOfnfPqPKfTV0Olt7s52VrfMkizBXs86fTpisZnHY
+ DoXIAJk2bdEL1h6jcruGbjzMhshsSZYxd0fRvi8ibR+dC2aY6n4a0PHB+b2SyJPiyKrVVGvvfpAyb
+ X7GMKdLlOBn9Sd+ZYkZbI4QPYPAsFpMvifp1B17X9Jw+oSZlH5fN1B3hLjJsMB7cd3z9ys1M4POLN
+ bkdHGD2g==;
 Received: from [2001:4bb8:180:7517:83e4:a809:b0aa:ca74] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lRzd6-00CiZO-UO; Thu, 01 Apr 2021 15:53:09 +0000
+ id 1lRzdQ-00CibG-7o; Thu, 01 Apr 2021 15:53:28 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
  Li Yang <leoyang.li@nxp.com>
-Subject: cleanup unused or almost unused IOMMU APIs and the FSL PAMU driver v3
-Date: Thu,  1 Apr 2021 17:52:36 +0200
-Message-Id: <20210401155256.298656-1-hch@lst.de>
+Subject: [PATCH 07/20] iommu/fsl_pamu: replace DOMAIN_ATTR_FSL_PAMU_STASH with
+ a direct call
+Date: Thu,  1 Apr 2021 17:52:43 +0200
+Message-Id: <20210401155256.298656-8-hch@lst.de>
 X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210401155256.298656-1-hch@lst.de>
+References: <20210401155256.298656-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -84,49 +87,165 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+Add a fsl_pamu_configure_l1_stash API that qman_portal can call directly
+instead of indirecting through the iommu attr API.
 
-there are a bunch of IOMMU APIs that are entirely unused, or only used as
-a private communication channel between the FSL PAMU driver and it's only
-consumer, the qbman portal driver.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Will Deacon <will@kernel.org>
+Acked-by: Li Yang <leoyang.li@nxp.com>
+---
+ arch/powerpc/include/asm/fsl_pamu_stash.h | 12 +++---------
+ drivers/iommu/fsl_pamu_domain.c           | 16 +++-------------
+ drivers/iommu/fsl_pamu_domain.h           |  2 --
+ drivers/soc/fsl/qbman/qman_portal.c       | 18 +++---------------
+ include/linux/iommu.h                     |  1 -
+ 5 files changed, 9 insertions(+), 40 deletions(-)
 
-So this series drops a huge chunk of entirely unused FSL PAMU
-functionality, then drops all kinds of unused IOMMU APIs, and then
-replaces what is left of the iommu_attrs with properly typed, smaller
-and easier to use specific APIs.
+diff --git a/arch/powerpc/include/asm/fsl_pamu_stash.h b/arch/powerpc/include/asm/fsl_pamu_stash.h
+index 30a31ad2123d86..c0fbadb70b5dad 100644
+--- a/arch/powerpc/include/asm/fsl_pamu_stash.h
++++ b/arch/powerpc/include/asm/fsl_pamu_stash.h
+@@ -7,6 +7,8 @@
+ #ifndef __FSL_PAMU_STASH_H
+ #define __FSL_PAMU_STASH_H
+ 
++struct iommu_domain;
++
+ /* cache stash targets */
+ enum pamu_stash_target {
+ 	PAMU_ATTR_CACHE_L1 = 1,
+@@ -14,14 +16,6 @@ enum pamu_stash_target {
+ 	PAMU_ATTR_CACHE_L3,
+ };
+ 
+-/*
+- * This attribute allows configuring stashig specific parameters
+- * in the PAMU hardware.
+- */
+-
+-struct pamu_stash_attribute {
+-	u32	cpu;	/* cpu number */
+-	u32	cache;	/* cache to stash to: L1,L2,L3 */
+-};
++int fsl_pamu_configure_l1_stash(struct iommu_domain *domain, u32 cpu);
+ 
+ #endif  /* __FSL_PAMU_STASH_H */
+diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
+index 689035e9d40955..557a152c1d2c49 100644
+--- a/drivers/iommu/fsl_pamu_domain.c
++++ b/drivers/iommu/fsl_pamu_domain.c
+@@ -372,27 +372,20 @@ static void fsl_pamu_detach_device(struct iommu_domain *domain,
+ }
+ 
+ /* Set the domain stash attribute */
+-static int configure_domain_stash(struct fsl_dma_domain *dma_domain, void *data)
++int fsl_pamu_configure_l1_stash(struct iommu_domain *domain, u32 cpu)
+ {
+-	struct pamu_stash_attribute *stash_attr = data;
++	struct fsl_dma_domain *dma_domain = to_fsl_dma_domain(domain);
+ 	unsigned long flags;
+ 	int ret;
+ 
+ 	spin_lock_irqsave(&dma_domain->domain_lock, flags);
+-
+-	memcpy(&dma_domain->dma_stash, stash_attr,
+-	       sizeof(struct pamu_stash_attribute));
+-
+-	dma_domain->stash_id = get_stash_id(stash_attr->cache,
+-					    stash_attr->cpu);
++	dma_domain->stash_id = get_stash_id(PAMU_ATTR_CACHE_L1, cpu);
+ 	if (dma_domain->stash_id == ~(u32)0) {
+ 		pr_debug("Invalid stash attributes\n");
+ 		spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+ 		return -EINVAL;
+ 	}
+-
+ 	ret = update_domain_stash(dma_domain, dma_domain->stash_id);
+-
+ 	spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+ 
+ 	return ret;
+@@ -426,9 +419,6 @@ static int fsl_pamu_set_domain_attr(struct iommu_domain *domain,
+ 	int ret = 0;
+ 
+ 	switch (attr_type) {
+-	case DOMAIN_ATTR_FSL_PAMU_STASH:
+-		ret = configure_domain_stash(dma_domain, data);
+-		break;
+ 	case DOMAIN_ATTR_FSL_PAMU_ENABLE:
+ 		ret = configure_domain_dma_state(dma_domain, *(int *)data);
+ 		break;
+diff --git a/drivers/iommu/fsl_pamu_domain.h b/drivers/iommu/fsl_pamu_domain.h
+index 13ee06e0ef0136..cd488004acd1b3 100644
+--- a/drivers/iommu/fsl_pamu_domain.h
++++ b/drivers/iommu/fsl_pamu_domain.h
+@@ -22,9 +22,7 @@ struct fsl_dma_domain {
+ 	 *
+ 	 */
+ 	int				enabled;
+-	/* stash_id obtained from the stash attribute details */
+ 	u32				stash_id;
+-	struct pamu_stash_attribute	dma_stash;
+ 	u32				snoop_id;
+ 	struct iommu_domain		iommu_domain;
+ 	spinlock_t			domain_lock;
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index 9ee1663f422cbf..798b3a1ffd0b9c 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -47,7 +47,6 @@ static void portal_set_cpu(struct qm_portal_config *pcfg, int cpu)
+ #ifdef CONFIG_FSL_PAMU
+ 	struct device *dev = pcfg->dev;
+ 	int window_count = 1;
+-	struct pamu_stash_attribute stash_attr;
+ 	int ret;
+ 
+ 	pcfg->iommu_domain = iommu_domain_alloc(&platform_bus_type);
+@@ -55,13 +54,9 @@ static void portal_set_cpu(struct qm_portal_config *pcfg, int cpu)
+ 		dev_err(dev, "%s(): iommu_domain_alloc() failed", __func__);
+ 		goto no_iommu;
+ 	}
+-	stash_attr.cpu = cpu;
+-	stash_attr.cache = PAMU_ATTR_CACHE_L1;
+-	ret = iommu_domain_set_attr(pcfg->iommu_domain,
+-				    DOMAIN_ATTR_FSL_PAMU_STASH,
+-				    &stash_attr);
++	ret = fsl_pamu_configure_l1_stash(pcfg->iommu_domain, cpu);
+ 	if (ret < 0) {
+-		dev_err(dev, "%s(): iommu_domain_set_attr() = %d",
++		dev_err(dev, "%s(): fsl_pamu_configure_l1_stash() = %d",
+ 			__func__, ret);
+ 		goto out_domain_free;
+ 	}
+@@ -143,15 +138,8 @@ static void qman_portal_update_sdest(const struct qm_portal_config *pcfg,
+ 							unsigned int cpu)
+ {
+ #ifdef CONFIG_FSL_PAMU /* TODO */
+-	struct pamu_stash_attribute stash_attr;
+-	int ret;
+-
+ 	if (pcfg->iommu_domain) {
+-		stash_attr.cpu = cpu;
+-		stash_attr.cache = PAMU_ATTR_CACHE_L1;
+-		ret = iommu_domain_set_attr(pcfg->iommu_domain,
+-				DOMAIN_ATTR_FSL_PAMU_STASH, &stash_attr);
+-		if (ret < 0) {
++		if (fsl_pamu_configure_l1_stash(pcfg->iommu_domain, cpu) < 0) {
+ 			dev_err(pcfg->dev,
+ 				"Failed to update pamu stash setting\n");
+ 			return;
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index f7baa81887a8bc..208e570e8d99e7 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -109,7 +109,6 @@ enum iommu_cap {
+ enum iommu_attr {
+ 	DOMAIN_ATTR_GEOMETRY,
+ 	DOMAIN_ATTR_PAGING,
+-	DOMAIN_ATTR_FSL_PAMU_STASH,
+ 	DOMAIN_ATTR_FSL_PAMU_ENABLE,
+ 	DOMAIN_ATTR_NESTING,	/* two stages of translation */
+ 	DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE,
+-- 
+2.30.1
 
-Changes since v2:
- - remove a comment fragment a little bit earlier
- - fix the aperture end passed to pamu_config_ppaace
- - fix a few trivial typos
- - remove more unused arguments to pamu_config_ppaace
- - do not accidentally enable lazy flushing for non-dma domains
-
-Changes since v1:
- - use a different way to control strict flushing behavior (from Robin)
- - remove the iommu_cmd_line wrappers
- - simplify the pagetbl quirks a little more
- - slightly improved patch ordering
- - better changelogs
-
-Diffstat:
- arch/powerpc/include/asm/fsl_pamu_stash.h   |   12 
- drivers/gpu/drm/msm/adreno/adreno_gpu.c     |    5 
- drivers/iommu/amd/iommu.c                   |   23 
- drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c |   75 ---
- drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.h |    1 
- drivers/iommu/arm/arm-smmu/arm-smmu.c       |  111 +---
- drivers/iommu/arm/arm-smmu/arm-smmu.h       |    2 
- drivers/iommu/dma-iommu.c                   |    9 
- drivers/iommu/fsl_pamu.c                    |  293 -----------
- drivers/iommu/fsl_pamu.h                    |   12 
- drivers/iommu/fsl_pamu_domain.c             |  688 ++--------------------------
- drivers/iommu/fsl_pamu_domain.h             |   46 -
- drivers/iommu/intel/iommu.c                 |   95 ---
- drivers/iommu/iommu.c                       |  118 +---
- drivers/soc/fsl/qbman/qman_portal.c         |   55 --
- drivers/vfio/vfio_iommu_type1.c             |   31 -
- drivers/vhost/vdpa.c                        |   10 
- include/linux/io-pgtable.h                  |    4 
- include/linux/iommu.h                       |   76 ---
- 19 files changed, 203 insertions(+), 1463 deletions(-)
