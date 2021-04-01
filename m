@@ -7,59 +7,56 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34DACC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 13:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AA0CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 13:31:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9972261247
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 13:31:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9972261247
+	by mail.kernel.org (Postfix) with ESMTPS id BE6AB61248
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Apr 2021 13:31:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE6AB61248
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FB3xM2C3Qz3c71
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 00:31:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FB3xj3KP8z3cGv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 00:31:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FB3wT51zFz2y0L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Apr 2021 00:30:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FB3wT59dzz2yRb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Apr 2021 00:30:48 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FB3wN34YCz9twjX;
- Thu,  1 Apr 2021 15:30:44 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FB3wL4M4Rz9twjV;
+ Thu,  1 Apr 2021 15:30:42 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cLpGo-DjBjSy; Thu,  1 Apr 2021 15:30:44 +0200 (CEST)
+ with ESMTP id 6QXPlekH9PAh; Thu,  1 Apr 2021 15:30:42 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FB3wN078lz9twjT;
- Thu,  1 Apr 2021 15:30:44 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FB3wL0Y8pz9twjT;
+ Thu,  1 Apr 2021 15:30:42 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E43518B99F;
- Thu,  1 Apr 2021 15:30:43 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 115448B99F;
+ Thu,  1 Apr 2021 15:30:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id QCigWfZt688c; Thu,  1 Apr 2021 15:30:43 +0200 (CEST)
+ with ESMTP id 5LZA3QbEPpKi; Thu,  1 Apr 2021 15:30:41 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 903438B991;
- Thu,  1 Apr 2021 15:30:43 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8B8888B991;
+ Thu,  1 Apr 2021 15:30:41 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6DEBB67646; Thu,  1 Apr 2021 13:30:43 +0000 (UTC)
-Message-Id: <a46dcdd39a9e80b012d86c294c4e5cd8d31665f3.1617283827.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <0c3d5cb8a4dfdf6ca1b8aeb385c01470d6628d55.1617283827.git.christophe.leroy@csgroup.eu>
-References: <0c3d5cb8a4dfdf6ca1b8aeb385c01470d6628d55.1617283827.git.christophe.leroy@csgroup.eu>
+ id 4954967646; Thu,  1 Apr 2021 13:30:41 +0000 (UTC)
+Message-Id: <0c3d5cb8a4dfdf6ca1b8aeb385c01470d6628d55.1617283827.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 3/3] powerpc/32s: Define a MODULE area below kernel text all
- the time
+Subject: [PATCH 1/3] powerpc/modules: Load modules closer to kernel text
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  jniethe5@gmail.com
-Date: Thu,  1 Apr 2021 13:30:43 +0000 (UTC)
+Date: Thu,  1 Apr 2021 13:30:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,70 +73,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On book3s/32, the segment below kernel text is used for module
-allocation when CONFIG_STRICT_KERNEL_RWX is defined.
+On book3s/32, when STRICT_KERNEL_RWX is selected, modules are
+allocated on the segment just before kernel text, ie on the
+0xb0000000-0xbfffffff when PAGE_OFFSET is 0xc0000000.
 
-In order to benefit from the powerpc specific module_alloc()
-function which allocate modules with 32 Mbytes from
-end of kernel text, use that segment below PAGE_OFFSET at all time.
+On the 8xx, TASK_SIZE is 0x80000000. The space between TASK_SIZE and
+PAGE_OFFSET is not used and could be used for modules.
+
+The idea comes from ARM architecture.
+
+Having modules just below PAGE_OFFSET offers an opportunity to
+minimise the distance between kernel text and modules and avoid
+trampolines in modules to access kernel functions or other module
+functions.
+
+When MODULES_VADDR is defined, powerpc has it's own module_alloc()
+function. In that function, first try to allocate the module
+above the limit defined by '_etext - 32M'. Then if the allocation
+fails, fallback to the entire MODULES area.
+
+DEBUG logs in module_32.c without the patch:
+
+[ 1572.588822] module_32: Applying ADD relocate section 13 to 12
+[ 1572.588891] module_32: Doing plt for call to 0xc00671a4 at 0xcae04024
+[ 1572.588964] module_32: Initialized plt for 0xc00671a4 at cae04000
+[ 1572.589037] module_32: REL24 value = CAE04000. location = CAE04024
+[ 1572.589110] module_32: Location before: 48000001.
+[ 1572.589171] module_32: Location after: 4BFFFFDD.
+[ 1572.589231] module_32: ie. jump to 03FFFFDC+CAE04024 = CEE04000
+[ 1572.589317] module_32: Applying ADD relocate section 15 to 14
+[ 1572.589386] module_32: Doing plt for call to 0xc00671a4 at 0xcadfc018
+[ 1572.589457] module_32: Initialized plt for 0xc00671a4 at cadfc000
+[ 1572.589529] module_32: REL24 value = CADFC000. location = CADFC018
+[ 1572.589601] module_32: Location before: 48000000.
+[ 1572.589661] module_32: Location after: 4BFFFFE8.
+[ 1572.589723] module_32: ie. jump to 03FFFFE8+CADFC018 = CEDFC000
+
+With the patch:
+
+[  279.404671] module_32: Applying ADD relocate section 13 to 12
+[  279.404741] module_32: REL24 value = C00671B4. location = BF808024
+[  279.404814] module_32: Location before: 48000001.
+[  279.404874] module_32: Location after: 4885F191.
+[  279.404933] module_32: ie. jump to 0085F190+BF808024 = C00671B4
+[  279.405016] module_32: Applying ADD relocate section 15 to 14
+[  279.405085] module_32: REL24 value = C00671B4. location = BF800018
+[  279.405156] module_32: Location before: 48000000.
+[  279.405215] module_32: Location after: 4886719C.
+[  279.405275] module_32: ie. jump to 0086719C+BF800018 = C00671B4
+
+We see that with the patch, no plt entries are set.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig                         | 2 +-
- arch/powerpc/include/asm/book3s/32/pgtable.h | 2 --
- arch/powerpc/mm/book3s32/mmu.c               | 7 -------
- 3 files changed, 1 insertion(+), 10 deletions(-)
+ arch/powerpc/kernel/module.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c1344c05226c..15a91202d5c3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1219,7 +1219,7 @@ config TASK_SIZE_BOOL
- config TASK_SIZE
- 	hex "Size of user task space" if TASK_SIZE_BOOL
- 	default "0x80000000" if PPC_8xx
--	default "0xb0000000" if PPC_BOOK3S_32 && STRICT_KERNEL_RWX
-+	default "0xb0000000" if PPC_BOOK3S_32
- 	default "0xc0000000"
- endmenu
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index a211b0253cdb..fab84024650c 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -14,6 +14,7 @@
+ #include <asm/firmware.h>
+ #include <linux/sort.h>
+ #include <asm/setup.h>
++#include <asm/sections.h>
  
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 415ae29fa73a..83c65845a1a9 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -194,10 +194,8 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #define VMALLOC_END	ioremap_bot
- #endif
+ static LIST_HEAD(module_bug_list);
  
--#ifdef CONFIG_STRICT_KERNEL_RWX
- #define MODULES_END	ALIGN_DOWN(PAGE_OFFSET, SZ_256M)
- #define MODULES_VADDR	(MODULES_END - SZ_256M)
--#endif
- 
- #ifndef __ASSEMBLY__
- #include <linux/sched.h>
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index a0db398b5c26..159930351d9f 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -184,17 +184,10 @@ static bool is_module_segment(unsigned long addr)
- {
- 	if (!IS_ENABLED(CONFIG_MODULES))
- 		return false;
--#ifdef MODULES_VADDR
- 	if (addr < ALIGN_DOWN(MODULES_VADDR, SZ_256M))
- 		return false;
- 	if (addr > ALIGN(MODULES_END, SZ_256M) - 1)
- 		return false;
--#else
--	if (addr < ALIGN_DOWN(VMALLOC_START, SZ_256M))
--		return false;
--	if (addr > ALIGN(VMALLOC_END, SZ_256M) - 1)
--		return false;
--#endif
- 	return true;
+@@ -88,12 +89,28 @@ int module_finalize(const Elf_Ehdr *hdr,
  }
  
+ #ifdef MODULES_VADDR
++static __always_inline void *
++__module_alloc(unsigned long size, unsigned long start, unsigned long end)
++{
++	return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL,
++				    PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
++				    __builtin_return_address(0));
++}
++
+ void *module_alloc(unsigned long size)
+ {
++	unsigned long limit = (unsigned long)_etext - SZ_32M;
++	void *ptr = NULL;
++
+ 	BUILD_BUG_ON(TASK_SIZE > MODULES_VADDR);
+ 
+-	return __vmalloc_node_range(size, 1, MODULES_VADDR, MODULES_END, GFP_KERNEL,
+-				    PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
+-				    __builtin_return_address(0));
++	/* First try within 32M limit from _etext to avoid branch trampolines */
++	if (MODULES_VADDR < PAGE_OFFSET && MODULES_END > limit)
++		ptr = __module_alloc(size, limit, MODULES_END);
++
++	if (!ptr)
++		ptr = __module_alloc(size, MODULES_VADDR, MODULES_END);
++
++	return ptr;
+ }
+ #endif
 -- 
 2.25.0
 
