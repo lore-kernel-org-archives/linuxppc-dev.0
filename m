@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A3F9C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 15:19:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E80FCC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 15:20:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EF0160FD7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 15:19:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EF0160FD7
+	by mail.kernel.org (Postfix) with ESMTPS id 36C4060FD7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Apr 2021 15:20:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36C4060FD7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FBkHl0NKyz3d4K
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:19:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FBkJK65rCz3c9w
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:20:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FBkFv064gz3brb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 02:18:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FBkFx4zTpz3btG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 02:18:13 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FBkFj2vNPz9v2lt;
- Fri,  2 Apr 2021 17:18:01 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FBkFn3JGVz9v2m6;
+ Fri,  2 Apr 2021 17:18:05 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NJ34BehnDmHj; Fri,  2 Apr 2021 17:18:01 +0200 (CEST)
+ with ESMTP id VqEXDMYbbW_D; Fri,  2 Apr 2021 17:18:05 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FBkFj1ndyz9v2ls;
- Fri,  2 Apr 2021 17:18:01 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FBkFn2H9Mz9v2ls;
+ Fri,  2 Apr 2021 17:18:05 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2774B8BB7C;
- Fri,  2 Apr 2021 17:18:03 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 327708BB7B;
+ Fri,  2 Apr 2021 17:18:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wc8EW3tptikR; Fri,  2 Apr 2021 17:18:03 +0200 (CEST)
+ with ESMTP id RgJz95waFuwr; Fri,  2 Apr 2021 17:18:07 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 99C3C8BB7B;
- Fri,  2 Apr 2021 17:18:02 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BB1658BB79;
+ Fri,  2 Apr 2021 17:18:06 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 701DA67989; Fri,  2 Apr 2021 15:18:02 +0000 (UTC)
-Message-Id: <68db4e57bb88c523f76dcae12feafbb0cae1a85d.1617375802.git.christophe.leroy@csgroup.eu>
+ id 8EFAC67989; Fri,  2 Apr 2021 15:18:06 +0000 (UTC)
+Message-Id: <9cf63d0419bb51d91c5b1c83ce250dff1e7107cc.1617375802.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1617375802.git.christophe.leroy@csgroup.eu>
 References: <cover.1617375802.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 01/20] cmdline: Add generic function to build command line.
+Subject: [PATCH v4 05/20] cmdline: Gives architectures opportunity to use
+ generically defined boot cmdline manipulation
 To: will@kernel.org, danielwa@cisco.com, robh@kernel.org,
  daniel@gimpelevich.san-francisco.ca.us, arnd@kernel.org,
  akpm@linux-foundation.org
-Date: Fri,  2 Apr 2021 15:18:02 +0000 (UTC)
+Date: Fri,  2 Apr 2021 15:18:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,111 +82,125 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This code provides architectures with a way to build command line
-based on what is built in the kernel and what is handed over by the
-bootloader, based on selected compile-time options.
+Most architectures have similar boot command line manipulation
+options. This patchs adds the definition in init/Kconfig, gated by
+CONFIG_HAVE_CMDLINE that the architectures can select to use them.
+
+CONFIG_CMDLINE_EXTEND is understood differently by architectures.
+For some of them it appends built-in CMDLINE to bootloader provided
+line. For others it appends the bootloader provided CMDLINE to the
+built-in one.
+To avoid confusion, this commit brings to different options:
+- CONFIG_CMDLINE_APPEND to append the built-in CMDLINE to the
+bootloader line.
+- CONFIG_CMDLINE_PREPEND to prepend the built-in CMDLINE in front of
+the bootloader line.
+
+For compatibility with existing architecture which uses CONFIG_OF, as
+OF has already been converted to generic cmdline, we keep
+CONFIG_CMDLINE_EXTEND as a synonym to CONFIG_CMDLINE_APPEND until
+arm, powerpc, riscv and sh architectures have been converted.
+
+A few differences are identified and will have to be taken
+into account when converting the architecture to generic cmdline:
+- riscv has CMDLINE_FALLBACK instead of CMDLINE_FROM_BOOTLOADER
+- Some architectures are using CONFIG_CMDLINE_OVERRIDE or
+CONFIG_CMDLINE_OVERWRITE instead of CONFIG_CMDLINE_FORCE.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
 v3:
-- Addressed comments from Will
-- Added capability to have src == dst
-v4:
-- Add cmdline_strlcpy()
-- Removed cmdline_build() macro, __cmdline_build() becomes cmdline_build()
-- Fixed the destination length to COMMAND_LINE_SIZE
-- Truncate at a space not in a quote when too long
-- Added a message when forcing the command line
----
- include/linux/cmdline.h | 79 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
- create mode 100644 include/linux/cmdline.h
+- Comments from Will.
+- Remove CONFIG_CMDLINE_BOOL. Using CONFIG_CMDLINE != "" instead, like arm and powerpc.
+- Changed EXTEND to APPEND. Keep EXTEND for backward compatibility.
 
-diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
-new file mode 100644
-index 000000000000..a0773dc365c7
---- /dev/null
-+++ b/include/linux/cmdline.h
-@@ -0,0 +1,79 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _LINUX_CMDLINE_H
-+#define _LINUX_CMDLINE_H
+v4:
+- Added CMDLINE_PREPEND as a dependency for INITRAMFS_FORCE
+- Removed the EXTEND || APPEND in cmdline.h, keep EXTEND as it
+   will always exit and switch to APPEND in last patch.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ init/Kconfig | 52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ usr/Kconfig  |  2 +-
+ 2 files changed, 53 insertions(+), 1 deletion(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 5f5c776ef192..af0d84662cc2 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -117,6 +117,58 @@ config INIT_ENV_ARG_LIMIT
+ 	  Maximum of each of the number of arguments and environment
+ 	  variables passed to init from the kernel command line.
+ 
++config GENERIC_CMDLINE
++	bool
 +
-+#include <linux/string.h>
-+#include <linux/printk.h>
-+#include <asm/setup.h>
++config CMDLINE
++	string "Default kernel command string" if GENERIC_CMDLINE
++	default ""
++	help
++	  Defines a default kernel command string.
++	  If this string is not empty, additional choices are proposed
++	  below to determine how it will be used by the kernel.
 +
-+/* Allow users to override strlcat/strlcpy, powerpc can't use strings so early*/
-+#ifndef cmdline_strlcat
-+#define cmdline_strlcat strlcat
-+#define cmdline_strlcpy strlcpy
-+#endif
++choice
++	prompt "Kernel command line type" if CMDLINE != ""
++	default CMDLINE_PREPEND if ARCH_WANT_CMDLINE_PREPEND_BY_DEFAULT
++	default CMDLINE_FROM_BOOTLOADER
++	depends on GENERIC_CMDLINE
++	help
++	  Determine how the default kernel arguments are combined with any
++	  arguments passed by the bootloader if any.
 +
-+/*
-+ * This function will append or prepend a builtin command line to the command
-+ * line provided by the bootloader. Kconfig options can be used to alter
-+ * the behavior of this builtin command line.
-+ * @dst: The destination of the final command line (Min. size COMMAND_LINE_SIZE)
-+ * @src: The starting string or NULL if there isn't one. Must not equal dst.
-+ * Returns: false if the string was truncated, true otherwise
-+ */
-+static __always_inline bool __cmdline_build(char *dst, const char *src)
-+{
-+	int len;
-+	char *ptr, *last_space;
-+	bool in_quote = false;
++config CMDLINE_FROM_BOOTLOADER
++	bool "Use bootloader kernel arguments if available"
++	help
++	  Uses the command-line options passed by the boot loader. If
++	  the boot loader doesn't provide any, the default kernel command
++	  string provided in CMDLINE will be used.
 +
-+	if (IS_ENABLED(CONFIG_CMDLINE_FORCE))
-+		src = NULL;
++config CMDLINE_APPEND
++	bool "Append to the bootloader kernel arguments"
++	help
++	  The default kernel command string will be appended to the
++	  command-line arguments provided by the bootloader.
 +
-+	dst[0] = 0;
++config CMDLINE_PREPEND
++	bool "Prepend to the bootloader kernel arguments"
++	help
++	  The default kernel command string will be prepended to the
++	  command-line arguments provided by the bootloader.
 +
-+	if (IS_ENABLED(CONFIG_CMDLINE_PREPEND))
-+		len = cmdline_strlcat(dst, CONFIG_CMDLINE " ", COMMAND_LINE_SIZE);
++config CMDLINE_FORCE
++	bool "Always use the default kernel command string"
++	help
++	  Always use the default kernel command string, ignoring any
++	  arguments provided by the bootloader.
++endchoice
 +
-+	len = cmdline_strlcat(dst, src, COMMAND_LINE_SIZE);
++config CMDLINE_EXTEND
++	bool
++	default CMDLINE_APPEND
++	help
++	  To be removed once all architectures are converted to generic CMDLINE
 +
-+	if (IS_ENABLED(CONFIG_CMDLINE_EXTEND))
-+		len = cmdline_strlcat(dst, " " CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-+
-+	if (len < COMMAND_LINE_SIZE - 1)
-+		return true;
-+
-+	for (ptr = dst; *ptr; ptr++) {
-+		if (*ptr == '"')
-+			in_quote = !in_quote;
-+		if (*ptr == ' ' && !in_quote)
-+			last_space = ptr;
-+	}
-+	if (last_space)
-+		*last_space = 0;
-+
-+	return false;
-+}
-+
-+/*
-+ * This function will append or prepend a builtin command line to the command
-+ * line provided by the bootloader. Kconfig options can be used to alter
-+ * the behavior of this builtin command line.
-+ * @dst: The destination of the final command line (Min. size COMMAND_LINE_SIZE)
-+ * @src: The starting string or NULL if there isn't one.
-+ */
-+static __always_inline void cmdline_build(char *dst, const char *src)
-+{
-+	static char tmp[COMMAND_LINE_SIZE] __initdata;
-+
-+	if (src == dst) {
-+		cmdline_strlcpy(tmp, src, COMMAND_LINE_SIZE);
-+		src = tmp;
-+	}
-+	if (!__cmdline_build(dst, src))
-+		pr_warn("Command line is too long, it has been truncated\n");
-+
-+	if (IS_ENABLED(CONFIG_CMDLINE_FORCE))
-+		pr_info("Forcing kernel command line to: %s\n", dst);
-+}
-+
-+#endif /* _LINUX_CMDLINE_H */
+ config COMPILE_TEST
+ 	bool "Compile also drivers which will not load"
+ 	depends on HAS_IOMEM
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 8bbcf699fe3b..b397e6b114d1 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -24,7 +24,7 @@ config INITRAMFS_SOURCE
+ 
+ config INITRAMFS_FORCE
+ 	bool "Ignore the initramfs passed by the bootloader"
+-	depends on CMDLINE_EXTEND || CMDLINE_FORCE
++	depends on CMDLINE_PREPEND || CMDLINE_APPEND || CMDLINE_FORCE
+ 	help
+ 	  This option causes the kernel to ignore the initramfs image
+ 	  (or initrd image) passed to it by the bootloader. This is
 -- 
 2.25.0
 
