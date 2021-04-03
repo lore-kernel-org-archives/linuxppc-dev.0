@@ -2,46 +2,68 @@ Return-Path: <SRS0=+tx8=JA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CA4DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C40C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 17:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D61561241
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:53:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D61561241
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 234436128B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 17:32:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 234436128B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FCFfr1CL0z3cV6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 22:53:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FCPBk3FNZz3bxm
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 03:32:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FCFds5NsMz30BW
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 22:52:17 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FCFdr5WjMz9sW0; Sat,  3 Apr 2021 22:52:16 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <bde9154e5351a5ac7bca3d59cdb5a5e8edacbb79.1617199569.git.christophe.leroy@csgroup.eu>
-References: <bde9154e5351a5ac7bca3d59cdb5a5e8edacbb79.1617199569.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/signal32: Fix Oops on sigreturn with unmapped
- VDSO
-Message-Id: <161745070541.936361.6883787979113499379.b4-ty@ellerman.id.au>
-Date: Sat, 03 Apr 2021 22:51:45 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FCPBG4kTnz3027
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Apr 2021 03:32:17 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FCPB205JNz9v2DV;
+ Sat,  3 Apr 2021 19:32:10 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id OlKSWiwht6s7; Sat,  3 Apr 2021 19:32:09 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FCPB16NhVz9v2DT;
+ Sat,  3 Apr 2021 19:32:09 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8FB008B76D;
+ Sat,  3 Apr 2021 19:32:11 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id exrl2fk04JRp; Sat,  3 Apr 2021 19:32:11 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A4BD8B76A;
+ Sat,  3 Apr 2021 19:32:11 +0200 (CEST)
+Subject: Re: [PATCH 08/10] powerpc/signal32: Convert restore_[tm]_user_regs()
+ to user access block
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ cmr@codefail.de
+References: <cover.1616151715.git.christophe.leroy@csgroup.eu>
+ <181adf15a6f644efcd1aeafb355f3578ff1b6bc5.1616151715.git.christophe.leroy@csgroup.eu>
+Message-ID: <7460dcad-a1d1-375d-a9a5-ba5f1d7a41a7@csgroup.eu>
+Date: Sat, 3 Apr 2021 19:32:06 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <181adf15a6f644efcd1aeafb355f3578ff1b6bc5.1616151715.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,41 +81,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 31 Mar 2021 14:07:04 +0000 (UTC), Christophe Leroy wrote:
-> PPC32 encounters a KUAP fault when trying to handle a signal with
-> VDSO unmapped.
+
+
+Le 19/03/2021 à 12:06, Christophe Leroy a écrit :
+> Convert restore_user_regs() and restore_tm_user_regs()
+> to use user_access_read_begin/end blocks.
 > 
-> 	Kernel attempted to read user page (7fc07ec0) - exploit attempt? (uid: 0)
-> 	BUG: Unable to handle kernel data access on read at 0x7fc07ec0
-> 	Faulting instruction address: 0xc00111d4
-> 	Oops: Kernel access of bad area, sig: 11 [#1]
-> 	BE PAGE_SIZE=16K PREEMPT CMPC885
-> 	CPU: 0 PID: 353 Comm: sigreturn_vdso Not tainted 5.12.0-rc4-s3k-dev-01553-gb30c310ea220 #4814
-> 	NIP:  c00111d4 LR: c0005a28 CTR: 00000000
-> 	REGS: cadb3dd0 TRAP: 0300   Not tainted  (5.12.0-rc4-s3k-dev-01553-gb30c310ea220)
-> 	MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48000884  XER: 20000000
-> 	DAR: 7fc07ec0 DSISR: 88000000
-> 	GPR00: c0007788 cadb3e90 c28d4a40 7fc07ec0 7fc07ed0 000004e0 7fc07ce0 00000000
-> 	GPR08: 00000001 00000001 7fc07ec0 00000000 28000282 1001b828 100a0920 00000000
-> 	GPR16: 100cac0c 100b0000 105c43a4 105c5685 100d0000 100d0000 100d0000 100b2e9e
-> 	GPR24: ffffffff 105c43c8 00000000 7fc07ec8 cadb3f40 cadb3ec8 c28d4a40 00000000
-> 	NIP [c00111d4] flush_icache_range+0x90/0xb4
-> 	LR [c0005a28] handle_signal32+0x1bc/0x1c4
-> 	Call Trace:
-> 	[cadb3e90] [100d0000] 0x100d0000 (unreliable)
-> 	[cadb3ec0] [c0007788] do_notify_resume+0x260/0x314
-> 	[cadb3f20] [c000c764] syscall_exit_prepare+0x120/0x184
-> 	[cadb3f30] [c00100b4] ret_from_syscall+0xc/0x28
-> 	--- interrupt: c00 at 0xfe807f8
-> 	NIP:  0fe807f8 LR: 10001060 CTR: c0139378
-> 	REGS: cadb3f40 TRAP: 0c00   Not tainted  (5.12.0-rc4-s3k-dev-01553-gb30c310ea220)
-> 	MSR:  0000d032 <EE,PR,ME,IR,DR,RI>  CR: 28000482  XER: 20000000
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>   arch/powerpc/include/asm/ptrace.h |   2 +-
+>   arch/powerpc/kernel/signal_32.c   | 141 +++++++++++++++---------------
+>   2 files changed, 72 insertions(+), 71 deletions(-)
 > 
-> [...]
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index 088c83853026..0b1a6f53e553 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -567,19 +569,22 @@ static long restore_user_regs(struct pt_regs *regs,
+>   	regs->msr &= ~MSR_SPE;
+>   	if (msr & MSR_SPE) {
+>   		/* restore spe registers from the stack */
+> -		if (__copy_from_user(current->thread.evr, &sr->mc_vregs,
+> -				     ELF_NEVRREG * sizeof(u32)))
+> -			return 1;
+> +		unsafe_copy_from_user(current->thread.evr, &sr->mc_vregs,
+> +				      ELF_NEVRREG * sizeof(u32));
 
-Applied to powerpc/fixes.
+Missing the , failed); here at the end of the line.
 
-[1/1] powerpc/signal32: Fix Oops on sigreturn with unmapped VDSO
-      https://git.kernel.org/powerpc/c/acca57217c688c5bbbd5140974533d81e8757cc9
+Michael can you add it ?
 
-cheers
+Thanks
+Christophe
