@@ -2,65 +2,61 @@ Return-Path: <SRS0=+tx8=JA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0082C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:28:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1FB0C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:48:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BAB7611C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:28:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BAB7611C0
+	by mail.kernel.org (Postfix) with ESMTPS id E790E61243
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:48:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E790E61243
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FC17V0T9vz3c0F
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 13:28:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FCFYX69Pvz3c6B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 22:48:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Z2sUMI6E;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VL5Kt5/U;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Z2sUMI6E; 
+ header.a=rsa-sha256 header.s=201909 header.b=VL5Kt5/U; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FC1736p0fz2xZC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 13:28:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FCFY61fYkz2xb9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 22:48:09 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FC16y504tz9sSC;
- Sat,  3 Apr 2021 13:28:10 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FCFY24Jp2z9sRR;
+ Sat,  3 Apr 2021 22:48:06 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617416890;
- bh=0h9Rkk3pH8W3/mESmW/wTOFUsfeyLufvNbYm/QFLvgA=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=Z2sUMI6E2b9/GIGqjYHJTE9eseIMOq5EoL75l07QPAf5DqpdH7lYF64fwseXtK3mR
- efwcgFKVjklBsR/MRM2rhMGyNvU0tQIb2e42Deg25VSGOnwh9QPDeoi2uj6AweiTIV
- eCzbyIgMVQ190cMa29hRhDXJMr46qj+v5IsG4Ra3yCIejbuRgfHWGyOlPhKzjcYSk7
- MZCsGV/6FBsfpJu8OqBzJZlt09KZAwIz/hNyErKFLe2lUowq0FjCqUv8xFDQzm1C9w
- 4Q0aoQVT8C9IXN03lcDq0v5+l08TmYVwKfU1g8voIxg8cepMsMaT46gAuouHwYiLq1
- uBXjIZP2Cfy2Q==
+ s=201909; t=1617450487;
+ bh=YRLSj0a8S1jccv7CvoHZicpnAvcgRhWqMSGP1YSnTro=;
+ h=From:To:Cc:Subject:Date:From;
+ b=VL5Kt5/Um0Okt8pQTYg9UDAcP5sAs09gzUIJNaI4+ymmIz1GRR0G9ESm8xuJ6275t
+ ykMqZ//W/YbUb2P2VJEyg8g0FeE43UIN4Yj0moBQeNFEbfr4lAjCOKkjkR75smKa8x
+ ESFYVgyV0FBoRkLTf9c7GXgSAqYBNYNoQn1lAcw6I4AohK4pjk2dMdTheg9dvC7VD2
+ SwGLTvlJJ5VmbD/+KB2SBSARTKccusp2dUEqQXkE53MQuUuBxAb5fy/HP8UWL0LcLU
+ tOYcVneurhT+BjgaosQHIa5U14DnueXOf8h35vuXXDzTs+G1jhfJV2u7qGi1wmpjtk
+ lH2yFCkcrc5Ug==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 04/14] powerpc/64s: avoid reloading (H)SRR registers if
- they are still valid
-In-Reply-To: <20210315220402.260594-5-npiggin@gmail.com>
-References: <20210315220402.260594-1-npiggin@gmail.com>
- <20210315220402.260594-5-npiggin@gmail.com>
-Date: Sat, 03 Apr 2021 13:28:07 +1100
-Message-ID: <874kgo14qw.fsf@mpe.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.12-5 tag
+Date: Sat, 03 Apr 2021 22:48:02 +1100
+Message-ID: <871rbr1te5.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,94 +70,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: nathanl@linux.ibm.com, aneesh.kumar@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index ccf913cedd29..b466b3e1bb3f 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -64,6 +64,30 @@ exception_marker:
->  	.section	".text"
->  	.align 7
->  
-> +.macro DEBUG_SRR_VALID srr
-> +#ifdef CONFIG_PPC_RFI_SRR_DEBUG
-> +	.ifc \srr,srr
-> +	mfspr	r11,SPRN_SRR0
-> +	ld	r12,_NIP(r1)
-> +100:	tdne	r11,r12
-> +	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-This always points at *this* line, not the caller. Works better with the
-patch below.
+Hi Linus,
 
-cheers
+Please pull some more powerpc fixes for 5.12:
+
+The following changes since commit cc7a0bb058b85ea03db87169c60c7cfdd5d34678:
+
+  PCI: rpadlpar: Fix potential drc_name corruption in store functions (2021-03-17 13:48:07 +1100)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.12-5
+
+for you to fetch changes up to 53f1d31708f6240e4615b0927df31f182e389e2f:
+
+  powerpc/mm/book3s64: Use the correct storage key value when calling H_PROTECT (2021-03-26 22:19:39 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.12 #5
+
+Fix a bug on pseries where spurious wakeups from H_PROD would prevent partition migration
+from succeeding.
+
+Fix oopses seen in pcpu_alloc(), caused by parallel faults of the percpu mapping causing
+us to corrupt the protection key used for the mapping, and cause a fatal key fault.
+
+Thanks to Aneesh Kumar K.V, Murilo Opsfelder Araujo, Nathan Lynch.
+
+- ------------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/mm/book3s64: Use the correct storage key value when calling H_PROTECT
+
+Nathan Lynch (2):
+      powerpc/pseries/mobility: use struct for shared state
+      powerpc/pseries/mobility: handle premature return from H_JOIN
 
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index b466b3e1bb3f..ada76b1279f9 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -64,26 +64,26 @@
- 	.section	".text"
- 	.align 7
- 
--.macro DEBUG_SRR_VALID srr
-+.macro DEBUG_SRR_VALID srr line
- #ifdef CONFIG_PPC_RFI_SRR_DEBUG
- 	.ifc \srr,srr
- 	mfspr	r11,SPRN_SRR0
- 	ld	r12,_NIP(r1)
- 100:	tdne	r11,r12
--	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	mfspr	r11,SPRN_SRR1
- 	ld	r12,_MSR(r1)
- 100:	tdne	r11,r12
--	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	.else
- 	mfspr	r11,SPRN_HSRR0
- 	ld	r12,_NIP(r1)
- 100:	tdne	r11,r12
--	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	mfspr	r11,SPRN_HSRR1
- 	ld	r12,_MSR(r1)
- 100:	tdne	r11,r12
--	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	.endif
- #endif
- .endm
-@@ -358,7 +358,7 @@ END_BTB_FLUSH_SECTION
- 	mtspr	SPRN_SRR0,r4
- 	mtspr	SPRN_SRR1,r5
- 1:
--	DEBUG_SRR_VALID srr
-+	DEBUG_SRR_VALID srr __LINE__
- 
- BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1			/* to clear the reservation */
-@@ -753,7 +753,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	stb	r4,PACAHSRR_VALID(r13)
- #endif
- 	.endif
--	DEBUG_SRR_VALID \srr
-+	DEBUG_SRR_VALID \srr __LINE__
- 
- BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1		/* to clear the reservation */
-@@ -825,7 +825,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	stb	r4,PACAHSRR_VALID(r13)
- #endif
- 	.endif
--	DEBUG_SRR_VALID \srr
-+	DEBUG_SRR_VALID \srr __LINE__
- 
- BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1		/* to clear the reservation */
+ arch/powerpc/platforms/pseries/lpar.c     |  3 +-
+ arch/powerpc/platforms/pseries/mobility.c | 48 ++++++++++++++++++--
+ 2 files changed, 46 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmBoVTsACgkQUevqPMjh
+pYDlFxAAkkiy2RiHbaAlWHpVekXVQN1/oRISHQ+9jRco3BQUAEq8wHJNrlArnab6
+N7C/ig2SiugagpLelRsXeXWyM54U3syIQnX3NRg82PgUBxU/LGJmIcyWCgDIf9x0
+/xbMrWcRMuzY1x916rX7MPuSVc8LcyVu9nByBrbFWNE6IqUrJ0ngrBNNsEyWbEf/
+NBHYqUzpurXYv/OHEPOQu9GIOWej5SR8oOKGn3/aJ66cg3WoC7iC56seBjSIrcLe
+zwhUenwRYM6YQ6boX0OBKs/NaPSeT9qy4JyZOe0Sqeo0Yvhj4VJs9W0napIYQde5
+y6ieoyHk33xPawUWiTEtkLmvH2nZPVRXCfGOQmh5B4mvuS/rrv6hTeFkdLFZ74yJ
+Fuan/ljnXSPTkT+xRITrOO/irZyTaRXJ4j0Ck3LrtluUFib9psf+OqtoIiqqy11w
+u+E8T1GChRZTuy2iMZy1jiyvmKwa/S5v67YUU2xUXNYeRI8j3g3cPo/W9Skn3TS2
+LiO5+/6Ws1ABn7TohGV2R7sTPu5AnJP7jyHVJuDbtf/Z79U1SMiNAOb8jA/8WNbW
+0NtLSQsy1PHonsqUIJgJntmstA46Xnsr1ruA2wR7GEuaaBrjSynw9cG55KlA4Lug
+16kaOFPBnJhvkgjTDI7Xl7+ktr4yuR5EriDI0wJMqbhxn+IJ5VM=
+=9cfb
+-----END PGP SIGNATURE-----
