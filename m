@@ -2,84 +2,67 @@ Return-Path: <SRS0=+tx8=JA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A807C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:06:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0082C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:28:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F1E560C40
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:06:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F1E560C40
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8BAB7611C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 02:28:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BAB7611C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FC0dZ2JfLz3c6C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 13:06:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FC17V0T9vz3c0F
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 13:28:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=OnLcBdwB;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Z2sUMI6E;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434;
- helo=mail-pf1-x434.google.com; envelope-from=syl.loop@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=OnLcBdwB; dkim-atps=neutral
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com
- [IPv6:2607:f8b0:4864:20::434])
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=Z2sUMI6E; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FC0d31v4wz2yxX
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 13:05:42 +1100 (AEDT)
-Received: by mail-pf1-x434.google.com with SMTP id x126so4563143pfc.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Apr 2021 19:05:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=jDmDmlQgBZSIrU2MP/TQeW+PUwzt+cJeJDtCDLSCiHA=;
- b=OnLcBdwBQB9Vwo7YGX1pIgbvtTMwzG6FHwLr9UoNKV46KyvOegmt53Y89NLsaQfN21
- fO/kLXHWveE2Wi+Kx8n2b3A4NxSnHmieke1kKcPZtYxHYRBUhgL1/dp35kLQt2xUwKq7
- v/LcjRAI3bjuBvzAWVn9d8cefGj1+/6d4CSLe+5OWPSeEek6jVH4s9LRDiDjQjpoVPft
- e0ETlME1Hd6Lv5o61HHOrV1ne3BcyYxez3omCSEtdVKd1Hg7aKRh9FF7UMITMVrjrutu
- XC3YfVpvI+44CvUkjpGZFnupEFjcIjnIMGwHEQo7VlcVW0c8m/f0BOUxLU/mUIGz9m2q
- EfBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=jDmDmlQgBZSIrU2MP/TQeW+PUwzt+cJeJDtCDLSCiHA=;
- b=GwXYnd/WGgS34LKiWapNGOAGe+zcdt8e/cB8Lj1HGZsNFwYeNV/sVo+Ii22obPZn0n
- 7+QmnCgkWLepjUYfY27vAj0Xpc3ikiSbqsVpJpQANtOjMGrUfabagpKwXpgtR8fP1YQA
- ZUSKXggq882Al3C9eIRUfRNRysBtdqeGdDsHByew8bei4YxVk/xEBYDjZxXWWdjxFaCh
- A0nE3tMcZuofRgtQGztzXbtSiH9EnaiDupIFDVP6lrXiLUaydKearuG9SpYC04MSzHhF
- p37BO34W3UiwYJk1XMusOeJ+IrZe6RU50puIz6RQEKmEwUd+hAZC3/j0uKW0UQSqo4AL
- GORw==
-X-Gm-Message-State: AOAM533Ef2eknYaGhwbQiQ6/LlaBqaZAwZECLj9jtDhvTGXFCPcm58lP
- 4OOBTWhMhEELEm6Sx2KIKvE=
-X-Google-Smtp-Source: ABdhPJxTadWTrGSrAJoCwI5/jjrL5p9pjDpr4boVyEUsCc/P8xeQrl0bH2k+B/WyJY7knMMezBJqIQ==
-X-Received: by 2002:a05:6a00:80b:b029:22e:e873:7f0e with SMTP id
- m11-20020a056a00080bb029022ee8737f0emr14588464pfk.61.1617415537687; 
- Fri, 02 Apr 2021 19:05:37 -0700 (PDT)
-Received: from localhost.localdomain ([116.246.26.51])
- by smtp.gmail.com with ESMTPSA id y29sm9513289pfp.206.2021.04.02.19.05.34
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 02 Apr 2021 19:05:37 -0700 (PDT)
-From: Youlin Song <syl.loop@gmail.com>
-To: robh+dt@kernel.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org
-Subject: [PATCH] powerpc/dts: fix not include DTC_FLAGS
-Date: Sat,  3 Apr 2021 10:04:23 +0800
-Message-Id: <20210403020423.85278-1-syl.loop@gmail.com>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FC1736p0fz2xZC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 13:28:15 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FC16y504tz9sSC;
+ Sat,  3 Apr 2021 13:28:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1617416890;
+ bh=0h9Rkk3pH8W3/mESmW/wTOFUsfeyLufvNbYm/QFLvgA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=Z2sUMI6E2b9/GIGqjYHJTE9eseIMOq5EoL75l07QPAf5DqpdH7lYF64fwseXtK3mR
+ efwcgFKVjklBsR/MRM2rhMGyNvU0tQIb2e42Deg25VSGOnwh9QPDeoi2uj6AweiTIV
+ eCzbyIgMVQ190cMa29hRhDXJMr46qj+v5IsG4Ra3yCIejbuRgfHWGyOlPhKzjcYSk7
+ MZCsGV/6FBsfpJu8OqBzJZlt09KZAwIz/hNyErKFLe2lUowq0FjCqUv8xFDQzm1C9w
+ 4Q0aoQVT8C9IXN03lcDq0v5+l08TmYVwKfU1g8voIxg8cepMsMaT46gAuouHwYiLq1
+ uBXjIZP2Cfy2Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 04/14] powerpc/64s: avoid reloading (H)SRR registers if
+ they are still valid
+In-Reply-To: <20210315220402.260594-5-npiggin@gmail.com>
+References: <20210315220402.260594-1-npiggin@gmail.com>
+ <20210315220402.260594-5-npiggin@gmail.com>
+Date: Sat, 03 Apr 2021 13:28:07 +1100
+Message-ID: <874kgo14qw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,32 +74,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Youlin Song <syl.loop@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I wanted to build the fsl dts in my machine and found that
-the dtb have not extra space,so uboot will cause about
-FDT_ERR_NOSPACE issue.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index ccf913cedd29..b466b3e1bb3f 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -64,6 +64,30 @@ exception_marker:
+>  	.section	".text"
+>  	.align 7
+>  
+> +.macro DEBUG_SRR_VALID srr
+> +#ifdef CONFIG_PPC_RFI_SRR_DEBUG
+> +	.ifc \srr,srr
+> +	mfspr	r11,SPRN_SRR0
+> +	ld	r12,_NIP(r1)
+> +100:	tdne	r11,r12
+> +	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
 
-Signed-off-by: Youlin Song <syl.loop@gmail.com>
----
- arch/powerpc/boot/dts/Makefile | 1 +
- 1 file changed, 1 insertion(+)
+This always points at *this* line, not the caller. Works better with the
+patch below.
 
-diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-index fb335d05aae8..c21165c0cd76 100644
---- a/arch/powerpc/boot/dts/Makefile
-+++ b/arch/powerpc/boot/dts/Makefile
-@@ -2,5 +2,6 @@
+cheers
+
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index b466b3e1bb3f..ada76b1279f9 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -64,26 +64,26 @@
+ 	.section	".text"
+ 	.align 7
  
- subdir-y += fsl
+-.macro DEBUG_SRR_VALID srr
++.macro DEBUG_SRR_VALID srr line
+ #ifdef CONFIG_PPC_RFI_SRR_DEBUG
+ 	.ifc \srr,srr
+ 	mfspr	r11,SPRN_SRR0
+ 	ld	r12,_NIP(r1)
+ 100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+ 	mfspr	r11,SPRN_SRR1
+ 	ld	r12,_MSR(r1)
+ 100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+ 	.else
+ 	mfspr	r11,SPRN_HSRR0
+ 	ld	r12,_NIP(r1)
+ 100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+ 	mfspr	r11,SPRN_HSRR1
+ 	ld	r12,_MSR(r1)
+ 100:	tdne	r11,r12
+-	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
++	EMIT_BUG_ENTRY 100b,__FILE__,\line,(BUGFLAG_WARNING | BUGFLAG_ONCE)
+ 	.endif
+ #endif
+ .endm
+@@ -358,7 +358,7 @@ END_BTB_FLUSH_SECTION
+ 	mtspr	SPRN_SRR0,r4
+ 	mtspr	SPRN_SRR1,r5
+ 1:
+-	DEBUG_SRR_VALID srr
++	DEBUG_SRR_VALID srr __LINE__
  
-+DTC_FLAGS   ?= -p 1024
- dtstree		:= $(srctree)/$(src)
- dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
--- 
-2.25.1
-
+ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1			/* to clear the reservation */
+@@ -753,7 +753,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	stb	r4,PACAHSRR_VALID(r13)
+ #endif
+ 	.endif
+-	DEBUG_SRR_VALID \srr
++	DEBUG_SRR_VALID \srr __LINE__
+ 
+ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1		/* to clear the reservation */
+@@ -825,7 +825,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	stb	r4,PACAHSRR_VALID(r13)
+ #endif
+ 	.endif
+-	DEBUG_SRR_VALID \srr
++	DEBUG_SRR_VALID \srr __LINE__
+ 
+ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1		/* to clear the reservation */
