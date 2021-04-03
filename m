@@ -2,63 +2,47 @@ Return-Path: <SRS0=+tx8=JA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1FB0C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:48:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 908C1C43460
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:52:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E790E61243
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:48:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E790E61243
+	by mail.kernel.org (Postfix) with ESMTPS id B4FE1610C7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 11:52:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4FE1610C7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FCFYX69Pvz3c6B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 22:48:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VL5Kt5/U;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FCFf90KqPz3c4V
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Apr 2021 22:52:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=VL5Kt5/U; 
- dkim-atps=neutral
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FCFY61fYkz2xb9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 22:48:09 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FCFY24Jp2z9sRR;
- Sat,  3 Apr 2021 22:48:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617450487;
- bh=YRLSj0a8S1jccv7CvoHZicpnAvcgRhWqMSGP1YSnTro=;
- h=From:To:Cc:Subject:Date:From;
- b=VL5Kt5/Um0Okt8pQTYg9UDAcP5sAs09gzUIJNaI4+ymmIz1GRR0G9ESm8xuJ6275t
- ykMqZ//W/YbUb2P2VJEyg8g0FeE43UIN4Yj0moBQeNFEbfr4lAjCOKkjkR75smKa8x
- ESFYVgyV0FBoRkLTf9c7GXgSAqYBNYNoQn1lAcw6I4AohK4pjk2dMdTheg9dvC7VD2
- SwGLTvlJJ5VmbD/+KB2SBSARTKccusp2dUEqQXkE53MQuUuBxAb5fy/HP8UWL0LcLU
- tOYcVneurhT+BjgaosQHIa5U14DnueXOf8h35vuXXDzTs+G1jhfJV2u7qGi1wmpjtk
- lH2yFCkcrc5Ug==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.12-5 tag
-Date: Sat, 03 Apr 2021 22:48:02 +1100
-Message-ID: <871rbr1te5.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FCFdp53c2z2ywx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Apr 2021 22:52:14 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4FCFdp1bPJz9sWD; Sat,  3 Apr 2021 22:52:13 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <9121a44a2d50ba1af18d8aa5ada06c9a3bea8afd.1617200085.git.christophe.leroy@csgroup.eu>
+References: <9121a44a2d50ba1af18d8aa5ada06c9a3bea8afd.1617200085.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/ptrace: Don't return error when getting/setting
+ FP regs without CONFIG_PPC_FPU_REGS
+Message-Id: <161745070512.936361.2043800315190251594.b4-ty@ellerman.id.au>
+Date: Sat, 03 Apr 2021 22:51:45 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,67 +54,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, aneesh.kumar@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Wed, 31 Mar 2021 14:14:58 +0000 (UTC), Christophe Leroy wrote:
+> An #ifdef CONFIG_PPC_FPU_REGS is missing in arch_ptrace() leading
+> to the following Oops because [REGSET_FPR] entry is not initialised in
+> native_regsets[].
+> 
+> [   41.917608] BUG: Unable to handle kernel instruction fetch
+> [   41.922849] Faulting instruction address: 0xff8fd228
+> [   41.927760] Oops: Kernel access of bad area, sig: 11 [#1]
+> [   41.933089] BE PAGE_SIZE=4K PREEMPT CMPC885
+> [   41.940753] Modules linked in:
+> [   41.943768] CPU: 0 PID: 366 Comm: gdb Not tainted 5.12.0-rc5-s3k-dev-01666-g7aac86a0f057-dirty #4835
+> [   41.952800] NIP:  ff8fd228 LR: c004d9e0 CTR: ff8fd228
+> [   41.957790] REGS: caae9df0 TRAP: 0400   Not tainted  (5.12.0-rc5-s3k-dev-01666-g7aac86a0f057-dirty)
+> [   41.966741] MSR:  40009032 <EE,ME,IR,DR,RI>  CR: 82004248  XER: 20000000
+> [   41.973540]
+> [   41.973540] GPR00: c004d9b4 caae9eb0 c1b64f60 c1b64520 c0713cd4 caae9eb8 c1bacdfc 00000004
+> [   41.973540] GPR08: 00000200 ff8fd228 c1bac700 00001032 28004242 1061aaf4 00000001 106d64a0
+> [   41.973540] GPR16: 00000000 00000000 7fa0a774 10610000 7fa0aef9 00000000 10610000 7fa0a538
+> [   41.973540] GPR24: 7fa0a580 7fa0a570 c1bacc00 c1b64520 c1bacc00 caae9ee8 00000108 c0713cd4
+> [   42.009685] NIP [ff8fd228] 0xff8fd228
+> [   42.013300] LR [c004d9e0] __regset_get+0x100/0x124
+> [   42.018036] Call Trace:
+> [   42.020443] [caae9eb0] [c004d9b4] __regset_get+0xd4/0x124 (unreliable)
+> [   42.026899] [caae9ee0] [c004da94] copy_regset_to_user+0x5c/0xb0
+> [   42.032751] [caae9f10] [c002f640] sys_ptrace+0xe4/0x588
+> [   42.037915] [caae9f30] [c0011010] ret_from_syscall+0x0/0x28
+> [   42.043422] --- interrupt: c00 at 0xfd1f8e4
+> [   42.047553] NIP:  0fd1f8e4 LR: 1004a688 CTR: 00000000
+> [   42.052544] REGS: caae9f40 TRAP: 0c00   Not tainted  (5.12.0-rc5-s3k-dev-01666-g7aac86a0f057-dirty)
+> [   42.061494] MSR:  0000d032 <EE,PR,ME,IR,DR,RI>  CR: 48004442  XER: 00000000
+> [   42.068551]
+> [   42.068551] GPR00: 0000001a 7fa0a040 77dad7e0 0000000e 00000170 00000000 7fa0a078 00000004
+> [   42.068551] GPR08: 00000000 108deb88 108dda40 106d6010 44004442 1061aaf4 00000001 106d64a0
+> [   42.068551] GPR16: 00000000 00000000 7fa0a774 10610000 7fa0aef9 00000000 10610000 7fa0a538
+> [   42.068551] GPR24: 7fa0a580 7fa0a570 1078fe00 1078fd70 1078fd70 00000170 0fdd3244 0000000d
+> [   42.104696] NIP [0fd1f8e4] 0xfd1f8e4
+> [   42.108225] LR [1004a688] 0x1004a688
+> [   42.111753] --- interrupt: c00
+> [   42.114768] Instruction dump:
+> [   42.117698] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> [   42.125443] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> [   42.133195] ---[ end trace d35616f22ab2100c ]---
+> 
+> [...]
 
-Hi Linus,
+Applied to powerpc/fixes.
 
-Please pull some more powerpc fixes for 5.12:
+[1/1] powerpc/ptrace: Don't return error when getting/setting FP regs without CONFIG_PPC_FPU_REGS
+      https://git.kernel.org/powerpc/c/3618250c8399cb36f4a0fbc48610a178307e1c64
 
-The following changes since commit cc7a0bb058b85ea03db87169c60c7cfdd5d34678:
-
-  PCI: rpadlpar: Fix potential drc_name corruption in store functions (2021-03-17 13:48:07 +1100)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.12-5
-
-for you to fetch changes up to 53f1d31708f6240e4615b0927df31f182e389e2f:
-
-  powerpc/mm/book3s64: Use the correct storage key value when calling H_PROTECT (2021-03-26 22:19:39 +1100)
-
-- ------------------------------------------------------------------
-powerpc fixes for 5.12 #5
-
-Fix a bug on pseries where spurious wakeups from H_PROD would prevent partition migration
-from succeeding.
-
-Fix oopses seen in pcpu_alloc(), caused by parallel faults of the percpu mapping causing
-us to corrupt the protection key used for the mapping, and cause a fatal key fault.
-
-Thanks to Aneesh Kumar K.V, Murilo Opsfelder Araujo, Nathan Lynch.
-
-- ------------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/mm/book3s64: Use the correct storage key value when calling H_PROTECT
-
-Nathan Lynch (2):
-      powerpc/pseries/mobility: use struct for shared state
-      powerpc/pseries/mobility: handle premature return from H_JOIN
-
-
- arch/powerpc/platforms/pseries/lpar.c     |  3 +-
- arch/powerpc/platforms/pseries/mobility.c | 48 ++++++++++++++++++--
- 2 files changed, 46 insertions(+), 5 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmBoVTsACgkQUevqPMjh
-pYDlFxAAkkiy2RiHbaAlWHpVekXVQN1/oRISHQ+9jRco3BQUAEq8wHJNrlArnab6
-N7C/ig2SiugagpLelRsXeXWyM54U3syIQnX3NRg82PgUBxU/LGJmIcyWCgDIf9x0
-/xbMrWcRMuzY1x916rX7MPuSVc8LcyVu9nByBrbFWNE6IqUrJ0ngrBNNsEyWbEf/
-NBHYqUzpurXYv/OHEPOQu9GIOWej5SR8oOKGn3/aJ66cg3WoC7iC56seBjSIrcLe
-zwhUenwRYM6YQ6boX0OBKs/NaPSeT9qy4JyZOe0Sqeo0Yvhj4VJs9W0napIYQde5
-y6ieoyHk33xPawUWiTEtkLmvH2nZPVRXCfGOQmh5B4mvuS/rrv6hTeFkdLFZ74yJ
-Fuan/ljnXSPTkT+xRITrOO/irZyTaRXJ4j0Ck3LrtluUFib9psf+OqtoIiqqy11w
-u+E8T1GChRZTuy2iMZy1jiyvmKwa/S5v67YUU2xUXNYeRI8j3g3cPo/W9Skn3TS2
-LiO5+/6Ws1ABn7TohGV2R7sTPu5AnJP7jyHVJuDbtf/Z79U1SMiNAOb8jA/8WNbW
-0NtLSQsy1PHonsqUIJgJntmstA46Xnsr1ruA2wR7GEuaaBrjSynw9cG55KlA4Lug
-16kaOFPBnJhvkgjTDI7Xl7+ktr4yuR5EriDI0wJMqbhxn+IJ5VM=
-=9cfb
------END PGP SIGNATURE-----
+cheers
