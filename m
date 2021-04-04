@@ -6,49 +6,49 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DDBBC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 00:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEA74C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 00:07:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF82061365
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 00:06:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF82061365
+	by mail.kernel.org (Postfix) with ESMTPS id E7B9A61365
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 00:07:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7B9A61365
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FCYxP2GMkz3c2x
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 10:06:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FCYxn4jwQz3cCC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Apr 2021 10:07:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FCYx04F8xz2yZC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FCYx04wqzz301v
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Apr 2021 10:06:24 +1000 (AEST)
-IronPort-SDR: L05SoEAPtYjlx1/CliCImxEYRTkToTYFcDKbywFRpQi1OdWbM89Dn7rj7nbALfGza6bgPP6Da3
- 2xz2/olDUXNQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9943"; a="212946015"
-X-IronPort-AV: E=Sophos;i="5.81,303,1610438400"; d="scan'208";a="212946015"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+IronPort-SDR: ZkxeIzoFcUGI29muxeg8ewPeTayjqM+s7CeRORH1DJK00OCj0x0jz7iwswNnJdfSpkmp7NgMRO
+ Sp79dg95PBfA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9943"; a="190438559"
+X-IronPort-AV: E=Sophos;i="5.81,303,1610438400"; d="scan'208";a="190438559"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  03 Apr 2021 17:06:21 -0700
-IronPort-SDR: V2VrqBlgS7ONv9DssO6GRorOR4Y0OZlX6+VseZKPd6/4/JdkNgttDohQzp/zyJ1XYpehL5gtfj
- X0WHyOe5Du4g==
+IronPort-SDR: XopvmHMKb+af3OLsJf0hSuKxAkPeMZKpAc0VLJXtyFJG4In6Hn1fZFfUSIgpo2ooRqqoihWN4l
+ qtunO6dc+/8g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,303,1610438400"; d="scan'208";a="378503777"
+X-IronPort-AV: E=Sophos;i="5.81,303,1610438400"; d="scan'208";a="385677185"
 Received: from lkp-server01.sh.intel.com (HELO 69d8fcc516b7) ([10.239.97.150])
- by orsmga003.jf.intel.com with ESMTP; 03 Apr 2021 17:06:20 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 03 Apr 2021 17:06:20 -0700
 Received: from kbuild by 69d8fcc516b7 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lSqHT-0007zb-F6; Sun, 04 Apr 2021 00:06:19 +0000
-Date: Sun, 04 Apr 2021 08:06:14 +0800
+ id 1lSqHU-0007zk-2s; Sun, 04 Apr 2021 00:06:20 +0000
+Date: Sun, 04 Apr 2021 08:06:07 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD REGRESSION
- 556baad64ee9f87db99de05be3b53edbd7beeaa1
-Message-ID: <606902f6.ioJBl8L+KFIJZOuD%lkp@intel.com>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 791f9e36599d94af5a76d3f74d04e16326761aae
+Message-ID: <606902ef.KUxJX1xEu8iZTLPZ%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -69,28 +69,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 556baad64ee9f87db99de05be3b53edbd7beeaa1  selftests/powerpc: Suggest memtrace instead of /dev/mem for ci memory
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: 791f9e36599d94af5a76d3f74d04e16326761aae  powerpc/vdso: Make sure vdso_wrapper.o is rebuilt everytime vdso.so is rebuilt
 
-Error/Warning in current branch:
+elapsed time: 723m
 
-arch/powerpc/kernel/signal_32.c:572:3: error: 'unsafe_copy_from_user' undeclared (first use in this function); did you mean 'raw_copy_from_user'?
-arch/powerpc/kernel/signal_32.c:573:36: error: macro "unsafe_copy_from_user" requires 4 arguments, but only 3 given
-arch/powerpc/platforms/powernv/memtrace.c:49:5: error: no previous prototype for 'memtrace_mmap' [-Werror=missing-prototypes]
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- powerpc-mpc8540_ads_defconfig
-|   |-- arch-powerpc-kernel-signal_32.c:error:macro-unsafe_copy_from_user-requires-arguments-but-only-given
-|   `-- arch-powerpc-kernel-signal_32.c:error:unsafe_copy_from_user-undeclared-(first-use-in-this-function)
-`-- powerpc-powernv_defconfig
-    `-- arch-powerpc-platforms-powernv-memtrace.c:error:no-previous-prototype-for-memtrace_mmap
-
-elapsed time: 721m
-
-configs tested: 119
+configs tested: 176
 configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -98,8 +86,8 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-x86_64                           allyesconfig
 riscv                            allmodconfig
+x86_64                           allyesconfig
 i386                             allyesconfig
 riscv                            allyesconfig
 powerpc                     powernv_defconfig
@@ -118,6 +106,11 @@ m68k                         amcore_defconfig
 m68k                       bvme6000_defconfig
 arm                       spear13xx_defconfig
 powerpc                     ppa8548_defconfig
+sh                          polaris_defconfig
+sh                         ap325rxa_defconfig
+sh                          urquell_defconfig
+mips                        bcm47xx_defconfig
+arm                            mps2_defconfig
 powerpc                          g5_defconfig
 arm                        mini2440_defconfig
 sh                            migor_defconfig
@@ -128,15 +121,35 @@ powerpc                      acadia_defconfig
 sh                 kfr2r09-romimage_defconfig
 sh                          sdk7780_defconfig
 powerpc                     ep8248e_defconfig
+powerpc                   bluestone_defconfig
+sh                          rsk7269_defconfig
+sh                           se7751_defconfig
+mips                        omega2p_defconfig
+arm                        mvebu_v7_defconfig
+um                            kunit_defconfig
 powerpc                      ppc64e_defconfig
 arm                         lpc32xx_defconfig
 m68k                        m5272c3_defconfig
 h8300                            alldefconfig
+powerpc                      chrp32_defconfig
+arc                 nsimosci_hs_smp_defconfig
+powerpc                     taishan_defconfig
+mips                             allmodconfig
+arm                          ep93xx_defconfig
 nds32                            alldefconfig
 arm                       netwinder_defconfig
 mips                         mpc30x_defconfig
 powerpc                 mpc836x_mds_defconfig
 xtensa                  nommu_kc705_defconfig
+sh                           se7712_defconfig
+powerpc                     tqm8555_defconfig
+arm                         mv78xx0_defconfig
+xtensa                          iss_defconfig
+arm                          pxa910_defconfig
+sh                           se7705_defconfig
+mips                     decstation_defconfig
+arm                        multi_v5_defconfig
+arm                         nhk8815_defconfig
 powerpc                      tqm8xx_defconfig
 arm                             rpc_defconfig
 sparc64                             defconfig
@@ -144,6 +157,15 @@ powerpc                 mpc834x_mds_defconfig
 powerpc                      ep88xc_defconfig
 parisc                generic-32bit_defconfig
 sh                           sh2007_defconfig
+arm                         hackkit_defconfig
+arm                          moxart_defconfig
+arm                           stm32_defconfig
+sh                            hp6xx_defconfig
+mips                           ip22_defconfig
+sh                   sh7724_generic_defconfig
+arm                      jornada720_defconfig
+arc                        nsim_700_defconfig
+arc                           tb10x_defconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
@@ -170,10 +192,15 @@ sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
 mips                             allyesconfig
-mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
+i386                 randconfig-a006-20210404
+i386                 randconfig-a003-20210404
+i386                 randconfig-a001-20210404
+i386                 randconfig-a004-20210404
+i386                 randconfig-a005-20210404
+i386                 randconfig-a002-20210404
 i386                 randconfig-a006-20210403
 i386                 randconfig-a003-20210403
 i386                 randconfig-a001-20210403
@@ -192,6 +219,18 @@ i386                 randconfig-a016-20210403
 i386                 randconfig-a012-20210403
 i386                 randconfig-a013-20210403
 i386                 randconfig-a015-20210403
+i386                 randconfig-a014-20210404
+i386                 randconfig-a016-20210404
+i386                 randconfig-a011-20210404
+i386                 randconfig-a012-20210404
+i386                 randconfig-a015-20210404
+i386                 randconfig-a013-20210404
+x86_64               randconfig-a004-20210404
+x86_64               randconfig-a003-20210404
+x86_64               randconfig-a005-20210404
+x86_64               randconfig-a001-20210404
+x86_64               randconfig-a002-20210404
+x86_64               randconfig-a006-20210404
 riscv                    nommu_k210_defconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
@@ -214,6 +253,12 @@ x86_64               randconfig-a003-20210403
 x86_64               randconfig-a001-20210403
 x86_64               randconfig-a002-20210403
 x86_64               randconfig-a006-20210403
+x86_64               randconfig-a014-20210404
+x86_64               randconfig-a015-20210404
+x86_64               randconfig-a013-20210404
+x86_64               randconfig-a011-20210404
+x86_64               randconfig-a012-20210404
+x86_64               randconfig-a016-20210404
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
