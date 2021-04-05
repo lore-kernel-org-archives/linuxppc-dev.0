@@ -5,78 +5,79 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2A22C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1BA5C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4504961210
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4504961210
+	by mail.kernel.org (Postfix) with ESMTPS id 5B20961210
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B20961210
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FDCY46QxKz3cBr
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 11:21:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FDCYW6qtVz3bwv
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 11:21:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Pld5uuyV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Ia1SRBaN;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e;
- helo=mail-pf1-x42e.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034;
+ helo=mail-pj1-x1034.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Pld5uuyV; dkim-atps=neutral
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
+ header.s=20161025 header.b=Ia1SRBaN; dkim-atps=neutral
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com
+ [IPv6:2607:f8b0:4864:20::1034])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FDCWc4NtMz2yRS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Apr 2021 11:20:11 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id v10so7196679pfn.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Apr 2021 18:20:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FDCWd3JXLz2yxS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Apr 2021 11:20:13 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id
+ f2-20020a17090a4a82b02900c67bf8dc69so7087080pjh.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Apr 2021 18:20:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=1Lonny+8YXdFwRIoOFSgIHHCV4tfZl5PHVskAqriodI=;
- b=Pld5uuyVNma4IP095QZiWqo8UqV8PkMaHdh9HQO5vviVQUc1Zrr6CStAUlatD1Cpt9
- Cf3dMiWSOxsJ2EbSqU2uxTTqqes5OQr/SCUIirAF+2fRdy4bQ0leINn/otKxy+2pVQ2x
- yPoDB25kpfCKupwHS1cs4k+qKMbci+yX/P0gfuucazdvzqgx2T+7bEMrJnw3YW7ApH4M
- 3IMouOXeU47OArfcU3rw96Sqpnlvn8pJSFpKH5sNkzsMQWv/AN/8cFbCSHbXd0AhgU6N
- gOqa2serK4u9NF3MOw9UU/3QAoWpe9bDq4cG0vDqKT2yJWmRTynMI1AiRRSkCxFy/Cr0
- 7TMA==
+ bh=OfjZBYhIkDtimAOFPQqSOyFCP6WGylRgGDnOYsNsrRY=;
+ b=Ia1SRBaNSSim5ddLtX57Kg+v5iFWsYO3Uoyt8Cwc/KA7JJ4DsJCpGkOxQ8Uau4m+8U
+ bvpiz+9xI+6am6uHbDy01kyJnbLHE+DdeWkByXrlVxqgBbgmvRcBOJzewToKrPE6cQud
+ nBwob2tEPStDffdYMeTktHNm+FmE8JZ3NWAeY/Okf9hgscz5ASZNbeKMxOYDfuxriHdU
+ Dgya82Ib0V0yoVlRI+Wz+R8pbWOwWLSD+frSh5dG94y41MP+pGTmYaJjOdBUssx5Q+4P
+ Lf1VGjKyprF443OeOEA2YJIh3OtS+6TvwUyRIMANUR8P5DH3H7lIv7WWyzbreJv5/UKU
+ 7ujA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=1Lonny+8YXdFwRIoOFSgIHHCV4tfZl5PHVskAqriodI=;
- b=YKa8VzmYU8lcEYh62tXBluKj2Mz6UU1Ewo+3GRxfwZw0vA78cfC8DUtxn4t4nHYebU
- kilRBJrRgsS1L94th5C9khfpWlNAz7wmTvQVGvea4U6BM14zJ4CIUkLwc2MoOKXjRF/+
- wtG3uwVVgxvMIihvIHb1I5B5ugxTBI+4syaQb6TKd6weMrHLFuT3Xusdy/uWKMcLUao5
- VngLaWJMLU4bNdTMdqlTZfOjw67Lp+PjhS40rOfveeN5CZRPwwyYoYlrI2GWAOb+SSWj
- O8oZDLAom35osPwbDx/Y5gORULnzcbreWpjOA/9G280e3ewH+74Eq7kJLNDyFZuwSRjl
- aMmQ==
-X-Gm-Message-State: AOAM532uy1N8o9pOmsu9N750hoa121jfSC+De5tXF7/03E4seN3yIqHk
- Nln1ucHxBEJk8VMdnzgwLEo=
-X-Google-Smtp-Source: ABdhPJxtDv4We3Qhgcb0JgXD1Oj5UVWVjspAVC4M8tPa2to/IEuHoNAXkvDJvNbQpvRLhOubCb6Vug==
-X-Received: by 2002:aa7:969d:0:b029:1f5:b02c:eed3 with SMTP id
- f29-20020aa7969d0000b02901f5b02ceed3mr21046840pfk.75.1617585603465; 
- Sun, 04 Apr 2021 18:20:03 -0700 (PDT)
+ bh=OfjZBYhIkDtimAOFPQqSOyFCP6WGylRgGDnOYsNsrRY=;
+ b=TqFeO79985lv4SZXxxEoyNPyJCKY0+aiimdUxNlF143noiCL808zVPeG//2EZJ87EK
+ UeutQjnyfsr94DEQYIsyNCo/EG3dfDkaimGnfnZy0/kvng5nLWzhBTxw2z9+Ze/T7Msa
+ lZRBbR7GQNQvUZvei17ZNOcAZvyvg0IbN2EDohto0hhzdZD8tCPg3w6ze6Pn9e6GI51a
+ li6QLdR5q/kPtsMntcmpiBUp/gZQ5ehf4XwZfSZmIaRCO+Hwb0Dc0V7McN48+OzPL1Js
+ YT5gSoSJGteuCbnGMMH2HJlSfxPQJiZmKRK0fIYVgp4OG+eMG9gtLe6WRDpfbXAWfDZc
+ zdfg==
+X-Gm-Message-State: AOAM5323D5EGA3mn2NaupDZ2r5i1Lqj6HKBbBrpH8B/vyI2SMoVAFl/q
+ a+lMJk2sKB+9nqc31haT/6Q=
+X-Google-Smtp-Source: ABdhPJwLOBc7+aa0W2w927sGnl26UcGB/vIhK+cm1ecZtNxEWHUlVlipg0jT1jyE22ABhG826u6aVw==
+X-Received: by 2002:a17:90a:f2cf:: with SMTP id
+ gt15mr7466893pjb.49.1617585610438; 
+ Sun, 04 Apr 2021 18:20:10 -0700 (PDT)
 Received: from bobo.ibm.com ([1.132.215.134])
- by smtp.gmail.com with ESMTPSA id e3sm14062536pfm.43.2021.04.04.18.20.00
+ by smtp.gmail.com with ESMTPSA id e3sm14062536pfm.43.2021.04.04.18.20.07
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 04 Apr 2021 18:20:03 -0700 (PDT)
+ Sun, 04 Apr 2021 18:20:10 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v6 01/48] KVM: PPC: Book3S HV: Nested move LPCR sanitising to
- sanitise_hv_regs
-Date: Mon,  5 Apr 2021 11:19:01 +1000
-Message-Id: <20210405011948.675354-2-npiggin@gmail.com>
+Subject: [PATCH v6 03/48] KVM: PPC: Book3S HV: Disallow LPCR[AIL] to be set to
+ 1 or 2
+Date: Mon,  5 Apr 2021 11:19:03 +1000
+Message-Id: <20210405011948.675354-4-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210405011948.675354-1-npiggin@gmail.com>
 References: <20210405011948.675354-1-npiggin@gmail.com>
@@ -99,82 +100,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This will get a bit more complicated in future patches. Move it
-into the helper function.
+These are already disallowed by H_SET_MODE from the guest, also disallow
+these by updating LPCR directly.
 
-This change allows the L1 hypervisor to determine some of the LPCR
-bits that the L0 is using to run it, which could be a privilege
-violation (LPCR is HV-privileged), although the same problem exists
-now for HFSCR for example. Discussion of the HV privilege issue is
-ongoing and can be resolved with a later change.
+AIL modes can affect the host interrupt behaviour while the guest LPCR
+value is set, so filter it here too.
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
+Suggested-by: Fabiano Rosas <farosas@linux.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv_nested.c | 27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 0cd0e7aad588..3060e5deffc8 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -132,8 +132,27 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
- 	}
- }
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index d2c7626cb960..daded8949a39 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -803,7 +803,10 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
+ 		vcpu->arch.dawrx1 = value2;
+ 		return H_SUCCESS;
+ 	case H_SET_MODE_RESOURCE_ADDR_TRANS_MODE:
+-		/* KVM does not support mflags=2 (AIL=2) */
++		/*
++		 * KVM does not support mflags=2 (AIL=2) and AIL=1 is reserved.
++		 * Keep this in synch with kvmppc_filter_guest_lpcr_hv.
++		 */
+ 		if (mflags != 0 && mflags != 3)
+ 			return H_UNSUPPORTED_FLAG_START;
+ 		return H_TOO_HARD;
+@@ -1645,6 +1648,8 @@ unsigned long kvmppc_filter_lpcr_hv(struct kvm *kvm, unsigned long lpcr)
+ 	/* On POWER8 and above, userspace can modify AIL */
+ 	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		lpcr &= ~LPCR_AIL;
++	if ((lpcr & LPCR_AIL) != LPCR_AIL_3)
++		lpcr &= ~LPCR_AIL; /* LPCR[AIL]=1/2 is disallowed */
  
-+/*
-+ * This can result in some L0 HV register state being leaked to an L1
-+ * hypervisor when the hv_guest_state is copied back to the guest after
-+ * being modified here.
-+ *
-+ * There is no known problem with such a leak, and in many cases these
-+ * register settings could be derived by the guest by observing behaviour
-+ * and timing, interrupts, etc., but it is an issue to consider.
-+ */
- static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
- {
-+	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-+	u64 mask;
-+
-+	/*
-+	 * Don't let L1 change LPCR bits for the L2 except these:
-+	 */
-+	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
-+		LPCR_LPES | LPCR_MER;
-+	hr->lpcr = (vc->lpcr & ~mask) | (hr->lpcr & mask);
-+
  	/*
- 	 * Don't let L1 enable features for L2 which we've disabled for L1,
- 	 * but preserve the interrupt cause field.
-@@ -271,8 +290,6 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	u64 hv_ptr, regs_ptr;
- 	u64 hdec_exp;
- 	s64 delta_purr, delta_spurr, delta_ic, delta_vtb;
--	u64 mask;
--	unsigned long lpcr;
- 
- 	if (vcpu->kvm->arch.l1_ptcr == 0)
- 		return H_NOT_AVAILABLE;
-@@ -321,9 +338,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	vcpu->arch.nested_vcpu_id = l2_hv.vcpu_token;
- 	vcpu->arch.regs = l2_regs;
- 	vcpu->arch.shregs.msr = vcpu->arch.regs.msr;
--	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
--		LPCR_LPES | LPCR_MER;
--	lpcr = (vc->lpcr & ~mask) | (l2_hv.lpcr & mask);
-+
- 	sanitise_hv_regs(vcpu, &l2_hv);
- 	restore_hv_regs(vcpu, &l2_hv);
- 
-@@ -335,7 +350,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 			r = RESUME_HOST;
- 			break;
- 		}
--		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, lpcr);
-+		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, l2_hv.lpcr);
- 	} while (is_kvmppc_resume_guest(r));
- 
- 	/* save L2 state for return */
+ 	 * On POWER9, allow userspace to enable large decrementer for the
 -- 
 2.23.0
 
