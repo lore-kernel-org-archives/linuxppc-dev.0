@@ -4,82 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 196E6C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57B7BC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E28186138D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:20:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E28186138D
+	by mail.kernel.org (Postfix) with ESMTPS id 981836138D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 01:21:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 981836138D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FDCX723HRz30Fc
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 11:20:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FDCXd12Tlz3c5m
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 11:21:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=th0OZH/9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=N2rJ/3VM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436;
- helo=mail-pf1-x436.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534;
+ helo=mail-pg1-x534.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=th0OZH/9; dkim-atps=neutral
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
- [IPv6:2607:f8b0:4864:20::436])
+ header.s=20161025 header.b=N2rJ/3VM; dkim-atps=neutral
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com
+ [IPv6:2607:f8b0:4864:20::534])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FDCWc4g3zz2yYh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FDCWc53ttz2yxR
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Apr 2021 11:20:11 +1000 (AEST)
-Received: by mail-pf1-x436.google.com with SMTP id m11so4564796pfc.11
+Received: by mail-pg1-x534.google.com with SMTP id k8so7172722pgf.4
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Apr 2021 18:20:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=4shQOl+Q9zLkUpe6/3smaSERBWGUCH93NF6hRCaZmCU=;
- b=th0OZH/9x9mShOnc54csEq70tg6C1O4x7QUndQFrobPuPB1XdjNcROTl884w3SFCF0
- pEfgxzwbdtPcQw6EsAuxqBdltNE71PnIOknAKMUwuR0kF5SutUr9HKwbddt+oLzcYsNq
- qW3hk6O+vxR1oiMFXsgUvaiBcjtgbOBtHRjRCYKef5pelovd99K9v1b9JoPZfuegsW2T
- 7ffyNNQEwO98vYeqIZ97a10hg+MEWOyd9D6WPmimwyS0QaVe9wN6+Zs3gBhPiOuQOO5X
- gxpNzZZMbriLyHlK26p69QIQQjrJ3DaydBbDlVL57/AYrMEIjWRtqeUgxA+fewcD9Cae
- LDFA==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=89D5oB20Yk7SvhPXJDnEzHQ/SJWU+2gNh2+j+d+qtcQ=;
+ b=N2rJ/3VMbmrEl/xVGbkQLgNOYyxZ08BX8my7F002I2/GJ+aav9Oo14+D83NyzipNNy
+ h9V+lPdTdK1DcMK0fDJtwlCDfu1NGxAjHA+xqFeIjQFJyyKOcxAG34afNX5oTEw7EB7b
+ C0Bmc184V2ap4XwXIsTKexo2d99UPfy9nbG+NuNaWleTI3K+wyI6QVvHj1FvRVlp9Ayd
+ aD+xAgz90QNa9Y48WajC4KgaEq7XWGKV4q0uXtTM+COu4eVYozRG03InO9/9tmLaPnIu
+ WSY4wnVLTjol2iRv59Jjy+YoL7sU4TbptDGO38P+mGei7rCIwuHmeGGvqrOQbornG5Uz
+ Ho+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=4shQOl+Q9zLkUpe6/3smaSERBWGUCH93NF6hRCaZmCU=;
- b=guHh9Hyyfl5UgZCXEGyyjdsA0Yuek2T2XjFZqapNDCmc2dscnqgNGuvo4UvXO0qB2v
- 9HClfD35zWZGlSBiz4QyjaIoACwJHMkgjmuSjkOLN+H+eA2j9ZNRrvdZw9jikbGSQCin
- M0YA47o0fiNB+/CaUXcaeMX/Vt907mUea4kqvI1HnW/5dyWxGjmM1n3B+To49fyXYjzj
- ZCU9rNioUSi6BqTtGkBjdPcwMF8tZEaMjf23scXmXOR5gm82S20Cei7isMIzZ7Bfz8sm
- fhzJ2nR5cC7Fq6LxKP0xr1/tOldI5u2WCgfY0wYXLE/OxKMT0Mo9gg1n8UsihfY11Psc
- VkbQ==
-X-Gm-Message-State: AOAM5300LXNDq5LCTHHSkgPy0V9CgCYXm1aX4qwHQZ0bMWbS9/TrDB4y
- WLKdWGl9hWBNN/2QFnxg0HjVLxK5aH75Cw==
-X-Google-Smtp-Source: ABdhPJycHBq9I5qXlQdZhewoKKU+807zBbgRSx1anlvMLsekt0HZUWdJq7ZyxFLIxrgsXXFajVneNA==
-X-Received: by 2002:a63:2507:: with SMTP id l7mr21149858pgl.198.1617585606814; 
- Sun, 04 Apr 2021 18:20:06 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=89D5oB20Yk7SvhPXJDnEzHQ/SJWU+2gNh2+j+d+qtcQ=;
+ b=hsIhkrvyr/H++jYRwYeHbYorfCWdVLd+6HQ5L8WeH/+KjxuwWr9yCyTSr1o2YVUc+e
+ zFemdvBHPeqo4BfSsxuCMq9HAN2IJDvMgoaEClEyYM8eFtOue/dummUCLyr2VlkymvB/
+ Yn9F2sfYURHo+yfNWUoYyqSm47dVXDBgBmbWJwT1RRWb2jEeBM9Z4NhRiFA6tKEtyDmI
+ Mce/QOEdxxLUiQMBrXQCT9bRDKI5QuVeMylEfHefp+XSaRUAq3wQmRgETlJlzFBB3+ii
+ UGGJKS/zYclT8NozQEf1nNx1N0E58KnDWPtcLFD1Vt2+vwArsVpDOpXs6XignZi1XnL9
+ gtXQ==
+X-Gm-Message-State: AOAM531zdyN933Bz0qo8NFMMQf9NEvE8E7Q8947rKjIJgij1P/EMZYh+
+ gyDRpLlfKxbuctwEn7XWXHc=
+X-Google-Smtp-Source: ABdhPJwCNJHnappHNR+KEwUFIJVFln31JD2rf+KgxV690PSJguwOBAxfHZjEmnM4MwFgVMaQ05eaXg==
+X-Received: by 2002:a63:e814:: with SMTP id s20mr21054362pgh.85.1617585599890; 
+ Sun, 04 Apr 2021 18:19:59 -0700 (PDT)
 Received: from bobo.ibm.com ([1.132.215.134])
- by smtp.gmail.com with ESMTPSA id e3sm14062536pfm.43.2021.04.04.18.20.03
+ by smtp.gmail.com with ESMTPSA id e3sm14062536pfm.43.2021.04.04.18.19.57
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 04 Apr 2021 18:20:06 -0700 (PDT)
+ Sun, 04 Apr 2021 18:19:59 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v6 02/48] KVM: PPC: Book3S HV: Add a function to filter guest
- LPCR bits
-Date: Mon,  5 Apr 2021 11:19:02 +1000
-Message-Id: <20210405011948.675354-3-npiggin@gmail.com>
+Subject: [PATCH v6 00/48] KVM: PPC: Book3S: C-ify the P9 entry/exit code
+Date: Mon,  5 Apr 2021 11:19:00 +1000
+Message-Id: <20210405011948.675354-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20210405011948.675354-1-npiggin@gmail.com>
-References: <20210405011948.675354-1-npiggin@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,171 +90,163 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- Fabiano Rosas <farosas@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Guest LPCR depends on hardware type, and future changes will add
-restrictions based on errata and guest MMU mode. Move this logic
-to a common function and use it for the cases where the guest
-wants to update its LPCR (or the LPCR of a nested guest).
+Git tree here
 
-This also adds a warning in other places that set or update LPCR
-if we try to set something that would have been disallowed by
-the filter, as a sanity check.
+https://github.com/npiggin/linux/tree/kvm-in-c-v6
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/kvm_book3s.h |  2 +
- arch/powerpc/kvm/book3s_hv.c          | 68 ++++++++++++++++++++-------
- arch/powerpc/kvm/book3s_hv_nested.c   |  8 +++-
- 3 files changed, 59 insertions(+), 19 deletions(-)
+This fixes a couple of bugs with the POWER7/8 path and now a
+POWER8 SMT guest boots and runs again.
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 2f5f919f6cd3..c58121508157 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -258,6 +258,8 @@ extern long kvmppc_hv_get_dirty_log_hpt(struct kvm *kvm,
- extern void kvmppc_harvest_vpa_dirty(struct kvmppc_vpa *vpa,
- 			struct kvm_memory_slot *memslot,
- 			unsigned long *map);
-+extern unsigned long kvmppc_filter_lpcr_hv(struct kvm *kvm,
-+			unsigned long lpcr);
- extern void kvmppc_update_lpcr(struct kvm *kvm, unsigned long lpcr,
- 			unsigned long mask);
- extern void kvmppc_set_fscr(struct kvm_vcpu *vcpu, u64 fscr);
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 13bad6bf4c95..d2c7626cb960 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1635,6 +1635,35 @@ static int kvm_arch_vcpu_ioctl_set_sregs_hv(struct kvm_vcpu *vcpu,
- 	return 0;
- }
- 
-+/*
-+ * Enforce limits on guest LPCR values based on hardware availability,
-+ * guest configuration, and possibly hypervisor support and security
-+ * concerns.
-+ */
-+unsigned long kvmppc_filter_lpcr_hv(struct kvm *kvm, unsigned long lpcr)
-+{
-+	/* On POWER8 and above, userspace can modify AIL */
-+	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
-+		lpcr &= ~LPCR_AIL;
-+
-+	/*
-+	 * On POWER9, allow userspace to enable large decrementer for the
-+	 * guest, whether or not the host has it enabled.
-+	 */
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		lpcr &= ~LPCR_LD;
-+
-+	return lpcr;
-+}
-+
-+static void verify_lpcr(struct kvm *kvm, unsigned long lpcr)
-+{
-+	if (lpcr != kvmppc_filter_lpcr_hv(kvm, lpcr)) {
-+		WARN_ONCE(1, "lpcr 0x%lx differs from filtered 0x%lx\n",
-+			  lpcr, kvmppc_filter_lpcr_hv(kvm, lpcr));
-+	}
-+}
-+
- static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
- 		bool preserve_top32)
- {
-@@ -1643,6 +1672,23 @@ static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
- 	u64 mask;
- 
- 	spin_lock(&vc->lock);
-+
-+	/*
-+	 * Userspace can only modify
-+	 * DPFD (default prefetch depth), ILE (interrupt little-endian),
-+	 * TC (translation control), AIL (alternate interrupt location),
-+	 * LD (large decrementer).
-+	 * These are subject to restrictions from kvmppc_filter_lcpr_hv().
-+	 */
-+	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD;
-+
-+	/* Broken 32-bit version of LPCR must not clear top bits */
-+	if (preserve_top32)
-+		mask &= 0xFFFFFFFF;
-+
-+	new_lpcr = kvmppc_filter_lpcr_hv(kvm,
-+			(vc->lpcr & ~mask) | (new_lpcr & mask));
-+
- 	/*
- 	 * If ILE (interrupt little-endian) has changed, update the
- 	 * MSR_LE bit in the intr_msr for each vcpu in this vcore.
-@@ -1661,25 +1707,8 @@ static void kvmppc_set_lpcr(struct kvm_vcpu *vcpu, u64 new_lpcr,
- 		}
- 	}
- 
--	/*
--	 * Userspace can only modify DPFD (default prefetch depth),
--	 * ILE (interrupt little-endian) and TC (translation control).
--	 * On POWER8 and POWER9 userspace can also modify AIL (alt. interrupt loc.).
--	 */
--	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC;
--	if (cpu_has_feature(CPU_FTR_ARCH_207S))
--		mask |= LPCR_AIL;
--	/*
--	 * On POWER9, allow userspace to enable large decrementer for the
--	 * guest, whether or not the host has it enabled.
--	 */
--	if (cpu_has_feature(CPU_FTR_ARCH_300))
--		mask |= LPCR_LD;
-+	vc->lpcr = new_lpcr;
- 
--	/* Broken 32-bit version of LPCR must not clear top bits */
--	if (preserve_top32)
--		mask &= 0xFFFFFFFF;
--	vc->lpcr = (vc->lpcr & ~mask) | (new_lpcr & mask);
- 	spin_unlock(&vc->lock);
- }
- 
-@@ -4641,8 +4670,10 @@ void kvmppc_update_lpcr(struct kvm *kvm, unsigned long lpcr, unsigned long mask)
- 		struct kvmppc_vcore *vc = kvm->arch.vcores[i];
- 		if (!vc)
- 			continue;
-+
- 		spin_lock(&vc->lock);
- 		vc->lpcr = (vc->lpcr & ~mask) | lpcr;
-+		verify_lpcr(kvm, vc->lpcr);
- 		spin_unlock(&vc->lock);
- 		if (++cores_done >= kvm->arch.online_vcores)
- 			break;
-@@ -4970,6 +5001,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 		kvmppc_setup_partition_table(kvm);
- 	}
- 
-+	verify_lpcr(kvm, lpcr);
- 	kvm->arch.lpcr = lpcr;
- 
- 	/* Initialization for future HPT resizes */
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 3060e5deffc8..d14fe32f167b 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -151,7 +151,13 @@ static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
- 	 */
- 	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
- 		LPCR_LPES | LPCR_MER;
--	hr->lpcr = (vc->lpcr & ~mask) | (hr->lpcr & mask);
-+
-+	/*
-+	 * Additional filtering is required depending on hardware
-+	 * and configuration.
-+	 */
-+	hr->lpcr = kvmppc_filter_lpcr_hv(vcpu->kvm,
-+			(vc->lpcr & ~mask) | (hr->lpcr & mask));
- 
- 	/*
- 	 * Don't let L1 enable features for L2 which we've disabled for L1,
+Main changes since v5:
+- Fixed changelog and subject for patch to re-arm host timer.
+- Fixed compile error with !HV [kernel test robot]
+- Rearranged syscall interrupt reflection changes (now it's disabled in
+  the new P9 path, and reflection is later enabled for hash rather than
+  enabling by default and later disabling for radix).
+- Fixed P9 hash ISI handler was testing MSR_DR, should be MSR_IR for
+  using the VRMA segment descriptor. Is this even needed for P9 hash
+  or does ASDR provide it for MMU=off faults?
+- Fixed POWER8 path fault and cede/nap handler bugs, guests now work
+  again on POWER8 including SMT guests.
+- Removed a bit more dead code from the P7/8 path (ultravisor).
+- Improved changelog and comments.
+
+Main changes since v4:
+- Accounted for reviews so far. Comment and changelog fixes.
+- Fix PR KVM register clobber [Paul]
+- Fix HPT guest LPCR[TC] not set [Paul]
+- Added comment about nested guest HV SPR leak issue [Paul]
+- Improve misc comments and changelogs [Paul and Alexey]
+- Fix decrementer_max export compile error [Alexey]
+- Fixed issue with set_dec() not being identical to mtDEC causing
+  a patch to have an unintended change [Alexey]
+- Re-add a patch to stop reflecting PR=1 sc 1, but only do it for radix.
+
+Main changes since v3:
+- Hopefully fixed LPCR sanising [from Fabiano review]
+- Added MSR[HV] clearing of guest MSR (like MSR[ME] setting).
+- Restored a lost comment about PPR saving, improved comments a bit
+  [Daniel review]
+- Added isyncs, removed XXX isync comment.
+- Fixed cede comment [Fabiano]
+- In stop handling real mode handlers patch, fixed problem of nested
+  hcall handler calling cede and xics hcalls and consuming them
+  [Fabiano]
+- Filter xics hcalls from being consumed if !kvmppc_xics_enabled
+  [Fabiano, Alexey noticed and Cedric provided the right recipe and
+   comment]
+- Removed some more of radix, nested, and virt mode paths from the
+  P7/8 code [noticed by Alexey].
+- Rebased on 5.12-rc4
+- Hopefully I responded to all reviews and collected all reviewed-bys.
+
+Thanks,
+Nick
+
+Nicholas Piggin (48):
+  KVM: PPC: Book3S HV: Nested move LPCR sanitising to sanitise_hv_regs
+  KVM: PPC: Book3S HV: Add a function to filter guest LPCR bits
+  KVM: PPC: Book3S HV: Disallow LPCR[AIL] to be set to 1 or 2
+  KVM: PPC: Book3S HV: Prevent radix guests setting LPCR[TC]
+  KVM: PPC: Book3S HV: Remove redundant mtspr PSPB
+  KVM: PPC: Book3S HV: remove unused kvmppc_h_protect argument
+  KVM: PPC: Book3S HV: Fix CONFIG_SPAPR_TCE_IOMMU=n default hcalls
+  powerpc/64s: Remove KVM handler support from CBE_RAS interrupts
+  powerpc/64s: remove KVM SKIP test from instruction breakpoint handler
+  KVM: PPC: Book3S HV: Ensure MSR[ME] is always set in guest MSR
+  KVM: PPC: Book3S HV: Ensure MSR[HV] is always clear in guest MSR
+  KVM: PPC: Book3S 64: move KVM interrupt entry to a common entry point
+  KVM: PPC: Book3S 64: Move GUEST_MODE_SKIP test into KVM
+  KVM: PPC: Book3S 64: add hcall interrupt handler
+  KVM: PPC: Book3S 64: Move hcall early register setup to KVM
+  KVM: PPC: Book3S 64: Move interrupt early register setup to KVM
+  KVM: PPC: Book3S 64: move bad_host_intr check to HV handler
+  KVM: PPC: Book3S 64: Minimise hcall handler calling convention
+    differences
+  KVM: PPC: Book3S HV P9: Move radix MMU switching instructions together
+  KVM: PPC: Book3S HV P9: implement kvmppc_xive_pull_vcpu in C
+  KVM: PPC: Book3S HV P9: Move xive vcpu context management into
+    kvmhv_p9_guest_entry
+  KVM: PPC: Book3S HV P9: Stop handling hcalls in real-mode in the P9
+    path
+  KVM: PPC: Book3S HV P9: Move setting HDEC after switching to guest
+    LPCR
+  KVM: PPC: Book3S HV P9: Use large decrementer for HDEC
+  KVM: PPC: Book3S HV P9: Use host timer accounting to avoid decrementer
+    read
+  KVM: PPC: Book3S HV P9: Reduce mftb per guest entry/exit
+  KVM: PPC: Book3S HV P9: Reduce irq_work vs guest decrementer races
+  KMV: PPC: Book3S HV: Use set_dec to set decrementer to host
+  powerpc/time: add API for KVM to re-arm the host timer/decrementer
+  KVM: PPC: Book3S HV P9: Implement the rest of the P9 path in C
+  KVM: PPC: Book3S HV P9: inline kvmhv_load_hv_regs_and_go into
+    __kvmhv_vcpu_entry_p9
+  KVM: PPC: Book3S HV P9: Read machine check registers while MSR[RI] is
+    0
+  KVM: PPC: Book3S HV P9: Improve exit timing accounting coverage
+  KVM: PPC: Book3S HV P9: Move SPR loading after expiry time check
+  KVM: PPC: Book3S HV P9: Add helpers for OS SPR handling
+  KVM: PPC: Book3S HV P9: Switch to guest MMU context as late as
+    possible
+  KVM: PPC: Book3S HV: Implement radix prefetch workaround by disabling
+    MMU
+  KVM: PPC: Book3S HV: Remove support for dependent threads mode on P9
+  KVM: PPC: Book3S HV: Remove radix guest support from P7/8 path
+  KVM: PPC: Book3S HV: Remove virt mode checks from real mode handlers
+  KVM: PPC: Book3S HV: Remove unused nested HV tests in XICS emulation
+  KVM: PPC: Book3S HV P9: Allow all P9 processors to enable nested HV
+  KVM: PPC: Book3S HV: small pseries_do_hcall cleanup
+  KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page
+    faults
+  KVM: PPC: Book3S HV P9: Reflect userspace hcalls to hash guests to
+    support PR KVM
+  KVM: PPC: Book3S HV P9: implement hash guest support
+  KVM: PPC: Book3S HV P9: implement hash host / hash guest support
+  KVM: PPC: Book3S HV: remove ISA v3.0 and v3.1 support from P7/8 path
+
+ arch/powerpc/include/asm/asm-prototypes.h |   3 +-
+ arch/powerpc/include/asm/exception-64s.h  |  13 +
+ arch/powerpc/include/asm/kvm_asm.h        |   3 +-
+ arch/powerpc/include/asm/kvm_book3s.h     |   2 +
+ arch/powerpc/include/asm/kvm_book3s_64.h  |   8 +
+ arch/powerpc/include/asm/kvm_host.h       |   8 +-
+ arch/powerpc/include/asm/kvm_ppc.h        |  21 +-
+ arch/powerpc/include/asm/mmu_context.h    |   6 -
+ arch/powerpc/include/asm/time.h           |  11 +
+ arch/powerpc/kernel/asm-offsets.c         |   1 -
+ arch/powerpc/kernel/exceptions-64s.S      | 257 ++-----
+ arch/powerpc/kernel/security.c            |   5 +-
+ arch/powerpc/kernel/time.c                |  43 +-
+ arch/powerpc/kvm/Makefile                 |   4 +
+ arch/powerpc/kvm/book3s.c                 |  17 +-
+ arch/powerpc/kvm/book3s_64_entry.S        | 409 +++++++++++
+ arch/powerpc/kvm/book3s_64_vio_hv.c       |  12 -
+ arch/powerpc/kvm/book3s_hv.c              | 782 ++++++++++++----------
+ arch/powerpc/kvm/book3s_hv_builtin.c      | 138 +---
+ arch/powerpc/kvm/book3s_hv_interrupt.c    | 529 +++++++++++++++
+ arch/powerpc/kvm/book3s_hv_interrupts.S   |   9 +-
+ arch/powerpc/kvm/book3s_hv_nested.c       |  37 +-
+ arch/powerpc/kvm/book3s_hv_ras.c          |   2 +
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  15 +-
+ arch/powerpc/kvm/book3s_hv_rm_xics.c      |  15 -
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 682 +------------------
+ arch/powerpc/kvm/book3s_segment.S         |   3 +
+ arch/powerpc/kvm/book3s_xive.c            | 113 +++-
+ arch/powerpc/kvm/book3s_xive.h            |   7 -
+ arch/powerpc/kvm/book3s_xive_native.c     |  10 -
+ arch/powerpc/mm/book3s64/radix_pgtable.c  |  27 +-
+ arch/powerpc/mm/book3s64/radix_tlb.c      |  46 --
+ arch/powerpc/mm/mmu_context.c             |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     |  52 +-
+ 34 files changed, 1735 insertions(+), 1559 deletions(-)
+ create mode 100644 arch/powerpc/kvm/book3s_64_entry.S
+ create mode 100644 arch/powerpc/kvm/book3s_hv_interrupt.c
+
 -- 
 2.23.0
 
