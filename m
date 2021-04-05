@@ -2,88 +2,86 @@ Return-Path: <SRS0=L/Xq=JC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB63AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 12:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C16BEC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 12:34:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 236B56136A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 12:34:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 236B56136A
+	by mail.kernel.org (Postfix) with ESMTPS id 2C9E46136A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 12:34:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C9E46136A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FDVTL4fxJz3bc4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 22:34:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FDVTp67Y6z3c8V
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Apr 2021 22:34:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=gyKml+bu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=lcLAn8kU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032;
- helo=mail-pj1-x1032.google.com; envelope-from=avagin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d;
+ helo=mail-pl1-x62d.google.com; envelope-from=avagin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=gyKml+bu; dkim-atps=neutral
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com
- [IPv6:2607:f8b0:4864:20::1032])
+ header.s=20161025 header.b=lcLAn8kU; dkim-atps=neutral
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com
+ [IPv6:2607:f8b0:4864:20::62d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FDJSD6l9Xz304f
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Apr 2021 15:02:33 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id
- cl21-20020a17090af695b02900c61ac0f0e9so7801530pjb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Apr 2021 22:02:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FDJXG0zN4z2yYp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Apr 2021 15:06:05 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id l1so5112113plg.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Apr 2021 22:06:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to;
- bh=kK15QIzlv37/lctPxHTH0/oV3sSKj5dMjOshVvLQYOY=;
- b=gyKml+buuchIf9zLiJIVWS/8SzsE3vie/q8RjjEKEoC9X5+eK9qAKzMKWxOYqpa4Up
- KpOAS0eXBL4aKv45eMa8N2NmSLc7tkb95RWRZaSoIH63ICZJNPXiEDntozIZhUQWK8rc
- g9ZOcHM/sKjaEi6WkL/IIcYMgVo73TwCNZ4yx9PdUK4U8kylnrx8RzWbLKyHqZnvQuzh
- Nkb8LsqnLU+RcWB0segCj3iV9VZu/Lza0exBAOkpAmmIPtm0WySWJKmmNPTLLk66UDa9
- C2fC5gvawj5GdnFEj3dCRwmrpDkNOxat2bkijMxV0wYXkDBeDmTecx9/puNx8TNvs+zS
- JF7A==
+ bh=3fTbn810HKtN/GZd+dZCj8RCoC/4KxCPs7oA5W4KPVE=;
+ b=lcLAn8kULzxXgKxShV0AgqXyZVuvRyCyKMeeLGzBGvjWr7mIRSTJD1+r1qPGJ1EgsG
+ mr9VH5qCnGODUNz7i75WS8IjkIsjtYBylmrnRkAr/+/+IPYzfHZlYnRffKaNsJjMZpkm
+ Wfv7W78b7hKqXb5Z0gc/P85tMkBiY3uBAj/Y+p0O9vlrueO2Xfig3pXgoSLrkik5i+Is
+ 1TTfFljgGBD5tDba2M3B+USQAJVZrbNEUdNo7yDijYDoGPAThekRmqNijVBgB04UQ0g+
+ aC1/jEmd8tGSQFaFf65hgwPJMiLzNOlgn3+xy1mtpm3NDzEFh6PzUiGoh1Rq+ZnNiDgw
+ 7qcA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to;
- bh=kK15QIzlv37/lctPxHTH0/oV3sSKj5dMjOshVvLQYOY=;
- b=UtpkG3zeu8rczhM/OSTVuWPgoOO1v4ZE4hYWoGmss4T82Z/Qmk6zt+vwXjwPGrcPdT
- dmsHk4BU8EJvHPyUwHXj+AwkogvSYYMlBPrHx31mi3K1p3Flalo3jfUhlximgXQose2w
- ZJYxOiqUGHWVWTl12pP8EtbQr/P+cMDCTOKzaaKxkhF/mkW/3KM6QiMejdIAu9eWQgT5
- YDXc8fUwo6CzWvqe6I8jJQQllM1yW9slYq/ld5+Y/WDXNskpvZBiP4iOjGhjQ+o9a9ud
- GfhvDWZHjcsXHCAWiSiIfsayI8xi93zJFo8eVax+IkRKKjVj+knSTk1aX4Ji5xxCkGZp
- q90w==
-X-Gm-Message-State: AOAM531sz8CurUgSoIjJ9o3QCrKAQQJQ9dcduys16a857sQvUjGKete8
- eB8pLWSzzBTt3Q/PfKxL9w8=
-X-Google-Smtp-Source: ABdhPJzLdUJy3dvpZoB0nqEQ8yTO9K/hjp0XKNEZRVpkDvLIZGb27U4wcpyLU1qydKLB2z3nz7DBUw==
-X-Received: by 2002:a17:902:7b90:b029:e6:f01d:9db2 with SMTP id
- w16-20020a1709027b90b02900e6f01d9db2mr22475666pll.69.1617598951642; 
- Sun, 04 Apr 2021 22:02:31 -0700 (PDT)
+ bh=3fTbn810HKtN/GZd+dZCj8RCoC/4KxCPs7oA5W4KPVE=;
+ b=ID9Y7Q1ONGtwZ3+JYmVqXG0x6CUQqMQTxFPdYlvhqxPJ8CHo6eDptntnH+tkaQ9hpd
+ Nds+KKCEKTVO4vfRKZXNy4F0RlSILw/k1O9Cp8YLy3d/LrJvqFAvARlcsNqSHKkcmkIJ
+ BLPljAt3S5kpmMxAPr615Tp3HretCH/sO0o5nRCYPyUJKAoHfUVggkeDMtm+PcI+2rsz
+ HqM2vC7RsNMsowRct2gwbtYqMrUAvet64zi9Sjt5BaQhXUy0jsDTlh2aWGlTsnlqSZgB
+ 7uDZu6cOmF16vs8n+8s93DPZ30FbsKFhNUngui4eBrYHX7vvuw0/sDs/gUq96QBkhU20
+ b4KQ==
+X-Gm-Message-State: AOAM5330r96CvwhLFKgkDImLgnsyAh4S8S/LQ0WUj3qRg2wv6bXrwuNA
+ 3+7hUdMKipxybC8Vbb/Rr34=
+X-Google-Smtp-Source: ABdhPJyF3TpYVCScDyhQYs9t8pf0zVDvyUve9gBh0d9Z+/i+q0bTH/Pl0G9hBaDGosAAAkd3neTyWw==
+X-Received: by 2002:a17:90a:9385:: with SMTP id
+ q5mr24897665pjo.121.1617599163672; 
+ Sun, 04 Apr 2021 22:06:03 -0700 (PDT)
 Received: from gmail.com ([2601:600:8500:5f14:d627:c51e:516e:a105])
- by smtp.gmail.com with ESMTPSA id 14sm14227119pfl.1.2021.04.04.22.02.30
+ by smtp.gmail.com with ESMTPSA id q66sm14846339pja.27.2021.04.04.22.06.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 04 Apr 2021 22:02:31 -0700 (PDT)
-Date: Sun, 4 Apr 2021 22:00:05 -0700
+ Sun, 04 Apr 2021 22:06:02 -0700 (PDT)
+Date: Sun, 4 Apr 2021 22:03:37 -0700
 From: Andrei Vagin <avagin@gmail.com>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH RESEND v1 2/4] lib/vdso: Add vdso_data pointer as input
- to __arch_get_timens_vdso_data()
-Message-ID: <YGqZVf5+74RYp8H5@gmail.com>
+Subject: Re: [PATCH RESEND v1 3/4] powerpc/vdso: Separate vvar vma from vdso
+Message-ID: <YGqaKYnLnvj2brJ8@gmail.com>
 References: <cover.1617209141.git.christophe.leroy@csgroup.eu>
- <539c4204b1baa77c55f758904a1ea239abbc7a5c.1617209142.git.christophe.leroy@csgroup.eu>
+ <f401eb1ebc0bfc4d8f0e10dc8e525fd409eb68e2.1617209142.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <539c4204b1baa77c55f758904a1ea239abbc7a5c.1617209142.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <f401eb1ebc0bfc4d8f0e10dc8e525fd409eb68e2.1617209142.git.christophe.leroy@csgroup.eu>
 X-Mailman-Approved-At: Mon, 05 Apr 2021 22:33:24 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,16 +102,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 31, 2021 at 04:48:45PM +0000, Christophe Leroy wrote:
-> For the same reason as commit e876f0b69dc9 ("lib/vdso: Allow
-> architectures to provide the vdso data pointer"), powerpc wants to
-> avoid calculation of relative position to code.
+On Wed, Mar 31, 2021 at 04:48:46PM +0000, Christophe Leroy wrote:
+> From: Dmitry Safonov <dima@arista.com>
 > 
-> As the timens_vdso_data is next page to vdso_data, provide
-> vdso_data pointer to __arch_get_timens_vdso_data() in order
-> to ease the calculation on powerpc in following patches.
->
+> Since commit 511157ab641e ("powerpc/vdso: Move vdso datapage up front")
+> VVAR page is in front of the VDSO area. In result it breaks CRIU
+> (Checkpoint Restore In Userspace) [1], where CRIU expects that "[vdso]"
+> from /proc/../maps points at ELF/vdso image, rather than at VVAR data page.
+> Laurent made a patch to keep CRIU working (by reading aux vector).
+> But I think it still makes sence to separate two mappings into different
+> VMAs. It will also make ppc64 less "special" for userspace and as
+> a side-bonus will make VVAR page un-writable by debugger (which previously
+> would COW page and can be unexpected).
+> 
+> I opportunistically Cc stable on it: I understand that usually such
+> stuff isn't a stable material, but that will allow us in CRIU have
+> one workaround less that is needed just for one release (v5.11) on
+> one platform (ppc64), which we otherwise have to maintain.
+> I wouldn't go as far as to say that the commit 511157ab641e is ABI
+> regression as no other userspace got broken, but I'd really appreciate
+> if it gets backported to v5.11 after v5.12 is released, so as not
+> to complicate already non-simple CRIU-vdso code. Thanks!
+> 
+> Cc: Andrei Vagin <avagin@gmail.com>
 
 Acked-by: Andrei Vagin <avagin@gmail.com>
- 
+
+> Cc: Andy Lutomirski <luto@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: Laurent Dufour <ldufour@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: stable@vger.kernel.org # v5.11
+> [1]: https://github.com/checkpoint-restore/criu/issues/1417
+> Signed-off-by: Dmitry Safonov <dima@arista.com>
+> Tested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
