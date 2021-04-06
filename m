@@ -6,45 +6,46 @@ X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0846FC43462
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E21C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91D26613C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91D26613C4
+	by mail.kernel.org (Postfix) with ESMTPS id 23055613C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23055613C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2XN2Bdwz3d5x
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:38:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2Xl3cd7z3c18
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:39:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tn4ZpMz309v
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tn4Jtsz309p
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Apr 2021 19:36:29 +1000 (AEST)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E2BD9613D2;
- Tue,  6 Apr 2021 09:36:27 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D26C6613CD;
+ Tue,  6 Apr 2021 09:36:26 +0000 (UTC)
 Received: from 78.163-31-62.static.virginmediabusiness.co.uk ([62.31.163.78]
  helo=why.lan) by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94)
  (envelope-from <maz@kernel.org>)
- id 1lTi8I-005owA-6H; Tue, 06 Apr 2021 10:36:26 +0100
+ id 1lTi8H-005owA-2H; Tue, 06 Apr 2021 10:36:25 +0100
 From: Marc Zyngier <maz@kernel.org>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-sh@vger.kernel.org
-Subject: [PATCH 7/9] irqdomain: Drop references to recusive irqdomain setup
-Date: Tue,  6 Apr 2021 10:35:55 +0100
-Message-Id: <20210406093557.1073423-8-maz@kernel.org>
+Subject: [PATCH 5/9] irqdomain: Kill
+ irq_create_strict_mappings()/irq_create_identity_mapping()
+Date: Tue,  6 Apr 2021 10:35:53 +0100
+Message-Id: <20210406093557.1073423-6-maz@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210406093557.1073423-1-maz@kernel.org>
 References: <20210406093557.1073423-1-maz@kernel.org>
@@ -80,45 +81,80 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It was never completely implemented, and was removed a long time
-ago. Adjust the documentation to reflect this.
+No user of these APIs are left, remove them.
 
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 ---
- kernel/irq/irqdomain.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ include/linux/irqdomain.h |  9 ---------
+ kernel/irq/irqdomain.c    | 35 -----------------------------------
+ 2 files changed, 44 deletions(-)
 
+diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+index b9600f24878a..3997ed9e4d7d 100644
+--- a/include/linux/irqdomain.h
++++ b/include/linux/irqdomain.h
+@@ -411,15 +411,6 @@ static inline unsigned int irq_linear_revmap(struct irq_domain *domain,
+ }
+ 
+ extern unsigned int irq_create_direct_mapping(struct irq_domain *host);
+-extern int irq_create_strict_mappings(struct irq_domain *domain,
+-				      unsigned int irq_base,
+-				      irq_hw_number_t hwirq_base, int count);
+-
+-static inline int irq_create_identity_mapping(struct irq_domain *host,
+-					      irq_hw_number_t hwirq)
+-{
+-	return irq_create_strict_mappings(host, hwirq, hwirq, 1);
+-}
+ 
+ extern const struct irq_domain_ops irq_domain_simple_ops;
+ 
 diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index 0ba761e6b0a8..89474aa88220 100644
+index dfa716305ea9..0ba761e6b0a8 100644
 --- a/kernel/irq/irqdomain.c
 +++ b/kernel/irq/irqdomain.c
-@@ -1659,12 +1659,10 @@ void irq_domain_free_irqs(unsigned int virq, unsigned int nr_irqs)
+@@ -703,41 +703,6 @@ unsigned int irq_create_mapping_affinity(struct irq_domain *domain,
+ }
+ EXPORT_SYMBOL_GPL(irq_create_mapping_affinity);
  
- /**
-  * irq_domain_alloc_irqs_parent - Allocate interrupts from parent domain
-+ * @domain:	Domain below which interrupts must be allocated
-  * @irq_base:	Base IRQ number
-  * @nr_irqs:	Number of IRQs to allocate
-  * @arg:	Allocation data (arch/domain specific)
+-/**
+- * irq_create_strict_mappings() - Map a range of hw irqs to fixed linux irqs
+- * @domain: domain owning the interrupt range
+- * @irq_base: beginning of linux IRQ range
+- * @hwirq_base: beginning of hardware IRQ range
+- * @count: Number of interrupts to map
 - *
-- * Check whether the domain has been setup recursive. If not allocate
-- * through the parent domain.
-  */
- int irq_domain_alloc_irqs_parent(struct irq_domain *domain,
- 				 unsigned int irq_base, unsigned int nr_irqs,
-@@ -1680,11 +1678,9 @@ EXPORT_SYMBOL_GPL(irq_domain_alloc_irqs_parent);
- 
- /**
-  * irq_domain_free_irqs_parent - Free interrupts from parent domain
-+ * @domain:	Domain below which interrupts must be freed
-  * @irq_base:	Base IRQ number
-  * @nr_irqs:	Number of IRQs to free
+- * This routine is used for allocating and mapping a range of hardware
+- * irqs to linux irqs where the linux irq numbers are at pre-defined
+- * locations. For use by controllers that already have static mappings
+- * to insert in to the domain.
 - *
-- * Check whether the domain has been setup recursive. If not free
-- * through the parent domain.
-  */
- void irq_domain_free_irqs_parent(struct irq_domain *domain,
- 				 unsigned int irq_base, unsigned int nr_irqs)
+- * Non-linear users can use irq_create_identity_mapping() for IRQ-at-a-time
+- * domain insertion.
+- *
+- * 0 is returned upon success, while any failure to establish a static
+- * mapping is treated as an error.
+- */
+-int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
+-			       irq_hw_number_t hwirq_base, int count)
+-{
+-	struct device_node *of_node;
+-	int ret;
+-
+-	of_node = irq_domain_get_of_node(domain);
+-	ret = irq_alloc_descs(irq_base, irq_base, count,
+-			      of_node_to_nid(of_node));
+-	if (unlikely(ret < 0))
+-		return ret;
+-
+-	irq_domain_associate_many(domain, irq_base, hwirq_base, count);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
+-
+ static int irq_domain_translate(struct irq_domain *d,
+ 				struct irq_fwspec *fwspec,
+ 				irq_hw_number_t *hwirq, unsigned int *type)
 -- 
 2.29.2
 
