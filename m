@@ -6,46 +6,46 @@ X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E21C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DCF1C43460
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23055613C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23055613C4
+	by mail.kernel.org (Postfix) with ESMTPS id 1CEB0613C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:39:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CEB0613C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2Xl3cd7z3c18
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:39:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2Y55wTNz3dZd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:39:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tn4Jtsz309p
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Apr 2021 19:36:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tp2jsjz30CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Apr 2021 19:36:30 +1000 (AEST)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D26C6613CD;
- Tue,  6 Apr 2021 09:36:26 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9DB06613D5;
+ Tue,  6 Apr 2021 09:36:28 +0000 (UTC)
 Received: from 78.163-31-62.static.virginmediabusiness.co.uk ([62.31.163.78]
  helo=why.lan) by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94)
  (envelope-from <maz@kernel.org>)
- id 1lTi8H-005owA-2H; Tue, 06 Apr 2021 10:36:25 +0100
+ id 1lTi8I-005owA-P4; Tue, 06 Apr 2021 10:36:27 +0100
 From: Marc Zyngier <maz@kernel.org>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-sh@vger.kernel.org
-Subject: [PATCH 5/9] irqdomain: Kill
- irq_create_strict_mappings()/irq_create_identity_mapping()
-Date: Tue,  6 Apr 2021 10:35:53 +0100
-Message-Id: <20210406093557.1073423-6-maz@kernel.org>
+Subject: [PATCH 8/9] powerpc: Convert irq_domain_add_legacy_isa use to
+ irq_domain_add_legacy
+Date: Tue,  6 Apr 2021 10:35:56 +0100
+Message-Id: <20210406093557.1073423-9-maz@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210406093557.1073423-1-maz@kernel.org>
 References: <20210406093557.1073423-1-maz@kernel.org>
@@ -81,80 +81,119 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No user of these APIs are left, remove them.
+irq_domain_add_legacy_isa is a pain. It only exists for the benefit of
+two PPC-specific drivers, and creates an ugly dependency between asm/irq.h
+and linux/irqdomain.h
+
+Instead, let's convert these two drivers to irq_domain_add_legacy(),
+stop using NUM_ISA_INTERRUPTS by directly setting NR_IRQS_LEGACY.
+
+The dependency cannot be broken yet as there is a lot of PPC-related
+code that depends on it, but that's the first step towards it.
+
+A followup patch will remove irq_domain_add_legacy_isa.
 
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 ---
- include/linux/irqdomain.h |  9 ---------
- kernel/irq/irqdomain.c    | 35 -----------------------------------
- 2 files changed, 44 deletions(-)
+ arch/powerpc/include/asm/irq.h         | 4 ++--
+ arch/powerpc/platforms/ps3/interrupt.c | 4 ++--
+ arch/powerpc/sysdev/i8259.c            | 3 ++-
+ arch/powerpc/sysdev/mpic.c             | 2 +-
+ arch/powerpc/sysdev/tsi108_pci.c       | 3 ++-
+ arch/powerpc/sysdev/xics/xics-common.c | 2 +-
+ 6 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index b9600f24878a..3997ed9e4d7d 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -411,15 +411,6 @@ static inline unsigned int irq_linear_revmap(struct irq_domain *domain,
- }
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index f3f264e441a7..aeb209144c68 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -23,8 +23,8 @@ extern atomic_t ppc_n_lost_interrupts;
+ /* Total number of virq in the platform */
+ #define NR_IRQS		CONFIG_NR_IRQS
  
- extern unsigned int irq_create_direct_mapping(struct irq_domain *host);
--extern int irq_create_strict_mappings(struct irq_domain *domain,
--				      unsigned int irq_base,
--				      irq_hw_number_t hwirq_base, int count);
--
--static inline int irq_create_identity_mapping(struct irq_domain *host,
--					      irq_hw_number_t hwirq)
--{
--	return irq_create_strict_mappings(host, hwirq, hwirq, 1);
--}
+-/* Same thing, used by the generic IRQ code */
+-#define NR_IRQS_LEGACY		NUM_ISA_INTERRUPTS
++/* Number of irqs reserved for a legacy isa controller */
++#define NR_IRQS_LEGACY		16
  
- extern const struct irq_domain_ops irq_domain_simple_ops;
+ extern irq_hw_number_t virq_to_hw(unsigned int virq);
  
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index dfa716305ea9..0ba761e6b0a8 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -703,41 +703,6 @@ unsigned int irq_create_mapping_affinity(struct irq_domain *domain,
- }
- EXPORT_SYMBOL_GPL(irq_create_mapping_affinity);
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 78f2339ed5cb..93e367a00452 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -45,7 +45,7 @@
+  * implementation equates HV plug value to Linux virq value, constrains each
+  * interrupt to have a system wide unique plug number, and limits the range
+  * of the plug values to map into the first dword of the bitmaps.  This
+- * gives a usable range of plug values of  {NUM_ISA_INTERRUPTS..63}.  Note
++ * gives a usable range of plug values of  {NR_IRQS_LEGACY..63}.  Note
+  * that there is no constraint on how many in this set an individual thread
+  * can acquire.
+  *
+@@ -721,7 +721,7 @@ static unsigned int ps3_get_irq(void)
+ 	}
  
--/**
-- * irq_create_strict_mappings() - Map a range of hw irqs to fixed linux irqs
-- * @domain: domain owning the interrupt range
-- * @irq_base: beginning of linux IRQ range
-- * @hwirq_base: beginning of hardware IRQ range
-- * @count: Number of interrupts to map
-- *
-- * This routine is used for allocating and mapping a range of hardware
-- * irqs to linux irqs where the linux irq numbers are at pre-defined
-- * locations. For use by controllers that already have static mappings
-- * to insert in to the domain.
-- *
-- * Non-linear users can use irq_create_identity_mapping() for IRQ-at-a-time
-- * domain insertion.
-- *
-- * 0 is returned upon success, while any failure to establish a static
-- * mapping is treated as an error.
-- */
--int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
--			       irq_hw_number_t hwirq_base, int count)
--{
--	struct device_node *of_node;
--	int ret;
--
--	of_node = irq_domain_get_of_node(domain);
--	ret = irq_alloc_descs(irq_base, irq_base, count,
--			      of_node_to_nid(of_node));
--	if (unlikely(ret < 0))
--		return ret;
--
--	irq_domain_associate_many(domain, irq_base, hwirq_base, count);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
--
- static int irq_domain_translate(struct irq_domain *d,
- 				struct irq_fwspec *fwspec,
- 				irq_hw_number_t *hwirq, unsigned int *type)
+ #if defined(DEBUG)
+-	if (unlikely(plug < NUM_ISA_INTERRUPTS || plug > PS3_PLUG_MAX)) {
++	if (unlikely(plug < NR_IRQS_LEGACY || plug > PS3_PLUG_MAX)) {
+ 		dump_bmp(&per_cpu(ps3_private, 0));
+ 		dump_bmp(&per_cpu(ps3_private, 1));
+ 		BUG();
+diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
+index c1d76c344351..dc1a151c63d7 100644
+--- a/arch/powerpc/sysdev/i8259.c
++++ b/arch/powerpc/sysdev/i8259.c
+@@ -260,7 +260,8 @@ void i8259_init(struct device_node *node, unsigned long intack_addr)
+ 	raw_spin_unlock_irqrestore(&i8259_lock, flags);
+ 
+ 	/* create a legacy host */
+-	i8259_host = irq_domain_add_legacy_isa(node, &i8259_host_ops, NULL);
++	i8259_host = irq_domain_add_legacy(node, NR_IRQS_LEGACY, 0, 0,
++					   &i8259_host_ops, NULL);
+ 	if (i8259_host == NULL) {
+ 		printk(KERN_ERR "i8259: failed to allocate irq host !\n");
+ 		return;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index b0426f28946a..995fb2ada507 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -602,7 +602,7 @@ static void __init mpic_scan_ht_pics(struct mpic *mpic)
+ /* Find an mpic associated with a given linux interrupt */
+ static struct mpic *mpic_find(unsigned int irq)
+ {
+-	if (irq < NUM_ISA_INTERRUPTS)
++	if (irq < NR_IRQS_LEGACY)
+ 		return NULL;
+ 
+ 	return irq_get_chip_data(irq);
+diff --git a/arch/powerpc/sysdev/tsi108_pci.c b/arch/powerpc/sysdev/tsi108_pci.c
+index 49f9541954f8..042bb38fa5c2 100644
+--- a/arch/powerpc/sysdev/tsi108_pci.c
++++ b/arch/powerpc/sysdev/tsi108_pci.c
+@@ -404,7 +404,8 @@ void __init tsi108_pci_int_init(struct device_node *node)
+ {
+ 	DBG("Tsi108_pci_int_init: initializing PCI interrupts\n");
+ 
+-	pci_irq_host = irq_domain_add_legacy_isa(node, &pci_irq_domain_ops, NULL);
++	pci_irq_host = irq_domain_add_legacy(node, NR_IRQS_LEGACY, 0, 0,
++					     &pci_irq_domain_ops, NULL);
+ 	if (pci_irq_host == NULL) {
+ 		printk(KERN_ERR "pci_irq_host: failed to allocate irq domain!\n");
+ 		return;
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index 7e4305c01bac..fdf8db4444b6 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -201,7 +201,7 @@ void xics_migrate_irqs_away(void)
+ 		struct ics *ics;
+ 
+ 		/* We can't set affinity on ISA interrupts */
+-		if (virq < NUM_ISA_INTERRUPTS)
++		if (virq < NR_IRQS_LEGACY)
+ 			continue;
+ 		/* We only need to migrate enabled IRQS */
+ 		if (!desc->action)
 -- 
 2.29.2
 
