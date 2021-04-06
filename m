@@ -6,45 +6,45 @@ X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 656B0C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60BDFC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB424613C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB424613C4
+	by mail.kernel.org (Postfix) with ESMTPS id 9605C613E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 09:38:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9605C613E7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2Wh1Dlmz3bvH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:38:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FF2X21TSvz3ckp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Apr 2021 19:38:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tm3WPBz301g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Apr 2021 19:36:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FF2Tn4KNtz309r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Apr 2021 19:36:29 +1000 (AEST)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 46F00613CB;
- Tue,  6 Apr 2021 09:36:26 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 57353613CF;
+ Tue,  6 Apr 2021 09:36:27 +0000 (UTC)
 Received: from 78.163-31-62.static.virginmediabusiness.co.uk ([62.31.163.78]
  helo=why.lan) by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94)
  (envelope-from <maz@kernel.org>)
- id 1lTi8G-005owA-G8; Tue, 06 Apr 2021 10:36:24 +0100
+ id 1lTi8H-005owA-KR; Tue, 06 Apr 2021 10:36:25 +0100
 From: Marc Zyngier <maz@kernel.org>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-sh@vger.kernel.org
-Subject: [PATCH 4/9] sh: intc: Drop the use of irq_create_identity_mapping()
-Date: Tue,  6 Apr 2021 10:35:52 +0100
-Message-Id: <20210406093557.1073423-5-maz@kernel.org>
+Subject: [PATCH 6/9] mips: netlogic: Use irq_domain_simple_ops for XLP PIC
+Date: Tue,  6 Apr 2021 10:35:54 +0100
+Message-Id: <20210406093557.1073423-7-maz@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210406093557.1073423-1-maz@kernel.org>
 References: <20210406093557.1073423-1-maz@kernel.org>
@@ -80,94 +80,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of playing games with using irq_create_identity_mapping()
-and irq_domain_associate(), drop the use of the former and only
-use the latter, together with the allocation of the irq_desc
-as needed.
-
-It doesn't make the code less awful, but at least the intent
-is clearer.
+Use the generic irq_domain_simple_ops structure instead of
+a home-grown one.
 
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 ---
- drivers/sh/intc/core.c | 50 ++++++++++++++++++------------------------
- 1 file changed, 21 insertions(+), 29 deletions(-)
+ arch/mips/netlogic/common/irq.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/sh/intc/core.c b/drivers/sh/intc/core.c
-index a14684ffe4c1..6c57ee1ce6c4 100644
---- a/drivers/sh/intc/core.c
-+++ b/drivers/sh/intc/core.c
-@@ -179,6 +179,23 @@ static unsigned int __init save_reg(struct intc_desc_int *d,
- 	return 0;
+diff --git a/arch/mips/netlogic/common/irq.c b/arch/mips/netlogic/common/irq.c
+index cf33dd8a487e..c25a2ce5e29f 100644
+--- a/arch/mips/netlogic/common/irq.c
++++ b/arch/mips/netlogic/common/irq.c
+@@ -276,10 +276,6 @@ asmlinkage void plat_irq_dispatch(void)
  }
  
-+static bool __init intc_map(struct irq_domain *domain, int irq)
-+{
-+	int res;
-+
-+	if (!irq_to_desc(irq) && irq_alloc_desc_at(irq, NUMA_NO_NODE) != irq) {
-+		pr_err("uname to allocate IRQ %d\n", irq);
-+		return false;
-+	}
-+
-+	if (irq_domain_associate(domain, irq, irq)) {
-+		pr_err("domain association failure\n");
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
- int __init register_intc_controller(struct intc_desc *desc)
+ #ifdef CONFIG_CPU_XLP
+-static const struct irq_domain_ops xlp_pic_irq_domain_ops = {
+-	.xlate = irq_domain_xlate_onetwocell,
+-};
+-
+ static int __init xlp_of_pic_init(struct device_node *node,
+ 					struct device_node *parent)
  {
- 	unsigned int i, k, smp;
-@@ -316,19 +333,8 @@ int __init register_intc_controller(struct intc_desc *desc)
- 		if (!vect->enum_id)
- 			continue;
+@@ -324,7 +320,7 @@ static int __init xlp_of_pic_init(struct device_node *node,
  
--		res = irq_create_identity_mapping(d->domain, irq);
--		if (unlikely(res)) {
--			if (res == -EEXIST) {
--				res = irq_domain_associate(d->domain, irq, irq);
--				if (unlikely(res)) {
--					pr_err("domain association failure\n");
--					continue;
--				}
--			} else {
--				pr_err("can't identity map IRQ %d\n", irq);
--				continue;
--			}
--		}
-+		if (!intc_map(d->domain, irq))
-+			continue;
- 
- 		intc_irq_xlate_set(irq, vect->enum_id, d);
- 		intc_register_irq(desc, d, vect->enum_id, irq);
-@@ -345,22 +351,8 @@ int __init register_intc_controller(struct intc_desc *desc)
- 			 * IRQ support, each vector still needs to have
- 			 * its own backing irq_desc.
- 			 */
--			res = irq_create_identity_mapping(d->domain, irq2);
--			if (unlikely(res)) {
--				if (res == -EEXIST) {
--					res = irq_domain_associate(d->domain,
--								   irq2, irq2);
--					if (unlikely(res)) {
--						pr_err("domain association "
--						       "failure\n");
--						continue;
--					}
--				} else {
--					pr_err("can't identity map IRQ %d\n",
--					       irq);
--					continue;
--				}
--			}
-+			if (!intc_map(d->domain, irq2))
-+				continue;
- 
- 			vect2->enum_id = 0;
- 
+ 	xlp_pic_domain = irq_domain_add_legacy(node, n_picirqs,
+ 		nlm_irq_to_xirq(socid, PIC_IRQ_BASE), PIC_IRQ_BASE,
+-		&xlp_pic_irq_domain_ops, NULL);
++		&irq_domain_simple_ops, NULL);
+ 	if (xlp_pic_domain == NULL) {
+ 		pr_err("PIC %pOFn: Creating legacy domain failed!\n", node);
+ 		return -EINVAL;
 -- 
 2.29.2
 
