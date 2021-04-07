@@ -2,138 +2,72 @@ Return-Path: <SRS0=l0Nn=JE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 971ABC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 03:39:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04ECDC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 03:43:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F891613A9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 03:39:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F891613A9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7D50661103
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 03:43:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D50661103
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FFVWM03clz30BF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 13:39:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FFVbp0vj0z3brF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 13:43:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=WLru/v+J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pRLlQVTS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=40.107.2.66; helo=eur02-ve1-obe.outbound.protection.outlook.com;
- envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=selector2 header.b=WLru/v+J; 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=pRLlQVTS; 
  dkim-atps=neutral
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20066.outbound.protection.outlook.com [40.107.2.66])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FFVVm5QT9z2yYx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 13:38:54 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=K6hEqoi56jNAXwv78Wv/AzCDJxgi09dWNS0fDg7pxwP1J0FybdXKsVqtNa9RnWGrrKhJmByyvQh20Fla25B5I4dTQPBaNHZeznabPq/hoXI5IcKcR4QyRd5cMq2jlRcFzNJAhu6WkIYXV1rxFNUocXoamhB2lr5KsnRdbCbPJerY5wpz8YlQyPX/TNeBg7Xpskzm96kkYOgTV1wZqpspSsW2eD6P4vqwn4BMtRB4q0oA2IKKEjyE5uV1PDlKBwvFzKg/YN6kxPndQh+1RpIpRGA5B0gTfXJtRFtthX1flMZwvLV4Ab7ESegpSeWyi7O0WbuqW5AVQFWUAxSWfpUdzw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+/G3+FH7pk9v0DlnTL490jRvg509sxXZrq6DCRadkJM=;
- b=haZ+2meqPDtayePGZksMgONspvjVqtZlB4H7Q2PeKB9x14fpPK+hr3mzK8pAwpkAaGRTJhsKb0kN+RQSsDT8ATyg45Bw8Qeo8JWR9/99uVonTs/tArYi6zHd6mBsvUo/AxPlZg3pfpS/THIx+pnJ8zqR1QTRdkx1PMi/DrG6VFhetfXs2YSMhIkdr2D3ch4nZtYfZeR9xK0u8HSYKmbrwxF0whB0CjF3TsYksk6WDysQ53uQkFf9/ePxr5FP209UuqNTLiJVI/QKeGaTB+VqGW9LTLQz5i8mrmpaui6zvX0adDlFKA2XzlY7VK9xBn3+K5YdnMEZZY1Sy3lcP7y6rA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+/G3+FH7pk9v0DlnTL490jRvg509sxXZrq6DCRadkJM=;
- b=WLru/v+J/sNYOktNZk6iTIfOxKiFmGqspeVM5aB/dccPSXji7gvPcPqsF4MWkCO2KcvXGN0YQA9UaAbO83LYBE2BNFSZHSFuq1nMXZje6Ef+7TNnxdFUXDMyL3nP106sepqTRrY6g3GcUBI6LBJgHVPXTU5RE7sNAExyqbSzmWs=
-Received: from VI1PR04MB4478.eurprd04.prod.outlook.com (2603:10a6:803:67::30)
- by VI1PR0402MB3438.eurprd04.prod.outlook.com (2603:10a6:803:5::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.28; Wed, 7 Apr
- 2021 03:38:46 +0000
-Received: from VI1PR04MB4478.eurprd04.prod.outlook.com
- ([fe80::8c2c:2497:951e:4896]) by VI1PR04MB4478.eurprd04.prod.outlook.com
- ([fe80::8c2c:2497:951e:4896%6]) with mapi id 15.20.3999.032; Wed, 7 Apr 2021
- 03:38:46 +0000
-From: Leo Li <leoyang.li@nxp.com>
-To: Ran Wang <ran.wang_1@nxp.com>
-Subject: RE: [PATCH v6] soc: fsl: enable acpi support in RCPM driver
-Thread-Topic: [PATCH v6] soc: fsl: enable acpi support in RCPM driver
-Thread-Index: AQHXFxzhJ56Ut1zN/ECNh+6T2L69Y6qoLhiAgAA4tzCAACjc0A==
-Date: Wed, 7 Apr 2021 03:38:46 +0000
-Message-ID: <VI1PR04MB447896C7673D9B3F77ED3D9C8F759@VI1PR04MB4478.eurprd04.prod.outlook.com>
-References: <20210312085822.12136-1-ran.wang_1@nxp.com>
- <CADRPPNRv_T9o=Kg4dCJ6jFPxOWMY24wgDXCzyTpz3oh_yL+4Tw@mail.gmail.com>
- <AM6PR04MB5413E08499BE566F67AA62ABF1759@AM6PR04MB5413.eurprd04.prod.outlook.com>
-In-Reply-To: <AM6PR04MB5413E08499BE566F67AA62ABF1759@AM6PR04MB5413.eurprd04.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: nxp.com; dkim=none (message not signed)
- header.d=none;nxp.com; dmarc=none action=none header.from=nxp.com;
-x-originating-ip: [136.49.83.111]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: b86ca101-2bde-40af-d58a-08d8f976a631
-x-ms-traffictypediagnostic: VI1PR0402MB3438:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <VI1PR0402MB3438BE2C80D3158E973A99098F759@VI1PR0402MB3438.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:913;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 38KHx+2Fw4gdW1+1X6ZUNkxvo8Wmc/3ARYDKF6RdEQiUUOStfo+dLXCHlg5+Jr4zR0ZwYwyuUmNAQC1I/skntkk3xCUM4dfWw/9Yg6wJDjrLSKC5Vd7+UWsWxz0MqusEoWzKCjKG2v3e1v3W3GweH/xW3RI8qcWeWSgPeKDyZwpH0hwqptPGPf1opNxBy7/9FDo5JTA9YtE0WcZx3CEUZEdD0w1kIghXeZN5ndNsfwEm71s9q6MzughPNsSWKFy+qGSARzGv4e7iIN2PYpQC8MCcOQCVnZSVgjTjdLYFy3MXjLO8Zb363xQwV5ZvrFDCNT7w75DhQB0WMB799KzdpVi8kRPoT25qVGcXu4GhDZ9D53n1TpwYjomj+RYcl4rrL08UjQFTkcrL5J2JSHF2lVKWptS3hf6tuJP1zC2e4wBEQzFsbg1rUShtNutCBay2tsMLRbe2l0WB/QiYGHtMjw/RFXwJCkpaQxVfevmOb2hJbKQ/iSmIr25RlSBZJjsuuh4tOD+GASbHvb9/rlu7Wf+P9iLc6HIAeZgeD40BEUdAVuRGPPmz/q7/EzY6tnsemX2a4XDmNPA6ey+SobHHWocbKbuPCMK3c7RMW4KA0B7WW7VngmS2kIQBwMJocj93ZlgBwnNtDHO3fDPp89hypRtAepfjbZnqXrSBavsJGA0=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:VI1PR04MB4478.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(376002)(136003)(39860400002)(346002)(396003)(366004)(86362001)(7696005)(33656002)(9686003)(478600001)(4326008)(6506007)(52536014)(6636002)(53546011)(38100700001)(83380400001)(8936002)(316002)(8676002)(66556008)(64756008)(66476007)(66446008)(2906002)(186003)(71200400001)(55016002)(26005)(54906003)(5660300002)(76116006)(66946007)(6862004);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata: =?utf-8?B?U3ZaYTV0bWh5TWExUGs0bEVGU2tuUWRNN2FmOGU4NGJjaFI4cmM0L2Fpa1Q0?=
- =?utf-8?B?bUV0TFdlRGtsZTRCWjBMSjZSemRxa0RQWW9ycDUvcnRjcjB1aDd2ZjNyekll?=
- =?utf-8?B?MDZYcjlkVWYvZ0NpaDllZDJqa3dTRzYxQS9HSWRoQWMvaUJUT2p1c0R0R0o1?=
- =?utf-8?B?WFJ2ekRURDJQR05KNEVacHNEVGpIRFJpMEI0UzVqc3RoWm51enQyTFFKUWJ3?=
- =?utf-8?B?NzhUT3BoQXdwNFppSE9LTzRzRTcyK2xDM1Q1c2pBcE5nSE50TmZ4aWV6bC9a?=
- =?utf-8?B?dWxVOUpVeUhySFdBU0pzalI0U2J3U2ZZSUM5dXlnTnRkbjRsTU92Q1RYelhL?=
- =?utf-8?B?M0ZUMldCUnBua242d2oxTjJETlV3TUtxUW1HbnJsV1IzZk5TMzY3QVBxdzd6?=
- =?utf-8?B?ZVVuNWZJT3pYOVZaNVdocnR3bzRLdEtHK0dUZHJzWGtnSzR4bUlORTArSGNX?=
- =?utf-8?B?Wk5JdU9WWHVoUmZaRzBsTGZPRVVkYkJjV2FSL3c4bVZqaUZndHVPd3RNSjdF?=
- =?utf-8?B?eVMySGw1MGdRWTZkbjQvRS9ua2lZM0JHWUoxdzl3V2dGTThXWiszdzNYUFRa?=
- =?utf-8?B?TitNTTNKT0tsZlZ6bGFtRWFqelhXRit3bnptMG5xaHNtZWVnemdLMXp0UnI5?=
- =?utf-8?B?NnJDRWE1Y0FXbWNEZk8wdXJDUGNBQnBLcXN3WTBMUTdsOHJyN3RXRUhvMEVq?=
- =?utf-8?B?OG9OZnordWNuZFVCU3FNVm8vakxJa2EzUGVQbU1KdXYrTERGQzFoR25uMVBH?=
- =?utf-8?B?WFkrRER5MzliZDdJUU40WXRTTzVsY0tGSXM5S2t3dEtTT2NYdGVqY3BEejMx?=
- =?utf-8?B?WlhSUGFqR1ROMjFjR0tweUhqUzlJdjBlY1lVdmtxUFF1dkkwQjhZcTlWOGpQ?=
- =?utf-8?B?SnBHZlRTalBMVmptcUJOeEcyRE5QVlNHSUlubStLcisyZEJ0bFkxeTl4WmNZ?=
- =?utf-8?B?Q2xSb01xK2ZYcFVkdGM2MUlvTWtwV2lnTFdpUldYUGs2bTlKcU1QWXFDYnQv?=
- =?utf-8?B?bkh2Sm14U0dnY0xEaHhucm1sNGZvdHduMEZTVmJIOEFMYW4yU3M0KzZ5Sk1I?=
- =?utf-8?B?aDA4NlNFN3R6N0EzRXJ3Rk1hS1Q0VTZZUUtHcGpLOTA2OHN5dlVOZzlKUCs3?=
- =?utf-8?B?clM5YlZLTGVuam1ieVk3WTE5ZDhUQnlTdExFcnBFamgrOFNxbnhYTkFoU0sy?=
- =?utf-8?B?STNBOSttbXJYdlBBdTJEdnFGNWg4R0c0dURQSVpDTzNKMG1lRXhZWkxaTytH?=
- =?utf-8?B?Z3ppUGFsT045ZUl2M002bjVxNzRlaXpESitDZjBoUlFGOGlmUjJtRWhaUXZ2?=
- =?utf-8?B?MWdseGwwTEpXd2ZHNWFQa0RNSlJOWmFnZFMyVThPM3lzQ3lTeStMK0JIYlc5?=
- =?utf-8?B?MXRiaXRDdnhqMUw2L091ZElDTEE3bzNDWjcvM1RYcEpJSFpHZjBPc09MM0dw?=
- =?utf-8?B?WitQQWtyYnEwa2gxUHZMRGFlemtmamJaenN5VUI2TTAzSExiVWpBRjFMSzFH?=
- =?utf-8?B?YVU2UEZRcFhoNk9sME1JREhqdlllbEZmRHByekZ0eVZjV20zRWdXenRxYUpF?=
- =?utf-8?B?SzlGM0JQOC9kZDRrZ3c1bnRwcjZ2eUV3VC9LajY2V1ZpMERCZ05CRjJaMWVj?=
- =?utf-8?B?V3RwU0NmaFZqb0xza0xKLzBRdTBpbUVYNGZmS3hlK1g5cHJkU2xZN0s2OHBh?=
- =?utf-8?B?Zlg3amNIZllRSithKzFMS3cydC9tQ1Qyc3k2V0pyZ1hjTVNVU3d4S1RleHBX?=
- =?utf-8?Q?lVAt37exPmvlkKq8l5swJhHMTyHeAwS7a5syqXf?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FFRH10S7Nz2ydJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 11:13:32 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 8F2FD613B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 01:13:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1617758008;
+ bh=4wmgtd3m+Ta1X4jkV88q8R8S6J8R9xiITuF0Yr6xVvE=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=pRLlQVTSNNqQq6FWgIz2B7IVJb0WD4DcmH/q1OoNuEMrYaWQrNUQZE+TGHQqvO7uZ
+ 0sbEWPuyB8HyaAmOyOmuJUzxCmp1p115y8GLeeHMULg8c7AuvfXjx5Z564IDbK8lJq
+ gmbN4+vm5P6n1CiJ0TfpP9EWDKvzUd31Ix6pvdON87LVzboxcqirc6EFlZYA+M4j8G
+ jHfCtKJ3iJFDoh1b09Poyvm8SAkLWUaz66KIw278EYEG9sTTsgo5EgmZQ4PmQnu3Wd
+ /7t4s6bK6dnu7hbZeox3JOJGIH6WZmQ5XIo2AS7KlPr83ACsPhjvDPLHQqqdmOaGvc
+ LBaAPBKO1awEA==
+Received: by mail-ej1-f53.google.com with SMTP id qo10so14481044ejb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Apr 2021 18:13:28 -0700 (PDT)
+X-Gm-Message-State: AOAM5301krqlZpCPWtbyEnA50zLJyv3AJkBSrADAkeM0xJcs58jzW9OH
+ 6RAA4LMvw0TFZevEDAVVGMWgcsNuc5bEiPSnfQ==
+X-Google-Smtp-Source: ABdhPJzl6RD27BOpLC9b+ksVgecIqSPzz04cn67QiZn3u6NF8pL8OvwlE6sLhJddWpFdEonXi5GuOvvWMqx7AYRmDLw=
+X-Received: by 2002:a17:906:1984:: with SMTP id
+ g4mr847605ejd.525.1617758006930; 
+ Tue, 06 Apr 2021 18:13:26 -0700 (PDT)
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB4478.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b86ca101-2bde-40af-d58a-08d8f976a631
-X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Apr 2021 03:38:46.1576 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: zc0bztf9eUXzH0tS8DMxMaR5KNEpOLqsXTmVJEnYZ8pWnJAkCYwJb9XF2Gsdkdb0doxH5D0aHcCp86xkmbUnfg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3438
+References: <20210405164643.21130-1-michael@walle.cc>
+ <20210405164643.21130-3-michael@walle.cc>
+In-Reply-To: <20210405164643.21130-3-michael@walle.cc>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Tue, 6 Apr 2021 20:13:15 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKbxY5sCJ_8F7iF0hFr52cwRsSc2bu48H7cqcNeWytDpA@mail.gmail.com>
+Message-ID: <CAL_JsqKbxY5sCJ_8F7iF0hFr52cwRsSc2bu48H7cqcNeWytDpA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] of: net: fix of_get_mac_addr_nvmem() for PCI and DSA
+ nodes
+To: Michael Walle <michael@walle.cc>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Wed, 07 Apr 2021 13:42:52 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,87 +79,165 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM
- ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>,
- lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+ Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>,
+ "moderated list:ARM/STM32 ARCHITECTURE"
+ <linux-stm32@st-md-mailman.stormreply.com>,
+ Jerome Brunet <jbrunet@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>,
+ Michal Simek <michal.simek@xilinx.com>, Jose Abreu <joabreu@synopsys.com>,
+ NXP Linux Team <linux-imx@nxp.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Hauke Mehrtens <hauke@hauke-m.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Lorenzo Bianconi <lorenzo.bianconi83@gmail.com>,
+ linux-omap <linux-omap@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Vladimir Oltean <olteanv@gmail.com>,
+ Claudiu Beznea <claudiu.beznea@microchip.com>,
+ =?UTF-8?B?SsOpcsO0bWUgUG91aWxsZXI=?= <jerome.pouiller@silabs.com>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Chris Snook <chris.snook@gmail.com>, Frank Rowand <frowand.list@gmail.com>,
+ Gregory Clement <gregory.clement@bootlin.com>,
+ Madalin Bucur <madalin.bucur@nxp.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Murali Karicheri <m-karicheri2@ti.com>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>, Wingman Kwok <w-kwok2@ti.com>,
+ Sean Wang <sean.wang@mediatek.com>, Maxime Ripard <mripard@kernel.org>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>,
+ "open list:ARM/Amlogic Meson..." <linux-amlogic@lists.infradead.org>,
+ Kalle Valo <kvalo@codeaurora.org>, Mirko Lindner <mlindner@marvell.com>,
+ Fugang Duan <fugang.duan@nxp.com>,
+ Bryan Whitehead <bryan.whitehead@microchip.com>,
+ QCA ath9k Development <ath9k-devel@qca.qualcomm.com>,
+ Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>,
+ Taras Chornyi <tchornyi@marvell.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Kevin Hilman <khilman@baylibre.com>, Heiner Kallweit <hkallweit1@gmail.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ Fabio Estevam <festevam@gmail.com>, Stanislaw Gruszka <stf_xl@wp.pl>,
+ Florian Fainelli <f.fainelli@gmail.com>, linux-staging@lists.linux.dev,
+ Chen-Yu Tsai <wens@csie.org>,
+ "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE"
+ <bcm-kernel-feedback-list@broadcom.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>,
+ Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
+ Vladimir Zapolskiy <vz@mleia.com>, John Crispin <john@phrozen.org>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sergei Shtylyov <sergei.shtylyov@gmail.com>, linux-oxnas@groups.io,
+ Shawn Guo <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>,
+ Helmut Schaa <helmut.schaa@googlemail.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ "open list:MEDIA DRIVERS FOR RENESAS - FCP"
+ <linux-renesas-soc@vger.kernel.org>, Ryder Lee <ryder.lee@mediatek.com>,
+ Russell King <linux@armlinux.org.uk>, Vadym Kochan <vkochan@marvell.com>,
+ Jakub Kicinski <kuba@kernel.org>, Vivien Didelot <vivien.didelot@gmail.com>,
+ Sunil Goutham <sgoutham@marvell.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ devicetree@vger.kernel.org,
+ "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Jernej Skrabec <jernej.skrabec@siol.net>, netdev <netdev@vger.kernel.org>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>, Li Yang <leoyang.li@nxp.com>,
+ Stephen Hemminger <stephen@networkplumber.org>, Vinod Koul <vkoul@kernel.org>,
+ Joyce Ooi <joyce.ooi@intel.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Felix Fietkau <nbd@nbd.name>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFuIFdhbmcgPHJhbi53
-YW5nXzFAbnhwLmNvbT4NCj4gU2VudDogVHVlc2RheSwgQXByaWwgNiwgMjAyMSA4OjMyIFBNDQo+
-IFRvOiBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT4NCj4gQ2M6IENocmlzdG9waGUgTGVyb3kg
-PGNocmlzdG9waGUubGVyb3lAY3Nncm91cC5ldT47IGxpbnV4cHBjLWRldg0KPiA8bGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmc+OyBtb2RlcmF0ZWQgbGlzdDpBUk0vRlJFRVNDQUxFIElNWCAv
-IE1YQw0KPiBBUk0gQVJDSElURUNUVVJFIDxsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
-ZC5vcmc+OyBsa21sIDxsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVj
-dDogUkU6IFtQQVRDSCB2Nl0gc29jOiBmc2w6IGVuYWJsZSBhY3BpIHN1cHBvcnQgaW4gUkNQTSBk
-cml2ZXINCj4gDQo+IEhpIExlbywNCj4gDQo+IE9uIFdlZG5lc2RheSwgQXByaWwgNywgMjAyMSA1
-OjQ1IEFNLCBMaSBZYW5nIHdyb3RlOg0KPiA+DQo+ID4gT24gRnJpLCBNYXIgMTIsIDIwMjEgYXQg
-Mjo1NiBBTSBSYW4gV2FuZyA8cmFuLndhbmdfMUBueHAuY29tPiB3cm90ZToNCj4gPiA+DQo+ID4g
-PiBGcm9tOiBQZW5nIE1hIDxwZW5nLm1hQG54cC5jb20+DQo+ID4gPg0KPiA+ID4gVGhpcyBwYXRj
-aCBlbmFibGVzIEFDUEkgc3VwcG9ydCBpbiBSQ1BNIGRyaXZlci4NCj4gPiA+DQo+ID4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBQZW5nIE1hIDxwZW5nLm1hQG54cC5jb20+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5
-OiBSYW4gV2FuZyA8cmFuLndhbmdfMUBueHAuY29tPg0KPiA+ID4gLS0tDQo+ID4gPiBDaGFuZ2Ug
-aW4gdjY6DQo+ID4gPiAgLSBSZW1vdmUgY29weXJpZ2h0IHVkcGF0ZSB0byByZWJhc2Ugb24gbGF0
-ZXN0IG1haW5saW5lDQo+ID4gPg0KPiA+ID4gQ2hhbmdlIGluIHY1Og0KPiA+ID4gIC0gRml4IHBh
-bmljIHdoZW4gZGV2LT5vZl9ub2RlIGlzIG51bGwNCj4gPiA+DQo+ID4gPiBDaGFuZ2UgaW4gdjQ6
-DQo+ID4gPiAgLSBNYWtlIGNvbW1pdCBzdWJqZWN0IG1vcmUgYWNjdXJhdGUNCj4gPiA+ICAtIFJl
-bW92ZSB1bnJlbGF0ZWQgbmV3IGJsYW5rIGxpbmUNCj4gPiA+DQo+ID4gPiBDaGFuZ2UgaW4gdjM6
-DQo+ID4gPiAgLSBBZGQgI2lmZGVmIENPTkZJR19BQ1BJIGZvciBhY3BpX2RldmljZV9pZA0KPiA+
-ID4gIC0gUmVuYW1lIHJjcG1fYWNwaV9pbXhfaWRzIHRvIHJjcG1fYWNwaV9pZHMNCj4gPiA+DQo+
-ID4gPiBDaGFuZ2UgaW4gdjI6DQo+ID4gPiAgLSBVcGRhdGUgYWNwaV9kZXZpY2VfaWQgdG8gZml4
-IGNvbmZsaWN0IHdpdGggb3RoZXIgZHJpdmVyDQo+ID4gPg0KPiA+ID4gIGRyaXZlcnMvc29jL2Zz
-bC9yY3BtLmMgfCAxOCArKysrKysrKysrKysrKysrLS0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwg
-MTYgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9zb2MvZnNsL3JjcG0uYyBiL2RyaXZlcnMvc29jL2ZzbC9yY3BtLmMgaW5kZXgN
-Cj4gPiA+IDRhY2UyOGNhYjMxNC4uN2FhOTk3YjkzMmQxIDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJp
-dmVycy9zb2MvZnNsL3JjcG0uYw0KPiA+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3JjcG0uYw0K
-PiA+ID4gQEAgLTEzLDYgKzEzLDcgQEANCj4gPiA+ICAjaW5jbHVkZSA8bGludXgvc2xhYi5oPg0K
-PiA+ID4gICNpbmNsdWRlIDxsaW51eC9zdXNwZW5kLmg+DQo+ID4gPiAgI2luY2x1ZGUgPGxpbnV4
-L2tlcm5lbC5oPg0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9hY3BpLmg+DQo+ID4gPg0KPiA+ID4g
-ICNkZWZpbmUgUkNQTV9XQUtFVVBfQ0VMTF9NQVhfU0laRSAgICAgIDcNCj4gPiA+DQo+ID4gPiBA
-QCAtNzgsMTAgKzc5LDE0IEBAIHN0YXRpYyBpbnQgcmNwbV9wbV9wcmVwYXJlKHN0cnVjdCBkZXZp
-Y2UgKmRldikNCj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxyY3Bt
-LXdha2V1cCIsIHZhbHVlLA0KPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBy
-Y3BtLT53YWtldXBfY2VsbHMgKyAxKTsNCj4gPiA+DQo+ID4gPiAtICAgICAgICAgICAgICAgLyog
-IFdha2V1cCBzb3VyY2Ugc2hvdWxkIHJlZmVyIHRvIGN1cnJlbnQgcmNwbSBkZXZpY2UgKi8NCj4g
-PiA+IC0gICAgICAgICAgICAgICBpZiAocmV0IHx8IChucC0+cGhhbmRsZSAhPSB2YWx1ZVswXSkp
-DQo+ID4gPiArICAgICAgICAgICAgICAgaWYgKHJldCkNCj4gPiA+ICAgICAgICAgICAgICAgICAg
-ICAgICAgIGNvbnRpbnVlOw0KPiA+ID4NCj4gPiA+ICsgICAgICAgICAgICAgICBpZiAoaXNfb2Zf
-bm9kZShkZXYtPmZ3bm9kZSkpDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAvKiAgU2hv
-dWxkIHJlZmVyIHRvIGN1cnJlbnQgcmNwbSBkZXZpY2UgKi8NCg0KQmV0dGVyIHRvIGJlIC8qIE9u
-bHkgaGFuZGxlIGRldmljZXMgd2l0aCBmc2wscmNwbS13YWtldXAgcG9pbnRpbmcgdG8gdGhlIGN1
-cnJlbnQgcmNwbSBub2RlKi8NCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGlmIChucC0+
-cGhhbmRsZSAhPSB2YWx1ZVswXSkNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgY29udGludWU7DQo+ID4NCj4gPiBJdCBsb29rcyBsaWtlIHRoYXQgd2UgYXNzdW1lIHRoYXQg
-aW4gdGhlIEFDUEkgc2NlbmFyaW8gdGhlcmUgd2lsbCBvbmx5DQo+ID4gYmUgb25lIFJDUE0gY29u
-dHJvbGxlciBhbmQgYWxsIGRldmljZXMgYXJlIGNvbnRyb2xsZWQgYnkgdGhpcyBzaW5nbGUNCj4g
-PiBQTSBjb250cm9sbGVyLiAgVGhpcyBwcm9iYWJseSBpcyB0cnVlIGZvciBhbGwgZXhpc3Rpbmcg
-U29DcyB3aXRoIGEgUkNQTS4gIEJ1dA0KPiBzaW5jZSB0aGUgZHJpdmVyIHRyaWVkIHRvIHN1cHBv
-cnQgbXVsdGlwbGUgUkNQTXMsIG1heWJlIHdlIHNob3VsZCBjb250aW51ZQ0KPiB0byBzdXBwb3J0
-IG11bHRpcGxlIFJDUE0gY29udHJvbGxlcnMgb3IgYXQgbGVhc3QgbWVudGlvbiB0aGF0IGluIHRo
-ZQ0KPiBjb21tZW50Lg0KPiANCj4gSG93IGFib3V0IGFkZGluZyBzb21lIGNvbW1lbnQgYXMgYmVs
-b3c6DQo+IA0KPiAvKiBGb3IgQUNQSSBtb2RlLCBjdXJyZW50bHkgd2UgYXNzdW1lIHRoZXJlIGlz
-IG9ubHkgb25lIFJDUE0gY29udHJvbGxlcg0KPiBleGlzdGluZyAqLw0KDQpPay4gIE9uIHRoZSBv
-dGhlciBoYW5kLCBpdCB3aWxsIGJlIGNsZWFyZXIgdG8gdXBkYXRlIHRoZSBleGlzdGluZyBjb21t
-ZW50IGFib3ZlLg0KDQo+IA0KPiBSZWdhcmRzLA0KPiBSYW4NCj4gDQo+ID4NCj4gPiA+ICsNCj4g
-PiA+ICAgICAgICAgICAgICAgICAvKiBQcm9wZXJ0eSAiI2ZzbCxyY3BtLXdha2V1cC1jZWxscyIg
-b2YgcmNwbSBub2RlIGRlZmluZXMgdGhlDQo+ID4gPiAgICAgICAgICAgICAgICAgICogbnVtYmVy
-IG9mIElQUERFWFBDUiByZWdpc3RlciBjZWxscywgYW5kICJmc2wscmNwbS13YWtldXAiDQo+ID4g
-PiAgICAgICAgICAgICAgICAgICogb2Ygd2FrZXVwIHNvdXJjZSBJUCBjb250YWlucyBhbiBpbnRl
-Z2VyIGFycmF5Og0KPiA+ID4gPHBoYW5kbGUgdG8gQEAgLTE3MiwxMCArMTc3LDE5IEBAIHN0YXRp
-YyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkDQo+ID4gPiByY3BtX29mX21hdGNoW10gPSB7ICB9
-OyAgTU9EVUxFX0RFVklDRV9UQUJMRShvZiwgcmNwbV9vZl9tYXRjaCk7DQo+ID4gPg0KPiA+ID4g
-KyNpZmRlZiBDT05GSUdfQUNQSQ0KPiA+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgYWNwaV9kZXZp
-Y2VfaWQgcmNwbV9hY3BpX2lkc1tdID0gew0KPiA+ID4gKyAgICAgICB7Ik5YUDAwMTUiLH0sDQo+
-ID4gPiArICAgICAgIHsgfQ0KPiA+ID4gK307DQo+ID4gPiArTU9EVUxFX0RFVklDRV9UQUJMRShh
-Y3BpLCByY3BtX2FjcGlfaWRzKTsgI2VuZGlmDQo+ID4gPiArDQo+ID4gPiAgc3RhdGljIHN0cnVj
-dCBwbGF0Zm9ybV9kcml2ZXIgcmNwbV9kcml2ZXIgPSB7DQo+ID4gPiAgICAgICAgIC5kcml2ZXIg
-PSB7DQo+ID4gPiAgICAgICAgICAgICAgICAgLm5hbWUgPSAicmNwbSIsDQo+ID4gPiAgICAgICAg
-ICAgICAgICAgLm9mX21hdGNoX3RhYmxlID0gcmNwbV9vZl9tYXRjaCwNCj4gPiA+ICsgICAgICAg
-ICAgICAgICAuYWNwaV9tYXRjaF90YWJsZSA9IEFDUElfUFRSKHJjcG1fYWNwaV9pZHMpLA0KPiA+
-ID4gICAgICAgICAgICAgICAgIC5wbSAgICAgPSAmcmNwbV9wbV9vcHMsDQo+ID4gPiAgICAgICAg
-IH0sDQo+ID4gPiAgICAgICAgIC5wcm9iZSA9IHJjcG1fcHJvYmUsDQo+ID4gPiAtLQ0KPiA+ID4g
-Mi4yNS4xDQo+ID4gPg0K
+On Mon, Apr 5, 2021 at 11:47 AM Michael Walle <michael@walle.cc> wrote:
+>
+> of_get_mac_address() already supports fetching the MAC address by an
+> nvmem provider. But until now, it was just working for platform devices.
+> Esp. it was not working for DSA ports and PCI devices. It gets more
+> common that PCI devices have a device tree binding since SoCs contain
+> integrated root complexes.
+>
+> Use the nvmem of_* binding to fetch the nvmem cells by a struct
+> device_node. We still have to try to read the cell by device first
+> because there might be a nvmem_cell_lookup associated with that device.
+>
+> Signed-off-by: Michael Walle <michael@walle.cc>
+> ---
+> Please note, that I've kept the nvmem_get_mac_address() which operates
+> on a device. The new of_get_mac_addr_nvmem() is almost identical and
+> there are no users of the former function right now, but it seems to be
+> the "newer" version to get the MAC address for a "struct device". Thus
+> I've kept it. Please advise, if I should kill it though.
+
+It seems kind of backwards from how we normally design this type of
+API where the API with a struct device will call a firmware specific
+version if there's a firmware handle. But certainly, I don't think we
+should be operating on platform device if we can help it.
+
+>  drivers/of/of_net.c | 37 +++++++++++++++++++++++++++++++------
+>  1 file changed, 31 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/of/of_net.c b/drivers/of/of_net.c
+> index 2344ad7fff5e..2323c6063eaf 100644
+> --- a/drivers/of/of_net.c
+> +++ b/drivers/of/of_net.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/phy.h>
+>  #include <linux/export.h>
+>  #include <linux/device.h>
+> +#include <linux/nvmem-consumer.h>
+>
+>  /**
+>   * of_get_phy_mode - Get phy mode for given device_node
+> @@ -56,18 +57,42 @@ static int of_get_mac_addr(struct device_node *np, const char *name, u8 *addr)
+>         return -ENODEV;
+>  }
+>
+> -static int of_get_mac_addr_nvmem(struct device_node *np, u8 addr)
+> +static int of_get_mac_addr_nvmem(struct device_node *np, u8 *addr)
+>  {
+>         struct platform_device *pdev = of_find_device_by_node(np);
+> +       struct nvmem_cell *cell;
+> +       const void *mac;
+> +       size_t len;
+>         int ret;
+>
+> -       if (!pdev)
+> -               return -ENODEV;
+> +       /* Try lookup by device first, there might be a nvmem_cell_lookup
+> +        * associated with a given device.
+> +        */
+> +       if (pdev) {
+> +               ret = nvmem_get_mac_address(&pdev->dev, addr);
+> +               put_device(&pdev->dev);
+> +               return ret;
+> +       }
+> +
+> +       cell = of_nvmem_cell_get(np, "mac-address");
+> +       if (IS_ERR(cell))
+> +               return PTR_ERR(cell);
+> +
+> +       mac = nvmem_cell_read(cell, &len);
+> +       nvmem_cell_put(cell);
+> +
+> +       if (IS_ERR(mac))
+> +               return PTR_ERR(mac);
+> +
+> +       if (len != ETH_ALEN || !is_valid_ether_addr(mac)) {
+> +               kfree(mac);
+> +               return -EINVAL;
+> +       }
+>
+> -       ret = nvmem_get_mac_address(&pdev->dev, addr);
+> -       put_device(&pdev->dev);
+> +       ether_addr_copy(addr, mac);
+> +       kfree(mac);
+>
+> -       return ret;
+> +       return 0;
+>  }
+>
+>  /**
+> --
+> 2.20.1
+>
