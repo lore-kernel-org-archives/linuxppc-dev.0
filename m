@@ -2,64 +2,64 @@ Return-Path: <SRS0=l0Nn=JE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13782C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 11:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4B42C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 11:33:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F2F861130
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 11:28:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F2F861130
+	by mail.kernel.org (Postfix) with ESMTPS id EF26D6138B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 11:33:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF26D6138B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FFhwF0P0Jz304F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 21:28:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FFj2r2ZGJz30hl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 21:33:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ODAla7nd;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PaKYhf+G;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=ODAla7nd; 
+ header.a=rsa-sha256 header.s=201909 header.b=PaKYhf+G; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FFhvn4WnKz2xy0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 21:27:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FFj2Q23qbz2yRD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 21:33:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FFhvf0Fmvz9sWY;
- Wed,  7 Apr 2021 21:27:41 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FFj2K26Yrz9sPf;
+ Wed,  7 Apr 2021 21:33:29 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1617794864;
- bh=Cj3f8ngloiA9HcJv0SBAooX4hLm02FHFDJHGT11hot4=;
+ s=201909; t=1617795209;
+ bh=y0l2cj5THm1KD/rp1s2DbbyiQ8447KTyycDVAMuWir0=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=ODAla7ndUsbsO31oqNPjrBU8zkC7Fp+vECJBoGGzU4J2dhiOl2L8LmJfhtgbZWVzt
- Y3mI9rf0jAiGHgr7KCr0OLNDnDSTl30UsMWXxcjChJT8goqJgYeInQdX3DlhWqMhvw
- MRxLqA34JMfG+VoniqJjTnhuOGueMiyk/BQWhKbmZadcseizWT316Fk6BEZf0yjffQ
- 5MbKTdD9VaJ1B6XsrxNJ0xPIfwW/TenRQpQ9eOKUF78y+AuJ3+UxI69Ufz46OX/k3/
- dUpboJ8nF3C/9dcFuyW6j+19SI4BsnlQ65lBGF/dDbVuBIj+m4J1sNNMLxxokK214e
- e/SIus9w4F7Yg==
+ b=PaKYhf+GI2NFfbUpaIVQvGYfB4g+oN/FQuz0XqD7E19sCrBZ0qdwOYiBBLFyWBlvN
+ 8Gk2+7nQSBnvR6zs5R4dH6Nlg5lqxjYUEPe4pgeUCQpgIQAL6l+WF9jmblUcT9IPkb
+ oW2cXKMKxUXI9ap/rmWeN3mMJ5KzXDVXevEPIWFWaL7F4/FLpcotBrIDn4ZvoUXOcS
+ v3kS2R6uvLH0aNxq92/BtxRvtyvbOUymuTrmFjRlCLB+iKTvCY/dRFPJ0JJBDxozSf
+ b1fkC3R0+4Mgm+b3IYqEZfkAkT1rPYgzxSIdbVOIvQVGGaB0Q4/Tlli1y6QsRTxdZu
+ vhfksNsLHIC/g==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Youlin Song <syl.loop@gmail.com>, robh+dt@kernel.org,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] powerpc/dts: fix not include DTC_FLAGS
-In-Reply-To: <20210403020423.85278-1-syl.loop@gmail.com>
-References: <20210403020423.85278-1-syl.loop@gmail.com>
-Date: Wed, 07 Apr 2021 21:27:22 +1000
-Message-ID: <87y2due3mt.fsf@mpe.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: Enable HAIL (HV AIL) for ISA v3.1
+ processors
+In-Reply-To: <20210402024124.545826-1-npiggin@gmail.com>
+References: <20210402024124.545826-1-npiggin@gmail.com>
+Date: Wed, 07 Apr 2021 21:33:28 +1000
+Message-ID: <87v98ye3cn.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,40 +73,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Youlin Song <syl.loop@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Youlin Song <syl.loop@gmail.com> writes:
-> I wanted to build the fsl dts in my machine and found that
-> the dtb have not extra space,so uboot will cause about
-> FDT_ERR_NOSPACE issue.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Starting with ISA v3.1, LPCR[AIL] no longer controls the interrupt
+> mode for HV=1 interrupts. Instead, a new LPCR[HAIL] bit is defined
+> which behaves like AIL=3 for HV interrupts when set.
 >
-> Signed-off-by: Youlin Song <syl.loop@gmail.com>
-> ---
->  arch/powerpc/boot/dts/Makefile | 1 +
->  1 file changed, 1 insertion(+)
+> Set HAIL on bare metal to give us mmu-on interrupts and improve
+> performance.
 >
-> diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-> index fb335d05aae8..c21165c0cd76 100644
-> --- a/arch/powerpc/boot/dts/Makefile
-> +++ b/arch/powerpc/boot/dts/Makefile
-> @@ -2,5 +2,6 @@
->  
->  subdir-y += fsl
->  
-> +DTC_FLAGS   ?= -p 1024
->  dtstree		:= $(srctree)/$(src)
->  dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
+> This also fixes an scv bug: we don't implement scv real mode (AIL=0)
+> vectors because they are at an inconvenient location, so we just
+> disable scv support when AIL can not be set. However powernv assumes
+> that LPCR[AIL] will enable AIL mode so it enables scv support despite
+> HV interrupts being AIL=0, which causes scv interrupts to go off into
+> the weeds.
 
-I guess that was missed in 1acf1cf8638a ("powerpc: build .dtb files in dts directory").
-
-Which I think means the assignment to DTC_FLAGS in
-arch/powerpc/boot/Makefile is not needed anymore.
-
-Can you send a v2 removing that assignment and explaining that's what
-happened?
+Should we tag this as fixing the initial P10 support, or the scv
+support? Or neither?
 
 cheers
+
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 1be20bc8dce2..9086a2644c89 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -441,6 +441,7 @@
+>  #define   LPCR_VRMA_LP1		ASM_CONST(0x0000800000000000)
+>  #define   LPCR_RMLS		0x1C000000	/* Implementation dependent RMO limit sel */
+>  #define   LPCR_RMLS_SH		26
+> +#define   LPCR_HAIL		ASM_CONST(0x0000000004000000)   /* HV AIL (ISAv3.1) */
+>  #define   LPCR_ILE		ASM_CONST(0x0000000002000000)   /* !HV irqs set MSR:LE */
+>  #define   LPCR_AIL		ASM_CONST(0x0000000001800000)	/* Alternate interrupt location */
+>  #define   LPCR_AIL_0		ASM_CONST(0x0000000000000000)	/* MMU off exception offset 0x0 */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 04a31586f760..671192afcdfd 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -233,10 +233,23 @@ static void cpu_ready_for_interrupts(void)
+>  	 * If we are not in hypervisor mode the job is done once for
+>  	 * the whole partition in configure_exceptions().
+>  	 */
+> -	if (cpu_has_feature(CPU_FTR_HVMODE) &&
+> -	    cpu_has_feature(CPU_FTR_ARCH_207S)) {
+> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+>  		unsigned long lpcr = mfspr(SPRN_LPCR);
+> -		mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
+> +		unsigned long new_lpcr = lpcr;
+> +
+> +		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+> +			/* P10 DD1 does not have HAIL */
+> +			if (pvr_version_is(PVR_POWER10) &&
+> +					(mfspr(SPRN_PVR) & 0xf00) == 0x100)
+> +				new_lpcr |= LPCR_AIL_3;
+> +			else
+> +				new_lpcr |= LPCR_HAIL;
+> +		} else if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+> +			new_lpcr |= LPCR_AIL_3;
+> +		}
+> +
+> +		if (new_lpcr != lpcr)
+> +			mtspr(SPRN_LPCR, new_lpcr);
+>  	}
+>  
+>  	/*
+> -- 
+> 2.23.0
