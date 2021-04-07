@@ -7,58 +7,58 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0737C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 17:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA4B2C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 17:24:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 652F96121E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 17:24:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 652F96121E
+	by mail.kernel.org (Postfix) with ESMTPS id 6491B61242
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 17:24:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6491B61242
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FFrq50B8Zz3cYR
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 03:24:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FFrqS0f5Wz3d20
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 03:24:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FFrnJ04nPz302x
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 03:22:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FFrnL45bLz30GV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 03:22:46 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FFrn969YQzB09ZZ;
- Wed,  7 Apr 2021 19:22:37 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FFrnD5tF4zB09Zd;
+ Wed,  7 Apr 2021 19:22:40 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PikW_eHcrmVD; Wed,  7 Apr 2021 19:22:37 +0200 (CEST)
+ with ESMTP id ARjndTOPdYxl; Wed,  7 Apr 2021 19:22:40 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FFrn954HBzB09ZS;
- Wed,  7 Apr 2021 19:22:37 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FFrnD530bzB09ZS;
+ Wed,  7 Apr 2021 19:22:40 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 586778B7B6;
- Wed,  7 Apr 2021 19:22:39 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 66EE08B7B6;
+ Wed,  7 Apr 2021 19:22:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id AqWa6-IJJund; Wed,  7 Apr 2021 19:22:39 +0200 (CEST)
+ with ESMTP id H3O39hLoOR4i; Wed,  7 Apr 2021 19:22:42 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0DF428B75F;
- Wed,  7 Apr 2021 19:22:39 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1BC388B75F;
+ Wed,  7 Apr 2021 19:22:42 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D370D6799B; Wed,  7 Apr 2021 17:22:38 +0000 (UTC)
-Message-Id: <fa3c3301ea0545028eef50270d00490aafab54bd.1617816138.git.christophe.leroy@csgroup.eu>
+ id F062B6799B; Wed,  7 Apr 2021 17:22:41 +0000 (UTC)
+Message-Id: <0838c473de92bc87826710cc2a35e0f05c98bbd9.1617816138.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <311235752428dacbee81728767aacc2bf4222384.1617816138.git.christophe.leroy@csgroup.eu>
 References: <311235752428dacbee81728767aacc2bf4222384.1617816138.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 5/8] powerpc/mem: flush_dcache_icache_phys() is for HIGHMEM
- pages only
+Subject: [PATCH v1 8/8] powerpc/mem: Use kmap_local_page() in flushing
+ functions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  7 Apr 2021 17:22:38 +0000 (UTC)
+Date: Wed,  7 Apr 2021 17:22:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,75 +75,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__flush_dcache_icache() is usable for non HIGHMEM pages on
-every platform.
-
-It is only for HIGHMEM pages that BOOKE needs kmap() and
-BOOK3S needs flush_dcache_icache_phys().
-
-So make flush_dcache_icache_phys() dependent on CONFIG_HIGHMEM and
-call it only when it is a HIGHMEM page.
-
-We could make flush_dcache_icache_phys() available at all time,
-but as it is declared NOKPROBE_SYMBOL(), GCC doesn't optimise
-it out when it is not used.
-
-So define a stub for !CONFIG_HIGHMEM in order to remove the #ifdef in
-flush_dcache_icache_page() and use IS_ENABLED() instead.
+Flushing functions don't rely on preemption being disabled, so
+use kmap_local_page() instead of kmap_atomic().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/mem.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/mem.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index d2c66827d9fd..9a5542f4de92 100644
+index 65b2205839fe..1895bd64191a 100644
 --- a/arch/powerpc/mm/mem.c
 +++ b/arch/powerpc/mm/mem.c
-@@ -413,7 +413,7 @@ void flush_icache_range(unsigned long start, unsigned long stop)
+@@ -464,16 +464,16 @@ static void flush_dcache_icache_hugepage(struct page *page)
+ {
+ 	int i;
+ 	int nr = compound_nr(page);
+-	void *start;
+ 
+ 	if (!PageHighMem(page)) {
+ 		for (i = 0; i < nr; i++)
+ 			__flush_dcache_icache(lowmem_page_address(page + i));
+ 	} else {
+ 		for (i = 0; i < nr; i++) {
+-			start = kmap_atomic(page+i);
++			void *start = kmap_local_page(page + i);
++
+ 			__flush_dcache_icache(start);
+-			kunmap_atomic(start);
++			kunmap_local(start);
+ 		}
+ 	}
  }
- EXPORT_SYMBOL(flush_icache_range);
- 
--#if !defined(CONFIG_PPC_8xx) && !defined(CONFIG_PPC64)
-+#ifdef CONFIG_HIGHMEM
- /**
-  * flush_dcache_icache_phys() - Flush a page by it's physical address
-  * @physaddr: the physical address of the page
-@@ -452,7 +452,11 @@ static void flush_dcache_icache_phys(unsigned long physaddr)
- 		: "ctr", "memory");
- }
- NOKPROBE_SYMBOL(flush_dcache_icache_phys)
--#endif // !defined(CONFIG_PPC_8xx) && !defined(CONFIG_PPC64)
-+#else
-+static void flush_dcache_icache_phys(unsigned long physaddr)
-+{
-+}
-+#endif
- 
- /*
-  * This is called when a page has been modified by the kernel.
-@@ -497,18 +501,15 @@ void flush_dcache_icache_page(struct page *page)
- 	if (PageCompound(page))
- 		return flush_dcache_icache_hugepage(page);
- 
--#if defined(CONFIG_PPC_8xx) || defined(CONFIG_PPC64)
--	/* On 8xx there is no need to kmap since highmem is not supported */
--	__flush_dcache_icache(page_address(page));
--#else
--	if (IS_ENABLED(CONFIG_BOOKE) || sizeof(phys_addr_t) > sizeof(void *)) {
-+	if (!PageHighMem(page)) {
-+		__flush_dcache_icache(lowmem_page_address(page));
-+	} else if (IS_ENABLED(CONFIG_BOOKE) || sizeof(phys_addr_t) > sizeof(void *)) {
- 		void *start = kmap_atomic(page);
+@@ -489,9 +489,10 @@ void flush_dcache_icache_page(struct page *page)
+ 	if (!PageHighMem(page)) {
+ 		__flush_dcache_icache(lowmem_page_address(page));
+ 	} else if (IS_ENABLED(CONFIG_BOOKE) || sizeof(phys_addr_t) > sizeof(void *)) {
+-		void *start = kmap_atomic(page);
++		void *start = kmap_local_page(page);
++
  		__flush_dcache_icache(start);
- 		kunmap_atomic(start);
+-		kunmap_atomic(start);
++		kunmap_local(start);
  	} else {
  		flush_dcache_icache_phys(page_to_phys(page));
  	}
--#endif
- }
- EXPORT_SYMBOL(flush_dcache_icache_page);
+@@ -564,11 +565,11 @@ void copy_user_page(void *vto, void *vfrom, unsigned long vaddr,
+ void flush_icache_user_page(struct vm_area_struct *vma, struct page *page,
+ 			     unsigned long addr, int len)
+ {
+-	unsigned long maddr;
++	void *maddr;
  
+-	maddr = (unsigned long) kmap(page) + (addr & ~PAGE_MASK);
+-	flush_icache_range(maddr, maddr + len);
+-	kunmap(page);
++	maddr = kmap_local_page(page) + (addr & ~PAGE_MASK);
++	flush_icache_range((unsigned long)maddr, (unsigned long)maddr + len);
++	kunmap_local(maddr);
+ }
+ 
+ /*
 -- 
 2.25.0
 
