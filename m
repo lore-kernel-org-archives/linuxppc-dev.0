@@ -2,45 +2,87 @@ Return-Path: <SRS0=l0Nn=JE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40ACEC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 08:57:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDCB5C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 09:36:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB96061019
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 08:57:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB96061019
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0751C6135D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 09:36:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0751C6135D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FFdZd355gz30BP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 18:57:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FFfR50LDRz3bsg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 19:36:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=IlI3gz6r;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=81.169.241.247; helo=theia.8bytes.org;
- envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
-Received: from theia.8bytes.org (8bytes.org [81.169.241.247])
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531;
+ helo=mail-pg1-x531.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=IlI3gz6r; dkim-atps=neutral
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
+ [IPv6:2607:f8b0:4864:20::531])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FFdZG6gDDz2xgP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 18:57:26 +1000 (AEST)
-Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 29AFC418; Wed,  7 Apr 2021 10:57:21 +0200 (CEST)
-Date: Wed, 7 Apr 2021 10:57:19 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: cleanup unused or almost unused IOMMU APIs and the FSL PAMU
- driver v3
-Message-ID: <YG1z7/b0i8WYOMHA@8bytes.org>
-References: <20210401155256.298656-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FFfQZ5HJrz300C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 19:35:49 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id f29so10145310pgm.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Apr 2021 02:35:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=ZVfKBalueTSgx5OM8QhCg5tppz9Kqf0PHs1cKuDosxY=;
+ b=IlI3gz6rmZE1g6Lr92QfSvO1jp0oUCgzsUDPV0c4ta5CPrtBiHImp5Q3bjTVMh1Rlq
+ AIAilsI7WBQgT41uReuS2IOgd6BPXvnxJTl2DpnjrD21J/KRHaHY+AfDEnNMGe2S3c5r
+ pXZRlUXVskQ8xTcncDLhulAgSiLfc64W9mrRPabsH4cg5FBzqs+hsEn5UiKqP7vUZbsz
+ 5JHgTwxe0B9oXVNf88sE0r4dWjr12Xvn7uMOmEww3HcFXHfvzSLtUez/uRtIstKLlVD9
+ DwCxOZoWpAqfAQ/Xg05paUMd4E6+DPWc43f/1Pct7JPk8XziuTWOHUuQchw88gC4gwHc
+ Segg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=ZVfKBalueTSgx5OM8QhCg5tppz9Kqf0PHs1cKuDosxY=;
+ b=dnSDNzVqQ2MkLWyzuH7thP82aWic3vQREkPAz4MpqFNK+XppgO96816z9whvadxCa0
+ HdEKOoOHxCycMkOXQJZHF6UJWJAYtHooL+Zwfsw+19JtWdm5HotNc76HvHWqn+LuHDUF
+ CJHqLA3AjlXfle8jcZfom0byoWq6srcqxct/tAFkh7yF9/jdZ/3v6sBqnxcfa2apD8Qm
+ gAatckLXk3r04IArN6u/hzIYFUDAi4BOy1/hSrQ0w1oJIjARuvQzE4AEeBUIJwH9ADTR
+ gpCGF9KO+/cG/nuK7KJ69CAj/iyl707a2SRRMqETbGX0dHxGhQBxu5LyF2Y+uCJ1mUZp
+ flFA==
+X-Gm-Message-State: AOAM532Gb00c/UDfz8S/fQxZMxO2fHOY5OG+Wca6ZB4wf9MgGOQTogvP
+ /gQwvZ0NcHE8re7wh7YmM1JJ/EcVhB0=
+X-Google-Smtp-Source: ABdhPJxBWevds9psSxRVML0ZYqbSkhf4IYBWg75auTJad2dREclOYkr/V28gnKKaT4t9MnCpmhdyNQ==
+X-Received: by 2002:a63:f715:: with SMTP id x21mr2401572pgh.399.1617788146335; 
+ Wed, 07 Apr 2021 02:35:46 -0700 (PDT)
+Received: from localhost ([1.132.144.230])
+ by smtp.gmail.com with ESMTPSA id q17sm23336341pfq.171.2021.04.07.02.35.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 07 Apr 2021 02:35:45 -0700 (PDT)
+Date: Wed, 07 Apr 2021 19:35:40 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v6 38/48] KVM: PPC: Book3S HV: Remove support for
+ dependent threads mode on P9
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20210405011948.675354-1-npiggin@gmail.com>
+ <20210405011948.675354-39-npiggin@gmail.com>
+ <YG1WcjXTbGtsqHgY@thinks.paulus.ozlabs.org>
+ <1617779718.vvrcxrnvnp.astroid@bobo.none>
+In-Reply-To: <1617779718.vvrcxrnvnp.astroid@bobo.none>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210401155256.298656-1-hch@lst.de>
+Message-Id: <1617787999.rtpf8vvh36.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,38 +94,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: freedreno@lists.freedesktop.org, kvm@vger.kernel.org,
- Will Deacon <will@kernel.org>, dri-devel@lists.freedesktop.org,
- Li Yang <leoyang.li@nxp.com>, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 01, 2021 at 05:52:36PM +0200, Christoph Hellwig wrote:
-> Diffstat:
->  arch/powerpc/include/asm/fsl_pamu_stash.h   |   12 
->  drivers/gpu/drm/msm/adreno/adreno_gpu.c     |    5 
->  drivers/iommu/amd/iommu.c                   |   23 
->  drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c |   75 ---
->  drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.h |    1 
->  drivers/iommu/arm/arm-smmu/arm-smmu.c       |  111 +---
->  drivers/iommu/arm/arm-smmu/arm-smmu.h       |    2 
->  drivers/iommu/dma-iommu.c                   |    9 
->  drivers/iommu/fsl_pamu.c                    |  293 -----------
->  drivers/iommu/fsl_pamu.h                    |   12 
->  drivers/iommu/fsl_pamu_domain.c             |  688 ++--------------------------
->  drivers/iommu/fsl_pamu_domain.h             |   46 -
->  drivers/iommu/intel/iommu.c                 |   95 ---
->  drivers/iommu/iommu.c                       |  118 +---
->  drivers/soc/fsl/qbman/qman_portal.c         |   55 --
->  drivers/vfio/vfio_iommu_type1.c             |   31 -
->  drivers/vhost/vdpa.c                        |   10 
->  include/linux/io-pgtable.h                  |    4 
->  include/linux/iommu.h                       |   76 ---
->  19 files changed, 203 insertions(+), 1463 deletions(-)
+Excerpts from Nicholas Piggin's message of April 7, 2021 5:44 pm:
+> Excerpts from Paul Mackerras's message of April 7, 2021 4:51 pm:
+>> On Mon, Apr 05, 2021 at 11:19:38AM +1000, Nicholas Piggin wrote:
+>>> Radix guest support will be removed from the P7/8 path, so disallow
+>>> dependent threads mode on P9.
+>>=20
+>> Dependent threads mode on P9 was added in order to support the mode
+>> where for security reasons you want to restrict the vcpus that run on
+>> a core to all be from the same VM, without requiring all guests to run
+>> single-threaded.  This was (at least at one stage) thought to be a
+>> useful mode for users that are worried about side-channel data leaks.
+>=20
+> Right.
+>=20
+>>=20
+>> Now it's possible that that mode is not practically useful for some
+>> reason, or that no-one actually wants it, but its removal should be
+>> discussed.  Also, the fact that we are losing that mode should be
+>> explicit in the commit message.
+>=20
+> Let's discuss. Did / does anyone really use it or ask for it that you
+> know of? What do other archs do? Compared with using standard options
+> that would achive this kind of security (disable SMT, I guess?) how
+> much is this worth keeping?
+>=20
+> It was pretty simple to support when the P8 dependent theads code had
+> to support P9 anyway. After this series, now all that code is only for
+> that one feature, so it would be pretty nice to be able to remove it.
+> How do we reach a point where you'd be okay to remove this and tell=20
+> people to just turn off SMT?
 
-Applied, thanks.
+Assuming we do decide to remove it, how's about something like this for=20
+a changelog. Does a bit more justice to the feature and its removal.
+
+Thanks,
+Nick
+
+    Dependent-threads mode is the normal KVM mode for pre-POWER9 SMT
+    processors, where all threads in a core (or subcore) would run the same
+    partition at the same time, or they would run the host.
+   =20
+    This design was mandated by MMU state that is shared between threads in
+    a processor, so the synchronisation point is in hypervisor real-mode
+    that has essentially no shared state, so it's safe for multiple threads
+    to gather and switch to the correct mode.
+   =20
+    It is implemented by having the host unplug all secondary threads and
+    always run in SMT1 mode, and host QEMU threads essentially represent
+    virtual cores that wake these secondary threads out of unplug when the
+    ioctl is called to run the guest. This happens via a side-path that is
+    mostly invisible to the rest of the Linux host and the secondary thread=
+s
+    still appear to be unplugged.
+   =20
+    POWER9 / ISA v3.0 has a more flexible MMU design that is independent
+    per-thread and allows a much simpler KVM implementation. Before the new
+    "P9 fast path" was added that began to take advantage of this, POWER9
+    support was implemented in the existing path which has support to run
+    in the dependent threads mode. So it was not much work to add support t=
+o
+    run POWER9 in this dependent threads mode.
+   =20
+    The mode is not required by the POWER9 MMU (although "mixed-mode" hash =
+/
+    radix MMU limitations of early processors were worked around using this
+    mode). But it is one way to run SMT guests without running different
+    guests or guest and host on different threads of the same core, so it
+    could avoid or reduce some SMT attack surfaces without turning off SMT
+    entirely.
+   =20
+    This security feature has some real, if indeterminate, value. However
+    the old path is lagging in features (nested HV), and with this series
+    the new P9 path adds remaining missing features (radix prefetch bug
+    and hash support, in later patches), so POWER9 dependent threads mode
+    support would be the only remaining reason to keep that code in and kee=
+p
+    supporting POWER9/POWER10 in the old path. So here we make the call to
+    drop this feature.
+   =20
+    Remove dependent threads mode support for POWER9 and above processors.
+    Systems can still achieve this security by disabling SMT entirely, but
+    that would generally come at a larger performance cost for guests.
+
