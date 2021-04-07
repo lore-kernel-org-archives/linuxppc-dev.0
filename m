@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02AA2C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 12:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5937C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 12:50:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D12E6124B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 12:49:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D12E6124B
+	by mail.kernel.org (Postfix) with ESMTPS id 425C461362
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 12:50:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 425C461362
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FFkkN3WBTz3bp2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 22:49:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FFkkw2dNXz3c3N
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Apr 2021 22:50:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
  envelope-from=yukuai3@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FFkk16xDMz302q
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 22:49:29 +1000 (AEST)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.60])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FFkfh15VnzpW23;
- Wed,  7 Apr 2021 20:46:36 +0800 (CST)
-Received: from huawei.com (10.175.127.227) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.498.0; Wed, 7 Apr 2021
- 20:49:15 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FFkkT32mKz3btf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Apr 2021 22:49:53 +1000 (AEST)
+Received: from DGGEMS405-HUB.china.huawei.com (unknown [172.30.72.60])
+ by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FFkgB672lzpVNC;
+ Wed,  7 Apr 2021 20:47:02 +0800 (CST)
+Received: from huawei.com (10.175.127.227) by DGGEMS405-HUB.china.huawei.com
+ (10.3.19.205) with Microsoft SMTP Server id 14.3.498.0; Wed, 7 Apr 2021
+ 20:49:38 +0800
 From: Yu Kuai <yukuai3@huawei.com>
 To: <benh@kernel.crashing.org>
-Subject: [PATCH] windfarm: make symbol 'wf_thread' static
-Date: Wed, 7 Apr 2021 20:57:38 +0800
-Message-ID: <20210407125738.4138480-1-yukuai3@huawei.com>
+Subject: [PATCH] macintosh/via-pmu: Make some symbols static
+Date: Wed, 7 Apr 2021 20:58:03 +0800
+Message-ID: <20210407125803.4138837-1-yukuai3@huawei.com>
 X-Mailer: git-send-email 2.25.4
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -64,31 +64,41 @@ Sender: "Linuxppc-dev"
 
 The sparse tool complains as follows:
 
-drivers/macintosh/windfarm_core.c:59:20: warning:
- symbol 'wf_thread' was not declared. Should it be static?
+drivers/macintosh/via-pmu.c:183:5: warning:
+ symbol 'pmu_cur_battery' was not declared. Should it be static?
+drivers/macintosh/via-pmu.c:190:5: warning:
+ symbol '__fake_sleep' was not declared. Should it be static?
 
-This symbol is not used outside of windfarm_core.c, so this
-commit marks it static.
+These symbols are not used outside of via-pmu.c, so this
+commit marks them static.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: Yu Kuai <yukuai3@huawei.com>
 ---
- drivers/macintosh/windfarm_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/macintosh/via-pmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-index 77612303841e..07f91ec1f960 100644
---- a/drivers/macintosh/windfarm_core.c
-+++ b/drivers/macintosh/windfarm_core.c
-@@ -56,7 +56,7 @@ static BLOCKING_NOTIFIER_HEAD(wf_client_list);
- static int wf_client_count;
- static unsigned int wf_overtemp;
- static unsigned int wf_overtemp_counter;
--struct task_struct *wf_thread;
-+static struct task_struct *wf_thread;
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 73e6ae88fafd..478766434919 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -180,14 +180,14 @@ static struct proc_dir_entry *proc_pmu_options;
+ static int option_server_mode;
  
- static struct platform_device wf_platform_device = {
- 	.name	= "windfarm",
+ int pmu_battery_count;
+-int pmu_cur_battery;
++static int pmu_cur_battery;
+ unsigned int pmu_power_flags = PMU_PWR_AC_PRESENT;
+ struct pmu_battery_info pmu_batteries[PMU_MAX_BATTERIES];
+ static int query_batt_timer = BATTERY_POLLING_COUNT;
+ static struct adb_request batt_req;
+ static struct proc_dir_entry *proc_pmu_batt[PMU_MAX_BATTERIES];
+ 
+-int __fake_sleep;
++static int __fake_sleep;
+ int asleep;
+ 
+ #ifdef CONFIG_ADB
 -- 
 2.25.4
 
