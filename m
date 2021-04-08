@@ -2,53 +2,108 @@ Return-Path: <SRS0=7qm+=JF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E54FC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B425C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 02:39:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D853461168
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D853461168
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7363A61139
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 02:39:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7363A61139
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FG3Bg4XCRz3cDH
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 11:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FG57F0hQHz3bqt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 12:39:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z2N4EECU;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
- envelope-from=yukuai3@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FG3B54glfz3c6l
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 11:11:25 +1000 (AEST)
-Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.58])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FG37T11DQz1BGP3;
- Thu,  8 Apr 2021 09:09:09 +0800 (CST)
-Received: from [10.174.179.129] (10.174.179.129) by
- DGGEMS412-HUB.china.huawei.com (10.3.19.212) with Microsoft SMTP Server id
- 14.3.498.0; Thu, 8 Apr 2021 09:11:12 +0800
-Subject: Re: [PATCH] powerpc: Make some symbols static
-To: kernel test robot <lkp@intel.com>, <mpe@ellerman.id.au>
-References: <20210407125942.4140430-1-yukuai3@huawei.com>
- <202104080005.BEYb9xKK-lkp@intel.com>
-From: "yukuai (C)" <yukuai3@huawei.com>
-Message-ID: <4deb323a-ce00-b463-9b06-5cb5be0795fa@huawei.com>
-Date: Thu, 8 Apr 2021 09:11:11 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Z2N4EECU; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FG56j0gXZz2yjS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 12:38:36 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 1382XWuT116753; Wed, 7 Apr 2021 22:38:29 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=GauS1UcugFbFs6YgEq9WXBU2mwVPWAyjwkwUsJH48VM=;
+ b=Z2N4EECUlC40Vi++5xbD0WYb2AS4CZYwsh7kROVqomCDX+P13ORJ94ABlKmO75OLAsfb
+ FgzAG+YyBTsKi/w66OSECkYrUVk6s1wr151mLiq4vp1VNzXss0hWkeMDPE10mYFzcFdR
+ WNnDuZ9HwH3jB9haAQR29NsZ5tnivsVBakPJqcWxPSu04lwVAcB8fRvUgrVAB0tv+aqp
+ oHJonEWEJc779FCraKMooBMG/Zh+yiRWVOnFUNesmphCm1B0gSIfPMoItQXUhV22f4kh
+ uEj68S6EzZb9ShD/gBJ7FRQoMZoOJ7mswB6//lHUtaUl2d1qhVjFhM+pD+Gnx28bBYUq DA== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37rvm53v7d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 07 Apr 2021 22:38:29 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1382XThp010697;
+ Thu, 8 Apr 2021 02:38:27 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06ams.nl.ibm.com with ESMTP id 37rvbw967a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 08 Apr 2021 02:38:27 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1382cOXR63898054
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 8 Apr 2021 02:38:25 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D54A64C046;
+ Thu,  8 Apr 2021 02:38:24 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E04E24C040;
+ Thu,  8 Apr 2021 02:38:23 +0000 (GMT)
+Received: from Madhavan.PrimaryTP (unknown [9.85.181.214])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  8 Apr 2021 02:38:23 +0000 (GMT)
+Subject: Re: [PATCH v3 1/2] powerpc/perf: Infrastructure to support checking
+ of attr.config*
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20210325115326.143151-1-maddy@linux.ibm.com>
+ <87sg42e34x.fsf@mpe.ellerman.id.au>
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Message-ID: <01370595-7135-1cb1-5998-76e169617b1b@linux.ibm.com>
+Date: Thu, 8 Apr 2021 08:08:22 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
-In-Reply-To: <202104080005.BEYb9xKK-lkp@intel.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+In-Reply-To: <87sg42e34x.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.179.129]
-X-CFilter-Loop: Reflected
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: lF0FrRBW9vTDel5kiG00fqblrg-fmxJt
+X-Proofpoint-ORIG-GUID: lF0FrRBW9vTDel5kiG00fqblrg-fmxJt
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-07_11:2021-04-07,
+ 2021-04-07 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0
+ spamscore=0 phishscore=0 adultscore=0 mlxscore=0 clxscore=1015
+ impostorscore=0 priorityscore=1501 mlxlogscore=999 bulkscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104080014
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,61 +115,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@lists.01.org,
- linux-kernel@vger.kernel.org, yi.zhang@huawei.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021/04/08 0:57, kernel test robot wrote:
-> Hi Yu,
-> 
-> Thank you for the patch! Yet something to improve:
-> 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v5.12-rc6 next-20210407]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Yu-Kuai/powerpc-Make-some-symbols-static/20210407-205258
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc64-defconfig (attached as .config)
-> compiler: powerpc64-linux-gcc (GCC) 9.3.0
-> reproduce (this is a W=1 build):
->          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # https://github.com/0day-ci/linux/commit/7c0f3f68006b9b42ce944b02a2059128cc5826ec
->          git remote add linux-review https://github.com/0day-ci/linux
->          git fetch --no-tags linux-review Yu-Kuai/powerpc-Make-some-symbols-static/20210407-205258
->          git checkout 7c0f3f68006b9b42ce944b02a2059128cc5826ec
->          # save the attached .config to linux build tree
->          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=powerpc64
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
->>> arch/powerpc/kernel/btext.c:49:12: error: 'force_printk_to_btext' defined but not used [-Werror=unused-variable]
->        49 | static int force_printk_to_btext;
->           |            ^~~~~~~~~~~~~~~~~~~~~
->     cc1: all warnings being treated as errors
-> 
-> 
-> vim +/force_printk_to_btext +49 arch/powerpc/kernel/btext.c
-> 
->      47	
->      48	static int boot_text_mapped __force_data;
->    > 49	static int force_printk_to_btext;
->      50	
 
-Will remove this variable in another patch.
+On 4/7/21 5:08 PM, Michael Ellerman wrote:
+> Madhavan Srinivasan <maddy@linux.ibm.com> writes:
+>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+>> index 6817331e22ff..c6eeb4fdc5fd 100644
+>> --- a/arch/powerpc/perf/core-book3s.c
+>> +++ b/arch/powerpc/perf/core-book3s.c
+>> @@ -1958,6 +1958,20 @@ static int power_pmu_event_init(struct perf_event *event)
+>>   
+>>   		if (ppmu->blacklist_ev && is_event_blacklisted(ev))
+>>   			return -EINVAL;
+>> +		/*
+>> +		 * PMU config registers have fields that are
+>> +		 * reserved and specific value to bit field as reserved.
+>> +		 * For ex., MMCRA[61:62] is Randome Sampling Mode (SM)
+>> +		 * and value of 0b11 to this field is reserved.
+>> +		 *
+>> +		 * This check is needed only for raw event type,
+>> +		 * since tools like fuzzer use raw event type to
+>> +		 * provide randomized event code values for test.
+>> +		 *
+>> +		 */
+>> +		if (ppmu->check_attr_config &&
+>> +		    ppmu->check_attr_config(event))
+>> +			return -EINVAL;
+>>   		break;
+> It's not obvious from the diff, but you're only doing the check for RAW
+> events.
+>
+> But I think that's wrong, we should always check, even if the event code
+> comes from the kernel we should still apply the same checks. Otherwise
+> we might inadvertently use an invalid event code for a HARDWARE or CACHE
+Reason for not including HARDWARE and CACHE events are thats,
+they are straight forward, meaning they dont use sampling or thresholding
+features. Currently, checks are mostly in that spaces to check for any 
+invalid
+values. We could include the check for all types the events.
 
-Thanks
-Yu Kuai
-> 
-> ---
-> 0-DAY CI Kernel Test Service, Intel Corporation
-> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
-> 
+I will respin the patch with that change
+
+Thanks for review
+Maddy
+
+
+> event.
+>
+> cheers
