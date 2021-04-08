@@ -2,47 +2,52 @@ Return-Path: <SRS0=7qm+=JF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C05C6C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E54FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35C2361168
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35C2361168
+	by mail.kernel.org (Postfix) with ESMTPS id D853461168
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 01:11:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D853461168
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FG3BJ6hc7z3c9X
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 11:11:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FG3Bg4XCRz3cDH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Apr 2021 11:11:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=szxga06-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
  envelope-from=yukuai3@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga06-in.huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FG39B0Qjqz2yxB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 11:10:34 +1000 (AEST)
-Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.58])
- by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4FG36x34QQzkj1k;
- Thu,  8 Apr 2021 09:08:41 +0800 (CST)
-Received: from huawei.com (10.175.127.227) by DGGEMS404-HUB.china.huawei.com
- (10.3.19.204) with Microsoft SMTP Server id 14.3.498.0; Thu, 8 Apr 2021
- 09:09:44 +0800
-From: Yu Kuai <yukuai3@huawei.com>
-To: <mpe@ellerman.id.au>
-Subject: [PATCH 0/2] code optimizations for btext.c
-Date: Thu, 8 Apr 2021 09:17:59 +0800
-Message-ID: <20210408011801.557004-1-yukuai3@huawei.com>
-X-Mailer: git-send-email 2.25.4
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FG3B54glfz3c6l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Apr 2021 11:11:25 +1000 (AEST)
+Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.58])
+ by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FG37T11DQz1BGP3;
+ Thu,  8 Apr 2021 09:09:09 +0800 (CST)
+Received: from [10.174.179.129] (10.174.179.129) by
+ DGGEMS412-HUB.china.huawei.com (10.3.19.212) with Microsoft SMTP Server id
+ 14.3.498.0; Thu, 8 Apr 2021 09:11:12 +0800
+Subject: Re: [PATCH] powerpc: Make some symbols static
+To: kernel test robot <lkp@intel.com>, <mpe@ellerman.id.au>
+References: <20210407125942.4140430-1-yukuai3@huawei.com>
+ <202104080005.BEYb9xKK-lkp@intel.com>
+From: "yukuai (C)" <yukuai3@huawei.com>
+Message-ID: <4deb323a-ce00-b463-9b06-5cb5be0795fa@huawei.com>
+Date: Thu, 8 Apr 2021 09:11:11 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.127.227]
+In-Reply-To: <202104080005.BEYb9xKK-lkp@intel.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.179.129]
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,19 +60,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: yukuai3@huawei.com, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@lists.01.org,
  linux-kernel@vger.kernel.org, yi.zhang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Yu Kuai (2):
-  powerpc: remove set but not used variable 'force_printk_to_btext'
-  powerpc: make 'boot_text_mapped' static
+On 2021/04/08 0:57, kernel test robot wrote:
+> Hi Yu,
+> 
+> Thank you for the patch! Yet something to improve:
+> 
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on v5.12-rc6 next-20210407]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Yu-Kuai/powerpc-Make-some-symbols-static/20210407-205258
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc64-defconfig (attached as .config)
+> compiler: powerpc64-linux-gcc (GCC) 9.3.0
+> reproduce (this is a W=1 build):
+>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>          chmod +x ~/bin/make.cross
+>          # https://github.com/0day-ci/linux/commit/7c0f3f68006b9b42ce944b02a2059128cc5826ec
+>          git remote add linux-review https://github.com/0day-ci/linux
+>          git fetch --no-tags linux-review Yu-Kuai/powerpc-Make-some-symbols-static/20210407-205258
+>          git checkout 7c0f3f68006b9b42ce944b02a2059128cc5826ec
+>          # save the attached .config to linux build tree
+>          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=powerpc64
+> 
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+> 
+> All errors (new ones prefixed by >>):
+> 
+>>> arch/powerpc/kernel/btext.c:49:12: error: 'force_printk_to_btext' defined but not used [-Werror=unused-variable]
+>        49 | static int force_printk_to_btext;
+>           |            ^~~~~~~~~~~~~~~~~~~~~
+>     cc1: all warnings being treated as errors
+> 
+> 
+> vim +/force_printk_to_btext +49 arch/powerpc/kernel/btext.c
+> 
+>      47	
+>      48	static int boot_text_mapped __force_data;
+>    > 49	static int force_printk_to_btext;
+>      50	
 
- arch/powerpc/kernel/btext.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Will remove this variable in another patch.
 
--- 
-2.25.4
-
+Thanks
+Yu Kuai
+> 
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> 
