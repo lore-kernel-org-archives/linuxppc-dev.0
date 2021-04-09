@@ -2,67 +2,93 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FABC43460
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB433C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:41:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B9B661108
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:35:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B9B661108
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 61B6D61106
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:41:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61B6D61106
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGtKh6lVBz3bV8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 19:35:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGtRm74n4z3by4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 19:41:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=eqIhnDSz;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::102f;
+ helo=mail-pj1-x102f.google.com; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=eqIhnDSz; dkim-atps=neutral
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
+ [IPv6:2607:f8b0:4864:20::102f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGtKJ528gz2yxl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 19:35:29 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FGtK85pZ8z9vBLl;
- Fri,  9 Apr 2021 11:35:24 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uq813t82CATX; Fri,  9 Apr 2021 11:35:24 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FGtK84CGyz9vBLh;
- Fri,  9 Apr 2021 11:35:24 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BDAA48B7E1;
- Fri,  9 Apr 2021 11:35:25 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wpfiCXxm5IY3; Fri,  9 Apr 2021 11:35:25 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F0BF28B7DE;
- Fri,  9 Apr 2021 11:35:24 +0200 (CEST)
-Subject: Re: [PATCH v3 8/9] mm/mremap: Allow arch runtime override
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
- <20210330060752.592769-9-aneesh.kumar@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <c421c3cb-6e9a-6db0-9e4b-f7a7e9a6c1cc@csgroup.eu>
-Date: Fri, 9 Apr 2021 11:35:23 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGtRH4ZxWz2xfl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 19:40:41 +1000 (AEST)
+Received: by mail-pj1-x102f.google.com with SMTP id nh5so2609750pjb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Apr 2021 02:40:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=message-id:date:mime-version:user-agent:subject:content-language:to
+ :cc:references:from:in-reply-to:content-transfer-encoding;
+ bh=YmU4UiRVkN1jsGVU6rQrNh3lTqcstMlm4Jq3GPaOiBg=;
+ b=eqIhnDSzpDVsrQPF0Ue5XOV2jhZhuABTesoYNs+8JkS5P/26nSC6kEcLaTg6hhRs+t
+ EBn18+xL8oMlFGcuH9Ho7V6URI56y7m4z5vHbYa7+1WeuFI6HTryEpAMA0spRWinOHbu
+ TjZj1V6txt49AJklDB7yEWntiF/Hwc/BSpVZQSWr8dxlfjBpaDW+sv0KA/ssn8lgSXy3
+ VEtN5j/XE1PqAa2I3SRlaFueEtpOSlPLqABVnvwwvALloBokUoGBWMUNZBTiOvzFYR03
+ XvduPait262wk1qAQkFlT+rNEQ0U4oTfGjEYo9XgS9sV+zV1+f2d85IwmJffEFNWhQR6
+ LxGw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=YmU4UiRVkN1jsGVU6rQrNh3lTqcstMlm4Jq3GPaOiBg=;
+ b=IkoUkFeomMUTaKgRQ7hrDLfZFD9WISVho3zgxcfo5czEeuQOSAAxk1mgdgmeXFcwRO
+ SqQM+BdWi93yl0vZd/Tevab5JAzXnGdwInuAVMluPhiyn8tIAoTcA+XudcEsjo/at+Mh
+ AfplccbH0XqT+nYsAeE1LK7s/dDHAEesCiSp4q6s3a6GEyqgLl8s11X89l+E0RHeg6G7
+ 3OnsXFsIvnY/iFWwfs1/Iv5J0tus2Q+FEsyUvcH6wkLftunrMWufKWpNaUXHuu00nWVb
+ D7ChWFTzC9HOSNUIFcP1cO1+22U6tG5txSLminfkuWbefF1Zq8YH7OiW+SK3uVqEOF+0
+ rAoA==
+X-Gm-Message-State: AOAM532s3mZLNptvvbFAEIcV98Ssxz60s7NvwNlBBcTyPVoJozHqX0+I
+ RxHaQehh63ellQXkgKNphkTmEA==
+X-Google-Smtp-Source: ABdhPJzBJnlNgNVxBVoaHcGTjRjTuUWT11L073en1sQkvqt5WFQV4jpmf9QTqoOhmXIVyzYlH7u8eQ==
+X-Received: by 2002:a17:902:f686:b029:e5:de44:af60 with SMTP id
+ l6-20020a170902f686b02900e5de44af60mr12117445plg.64.1617961237726; 
+ Fri, 09 Apr 2021 02:40:37 -0700 (PDT)
+Received: from localhost
+ (ppp121-45-194-51.cbr-trn-nor-bras38.tpg.internode.on.net. [121.45.194.51])
+ by smtp.gmail.com with UTF8SMTPSA id f135sm1721237pfa.102.2021.04.09.02.40.35
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 09 Apr 2021 02:40:36 -0700 (PDT)
+Message-ID: <19d2d94d-8c7e-70ae-1a40-97c67654a373@ozlabs.ru>
+Date: Fri, 9 Apr 2021 19:40:33 +1000
 MIME-Version: 1.0
-In-Reply-To: <20210330060752.592769-9-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101
+ Thunderbird/88.0
+Subject: Re: [PATCH v6 33/48] KVM: PPC: Book3S HV P9: Improve exit timing
+ accounting coverage
+Content-Language: en-US
+To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
+References: <20210405011948.675354-1-npiggin@gmail.com>
+ <20210405011948.675354-34-npiggin@gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <20210405011948.675354-34-npiggin@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,148 +100,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: joel@joelfernandes.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- kaleshsingh@google.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 30/03/2021 à 08:07, Aneesh Kumar K.V a écrit :
-> Architectures like ppc64 can only support faster mremap only with radix
-
-... only .... only ...
-
-> translation. Hence allow a runtime check w.r.t support for fast mremap.
+On 05/04/2021 11:19, Nicholas Piggin wrote:
+> The C conversion caused exit timing to become a bit cramped. Expand it
+> to cover more of the entry and exit code.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
 > ---
->   arch/arc/include/asm/tlb.h     |  5 +++++
->   arch/arm64/include/asm/tlb.h   |  6 ++++++
->   arch/powerpc/include/asm/tlb.h |  6 ++++++
->   arch/x86/include/asm/tlb.h     |  5 +++++
->   mm/mremap.c                    | 14 +++++++++++++-
->   5 files changed, 35 insertions(+), 1 deletion(-)
+>   arch/powerpc/kvm/book3s_hv_interrupt.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/arc/include/asm/tlb.h b/arch/arc/include/asm/tlb.h
-> index 975b35d3738d..22b8cfb46cbf 100644
-> --- a/arch/arc/include/asm/tlb.h
-> +++ b/arch/arc/include/asm/tlb.h
-> @@ -9,4 +9,9 @@
->   #include <linux/pagemap.h>
->   #include <asm-generic/tlb.h>
+> diff --git a/arch/powerpc/kvm/book3s_hv_interrupt.c b/arch/powerpc/kvm/book3s_hv_interrupt.c
+> index e93d2a6456ff..44c77f907f91 100644
+> --- a/arch/powerpc/kvm/book3s_hv_interrupt.c
+> +++ b/arch/powerpc/kvm/book3s_hv_interrupt.c
+> @@ -154,6 +154,8 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+>   	if (hdec < 0)
+>   		return BOOK3S_INTERRUPT_HV_DECREMENTER;
 >   
-> +#define arch_supports_page_tables_move arch_supports_page_tables_move
-> +static inline bool arch_supports_page_tables_move(void)
-> +{
-> +	return true;
-> +}
-
-I can't see why ARC arch needs that. It neither selects CONFIG_HAVE_MOVE_PMD nor CONFIG_HAVE_MOVE_PUD.
-
-
->   #endif /* _ASM_ARC_TLB_H */
-> diff --git a/arch/arm64/include/asm/tlb.h b/arch/arm64/include/asm/tlb.h
-> index 61c97d3b58c7..fe209efc6a10 100644
-> --- a/arch/arm64/include/asm/tlb.h
-> +++ b/arch/arm64/include/asm/tlb.h
-> @@ -94,4 +94,10 @@ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pudp,
->   }
->   #endif
->   
-> +#define arch_supports_page_tables_move arch_supports_page_tables_move
-> +static inline bool arch_supports_page_tables_move(void)
-> +{
-> +	return true;
-> +}
+> +	start_timing(vcpu, &vcpu->arch.rm_entry);
 > +
->   #endif
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 160422a439aa..058918a7cd3c 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -83,5 +83,11 @@ static inline int mm_is_thread_local(struct mm_struct *mm)
->   }
->   #endif
+>   	if (vc->tb_offset) {
+>   		u64 new_tb = tb + vc->tb_offset;
+>   		mtspr(SPRN_TBU40, new_tb);
+> @@ -204,8 +206,6 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+>   	 */
+>   	mtspr(SPRN_HDEC, hdec);
 >   
-> +#define arch_supports_page_tables_move arch_supports_page_tables_move
-> +static inline bool arch_supports_page_tables_move(void)
-> +{
-> +	return radix_enabled();
-> +}
+> -	start_timing(vcpu, &vcpu->arch.rm_entry);
+> -
+>   	vcpu->arch.ceded = 0;
+>   
+>   	WARN_ON_ONCE(vcpu->arch.shregs.msr & MSR_HV);
+> @@ -349,8 +349,6 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+>   
+>   	accumulate_time(vcpu, &vcpu->arch.rm_exit);
+>   
+> -	end_timing(vcpu);
+> -
+>   	/* Advance host PURR/SPURR by the amount used by guest */
+>   	purr = mfspr(SPRN_PURR);
+>   	spurr = mfspr(SPRN_SPURR);
+> @@ -415,6 +413,8 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+>   
+>   	switch_mmu_to_host_radix(kvm, host_pidr);
+>   
+> +	end_timing(vcpu);
 > +
->   #endif /* __KERNEL__ */
->   #endif /* __ASM_POWERPC_TLB_H */
-> diff --git a/arch/x86/include/asm/tlb.h b/arch/x86/include/asm/tlb.h
-> index 1bfe979bb9bc..62915238bb36 100644
-> --- a/arch/x86/include/asm/tlb.h
-> +++ b/arch/x86/include/asm/tlb.h
-> @@ -37,4 +37,9 @@ static inline void __tlb_remove_table(void *table)
->   	free_page_and_swap_cache(table);
+>   	return trap;
 >   }
->   
-> +#define arch_supports_page_tables_move arch_supports_page_tables_move
-> +static inline bool arch_supports_page_tables_move(void)
-> +{
-> +	return true;
-> +}
->   #endif /* _ASM_X86_TLB_H */
-> diff --git a/mm/mremap.c b/mm/mremap.c
-> index 7ac1df8e6d51..4d812af3e44b 100644
-> --- a/mm/mremap.c
-> +++ b/mm/mremap.c
-> @@ -25,7 +25,7 @@
->   #include <linux/userfaultfd_k.h>
->   
->   #include <asm/cacheflush.h>
-> -#include <asm/tlbflush.h>
-> +#include <asm/tlb.h>
->   #include <asm/pgalloc.h>
->   
->   #include "internal.h"
-> @@ -221,6 +221,14 @@ static inline void flush_pte_tlb_pwc_range(struct vm_area_struct *vma,
->   }
->   #endif
->   
-> +#ifndef arch_supports_page_tables_move
-> +#define arch_supports_page_tables_move arch_supports_page_tables_move
-> +static inline bool arch_supports_page_tables_move(void)
-> +{
-> +	return false;
-
-Can you do
-
-	return IS_ENABLED(CONFIG_HAVE_MOVE_PMD) || IS_ENABLED(CONFIG_HAVE_MOVE_PUD);
-
-And then remove the arch_supports_page_tables_move() you have added for arc, arm64 and x86 ?
-
-> +}
-> +#endif
-> +
->   #ifdef CONFIG_HAVE_MOVE_PMD
-
-Next step could be remove that #ifdef and the content of the matching #else
-For that we'd just need a stub version of set_pmd_at() and set_pud_at().
-
->   static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
->   		  unsigned long new_addr, pmd_t *old_pmd, pmd_t *new_pmd)
-> @@ -229,6 +237,8 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
->   	struct mm_struct *mm = vma->vm_mm;
->   	pmd_t pmd;
->   
-> +	if (!arch_supports_page_tables_move())
-> +		return false;
->   	/*
->   	 * The destination pmd shouldn't be established, free_pgtables()
->   	 * should have released it.
-> @@ -295,6 +305,8 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
->   	struct mm_struct *mm = vma->vm_mm;
->   	pud_t pud;
->   
-> +	if (!arch_supports_page_tables_move())
-> +		return false;
->   	/*
->   	 * The destination pud shouldn't be established, free_pgtables()
->   	 * should have released it.
+>   EXPORT_SYMBOL_GPL(kvmhv_vcpu_entry_p9);
 > 
+
+-- 
+Alexey
