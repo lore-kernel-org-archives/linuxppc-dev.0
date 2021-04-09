@@ -2,67 +2,51 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CBA8C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 10:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DCFAC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 11:31:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8191661165
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 10:21:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8191661165
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8E7786115B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 11:31:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E7786115B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGvLB0J5xz3c0K
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 20:21:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGwtd0nK6z3c0r
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 21:31:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGvKn6R5vz30Kb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 20:20:57 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FGvKd22R6z9vBmN;
- Fri,  9 Apr 2021 12:20:53 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id U6kaT8vyPDk2; Fri,  9 Apr 2021 12:20:53 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FGvKd0qpkz9vBmM;
- Fri,  9 Apr 2021 12:20:53 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 449288B7E3;
- Fri,  9 Apr 2021 12:20:54 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 20mYPqZcSrF8; Fri,  9 Apr 2021 12:20:54 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0866D8B7E1;
- Fri,  9 Apr 2021 12:20:52 +0200 (CEST)
-Subject: Re: [PATCH v4 18/20] x86: Convert to GENERIC_CMDLINE
-To: Rob Herring <robh@kernel.org>
-References: <cover.1617375802.git.christophe.leroy@csgroup.eu>
- <ab0fd4477964cdbf99e3dd2965a455aa3e738e4b.1617375802.git.christophe.leroy@csgroup.eu>
- <20210408194148.GB1724284@robh.at.kernel.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <834c4850-5541-b5c2-0b7b-d7d960ab2629@csgroup.eu>
-Date: Fri, 9 Apr 2021 12:20:49 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.0
+ smtp.mailfrom=baikalelectronics.ru (client-ip=87.245.175.226;
+ helo=mail.baikalelectronics.ru;
+ envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
+Received: from mail.baikalelectronics.ru (mail.baikalelectronics.com
+ [87.245.175.226])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FGwtD3W7zz30Hk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 21:30:41 +1000 (AEST)
+From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To: Andy Gross <agross@kernel.org>, Bjorn Andersson
+ <bjorn.andersson@linaro.org>, Felipe Balbi <balbi@kernel.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Vladimir Zapolskiy <vz@mleia.com>, Alexey
+ Brodkin <abrodkin@synopsys.com>, Vineet Gupta <vgupta@synopsys.com>, Rob
+ Herring <robh+dt@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ <linux-usb@vger.kernel.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH RESEND v8 3/7] powerpc: dts: akebono: Harmonize EHCI/OHCI DT
+ nodes name
+Date: Fri, 9 Apr 2021 14:30:24 +0300
+Message-ID: <20210409113029.7144-4-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <20210409113029.7144-1-Sergey.Semin@baikalelectronics.ru>
+References: <20210409113029.7144-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-In-Reply-To: <20210408194148.GB1724284@robh.at.kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,81 +58,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, arnd@kernel.org, microblaze <monstr@monstr.eu>,
- daniel@gimpelevich.san-francisco.ca.us, devicetree@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-xtensa@linux-xtensa.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- nios2 <ley.foon.tan@intel.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org,
- openrisc@lists.librecores.org, linux-hexagon@vger.kernel.org,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org, will@kernel.org,
- linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- danielwa@cisco.com
+Cc: Serge Semin <Sergey.Semin@baikalelectronics.ru>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Serge Semin <fancer.lancer@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In accordance with the Generic EHCI/OHCI bindings the corresponding node
+name is suppose to comply with the Generic USB HCD DT schema, which
+requires the USB nodes to have the name acceptable by the regexp:
+"^usb(@.*)?" . Make sure the "generic-ehci" and "generic-ohci"-compatible
+nodes are correctly named.
 
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ arch/powerpc/boot/dts/akebono.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Le 08/04/2021 à 21:41, Rob Herring a écrit :
-> On Fri, Apr 02, 2021 at 03:18:20PM +0000, Christophe Leroy wrote:
->> This converts the architecture to GENERIC_CMDLINE.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->>   arch/x86/Kconfig        | 45 ++---------------------------------------
->>   arch/x86/kernel/setup.c | 17 ++--------------
->>   2 files changed, 4 insertions(+), 58 deletions(-)
->>
->> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->> index a20684d56b4b..66b384228ca3 100644
->> --- a/arch/x86/Kconfig
->> +++ b/arch/x86/Kconfig
->> @@ -104,6 +104,7 @@ config X86
->>   	select ARCH_USE_QUEUED_SPINLOCKS
->>   	select ARCH_USE_SYM_ANNOTATIONS
->>   	select ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
->> +	select ARCH_WANT_CMDLINE_PREPEND_BY_DEFAULT
-> 
-> Seems to be non-existent kconfig option.
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index df18f8dc4642..343326c30380 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -126,7 +126,7 @@ SATA0: sata@30000010000 {
+ 			interrupts = <93 2>;
+ 		};
+ 
+-		EHCI0: ehci@30010000000 {
++		EHCI0: usb@30010000000 {
+ 			compatible = "ibm,476gtr-ehci", "generic-ehci";
+ 			reg = <0x300 0x10000000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+@@ -140,14 +140,14 @@ SD0: sd@30000000000 {
+ 			interrupt-parent = <&MPIC>;
+ 		};
+ 
+-		OHCI0: ohci@30010010000 {
++		OHCI0: usb@30010010000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10010000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+ 			interrupts = <89 1>;
+ 			};
+ 
+-		OHCI1: ohci@30010020000 {
++		OHCI1: usb@30010020000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10020000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+-- 
+2.30.1
 
-Oops. Added in v5.
-
->> @@ -883,18 +881,7 @@ void __init setup_arch(char **cmdline_p)
->>   	bss_resource.start = __pa_symbol(__bss_start);
->>   	bss_resource.end = __pa_symbol(__bss_stop)-1;
->>   
->> -#ifdef CONFIG_CMDLINE_BOOL
->> -#ifdef CONFIG_CMDLINE_FORCE
->> -	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
->> -#else
->> -	if (builtin_cmdline[0]) {
->> -		/* append boot loader cmdline to builtin */
->> -		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
->> -		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
->> -		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
->> -	}
->> -#endif
->> -#endif
->> +	cmdline_build(boot_command_line, boot_command_line);
->>   
->>   	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
->>   	*cmdline_p = command_line;
-> 
-> Once this is all done, I wonder if we can get rid of the strlcpy and
-> perhaps also cmdline_p.
-> 
-
-It seems rather complicated, in init/main.c you have heavy manipulations of command lines which 
-seems to be done in setup_command_line() which seems to add stuff in front of command lines, at the 
-end we end up with several command lines:
-
-/* Untouched saved command line (eg. for /proc) */
-char *saved_command_line;
-/* Command line for parameter parsing */
-static char *static_command_line;
-/* Untouched extra command line */
-static char *extra_command_line;
-
-Some of them come from the cmdline_p which others are from boot_command_line.
-
-I think a cleanup on all that stuff would be worth it as a further step.
