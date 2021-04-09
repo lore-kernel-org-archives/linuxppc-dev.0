@@ -7,40 +7,40 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A6D1C43460
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F561C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 10:00:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F037861221
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 09:59:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F037861221
+	by mail.kernel.org (Postfix) with ESMTPS id ABF776115B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 10:00:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABF776115B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGtsQ3xlJz3by0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 19:59:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGtsw0DMgz3br7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 20:00:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
  envelope-from=zhengzucheng@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGtKC03CPz2yxr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 19:35:22 +1000 (AEST)
-Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.59])
- by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4FGtFn5szrzPpGn;
- Fri,  9 Apr 2021 17:32:29 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGtNP6lLgz2xb6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 19:38:13 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.60])
+ by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4FGtK61pdJzPpZZ;
+ Fri,  9 Apr 2021 17:35:22 +0800 (CST)
 Received: from huawei.com (10.67.174.166) by DGGEMS403-HUB.china.huawei.com
  (10.3.19.203) with Microsoft SMTP Server id 14.3.498.0; Fri, 9 Apr 2021
- 17:35:13 +0800
+ 17:38:09 +0800
 From: Zucheng Zheng <zhengzucheng@huawei.com>
 To: <benh@kernel.crashing.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
- <oohall@gmail.com>, <akpm@linux-foundation.org>, <rppt@kernel.org>,
- <christophe.leroy@csgroup.eu>
-Subject: [PATCH -next] powerpc/pmac: remove not use symbol
-Date: Fri, 9 Apr 2021 17:35:19 +0800
-Message-ID: <20210409093519.118000-1-zhengzucheng@huawei.com>
+ <rppt@kernel.org>, <christophe.leroy@csgroup.eu>,
+ <akpm@linux-foundation.org>, <oohall@gmail.com>
+Subject: [PATCH -next] powerpc/pmac: Make some symbols static
+Date: Fri, 9 Apr 2021 17:38:15 +0800
+Message-ID: <20210409093815.118619-1-zhengzucheng@huawei.com>
 X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -63,28 +63,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-sccdbg symbol is not used, so remove it
+ppc_override_l2cr/ppc_override_l2cr_value/has_l2cache symbol is not used
+outside of setup.c, so commit marks it static.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
 Signed-off-by: Zucheng Zheng <zhengzucheng@huawei.com>
 ---
- arch/powerpc/platforms/powermac/setup.c | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/platforms/powermac/setup.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index db5107c80485..df9ea37d5708 100644
+index 86aee3f2483f..db5107c80485 100644
 --- a/arch/powerpc/platforms/powermac/setup.c
 +++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -83,10 +83,6 @@ extern struct machdep_calls pmac_md;
+@@ -71,9 +71,9 @@
  
- #define DEFAULT_ROOT_DEVICE Root_SDA1	/* sda1 - slightly silly choice */
+ #undef SHOW_GATWICK_IRQS
  
--#ifdef CONFIG_PPC64
--int sccdbg;
--#endif
--
- sys_ctrler_t sys_ctrler = SYS_CTRLER_UNKNOWN;
- EXPORT_SYMBOL(sys_ctrler);
+-int ppc_override_l2cr = 0;
+-int ppc_override_l2cr_value;
+-int has_l2cache = 0;
++static int ppc_override_l2cr;
++static int ppc_override_l2cr_value;
++static int has_l2cache;
+ 
+ int pmac_newworld;
  
 -- 
 2.17.1
