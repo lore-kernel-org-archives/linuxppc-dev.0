@@ -2,115 +2,97 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AFABC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A40FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:57:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3843061106
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:56:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3843061106
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77EC6610FB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:57:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77EC6610FB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGynZ3pP5z3c0m
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 22:56:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGypp5h4yz3c2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 22:57:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aE8MyzoC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=aE8MyzoC; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGyn275N1z2yjP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 22:56:22 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 139CXxjA102803; Fri, 9 Apr 2021 08:56:14 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=0P509MmLBlh98oicNoIESiOrgt6diqDBw+dExix6snU=;
- b=aE8MyzoCLf85iU01ybv124KZTCk+atrB4J/Xh0dbOwBKGcBLOgsbT4G+b5grXRMted1m
- eqx4zV8CDMvCT+HjCDzyE/6LA4aAIQ9Wg2pP/O6Ic2kQJ7S6gbNR43/X0muKDgMkjx3u
- H2eFUx4tQp2CNQkEQnZcyDB8ncl0XXDu8KX7RXWQWN9SyyniusGlnXWZC86rgLYk6v0N
- /ldrVqoP/dnSbKsphKUlqCcDyrJmsmO9BJTEZYV6uf6LqiQNc+J5aFGAcMtAvdkFPVOw
- 3MIRBvvB2OxOWF/i6X6bNSaGrln32yr5IlG3it9UiAknwGinc600/MWmq3Z2baiRW4Yw Jg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37rvpj7ekw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 09 Apr 2021 08:56:14 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 139CcWYx127568;
- Fri, 9 Apr 2021 08:56:14 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37rvpj7ekc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 09 Apr 2021 08:56:13 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 139ClDNM027359;
- Fri, 9 Apr 2021 12:56:12 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma01fra.de.ibm.com with ESMTP id 37rvmq9aps-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 09 Apr 2021 12:56:12 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 139CtkSh37028162
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 9 Apr 2021 12:55:46 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3AFAE4204F;
- Fri,  9 Apr 2021 12:56:07 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7F5B04204B;
- Fri,  9 Apr 2021 12:56:05 +0000 (GMT)
-Received: from [9.124.213.196] (unknown [9.124.213.196])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri,  9 Apr 2021 12:56:05 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
-Subject: Re: [PATCH] powerpc/perf: Fix PMU callbacks to clear pending PMI
- before resetting an overflown PMC
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1617927471.vhjclnvhj3.astroid@bobo.none>
-Date: Fri, 9 Apr 2021 18:23:51 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <6F7D0CD6-EA13-4D6F-9592-98CCC4537133@linux.vnet.ibm.com>
-References: <1617720464-1651-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1617720464-1651-2-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1617927471.vhjclnvhj3.astroid@bobo.none>
-To: Nicholas Piggin <npiggin@gmail.com>
-X-Mailer: Apple Mail (2.3608.120.23.2.4)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: -KvXytqKST9SE4s_w0qxRNwYL62tops4
-X-Proofpoint-GUID: tJVYrmlL3Pl6lhr001uwgEPVV8Dm49yj
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-09_05:2021-04-09,
- 2021-04-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- mlxlogscore=999 priorityscore=1501 clxscore=1015 malwarescore=0
- suspectscore=0 bulkscore=0 adultscore=0 mlxscore=0 lowpriorityscore=0
- spamscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104090093
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGtwr11Blz2yxr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 20:02:51 +1000 (AEST)
+IronPort-SDR: kPtEHqsc3kROwmMaK9SYh/iHgbO1/1fLzh2Ye4JW1oNGhaIbuXyimIHO4ls1AAL1evWopfGNgf
+ lx5LARbZdsgw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9948"; a="193843925"
+X-IronPort-AV: E=Sophos;i="5.82,209,1613462400"; d="scan'208";a="193843925"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Apr 2021 03:02:48 -0700
+IronPort-SDR: RalkOHRWz6iloJxOUmIeoeNsZTn2Zt/Y1Q+kJaWpdXSu5rc+SR0Rt/UXA/GW158e2hjUnBXSs4
+ LQKqP2dOfQzQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.82,209,1613462400"; d="scan'208";a="380597770"
+Received: from black.fi.intel.com ([10.237.72.28])
+ by orsmga003.jf.intel.com with ESMTP; 09 Apr 2021 03:02:37 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+ id 946B9501; Fri,  9 Apr 2021 13:02:53 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Alexander Lobakin <alobakin@pm.me>, Wei Liu <wei.liu@kernel.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Christian Brauner <christian.brauner@ubuntu.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Kees Cook <keescook@chromium.org>, Mike Rapoport <rppt@kernel.org>,
+ Corey Minyard <cminyard@mvista.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ "Jason J. Herne" <jjherne@linux.ibm.com>, Joerg Roedel <jroedel@suse.de>,
+ Michael Kelley <mikelley@microsoft.com>, Joe Perches <joe@perches.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Scott Branden <scott.branden@broadcom.com>,
+ Olof Johansson <olof@lixom.net>, Mihai Carabas <mihai.carabas@oracle.com>,
+ Wang Wenhu <wenhu.wang@vivo.com>, Marek Czerski <ma.czerski@gmail.com>,
+ Hongbo Yao <yaohongbo@huawei.com>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
+ Vineeth Vijayan <vneethv@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ Alexander Egorenkov <egorenar@linux.ibm.com>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Vlastimil Babka <vbabka@suse.cz>, "Paul E. McKenney" <paulmck@kernel.org>,
+ "Steven Rostedt (VMware)" <rostedt@goodmis.org>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-hyperv@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
+ openipmi-developer@lists.sourceforge.net, linux-clk@vger.kernel.org,
+ linux-edac@vger.kernel.org, coresight@lists.linaro.org,
+ linux-leds@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com,
+ netdev@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-arch@vger.kernel.org, kexec@lists.infradead.org, rcu@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org
+Subject: [PATCH v2 1/1] kernel.h: Split out panic and oops helpers
+Date: Fri,  9 Apr 2021 13:02:50 +0300
+Message-Id: <20210409100250.25922-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 09 Apr 2021 22:57:31 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,415 +104,1000 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "nasastry@in.ibm.com" <nasastry@in.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+ Joel Fernandes <joel@joelfernandes.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Will Deacon <will@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>, Daniel Drake <dsd@laptop.org>,
+ Jens Frederich <jfrederich@gmail.com>, Richard Weinberger <richard@nod.at>,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Jakub Kicinski <kuba@kernel.org>, Matt Turner <mattst88@gmail.com>,
+ Iurii Zaikin <yzaikin@google.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Mike Leach <mike.leach@linaro.org>, Ohad Ben-Cohen <ohad@wizery.com>,
+ Robert Richter <rric@kernel.org>, Corey Minyard <minyard@acm.org>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Josh Triplett <josh@joshtriplett.org>, Alex Elder <elder@kernel.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Richard Henderson <rth@twiddle.net>, Juergen Gross <jgross@suse.com>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Jon Nettleton <jon.nettleton@gmail.com>, Stephen Boyd <sboyd@kernel.org>,
+ Sebastian Reichel <sre@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>,
+ Luis Chamberlain <mcgrof@kernel.org>, James Morse <james.morse@arm.com>,
+ Eric Biederman <ebiederm@xmission.com>, Leo Yan <leo.yan@linaro.org>,
+ Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+kernel.h is being used as a dump for all kinds of stuff for a long time.
+Here is the attempt to start cleaning it up by splitting out panic and
+oops helpers.
 
+There are several purposes of doing this:
+- dropping dependency in bug.h
+- dropping a loop by moving out panic_notifier.h
+- unload kernel.h from something which has its own domain
 
-> On 09-Apr-2021, at 6:38 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
->=20
-Hi Nick,
+At the same time convert users tree-wide to use new headers, although
+for the time being include new header back to kernel.h to avoid twisted
+indirected includes for existing users.
 
-Thanks for checking the patch and sharing review comments.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Acked-by: Corey Minyard <cminyard@mvista.com>
+Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: Kees Cook <keescook@chromium.org>
+Acked-by: Wei Liu <wei.liu@kernel.org>
+Acked-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+v2:
+ - fixed all errors with allmodconfig on x86_64 (Andrew)
+ - checked with allyesconfig on x86_64
+ - additionally grepped source code for panic notifier list usage
+   and converted all users
+ - elaborated commit message (Luis)
+ - collected given tags (incl. Andrew's SoB, see below)
 
-> I was going to nitpick "overflown" here as something birds do, but =
-some
-> sources says overflown is okay for past tense.
->=20
-> You could use "overflowed" for that, but I understand the issue with =
-the=20
-> word: you are talking about counters that are currently in an =
-"overflow"=20
-> state, but the overflow occurred in the past and is not still =
-happening
-> so you "overflowing" doesn't exactly fit either.
->=20
-> overflown kind of works for some reason you can kind of use it for
-> present tense!
+I added Andrew's SoB since part of the fixes I took from him. Andrew,
+feel free to amend or tell me how you want me to do.
 
-Ok sure, Yes counter is currently in an =E2=80=9Coverflow=E2=80=9D =
-state.
+ arch/alpha/kernel/setup.c                     |  2 +-
+ arch/arm64/kernel/setup.c                     |  1 +
+ arch/mips/kernel/relocate.c                   |  1 +
+ arch/mips/sgi-ip22/ip22-reset.c               |  1 +
+ arch/mips/sgi-ip32/ip32-reset.c               |  1 +
+ arch/parisc/kernel/pdc_chassis.c              |  1 +
+ arch/powerpc/kernel/setup-common.c            |  1 +
+ arch/s390/kernel/ipl.c                        |  1 +
+ arch/sparc/kernel/sstate.c                    |  1 +
+ arch/um/drivers/mconsole_kern.c               |  1 +
+ arch/um/kernel/um_arch.c                      |  1 +
+ arch/x86/include/asm/desc.h                   |  1 +
+ arch/x86/kernel/cpu/mshyperv.c                |  1 +
+ arch/x86/kernel/setup.c                       |  1 +
+ arch/x86/purgatory/purgatory.c                |  2 +
+ arch/x86/xen/enlighten.c                      |  1 +
+ arch/xtensa/platforms/iss/setup.c             |  1 +
+ drivers/bus/brcmstb_gisb.c                    |  1 +
+ drivers/char/ipmi/ipmi_msghandler.c           |  1 +
+ drivers/clk/analogbits/wrpll-cln28hpc.c       |  4 +
+ drivers/edac/altera_edac.c                    |  1 +
+ drivers/firmware/google/gsmi.c                |  1 +
+ drivers/hv/vmbus_drv.c                        |  1 +
+ .../hwtracing/coresight/coresight-cpu-debug.c |  1 +
+ drivers/leds/trigger/ledtrig-activity.c       |  1 +
+ drivers/leds/trigger/ledtrig-heartbeat.c      |  1 +
+ drivers/leds/trigger/ledtrig-panic.c          |  1 +
+ drivers/misc/bcm-vk/bcm_vk_dev.c              |  1 +
+ drivers/misc/ibmasm/heartbeat.c               |  1 +
+ drivers/misc/pvpanic/pvpanic.c                |  1 +
+ drivers/net/ipa/ipa_smp2p.c                   |  1 +
+ drivers/parisc/power.c                        |  1 +
+ drivers/power/reset/ltc2952-poweroff.c        |  1 +
+ drivers/remoteproc/remoteproc_core.c          |  1 +
+ drivers/s390/char/con3215.c                   |  1 +
+ drivers/s390/char/con3270.c                   |  1 +
+ drivers/s390/char/sclp.c                      |  1 +
+ drivers/s390/char/sclp_con.c                  |  1 +
+ drivers/s390/char/sclp_vt220.c                |  1 +
+ drivers/s390/char/zcore.c                     |  1 +
+ drivers/soc/bcm/brcmstb/pm/pm-arm.c           |  1 +
+ drivers/staging/olpc_dcon/olpc_dcon.c         |  1 +
+ drivers/video/fbdev/hyperv_fb.c               |  1 +
+ include/asm-generic/bug.h                     |  3 +-
+ include/linux/kernel.h                        | 84 +---------------
+ include/linux/panic.h                         | 98 +++++++++++++++++++
+ include/linux/panic_notifier.h                | 12 +++
+ kernel/hung_task.c                            |  1 +
+ kernel/kexec_core.c                           |  1 +
+ kernel/panic.c                                |  1 +
+ kernel/rcu/tree.c                             |  2 +
+ kernel/sysctl.c                               |  1 +
+ kernel/trace/trace.c                          |  1 +
+ 53 files changed, 167 insertions(+), 85 deletions(-)
+ create mode 100644 include/linux/panic.h
+ create mode 100644 include/linux/panic_notifier.h
 
->=20
-> Excerpts from Athira Rajeev's message of April 7, 2021 12:47 am:
->> Running perf fuzzer showed below in dmesg logs:
->> "Can't find PMC that caused IRQ"
->>=20
->> This means a PMU exception happened, but none of the PMC's =
-(Performance
->> Monitor Counter) were found to be overflown. There are some corner =
-cases
->> that clears the PMCs after PMI gets masked. In such cases, the perf
->> interrupt handler will not find the active PMC values that had caused
->> the overflow and thus leads to this message while replaying.
->>=20
->> Case 1: PMU Interrupt happens during replay of other interrupts and
->> counter values gets cleared by PMU callbacks before replay:
->>=20
->> During replay of interrupts like timer, __do_irq and doorbell =
-exception, we
->> conditionally enable interrupts via may_hard_irq_enable(). This could
->> potentially create a window to generate a PMI. Since irq soft mask is =
-set
->> to ALL_DISABLED, the PMI will get masked here.
->=20
-> I wonder if may_hard_irq_enable shouldn't enable if PMI is soft
-> disabled. And also maybe replay should not set ALL_DISABLED if
-> there are no PMI interrupts pending.
->=20
-> Still, I think those are a bit more tricky and might take a while
-> to get right or just not be worth while, so I think your patch is
-> fine.
-
-Ok Nick.
->=20
->> We could get IPIs run before
->> perf interrupt is replayed and the PMU events could deleted or =
-stopped.
->> This will change the PMU SPR values and resets the counters. Snippet =
-of
->> ftrace log showing PMU callbacks invoked in "__do_irq":
->>=20
->> <idle>-0 [051] dns. 132025441306354: __do_irq <-call_do_irq
->> <idle>-0 [051] dns. 132025441306430: irq_enter <-__do_irq
->> <idle>-0 [051] dns. 132025441306503: irq_enter_rcu <-__do_irq
->> <idle>-0 [051] dnH. 132025441306599: xive_get_irq <-__do_irq
->> <<>>
->> <idle>-0 [051] dnH. 132025441307770: =
-generic_smp_call_function_single_interrupt <-smp_ipi_demux_relaxed
->> <idle>-0 [051] dnH. 132025441307839: flush_smp_call_function_queue =
-<-smp_ipi_demux_relaxed
->> <idle>-0 [051] dnH. 132025441308057: _raw_spin_lock <-event_function
->> <idle>-0 [051] dnH. 132025441308206: power_pmu_disable =
-<-perf_pmu_disable
->> <idle>-0 [051] dnH. 132025441308337: power_pmu_del <-event_sched_out
->> <idle>-0 [051] dnH. 132025441308407: power_pmu_read <-power_pmu_del
->> <idle>-0 [051] dnH. 132025441308477: read_pmc <-power_pmu_read
->> <idle>-0 [051] dnH. 132025441308590: isa207_disable_pmc =
-<-power_pmu_del
->> <idle>-0 [051] dnH. 132025441308663: write_pmc <-power_pmu_del
->> <idle>-0 [051] dnH. 132025441308787: power_pmu_event_idx =
-<-perf_event_update_userpage
->> <idle>-0 [051] dnH. 132025441308859: rcu_read_unlock_strict =
-<-perf_event_update_userpage
->> <idle>-0 [051] dnH. 132025441308975: power_pmu_enable =
-<-perf_pmu_enable
->> <<>>
->> <idle>-0 [051] dnH. 132025441311108: irq_exit <-__do_irq
->> <idle>-0 [051] dns. 132025441311319: performance_monitor_exception =
-<-replay_soft_interrupts
->>=20
->> Case 2: PMI's masked during local_* operations, example local_add.
->> If the local_add operation happens within a local_irq_save, replay of
->> PMI will be during local_irq_restore. Similar to case 1, this could
->> also create a window before replay where PMU events gets deleted or
->> stopped.
->=20
-> Here as well perhaps PMIs should be replayed if they are unmasked
-> even if other interrupts are still masked. Again that might be more
-> complexity than it's worth.
-Ok..
-
->=20
->>=20
->> Patch adds a fix to update the PMU callback functions =
-(del,stop,enable) to
->> check for pending perf interrupt. If there is an overflown PMC and =
-pending
->> perf interrupt indicated in Paca, clear the PMI bit in paca to drop =
-that
->> sample. In case of power_pmu_del, also clear the MMCR0 PMAO bit which
->> otherwise could lead to spurious interrupts in some corner cases. =
-Example,
->> a timer after power_pmu_del which will re-enable interrupts since PMI =
-is
->> cleared and triggers a PMI again since PMAO bit is still set.
->>=20
->> We can't just replay PMI any time. Hence this approach is preferred =
-rather
->> than replaying PMI before resetting overflown PMC. Patch also =
-documents
->> core-book3s on a race condition which can trigger these PMC messages =
-during
->> idle path in PowerNV.
->>=20
->> Fixes: f442d004806e ("powerpc/64s: Add support to mask perf =
-interrupts and replay them")
->> Reported-by: Nageswara R Sastry <nasastry@in.ibm.com>
->> Suggested-by: Nicholas Piggin <npiggin@gmail.com>
->> Suggested-by: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> ---
->> arch/powerpc/include/asm/pmc.h  | 11 +++++++++
->> arch/powerpc/perf/core-book3s.c | 55 =
-+++++++++++++++++++++++++++++++++++++++++
->> 2 files changed, 66 insertions(+)
->>=20
->> diff --git a/arch/powerpc/include/asm/pmc.h =
-b/arch/powerpc/include/asm/pmc.h
->> index c6bbe9778d3c..97b4bd8de25b 100644
->> --- a/arch/powerpc/include/asm/pmc.h
->> +++ b/arch/powerpc/include/asm/pmc.h
->> @@ -34,11 +34,22 @@ static inline void ppc_set_pmu_inuse(int inuse)
->> #endif
->> }
->>=20
->> +static inline int clear_paca_irq_pmi(void)
->> +{
->> +	if (get_paca()->irq_happened & PACA_IRQ_PMI) {
->> +		WARN_ON_ONCE(mfmsr() & MSR_EE);
->> +		get_paca()->irq_happened &=3D ~PACA_IRQ_PMI;
->> +		return 1;
->> +	}
->> +	return 0;
->> +}
->=20
-> Could you put this in arch/powerpc/include/asm/hw_irq.h and
-> rather than paca_irq, call it irq_pending perhaps
->=20
->  clear_pmi_irq_pending()
->=20
->  get_clear_pmi_irq_pending() if you're also testing it.
-
-Sure,  I will use =E2=80=9Cget_clear_pmi_irq_pending()=E2=80=9D and try =
-with moving this to arch/powerpc/include/asm/hw_irq.h
-
->=20
-> Could you add a little comment about the corner cases above it too?
-> The root cause seem to be interrupt replay while a masked PMI is
-> pending can result in other interrupts arriving which clear the PMU
-> overflow so the pending PMI must be cleared.
-
-Ok, I will add comment and fix this in next version.
-
->=20
->> +
->> extern void power4_enable_pmcs(void);
->>=20
->> #else /* CONFIG_PPC64 */
->>=20
->> static inline void ppc_set_pmu_inuse(int inuse) { }
->> +static inline int clear_paca_irq_pmi(void) { return 0; }
->>=20
->> #endif
->>=20
->> diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c
->> index 766f064f00fb..18ca3c90f866 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -847,6 +847,20 @@ static void write_pmc(int idx, unsigned long =
-val)
->> 	}
->> }
->>=20
->> +static int pmc_overflown(int idx)
->> +{
->> +	unsigned long val[8];
->> +	int i;
->> +
->> +	for (i =3D 0; i < ppmu->n_counter; i++)
->> +		val[i] =3D read_pmc(i + 1);
->> +
->> +	if ((int)val[idx-1] < 0)
->> +		return 1;
->> +
->> +	return 0;
->> +}
->> +
->> /* Called from sysrq_handle_showregs() */
->> void perf_event_print_debug(void)
->> {
->> @@ -1438,6 +1452,15 @@ static void power_pmu_enable(struct pmu *pmu)
->> 		event =3D cpuhw->event[i];
->> 		if (event->hw.idx && event->hw.idx !=3D hwc_index[i] + =
-1) {
->> 			power_pmu_read(event);
->> +			/*
->> +			 * if the PMC corresponding to event->hw.idx is
->> +			 * overflown, check if there is any pending perf
->> +			 * interrupt set in paca. If so, disable the =
-interrupt
->> +			 * by clearing the paca bit for PMI since we are =
-going
->> +			 * to reset the PMC.
->> +			 */
->> +			if (pmc_overflown(event->hw.idx))
->> +				clear_paca_irq_pmi();
->=20
-> If the pmc is not overflown, could there still be a PMI pending?
-
-I didn=E2=80=99t hit that scenario where PMI is pending without an =
-overflown PMC.
-Also I believe if such a case happens, we will need an investigation =
-there. It could be a different case to be handled.
-
-I actually considered below two points for adding this PMC check instead =
-of just clearing the PMI.
-
-1. Make sure we are not masking any bug here by just clearing =
-PACA_IRQ_PMI.
-Ideally if PMI is set in irq_happened, it means there was a counter =
-overflow.
-2. If there is more than one PMU event, say two events. Make sure we are =
-clearing PMI only for the
-event whose counter is overflown.
-=20
->=20
->> 			write_pmc(event->hw.idx, 0);
->> 			event->hw.idx =3D 0;
->> 		}
->> @@ -1474,6 +1497,10 @@ static void power_pmu_enable(struct pmu *pmu)
->> 		event->hw.idx =3D idx;
->> 		if (event->hw.state & PERF_HES_STOPPED)
->> 			val =3D 0;
->> +
->> +		/* See above for clear_paca_irq_pmi */
->> +		if (pmc_overflown(event->hw.idx))
->> +			clear_paca_irq_pmi();
->> 		write_pmc(idx, val);
->>=20
->> 		perf_event_update_userpage(event);
->> @@ -1619,6 +1646,7 @@ static void power_pmu_del(struct perf_event =
-*event, int ef_flags)
->> 	struct cpu_hw_events *cpuhw;
->> 	long i;
->> 	unsigned long flags;
->> +	unsigned long val_mmcr0;
->>=20
->> 	local_irq_save(flags);
->> 	perf_pmu_disable(event->pmu);
->> @@ -1636,6 +1664,22 @@ static void power_pmu_del(struct perf_event =
-*event, int ef_flags)
->> 			--cpuhw->n_events;
->> 			ppmu->disable_pmc(event->hw.idx - 1, =
-&cpuhw->mmcr);
->> 			if (event->hw.idx) {
->> +				/*
->> +				 * if the PMC corresponding to =
-event->hw.idx is
->> +				 * overflown, check if there is any =
-pending perf
->> +				 * interrupt set in paca. If so, disable =
-the interrupt
->> +				 * and clear the MMCR0 PMAO bit since we =
-are going
->> +				 * to reset the PMC and delete the =
-event.
->> +				 */
->> +				if (pmc_overflown(event->hw.idx)) {
->> +					if (clear_paca_irq_pmi()) {
->> +						val_mmcr0 =3D =
-mfspr(SPRN_MMCR0);
->> +						val_mmcr0 &=3D =
-~MMCR0_PMAO;
->> +						write_mmcr0(cpuhw, =
-val_mmcr0);
->> +						mb();
->> +						isync();
->=20
-> I don't know the perf subsystem, but just out of curiosity why does
-> MMCR0 need to be cleared only in this case?
-
-I got a corner case in power_pmu_del, with only clearing PACA_IRQ_PMI =
-and without resetting MMCR0 PMAO bit.
-Here is the flow:
-
-1. We clear the PMI bit Paca, but MMCR0 has the PMAO bit still set. PMAO =
-bit indicates a PMI has occurred.
-2. A timer interrupt is replayed after power_pmu_del which does a =
-=E2=80=9Cmay_hard_irq_enable=E2=80=9D.
-This will re-enable interrupts and triggers a PMI again since PMAO bit =
-is still set.
-
-So clear PMAO bit to avoid such spurious interrupts.
-Ftrace logs showing the same with some debug trace_printks :
-
-     <idle>-0    [134] d.h. 327287888478: power_pmu_del =
-<-event_sched_out.isra.126
-     <<>>    Here we cleared the PMI
-     <idle>-0    [134] d.h. 327287889272: write_pmc <-power_pmu_del
-     <idle>-0    [134] d.h. 327287889346: rcu_read_unlock_strict =
-<-perf_event_update_userpage
-     <idle>-0    [134] d.h. 327287889711: power_pmu_del: In =
-power_pmu_del MMCR0 is 82004090, local_paca->irq_happened is 9
-     <idle>-0    [134] d.h. 327287889811: power_pmu_enable =
-<-perf_pmu_enable
-     <idle>-0    [134] d.h. 327287889982: irq_exit <-doorbell_exception
-     <idle>-0    [134] d... 327287890053: idle_cpu <-irq_exit
-     <idle>-0    [134] d... 327287890158: tick_nohz_irq_exit <-irq_exit
-     <idle>-0    [134] d... 327287890219: ktime_get <-tick_nohz_irq_exit
-     <idle>-0    [134] d... 327287890328: replay_soft_interrupts =
-<-interrupt_exit_kernel_prepare
-     <idle>-0    [134] d... 327287890399: irq_enter <-timer_interrupt
-     <<>>
-     <idle>-0    [134] d.h. 327287891163: timer_interrupt: Before =
-may_hard_irq_enable MMCR0 is 82004090, local_paca->irq_happened is 1
-     <<>>
-     <idle>-0    [134] d.h. 327287894310: timer_interrupt: After =
-may_hard_irq_enable MMCR0 is 82004090, local_paca->irq_happened is 21
-
-In case of other callbacks like pmu enable, we are programming MMCR0. =
-But in case of event getting deleted, there is no
-way we clear PMAO unless an event gets scheduled again in that cpu. =
-Hence added this check only in pmu_del callback.
-=20
-
-> What if we disabled MSR[EE]
-> right before a perf interrupt came in, so we don't get a pending PMI
-> but the condition is still close to the same.
-
-Nick, I didn=E2=80=99t get this question exactly. Can you please help =
-explain a bit ?
-=46rom my understanding, consider that we disabled MSR[EE] before perf =
-interrupt came in.
-So once the interrupts are re-enabled:
-
-1. If soft mask is set to IRQS_DISABLED, perf interrupt will be =
-triggered as NMI.
-2. In case of ALL_DISABLED, it will be masked for replay. If PMU =
-callbacks are invoked before replay,
-our present patch will take care of clearing PMI in corner cases.
-
-Thanks
-Athira.
->=20
->> +				}
->> 				write_pmc(event->hw.idx, 0);
->> 				event->hw.idx =3D 0;
->> 			}
->> @@ -1714,6 +1758,8 @@ static void power_pmu_stop(struct perf_event =
-*event, int ef_flags)
->>=20
->> 	local_irq_save(flags);
->> 	perf_pmu_disable(event->pmu);
->> +	if (pmc_overflown(event->hw.idx))
->> +		clear_paca_irq_pmi();
->>=20
->> 	power_pmu_read(event);
->> 	event->hw.state |=3D PERF_HES_STOPPED | PERF_HES_UPTODATE;
->> @@ -2343,6 +2389,15 @@ static void __perf_event_interrupt(struct =
-pt_regs *regs)
->> 			}
->> 		}
->> 	}
->> +
->> +	/*
->> +	 * During system wide profling or while specific CPU
->> +	 * is monitored for an event, some corner cases could
->> +	 * cause PMC to overflow in idle path. This will trigger
->> +	 * a PMI after waking up from idle. Since counter values
->> +	 * are _not_ saved/restored in idle path, can lead to
->> +	 * below "Can't find PMC" message.
->> +	 */
->> 	if (unlikely(!found) && !arch_irq_disabled_regs(regs))
->> 		printk_ratelimited(KERN_WARNING "Can't find PMC that =
-caused IRQ\n");
->>=20
->> --=20
->> 1.8.3.1
+diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
+index 03dda3beb3bd..5d1296534682 100644
+--- a/arch/alpha/kernel/setup.c
++++ b/arch/alpha/kernel/setup.c
+@@ -28,6 +28,7 @@
+ #include <linux/init.h>
+ #include <linux/string.h>
+ #include <linux/ioport.h>
++#include <linux/panic_notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/memblock.h>
+ #include <linux/pci.h>
+@@ -46,7 +47,6 @@
+ #include <linux/log2.h>
+ #include <linux/export.h>
+ 
+-extern struct atomic_notifier_head panic_notifier_list;
+ static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
+ static struct notifier_block alpha_panic_block = {
+ 	alpha_panic_event,
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 61845c0821d9..787bc0f601b3 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -23,6 +23,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/smp.h>
+ #include <linux/fs.h>
++#include <linux/panic_notifier.h>
+ #include <linux/proc_fs.h>
+ #include <linux/memblock.h>
+ #include <linux/of_fdt.h>
+diff --git a/arch/mips/kernel/relocate.c b/arch/mips/kernel/relocate.c
+index 499a5357c09f..56b51de2dc51 100644
+--- a/arch/mips/kernel/relocate.c
++++ b/arch/mips/kernel/relocate.c
+@@ -18,6 +18,7 @@
+ #include <linux/kernel.h>
+ #include <linux/libfdt.h>
+ #include <linux/of_fdt.h>
++#include <linux/panic_notifier.h>
+ #include <linux/sched/task.h>
+ #include <linux/start_kernel.h>
+ #include <linux/string.h>
+diff --git a/arch/mips/sgi-ip22/ip22-reset.c b/arch/mips/sgi-ip22/ip22-reset.c
+index c374f3ceec38..9028dbbb45dd 100644
+--- a/arch/mips/sgi-ip22/ip22-reset.c
++++ b/arch/mips/sgi-ip22/ip22-reset.c
+@@ -12,6 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/sched/signal.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/pm.h>
+ #include <linux/timer.h>
+ 
+diff --git a/arch/mips/sgi-ip32/ip32-reset.c b/arch/mips/sgi-ip32/ip32-reset.c
+index 20d8637340be..18d1c115cd53 100644
+--- a/arch/mips/sgi-ip32/ip32-reset.c
++++ b/arch/mips/sgi-ip32/ip32-reset.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/panic_notifier.h>
+ #include <linux/sched.h>
+ #include <linux/sched/signal.h>
+ #include <linux/notifier.h>
+diff --git a/arch/parisc/kernel/pdc_chassis.c b/arch/parisc/kernel/pdc_chassis.c
+index 75ae88d13909..da154406d368 100644
+--- a/arch/parisc/kernel/pdc_chassis.c
++++ b/arch/parisc/kernel/pdc_chassis.c
+@@ -20,6 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/notifier.h>
+ #include <linux/cache.h>
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 74a98fff2c2f..046fe21b5c3b 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -9,6 +9,7 @@
+ #undef DEBUG
+ 
+ #include <linux/export.h>
++#include <linux/panic_notifier.h>
+ #include <linux/string.h>
+ #include <linux/sched.h>
+ #include <linux/init.h>
+diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
+index 7a21eca498aa..e0b675dd7080 100644
+--- a/arch/s390/kernel/ipl.c
++++ b/arch/s390/kernel/ipl.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/device.h>
+ #include <linux/delay.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/ctype.h>
+ #include <linux/fs.h>
+diff --git a/arch/sparc/kernel/sstate.c b/arch/sparc/kernel/sstate.c
+index ac8677c3841e..3bcc4ddc6911 100644
+--- a/arch/sparc/kernel/sstate.c
++++ b/arch/sparc/kernel/sstate.c
+@@ -6,6 +6,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ 
+diff --git a/arch/um/drivers/mconsole_kern.c b/arch/um/drivers/mconsole_kern.c
+index 6d00af25ec6b..328b16f99b30 100644
+--- a/arch/um/drivers/mconsole_kern.c
++++ b/arch/um/drivers/mconsole_kern.c
+@@ -12,6 +12,7 @@
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/sched/debug.h>
+ #include <linux/proc_fs.h>
+diff --git a/arch/um/kernel/um_arch.c b/arch/um/kernel/um_arch.c
+index 74e07e748a9b..9512253947d5 100644
+--- a/arch/um/kernel/um_arch.c
++++ b/arch/um/kernel/um_arch.c
+@@ -7,6 +7,7 @@
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/panic_notifier.h>
+ #include <linux/seq_file.h>
+ #include <linux/string.h>
+ #include <linux/utsname.h>
+diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
+index 476082a83d1c..ceb12683b6d1 100644
+--- a/arch/x86/include/asm/desc.h
++++ b/arch/x86/include/asm/desc.h
+@@ -9,6 +9,7 @@
+ #include <asm/irq_vectors.h>
+ #include <asm/cpu_entry_area.h>
+ 
++#include <linux/debug_locks.h>
+ #include <linux/smp.h>
+ #include <linux/percpu.h>
+ 
+diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
+index 22f13343b5da..9e5c6f2b044d 100644
+--- a/arch/x86/kernel/cpu/mshyperv.c
++++ b/arch/x86/kernel/cpu/mshyperv.c
+@@ -17,6 +17,7 @@
+ #include <linux/irq.h>
+ #include <linux/kexec.h>
+ #include <linux/i8253.h>
++#include <linux/panic_notifier.h>
+ #include <linux/random.h>
+ #include <asm/processor.h>
+ #include <asm/hypervisor.h>
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 59e5e0903b0c..570699eecf90 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -14,6 +14,7 @@
+ #include <linux/initrd.h>
+ #include <linux/iscsi_ibft.h>
+ #include <linux/memblock.h>
++#include <linux/panic_notifier.h>
+ #include <linux/pci.h>
+ #include <linux/root_dev.h>
+ #include <linux/hugetlb.h>
+diff --git a/arch/x86/purgatory/purgatory.c b/arch/x86/purgatory/purgatory.c
+index f03b64d9cb51..7558139920f8 100644
+--- a/arch/x86/purgatory/purgatory.c
++++ b/arch/x86/purgatory/purgatory.c
+@@ -9,6 +9,8 @@
+  */
+ 
+ #include <linux/bug.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
+ #include <crypto/sha2.h>
+ #include <asm/purgatory.h>
+ 
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index aa9f50fccc5d..c79bd0af2e8c 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -6,6 +6,7 @@
+ #include <linux/cpu.h>
+ #include <linux/kexec.h>
+ #include <linux/slab.h>
++#include <linux/panic_notifier.h>
+ 
+ #include <xen/xen.h>
+ #include <xen/features.h>
+diff --git a/arch/xtensa/platforms/iss/setup.c b/arch/xtensa/platforms/iss/setup.c
+index ed519aee0ec8..d3433e1bb94e 100644
+--- a/arch/xtensa/platforms/iss/setup.c
++++ b/arch/xtensa/platforms/iss/setup.c
+@@ -14,6 +14,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/printk.h>
+ #include <linux/string.h>
+ 
+diff --git a/drivers/bus/brcmstb_gisb.c b/drivers/bus/brcmstb_gisb.c
+index 7355fa2cb439..6551286a60cc 100644
+--- a/drivers/bus/brcmstb_gisb.c
++++ b/drivers/bus/brcmstb_gisb.c
+@@ -6,6 +6,7 @@
+ #include <linux/init.h>
+ #include <linux/types.h>
+ #include <linux/module.h>
++#include <linux/panic_notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
+ #include <linux/sysfs.h>
+diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
+index 8a0e97b33cae..e96cb5c4f97a 100644
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/errno.h>
++#include <linux/panic_notifier.h>
+ #include <linux/poll.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+diff --git a/drivers/clk/analogbits/wrpll-cln28hpc.c b/drivers/clk/analogbits/wrpll-cln28hpc.c
+index 776ead319ae9..7c64ea52a8d5 100644
+--- a/drivers/clk/analogbits/wrpll-cln28hpc.c
++++ b/drivers/clk/analogbits/wrpll-cln28hpc.c
+@@ -23,8 +23,12 @@
+ 
+ #include <linux/bug.h>
+ #include <linux/err.h>
++#include <linux/limits.h>
+ #include <linux/log2.h>
+ #include <linux/math64.h>
++#include <linux/math.h>
++#include <linux/minmax.h>
++
+ #include <linux/clk/analogbits-wrpll-cln28hpc.h>
+ 
+ /* MIN_INPUT_FREQ: minimum input clock frequency, in Hz (Fref_min) */
+diff --git a/drivers/edac/altera_edac.c b/drivers/edac/altera_edac.c
+index 5f7fd79ec82f..61c21bd880a4 100644
+--- a/drivers/edac/altera_edac.c
++++ b/drivers/edac/altera_edac.c
+@@ -20,6 +20,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
++#include <linux/panic_notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/types.h>
+diff --git a/drivers/firmware/google/gsmi.c b/drivers/firmware/google/gsmi.c
+index bb6e77ee3898..adaa492c3d2d 100644
+--- a/drivers/firmware/google/gsmi.c
++++ b/drivers/firmware/google/gsmi.c
+@@ -19,6 +19,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/fs.h>
+ #include <linux/slab.h>
++#include <linux/panic_notifier.h>
+ #include <linux/ioctl.h>
+ #include <linux/acpi.h>
+ #include <linux/io.h>
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 004c3390c15f..7107b9b6eff4 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -25,6 +25,7 @@
+ 
+ #include <linux/delay.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/ptrace.h>
+ #include <linux/screen_info.h>
+ #include <linux/kdebug.h>
+diff --git a/drivers/hwtracing/coresight/coresight-cpu-debug.c b/drivers/hwtracing/coresight/coresight-cpu-debug.c
+index 2dcf13de751f..9731d3a96073 100644
+--- a/drivers/hwtracing/coresight/coresight-cpu-debug.c
++++ b/drivers/hwtracing/coresight/coresight-cpu-debug.c
+@@ -17,6 +17,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/panic_notifier.h>
+ #include <linux/pm_qos.h>
+ #include <linux/slab.h>
+ #include <linux/smp.h>
+diff --git a/drivers/leds/trigger/ledtrig-activity.c b/drivers/leds/trigger/ledtrig-activity.c
+index 14ba7faaed9e..30bc9df03636 100644
+--- a/drivers/leds/trigger/ledtrig-activity.c
++++ b/drivers/leds/trigger/ledtrig-activity.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/leds.h>
+ #include <linux/module.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+diff --git a/drivers/leds/trigger/ledtrig-heartbeat.c b/drivers/leds/trigger/ledtrig-heartbeat.c
+index 36b6709afe9f..7fe0a05574d2 100644
+--- a/drivers/leds/trigger/ledtrig-heartbeat.c
++++ b/drivers/leds/trigger/ledtrig-heartbeat.c
+@@ -11,6 +11,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/panic_notifier.h>
+ #include <linux/slab.h>
+ #include <linux/timer.h>
+ #include <linux/sched.h>
+diff --git a/drivers/leds/trigger/ledtrig-panic.c b/drivers/leds/trigger/ledtrig-panic.c
+index 5751cd032f9d..64abf2e91608 100644
+--- a/drivers/leds/trigger/ledtrig-panic.c
++++ b/drivers/leds/trigger/ledtrig-panic.c
+@@ -8,6 +8,7 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/leds.h>
+ #include "../leds.h"
+ 
+diff --git a/drivers/misc/bcm-vk/bcm_vk_dev.c b/drivers/misc/bcm-vk/bcm_vk_dev.c
+index 6bfea3210389..ad639ee85b2a 100644
+--- a/drivers/misc/bcm-vk/bcm_vk_dev.c
++++ b/drivers/misc/bcm-vk/bcm_vk_dev.c
+@@ -9,6 +9,7 @@
+ #include <linux/fs.h>
+ #include <linux/idr.h>
+ #include <linux/interrupt.h>
++#include <linux/panic_notifier.h>
+ #include <linux/kref.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+diff --git a/drivers/misc/ibmasm/heartbeat.c b/drivers/misc/ibmasm/heartbeat.c
+index 4f5f3bdc814d..59c9a0d95659 100644
+--- a/drivers/misc/ibmasm/heartbeat.c
++++ b/drivers/misc/ibmasm/heartbeat.c
+@@ -9,6 +9,7 @@
+  */
+ 
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include "ibmasm.h"
+ #include "dot_command.h"
+ #include "lowlevel.h"
+diff --git a/drivers/misc/pvpanic/pvpanic.c b/drivers/misc/pvpanic/pvpanic.c
+index 65f70a4da8c0..793ea0c01193 100644
+--- a/drivers/misc/pvpanic/pvpanic.c
++++ b/drivers/misc/pvpanic/pvpanic.c
+@@ -13,6 +13,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/panic_notifier.h>
+ #include <linux/types.h>
+ #include <linux/cdev.h>
+ #include <linux/list.h>
+diff --git a/drivers/net/ipa/ipa_smp2p.c b/drivers/net/ipa/ipa_smp2p.c
+index a5f7a79a1923..34b68dc43886 100644
+--- a/drivers/net/ipa/ipa_smp2p.c
++++ b/drivers/net/ipa/ipa_smp2p.c
+@@ -8,6 +8,7 @@
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/soc/qcom/smem.h>
+ #include <linux/soc/qcom/smem_state.h>
+ 
+diff --git a/drivers/parisc/power.c b/drivers/parisc/power.c
+index ebaf6867b457..456776bd8ee6 100644
+--- a/drivers/parisc/power.c
++++ b/drivers/parisc/power.c
+@@ -38,6 +38,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/notifier.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/sched/signal.h>
+ #include <linux/kthread.h>
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
+index d1495af30081..8688c8ba8894 100644
+--- a/drivers/power/reset/ltc2952-poweroff.c
++++ b/drivers/power/reset/ltc2952-poweroff.c
+@@ -52,6 +52,7 @@
+ #include <linux/slab.h>
+ #include <linux/kmod.h>
+ #include <linux/module.h>
++#include <linux/panic_notifier.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/reboot.h>
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
+index 626a6b90fba2..76dd8e2b1e7e 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -20,6 +20,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
++#include <linux/panic_notifier.h>
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ #include <linux/dma-map-ops.h>
+diff --git a/drivers/s390/char/con3215.c b/drivers/s390/char/con3215.c
+index 1fd5bca9fa20..02523f4e29f4 100644
+--- a/drivers/s390/char/con3215.c
++++ b/drivers/s390/char/con3215.c
+@@ -19,6 +19,7 @@
+ #include <linux/console.h>
+ #include <linux/interrupt.h>
+ #include <linux/err.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/serial.h> /* ASYNC_* flags */
+ #include <linux/slab.h>
+diff --git a/drivers/s390/char/con3270.c b/drivers/s390/char/con3270.c
+index e21962c0fd94..87cdbace1453 100644
+--- a/drivers/s390/char/con3270.c
++++ b/drivers/s390/char/con3270.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/list.h>
++#include <linux/panic_notifier.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ #include <linux/err.h>
+diff --git a/drivers/s390/char/sclp.c b/drivers/s390/char/sclp.c
+index 986bbbc23d0a..6627820a5eb9 100644
+--- a/drivers/s390/char/sclp.c
++++ b/drivers/s390/char/sclp.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/module.h>
+ #include <linux/err.h>
++#include <linux/panic_notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+ #include <linux/timer.h>
+diff --git a/drivers/s390/char/sclp_con.c b/drivers/s390/char/sclp_con.c
+index 9b852a47ccc1..cc01a7b8595d 100644
+--- a/drivers/s390/char/sclp_con.c
++++ b/drivers/s390/char/sclp_con.c
+@@ -10,6 +10,7 @@
+ #include <linux/kmod.h>
+ #include <linux/console.h>
+ #include <linux/init.h>
++#include <linux/panic_notifier.h>
+ #include <linux/timer.h>
+ #include <linux/jiffies.h>
+ #include <linux/termios.h>
+diff --git a/drivers/s390/char/sclp_vt220.c b/drivers/s390/char/sclp_vt220.c
+index 7f4445b0f819..5b8a7b090a97 100644
+--- a/drivers/s390/char/sclp_vt220.c
++++ b/drivers/s390/char/sclp_vt220.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/spinlock.h>
++#include <linux/panic_notifier.h>
+ #include <linux/list.h>
+ #include <linux/wait.h>
+ #include <linux/timer.h>
+diff --git a/drivers/s390/char/zcore.c b/drivers/s390/char/zcore.c
+index bd3c724bf695..b5b0848da93b 100644
+--- a/drivers/s390/char/zcore.c
++++ b/drivers/s390/char/zcore.c
+@@ -15,6 +15,7 @@
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ 
+ #include <asm/asm-offsets.h>
+diff --git a/drivers/soc/bcm/brcmstb/pm/pm-arm.c b/drivers/soc/bcm/brcmstb/pm/pm-arm.c
+index a673fdffe216..3cbb165d6e30 100644
+--- a/drivers/soc/bcm/brcmstb/pm/pm-arm.c
++++ b/drivers/soc/bcm/brcmstb/pm/pm-arm.c
+@@ -28,6 +28,7 @@
+ #include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
++#include <linux/panic_notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/printk.h>
+diff --git a/drivers/staging/olpc_dcon/olpc_dcon.c b/drivers/staging/olpc_dcon/olpc_dcon.c
+index 6d8e9a481786..7284cb4ac395 100644
+--- a/drivers/staging/olpc_dcon/olpc_dcon.c
++++ b/drivers/staging/olpc_dcon/olpc_dcon.c
+@@ -22,6 +22,7 @@
+ #include <linux/device.h>
+ #include <linux/uaccess.h>
+ #include <linux/ctype.h>
++#include <linux/panic_notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/olpc-ec.h>
+ #include <asm/tsc.h>
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4dc9077dd2ac..ac06ee7c87d7 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -52,6 +52,7 @@
+ #include <linux/completion.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
++#include <linux/panic_notifier.h>
+ #include <linux/efi.h>
+ #include <linux/console.h>
+ 
+diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+index 76a10e0dca9f..719410b93f99 100644
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -17,7 +17,8 @@
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+-#include <linux/kernel.h>
++#include <linux/panic.h>
++#include <linux/printk.h>
+ 
+ #ifdef CONFIG_BUG
+ 
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 09035ac67d4b..6c5a05ac1ecb 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -14,6 +14,7 @@
+ #include <linux/math.h>
+ #include <linux/minmax.h>
+ #include <linux/typecheck.h>
++#include <linux/panic.h>
+ #include <linux/printk.h>
+ #include <linux/build_bug.h>
+ #include <linux/static_call_types.h>
+@@ -70,7 +71,6 @@
+ #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
+ 
+ struct completion;
+-struct pt_regs;
+ struct user;
+ 
+ #ifdef CONFIG_PREEMPT_VOLUNTARY
+@@ -175,14 +175,6 @@ void __might_fault(const char *file, int line);
+ static inline void might_fault(void) { }
+ #endif
+ 
+-extern struct atomic_notifier_head panic_notifier_list;
+-extern long (*panic_blink)(int state);
+-__printf(1, 2)
+-void panic(const char *fmt, ...) __noreturn __cold;
+-void nmi_panic(struct pt_regs *regs, const char *msg);
+-extern void oops_enter(void);
+-extern void oops_exit(void);
+-extern bool oops_may_print(void);
+ void do_exit(long error_code) __noreturn;
+ void complete_and_exit(struct completion *, long) __noreturn;
+ 
+@@ -368,52 +360,8 @@ extern int __kernel_text_address(unsigned long addr);
+ extern int kernel_text_address(unsigned long addr);
+ extern int func_ptr_is_kernel_text(void *ptr);
+ 
+-#ifdef CONFIG_SMP
+-extern unsigned int sysctl_oops_all_cpu_backtrace;
+-#else
+-#define sysctl_oops_all_cpu_backtrace 0
+-#endif /* CONFIG_SMP */
+-
+ extern void bust_spinlocks(int yes);
+-extern int panic_timeout;
+-extern unsigned long panic_print;
+-extern int panic_on_oops;
+-extern int panic_on_unrecovered_nmi;
+-extern int panic_on_io_nmi;
+-extern int panic_on_warn;
+-extern unsigned long panic_on_taint;
+-extern bool panic_on_taint_nousertaint;
+-extern int sysctl_panic_on_rcu_stall;
+-extern int sysctl_max_rcu_stall_to_panic;
+-extern int sysctl_panic_on_stackoverflow;
+-
+-extern bool crash_kexec_post_notifiers;
+ 
+-/*
+- * panic_cpu is used for synchronizing panic() and crash_kexec() execution. It
+- * holds a CPU number which is executing panic() currently. A value of
+- * PANIC_CPU_INVALID means no CPU has entered panic() or crash_kexec().
+- */
+-extern atomic_t panic_cpu;
+-#define PANIC_CPU_INVALID	-1
+-
+-/*
+- * Only to be used by arch init code. If the user over-wrote the default
+- * CONFIG_PANIC_TIMEOUT, honor it.
+- */
+-static inline void set_arch_panic_timeout(int timeout, int arch_default_timeout)
+-{
+-	if (panic_timeout == arch_default_timeout)
+-		panic_timeout = timeout;
+-}
+-extern const char *print_tainted(void);
+-enum lockdep_ok {
+-	LOCKDEP_STILL_OK,
+-	LOCKDEP_NOW_UNRELIABLE
+-};
+-extern void add_taint(unsigned flag, enum lockdep_ok);
+-extern int test_taint(unsigned flag);
+-extern unsigned long get_taint(void);
+ extern int root_mountflags;
+ 
+ extern bool early_boot_irqs_disabled;
+@@ -432,36 +380,6 @@ extern enum system_states {
+ 	SYSTEM_SUSPEND,
+ } system_state;
+ 
+-/* This cannot be an enum because some may be used in assembly source. */
+-#define TAINT_PROPRIETARY_MODULE	0
+-#define TAINT_FORCED_MODULE		1
+-#define TAINT_CPU_OUT_OF_SPEC		2
+-#define TAINT_FORCED_RMMOD		3
+-#define TAINT_MACHINE_CHECK		4
+-#define TAINT_BAD_PAGE			5
+-#define TAINT_USER			6
+-#define TAINT_DIE			7
+-#define TAINT_OVERRIDDEN_ACPI_TABLE	8
+-#define TAINT_WARN			9
+-#define TAINT_CRAP			10
+-#define TAINT_FIRMWARE_WORKAROUND	11
+-#define TAINT_OOT_MODULE		12
+-#define TAINT_UNSIGNED_MODULE		13
+-#define TAINT_SOFTLOCKUP		14
+-#define TAINT_LIVEPATCH			15
+-#define TAINT_AUX			16
+-#define TAINT_RANDSTRUCT		17
+-#define TAINT_FLAGS_COUNT		18
+-#define TAINT_FLAGS_MAX			((1UL << TAINT_FLAGS_COUNT) - 1)
+-
+-struct taint_flag {
+-	char c_true;	/* character printed when tainted */
+-	char c_false;	/* character printed when not tainted */
+-	bool module;	/* also show as a per-module taint flag */
+-};
+-
+-extern const struct taint_flag taint_flags[TAINT_FLAGS_COUNT];
+-
+ extern const char hex_asc[];
+ #define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
+ #define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]
+diff --git a/include/linux/panic.h b/include/linux/panic.h
+new file mode 100644
+index 000000000000..f5844908a089
+--- /dev/null
++++ b/include/linux/panic.h
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _LINUX_PANIC_H
++#define _LINUX_PANIC_H
++
++#include <linux/compiler_attributes.h>
++#include <linux/types.h>
++
++struct pt_regs;
++
++extern long (*panic_blink)(int state);
++__printf(1, 2)
++void panic(const char *fmt, ...) __noreturn __cold;
++void nmi_panic(struct pt_regs *regs, const char *msg);
++extern void oops_enter(void);
++extern void oops_exit(void);
++extern bool oops_may_print(void);
++
++#ifdef CONFIG_SMP
++extern unsigned int sysctl_oops_all_cpu_backtrace;
++#else
++#define sysctl_oops_all_cpu_backtrace 0
++#endif /* CONFIG_SMP */
++
++extern int panic_timeout;
++extern unsigned long panic_print;
++extern int panic_on_oops;
++extern int panic_on_unrecovered_nmi;
++extern int panic_on_io_nmi;
++extern int panic_on_warn;
++
++extern unsigned long panic_on_taint;
++extern bool panic_on_taint_nousertaint;
++
++extern int sysctl_panic_on_rcu_stall;
++extern int sysctl_max_rcu_stall_to_panic;
++extern int sysctl_panic_on_stackoverflow;
++
++extern bool crash_kexec_post_notifiers;
++
++/*
++ * panic_cpu is used for synchronizing panic() and crash_kexec() execution. It
++ * holds a CPU number which is executing panic() currently. A value of
++ * PANIC_CPU_INVALID means no CPU has entered panic() or crash_kexec().
++ */
++extern atomic_t panic_cpu;
++#define PANIC_CPU_INVALID	-1
++
++/*
++ * Only to be used by arch init code. If the user over-wrote the default
++ * CONFIG_PANIC_TIMEOUT, honor it.
++ */
++static inline void set_arch_panic_timeout(int timeout, int arch_default_timeout)
++{
++	if (panic_timeout == arch_default_timeout)
++		panic_timeout = timeout;
++}
++
++/* This cannot be an enum because some may be used in assembly source. */
++#define TAINT_PROPRIETARY_MODULE	0
++#define TAINT_FORCED_MODULE		1
++#define TAINT_CPU_OUT_OF_SPEC		2
++#define TAINT_FORCED_RMMOD		3
++#define TAINT_MACHINE_CHECK		4
++#define TAINT_BAD_PAGE			5
++#define TAINT_USER			6
++#define TAINT_DIE			7
++#define TAINT_OVERRIDDEN_ACPI_TABLE	8
++#define TAINT_WARN			9
++#define TAINT_CRAP			10
++#define TAINT_FIRMWARE_WORKAROUND	11
++#define TAINT_OOT_MODULE		12
++#define TAINT_UNSIGNED_MODULE		13
++#define TAINT_SOFTLOCKUP		14
++#define TAINT_LIVEPATCH			15
++#define TAINT_AUX			16
++#define TAINT_RANDSTRUCT		17
++#define TAINT_FLAGS_COUNT		18
++#define TAINT_FLAGS_MAX			((1UL << TAINT_FLAGS_COUNT) - 1)
++
++struct taint_flag {
++	char c_true;	/* character printed when tainted */
++	char c_false;	/* character printed when not tainted */
++	bool module;	/* also show as a per-module taint flag */
++};
++
++extern const struct taint_flag taint_flags[TAINT_FLAGS_COUNT];
++
++enum lockdep_ok {
++	LOCKDEP_STILL_OK,
++	LOCKDEP_NOW_UNRELIABLE,
++};
++
++extern const char *print_tainted(void);
++extern void add_taint(unsigned flag, enum lockdep_ok);
++extern int test_taint(unsigned flag);
++extern unsigned long get_taint(void);
++
++#endif	/* _LINUX_PANIC_H */
+diff --git a/include/linux/panic_notifier.h b/include/linux/panic_notifier.h
+new file mode 100644
+index 000000000000..41e32483d7a7
+--- /dev/null
++++ b/include/linux/panic_notifier.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _LINUX_PANIC_NOTIFIERS_H
++#define _LINUX_PANIC_NOTIFIERS_H
++
++#include <linux/notifier.h>
++#include <linux/types.h>
++
++extern struct atomic_notifier_head panic_notifier_list;
++
++extern bool crash_kexec_post_notifiers;
++
++#endif	/* _LINUX_PANIC_NOTIFIERS_H */
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index bb2e3e15c84c..2871076e4d29 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -15,6 +15,7 @@
+ #include <linux/kthread.h>
+ #include <linux/lockdep.h>
+ #include <linux/export.h>
++#include <linux/panic_notifier.h>
+ #include <linux/sysctl.h>
+ #include <linux/suspend.h>
+ #include <linux/utsname.h>
+diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+index f099baee3578..4b34a9aa32bc 100644
+--- a/kernel/kexec_core.c
++++ b/kernel/kexec_core.c
+@@ -26,6 +26,7 @@
+ #include <linux/suspend.h>
+ #include <linux/device.h>
+ #include <linux/freezer.h>
++#include <linux/panic_notifier.h>
+ #include <linux/pm.h>
+ #include <linux/cpu.h>
+ #include <linux/uaccess.h>
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 332736a72a58..edad89660a2b 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -23,6 +23,7 @@
+ #include <linux/reboot.h>
+ #include <linux/delay.h>
+ #include <linux/kexec.h>
++#include <linux/panic_notifier.h>
+ #include <linux/sched.h>
+ #include <linux/sysrq.h>
+ #include <linux/init.h>
+diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+index 03282196953a..67f8f65a9ada 100644
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -32,6 +32,8 @@
+ #include <linux/export.h>
+ #include <linux/completion.h>
+ #include <linux/moduleparam.h>
++#include <linux/panic.h>
++#include <linux/panic_notifier.h>
+ #include <linux/percpu.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 3601786ddaeb..e5cf9c4ef5e1 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -27,6 +27,7 @@
+ #include <linux/sysctl.h>
+ #include <linux/bitmap.h>
+ #include <linux/signal.h>
++#include <linux/panic.h>
+ #include <linux/printk.h>
+ #include <linux/proc_fs.h>
+ #include <linux/security.h>
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 507a30bf26e4..9612a1d8fa13 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -39,6 +39,7 @@
+ #include <linux/slab.h>
+ #include <linux/ctype.h>
+ #include <linux/init.h>
++#include <linux/panic_notifier.h>
+ #include <linux/poll.h>
+ #include <linux/nmi.h>
+ #include <linux/fs.h>
+-- 
+2.30.2
 
