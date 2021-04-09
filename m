@@ -7,49 +7,48 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C90EDC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 399BBC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5AA2060238
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AA2060238
+	by mail.kernel.org (Postfix) with ESMTPS id B4AC3610A4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4AC3610A4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGhsc0BZVz3c4Y
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:29:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGhsy3FfMz3c7Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:29:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGhrs60Y9z2yx2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 12:28:43 +1000 (AEST)
-IronPort-SDR: o8fmAV/XciSauwlVh8NKp+ENg30BgKj9+X4Xc1uZ5fpiWB5Cfv5bC6tSXZqv3tqtH9r/3t/WcA
- ThTKCAU/lvKw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9948"; a="173757715"
-X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="173757715"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGhrs6pHSz2yx6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 12:28:44 +1000 (AEST)
+IronPort-SDR: CTQ1SWmJe7KgqOhNjxfCWl2YGQzgUq22GVhKU8+dGPz6+vPm7mTC0uTU5eZIwSuyrwXN/VKMpb
+ m4FAxeGX0wWw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9948"; a="181207343"
+X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="181207343"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  08 Apr 2021 19:28:41 -0700
-IronPort-SDR: akKVHyO/jQP6/U/15sqKYGBNEi/xGkd0zIoYrW9agrvbZR6eVDKjsr+wdUD7qB6X1gmjL7L5Io
- O96CflkAI02Q==
+IronPort-SDR: 0gX1BhChxyomEQJIHTjVxHH5FHCMuRhwQpL2zg0LbRt0DZKypYPX7d6mFytRzFeQrRRxVVDXpj
+ reI7QOibriTw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="610320997"
+X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="381946049"
 Received: from lkp-server01.sh.intel.com (HELO 69d8fcc516b7) ([10.239.97.150])
- by fmsmga006.fm.intel.com with ESMTP; 08 Apr 2021 19:28:40 -0700
+ by orsmga006.jf.intel.com with ESMTP; 08 Apr 2021 19:28:40 -0700
 Received: from kbuild by 69d8fcc516b7 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lUgsx-000G3D-Lx; Fri, 09 Apr 2021 02:28:39 +0000
-Date: Fri, 09 Apr 2021 10:28:29 +0800
+ id 1lUgsx-000G3A-Dd; Fri, 09 Apr 2021 02:28:39 +0000
+Date: Fri, 09 Apr 2021 10:28:19 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD REGRESSION
- 3ac6488df9160f52bbd8b8ec3387a53ac3d0f2eb
-Message-ID: <606fbbcd.YCqB+tR1NRgrmWMp%lkp@intel.com>
+Subject: [powerpc:next] BUILD SUCCESS c46bbf5d2defae50d61ddf31502017ee8952af83
+Message-ID: <606fbbc3.79PARf3CPvE3hpw6%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,31 +69,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 3ac6488df9160f52bbd8b8ec3387a53ac3d0f2eb  powerpc/xive: Modernize XIVE-IPI domain with an 'alloc' handler
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+branch HEAD: c46bbf5d2defae50d61ddf31502017ee8952af83  powerpc/32: Remove powerpc specific definition of 'ptrdiff_t'
 
-Error/Warning reports:
+elapsed time: 728m
 
-https://lore.kernel.org/linuxppc-dev/202104090230.ACwnO03u-lkp@intel.com
-https://lore.kernel.org/linuxppc-dev/202104090827.jH0WBiCC-lkp@intel.com
-
-Error/Warning in current branch:
-
-include/linux/compiler_types.h:320:38: error: call to '__compiletime_assert_171' declared with attribute error: BUILD_BUG_ON failed: TASK_SIZE > MODULES_VADDR
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- powerpc-randconfig-s031-20210408
-|   |-- drivers-w1-slaves-w1_ds28e04.c:sparse:sparse:incorrect-type-in-initializer-(different-address-spaces)-expected-char-const-noderef-__user-_gu_addr-got-char-const-buf
-|   `-- drivers-w1-slaves-w1_ds28e04.c:sparse:sparse:incorrect-type-in-initializer-(different-address-spaces)-expected-char-noderef-__user-_pu_addr-got-char-buf
-`-- powerpc64-randconfig-c004-20210408
-    `-- include-linux-compiler_types.h:error:call-to-__compiletime_assert_NNN-declared-with-attribute-error:BUILD_BUG_ON-failed:TASK_SIZE-MODULES_VADDR
-
-elapsed time: 727m
-
-configs tested: 166
+configs tested: 165
 configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -154,48 +138,48 @@ mips                          rb532_defconfig
 powerpc                 mpc834x_mds_defconfig
 sh                          landisk_defconfig
 powerpc                      arches_defconfig
+parisc                           allyesconfig
 m68k                          hp300_defconfig
 s390                          debug_defconfig
 sh                 kfr2r09-romimage_defconfig
 arm                             mxs_defconfig
 mips                          malta_defconfig
 arm                           u8500_defconfig
+um                           x86_64_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                          ixp4xx_defconfig
+sh                  sh7785lcr_32bit_defconfig
 sh                           se7206_defconfig
 nios2                            alldefconfig
 arc                        vdk_hs38_defconfig
 sh                          sdk7786_defconfig
 powerpc                     mpc83xx_defconfig
 arm                          pxa3xx_defconfig
-um                           x86_64_defconfig
 arm                            zeus_defconfig
 arm                      footbridge_defconfig
 powerpc                        warp_defconfig
 mips                           ip22_defconfig
 m68k                          multi_defconfig
 sh                          lboxre2_defconfig
+arm64                            alldefconfig
 powerpc                     mpc5200_defconfig
 powerpc                      ep88xc_defconfig
 m68k                          amiga_defconfig
 arm                  colibri_pxa270_defconfig
 arm                            xcep_defconfig
 ia64                            zx1_defconfig
-sh                  sh7785lcr_32bit_defconfig
 arm                            dove_defconfig
 powerpc                 mpc85xx_cds_defconfig
 arm                         shannon_defconfig
 powerpc                 xes_mpc85xx_defconfig
 arm                         at91_dt_defconfig
 sh                   sh7724_generic_defconfig
-arc                    vdk_hs38_smp_defconfig
 mips                           ip32_defconfig
-powerpc                 mpc8272_ads_defconfig
-openrisc                            defconfig
-riscv             nommu_k210_sdcard_defconfig
-mips                          ath25_defconfig
-mips                          ath79_defconfig
+arm                        realview_defconfig
+arm                        mvebu_v7_defconfig
+arm                          collie_defconfig
 powerpc                         ps3_defconfig
 arm                          gemini_defconfig
-arm                        realview_defconfig
 arm                          iop32x_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
@@ -218,7 +202,6 @@ sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
-parisc                           allyesconfig
 s390                                defconfig
 sparc                            allyesconfig
 sparc                               defconfig
