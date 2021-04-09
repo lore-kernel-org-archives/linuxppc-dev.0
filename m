@@ -2,57 +2,90 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 399BBC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1D78C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:52:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4AC3610A4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:29:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4AC3610A4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id BDF9960FE8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 02:52:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDF9960FE8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGhsy3FfMz3c7Q
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:29:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGjMz0HDsz3bT2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:52:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=dbL+4SuF;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2d;
+ helo=mail-qv1-xf2d.google.com; envelope-from=leobras.c@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=dbL+4SuF; dkim-atps=neutral
+Received: from mail-qv1-xf2d.google.com (mail-qv1-xf2d.google.com
+ [IPv6:2607:f8b0:4864:20::f2d])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGhrs6pHSz2yx6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 12:28:44 +1000 (AEST)
-IronPort-SDR: CTQ1SWmJe7KgqOhNjxfCWl2YGQzgUq22GVhKU8+dGPz6+vPm7mTC0uTU5eZIwSuyrwXN/VKMpb
- m4FAxeGX0wWw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9948"; a="181207343"
-X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="181207343"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Apr 2021 19:28:41 -0700
-IronPort-SDR: 0gX1BhChxyomEQJIHTjVxHH5FHCMuRhwQpL2zg0LbRt0DZKypYPX7d6mFytRzFeQrRRxVVDXpj
- reI7QOibriTw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,208,1613462400"; d="scan'208";a="381946049"
-Received: from lkp-server01.sh.intel.com (HELO 69d8fcc516b7) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 08 Apr 2021 19:28:40 -0700
-Received: from kbuild by 69d8fcc516b7 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lUgsx-000G3A-Dd; Fri, 09 Apr 2021 02:28:39 +0000
-Date: Fri, 09 Apr 2021 10:28:19 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS c46bbf5d2defae50d61ddf31502017ee8952af83
-Message-ID: <606fbbc3.79PARf3CPvE3hpw6%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGjMR2YJ9z2yZ4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 12:51:46 +1000 (AEST)
+Received: by mail-qv1-xf2d.google.com with SMTP id h3so1215519qve.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Apr 2021 19:51:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :organization:user-agent:mime-version:content-transfer-encoding;
+ bh=Ti/qpIJK0JqvHL8TU/tnfoeQ9Y9IJU2p+9Y0hgWyYLA=;
+ b=dbL+4SuFGgzny/mPnRzaZ4dtQnvbr2GIofq9+J0p7ghVS5THzn0NrGyLRIsCM7ufDJ
+ ntYXe6wRo1Qo7BO5TUGo3Swq5JspriqnLFEbKz4EPWmhmvrnLS7Hytszw8i7A2Wo+YFZ
+ t43Iw1Qkun5eJ+ACmxXy3CoEA1Vr5ZjFXmMmFJGEM6BXfQWh3Uj23AOvh2iBmNItNO6s
+ npsCM/CANpewDB/Ck5yama6lTO8stoQpz4bsbc3gVOoOJ6X8ToRVbsQO6HHt4ewimNDY
+ NfRZpUtbPViUzQKO8bfhJDXM46PorufDiOlolfFB806LIh4XzXsDaw3/jRXedTS8hCrM
+ uUVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:organization:user-agent:mime-version
+ :content-transfer-encoding;
+ bh=Ti/qpIJK0JqvHL8TU/tnfoeQ9Y9IJU2p+9Y0hgWyYLA=;
+ b=o4SQsgXHD7/3cazlGXBLObo1+Ja5ue37bQYK+RX2YsR59FFzQcgyEbvIalkM5VIE9I
+ oNHVmTw8IKOcnk0XwoVDHxRDIWxQk4Z3AlogBv9+sx/joxmLngkrEVLWh+KrcT/6VSlH
+ xKh+aEzwikQeaFBU5qyQ2dcBINcup2Ck41tYKSRs5DMffylQS4oKFLpymvReGriLDETM
+ QGmGIxhGz5yU+73mNTUdzinZDdsTCj3xMOeNodLQyaYheqCuffZxjc7HrmrAK9HeDYEj
+ XGHKTRbU+ONXDavtRylNLpU/5/2/NX/n3CkxcTQHp0c56IyCL98exSTcLonr1Hvm4kno
+ 5NSQ==
+X-Gm-Message-State: AOAM531AFsaw09ls6/5Mo+Lq9TNehMEAmM3ROFjkhqMKqLV0sagi6gj2
+ cwnX1+w2UVgykq60O9wNLveOlSDGDMk=
+X-Google-Smtp-Source: ABdhPJzTi39fAOMh7hkNEfyra0UzEUiu3Dt6zJYz5i979zxCQHEcKh6pILhSu5DdXRy7mGBRLE9K0w==
+X-Received: by 2002:a0c:e84e:: with SMTP id l14mr12178774qvo.39.1617936702818; 
+ Thu, 08 Apr 2021 19:51:42 -0700 (PDT)
+Received: from li-908e0a4c-2250-11b2-a85c-f027e903211b.ibm.com
+ ([2804:14c:482:7b04::1000])
+ by smtp.gmail.com with ESMTPSA id 26sm214093qtd.73.2021.04.08.19.51.38
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 08 Apr 2021 19:51:42 -0700 (PDT)
+Message-ID: <e5c924479839815c025de29d650d82419b18c0dc.camel@gmail.com>
+Subject: Re: [PATCH 2/3] powerpc/mm/hash: Avoid multiple HPT resize-ups on
+ memory hotplug
+From: Leonardo Bras <leobras.c@gmail.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Date: Thu, 08 Apr 2021 23:51:36 -0300
+In-Reply-To: <YFhNd42RvobCV8tF@yekko.fritz.box>
+References: <20210312072940.598696-1-leobras.c@gmail.com>
+ <20210312072940.598696-3-leobras.c@gmail.com>
+ <YFhNd42RvobCV8tF@yekko.fritz.box>
+Organization: IBM
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,191 +97,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, David Hildenbrand <david@redhat.com>,
+ Scott Cheloha <cheloha@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Bharata B Rao <bharata@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Sandipan Das <sandipan@linux.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Laurent Dufour <ldufour@linux.ibm.com>, Logan Gunthorpe <logang@deltatee.com>,
+ Dan Williams <dan.j.williams@intel.com>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: c46bbf5d2defae50d61ddf31502017ee8952af83  powerpc/32: Remove powerpc specific definition of 'ptrdiff_t'
+Hello David, thanks for the feedback!
 
-elapsed time: 728m
+On Mon, 2021-03-22 at 18:55 +1100, David Gibson wrote:
+> > +void hash_memory_batch_expand_prepare(unsigned long newsize)
+> > +{
+> > +	/*
+> > +	 * Resizing-up HPT should never fail, but there are some cases system starts with higher
+> > +	 * SHIFT than required, and we go through the funny case of resizing HPT down while
+> > +	 * adding memory
+> > +	 */
+> > +
+> > +	while (resize_hpt_for_hotplug(newsize, false) == -ENOSPC) {
+> > +		newsize *= 2;
+> > +		pr_warn("Hash collision while resizing HPT\n");
+> 
+> This unbounded increase in newsize makes me nervous - we should be
+> bounded by the current size of the HPT at least.  In practice we
+> should be fine, since the resize should always succeed by the time we
+> reach our current HPT size, but that's far from obvious from this
+> point in the code.
 
-configs tested: 165
-configs skipped: 2
+Sure, I will add bounds in v2.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> 
+> And... you're doubling newsize which is a value which might not be a
+> power of 2.  I'm wondering if there's an edge case where this could
+> actually cause us to skip the current size and erroneously resize to
+> one bigger than we have currently.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-i386                             allyesconfig
-mips                         rt305x_defconfig
-um                                allnoconfig
-sh                          urquell_defconfig
-sh                            titan_defconfig
-arm                             ezx_defconfig
-arm                        oxnas_v6_defconfig
-powerpc                     akebono_defconfig
-arm                     eseries_pxa_defconfig
-arm                            pleb_defconfig
-m68k                         amcore_defconfig
-sparc                       sparc32_defconfig
-powerpc                     ppa8548_defconfig
-x86_64                           alldefconfig
-mips                    maltaup_xpa_defconfig
-xtensa                  cadence_csp_defconfig
-powerpc                           allnoconfig
-powerpc                      mgcoge_defconfig
-powerpc                 linkstation_defconfig
-sh                            migor_defconfig
-mips                       lemote2f_defconfig
-m68k                        m5407c3_defconfig
-arm                            lart_defconfig
-arm                           spitz_defconfig
-arm                         palmz72_defconfig
-arm                         lpc32xx_defconfig
-ia64                             alldefconfig
-powerpc                 mpc832x_mds_defconfig
-powerpc                      ppc6xx_defconfig
-sh                   sh7770_generic_defconfig
-sh                           sh2007_defconfig
-mips                           ip28_defconfig
-sh                          r7780mp_defconfig
-m68k                        mvme16x_defconfig
-arm                        multi_v5_defconfig
-powerpc                     kmeter1_defconfig
-arc                     nsimosci_hs_defconfig
-arm                        clps711x_defconfig
-xtensa                    xip_kc705_defconfig
-m68k                       bvme6000_defconfig
-h8300                            alldefconfig
-riscv                    nommu_k210_defconfig
-mips                     loongson1b_defconfig
-mips                  decstation_64_defconfig
-powerpc                      ppc64e_defconfig
-mips                          rb532_defconfig
-powerpc                 mpc834x_mds_defconfig
-sh                          landisk_defconfig
-powerpc                      arches_defconfig
-parisc                           allyesconfig
-m68k                          hp300_defconfig
-s390                          debug_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                             mxs_defconfig
-mips                          malta_defconfig
-arm                           u8500_defconfig
-um                           x86_64_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                          ixp4xx_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                           se7206_defconfig
-nios2                            alldefconfig
-arc                        vdk_hs38_defconfig
-sh                          sdk7786_defconfig
-powerpc                     mpc83xx_defconfig
-arm                          pxa3xx_defconfig
-arm                            zeus_defconfig
-arm                      footbridge_defconfig
-powerpc                        warp_defconfig
-mips                           ip22_defconfig
-m68k                          multi_defconfig
-sh                          lboxre2_defconfig
-arm64                            alldefconfig
-powerpc                     mpc5200_defconfig
-powerpc                      ep88xc_defconfig
-m68k                          amiga_defconfig
-arm                  colibri_pxa270_defconfig
-arm                            xcep_defconfig
-ia64                            zx1_defconfig
-arm                            dove_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                         shannon_defconfig
-powerpc                 xes_mpc85xx_defconfig
-arm                         at91_dt_defconfig
-sh                   sh7724_generic_defconfig
-mips                           ip32_defconfig
-arm                        realview_defconfig
-arm                        mvebu_v7_defconfig
-arm                          collie_defconfig
-powerpc                         ps3_defconfig
-arm                          gemini_defconfig
-arm                          iop32x_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a004-20210408
-x86_64               randconfig-a005-20210408
-x86_64               randconfig-a003-20210408
-x86_64               randconfig-a001-20210408
-x86_64               randconfig-a002-20210408
-x86_64               randconfig-a006-20210408
-i386                 randconfig-a006-20210408
-i386                 randconfig-a003-20210408
-i386                 randconfig-a001-20210408
-i386                 randconfig-a004-20210408
-i386                 randconfig-a005-20210408
-i386                 randconfig-a002-20210408
-i386                 randconfig-a014-20210408
-i386                 randconfig-a016-20210408
-i386                 randconfig-a011-20210408
-i386                 randconfig-a012-20210408
-i386                 randconfig-a013-20210408
-i386                 randconfig-a015-20210408
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+I also though that at the start, but it seems quite reliable.
+Before using this value, htab_shift_for_mem_size() will always round it
+to next power of 2. 
+Ex.
+Any value between 0b0101 and 0b1000 will be rounded to 0b1000 for shift
+calculation. If we multiply it by 2 (same as << 1), we have that
+anything between 0b01010 and 0b10000 will be rounded to 0b10000. 
 
-clang tested configs:
-x86_64               randconfig-a014-20210408
-x86_64               randconfig-a015-20210408
-x86_64               randconfig-a012-20210408
-x86_64               randconfig-a011-20210408
-x86_64               randconfig-a013-20210408
-x86_64               randconfig-a016-20210408
+This works just fine as long as we are multiplying. 
+Division may have the behavior you expect, as 0b0101 >> 1 would become
+0b010 and skip a shift.
+	
+> > +void memory_batch_expand_prepare(unsigned long newsize)
+> 
+> This wrapper doesn't seem useful.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Yeah, it does little, but I can't just jump into hash_* functions
+directly from hotplug-memory.c, without even knowing if it's using hash
+pagetables. (in case the suggestion would be test for disable_radix
+inside hash_memory_batch*)
+
+> 
+> > +{
+> > +	if (!radix_enabled())
+> > +		hash_memory_batch_expand_prepare(newsize);
+> > +}
+> >  #endif /* CONFIG_MEMORY_HOTPLUG */
+> >  
+> > 
+> > +	memory_batch_expand_prepare(memblock_phys_mem_size() +
+> > +				     drmem_info->n_lmbs * drmem_lmb_size());
+> 
+> This doesn't look right.  memory_add_by_index() is adding a *single*
+> LMB, I think using drmem_info->n_lmbs here means you're counting this
+> as adding again as much memory as you already have hotplugged.
+
+Yeah, my mistake. This makes sense.
+I will change it to something like 
+memblock_phys_mem_size() + drmem_lmb_size()
+
+> > 
+> > +	memory_batch_expand_prepare(memblock_phys_mem_size() + lmbs_to_add * drmem_lmb_size());
+> > +
+> >  	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+> >  		if (lmb->flags & DRCONF_MEM_ASSIGNED)
+> >  			continue;
+> 
+> I don't see memory_batch_expand_prepare() suppressing any existing HPT
+> resizes.  Won't this just resize to the right size for the full add,
+> then resize several times again as we perform the add?  Or.. I guess
+> that will be suppressed by patch 1/3. 
+
+Correct.
+
+>  That's seems kinda fragile, though.
+
+What do you mean by fragile here?
+What would you suggest doing different?
+
+Best regards,
+Leonardo Bras
+
