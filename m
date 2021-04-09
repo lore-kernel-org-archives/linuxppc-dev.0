@@ -2,53 +2,82 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A581C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 07:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 079E6C43462
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 07:20:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABEF061105
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 07:04:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABEF061105
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2EEDB61177
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 07:20:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EEDB61177
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGpz12mFTz3bxg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 17:04:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FGqKM5g7zz3by8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 17:20:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=q+jIWwzI;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com;
- envelope-from=cuibixuan@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 939 seconds by postgrey-1.36 at boromir;
- Fri, 09 Apr 2021 16:55:33 AEST
-Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::536;
+ helo=mail-pg1-x536.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=q+jIWwzI; dkim-atps=neutral
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com
+ [IPv6:2607:f8b0:4864:20::536])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGpmj0pjlz2yYv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 16:55:32 +1000 (AEST)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4FGpMq2QRRz9xbW;
- Fri,  9 Apr 2021 14:37:27 +0800 (CST)
-Received: from huawei.com (10.174.28.241) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.498.0; Fri, 9 Apr 2021
- 14:39:34 +0800
-From: Bixuan Cui <cuibixuan@huawei.com>
-To: <cuibixuan@huawei.com>, Michael Ellerman <mpe@ellerman.id.au>, "Qinglang
- Miao" <miaoqinglang@huawei.com>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH -next] powerpc/powernv: make symbol 'mpipl_kobj' static
-Date: Fri, 9 Apr 2021 14:38:55 +0800
-Message-ID: <20210409063855.57347-1-cuibixuan@huawei.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FGqJp3y6rz303f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 17:19:54 +1000 (AEST)
+Received: by mail-pg1-x536.google.com with SMTP id w10so3224634pgh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Apr 2021 00:19:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=3jpQ3lZXMgzXRrsRMytSQQwKCg9AstxjxLrChn5w6cw=;
+ b=q+jIWwzIzCXrBiItIjor8RfQsqmwt6DshA3PoZ7NMrJqyNtdyJ0LgUsNWVzl4aOKHg
+ GayOOz+5vGt68tGX998K17zkv/pxUanMYMydbCfrUqNlv6zBUtlUOqABluYnslJkSYfj
+ ouAymLwFd5ba8qNr2yRQ8Bs74Vjhiz3Dbee28=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=3jpQ3lZXMgzXRrsRMytSQQwKCg9AstxjxLrChn5w6cw=;
+ b=TFCTXeKpdochpQZGAt2Zi3jQBRr/igrfpk4JgAZ+5dgT7BYdqBsLcm62oV/KjPzBPr
+ REVjH1oto50esyNRmOqaGL7qho3A0ATJpkYpGZ7m0UiKsJG+DEarWCnTY96n9xtN4YT7
+ hhoMWaP77/nuSItuM/CkikpP5FXgPdhNGlXvdrH6o+16AzmD/jKHtgTRQ5xxVKvf5fva
+ mt+B2p5ggPx0PQ/4UsRJip0SP5aLNZPmdij1/NctSDLC0UGxPoq+FcP2Ze4KsmbYdN4L
+ /2oeVq9zTlMKZy7pef1vy6E2UsChmzVbzm3W1xe/p/N9CMovUyCY8K4fB4qXb7WT/8EJ
+ HUYw==
+X-Gm-Message-State: AOAM532n9V6SPgQ+pzvckKYDtQyiABQjff5r5UOaaw58huQfSEWprqSv
+ 5Wqp8vpRkRmO+PA+iW8xyMCn4g==
+X-Google-Smtp-Source: ABdhPJwPfAya/vYfNmH8mZgcEYD6mXq9hmGnG4qDZ1azfbvW7kO+y+hKgSmjhSYDNtCBTNVyuPSGKw==
+X-Received: by 2002:a63:1c22:: with SMTP id c34mr5763854pgc.408.1617952791067; 
+ Fri, 09 Apr 2021 00:19:51 -0700 (PDT)
+Received: from localhost
+ (2001-44b8-111e-5c00-600a-73c5-13c4-f875.static.ipv6.internode.on.net.
+ [2001:44b8:111e:5c00:600a:73c5:13c4:f875])
+ by smtp.gmail.com with ESMTPSA id b21sm1357924pji.39.2021.04.09.00.19.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 09 Apr 2021 00:19:50 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mpe@ellerman.id.au
+Subject: Re: [PATCH v2 2/4] powerpc/selftests/perf-hwbreak: Coalesce event
+ creation code
+In-Reply-To: <20210407054938.312857-3-ravi.bangoria@linux.ibm.com>
+References: <20210407054938.312857-1-ravi.bangoria@linux.ibm.com>
+ <20210407054938.312857-3-ravi.bangoria@linux.ibm.com>
+Date: Fri, 09 Apr 2021 17:19:47 +1000
+Message-ID: <87k0pbgc18.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.28.241]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Fri, 09 Apr 2021 17:04:11 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,36 +89,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: ravi.bangoria@linux.ibm.com, mikey@neuling.org, shuah@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The sparse tool complains as follows:
+Hi Ravi,
 
-arch/powerpc/platforms/powernv/opal-core.c:74:16: warning:
- symbol 'mpipl_kobj' was not declared.
+> perf-hwbreak selftest opens hw-breakpoint event at multiple places for
+> which it has same code repeated. Coalesce that code into a function.
+>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> ---
+>  .../selftests/powerpc/ptrace/perf-hwbreak.c   | 78 +++++++++----------
 
-This symbol is not used outside of opal-core.c, so marks it static.
+This doesn't simplify things very much for the code as it stands now,
+but I think your next patch adds a bunch of calls to these functions, so
+I agree that it makes sense to consolidate them now.
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
----
- arch/powerpc/platforms/powernv/opal-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>  1 file changed, 38 insertions(+), 40 deletions(-)
+>
+> diff --git a/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
+> index c1f324afdbf3..bde475341c8a 100644
+> --- a/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
+> +++ b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
+> @@ -34,28 +34,46 @@
+>  
+>  #define DAWR_LENGTH_MAX ((0x3f + 1) * 8)
+>  
+> -static inline int sys_perf_event_open(struct perf_event_attr *attr, pid_t pid,
+> -				      int cpu, int group_fd,
+> -				      unsigned long flags)
+> +static void perf_event_attr_set(struct perf_event_attr *attr,
+> +				__u32 type, __u64 addr, __u64 len,
+> +				bool exclude_user)
+>  {
+> -	attr->size = sizeof(*attr);
+> -	return syscall(__NR_perf_event_open, attr, pid, cpu, group_fd, flags);
+> +	memset(attr, 0, sizeof(struct perf_event_attr));
+> +	attr->type           = PERF_TYPE_BREAKPOINT;
+> +	attr->size           = sizeof(struct perf_event_attr);
+> +	attr->bp_type        = type;
+> +	attr->bp_addr        = addr;
+> +	attr->bp_len         = len;
+> +	attr->exclude_kernel = 1;
+> +	attr->exclude_hv     = 1;
+> +	attr->exclude_guest  = 1;
 
-diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
-index 0d9ba70f7251..5b9736bbc2aa 100644
---- a/arch/powerpc/platforms/powernv/opal-core.c
-+++ b/arch/powerpc/platforms/powernv/opal-core.c
-@@ -71,7 +71,7 @@ static LIST_HEAD(opalcore_list);
- static struct opalcore_config *oc_conf;
- static const struct opal_mpipl_fadump *opalc_metadata;
- static const struct opal_mpipl_fadump *opalc_cpu_metadata;
--struct kobject *mpipl_kobj;
-+static struct kobject *mpipl_kobj;
- 
- /*
-  * Set crashing CPU's signal to SIGUSR1. if the kernel is triggered
+Only 1 of the calls to perf sets exclude_{kernel,hv,guest} - I assume
+there's no issue with setting them always but I wanted to check.
 
+> +	attr->exclude_user   = exclude_user;
+> +	attr->disabled       = 1;
+>  }
+>  
+> -	/* setup counters */
+> -	memset(&attr, 0, sizeof(attr));
+> -	attr.disabled = 1;
+> -	attr.type = PERF_TYPE_BREAKPOINT;
+> -	attr.bp_type = readwriteflag;
+> -	attr.bp_addr = (__u64)ptr;
+> -	attr.bp_len = sizeof(int);
+> -	if (arraytest)
+> -		attr.bp_len = DAWR_LENGTH_MAX;
+> -	attr.exclude_user = exclude_user;
+> -	break_fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
+> +	break_fd = perf_process_event_open_exclude_user(readwriteflag, (__u64)ptr,
+> +				arraytest ? DAWR_LENGTH_MAX : sizeof(int),
+> +				exclude_user);
+
+checkpatch doesn't like this very much:
+
+CHECK: Alignment should match open parenthesis
+#103: FILE: tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c:115:
++	break_fd = perf_process_event_open_exclude_user(readwriteflag, (__u64)ptr,
++				arraytest ? DAWR_LENGTH_MAX : sizeof(int),
+
+Apart from that, this seems good but I haven't checked in super fine
+detail just yet :)
+
+Kind regards,
+Daniel
