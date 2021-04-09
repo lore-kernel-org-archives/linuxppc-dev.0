@@ -2,65 +2,74 @@ Return-Path: <SRS0=fTJU=JG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BAF1C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3E01C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 14:29:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F828610FB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 12:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F828610FB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0EB74611AE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 14:29:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EB74611AE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=me.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FGyqK0nmBz3c9L
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Apr 2021 22:58:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FH0r92gGcz3bsD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 00:29:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r257Sg1O;
+	dkim=pass (2048-bit key; unprotected) header.d=me.com header.i=@me.com header.a=rsa-sha256 header.s=1a1hai header.b=v/1pJ6Cu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sre@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=me.com
+ (client-ip=17.58.6.41; helo=pv50p00im-zteg10011401.me.com;
+ envelope-from=sxwjean@me.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=r257Sg1O; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=me.com header.i=@me.com header.a=rsa-sha256
+ header.s=1a1hai header.b=v/1pJ6Cu; dkim-atps=neutral
+Received: from pv50p00im-zteg10011401.me.com (pv50p00im-zteg10011401.me.com
+ [17.58.6.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FGxHs0rPPz3bPN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Apr 2021 21:49:28 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8AF2561005;
- Fri,  9 Apr 2021 11:49:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1617968966;
- bh=wSgw8vqxkTcKSyPgvD8ke8joz3MElmiOLTRjt10EyxQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=r257Sg1OggCxGJg5bCTag7NFuCUtM6bBbQPGssOeudpQTueqANF9k8caCST6j+GGs
- mhq+777ZkQwKVhOaru41hweVqSWj04b/XsU8h7+ydnyEF2kONVWjrmWmJI81FX2inh
- 1I5q5flBzM6rB5dvZupRSAfvTfk2iRV4KJ8C1mZTY2vPCzbW73c/T7i/07hy3SI8DF
- 8mRhhs2yT0V+iCISJxvGjQqPD7ppY2j6k1JTxquPWqltBrBwD9Eqf+usc+F86rClEv
- 1sWx6Xv2N6pfdBPoJd3B8urT8gi+vY7QJWCh4h6thPfMXLecWCPm/VUEaLlVYX5ru+
- /QWkr+ISokV9Q==
-Received: by earth.universe (Postfix, from userid 1000)
- id 877D23C0C96; Fri,  9 Apr 2021 13:49:24 +0200 (CEST)
-Date: Fri, 9 Apr 2021 13:49:24 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v2 1/1] kernel.h: Split out panic and oops helpers
-Message-ID: <20210409114924.6dpefx26px7aeuaj@earth.universe>
-References: <20210409100250.25922-1-andriy.shevchenko@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="c2qg5eip4k7clkwy"
-Content-Disposition: inline
-In-Reply-To: <20210409100250.25922-1-andriy.shevchenko@linux.intel.com>
-X-Mailman-Approved-At: Fri, 09 Apr 2021 22:57:31 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FH0qh1kbVz2yq9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Apr 2021 00:28:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=me.com; s=1a1hai;
+ t=1617978526; bh=pvaBz+5lRBcsWP67c8Q1CqZeEtpj8crJ5u3DCAQ9ZpU=;
+ h=From:To:Subject:Date:Message-Id;
+ b=v/1pJ6CuqhJY81T8cAutr7I5xEQsPY+CwEnHWzY+Wr6kMVyYnac1w3UiqZQVld6Ht
+ gBx2p5ib7uEiUqTj3AP9X3HjiX//VH9I5gIb0TiemRLHAapV6r2evq3cQoaxphTiir
+ qtHNNf/nLbw+s6urzL8BrQH2u+0H+rtbLbQr1rYIaaHR45hv8gzIvg7v0UCk3HIdY9
+ of717Nn6HM3h/iBL30WrgAdfwMET7Ty7XPpVPFr7daMVw1+5Bp/OF4vbfcVenclLGd
+ we1snaH6+h61vFrIUZ+wko44KNeNFFHeeQ0MXTj+t+5eB4xjQaT+bG0elf8mvdF9AH
+ PBUZ1f6jxCg0w==
+Received: from localhost.localdomain (unknown [120.245.2.39])
+ by pv50p00im-zteg10011401.me.com (Postfix) with ESMTPSA id BFCC69003EE;
+ Fri,  9 Apr 2021 14:28:38 +0000 (UTC)
+From: Xiongwei Song <sxwjean@me.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ oleg@redhat.com, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ aneesh.kumar@linux.ibm.com, ravi.bangoria@linux.ibm.com, mikey@neuling.org,
+ haren@linux.ibm.com, akpm@linux-foundation.org, rppt@kernel.org,
+ jniethe5@gmail.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com,
+ peterz@infradead.org, kjain@linux.ibm.com, kan.liang@linux.intel.com,
+ aik@ozlabs.ru, alistair@popple.id.au, pmladek@suse.com,
+ john.ogness@linutronix.de
+Subject: [PATCH v4] powerpc/traps: Enhance readability for trap types
+Date: Fri,  9 Apr 2021 22:28:32 +0800
+Message-Id: <20210409142832.26063-1-sxwjean@me.com>
+X-Mailer: git-send-email 2.17.1
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-09_06:2021-04-09,
+ 2021-04-09 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxscore=0
+ mlxlogscore=734 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-2009150000 definitions=main-2104090110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,148 +81,367 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Corey Minyard <cminyard@mvista.com>, dri-devel@lists.freedesktop.org,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- "K. Y. Srinivasan" <kys@microsoft.com>, linux-clk@vger.kernel.org,
- linux-arch@vger.kernel.org, Wei Liu <wei.liu@kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Jens Frederich <jfrederich@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, xen-devel@lists.xenproject.org,
- Matt Turner <mattst88@gmail.com>, Ohad Ben-Cohen <ohad@wizery.com>,
- linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>,
- linux-um@lists.infradead.org, Daniel Drake <dsd@laptop.org>,
- Mihai Carabas <mihai.carabas@oracle.com>, Thomas Gleixner <tglx@linutronix.de>,
- Richard Henderson <rth@twiddle.net>, Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Luis Chamberlain <mcgrof@kernel.org>, Joe Perches <joe@perches.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Marek Czerski <ma.czerski@gmail.com>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Jon Nettleton <jon.nettleton@gmail.com>,
- Alexander Egorenkov <egorenar@linux.ibm.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Christian Brauner <christian.brauner@ubuntu.com>, linux-s390@vger.kernel.org,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>, Corey Minyard <minyard@acm.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Helge Deller <deller@gmx.de>, Suzuki K Poulose <suzuki.poulose@arm.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Iurii Zaikin <yzaikin@google.com>, linux-xtensa@linux-xtensa.org,
- Joerg Roedel <jroedel@suse.de>, Vasily Gorbik <gor@linux.ibm.com>,
- Scott Branden <scott.branden@broadcom.com>, coresight@lists.linaro.org,
- linux-fsdevel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Mathieu Poirier <mathieu.poirier@linaro.org>,
- Stephen Boyd <sboyd@kernel.org>, Peter Oberparleiter <oberpar@linux.ibm.com>,
- Dinh Nguyen <dinguyen@kernel.org>, James Morse <james.morse@arm.com>,
- Eric Biederman <ebiederm@xmission.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Michael Turquette <mturquette@baylibre.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-hyperv@vger.kernel.org,
- Vineeth Vijayan <vneethv@linux.ibm.com>,
- Joel Fernandes <joel@joelfernandes.org>, Will Deacon <will@kernel.org>,
- Florian Fainelli <f.fainelli@gmail.com>, linux-staging@lists.linux.dev,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- bcm-kernel-feedback-list@broadcom.com, Juergen Gross <jgross@suse.com>,
- Robert Richter <rric@kernel.org>, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Haiyang Zhang <haiyangz@microsoft.com>,
- Josh Triplett <josh@joshtriplett.org>,
- "Steven Rostedt \(VMware\)" <rostedt@goodmis.org>, rcu@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, linux-fbdev@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net,
- Michael Kelley <mikelley@microsoft.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Hongbo Yao <yaohongbo@huawei.com>, linux-alpha@vger.kernel.org,
- Olof Johansson <olof@lixom.net>, "David S. Miller" <davem@davemloft.net>,
- Mike Rapoport <rppt@kernel.org>, Alexander Lobakin <alobakin@pm.me>,
- linux-remoteproc@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-leds@vger.kernel.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Richard Weinberger <richard@nod.at>, x86@kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Jakub Kicinski <kuba@kernel.org>, Wang Wenhu <wenhu.wang@vivo.com>,
- Jeff Dike <jdike@addtoit.com>, Mike Leach <mike.leach@linaro.org>,
- "Paul E. McKenney" <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Vlastimil Babka <vbabka@suse.cz>,
- linux-edac@vger.kernel.org, "Jason J. Herne" <jjherne@linux.ibm.com>,
- netdev@vger.kernel.org, kexec@lists.infradead.org, linux-mips@vger.kernel.org,
- Leo Yan <leo.yan@linaro.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Xiongwei Song <sxwjean@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Xiongwei Song <sxwjean@gmail.com>
 
---c2qg5eip4k7clkwy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Create a new header named traps.h, define macros to list ppc interrupt
+types in traps.h, replace the references of the trap hex values with these
+macros.
 
-Hi,
+Referred the hex numbers in arch/powerpc/kernel/exceptions-64e.S,
+arch/powerpc/kernel/exceptions-64s.S and
+arch/powerpc/include/asm/kvm_asm.h.
 
-On Fri, Apr 09, 2021 at 01:02:50PM +0300, Andy Shevchenko wrote:
-> kernel.h is being used as a dump for all kinds of stuff for a long time.
-> Here is the attempt to start cleaning it up by splitting out panic and
-> oops helpers.
->=20
-> There are several purposes of doing this:
-> - dropping dependency in bug.h
-> - dropping a loop by moving out panic_notifier.h
-> - unload kernel.h from something which has its own domain
->=20
-> At the same time convert users tree-wide to use new headers, although
-> for the time being include new header back to kernel.h to avoid twisted
-> indirected includes for existing users.
->=20
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Acked-by: Mike Rapoport <rppt@linux.ibm.com>
-> Acked-by: Corey Minyard <cminyard@mvista.com>
-> Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Wei Liu <wei.liu@kernel.org>
-> Acked-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> v2:
->  - fixed all errors with allmodconfig on x86_64 (Andrew)
->  - checked with allyesconfig on x86_64
->  - additionally grepped source code for panic notifier list usage
->    and converted all users
->  - elaborated commit message (Luis)
->  - collected given tags (incl. Andrew's SoB, see below)
->=20
-> I added Andrew's SoB since part of the fixes I took from him. Andrew,
-> feel free to amend or tell me how you want me to do.
->=20
-> [...]
->  drivers/power/reset/ltc2952-poweroff.c        |  1 +
-> [...]
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Xiongwei Song <sxwjean@gmail.com>
+---
 
-Acked-by: Sebastian Reichel <sre@kernel.org>
+v3-v4:
+Fix compile issue:
+arch/powerpc/kernel/process.c:1473:14: error: 'INTERRUPT_MACHINE_CHECK' undeclared (first use in this function); did you mean 'TAINT_MACHINE_CHECK'?
+I didn't add "Reported-by: kernel test robot <lkp@intel.com>" here,
+because it's improper for this patch.
 
--- Sebastian
+v2-v3:
+Correct the prefix of trap macros with INTERRUPT_, the previous prefix
+is TRAP_, which is not precise. This is suggested by Segher Boessenkool
+and Nicholas Piggin.
 
---c2qg5eip4k7clkwy
-Content-Type: application/pgp-signature; name="signature.asc"
+v1-v2:
+Define more trap macros to replace more trap hexs in code, not just for
+the __show_regs function. This is suggested by Christophe Leroy.
 
------BEGIN PGP SIGNATURE-----
+---
+ arch/powerpc/include/asm/interrupt.h  |  9 +++++---
+ arch/powerpc/include/asm/ptrace.h     |  3 ++-
+ arch/powerpc/include/asm/traps.h      | 32 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/interrupt.c       |  3 ++-
+ arch/powerpc/kernel/process.c         |  5 ++++-
+ arch/powerpc/mm/book3s64/hash_utils.c |  5 +++--
+ arch/powerpc/mm/fault.c               | 21 +++++++++++-------
+ arch/powerpc/perf/core-book3s.c       |  5 +++--
+ arch/powerpc/xmon/xmon.c              | 16 +++++++++++---
+ 9 files changed, 78 insertions(+), 21 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/traps.h
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmBwPzkACgkQ2O7X88g7
-+poVqw//cO5+glgFxA2CU4t3EHFTzSR2pExNCOensIzn/2YcvKlq6RBiaVlO87al
-zfq//z42WEWWRFkl4NeyjJx6ueQGo5Hk7qQiPRQhgt55UiQsizdAFXK4u97lVQ68
-7V2xDT3MlQ/vc+LG3vZBcSGMIoupHDqbYU2kF8xlBhdwuF1lr44NDxRTRsVErgor
-hlvEGYmwSTIg8aEkLt6Da/elDscG08MDU+vv6KLaSiruCN+RtgZGin9gv3Xu+KUi
-PhPU9ZOAfi6duIQdKmdXiAZ8Vlp/43yzeo80t/XUyiEy7Yq+qtsP6YXHlSWlPJnV
-Zz3ifkmNn7YFWd+iOeTe3oTfVIAtg4w/uX184urC+t242MBSeqEkHt7/1TJR2UAx
-8s9NtSaCLUPuFLPO9s8t6nP4kQ4HN3BoxMvgessqguLZtSg3n1Z4+ZE8veoYHQD3
-Vwz58nFLYkMxRB/pFq6dkXv6uPXTbreYkWuUFsDIao2+FVDkMp81DqE86K2li2d6
-/B6jSmObDmG/aryJn+hoHhCEJSfLnaszENAc0toFvCGYU9D5Com1A74gdztMgOvf
-CB4G04azFTgeTjX5JB6r7KXrcZ08bzspk/lo5H9fx+SLki6gFb88zNqBOLcnMM0d
-FZFNMmZ543wUtAsJSxqObtKeAcjitPcaURrh6sWiRuJkndGtmNY=
-=QA06
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index 05e7fc4ffb50..4fd904fb5d59 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -8,6 +8,7 @@
+ #include <asm/ftrace.h>
+ #include <asm/kprobes.h>
+ #include <asm/runlatch.h>
++#include <asm/traps.h>
+ 
+ static inline void nap_adjust_return(struct pt_regs *regs)
+ {
+@@ -70,7 +71,7 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+ 		 * CT_WARN_ON comes here via program_check_exception,
+ 		 * so avoid recursion.
+ 		 */
+-		if (TRAP(regs) != 0x700)
++		if (TRAP(regs) != INTERRUPT_PROGRAM)
+ 			CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
+ 	}
+ #endif
+@@ -175,7 +176,8 @@ static inline void interrupt_nmi_enter_prepare(struct pt_regs *regs, struct inte
+ 	/* Don't do any per-CPU operations until interrupt state is fixed */
+ #endif
+ 	/* Allow DEC and PMI to be traced when they are soft-NMI */
+-	if (TRAP(regs) != 0x900 && TRAP(regs) != 0xf00 && TRAP(regs) != 0x260) {
++	if (TRAP(regs) != INTERRUPT_DECREMENTER &&
++	    TRAP(regs) != INTERRUPT_PERFMON) {
+ 		state->ftrace_enabled = this_cpu_get_ftrace_enabled();
+ 		this_cpu_set_ftrace_enabled(0);
+ 	}
+@@ -204,7 +206,8 @@ static inline void interrupt_nmi_exit_prepare(struct pt_regs *regs, struct inter
+ 	 */
+ 
+ #ifdef CONFIG_PPC64
+-	if (TRAP(regs) != 0x900 && TRAP(regs) != 0xf00 && TRAP(regs) != 0x260)
++	if (TRAP(regs) != INTERRUPT_DECREMENTER &&
++	    TRAP(regs) != INTERRUPT_PERFMON)
+ 		this_cpu_set_ftrace_enabled(state->ftrace_enabled);
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 95600f3a6523..07ff8629e776 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -21,6 +21,7 @@
+ 
+ #include <uapi/asm/ptrace.h>
+ #include <asm/asm-const.h>
++#include <asm/traps.h>
+ 
+ #ifndef __ASSEMBLY__
+ struct pt_regs
+@@ -237,7 +238,7 @@ static inline bool trap_is_unsupported_scv(struct pt_regs *regs)
+ 
+ static inline bool trap_is_syscall(struct pt_regs *regs)
+ {
+-	return (trap_is_scv(regs) || TRAP(regs) == 0xc00);
++	return (trap_is_scv(regs) || TRAP(regs) == INTERRUPT_SYSCALL);
+ }
+ 
+ static inline bool trap_norestart(struct pt_regs *regs)
+diff --git a/arch/powerpc/include/asm/traps.h b/arch/powerpc/include/asm/traps.h
+new file mode 100644
+index 000000000000..2e64e10afcef
+--- /dev/null
++++ b/arch/powerpc/include/asm/traps.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_PPC_TRAPS_H
++#define _ASM_PPC_TRAPS_H
++
++#if defined(CONFIG_BOOKE) || defined(CONFIG_4xx)
++#define INTERRUPT_MACHINE_CHECK   0x000
++#define INTERRUPT_CRITICAL_INPUT  0x100
++#define INTERRUPT_ALTIVEC_UNAVAIL 0x200
++#define INTERRUPT_PERFMON         0x260
++#define INTERRUPT_DOORBELL        0x280
++#define INTERRUPT_DEBUG           0xd00
++#else
++#define INTERRUPT_SYSTEM_RESET    0x100
++#define INTERRUPT_MACHINE_CHECK   0x200
++#define INTERRUPT_DATA_SEGMENT    0x380
++#define INTERRUPT_INST_SEGMENT    0x480
++#define INTERRUPT_DOORBELL        0xa00
++#define INTERRUPT_TRACE           0xd00
++#define INTERRUPT_H_DATA_STORAGE  0xe00
++#define INTERRUPT_PERFMON         0xf00
++#define INTERRUPT_H_FAC_UNAVAIL   0xf80
++#endif
++
++#define INTERRUPT_DATA_STORAGE    0x300
++#define INTERRUPT_INST_STORAGE    0x400
++#define INTERRUPT_ALIGNMENT       0x600
++#define INTERRUPT_PROGRAM         0x700
++#define INTERRUPT_FP_UNAVAIL      0x800
++#define INTERRUPT_DECREMENTER     0x900
++#define INTERRUPT_SYSCALL         0xc00
++
++#endif /* _ASM_PPC_TRAPS_H */
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index c4dd4b8f9cfa..72689f7ca7c8 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -19,6 +19,7 @@
+ #include <asm/syscall.h>
+ #include <asm/time.h>
+ #include <asm/unistd.h>
++#include <asm/traps.h>
+ 
+ #if defined(CONFIG_PPC_ADV_DEBUG_REGS) && defined(CONFIG_PPC32)
+ unsigned long global_dbcr0[NR_CPUS];
+@@ -456,7 +457,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsign
+ 	 * CT_WARN_ON comes here via program_check_exception,
+ 	 * so avoid recursion.
+ 	 */
+-	if (TRAP(regs) != 0x700)
++	if (TRAP(regs) != INTERRUPT_PROGRAM)
+ 		CT_WARN_ON(ct_state() == CONTEXT_USER);
+ 
+ 	kuap = kuap_get_and_assert_locked();
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index b966c8e0cead..92cd49427b2f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -64,6 +64,7 @@
+ #include <asm/asm-prototypes.h>
+ #include <asm/stacktrace.h>
+ #include <asm/hw_breakpoint.h>
++#include <asm/traps.h>
+ 
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+@@ -1469,7 +1470,9 @@ static void __show_regs(struct pt_regs *regs)
+ 	trap = TRAP(regs);
+ 	if (!trap_is_syscall(regs) && cpu_has_feature(CPU_FTR_CFAR))
+ 		pr_cont("CFAR: "REG" ", regs->orig_gpr3);
+-	if (trap == 0x200 || trap == 0x300 || trap == 0x600) {
++	if (trap == INTERRUPT_MACHINE_CHECK ||
++	    trap == INTERRUPT_DATA_STORAGE ||
++	    trap == INTERRUPT_ALIGNMENT) {
+ 		if (IS_ENABLED(CONFIG_4xx) || IS_ENABLED(CONFIG_BOOKE))
+ 			pr_cont("DEAR: "REG" ESR: "REG" ", regs->dar, regs->dsisr);
+ 		else
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 7719995323c3..2bf06e01b309 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -64,6 +64,7 @@
+ #include <asm/pte-walk.h>
+ #include <asm/asm-prototypes.h>
+ #include <asm/ultravisor.h>
++#include <asm/traps.h>
+ 
+ #include <mm/mmu_decl.h>
+ 
+@@ -1145,7 +1146,7 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ 
+ 	/* page is dirty */
+ 	if (!test_bit(PG_dcache_clean, &page->flags) && !PageReserved(page)) {
+-		if (trap == 0x400) {
++		if (trap == INTERRUPT_INST_STORAGE) {
+ 			flush_dcache_icache_page(page);
+ 			set_bit(PG_dcache_clean, &page->flags);
+ 		} else
+@@ -1545,7 +1546,7 @@ DEFINE_INTERRUPT_HANDLER_RET(__do_hash_fault)
+ 	if (user_mode(regs) || (region_id == USER_REGION_ID))
+ 		access &= ~_PAGE_PRIVILEGED;
+ 
+-	if (TRAP(regs) == 0x400)
++	if (TRAP(regs) == INTERRUPT_INST_STORAGE)
+ 		access |= _PAGE_EXEC;
+ 
+ 	err = hash_page_mm(mm, ea, access, TRAP(regs), flags);
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 0c0b1c2cfb49..1215fa2a72a7 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -44,6 +44,7 @@
+ #include <asm/debug.h>
+ #include <asm/kup.h>
+ #include <asm/inst.h>
++#include <asm/traps.h>
+ 
+ 
+ /*
+@@ -197,7 +198,7 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr,
+ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
+ 			     unsigned long address, bool is_write)
+ {
+-	int is_exec = TRAP(regs) == 0x400;
++	int is_exec = TRAP(regs) == INTERRUPT_INST_STORAGE;
+ 
+ 	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on others */
+ 	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
+@@ -391,7 +392,7 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	struct vm_area_struct * vma;
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned int flags = FAULT_FLAG_DEFAULT;
+- 	int is_exec = TRAP(regs) == 0x400;
++	int is_exec = TRAP(regs) == INTERRUPT_INST_STORAGE;
+ 	int is_user = user_mode(regs);
+ 	int is_write = page_fault_is_write(error_code);
+ 	vm_fault_t fault, major = 0;
+@@ -588,20 +589,24 @@ void __bad_page_fault(struct pt_regs *regs, int sig)
+ 	/* kernel has accessed a bad area */
+ 
+ 	switch (TRAP(regs)) {
+-	case 0x300:
+-	case 0x380:
+-	case 0xe00:
++	case INTERRUPT_DATA_STORAGE:
++#if !defined(CONFIG_BOOKE) && !defined(CONFIG_4xx)
++	case INTERRUPT_DATA_SEGMENT:
++	case INTERRUPT_H_DATA_STORAGE:
++#endif
+ 		pr_alert("BUG: %s on %s at 0x%08lx\n",
+ 			 regs->dar < PAGE_SIZE ? "Kernel NULL pointer dereference" :
+ 			 "Unable to handle kernel data access",
+ 			 is_write ? "write" : "read", regs->dar);
+ 		break;
+-	case 0x400:
+-	case 0x480:
++	case INTERRUPT_INST_STORAGE:
++#if !defined(CONFIG_BOOKE) && !defined(CONFIG_4xx)
++	case INTERRUPT_INST_SEGMENT:
++#endif
+ 		pr_alert("BUG: Unable to handle kernel instruction fetch%s",
+ 			 regs->nip < PAGE_SIZE ? " (NULL pointer?)\n" : "\n");
+ 		break;
+-	case 0x600:
++	case INTERRUPT_ALIGNMENT:
+ 		pr_alert("BUG: Unable to handle kernel unaligned access at 0x%08lx\n",
+ 			 regs->dar);
+ 		break;
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 766f064f00fb..6e34f5bba232 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -17,6 +17,7 @@
+ #include <asm/firmware.h>
+ #include <asm/ptrace.h>
+ #include <asm/code-patching.h>
++#include <asm/traps.h>
+ 
+ #ifdef CONFIG_PPC64
+ #include "internal.h"
+@@ -168,7 +169,7 @@ static bool regs_use_siar(struct pt_regs *regs)
+ 	 * they have not been setup using perf_read_regs() and so regs->result
+ 	 * is something random.
+ 	 */
+-	return ((TRAP(regs) == 0xf00) && regs->result);
++	return ((TRAP(regs) == INTERRUPT_PERFMON) && regs->result);
+ }
+ 
+ /*
+@@ -347,7 +348,7 @@ static inline void perf_read_regs(struct pt_regs *regs)
+ 	 * hypervisor samples as well as samples in the kernel with
+ 	 * interrupts off hence the userspace check.
+ 	 */
+-	if (TRAP(regs) != 0xf00)
++	if (TRAP(regs) != INTERRUPT_PERFMON)
+ 		use_siar = 0;
+ 	else if ((ppmu->flags & PPMU_NO_SIAR))
+ 		use_siar = 0;
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 3fe37495f63d..59136634c5ce 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -54,6 +54,7 @@
+ #include <asm/code-patching.h>
+ #include <asm/sections.h>
+ #include <asm/inst.h>
++#include <asm/traps.h>
+ 
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+@@ -1769,7 +1770,12 @@ static void excprint(struct pt_regs *fp)
+ 	printf("    sp: %lx\n", fp->gpr[1]);
+ 	printf("   msr: %lx\n", fp->msr);
+ 
+-	if (trap == 0x300 || trap == 0x380 || trap == 0x600 || trap == 0x200) {
++	if (trap == INTERRUPT_DATA_STORAGE ||
++#if !defined(CONFIG_BOOKE) && !defined(CONFIG_4xx)
++	    trap == INTERRUPT_DATA_SEGMENT ||
++#endif
++	    trap == INTERRUPT_ALIGNMENT ||
++	    trap == INTERRUPT_MACHINE_CHECK) {
+ 		printf("   dar: %lx\n", fp->dar);
+ 		if (trap != 0x380)
+ 			printf(" dsisr: %lx\n", fp->dsisr);
+@@ -1785,7 +1791,7 @@ static void excprint(struct pt_regs *fp)
+ 		       current->pid, current->comm);
+ 	}
+ 
+-	if (trap == 0x700)
++	if (trap == INTERRUPT_PROGRAM)
+ 		print_bug_trap(fp);
+ 
+ 	printf(linux_banner);
+@@ -1846,7 +1852,11 @@ static void prregs(struct pt_regs *fp)
+ 	printf("ctr = "REG"   xer = "REG"   trap = %4lx\n",
+ 	       fp->ctr, fp->xer, fp->trap);
+ 	trap = TRAP(fp);
+-	if (trap == 0x300 || trap == 0x380 || trap == 0x600)
++	if (trap == INTERRUPT_DATA_STORAGE ||
++#if !defined(CONFIG_BOOKE) && !defined(CONFIG_4xx)
++	    trap == INTERRUPT_DATA_SEGMENT ||
++#endif
++	    trap == INTERRUPT_ALIGNMENT)
+ 		printf("dar = "REG"   dsisr = %.8lx\n", fp->dar, fp->dsisr);
+ }
+ 
+-- 
+2.17.1
 
---c2qg5eip4k7clkwy--
