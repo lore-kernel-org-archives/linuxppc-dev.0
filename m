@@ -6,41 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93A9EC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:30:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94DC1C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:31:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAEAE6115B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:30:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAEAE6115B
+	by mail.kernel.org (Postfix) with ESMTPS id 28D446115B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:31:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28D446115B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcqL4FJcz3cDw
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:30:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcqk6DLrz3cMy
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:30:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcp43tnnz3bVM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcp46TM4z3bpW
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Apr 2021 00:29:32 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FHcp42Vcbz9sWc; Sun, 11 Apr 2021 00:29:32 +1000 (AEST)
+ id 4FHcp35tBMz9sWX; Sun, 11 Apr 2021 00:29:31 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>
-In-Reply-To: <cover.1615398265.git.christophe.leroy@csgroup.eu>
-References: <cover.1615398265.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 00/15] powerpc: Cleanup of uaccess.h and adding asm
- goto for get_user()
-Message-Id: <161806493038.1467223.3176738134833493844.b4-ty@ellerman.id.au>
-Date: Sun, 11 Apr 2021 00:28:50 +1000
+In-Reply-To: <828348da7868eda953ce023994404dfc49603b64.1616514473.git.christophe.leroy@csgroup.eu>
+References: <828348da7868eda953ce023994404dfc49603b64.1616514473.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Switch to relative jump labels
+Message-Id: <161806493513.1467223.12842890533757437748.b4-ty@ellerman.id.au>
+Date: Sun, 11 Apr 2021 00:28:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -60,47 +59,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 10 Mar 2021 17:46:39 +0000 (UTC), Christophe Leroy wrote:
-> This series cleans up uaccess.h and adds asm goto for get_user()
+On Tue, 23 Mar 2021 15:47:59 +0000 (UTC), Christophe Leroy wrote:
+> Convert powerpc to relative jump labels.
 > 
-> v2:
-> - Further clean ups
-> - asm goto for get_user()
-> - Move a few patches unrelated to put_user/get_user into another misc series.
+> Before the patch, pseries_defconfig vmlinux.o has:
+> 9074 __jump_table  0003f2a0  0000000000000000  0000000000000000  01321fa8  2**0
+> 
+> With the patch, the same config gets:
+> 9074 __jump_table  0002a0e0  0000000000000000  0000000000000000  01321fb4  2**0
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[01/15] powerpc/uaccess: Remove __get_user_allowed() and unsafe_op_wrap()
-        https://git.kernel.org/powerpc/c/8cdf748d557f15ae6f9e0d4108cc3ea6e1ee4419
-[02/15] powerpc/uaccess: Define ___get_user_instr() for ppc32
-        https://git.kernel.org/powerpc/c/9bd68dc5d7463cb959bff9ac4b6c7e578171de35
-[03/15] powerpc/align: Convert emulate_spe() to user_access_begin
-        https://git.kernel.org/powerpc/c/3fa3db32956d74c0784171ae0334685502bb169a
-[04/15] powerpc/uaccess: Remove __get/put_user_inatomic()
-        https://git.kernel.org/powerpc/c/bad956b8fe1a8b3b634d596ed2023ec30726cdf1
-[05/15] powerpc/uaccess: Move get_user_instr helpers in asm/inst.h
-        https://git.kernel.org/powerpc/c/35506a3e2d7c4d93cb564e23471a448cbd98f085
-[06/15] powerpc/align: Don't use __get_user_instr() on kernel addresses
-        https://git.kernel.org/powerpc/c/111631b5e9dae764754657aad00bd6cd1a805d0d
-[07/15] powerpc/uaccess: Call might_fault() inconditionaly
-        https://git.kernel.org/powerpc/c/ed0d9c66f97c6865e87fa6e3631bbc3919a31ad6
-[08/15] powerpc/uaccess: Remove __unsafe_put_user_goto()
-        https://git.kernel.org/powerpc/c/be15a165796598cd3929ca9aac56ba5ec69e41c1
-[09/15] powerpc/uaccess: Remove __chk_user_ptr() in __get/put_user
-        https://git.kernel.org/powerpc/c/028e15616857add3ba4951f989027675370b0e82
-[10/15] powerpc/uaccess: Remove calls to __get_user_bad() and __put_user_bad()
-        https://git.kernel.org/powerpc/c/9975f852ce1bf041a1a81bf882e29ee7a3b78ca6
-[11/15] powerpc/uaccess: Split out __get_user_nocheck()
-        https://git.kernel.org/powerpc/c/f904c22f2a9fb09fe705efdedbe4af9a30bdf633
-[12/15] powerpc/uaccess: Rename __get/put_user_check/nocheck
-        https://git.kernel.org/powerpc/c/17f8c0bc21bbb7d1fe729c7f656924a6ea72079b
-[13/15] powerpc/uaccess: Refactor get/put_user() and __get/put_user()
-        https://git.kernel.org/powerpc/c/e72fcdb26cde72985c418b39f72ecaa222e1f4d5
-[14/15] powerpc/uaccess: Introduce __get_user_size_goto()
-        https://git.kernel.org/powerpc/c/035785ab2826beb43cfa65a2df37d60074915a4d
-[15/15] powerpc/uaccess: Use asm goto for get_user when compiler supports it
-        https://git.kernel.org/powerpc/c/5cd29b1fd3e8f2b45fe6d011588d832417defe31
+[1/1] powerpc: Switch to relative jump labels
+      https://git.kernel.org/powerpc/c/b0b3b2c78ec075cec4721986a95abbbac8c3da4f
 
 cheers
