@@ -2,68 +2,44 @@ Return-Path: <SRS0=Z3yz=JH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A017C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 340DCC43460
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:29:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 156F6610E5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:19:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 156F6610E5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id 97108610A3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:29:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97108610A3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcZQ3tygz3byg
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:19:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcpN573Rz3c12
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:29:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcZ30ZfWz2ysr
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Apr 2021 00:19:06 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-84-kCKo1-18OZuYsleNdk-yPA-1; Sat, 10 Apr 2021 15:17:06 +0100
-X-MC-Unique: kCKo1-18OZuYsleNdk-yPA-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.2; Sat, 10 Apr 2021 15:17:05 +0100
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.012; Sat, 10 Apr 2021 15:17:05 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Matthew Wilcox' <willy@infradead.org>, kernel test robot <lkp@intel.com>
-Subject: RE: Bogus struct page layout on 32-bit
-Thread-Topic: Bogus struct page layout on 32-bit
-Thread-Index: AQHXLbNopyewSd0HZEaZbqB5fscTXqqtw2Cg
-Date: Sat, 10 Apr 2021 14:17:04 +0000
-Message-ID: <b9d5b09eaec44334b29241e16b8605d5@AcuMS.aculab.com>
-References: <20210409185105.188284-3-willy@infradead.org>
- <202104100656.N7EVvkNZ-lkp@intel.com>
- <20210410024313.GX2531743@casper.infradead.org>
-In-Reply-To: <20210410024313.GX2531743@casper.infradead.org>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcp24QyRz3005
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Apr 2021 00:29:30 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4FHcp206Lyz9sWH; Sun, 11 Apr 2021 00:29:29 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <1617725761-1464-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+References: <1617725761-1464-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Fix PMU constraint check for EBB events
+Message-Id: <161806493740.1467223.9552501600191606671.b4-ty@ellerman.id.au>
+Date: Sun, 11 Apr 2021 00:28:57 +1000
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,133 +51,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "kbuild-all@lists.01.org" <kbuild-all@lists.01.org>,
- "clang-built-linux@googlegroups.com" <clang-built-linux@googlegroups.com>,
- Jesper Dangaard Brouer <brouer@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: cascardo@canonical.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Matthew Wilcox
-> Sent: 10 April 2021 03:43
-> On Sat, Apr 10, 2021 at 06:45:35AM +0800, kernel test robot wrote:
-> > >> include/linux/mm_types.h:274:1: error: static_assert failed due to r=
-equirement
-> '__builtin_offsetof(struct page, lru) =3D=3D __builtin_offsetof(struct fo=
-lio, lru)' "offsetof(struct page,
-> lru) =3D=3D offsetof(struct folio, lru)"
-> >    FOLIO_MATCH(lru, lru);
-> >    include/linux/mm_types.h:272:2: note: expanded from macro 'FOLIO_MAT=
-CH'
-> >            static_assert(offsetof(struct page, pg) =3D=3D offsetof(stru=
-ct folio, fl))
->=20
-> Well, this is interesting.  pahole reports:
->=20
-> struct page {
->         long unsigned int          flags;                /*     0     4 *=
-/
->         /* XXX 4 bytes hole, try to pack */
->         union {
->                 struct {
->                         struct list_head lru;            /*     8     8 *=
-/
-> ...
-> struct folio {
->         union {
->                 struct {
->                         long unsigned int flags;         /*     0     4 *=
-/
->                         struct list_head lru;            /*     4     8 *=
-/
->=20
-> so this assert has absolutely done its job.
->=20
-> But why has this assert triggered?  Why is struct page layout not what
-> we thought it was?  Turns out it's the dma_addr added in 2019 by commit
-> c25fff7171be ("mm: add dma_addr_t to struct page").  On this particular
-> config, it's 64-bit, and ppc32 requires alignment to 64-bit.  So
-> the whole union gets moved out by 4 bytes.
->=20
-> Unfortunately, we can't just fix this by putting an 'unsigned long pad'
-> in front of it.  It still aligns the entire union to 8 bytes, and then
-> it skips another 4 bytes after the pad.
->=20
-> We can fix it like this ...
->=20
-> +++ b/include/linux/mm_types.h
-> @@ -96,11 +96,12 @@ struct page {
->                         unsigned long private;
->                 };
->                 struct {        /* page_pool used by netstack */
-> +                       unsigned long _page_pool_pad;
->                         /**
->                          * @dma_addr: might require a 64-bit value even o=
-n
->                          * 32-bit architectures.
->                          */
-> -                       dma_addr_t dma_addr;
-> +                       dma_addr_t dma_addr __packed;
->                 };
->                 struct {        /* slab, slob and slub */
->                         union {
->=20
-> but I don't know if GCC is smart enough to realise that dma_addr is now
-> on an 8 byte boundary and it can use a normal instruction to access it,
-> or whether it'll do something daft like use byte loads to access it.
+On Tue, 6 Apr 2021 12:16:01 -0400, Athira Rajeev wrote:
+> The power PMU group constraints includes check for EBB events
+> to make sure all events in a group must agree on EBB. This
+> will prevent scheduling EBB and non-EBB events together.
+> But in the existing check, settings for constraint mask and
+> value is interchanged. Patch fixes the same.
+> 
+> Before the patch, PMU selftest "cpu_event_pinned_vs_ebb_test"
+> fails with below in dmesg logs. This happens because EBB event
+> gets enabled along with a non-EBB cpu event.
+> 
+> [...]
 
-I'm betting it will use byte accesses.
-Checked - it does seem to use 4-byte accesses.
-(godbolt is rather short of 32 bit compilers...)
+Applied to powerpc/next.
 
->=20
-> We could also do:
->=20
-> +                       dma_addr_t dma_addr __packed __aligned(sizeof(voi=
-d *));
+[1/1] powerpc/perf: Fix PMU constraint check for EBB events
+      https://git.kernel.org/powerpc/c/10f8f96179ecc7f69c927f6d231f6d02736cea83
 
-I wonder if __aligned(n) should be defined as
-=09__attribute__((packed,aligned(n))
-I don't think you ever want the 'unpacked' variant.
-
-But explicitly reducing the alignment of single member is much
-better than the habit of marking the structure 'packed'.
-
-(Never mind the habit of adding __packed 'because we don't want
-the compiler to add random padding.)
-
->=20
-> and I see pahole, at least sees this correctly:
->=20
->                 struct {
->                         long unsigned int _page_pool_pad; /*     4     4 =
-*/
->                         dma_addr_t dma_addr __attribute__((__aligned__(4)=
-)); /*     8     8 */
->                 } __attribute__((__packed__)) __attribute__((__aligned__(=
-4)));
-
-Is the attribute on the struct an artifact of pahole?
-It should just have an alignment of 4 without anything special.
-
->=20
-> This presumably affects any 32-bit architecture with a 64-bit phys_addr_t
-> / dma_addr_t.  Advice, please?
-
-Only those where a 64-bit value is 64-bit aligned.
-So that excludes x86 (which can have 64-bit dma) but includes sparc32
-(which probably doesn't).
-
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
-
+cheers
