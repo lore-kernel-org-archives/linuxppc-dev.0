@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06A4DC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81BCFC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:34:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68606610A3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:34:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68606610A3
+	by mail.kernel.org (Postfix) with ESMTPS id 1386F610A3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Apr 2021 14:34:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1386F610A3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcw10mnvz3f7W
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:34:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FHcwK5jL1z3fLx
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Apr 2021 00:34:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcpD64tgz3c0Y
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Apr 2021 00:29:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FHcpF0gl5z3bx8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Apr 2021 00:29:41 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FHcpC2x7Kz9sXL; Sun, 11 Apr 2021 00:29:39 +1000 (AEST)
+ id 4FHcpD2YmZz9t0k; Sun, 11 Apr 2021 00:29:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20210312012044.3660743-1-npiggin@gmail.com>
-References: <20210312012044.3660743-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: power4 nap fixup in C
-Message-Id: <161806492607.1467223.7549979604946856102.b4-ty@ellerman.id.au>
-Date: Sun, 11 Apr 2021 00:28:46 +1000
+In-Reply-To: <20210406025508.821718-1-npiggin@gmail.com>
+References: <20210406025508.821718-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/64s: power4 nap fixup in C
+Message-Id: <161806493758.1467223.3132681025392394818.b4-ty@ellerman.id.au>
+Date: Sun, 11 Apr 2021 00:28:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,11 +51,12 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Andreas Schwab <schwab@linux-m68k.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 12 Mar 2021 11:20:44 +1000, Nicholas Piggin wrote:
+On Tue, 6 Apr 2021 12:55:08 +1000, Nicholas Piggin wrote:
 > There is no need for this to be in asm, use the new intrrupt entry wrapper.
 
 Applied to powerpc/next.
