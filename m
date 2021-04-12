@@ -2,57 +2,70 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23721C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:45:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB0E4C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:56:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8203E6120B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:45:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8203E6120B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=techsingularity.net
+	by mail.kernel.org (Postfix) with ESMTPS id C614D611AD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:56:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C614D611AD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkPS1dk1z3c0D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:45:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=techsingularity.net (client-ip=46.22.139.220;
- helo=outbound-smtp37.blacknight.com; envelope-from=mgorman@techsingularity.net;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 460 seconds by postgrey-1.36 at boromir;
- Mon, 12 Apr 2021 19:45:11 AEST
-Received: from outbound-smtp37.blacknight.com (outbound-smtp37.blacknight.com
- [46.22.139.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkP32kc2z3004
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:45:11 +1000 (AEST)
-Received: from mail.blacknight.com (pemlinmail01.blacknight.ie [81.17.254.10])
- by outbound-smtp37.blacknight.com (Postfix) with ESMTPS id 622692302
- for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 12 Apr 2021 10:37:24 +0100 (IST)
-Received: (qmail 24080 invoked from network); 12 Apr 2021 09:37:24 -0000
-Received: from unknown (HELO techsingularity.net)
- (mgorman@techsingularity.net@[84.203.22.4])
- by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated);
- 12 Apr 2021 09:37:24 -0000
-Date: Mon, 12 Apr 2021 10:37:22 +0100
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] powerpc/smp: Add SD_SHARE_PKG_RESOURCES flag to MC
- sched-domain
-Message-ID: <20210412093722.GS3697@techsingularity.net>
-References: <1617341874-1205-1-git-send-email-ego@linux.vnet.ibm.com>
- <20210412062436.GB2633526@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkf21bx4z3bTr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:56:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkdd5rDqz309y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:56:03 +1000 (AEST)
+Received: from mail-wm1-f52.google.com ([209.85.128.52]) by
+ mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1MyNoa-1lkNLW3Utg-00ydVF for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr
+ 2021 11:55:58 +0200
+Received: by mail-wm1-f52.google.com with SMTP id k128so6426594wmk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 02:55:57 -0700 (PDT)
+X-Gm-Message-State: AOAM530KkitZ8pp9svm50COW47BrpdQ7nv3AejkbgEqLd25lHn3kFcNX
+ T6O4DkzpVO3LxH3ReAA4yrp022Kp8WLYShu/7Ms=
+X-Google-Smtp-Source: ABdhPJzTfxxaxsVCZqgwljY94HrF+v5FbHKG19HOl8IGqXY6e9UlqBjrbb/hk/qI5QxcbCRl2V2ekh7/KCvv8xos6no=
+X-Received: by 2002:a7b:c14a:: with SMTP id z10mr3077982wmi.75.1618221357638; 
+ Mon, 12 Apr 2021 02:55:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20210412062436.GB2633526@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20210412085545.2595431-1-hch@lst.de>
+ <20210412085545.2595431-2-hch@lst.de>
+In-Reply-To: <20210412085545.2595431-2-hch@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 12 Apr 2021 11:55:41 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a2MSJarPMfJ8RrSKDMXte3KQec=+GQ-LzV6HB7-Nm1FcQ@mail.gmail.com>
+Message-ID: <CAK8P3a2MSJarPMfJ8RrSKDMXte3KQec=+GQ-LzV6HB7-Nm1FcQ@mail.gmail.com>
+Subject: Re: [PATCH 1/5] uapi: remove the unused HAVE_ARCH_STRUCT_FLOCK64
+ define
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:HN1i/tIKssi+Q6nZtfFCctnFuYxexKGWuG8D9U+RjYWKr7PIhcy
+ II7glUUiMwG40qfC2bDtAFcGMMSIUgnUGkVDtJ1WE+nTjKS+hMw1BpVHIp8zoyA5472rsEj
+ wBJNrr0wsiWl6xQC9ORWyHF1TUKCqf1XXyYrAaWRsax446kn9H5VBLpjkHC6fPvfdswWgWM
+ Fh0GeMYIUiTQ1ZUKw2/mg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:OgUZvUE+adY=:7guKUSdVoMDVapqnLtTfg9
+ z5fZGvZYI9neUu+isO6rmXJZdI0QAp41++B4tCFrLez7x07pbMI899oHEBxRLEcN+whLGCdJv
+ vFt/+ZHwxku8DbzJFnn4LviEe/oB+b0EF+3xtvOpjJwU1RR8cCqepJd9jTL4J7esqnKraQJM5
+ 1c3nR7KRlFkFrlRvdyH27ddEIIQsJLKYFhZugmzoUrVx7twd88M0ezJHNLY+va473BhIhnN+z
+ SXczIHQfeYIr3l5ARVuqdHydqeUEk8gO8Do0GEBsmrETzyOyevyuHrmyqapc8GyiTjmwi/WDZ
+ a7lsYi53TQjxTUVFdrBRnkLQYmbzf6L1HkaQKQ2mqKyapO3trq5zCJzTg9vuoV0jWTCtG2EAz
+ XLZQrvPq3hmcd9FJ9saEi//aIclJTwQqcC0SBskP5g8Ii8yigzmz1tWogeLfoUuMxz1JgDBO2
+ aqlazTOtx6LWhnLDxIeA3vG6nEYjSnUw8k6gkQr4RWZIN/BT3RHtsKHIVZb+kywwRZm7mrUEe
+ bG4Du3vUyTV+eL3Dpd3A+niEA8dgwzExdlXK43p8d1OTnwV7daf2euLz9V1GvFXKXPAVJaWlB
+ et6HGRn893W4hQ4AdShT9ZnpgJ1e9h7wcy
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,52 +77,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
- LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, Parth Shah <parth@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Valentin Schneider <valentin.schneider@arm.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Parisc List <linux-parisc@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 12, 2021 at 11:54:36AM +0530, Srikar Dronamraju wrote:
-> * Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2021-04-02 11:07:54]:
-> 
-> > 
-> > To remedy this, this patch proposes that the LLC be moved to the MC
-> > level which is a group of cores in one half of the chip.
-> > 
-> >       SMT (SMT4) --> MC (Hemisphere)[LLC] --> DIE
-> > 
-> 
-> I think marking Hemisphere as a LLC in a P10 scenario is a good idea.
-> 
-> > While there is no cache being shared at this level, this is still the
-> > level where some amount of cache-snooping takes place and it is
-> > relatively faster to access the data from the caches of the cores
-> > within this domain. With this change, we no longer see regressions on
-> > P10 for applications which require single threaded performance.
-> 
-> Peter, Valentin, Vincent, Mel, etal
-> 
-> On architectures where we have multiple levels of cache access latencies
-> within a DIE, (For example: one within the current LLC or SMT core and the
-> other at MC or Hemisphere, and finally across hemispheres), do you have any
-> suggestions on how we could handle the same in the core scheduler?
-> 
+On Mon, Apr 12, 2021 at 10:55 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Minimally I think it would be worth detecting when there are multiple
-LLCs per node and detecting that in generic code as a static branch. In
-select_idle_cpu, consider taking two passes -- first on the LLC domain
-and if no idle CPU is found then taking a second pass if the search depth
-allows within the node with the LLC CPUs masked out. While there would be
-a latency hit because cache is not shared, it would still be a CPU local
-to memory that is idle. That would potentially be beneficial on Zen*
-as well without having to introduce new domains in the topology hierarchy.
+The patch looks good, but I'd like to see a description for each one.
+How about:
 
--- 
-Mel Gorman
-SUSE Labs
+| The check was added when Stephen Rothwell created the file, but
+| no architecture ever defined it.
+
+        Arnd
