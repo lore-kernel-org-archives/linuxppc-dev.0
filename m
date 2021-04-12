@@ -2,55 +2,104 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5260AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54333C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:27:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1AEC61355
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:25:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1AEC61355
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6FB3A61355
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:27:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FB3A61355
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FK3G72QD2z30J0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 08:25:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FK3Js5P3Vz3c0q
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 08:27:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4FK3Fj6wm5z301B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 08:24:57 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 13CMLi6p013457;
- Mon, 12 Apr 2021 17:21:44 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 13CMLhsf013456;
- Mon, 12 Apr 2021 17:21:43 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Mon, 12 Apr 2021 17:21:43 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v2 1/1] powerpc/iommu: Enable remaining IOMMU Pagesizes
- present in LoPAR
-Message-ID: <20210412222143.GO26583@gate.crashing.org>
-References: <20210407195613.131140-1-leobras.c@gmail.com>
- <87im4xe3pk.fsf@mpe.ellerman.id.au>
- <8e1ce7e9-415b-92ea-0437-a4331ed3c7f9@ozlabs.ru>
- <87ft01du50.fsf@mpe.ellerman.id.au>
- <21407a96-5b20-3fae-f1c8-895973b655ef@ozlabs.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21407a96-5b20-3fae-f1c8-895973b655ef@ozlabs.ru>
-User-Agent: Mutt/1.4.2.3i
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Wg0CPOav;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Wg0CPOav; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FK3JM3PY7z300c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 08:27:14 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13CM4KNW077369; Mon, 12 Apr 2021 18:27:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=luum+pxer+WirNEHYuoLeR8uzLoE4JG3p9cQsJmIasA=;
+ b=Wg0CPOavJ3uE1n5qX7HblbGliNZ/zg3t9iEtpU1QDxSQ3hecAKGOiuLe4lTubCTfg7kq
+ M5H1nlUjzSSVKe7568XFvb1m3WwvQ+4nZ1lFBYfRUTcVp4G3r08i5NhicydcK7XaN8df
+ MRMlQZlTFYjJ1OwEmyVslNKFyPNRUyQof6y9lLaXJEH+JLs+Xh4pPfl/9mbHJ8yP5Dey
+ kPKr9skN1W2ZJyy9Cl7BjAfUaLGePlXXovI1eQCpVUvqIVOvMd0KZBT0gYXGldd2zfef
+ ek5YuLlnZgXlXWNtHv92mugSbcbCeCfHoo34LeVk6VO2d5iKYSBy17RIdmQeqdUwr4Ug Iw== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37vkdgb967-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 12 Apr 2021 18:27:08 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13CMBj1s025896;
+ Mon, 12 Apr 2021 22:27:07 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma01dal.us.ibm.com with ESMTP id 37u3n98mvd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 12 Apr 2021 22:27:07 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13CMR6ZK24445210
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 12 Apr 2021 22:27:06 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8C22FBE054;
+ Mon, 12 Apr 2021 22:27:06 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DFD32BE04F;
+ Mon, 12 Apr 2021 22:27:04 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.211.82.34])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 12 Apr 2021 22:27:04 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [RFC PATCH 2/2] KVM: PPC: Book3S HV: Provide a more accurate
+ MAX_VCPU_ID in P9
+Date: Mon, 12 Apr 2021 19:26:56 -0300
+Message-Id: <20210412222656.3466987-3-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210412222656.3466987-1-farosas@linux.ibm.com>
+References: <20210412222656.3466987-1-farosas@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: oCn6YlPUZtVWsAbTJdrY0kke-9Qv5__6
+X-Proofpoint-ORIG-GUID: oCn6YlPUZtVWsAbTJdrY0kke-9Qv5__6
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-12_11:2021-04-12,
+ 2021-04-12 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ priorityscore=1501 phishscore=0 mlxlogscore=967 impostorscore=0
+ adultscore=0 lowpriorityscore=0 malwarescore=0 mlxscore=0 spamscore=0
+ bulkscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104120142
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,42 +111,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Leonardo Bras <leobras.c@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, brking@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, groug@kaod.org, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 09, 2021 at 02:36:16PM +1000, Alexey Kardashevskiy wrote:
-> On 08/04/2021 19:04, Michael Ellerman wrote:
-> >>>>+#define QUERY_DDW_PGSIZE_4K	0x01
-> >>>>+#define QUERY_DDW_PGSIZE_64K	0x02
-> >>>>+#define QUERY_DDW_PGSIZE_16M	0x04
-> >>>>+#define QUERY_DDW_PGSIZE_32M	0x08
-> >>>>+#define QUERY_DDW_PGSIZE_64M	0x10
-> >>>>+#define QUERY_DDW_PGSIZE_128M	0x20
-> >>>>+#define QUERY_DDW_PGSIZE_256M	0x40
-> >>>>+#define QUERY_DDW_PGSIZE_16G	0x80
-> >>>
-> >>>I'm not sure the #defines really gain us much vs just putting the
-> >>>literal values in the array below?
-> >>
-> >>Then someone says "uuuuu magic values" :) I do not mind either way. 
-> >>Thanks,
-> >
-> >Yeah that's true. But #defining them doesn't make them less magic, if
-> >you only use them in one place :)
-> 
-> Defining them with "QUERY_DDW" in the names kinda tells where they are 
-> from. Can also grep QEMU using these to see how the other side handles 
-> it. Dunno.
+The KVM_CAP_MAX_VCPU_ID capability was added by commit 0b1b1dfd52a6
+("kvm: introduce KVM_MAX_VCPU_ID") to allow for vcpu ids larger than
+KVM_MAX_VCPU in powerpc.
 
-And *not* defining anything reduces the mental load a lot.  You can add
-a comment at the single spot you use them, explaining what this is, in a
-much better way!
+For a P9 host we depend on the guest VSMT value to know what is the
+maximum number of vcpu id we can support:
 
-Comments are *good*.
+kvmppc_core_vcpu_create_hv:
+    (...)
+    if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+-->         if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode)) {
+                    pr_devel("KVM: VCPU ID too high\n");
+                    core = KVM_MAX_VCORES;
+            } else {
+                    BUG_ON(kvm->arch.smt_mode != 1);
+                    core = kvmppc_pack_vcpu_id(kvm, id);
+            }
+    } else {
+            core = id / kvm->arch.smt_mode;
+    }
 
+which means that the value being returned by the capability today for
+a given guest is potentially way larger than what we actually support:
 
-Segher
+\#define KVM_MAX_VCPU_ID (MAX_SMT_THREADS * KVM_MAX_VCORES)
+
+If the capability is queried before userspace enables the
+KVM_CAP_PPC_SMT ioctl there is not much we can do, but if the emulated
+smt mode is already known we could provide a more accurate value.
+
+The only practical effect of this change today is to make the
+kvm_create_max_vcpus test pass for powerpc. The QEMU spapr machine has
+a lower max vcpu than what KVM allows so even KVM_MAX_VCPU is not
+reached.
+
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+
+---
+I see that for ppc, QEMU uses the capability after enabling
+KVM_CAP_PPC_SMT, so we could change QEMU to issue the check extension
+on the vm fd so that it would get the more accurate value.
+---
+ arch/powerpc/kvm/powerpc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index a2a68a958fa0..95c9f47cc1b3 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -649,7 +649,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		r = KVM_MAX_VCPUS;
+ 		break;
+ 	case KVM_CAP_MAX_VCPU_ID:
+-		r = KVM_MAX_VCPU_ID;
++		if (hv_enabled && cpu_has_feature(CPU_FTR_ARCH_300))
++			r = KVM_MAX_VCPUS * ((kvm) ? kvm->arch.emul_smt_mode : 1);
++		else
++			r = KVM_MAX_VCPU_ID;
+ 		break;
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case KVM_CAP_PPC_GET_SMMU_INFO:
+-- 
+2.29.2
+
