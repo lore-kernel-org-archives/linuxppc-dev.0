@@ -2,76 +2,75 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDFD3C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23E97C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:37:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2616B61356
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2616B61356
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 5FAD261209
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:37:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FAD261209
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJjMY5RQ1z3ckq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 18:58:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=cjDfmbji;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+68317ec28ad53de92ceb+6441+infradead.org+hch@bombadil.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkDb6b4jz30CK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:37:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=cjDfmbji; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 156016 seconds by postgrey-1.36 at boromir;
+ Mon, 12 Apr 2021 19:37:31 AEST
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJjJf4q4jz302H
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 18:56:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=fgQRdEagpaZNMUiuJhh4HzfGVzVozqLdJZdOWxKQU1Q=; b=cjDfmbjibw3FJuZW9g7tculTQg
- X5UvjE9IN7RhJyE/cV0JXLAPTzZytj4G7rKj403Lyboz+4QxvrO1a89CTwjn+bZeCtnPPitmpmBSC
- AsDZ/qwwP7pWoQMpmV+BZf6km/T1Hy/Mmc5r3ZoODDHFLULPIZn9jE/iENE1oTYHtL1wkxHb098rS
- jG58BQ7+YiChH1rk9FP2yyQc2lAjiaJjOrAIwngUci9JvxWqMYeecrSSvI0FhOk3arbLv9SIFfEK3
- n4f19h/Um9lfBoZv5EstKKZVj+tNBKGTWgaeDgytQikNo8F74AjvZX+I5mXCjY0cu2XoNFMTUXrl2
- brfnNDXQ==;
-Received: from [2001:4bb8:199:e2bd:3218:1918:85d1:2852] (helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lVsMN-0060EC-J3; Mon, 12 Apr 2021 08:55:56 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 3/5] uapi: merge the 32-bit mips struct flock into the generic
- one
-Date: Mon, 12 Apr 2021 10:55:43 +0200
-Message-Id: <20210412085545.2595431-4-hch@lst.de>
-X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210412085545.2595431-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkDC6Z6Vz300K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:37:29 +1000 (AEST)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-82-C7COxs-EPmWmM_DfUiqZhw-1; Mon, 12 Apr 2021 10:37:23 +0100
+X-MC-Unique: C7COxs-EPmWmM_DfUiqZhw-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
+ Server (TLS) id 15.0.1497.2; Mon, 12 Apr 2021 10:37:22 +0100
+Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
+ AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
+ 15.00.1497.012; Mon, 12 Apr 2021 10:37:22 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christoph Hellwig' <hch@lst.de>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Thomas Bogendoerfer
+ <tsbogend@alpha.franken.de>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>,
+ Michael Ellerman <mpe@ellerman.id.au>, Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@de.ibm.com>, "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: RE: [PATCH 5/5] compat: consolidate the compat_flock{,64} definition
+Thread-Topic: [PATCH 5/5] compat: consolidate the compat_flock{, 64} definition
+Thread-Index: AQHXL3nAXViKKuH90kqxIUkBtWSuL6qwmWXw
+Date: Mon, 12 Apr 2021 09:37:21 +0000
+Message-ID: <15be19af19174c7692dd795297884096@AcuMS.aculab.com>
 References: <20210412085545.2595431-1-hch@lst.de>
+ <20210412085545.2595431-6-hch@lst.de>
+In-Reply-To: <20210412085545.2595431-6-hch@lst.de>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,115 +82,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a new __ARCH_FLOCK_EXTRA_SYSID macro following the style of
-__ARCH_FLOCK_PAD to avoid having a separate definition just for one
-architecture.
+From: Christoph Hellwig
+> Sent: 12 April 2021 09:56
+>=20
+> Provide a single common definition for the compat_flock and
+> compat_flock64 structures using the same tricks as for the native
+> variants.  An extra define is added for the packing required on x86.
+>=20
+...
+>  /*
+> - * IA32 uses 4 byte alignment for 64 bit quantities,
+> - * so we need to pack this structure.
+> + * IA32 uses 4 byte alignment for 64 bit quantities, so we need to pack =
+the
+> + * compat flock64 structure.
+>   */
+> -struct compat_flock64 {
+> -=09short=09=09l_type;
+> -=09short=09=09l_whence;
+> -=09compat_loff_t=09l_start;
+> -=09compat_loff_t=09l_len;
+> -=09compat_pid_t=09l_pid;
+> -} __attribute__((packed));
+> +#define __ARCH_NEED_COMPAT_FLOCK64_PACKED
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/mips/include/uapi/asm/fcntl.h     | 26 +++-----------------------
- include/uapi/asm-generic/fcntl.h       |  5 +++--
- tools/include/uapi/asm-generic/fcntl.h |  5 +++--
- 3 files changed, 9 insertions(+), 27 deletions(-)
+That shouldn't need to be packed at all.
+(Since the 32bit variant isn't packed.)
 
-diff --git a/arch/mips/include/uapi/asm/fcntl.h b/arch/mips/include/uapi/asm/fcntl.h
-index 42e13dead54319..9e44ac810db94d 100644
---- a/arch/mips/include/uapi/asm/fcntl.h
-+++ b/arch/mips/include/uapi/asm/fcntl.h
-@@ -50,30 +50,10 @@
- #define F_SETLKW64	35
- #endif
- 
--/*
-- * The flavours of struct flock.  "struct flock" is the ABI compliant
-- * variant.  Finally struct flock64 is the LFS variant of struct flock.	 As
-- * a historic accident and inconsistence with the ABI definition it doesn't
-- * contain all the same fields as struct flock.
-- */
+compat_loff_t should itself have __attribute__((aligned(4)))
+probably inherited from compat_s64.
+So l_start will be at offset 4 without the __packed.
+
+I'm guessing that compat_pid_t is 16 bits?
+So the native 32bit version has an unnamed 2 byte structure pad.
+The 'packed' removes this pad from the compat structure.
+
+AFAICT (apart from mips) the __ARCH_COMPAT_FLOCK_PAD is just
+adding an explicit pad for the implicit pad the compiler
+would generate because compat_pid_t is 16 bits.
+
+If the padding need not be named for the 64bit system calls.
+(Where there is probably rather more padding all over the place.)
+then it doesn't need to be named for the compat variants.
+
+Even the mips extra padding could be removed.
+F_GETLK might be expected to do a read-write of them, so
+return EFAULT if not mapped.
+But nothing should be testing the EFAULT is returned!
+
+=09David
+
 -
- #if _MIPS_SIM != _MIPS_SIM_ABI64
--
--#include <linux/types.h>
--
--struct flock {
--	short	l_type;
--	short	l_whence;
--	__kernel_off_t	l_start;
--	__kernel_off_t	l_len;
--	long	l_sysid;
--	__kernel_pid_t l_pid;
--	long	pad[4];
--};
--
--#define HAVE_ARCH_STRUCT_FLOCK
--
--#endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
-+#define __ARCH_FLOCK_EXTRA_SYSID	long l_sysid;
-+#define __ARCH_FLOCK_PAD		long pad[4];
-+#endif
- 
- #include <asm-generic/fcntl.h>
- 
-diff --git a/include/uapi/asm-generic/fcntl.h b/include/uapi/asm-generic/fcntl.h
-index df7ad6962dff71..7e714443a8d2e3 100644
---- a/include/uapi/asm-generic/fcntl.h
-+++ b/include/uapi/asm-generic/fcntl.h
-@@ -188,18 +188,19 @@ struct f_owner_ex {
- 
- #define F_LINUX_SPECIFIC_BASE	1024
- 
--#ifndef HAVE_ARCH_STRUCT_FLOCK
- struct flock {
- 	short	l_type;
- 	short	l_whence;
- 	__kernel_off_t	l_start;
- 	__kernel_off_t	l_len;
-+#ifdef __ARCH_FLOCK_EXTRA_SYSID
-+	__ARCH_FLOCK_EXTRA_SYSID
-+#endif
- 	__kernel_pid_t	l_pid;
- #ifdef __ARCH_FLOCK_PAD
- 	__ARCH_FLOCK_PAD
- #endif
- };
--#endif
- 
- struct flock64 {
- 	short  l_type;
-diff --git a/tools/include/uapi/asm-generic/fcntl.h b/tools/include/uapi/asm-generic/fcntl.h
-index 82054502b9748d..bf961a71802e0e 100644
---- a/tools/include/uapi/asm-generic/fcntl.h
-+++ b/tools/include/uapi/asm-generic/fcntl.h
-@@ -187,18 +187,19 @@ struct f_owner_ex {
- 
- #define F_LINUX_SPECIFIC_BASE	1024
- 
--#ifndef HAVE_ARCH_STRUCT_FLOCK
- struct flock {
- 	short	l_type;
- 	short	l_whence;
- 	__kernel_off_t	l_start;
- 	__kernel_off_t	l_len;
-+#ifdef __ARCH_FLOCK_EXTRA_SYSID
-+	__ARCH_FLOCK_EXTRA_SYSID
-+#endif
- 	__kernel_pid_t	l_pid;
- #ifdef __ARCH_FLOCK_PAD
- 	__ARCH_FLOCK_PAD
- #endif
- };
--#endif
- 
- struct flock64 {
- 	short  l_type;
--- 
-2.30.1
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
