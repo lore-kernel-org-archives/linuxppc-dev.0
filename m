@@ -2,67 +2,57 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E340C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23721C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:45:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33E3E61244
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:42:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33E3E61244
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8203E6120B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:45:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8203E6120B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=techsingularity.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkKl6DJCz3byG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:42:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EI0crJes;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkPS1dk1z3c0D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:45:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=EI0crJes; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=techsingularity.net (client-ip=46.22.139.220;
+ helo=outbound-smtp37.blacknight.com; envelope-from=mgorman@techsingularity.net;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 460 seconds by postgrey-1.36 at boromir;
+ Mon, 12 Apr 2021 19:45:11 AEST
+Received: from outbound-smtp37.blacknight.com (outbound-smtp37.blacknight.com
+ [46.22.139.220])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkKF42Npz309p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:41:52 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FJkK23pJvz9sCD;
- Mon, 12 Apr 2021 19:41:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1618220503;
- bh=qKUReVSabx2CuMNjbJlsyrB/4dzn/agdSM7iEVUdJFE=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=EI0crJes1a/+RqdpvZLEAvaeJSuKP8N8cwfdww93gWYxTDEwk/z7w5zNQZG5BAEZd
- ev3Jn5y9op0/i9JCxYb9TguxAMm8bB/voRAgJLL4Ijy05V7KcdYLFTXDKOke8vJbCS
- RjzGshVhLlUYRHa2SNMBvGbr1dFb2MSejY1iYDIauJls7QOB5ypl7lVgKongVwTmuD
- 7h+MR2KVudCiNQSNYaaKPV9eqVoxbvnpndlLZmB3u5KZfN+rX/LVphobTYVG53Z3+L
- d6f1izCOSt7lDm1hwVd+/bwDl0PSXgw/yDq+w0FxS9jnvnqXM2ThTwAITB7vaKbRMa
- 6M/gf3g51FSHQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alex Williamson <alex.williamson@redhat.com>, Christoph Hellwig
- <hch@lst.de>
-Subject: Re: [PATCH 1/2] vfio/pci: remove vfio_pci_nvlink2
-In-Reply-To: <20210406133805.715120bd@omen>
-References: <20210326061311.1497642-1-hch@lst.de>
- <20210326061311.1497642-2-hch@lst.de> <20210406133805.715120bd@omen>
-Date: Mon, 12 Apr 2021 19:41:41 +1000
-Message-ID: <87y2dndelm.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkP32kc2z3004
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:45:11 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail01.blacknight.ie [81.17.254.10])
+ by outbound-smtp37.blacknight.com (Postfix) with ESMTPS id 622692302
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 12 Apr 2021 10:37:24 +0100 (IST)
+Received: (qmail 24080 invoked from network); 12 Apr 2021 09:37:24 -0000
+Received: from unknown (HELO techsingularity.net)
+ (mgorman@techsingularity.net@[84.203.22.4])
+ by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated);
+ 12 Apr 2021 09:37:24 -0000
+Date: Mon, 12 Apr 2021 10:37:22 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] powerpc/smp: Add SD_SHARE_PKG_RESOURCES flag to MC
+ sched-domain
+Message-ID: <20210412093722.GS3697@techsingularity.net>
+References: <1617341874-1205-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20210412062436.GB2633526@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20210412062436.GB2633526@linux.vnet.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,47 +64,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason Gunthorpe <jgg@nvidia.com>, kvm@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>,
- Daniel Vetter <daniel@ffwll.ch>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-api@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
+ LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, Parth Shah <parth@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Valentin Schneider <valentin.schneider@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alex Williamson <alex.williamson@redhat.com> writes:
-> On Fri, 26 Mar 2021 07:13:10 +0100
-> Christoph Hellwig <hch@lst.de> wrote:
->
->> This driver never had any open userspace (which for VFIO would include
->> VM kernel drivers) that use it, and thus should never have been added
->> by our normal userspace ABI rules.
->> 
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
->> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> ---
->>  drivers/vfio/pci/Kconfig            |   6 -
->>  drivers/vfio/pci/Makefile           |   1 -
->>  drivers/vfio/pci/vfio_pci.c         |  18 -
->>  drivers/vfio/pci/vfio_pci_nvlink2.c | 490 ----------------------------
->>  drivers/vfio/pci/vfio_pci_private.h |  14 -
->>  include/uapi/linux/vfio.h           |  38 +--
->>  6 files changed, 4 insertions(+), 563 deletions(-)
->>  delete mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
->
-> Hearing no objections, applied to vfio next branch for v5.13.  Thanks,
+On Mon, Apr 12, 2021 at 11:54:36AM +0530, Srikar Dronamraju wrote:
+> * Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2021-04-02 11:07:54]:
+> 
+> > 
+> > To remedy this, this patch proposes that the LLC be moved to the MC
+> > level which is a group of cores in one half of the chip.
+> > 
+> >       SMT (SMT4) --> MC (Hemisphere)[LLC] --> DIE
+> > 
+> 
+> I think marking Hemisphere as a LLC in a P10 scenario is a good idea.
+> 
+> > While there is no cache being shared at this level, this is still the
+> > level where some amount of cache-snooping takes place and it is
+> > relatively faster to access the data from the caches of the cores
+> > within this domain. With this change, we no longer see regressions on
+> > P10 for applications which require single threaded performance.
+> 
+> Peter, Valentin, Vincent, Mel, etal
+> 
+> On architectures where we have multiple levels of cache access latencies
+> within a DIE, (For example: one within the current LLC or SMT core and the
+> other at MC or Hemisphere, and finally across hemispheres), do you have any
+> suggestions on how we could handle the same in the core scheduler?
+> 
 
-Looks like you only took patch 1?
+Minimally I think it would be worth detecting when there are multiple
+LLCs per node and detecting that in generic code as a static branch. In
+select_idle_cpu, consider taking two passes -- first on the LLC domain
+and if no idle CPU is found then taking a second pass if the search depth
+allows within the node with the LLC CPUs masked out. While there would be
+a latency hit because cache is not shared, it would still be a CPU local
+to memory that is idle. That would potentially be beneficial on Zen*
+as well without having to introduce new domains in the topology hierarchy.
 
-I can't take patch 2 on its own, that would break the build.
-
-Do you want to take both patches? There's currently no conflicts against
-my tree. It's possible one could appear before the v5.13 merge window,
-though it would probably just be something minor.
-
-Or I could apply both patches to my tree, which means patch 1 would
-appear as two commits in the git history, but that's not a big deal.
-
-cheers
+-- 
+Mel Gorman
+SUSE Labs
