@@ -2,74 +2,80 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83490C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:02:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3385C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:03:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8B0C6124B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:02:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8B0C6124B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=walle.cc
+	by mail.kernel.org (Postfix) with ESMTPS id D3D9C61220
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:03:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3D9C61220
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FK2m522xxz3cBX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 08:02:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FK2mc29tWz3c2Y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 08:03:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=EHwgEODO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=fg44s9YW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
- helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=EHwgEODO; 
- dkim-atps=neutral
-Received: from ssl.serverraum.org (ssl.serverraum.org
- [IPv6:2a01:4f8:151:8464::1:2])
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::533;
+ helo=mail-pg1-x533.google.com; envelope-from=kaleshsingh@google.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=fg44s9YW; dkim-atps=neutral
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com
+ [IPv6:2607:f8b0:4864:20::533])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJx5z4gStz303w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 03:47:50 +1000 (AEST)
-Received: from mwalle01.fritz.box (unknown
- [IPv6:2a02:810c:c200:2e91:fa59:71ff:fe9b:b851])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id 0C67F22249;
- Mon, 12 Apr 2021 19:47:25 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1618249662;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=ACunbYYfUYQX2dQfrSBcq4Yxr9z2iAhwXNJmeYavID0=;
- b=EHwgEODOPZY3i3DvMUC0DA3H0EinzUZaPq96BoCBx/hpsA4ESSlbZOieaK8tJyqesrb9Un
- e9xZmNdlSP4kTnaFyWTzg9DJ4jn0ifgq4bGUCFFjXpmA2Tf8+vjS6TW/El0zn3/PkifVrj
- mtBF6RQrViyJ2N+BnddeC321+MiZNgc=
-From: Michael Walle <michael@walle.cc>
-To: ath9k-devel@qca.qualcomm.com, UNGLinuxDriver@microchip.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-amlogic@lists.infradead.org, linux-oxnas@groups.io,
- linux-omap@vger.kernel.org, linux-wireless@vger.kernel.org,
- devicetree@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: [PATCH net-next v4 0/2] of: net: support non-platform devices in
- of_get_mac_address()
-Date: Mon, 12 Apr 2021 19:47:16 +0200
-Message-Id: <20210412174718.17382-1-michael@walle.cc>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJyCS5XNqz302b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 04:37:38 +1000 (AEST)
+Received: by mail-pg1-x533.google.com with SMTP id y32so10064971pga.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 11:37:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=z3+agwM/TeNrjUCMQXaeoLSrY4b9sKMllw4YPnQltNg=;
+ b=fg44s9YWe4dvFlAkKx4+cvJSjakBhdVeCGUvL4WcBLHsdaQHQkKop/DX7oXsvwUFB5
+ +JdUdUg9vzY5p55aasDH1LiCLx9oY0hw5UVl5SoYEyegXOaRlxcWind7SBPqqJcdZjOB
+ 2hyzj4kHwzU/iFNwyu9e2k7YXQq3FkNmjCcrjHX4uCy9ZEkeW4MBnizGsr+EvU4mh0d+
+ K3zxfBJXJrPzAX5NOVtVsnE/InTqgrCcnCHoOR5aR9k3K/FGM55/Vm7soYeVlMgte6po
+ R4kmir40HqzuPSmgx/5/DsLenWmL3KWvYhgKeQmmZ2LAjAXkVb1uI1k7+ztX6P2gpuZt
+ SoOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=z3+agwM/TeNrjUCMQXaeoLSrY4b9sKMllw4YPnQltNg=;
+ b=QSihjeRELpQD4or0E1Lriyt/V0AlUzIx6EzplAu8Q6DimL6DZJcfKLcOhdQzKfTA+E
+ 4GiCP5skPEH8UXN4f9yYgn1yY5YvTW1H9HF74/rAKClAdKC+zF4RSQwtIHxvWQbrfbpp
+ gMmo2kaoXjKXMcvYIY5W3pObhhBB/0RR0VnL6+H/bpZMYcCM++NM4M3IpXjAM4kYS/Vc
+ ATAJClv1pKs8EKAIl4Cu/IHAjXcAARiLZbYwdcfkCNiGh8yBBajxy8Sko0UCc+QhOy1Z
+ WEt0PAw6TOmCjZhN7qrf/FfjeskoFj5u3/yx/ZRRgmsukmyAdXU8auVbaawkqR+vKbST
+ hNRA==
+X-Gm-Message-State: AOAM532/KWWEI8DjeMNM7pQYd9kvHrB0kqutGmfwIPh4+5yrrqIZ8qcE
+ r/eM/AIosAXVutGoSoGhRG0cRhQN5Po4X723tpmOSw==
+X-Google-Smtp-Source: ABdhPJwvcp/oN+rzkEkXX3s0V+B9ISLIx8bTCK7FQ3WQ5zVZE456bxdwefP/X1sYkxg61pV8BxZr6bs9VqpgtBYhBRA=
+X-Received: by 2002:a05:6a00:1c67:b029:215:6f93:d220 with SMTP id
+ s39-20020a056a001c67b02902156f93d220mr24848728pfw.36.1618252654995; Mon, 12
+ Apr 2021 11:37:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam: Yes
+References: <20210330060752.592769-1-aneesh.kumar@linux.ibm.com>
+ <20210330060752.592769-2-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20210330060752.592769-2-aneesh.kumar@linux.ibm.com>
+From: Kalesh Singh <kaleshsingh@google.com>
+Date: Mon, 12 Apr 2021 11:37:24 -0700
+Message-ID: <CAC_TJvckza8EDro7orzWbtT3dbs=MG+zcASvvpFzj+eedVMXKA@mail.gmail.com>
+Subject: Re: [PATCH v3 1/9] selftest/mremap_test: Update the test to handle
+ pagesize other than 4K
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Tue, 13 Apr 2021 08:01:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,186 +88,177 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Pouiller?= <jerome.pouiller@silabs.com>,
- Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
- Andreas Larsson <andreas@gaisler.com>, Rob Herring <robh+dt@kernel.org>,
- Michal Simek <michal.simek@xilinx.com>,
- Lorenzo Bianconi <lorenzo.bianconi83@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Michael Walle <michael@walle.cc>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>,
- Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>,
- Li Yang <leoyang.li@nxp.com>, Fabio Estevam <festevam@gmail.com>,
- Jerome Brunet <jbrunet@baylibre.com>,
- Stephen Hemminger <stephen@networkplumber.org>,
- Florian Fainelli <f.fainelli@gmail.com>, Frank Rowand <frowand.list@gmail.com>,
- Vivien Didelot <vivien.didelot@gmail.com>,
- Gregory Clement <gregory.clement@bootlin.com>,
- Madalin Bucur <madalin.bucur@nxp.com>, Russell King <linux@armlinux.org.uk>,
- Neil Armstrong <narmstrong@baylibre.com>, Wingman Kwok <w-kwok2@ti.com>,
- Chen-Yu Tsai <wens@csie.org>, Jose Abreu <joabreu@synopsys.com>,
- bcm-kernel-feedback-list@broadcom.com, NXP Linux Team <linux-imx@nxp.com>,
- Chris Snook <chris.snook@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
- Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
- Yisen Zhuang <yisen.zhuang@huawei.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
- Sunil Goutham <sgoutham@marvell.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>,
- Alexandre Torgue <alexandre.torgue@st.com>, Stanislaw Gruszka <stf_xl@wp.pl>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Hauke Mehrtens <hauke@hauke-m.de>, Sascha Hauer <s.hauer@pengutronix.de>,
- Sean Wang <sean.wang@mediatek.com>, Salil Mehta <salil.mehta@huawei.com>,
- Maxime Ripard <mripard@kernel.org>, Vladimir Zapolskiy <vz@mleia.com>,
- Claudiu Manoil <claudiu.manoil@nxp.com>, Ryder Lee <ryder.lee@mediatek.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Murali Karicheri <m-karicheri2@ti.com>, John Crispin <john@phrozen.org>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Giuseppe Cavallaro <peppe.cavallaro@st.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Kalle Valo <kvalo@codeaurora.org>, Mirko Lindner <mlindner@marvell.com>,
- Jernej Skrabec <jernej.skrabec@siol.net>, Vladimir Oltean <olteanv@gmail.com>,
- Fugang Duan <fugang.duan@nxp.com>, Vadym Kochan <vkochan@marvell.com>,
- Kevin Hilman <khilman@baylibre.com>,
- Bryan Whitehead <bryan.whitehead@microchip.com>,
- Helmut Schaa <helmut.schaa@googlemail.com>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- "David S . Miller" <davem@davemloft.net>, Taras Chornyi <tchornyi@marvell.com>,
- Vinod Koul <vkoul@kernel.org>, Sergei Shtylyov <sergei.shtylyov@gmail.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>, Joyce Ooi <joyce.ooi@intel.com>,
- Heiner Kallweit <hkallweit1@gmail.com>, Shawn Guo <shawnguo@kernel.org>,
- Claudiu Beznea <claudiu.beznea@microchip.com>, Felix Fietkau <nbd@nbd.name>
+Cc: npiggin@gmail.com, "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ joel@joelfernandes.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_get_mac_address() is commonly used to fetch the MAC address
-from the device tree. It also supports reading it from a NVMEM
-provider. But the latter is only possible for platform devices,
-because only platform devices are searched for a matching device
-node.
+On Mon, Mar 29, 2021 at 11:08 PM Aneesh Kumar K.V
+<aneesh.kumar@linux.ibm.com> wrote:
+>
+> Instead of hardcoding 4K page size fetch it using sysconf(). For the performance
+> measurements test still assume 2M and 1G are hugepage sizes.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Add a second method to fetch the NVMEM cell by a device tree node
-instead of a "struct device".
+Reviewed-by: Kalesh Singh <kaleshsingh@google.com>
 
-Moreover, the NVMEM subsystem will return dynamically allocated
-data which has to be freed after use. Currently, this is handled
-by allocating a device resource manged buffer to store the MAC
-address. of_get_mac_address() then returns a pointer to this
-buffer. Without a device, this trick is not possible anymore.
-Thus, change the of_get_mac_address() API to have the caller
-supply a buffer.
-
-It was considered to use the network device to attach the buffer
-to, but then the order matters and netdev_register() has to be
-called before of_get_mac_address(). No driver does it this way.
-
-changes since v3:
- - use memcpy() instead of ether_addr_copy() where appropriate.
-   Sometimes the destination is on the stack, thus the 2 byte
-   alignment requrement is not met.
- - fix "return PTR_ERR(mac_addr)" as found by Dan Carpenter
- - changed subject of patch 2/2, as suggested by Florian Fainelli
-
-changes since v2:
- - fixed of_get_mac_addr_nvmem() signature, which was accidentially
-   fixed in patch 2/2 again
-
-changes since v1:
- - fixed stmmac_probe_config_dt() for !CONFIG_OF
- - added missing queue in patch subject
-
-Michael Walle (2):
-  of: net: pass the dst buffer to of_get_mac_address()
-  of: net: fix of_get_mac_addr_nvmem() for non-platform devices
-
- arch/arm/mach-mvebu/kirkwood.c                |  3 +-
- arch/powerpc/sysdev/tsi108_dev.c              |  5 +-
- drivers/net/ethernet/aeroflex/greth.c         |  6 +-
- drivers/net/ethernet/allwinner/sun4i-emac.c   | 10 +--
- drivers/net/ethernet/altera/altera_tse_main.c |  7 +-
- drivers/net/ethernet/arc/emac_main.c          |  8 +-
- drivers/net/ethernet/atheros/ag71xx.c         |  7 +-
- drivers/net/ethernet/broadcom/bcm4908_enet.c  |  7 +-
- drivers/net/ethernet/broadcom/bcmsysport.c    |  7 +-
- drivers/net/ethernet/broadcom/bgmac-bcma.c    | 10 +--
- .../net/ethernet/broadcom/bgmac-platform.c    | 11 ++-
- drivers/net/ethernet/cadence/macb_main.c      | 11 +--
- .../net/ethernet/cavium/octeon/octeon_mgmt.c  |  8 +-
- .../net/ethernet/cavium/thunder/thunder_bgx.c |  5 +-
- drivers/net/ethernet/davicom/dm9000.c         | 10 +--
- drivers/net/ethernet/ethoc.c                  |  6 +-
- drivers/net/ethernet/ezchip/nps_enet.c        |  7 +-
- drivers/net/ethernet/freescale/fec_main.c     |  7 +-
- drivers/net/ethernet/freescale/fec_mpc52xx.c  |  7 +-
- drivers/net/ethernet/freescale/fman/mac.c     |  9 +-
- .../ethernet/freescale/fs_enet/fs_enet-main.c |  5 +-
- drivers/net/ethernet/freescale/gianfar.c      |  8 +-
- drivers/net/ethernet/freescale/ucc_geth.c     |  5 +-
- drivers/net/ethernet/hisilicon/hisi_femac.c   |  7 +-
- drivers/net/ethernet/hisilicon/hix5hd2_gmac.c |  7 +-
- drivers/net/ethernet/lantiq_xrx200.c          |  7 +-
- drivers/net/ethernet/marvell/mv643xx_eth.c    |  5 +-
- drivers/net/ethernet/marvell/mvneta.c         |  6 +-
- .../ethernet/marvell/prestera/prestera_main.c | 11 +--
- drivers/net/ethernet/marvell/pxa168_eth.c     |  9 +-
- drivers/net/ethernet/marvell/sky2.c           |  8 +-
- drivers/net/ethernet/mediatek/mtk_eth_soc.c   | 11 +--
- drivers/net/ethernet/micrel/ks8851_common.c   |  7 +-
- drivers/net/ethernet/microchip/lan743x_main.c |  5 +-
- drivers/net/ethernet/nxp/lpc_eth.c            |  4 +-
- drivers/net/ethernet/qualcomm/qca_spi.c       | 10 +--
- drivers/net/ethernet/qualcomm/qca_uart.c      |  9 +-
- drivers/net/ethernet/renesas/ravb_main.c      | 12 +--
- drivers/net/ethernet/renesas/sh_eth.c         |  5 +-
- .../ethernet/samsung/sxgbe/sxgbe_platform.c   | 13 +--
- drivers/net/ethernet/socionext/sni_ave.c      | 10 +--
- .../ethernet/stmicro/stmmac/dwmac-anarion.c   |  2 +-
- .../stmicro/stmmac/dwmac-dwc-qos-eth.c        |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-generic.c   |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-imx.c   |  2 +-
- .../stmicro/stmmac/dwmac-intel-plat.c         |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-ipq806x.c   |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-lpc18xx.c   |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-mediatek.c  |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-meson.c |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-meson8b.c   |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-oxnas.c |  2 +-
- .../stmicro/stmmac/dwmac-qcom-ethqos.c        |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-rk.c    |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-socfpga.c   |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-sti.c   |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-stm32.c |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-sun8i.c |  2 +-
- .../net/ethernet/stmicro/stmmac/dwmac-sunxi.c |  2 +-
- .../ethernet/stmicro/stmmac/dwmac-visconti.c  |  2 +-
- drivers/net/ethernet/stmicro/stmmac/stmmac.h  |  2 +-
- .../net/ethernet/stmicro/stmmac/stmmac_main.c |  2 +-
- .../ethernet/stmicro/stmmac/stmmac_platform.c | 14 +--
- .../ethernet/stmicro/stmmac/stmmac_platform.h |  2 +-
- drivers/net/ethernet/ti/am65-cpsw-nuss.c      | 19 ++---
- drivers/net/ethernet/ti/cpsw.c                |  7 +-
- drivers/net/ethernet/ti/cpsw_new.c            |  7 +-
- drivers/net/ethernet/ti/davinci_emac.c        |  8 +-
- drivers/net/ethernet/ti/netcp_core.c          |  7 +-
- drivers/net/ethernet/wiznet/w5100-spi.c       |  8 +-
- drivers/net/ethernet/wiznet/w5100.c           |  2 +-
- drivers/net/ethernet/xilinx/ll_temac_main.c   |  8 +-
- .../net/ethernet/xilinx/xilinx_axienet_main.c | 15 ++--
- drivers/net/ethernet/xilinx/xilinx_emaclite.c |  8 +-
- drivers/net/wireless/ath/ath9k/init.c         |  5 +-
- drivers/net/wireless/mediatek/mt76/eeprom.c   |  9 +-
- .../net/wireless/ralink/rt2x00/rt2x00dev.c    |  6 +-
- drivers/of/of_net.c                           | 85 ++++++++++++-------
- drivers/staging/octeon/ethernet.c             | 10 +--
- drivers/staging/wfx/main.c                    |  7 +-
- include/linux/of_net.h                        |  6 +-
- include/net/dsa.h                             |  2 +-
- net/dsa/dsa2.c                                |  2 +-
- net/dsa/slave.c                               |  2 +-
- net/ethernet/eth.c                            | 11 +--
- 85 files changed, 243 insertions(+), 364 deletions(-)
-
--- 
-2.20.1
-
+> ---
+>  tools/testing/selftests/vm/mremap_test.c | 113 ++++++++++++-----------
+>  1 file changed, 61 insertions(+), 52 deletions(-)
+>
+> diff --git a/tools/testing/selftests/vm/mremap_test.c b/tools/testing/selftests/vm/mremap_test.c
+> index 9c391d016922..c9a5461eb786 100644
+> --- a/tools/testing/selftests/vm/mremap_test.c
+> +++ b/tools/testing/selftests/vm/mremap_test.c
+> @@ -45,14 +45,15 @@ enum {
+>         _4MB = 4ULL << 20,
+>         _1GB = 1ULL << 30,
+>         _2GB = 2ULL << 30,
+> -       PTE = _4KB,
+>         PMD = _2MB,
+>         PUD = _1GB,
+>  };
+>
+> +#define PTE page_size
+> +
+>  #define MAKE_TEST(source_align, destination_align, size,       \
+>                   overlaps, should_fail, test_name)             \
+> -{                                                              \
+> +(struct test){                                                 \
+>         .name = test_name,                                      \
+>         .config = {                                             \
+>                 .src_alignment = source_align,                  \
+> @@ -252,12 +253,17 @@ static int parse_args(int argc, char **argv, unsigned int *threshold_mb,
+>         return 0;
+>  }
+>
+> +#define MAX_TEST 13
+> +#define MAX_PERF_TEST 3
+>  int main(int argc, char **argv)
+>  {
+>         int failures = 0;
+>         int i, run_perf_tests;
+>         unsigned int threshold_mb = VALIDATION_DEFAULT_THRESHOLD;
+>         unsigned int pattern_seed;
+> +       struct test test_cases[MAX_TEST];
+> +       struct test perf_test_cases[MAX_PERF_TEST];
+> +       int page_size;
+>         time_t t;
+>
+>         pattern_seed = (unsigned int) time(&t);
+> @@ -268,56 +274,59 @@ int main(int argc, char **argv)
+>         ksft_print_msg("Test configs:\n\tthreshold_mb=%u\n\tpattern_seed=%u\n\n",
+>                        threshold_mb, pattern_seed);
+>
+> -       struct test test_cases[] = {
+> -               /* Expected mremap failures */
+> -               MAKE_TEST(_4KB, _4KB, _4KB, OVERLAPPING, EXPECT_FAILURE,
+> -                 "mremap - Source and Destination Regions Overlapping"),
+> -               MAKE_TEST(_4KB, _1KB, _4KB, NON_OVERLAPPING, EXPECT_FAILURE,
+> -                 "mremap - Destination Address Misaligned (1KB-aligned)"),
+> -               MAKE_TEST(_1KB, _4KB, _4KB, NON_OVERLAPPING, EXPECT_FAILURE,
+> -                 "mremap - Source Address Misaligned (1KB-aligned)"),
+> -
+> -               /* Src addr PTE aligned */
+> -               MAKE_TEST(PTE, PTE, _8KB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "8KB mremap - Source PTE-aligned, Destination PTE-aligned"),
+> -
+> -               /* Src addr 1MB aligned */
+> -               MAKE_TEST(_1MB, PTE, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2MB mremap - Source 1MB-aligned, Destination PTE-aligned"),
+> -               MAKE_TEST(_1MB, _1MB, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2MB mremap - Source 1MB-aligned, Destination 1MB-aligned"),
+> -
+> -               /* Src addr PMD aligned */
+> -               MAKE_TEST(PMD, PTE, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "4MB mremap - Source PMD-aligned, Destination PTE-aligned"),
+> -               MAKE_TEST(PMD, _1MB, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "4MB mremap - Source PMD-aligned, Destination 1MB-aligned"),
+> -               MAKE_TEST(PMD, PMD, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "4MB mremap - Source PMD-aligned, Destination PMD-aligned"),
+> -
+> -               /* Src addr PUD aligned */
+> -               MAKE_TEST(PUD, PTE, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2GB mremap - Source PUD-aligned, Destination PTE-aligned"),
+> -               MAKE_TEST(PUD, _1MB, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2GB mremap - Source PUD-aligned, Destination 1MB-aligned"),
+> -               MAKE_TEST(PUD, PMD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2GB mremap - Source PUD-aligned, Destination PMD-aligned"),
+> -               MAKE_TEST(PUD, PUD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "2GB mremap - Source PUD-aligned, Destination PUD-aligned"),
+> -       };
+> -
+> -       struct test perf_test_cases[] = {
+> -               /*
+> -                * mremap 1GB region - Page table level aligned time
+> -                * comparison.
+> -                */
+> -               MAKE_TEST(PTE, PTE, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "1GB mremap - Source PTE-aligned, Destination PTE-aligned"),
+> -               MAKE_TEST(PMD, PMD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "1GB mremap - Source PMD-aligned, Destination PMD-aligned"),
+> -               MAKE_TEST(PUD, PUD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> -                 "1GB mremap - Source PUD-aligned, Destination PUD-aligned"),
+> -       };
+> +       page_size = sysconf(_SC_PAGESIZE);
+> +
+> +       /* Expected mremap failures */
+> +       test_cases[0] = MAKE_TEST(page_size, page_size, page_size,
+> +                                 OVERLAPPING, EXPECT_FAILURE,
+> +                                 "mremap - Source and Destination Regions Overlapping");
+> +
+> +       test_cases[1] = MAKE_TEST(page_size, page_size/4, page_size,
+> +                                 NON_OVERLAPPING, EXPECT_FAILURE,
+> +                                 "mremap - Destination Address Misaligned (1KB-aligned)");
+> +       test_cases[2] = MAKE_TEST(page_size/4, page_size, page_size,
+> +                                 NON_OVERLAPPING, EXPECT_FAILURE,
+> +                                 "mremap - Source Address Misaligned (1KB-aligned)");
+> +
+> +       /* Src addr PTE aligned */
+> +       test_cases[3] = MAKE_TEST(PTE, PTE, PTE * 2,
+> +                                 NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "8KB mremap - Source PTE-aligned, Destination PTE-aligned");
+> +
+> +       /* Src addr 1MB aligned */
+> +       test_cases[4] = MAKE_TEST(_1MB, PTE, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "2MB mremap - Source 1MB-aligned, Destination PTE-aligned");
+> +       test_cases[5] = MAKE_TEST(_1MB, _1MB, _2MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "2MB mremap - Source 1MB-aligned, Destination 1MB-aligned");
+> +
+> +       /* Src addr PMD aligned */
+> +       test_cases[6] = MAKE_TEST(PMD, PTE, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "4MB mremap - Source PMD-aligned, Destination PTE-aligned");
+> +       test_cases[7] = MAKE_TEST(PMD, _1MB, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "4MB mremap - Source PMD-aligned, Destination 1MB-aligned");
+> +       test_cases[8] = MAKE_TEST(PMD, PMD, _4MB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "4MB mremap - Source PMD-aligned, Destination PMD-aligned");
+> +
+> +       /* Src addr PUD aligned */
+> +       test_cases[9] = MAKE_TEST(PUD, PTE, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                 "2GB mremap - Source PUD-aligned, Destination PTE-aligned");
+> +       test_cases[10] = MAKE_TEST(PUD, _1MB, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                  "2GB mremap - Source PUD-aligned, Destination 1MB-aligned");
+> +       test_cases[11] = MAKE_TEST(PUD, PMD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                  "2GB mremap - Source PUD-aligned, Destination PMD-aligned");
+> +       test_cases[12] = MAKE_TEST(PUD, PUD, _2GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                  "2GB mremap - Source PUD-aligned, Destination PUD-aligned");
+> +
+> +       perf_test_cases[0] =  MAKE_TEST(page_size, page_size, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                       "1GB mremap - Source PTE-aligned, Destination PTE-aligned");
+> +       /*
+> +        * mremap 1GB region - Page table level aligned time
+> +        * comparison.
+> +        */
+> +       perf_test_cases[1] = MAKE_TEST(PMD, PMD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                      "1GB mremap - Source PMD-aligned, Destination PMD-aligned");
+> +       perf_test_cases[2] = MAKE_TEST(PUD, PUD, _1GB, NON_OVERLAPPING, EXPECT_SUCCESS,
+> +                                      "1GB mremap - Source PUD-aligned, Destination PUD-aligned");
+>
+>         run_perf_tests =  (threshold_mb == VALIDATION_NO_THRESHOLD) ||
+>                                 (threshold_mb * _1MB >= _1GB);
+> --
+> 2.30.2
+>
