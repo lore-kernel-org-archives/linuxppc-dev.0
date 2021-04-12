@@ -2,110 +2,108 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99A64C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 14:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC9CFC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 14:17:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B88A061220
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 14:06:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B88A061220
+	by mail.kernel.org (Postfix) with ESMTPS id 328AF61246
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 14:17:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 328AF61246
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJrBh0SLhz3bmg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 00:06:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJrRh3NvJz30Dq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 00:17:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tg/J37Hz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cFFXtn+s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Tg/J37Hz; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=cFFXtn+s; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJrB96dMxz30BD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 00:06:09 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13CE2wLG055751; Mon, 12 Apr 2021 10:06:06 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJrRC2DNyz2yYh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Apr 2021 00:17:26 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13CE4OmC077556; Mon, 12 Apr 2021 10:17:17 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=imMop1+fNcGEidP7nMLbVS3Ggwi8E+o5W0jjoJmMAYA=;
- b=Tg/J37HzpIcjVUQ6qGsgTaLjeThJOoVvAQvXL3x1cnzwPmzTvrk1l/BhUzAO7pCiVXs7
- DL3MMy4EPirWMHs+Anwodzjvcl9mR0EwxieGY/VUk2g/Hs6TYuqEI9OegRZPUCVJjW0x
- bdaOU8gghIjQjDe8OYkEGJKBLYJQ33ldCC+GTgXVRPLc6hBduKHsHecWz7wleRo2RhO8
- 74V2u6Kp+CHQayCJXjKngGIFnGVN4wfviYVw45hjXqp3uMNesoI2ZUTHi7JwLQ/qaMHS
- 6om/XdGBJO82yyfClag7gfKEDUvRN5NYjB20keCVwl8giNF5IK5UY2mmWFGw8fSxbDhR /Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37vn535vve-1
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=xYI2ryD7+6+zZPCZSb2a1k0FN7PgIpuHg4iXW30jUmA=;
+ b=cFFXtn+sshacxABE5RyC9TXqBm8Slr4gRd+j/p+4BYnP7r7SspzvdumkJNvg7Iq6Yv5V
+ ijtvHF+DMowucbKAWEJ0zHcpRShnIZB0wtFgOI5fypiDj+TlMi1b258xNAkQt1jF+B9j
+ +aY9nuXccBqHsR6flwSwnwoeLUiCLrKoVQQoNKiTEE8/yFrQt20JT4VIf5MJZUC9EH2s
+ rOWZVqX/Mk3ahT+RCRWRkCpn7S9HNCdrqHCCEPXo2ffvrAt1qJyQ28jUhTfyMF/4YZ/H
+ 0y3GMqXz8KpL7qel07AfDIrdUTsc05vcpGkINb+6lf/47Fgxi2L6dY+lvK0wOr8ire9a ow== 
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37vkdjtgfd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 12 Apr 2021 10:06:06 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13CE4X69063390;
- Mon, 12 Apr 2021 10:06:05 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37vn535vux-1
+ Mon, 12 Apr 2021 10:17:17 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13CECEhP017254;
+ Mon, 12 Apr 2021 14:17:16 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma05wdc.us.ibm.com with ESMTP id 37u3n9gp1c-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 12 Apr 2021 10:06:05 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13CDvhFB022514;
- Mon, 12 Apr 2021 14:06:05 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01dal.us.ibm.com with ESMTP id 37u3n94pvw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 12 Apr 2021 14:06:05 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13CE63rK56427010
+ Mon, 12 Apr 2021 14:17:16 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13CEHFC632178478
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 12 Apr 2021 14:06:03 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B605CBE056;
- Mon, 12 Apr 2021 14:06:03 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 06C02BE053;
- Mon, 12 Apr 2021 14:06:02 +0000 (GMT)
-Received: from localhost (unknown [9.211.82.34])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Mon, 12 Apr 2021 14:06:02 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v1 01/12] KVM: PPC: Book3S HV P9: Restore host CTRL SPR
- after guest exit
-In-Reply-To: <20210412014845.1517916-2-npiggin@gmail.com>
-References: <20210412014845.1517916-1-npiggin@gmail.com>
- <20210412014845.1517916-2-npiggin@gmail.com>
-Date: Mon, 12 Apr 2021 11:06:00 -0300
-Message-ID: <877dl761iv.fsf@linux.ibm.com>
+ Mon, 12 Apr 2021 14:17:15 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 41C7B6A054;
+ Mon, 12 Apr 2021 14:17:15 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8404A6A047;
+ Mon, 12 Apr 2021 14:17:12 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.199.37.91])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 12 Apr 2021 14:17:12 +0000 (GMT)
+Subject: Re: [PATCH -next] powerpc/perf/hv-24x7: Make some symbols static
+To: Bixuan Cui <cuibixuan@huawei.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+References: <20210409090124.59492-1-cuibixuan@huawei.com>
+From: kajoljain <kjain@linux.ibm.com>
+Message-ID: <8187bbd0-e626-d113-3449-58eea5b13571@linux.ibm.com>
+Date: Mon, 12 Apr 2021 19:47:10 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20210409090124.59492-1-cuibixuan@huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: BvqzYckQoTSCpfDpSvpAs70PjxRx4jMp
-X-Proofpoint-GUID: QjqkTGjAIVpxQC3VDsMqqinVgAfYHYs1
+X-Proofpoint-ORIG-GUID: ucZArozQ-G-GjPWGdqTxemrzaX2UmuFE
+X-Proofpoint-GUID: ucZArozQ-G-GjPWGdqTxemrzaX2UmuFE
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-12_10:2021-04-12,
  2021-04-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 adultscore=0
- suspectscore=0 bulkscore=0 malwarescore=0 mlxlogscore=999 clxscore=1015
- impostorscore=0 spamscore=0 lowpriorityscore=0 priorityscore=1501
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104120096
+ priorityscore=1501 mlxscore=0
+ phishscore=0 lowpriorityscore=0 adultscore=0 clxscore=1011 spamscore=0
+ malwarescore=0 bulkscore=0 impostorscore=0 mlxlogscore=999 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
+ definitions=main-2104120096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,52 +115,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
 
-> The host CTRL (runlatch) value is not restored after guest exit. The
-> host CTRL should always be 1 except in CPU idle code, so this can result
-> in the host running with runlatch clear, and potentially switching to
-> a different vCPU which then runs with runlatch clear as well.
->
-> This has little effect on P9 machines, CTRL is only responsible for some
-> PMU counter logic in the host and so other than corner cases of software
-> relying on that, or explicitly reading the runlatch value (Linux does
-> not appear to be affected but it's possible non-Linux guests could be),
-> there should be no execution correctness problem, though it could be
-> used as a covert channel between guests.
->
-> There may be microcontrollers, firmware or monitoring tools that sample
-> the runlatch value out-of-band, however since the register is writable
-> by guests, these values would (should) not be relied upon for correct
-> operation of the host, so suboptimal performance or incorrect reporting
-> should be the worst problem.
->
-> Fixes: 95a6432ce9038 ("KVM: PPC: Book3S HV: Streamlined guest entry/exit path on P9 for radix guests")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+On 4/9/21 2:31 PM, Bixuan Cui wrote:
+> The sparse tool complains as follows:
+> 
+> arch/powerpc/perf/hv-24x7.c:229:1: warning:
+>  symbol '__pcpu_scope_hv_24x7_txn_flags' was not declared. Should it be static?
+> arch/powerpc/perf/hv-24x7.c:230:1: warning:
+>  symbol '__pcpu_scope_hv_24x7_txn_err' was not declared. Should it be static?
+> arch/powerpc/perf/hv-24x7.c:236:1: warning:
+>  symbol '__pcpu_scope_hv_24x7_hw' was not declared. Should it be static?
+> arch/powerpc/perf/hv-24x7.c:244:1: warning:
+>  symbol '__pcpu_scope_hv_24x7_reqb' was not declared. Should it be static?
+> arch/powerpc/perf/hv-24x7.c:245:1: warning:
+>  symbol '__pcpu_scope_hv_24x7_resb' was not declared. Should it be static?
+> 
+> This symbol is not used outside of hv-24x7.c, so this
+> commit marks it static.
+
+Patch looks good to me.
+
+Reviewed-By: Kajol Jain<kjain@linux.ibm.com>
+
+Thanks,
+Kajol jain
+
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
 > ---
->  arch/powerpc/kvm/book3s_hv.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 13bad6bf4c95..208a053c9adf 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -3728,7 +3728,10 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
->  	vcpu->arch.dec_expires = dec + tb;
->  	vcpu->cpu = -1;
->  	vcpu->arch.thread_cpu = -1;
-> +	/* Save guest CTRL register, set runlatch to 1 */
->  	vcpu->arch.ctrl = mfspr(SPRN_CTRLF);
-> +	if (!(vcpu->arch.ctrl & 1))
-> +		mtspr(SPRN_CTRLT, vcpu->arch.ctrl | 1);
-
-Maybe ditch the comment and use the already defined CTRL_RUNLATCH?
-
->
->  	vcpu->arch.iamr = mfspr(SPRN_IAMR);
->  	vcpu->arch.pspb = mfspr(SPRN_PSPB);
+>  arch/powerpc/perf/hv-24x7.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index e5eb33255066..1816f560a465 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -226,14 +226,14 @@ static struct attribute_group event_long_desc_group = {
+>  
+>  static struct kmem_cache *hv_page_cache;
+>  
+> -DEFINE_PER_CPU(int, hv_24x7_txn_flags);
+> -DEFINE_PER_CPU(int, hv_24x7_txn_err);
+> +static DEFINE_PER_CPU(int, hv_24x7_txn_flags);
+> +static DEFINE_PER_CPU(int, hv_24x7_txn_err);
+>  
+>  struct hv_24x7_hw {
+>  	struct perf_event *events[255];
+>  };
+>  
+> -DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+> +static DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+>  
+>  /*
+>   * request_buffer and result_buffer are not required to be 4k aligned,
+> @@ -241,8 +241,8 @@ DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
+>   * the simplest way to ensure that.
+>   */
+>  #define H24x7_DATA_BUFFER_SIZE	4096
+> -DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+> -DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+> +static DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+> +static DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
+>  
+>  static unsigned int max_num_requests(int interface_version)
+>  {
+> 
