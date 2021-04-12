@@ -6,64 +6,45 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78DEAC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 10:04:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55BE7C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 10:06:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1D486121E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 10:04:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1D486121E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id A0BFD61278
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 10:06:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0BFD61278
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkq91Lhkz3bxb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 20:04:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkt20jqYz30Cr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 20:06:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkpn2PKYz309w
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 20:04:00 +1000 (AEST)
-Received: from mail-wm1-f51.google.com ([209.85.128.51]) by
- mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MqbDs-1ls2yD1yNs-00mYH0 for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr
- 2021 12:03:57 +0200
-Received: by mail-wm1-f51.google.com with SMTP id p19so6455572wmq.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 03:03:56 -0700 (PDT)
-X-Gm-Message-State: AOAM532CDlpIUzWGtnbOPAE5pZfeY88Yvl1eKGI+s4iaI+CeCVAwlOmC
- rwvqbU5dTBU4VrLBDh9fmCUsIx/Uy7P+jSXfPlY=
-X-Google-Smtp-Source: ABdhPJz1GJVeZO+sIN2KpJ8Wn8donSpdvAqFqtcymRYAYBYot2xnOavBT3UwXj8nuP92Z994bQxnP3scv1qVkv9AVF0=
-X-Received: by 2002:a7b:c245:: with SMTP id b5mr25489890wmj.120.1618221836576; 
- Mon, 12 Apr 2021 03:03:56 -0700 (PDT)
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FJksg4WsDz309y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 20:06:29 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AC6A51FB;
+ Mon, 12 Apr 2021 03:06:26 -0700 (PDT)
+Received: from e113632-lin (e113632-lin.cambridge.arm.com [10.1.194.46])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E18933F694;
+ Mon, 12 Apr 2021 03:06:24 -0700 (PDT)
+From: Valentin Schneider <valentin.schneider@arm.com>
+To: Mel Gorman <mgorman@techsingularity.net>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] powerpc/smp: Add SD_SHARE_PKG_RESOURCES flag to MC
+ sched-domain
+In-Reply-To: <20210412093722.GS3697@techsingularity.net>
+References: <1617341874-1205-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20210412062436.GB2633526@linux.vnet.ibm.com>
+ <20210412093722.GS3697@techsingularity.net>
+Date: Mon, 12 Apr 2021 11:06:19 +0100
+Message-ID: <871rbfom04.mognet@arm.com>
 MIME-Version: 1.0
-References: <20210412085545.2595431-1-hch@lst.de>
-In-Reply-To: <20210412085545.2595431-1-hch@lst.de>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 12 Apr 2021 12:03:40 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a38qgkjkh4+fDKp4TufL+2_W-quZBFK9pJFf7wXP=84xQ@mail.gmail.com>
-Message-ID: <CAK8P3a38qgkjkh4+fDKp4TufL+2_W-quZBFK9pJFf7wXP=84xQ@mail.gmail.com>
-Subject: Re: consolidate the flock uapi definitions
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:LaH7q6QRgmrG4X/zcz8Nm7H8gTdtC62kAn7Ps6JbDtQ5K7FlcVk
- uOAOuwxNHbSxjgwjA6Mgv8OLCW65SBZEmF13xfsFb/suEGL8j6DcNPMBfYeGYhPn8mqVrUS
- ZnBBzNUeEQaTqWLA0l6DGif0lITmwRuxjJ310lkmDJmNOa0yYnOGxofueGxYoys2bwhkqsA
- aPTKFmijw5HcQJSK3Xcpg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:paViTrMBc7s=:cWN9qWcHTC4rZj12LYf9Sf
- KBFrU9Qk4d7RiDvKu0oI0MxVOsR4OEjt93VWw17Sb+3BM7rDLA13EwbmgVitc0pPHkS7wRpvi
- yR6pNrLNu61L2DRqU22o62xxRbhr53xu2Cwb/1ryo64JU/f34lwu1+whFhZkpoGUqtgl/4SHx
- FmiRDd2ORTGRZE5r/b9UMQliLa/skc5tkJSHSur195f09viSlFSFfIT6tlapxddzfGMurTv2L
- 8ehWCe3o7352TuUoQUscjiNTz8SmufdoZzrnZ1FFE18y11Q1r14yTPKN1XjxADzSFMydVemXQ
- l45k9IabPUqQR+V1k4idc5LI6iGs29A8VBg2vjJEqilA9ZvngEL8qpyQ/5UvvVpM0PwK9Rz6q
- hKRs0Pm7jcF5tZ+FsN8wWkLaaYKIOo5u4eDtav6AX09VicqDSJ+1oMjJ/PR+XO5DAuiOBjbml
- r968ovZ/hIoSMx0C5IuHu7rrO0R2WR+XgK2GvKv8iQa02+3LlsAJFRNZeA318wUHxlfgsUJ6J
- tbOknHQdu848cIndFwPwdkOlNYT/ksfXheRPDvkSvaTdg3lZW/EQKoO1ZBt4nhtldpOIIOxFs
- XhmBVAiYKzezO7EKzybPhRNVqcPoA83G8q
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,39 +56,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Parisc List <linux-parisc@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
+ LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Parth Shah <parth@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 12, 2021 at 10:55 AM Christoph Hellwig <hch@lst.de> wrote:
+On 12/04/21 10:37, Mel Gorman wrote:
+> On Mon, Apr 12, 2021 at 11:54:36AM +0530, Srikar Dronamraju wrote:
+>> * Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2021-04-02 11:07:54]:
+>>
+>> >
+>> > To remedy this, this patch proposes that the LLC be moved to the MC
+>> > level which is a group of cores in one half of the chip.
+>> >
+>> >       SMT (SMT4) --> MC (Hemisphere)[LLC] --> DIE
+>> >
+>>
+>> I think marking Hemisphere as a LLC in a P10 scenario is a good idea.
+>>
+>> > While there is no cache being shared at this level, this is still the
+>> > level where some amount of cache-snooping takes place and it is
+>> > relatively faster to access the data from the caches of the cores
+>> > within this domain. With this change, we no longer see regressions on
+>> > P10 for applications which require single threaded performance.
+>>
+>> Peter, Valentin, Vincent, Mel, etal
+>>
+>> On architectures where we have multiple levels of cache access latencies
+>> within a DIE, (For example: one within the current LLC or SMT core and the
+>> other at MC or Hemisphere, and finally across hemispheres), do you have any
+>> suggestions on how we could handle the same in the core scheduler?
+>>
 >
-> Hi all,
+> Minimally I think it would be worth detecting when there are multiple
+> LLCs per node and detecting that in generic code as a static branch. In
+> select_idle_cpu, consider taking two passes -- first on the LLC domain
+> and if no idle CPU is found then taking a second pass if the search depth
+> allows within the node with the LLC CPUs masked out.
+
+I think that's actually a decent approach. Tying SD_SHARE_PKG_RESOURCES to
+something other than pure cache topology in a generic manner is tough (as
+it relies on murky, ill-defined hardware fabric properties).
+
+Last I tried thinking about that, I stopped at having a core-to-core
+latency matrix, building domains off of that, and having some knob
+specifying the highest distance value below which we'd set
+SD_SHARE_PKG_RESOURCES. There's a few things I 'hate' about that; for one
+it makes cpus_share_cache() somewhat questionable.
+
+> While there would be
+> a latency hit because cache is not shared, it would still be a CPU local
+> to memory that is idle. That would potentially be beneficial on Zen*
+> as well without having to introduce new domains in the topology hierarchy.
 >
-> currently we deal with the slight differents in the various architecture
-> variants of the flock and flock64 stuctures in a very cruft way.  This
-> series switches to just use small arch hooks and define the rest in
-> asm-generic and linux/compat.h instead.
-
-Nice cleanup. I can merge it through the asm-generic tree if you like,
-though it's a little late just ahead of the merge window.
-
-I would not want to change the compat_loff_t definition to compat_s64
-to avoid the padding at this time, though that might be a useful cleanup
-for a future cycle.
-
-        Arnd
+> --
+> Mel Gorman
+> SUSE Labs
