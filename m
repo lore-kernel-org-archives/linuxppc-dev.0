@@ -2,71 +2,64 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E94C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 11:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B48C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 11:42:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB63961241
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 11:26:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB63961241
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id D937B61244
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 11:42:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D937B61244
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJmf82NR2z3c75
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 21:26:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.135; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJmdm4f2hz3028
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 21:26:20 +1000 (AEST)
-Received: from mail-wr1-f43.google.com ([209.85.221.43]) by
- mrelayeu.kundenserver.de (mreue009 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MbRXd-1m7iUq0CxF-00bqcG for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr
- 2021 13:26:17 +0200
-Received: by mail-wr1-f43.google.com with SMTP id a6so12541928wrw.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 04:26:16 -0700 (PDT)
-X-Gm-Message-State: AOAM533TexU/OPlRYoGz3d09dwz+iHR8wy3vV98b4ZHaHqeY1R86x3OD
- pRlzw3sY9z051Cn809VbxzhYfuOK+Z5gJ5aqVvE=
-X-Google-Smtp-Source: ABdhPJy46sI91TDF91SxINRlLS3vYTwc1YeMRJCymXnpPG5ap8cTdjbAP71XB76ODq1s/TL2YmK09N0XG1Vr80EDjdY=
-X-Received: by 2002:adf:c70b:: with SMTP id k11mr31632710wrg.165.1618226776291; 
- Mon, 12 Apr 2021 04:26:16 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210412085545.2595431-1-hch@lst.de>
- <20210412085545.2595431-6-hch@lst.de>
- <15be19af19174c7692dd795297884096@AcuMS.aculab.com>
- <5c3635a2b44a496b88d665e8686d9436@AcuMS.aculab.com>
-In-Reply-To: <5c3635a2b44a496b88d665e8686d9436@AcuMS.aculab.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 12 Apr 2021 13:26:00 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a1JZ=JerasdkntzX_ApaCF7C29ZS1E31aPQATOts0ZiLw@mail.gmail.com>
-Message-ID: <CAK8P3a1JZ=JerasdkntzX_ApaCF7C29ZS1E31aPQATOts0ZiLw@mail.gmail.com>
-Subject: Re: [PATCH 5/5] compat: consolidate the compat_flock{,64} definition
-To: David Laight <David.Laight@aculab.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:K/ka3Q+B1BaGhTINpnNd6qvWX1YXcTjycuB+fGaVGkXrEdKB2BA
- 9KzWFd4BdMt8TtMuoBZKeRMAEAAzj6pKL3Y6byn84RvR8jlh+cZubUF7YfsfnprnszeKrpl
- 2x5f4UzwwKJKKLc9H8QnHT/JhGkZEevF1uyfiu+8AL0xyvoOHgjkPzqDk8WqYdoHjC3tAwz
- 2DR/48ou3ZdnEvK6cUV+g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:RZQ/f3YyP4U=:hPd0lZn1HE1zZVhJim5u9+
- b0NLgSFhedHVqzYnlFxPNZ3NPN8hMCsu/g5crqUnpa6XyblRWKuUTslPVjcKjEzTtRTodROOl
- EWoTsKFwM7BXxo+zddGUXh0d6ZPhErZxO5zJaB+OGr9GZQQa0gf91OqnsAG5ZptHI+/07Pghf
- VbEZz85pG60GOZdV54rTQS8QnH8009P8GaYzRB00feNehNiMhccetLy4WG8zJzhids1H6bpDo
- 3f1+ZTYXx2qWX+zt/nKoiQKh5cT4bXPQatX99dQHYuwfV5TW6FQQKhROyXKDbCdgEyQQNelXH
- v9Uzke6ta1YwZsCDcoLBxLzkku90M7KVe242PXu6DlUccM1d0S2An9vJvd1LQ0R44UYoxxeIb
- Thw62jqmBsjwHUGRvNBKbUvKDo2CdlCFqwRpVU9pbJDzihQoY5jWFHCBXorqB5zO8GwM+ZW5U
- srv+5F80SHDbCd78I0LTZZvaZa0CBDqEqn37CMZV/UMvQDQlJE75kQDgJjv46OFKZAaZOAhx1
- Bx4jqIOusE6glxcVAw5PEb4C+K1bgFHblAiju0CGpT/q2Bop4WYdEXw0V9MlIahPj16onHKyf
- P2J+164MCE+5RkK1cmZUXacZdTD+HGVj51
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJn0Y2ytGz3bTy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 21:42:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJn074kNnz2yRR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 21:42:13 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FJmzy3KRMz9tyR3;
+ Mon, 12 Apr 2021 13:42:06 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id CRUoPyy54Xu5; Mon, 12 Apr 2021 13:42:06 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FJmzy2YdTz9tyQT;
+ Mon, 12 Apr 2021 13:42:06 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 57E8F8B78E;
+ Mon, 12 Apr 2021 13:42:11 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 3fNgrniX9wPT; Mon, 12 Apr 2021 13:42:11 +0200 (CEST)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 094CE8B78D;
+ Mon, 12 Apr 2021 13:42:11 +0200 (CEST)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id DBB3B67A06; Mon, 12 Apr 2021 11:42:10 +0000 (UTC)
+Message-Id: <13df05f03833b4ff9c413ce06b4a606043e0da72.1618227677.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <857ceb23b6a614aea2522e770b067593d5f9e906.1618227677.git.christophe.leroy@csgroup.eu>
+References: <857ceb23b6a614aea2522e770b067593d5f9e906.1618227677.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 2/4] powerpc: Make probe_kernel_read_inst() common to PPC32
+ and PPC64
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ jniethe5@gmail.com
+Date: Mon, 12 Apr 2021 11:42:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,55 +71,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- Vasily Gorbik <gor@linux.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Helge Deller <deller@gmx.de>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>,
- Heiko Carstens <hca@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 12, 2021 at 12:54 PM David Laight <David.Laight@aculab.com> wrote:
-> From: David Laight > Sent: 12 April 2021 10:37
-> ...
-> > I'm guessing that compat_pid_t is 16 bits?
-> > So the native 32bit version has an unnamed 2 byte structure pad.
-> > The 'packed' removes this pad from the compat structure.
-> >
-> > AFAICT (apart from mips) the __ARCH_COMPAT_FLOCK_PAD is just
-> > adding an explicit pad for the implicit pad the compiler
-> > would generate because compat_pid_t is 16 bits.
->
-> I've just looked at the header.
-> compat_pid_t is 32 bits.
-> So Linux must have gained 32bit pids at some earlier time.
-> (Historically Unix pids were 16 bit - even on 32bit systems.)
->
-> Which makes the explicit pad in 'sparc' rather 'interesting'.
+We have two independant versions of probe_kernel_read_inst(), one for
+PPC32 and one for PPC64.
 
-I saw it was there since the sparc kernel support got merged in
-linux-1.3, possibly copied from an older sunos version.
+The PPC32 is identical to the first part of the PPC64 version.
+The remaining part of PPC64 version is not relevant for PPC32, but
+not contradictory, so we can easily have a common function with
+the PPC64 part opted out via a IS_ENABLED(CONFIG_PPC64).
 
-> oh - compat_loff_t is only used in a couple of other places.
-> neither care in any way about the alignment.
-> (Provided get_user() doesn't fault on a 8n+4 aligned address.)
+The only need is to add a version of ppc_inst_prefix() for PPC32.
 
-Ah right, I also see that after this series it's only used in to other
-places:  compat_resume_swap_area, which could also lose the
-__packed annotation, and in the declaration of
-compat_sys_sendfile64, where it makes no difference.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/inst.h |  2 ++
+ arch/powerpc/lib/inst.c         | 17 +----------------
+ 2 files changed, 3 insertions(+), 16 deletions(-)
 
-      Arnd
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 2902d4e6a363..a40c3913a4a3 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -102,6 +102,8 @@ static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
+ 
+ #define ppc_inst(x) ((struct ppc_inst){ .val = x })
+ 
++#define ppc_inst_prefix(x, y) ppc_inst(x)
++
+ static inline bool ppc_inst_prefixed(struct ppc_inst x)
+ {
+ 	return false;
+diff --git a/arch/powerpc/lib/inst.c b/arch/powerpc/lib/inst.c
+index c57b3548de37..0dff3ac2d45f 100644
+--- a/arch/powerpc/lib/inst.c
++++ b/arch/powerpc/lib/inst.c
+@@ -8,7 +8,6 @@
+ #include <asm/inst.h>
+ #include <asm/ppc-opcode.h>
+ 
+-#ifdef CONFIG_PPC64
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src)
+ {
+@@ -18,7 +17,7 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+ 	if (err)
+ 		return err;
+-	if (get_op(val) == OP_PREFIX) {
++	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
+ 		err = copy_from_kernel_nofault(&suffix, (void *)src + 4, 4);
+ 		*inst = ppc_inst_prefix(val, suffix);
+ 	} else {
+@@ -26,17 +25,3 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	}
+ 	return err;
+ }
+-#else /* !CONFIG_PPC64 */
+-int probe_kernel_read_inst(struct ppc_inst *inst,
+-			   struct ppc_inst *src)
+-{
+-	unsigned int val;
+-	int err;
+-
+-	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+-	if (!err)
+-		*inst = ppc_inst(val);
+-
+-	return err;
+-}
+-#endif /* CONFIG_PPC64 */
+-- 
+2.25.0
+
