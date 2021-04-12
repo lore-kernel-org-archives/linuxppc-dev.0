@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84D25C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDFD3C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13AF961367
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13AF961367
+	by mail.kernel.org (Postfix) with ESMTPS id 2616B61356
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 08:58:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2616B61356
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJjM54qNxz3cVF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 18:58:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJjMY5RQ1z3ckq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 18:58:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=saK0qma4;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=cjDfmbji;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -30,28 +30,28 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=saK0qma4; 
+ header.s=bombadil.20210309 header.b=cjDfmbji; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJjJg2Yp8z302W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 18:56:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJjJf4q4jz302H
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 18:56:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=6Y4VhM6xHYg2vg7wXzTQ4ZPFN68qKXNHBM+X0eTBVUk=; b=saK0qma469voeC3jirfWwV/g0Y
- hX1Uy78w/Nmb1zYgtEZR4pqclVzThV9O1uS7uGb4WWhRd7Kdw04Qu8d5IlB9nVPtfi7fPQcGVhgfj
- JEN7P+hgPuRVbFmF74puK3nK8q6jOelXYjWMbcVdpxBRl53dTkcluulOAYJB2jXRVw28qWU1bc0fn
- oExwwTbJTLExTcWKVVrQxgnt6buQ0O+6zQ62vE7BTs4ByA2ZFLVn4WmZrmGn0uhZaEMcIOuG+6t1K
- txCkxJRjoHFBBdQ/dilbs4y3b28bqKNiaEJB8HM/uHuKtY1E0dUhMUkDb9QSko8kVUtr/yK8PVSdZ
- xoWxKzmw==;
+ bh=fgQRdEagpaZNMUiuJhh4HzfGVzVozqLdJZdOWxKQU1Q=; b=cjDfmbjibw3FJuZW9g7tculTQg
+ X5UvjE9IN7RhJyE/cV0JXLAPTzZytj4G7rKj403Lyboz+4QxvrO1a89CTwjn+bZeCtnPPitmpmBSC
+ AsDZ/qwwP7pWoQMpmV+BZf6km/T1Hy/Mmc5r3ZoODDHFLULPIZn9jE/iENE1oTYHtL1wkxHb098rS
+ jG58BQ7+YiChH1rk9FP2yyQc2lAjiaJjOrAIwngUci9JvxWqMYeecrSSvI0FhOk3arbLv9SIFfEK3
+ n4f19h/Um9lfBoZv5EstKKZVj+tNBKGTWgaeDgytQikNo8F74AjvZX+I5mXCjY0cu2XoNFMTUXrl2
+ brfnNDXQ==;
 Received: from [2001:4bb8:199:e2bd:3218:1918:85d1:2852] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lVsMI-0060DZ-64; Mon, 12 Apr 2021 08:55:50 +0000
+ id 1lVsMN-0060EC-J3; Mon, 12 Apr 2021 08:55:56 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -61,9 +61,10 @@ To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Christian Borntraeger <borntraeger@de.ibm.com>,
  "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 1/5] uapi: remove the unused HAVE_ARCH_STRUCT_FLOCK64 define
-Date: Mon, 12 Apr 2021 10:55:41 +0200
-Message-Id: <20210412085545.2595431-2-hch@lst.de>
+Subject: [PATCH 3/5] uapi: merge the 32-bit mips struct flock into the generic
+ one
+Date: Mon, 12 Apr 2021 10:55:43 +0200
+Message-Id: <20210412085545.2595431-4-hch@lst.de>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210412085545.2595431-1-hch@lst.de>
 References: <20210412085545.2595431-1-hch@lst.de>
@@ -90,50 +91,107 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Add a new __ARCH_FLOCK_EXTRA_SYSID macro following the style of
+__ARCH_FLOCK_PAD to avoid having a separate definition just for one
+architecture.
+
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/uapi/asm-generic/fcntl.h       | 2 --
- tools/include/uapi/asm-generic/fcntl.h | 2 --
- 2 files changed, 4 deletions(-)
+ arch/mips/include/uapi/asm/fcntl.h     | 26 +++-----------------------
+ include/uapi/asm-generic/fcntl.h       |  5 +++--
+ tools/include/uapi/asm-generic/fcntl.h |  5 +++--
+ 3 files changed, 9 insertions(+), 27 deletions(-)
 
+diff --git a/arch/mips/include/uapi/asm/fcntl.h b/arch/mips/include/uapi/asm/fcntl.h
+index 42e13dead54319..9e44ac810db94d 100644
+--- a/arch/mips/include/uapi/asm/fcntl.h
++++ b/arch/mips/include/uapi/asm/fcntl.h
+@@ -50,30 +50,10 @@
+ #define F_SETLKW64	35
+ #endif
+ 
+-/*
+- * The flavours of struct flock.  "struct flock" is the ABI compliant
+- * variant.  Finally struct flock64 is the LFS variant of struct flock.	 As
+- * a historic accident and inconsistence with the ABI definition it doesn't
+- * contain all the same fields as struct flock.
+- */
+-
+ #if _MIPS_SIM != _MIPS_SIM_ABI64
+-
+-#include <linux/types.h>
+-
+-struct flock {
+-	short	l_type;
+-	short	l_whence;
+-	__kernel_off_t	l_start;
+-	__kernel_off_t	l_len;
+-	long	l_sysid;
+-	__kernel_pid_t l_pid;
+-	long	pad[4];
+-};
+-
+-#define HAVE_ARCH_STRUCT_FLOCK
+-
+-#endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
++#define __ARCH_FLOCK_EXTRA_SYSID	long l_sysid;
++#define __ARCH_FLOCK_PAD		long pad[4];
++#endif
+ 
+ #include <asm-generic/fcntl.h>
+ 
 diff --git a/include/uapi/asm-generic/fcntl.h b/include/uapi/asm-generic/fcntl.h
-index 9dc0bf0c5a6ee8..fb454bb629d114 100644
+index df7ad6962dff71..7e714443a8d2e3 100644
 --- a/include/uapi/asm-generic/fcntl.h
 +++ b/include/uapi/asm-generic/fcntl.h
-@@ -203,7 +203,6 @@ struct flock {
- };
- #endif
+@@ -188,18 +188,19 @@ struct f_owner_ex {
  
--#ifndef HAVE_ARCH_STRUCT_FLOCK64
- #ifndef __ARCH_FLOCK64_PAD
- #define __ARCH_FLOCK64_PAD
+ #define F_LINUX_SPECIFIC_BASE	1024
+ 
+-#ifndef HAVE_ARCH_STRUCT_FLOCK
+ struct flock {
+ 	short	l_type;
+ 	short	l_whence;
+ 	__kernel_off_t	l_start;
+ 	__kernel_off_t	l_len;
++#ifdef __ARCH_FLOCK_EXTRA_SYSID
++	__ARCH_FLOCK_EXTRA_SYSID
++#endif
+ 	__kernel_pid_t	l_pid;
+ #ifdef __ARCH_FLOCK_PAD
+ 	__ARCH_FLOCK_PAD
  #endif
-@@ -216,6 +215,5 @@ struct flock64 {
- 	__kernel_pid_t  l_pid;
- 	__ARCH_FLOCK64_PAD
  };
 -#endif
  
- #endif /* _ASM_GENERIC_FCNTL_H */
+ struct flock64 {
+ 	short  l_type;
 diff --git a/tools/include/uapi/asm-generic/fcntl.h b/tools/include/uapi/asm-generic/fcntl.h
-index ac190958c98144..4a49d33ca4d55d 100644
+index 82054502b9748d..bf961a71802e0e 100644
 --- a/tools/include/uapi/asm-generic/fcntl.h
 +++ b/tools/include/uapi/asm-generic/fcntl.h
-@@ -202,7 +202,6 @@ struct flock {
- };
- #endif
+@@ -187,18 +187,19 @@ struct f_owner_ex {
  
--#ifndef HAVE_ARCH_STRUCT_FLOCK64
- #ifndef __ARCH_FLOCK64_PAD
- #define __ARCH_FLOCK64_PAD
+ #define F_LINUX_SPECIFIC_BASE	1024
+ 
+-#ifndef HAVE_ARCH_STRUCT_FLOCK
+ struct flock {
+ 	short	l_type;
+ 	short	l_whence;
+ 	__kernel_off_t	l_start;
+ 	__kernel_off_t	l_len;
++#ifdef __ARCH_FLOCK_EXTRA_SYSID
++	__ARCH_FLOCK_EXTRA_SYSID
++#endif
+ 	__kernel_pid_t	l_pid;
+ #ifdef __ARCH_FLOCK_PAD
+ 	__ARCH_FLOCK_PAD
  #endif
-@@ -215,6 +214,5 @@ struct flock64 {
- 	__kernel_pid_t  l_pid;
- 	__ARCH_FLOCK64_PAD
  };
 -#endif
  
- #endif /* _ASM_GENERIC_FCNTL_H */
+ struct flock64 {
+ 	short  l_type;
 -- 
 2.30.1
 
