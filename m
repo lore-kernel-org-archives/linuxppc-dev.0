@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 712EFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4E00C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:57:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAEEE61261
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:56:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAEEE61261
+	by mail.kernel.org (Postfix) with ESMTPS id 43E4A61263
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:57:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43E4A61263
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJpdz2KgDz3c1j
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:56:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJpfS3n8jz3c7M
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:57:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ctnylBHF;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=rCz08sj8;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ttKtKfHT;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=rsZEHxCy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
@@ -30,46 +30,42 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=ctnylBHF; 
+ header.s=2020 header.b=ttKtKfHT; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=rCz08sj8; 
+ header.a=ed25519-sha256 header.s=2020e header.b=rsZEHxCy; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJpdW0sjLz30BV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJpdW25SKz30C5
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 22:56:15 +1000 (AEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1618231670;
+ s=2020; t=1618231686;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=XDUgZVHsV7/vHCbmfDZhFYUbv1Qm8FRk0fOlAV4IBn0=;
- b=ctnylBHFtV4GSt7oxiFjMPSTheoqRRPDVjTVvDiKGe7EYKwowFtZXntvohPz09OyXmo6Ge
- Tlh5OIYTmAN2Mp3aShUrlGOVcSEVdYopsWflLA15/mCCPF6qjaLD0ERd/ogiqBtc7zRCQp
- ucSKvEUYbb2RzWENP+EOLUDWbTLz7mUFJjYEA2wNAq0aURiejvFcmySEoxg/RU8imxLFYX
- 4ZBHSBvUobC2Nfzo+h3/BTwtMvgMbT8nZv8PjRB7T/TS0eW7dB/aPwLxUhDk1JGop/RjYM
- UXAPZR63YLOIAj+NOISgSQwdo66GiNIHAPSWlXw+CJtkdyjK6dab4/xRfPPpmA==
+ in-reply-to:in-reply-to; bh=msG8qht51owt3dOAb8bO2Q/JGreHFsZAw+taKjc/k/0=;
+ b=ttKtKfHTkJMwc/7gd8FTEtSE7z6D37j94Fd9vBOq7/5KqXfG2VdD2seAIKa2ZxaQ4sr7+l
+ nGov0CrV1JbRb/6kaL2bDGO5CNfBL55UWrXwSPTp/4omJnPFHeNed6WfSyqWBQ3KmL3ynH
+ newr6bQfGxD9dMNXt6q5i0rz6hRhJHgMjhz3FnJwvjooffnIE6uwtqgu01N6O1OqwKInHm
+ zkc7OCVHrlvOtjOeaZrixX0yZlVwt194a6ixyUZ9nJP1DJjxf/uBUshsd+nV+d7HP3FQNj
+ 5oqdCabdmEpESdF41ciIKsY2CEGM6wPLhZWSPSB0fik0mvawW34S24fH2eHTaw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1618231670;
+ s=2020e; t=1618231686;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=XDUgZVHsV7/vHCbmfDZhFYUbv1Qm8FRk0fOlAV4IBn0=;
- b=rCz08sj8BXMgUVLsgDotEOxcVLgGrnuIVx/2ybSd/XFsXsmTp2mLdwFk0arl2G6Jr/08vS
- aCPvCbZrIZh0C/Dg==
+ in-reply-to:in-reply-to; bh=msG8qht51owt3dOAb8bO2Q/JGreHFsZAw+taKjc/k/0=;
+ b=rsZEHxCyPYPtlclpxkmK9d9/VTx1jx273GBJjXOqpEEbmozWkgV2sLzK2xydvH3QpabVRr
+ WclALlc+a7gZW9Ag==
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH RESEND v1 1/4] lib/vdso: Mark do_hres_timens() and
- do_coarse_timens() __always_inline()
-In-Reply-To: <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
-References: <cover.1617209141.git.christophe.leroy@csgroup.eu>
- <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
-Date: Mon, 12 Apr 2021 14:47:49 +0200
-Message-ID: <87r1jf1xfu.ffs@nanos.tec.linutronix.de>
+Subject: Re: [PATCH RESEND v1 2/4] lib/vdso: Add vdso_data pointer as input to
+ __arch_get_timens_vdso_data()
+In-Reply-To: <539c4204b1baa77c55f758904a1ea239abbc7a5c.1617209142.git.christophe.leroy@csgroup.eu>
+Date: Mon, 12 Apr 2021 14:48:06 +0200
+Message-ID: <87pmyz1xfd.ffs@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -91,23 +87,13 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Wed, Mar 31 2021 at 16:48, Christophe Leroy wrote:
-> In the same spirit as commit c966533f8c6c ("lib/vdso: Mark do_hres()
-> and do_coarse() as __always_inline"), mark do_hres_timens() and
-> do_coarse_timens() __always_inline.
+> For the same reason as commit e876f0b69dc9 ("lib/vdso: Allow
+> architectures to provide the vdso data pointer"), powerpc wants to
+> avoid calculation of relative position to code.
 >
-> The measurement below in on a non timens process, ie on the fastest path.
->
-> On powerpc32, without the patch:
->
-> clock-gettime-monotonic-raw:    vdso: 1155 nsec/call
-> clock-gettime-monotonic-coarse:    vdso: 813 nsec/call
-> clock-gettime-monotonic:    vdso: 1076 nsec/call
->
-> With the patch:
->
-> clock-gettime-monotonic-raw:    vdso: 1100 nsec/call
-> clock-gettime-monotonic-coarse:    vdso: 667 nsec/call
-> clock-gettime-monotonic:    vdso: 1025 nsec/call
+> As the timens_vdso_data is next page to vdso_data, provide
+> vdso_data pointer to __arch_get_timens_vdso_data() in order
+> to ease the calculation on powerpc in following patches.
 >
 > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
