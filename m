@@ -2,75 +2,67 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23E97C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E340C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:42:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FAD261209
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:37:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FAD261209
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id 33E3E61244
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 09:42:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33E3E61244
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkDb6b4jz30CK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:37:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJkKl6DJCz3byG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 19:42:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EI0crJes;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 156016 seconds by postgrey-1.36 at boromir;
- Mon, 12 Apr 2021 19:37:31 AEST
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=EI0crJes; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkDC6Z6Vz300K
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:37:29 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-82-C7COxs-EPmWmM_DfUiqZhw-1; Mon, 12 Apr 2021 10:37:23 +0100
-X-MC-Unique: C7COxs-EPmWmM_DfUiqZhw-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.2; Mon, 12 Apr 2021 10:37:22 +0100
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.012; Mon, 12 Apr 2021 10:37:22 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christoph Hellwig' <hch@lst.de>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Thomas Bogendoerfer
- <tsbogend@alpha.franken.de>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>,
- Michael Ellerman <mpe@ellerman.id.au>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger
- <borntraeger@de.ibm.com>, "David S. Miller" <davem@davemloft.net>,
- "x86@kernel.org" <x86@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: RE: [PATCH 5/5] compat: consolidate the compat_flock{,64} definition
-Thread-Topic: [PATCH 5/5] compat: consolidate the compat_flock{, 64} definition
-Thread-Index: AQHXL3nAXViKKuH90kqxIUkBtWSuL6qwmWXw
-Date: Mon, 12 Apr 2021 09:37:21 +0000
-Message-ID: <15be19af19174c7692dd795297884096@AcuMS.aculab.com>
-References: <20210412085545.2595431-1-hch@lst.de>
- <20210412085545.2595431-6-hch@lst.de>
-In-Reply-To: <20210412085545.2595431-6-hch@lst.de>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJkKF42Npz309p
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 19:41:52 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FJkK23pJvz9sCD;
+ Mon, 12 Apr 2021 19:41:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1618220503;
+ bh=qKUReVSabx2CuMNjbJlsyrB/4dzn/agdSM7iEVUdJFE=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=EI0crJes1a/+RqdpvZLEAvaeJSuKP8N8cwfdww93gWYxTDEwk/z7w5zNQZG5BAEZd
+ ev3Jn5y9op0/i9JCxYb9TguxAMm8bB/voRAgJLL4Ijy05V7KcdYLFTXDKOke8vJbCS
+ RjzGshVhLlUYRHa2SNMBvGbr1dFb2MSejY1iYDIauJls7QOB5ypl7lVgKongVwTmuD
+ 7h+MR2KVudCiNQSNYaaKPV9eqVoxbvnpndlLZmB3u5KZfN+rX/LVphobTYVG53Z3+L
+ d6f1izCOSt7lDm1hwVd+/bwDl0PSXgw/yDq+w0FxS9jnvnqXM2ThTwAITB7vaKbRMa
+ 6M/gf3g51FSHQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alex Williamson <alex.williamson@redhat.com>, Christoph Hellwig
+ <hch@lst.de>
+Subject: Re: [PATCH 1/2] vfio/pci: remove vfio_pci_nvlink2
+In-Reply-To: <20210406133805.715120bd@omen>
+References: <20210326061311.1497642-1-hch@lst.de>
+ <20210326061311.1497642-2-hch@lst.de> <20210406133805.715120bd@omen>
+Date: Mon, 12 Apr 2021 19:41:41 +1000
+Message-ID: <87y2dndelm.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,70 +74,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Jason Gunthorpe <jgg@nvidia.com>, kvm@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>,
+ Daniel Vetter <daniel@ffwll.ch>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christoph Hellwig
-> Sent: 12 April 2021 09:56
->=20
-> Provide a single common definition for the compat_flock and
-> compat_flock64 structures using the same tricks as for the native
-> variants.  An extra define is added for the packing required on x86.
->=20
-...
->  /*
-> - * IA32 uses 4 byte alignment for 64 bit quantities,
-> - * so we need to pack this structure.
-> + * IA32 uses 4 byte alignment for 64 bit quantities, so we need to pack =
-the
-> + * compat flock64 structure.
->   */
-> -struct compat_flock64 {
-> -=09short=09=09l_type;
-> -=09short=09=09l_whence;
-> -=09compat_loff_t=09l_start;
-> -=09compat_loff_t=09l_len;
-> -=09compat_pid_t=09l_pid;
-> -} __attribute__((packed));
-> +#define __ARCH_NEED_COMPAT_FLOCK64_PACKED
+Alex Williamson <alex.williamson@redhat.com> writes:
+> On Fri, 26 Mar 2021 07:13:10 +0100
+> Christoph Hellwig <hch@lst.de> wrote:
+>
+>> This driver never had any open userspace (which for VFIO would include
+>> VM kernel drivers) that use it, and thus should never have been added
+>> by our normal userspace ABI rules.
+>> 
+>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> ---
+>>  drivers/vfio/pci/Kconfig            |   6 -
+>>  drivers/vfio/pci/Makefile           |   1 -
+>>  drivers/vfio/pci/vfio_pci.c         |  18 -
+>>  drivers/vfio/pci/vfio_pci_nvlink2.c | 490 ----------------------------
+>>  drivers/vfio/pci/vfio_pci_private.h |  14 -
+>>  include/uapi/linux/vfio.h           |  38 +--
+>>  6 files changed, 4 insertions(+), 563 deletions(-)
+>>  delete mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
+>
+> Hearing no objections, applied to vfio next branch for v5.13.  Thanks,
 
-That shouldn't need to be packed at all.
-(Since the 32bit variant isn't packed.)
+Looks like you only took patch 1?
 
-compat_loff_t should itself have __attribute__((aligned(4)))
-probably inherited from compat_s64.
-So l_start will be at offset 4 without the __packed.
+I can't take patch 2 on its own, that would break the build.
 
-I'm guessing that compat_pid_t is 16 bits?
-So the native 32bit version has an unnamed 2 byte structure pad.
-The 'packed' removes this pad from the compat structure.
+Do you want to take both patches? There's currently no conflicts against
+my tree. It's possible one could appear before the v5.13 merge window,
+though it would probably just be something minor.
 
-AFAICT (apart from mips) the __ARCH_COMPAT_FLOCK_PAD is just
-adding an explicit pad for the implicit pad the compiler
-would generate because compat_pid_t is 16 bits.
+Or I could apply both patches to my tree, which means patch 1 would
+appear as two commits in the git history, but that's not a big deal.
 
-If the padding need not be named for the 64bit system calls.
-(Where there is probably rather more padding all over the place.)
-then it doesn't need to be named for the compat variants.
-
-Even the mips extra padding could be removed.
-F_GETLK might be expected to do a read-write of them, so
-return EFAULT if not mapped.
-But nothing should be testing the EFAULT is returned!
-
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
-
+cheers
