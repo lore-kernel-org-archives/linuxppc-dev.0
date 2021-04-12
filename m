@@ -2,54 +2,76 @@ Return-Path: <SRS0=//ir=JJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C392C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:55:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 712EFC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:56:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E11861246
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:55:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E11861246
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DAEEE61261
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 12:56:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAEEE61261
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FJpcZ0YZLz3bTy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:55:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FJpdz2KgDz3c1j
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Apr 2021 22:56:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=vincenzo.frascino@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4FJpcD2gVLz30BV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 22:55:06 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 82EA51FB;
- Mon, 12 Apr 2021 05:55:03 -0700 (PDT)
-Received: from [10.37.12.6] (unknown [10.37.12.6])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0E9C53F73B;
- Mon, 12 Apr 2021 05:55:00 -0700 (PDT)
-Subject: Re: [PATCH RESEND v1 1/4] lib/vdso: Mark do_hres_timens() and
- do_coarse_timens() __always_inline()
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ctnylBHF;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=rCz08sj8;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=ctnylBHF; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=rCz08sj8; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FJpdW0sjLz30BV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2021 22:56:15 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1618231670;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=XDUgZVHsV7/vHCbmfDZhFYUbv1Qm8FRk0fOlAV4IBn0=;
+ b=ctnylBHFtV4GSt7oxiFjMPSTheoqRRPDVjTVvDiKGe7EYKwowFtZXntvohPz09OyXmo6Ge
+ Tlh5OIYTmAN2Mp3aShUrlGOVcSEVdYopsWflLA15/mCCPF6qjaLD0ERd/ogiqBtc7zRCQp
+ ucSKvEUYbb2RzWENP+EOLUDWbTLz7mUFJjYEA2wNAq0aURiejvFcmySEoxg/RU8imxLFYX
+ 4ZBHSBvUobC2Nfzo+h3/BTwtMvgMbT8nZv8PjRB7T/TS0eW7dB/aPwLxUhDk1JGop/RjYM
+ UXAPZR63YLOIAj+NOISgSQwdo66GiNIHAPSWlXw+CJtkdyjK6dab4/xRfPPpmA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1618231670;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=XDUgZVHsV7/vHCbmfDZhFYUbv1Qm8FRk0fOlAV4IBn0=;
+ b=rCz08sj8BXMgUVLsgDotEOxcVLgGrnuIVx/2ybSd/XFsXsmTp2mLdwFk0arl2G6Jr/08vS
+ aCPvCbZrIZh0C/Dg==
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH RESEND v1 1/4] lib/vdso: Mark do_hres_timens() and
+ do_coarse_timens() __always_inline()
+In-Reply-To: <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
 References: <cover.1617209141.git.christophe.leroy@csgroup.eu>
  <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
-From: Vincenzo Frascino <vincenzo.frascino@arm.com>
-Message-ID: <8b42e769-2f17-e2b4-4d2a-b86c4e412598@arm.com>
-Date: Mon, 12 Apr 2021 13:54:58 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+Date: Mon, 12 Apr 2021 14:47:49 +0200
+Message-ID: <87r1jf1xfu.ffs@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <90dcf45ebadfd5a07f24241551c62f619d1cb930.1617209142.git.christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,90 +85,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, arnd@arndb.de, dima@arista.com,
  linux-kernel@vger.kernel.org, avagin@gmail.com, luto@kernel.org,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+ vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 3/31/21 5:48 PM, Christophe Leroy wrote:
+On Wed, Mar 31 2021 at 16:48, Christophe Leroy wrote:
 > In the same spirit as commit c966533f8c6c ("lib/vdso: Mark do_hres()
 > and do_coarse() as __always_inline"), mark do_hres_timens() and
 > do_coarse_timens() __always_inline.
-> 
+>
 > The measurement below in on a non timens process, ie on the fastest path.
-> 
+>
 > On powerpc32, without the patch:
-> 
+>
 > clock-gettime-monotonic-raw:    vdso: 1155 nsec/call
 > clock-gettime-monotonic-coarse:    vdso: 813 nsec/call
 > clock-gettime-monotonic:    vdso: 1076 nsec/call
-> 
+>
 > With the patch:
-> 
+>
 > clock-gettime-monotonic-raw:    vdso: 1100 nsec/call
 > clock-gettime-monotonic-coarse:    vdso: 667 nsec/call
 > clock-gettime-monotonic:    vdso: 1025 nsec/call
-> 
+>
 > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Reviewed-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
-
-> ---
->  lib/vdso/gettimeofday.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-> index 2919f1698140..c6f6dee08746 100644
-> --- a/lib/vdso/gettimeofday.c
-> +++ b/lib/vdso/gettimeofday.c
-> @@ -46,8 +46,8 @@ static inline bool vdso_cycles_ok(u64 cycles)
->  #endif
->  
->  #ifdef CONFIG_TIME_NS
-> -static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-> -			  struct __kernel_timespec *ts)
-> +static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-> +					  struct __kernel_timespec *ts)
->  {
->  	const struct vdso_data *vd = __arch_get_timens_vdso_data();
->  	const struct timens_offset *offs = &vdns->offset[clk];
-> @@ -97,8 +97,8 @@ static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
->  	return NULL;
->  }
->  
-> -static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-> -			  struct __kernel_timespec *ts)
-> +static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-> +					  struct __kernel_timespec *ts)
->  {
->  	return -EINVAL;
->  }
-> @@ -159,8 +159,8 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
->  }
->  
->  #ifdef CONFIG_TIME_NS
-> -static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-> -			    struct __kernel_timespec *ts)
-> +static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-> +					    struct __kernel_timespec *ts)
->  {
->  	const struct vdso_data *vd = __arch_get_timens_vdso_data();
->  	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
-> @@ -188,8 +188,8 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
->  	return 0;
->  }
->  #else
-> -static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-> -			    struct __kernel_timespec *ts)
-> +static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-> +					    struct __kernel_timespec *ts)
->  {
->  	return -1;
->  }
-> 
-
--- 
-Regards,
-Vincenzo
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
