@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AB2BC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:38:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D596C43460
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:40:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F229F61220
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:38:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F229F61220
+	by mail.kernel.org (Postfix) with ESMTPS id D2F0C60720
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:40:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2F0C60720
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FKWX056CCz3d3N
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 02:38:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FKWYr3py3z3bwk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 02:40:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FKWW967KVz2xg0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 02:38:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FKWYS2F7bz304D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 02:40:11 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FKWW55mr2z9vBLN;
- Tue, 13 Apr 2021 18:38:09 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FKWYM4x19z9v4hH;
+ Tue, 13 Apr 2021 18:40:07 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QSM6Vb-9EqKB; Tue, 13 Apr 2021 18:38:09 +0200 (CEST)
+ with ESMTP id bCLaCQ1Kb3iD; Tue, 13 Apr 2021 18:40:07 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FKWW54knkz9v4h8;
- Tue, 13 Apr 2021 18:38:09 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FKWYM49gQz9v4h8;
+ Tue, 13 Apr 2021 18:40:07 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 366138B7AA;
- Tue, 13 Apr 2021 18:38:11 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3AFAB8B7AA;
+ Tue, 13 Apr 2021 18:40:09 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id t_w4HAtxxMMJ; Tue, 13 Apr 2021 18:38:11 +0200 (CEST)
+ with ESMTP id oBY3L0VcztpY; Tue, 13 Apr 2021 18:40:09 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D63598B75F;
- Tue, 13 Apr 2021 18:38:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 071A98B75F;
+ Tue, 13 Apr 2021 18:40:09 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A468367A15; Tue, 13 Apr 2021 16:38:10 +0000 (UTC)
-Message-Id: <389962b1b702e3c78d169e59bcfac56282889173.1618331882.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <b286e07fb771a664b631cd07a40b09c06f26e64b.1618331881.git.christophe.leroy@csgroup.eu>
-References: <b286e07fb771a664b631cd07a40b09c06f26e64b.1618331881.git.christophe.leroy@csgroup.eu>
+ id C320D67A15; Tue, 13 Apr 2021 16:40:08 +0000 (UTC)
+Message-Id: <13df05f03833b4ff9c413ce06b4a606043e0da72.1618331980.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <857ceb23b6a614aea2522e770b067593d5f9e906.1618331980.git.christophe.leroy@csgroup.eu>
+References: <857ceb23b6a614aea2522e770b067593d5f9e906.1618331980.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 2/2] powerpc/bug: Provide better flexibility to
- WARN_ON/__WARN_FLAGS() with asm goto
+Subject: [PATCH v2 2/4] powerpc: Make probe_kernel_read_inst() common to PPC32
+ and PPC64
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 13 Apr 2021 16:38:10 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ jniethe5@gmail.com
+Date: Tue, 13 Apr 2021 16:40:08 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,348 +76,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using asm goto in __WARN_FLAGS() and WARN_ON() allows more
-flexibility to GCC.
+We have two independant versions of probe_kernel_read_inst(), one for
+PPC32 and one for PPC64.
 
-For that add an entry to the exception table so that
-program_check_exception() knowns where to resume execution
-after a WARNING.
+The PPC32 is identical to the first part of the PPC64 version.
+The remaining part of PPC64 version is not relevant for PPC32, but
+not contradictory, so we can easily have a common function with
+the PPC64 part opted out via a IS_ENABLED(CONFIG_PPC64).
 
-Here are two exemples. The first one is done on PPC32 (which
-benefits from the previous patch), the second is on PPC64.
-
-	unsigned long test(struct pt_regs *regs)
-	{
-		int ret;
-
-		WARN_ON(regs->msr & MSR_PR);
-
-		return regs->gpr[3];
-	}
-
-	unsigned long test9w(unsigned long a, unsigned long b)
-	{
-		if (WARN_ON(!b))
-			return 0;
-		return a / b;
-	}
-
-Before the patch:
-
-	000003a8 <test>:
-	 3a8:	81 23 00 84 	lwz     r9,132(r3)
-	 3ac:	71 29 40 00 	andi.   r9,r9,16384
-	 3b0:	40 82 00 0c 	bne     3bc <test+0x14>
-	 3b4:	80 63 00 0c 	lwz     r3,12(r3)
-	 3b8:	4e 80 00 20 	blr
-
-	 3bc:	0f e0 00 00 	twui    r0,0
-	 3c0:	80 63 00 0c 	lwz     r3,12(r3)
-	 3c4:	4e 80 00 20 	blr
-
-	0000000000000bf0 <.test9w>:
-	 bf0:	7c 89 00 74 	cntlzd  r9,r4
-	 bf4:	79 29 d1 82 	rldicl  r9,r9,58,6
-	 bf8:	0b 09 00 00 	tdnei   r9,0
-	 bfc:	2c 24 00 00 	cmpdi   r4,0
-	 c00:	41 82 00 0c 	beq     c0c <.test9w+0x1c>
-	 c04:	7c 63 23 92 	divdu   r3,r3,r4
-	 c08:	4e 80 00 20 	blr
-
-	 c0c:	38 60 00 00 	li      r3,0
-	 c10:	4e 80 00 20 	blr
-
-After the patch:
-
-	000003a8 <test>:
-	 3a8:	81 23 00 84 	lwz     r9,132(r3)
-	 3ac:	71 29 40 00 	andi.   r9,r9,16384
-	 3b0:	40 82 00 0c 	bne     3bc <test+0x14>
-	 3b4:	80 63 00 0c 	lwz     r3,12(r3)
-	 3b8:	4e 80 00 20 	blr
-
-	 3bc:	0f e0 00 00 	twui    r0,0
-
-	0000000000000c50 <.test9w>:
-	 c50:	7c 89 00 74 	cntlzd  r9,r4
-	 c54:	79 29 d1 82 	rldicl  r9,r9,58,6
-	 c58:	0b 09 00 00 	tdnei   r9,0
-	 c5c:	7c 63 23 92 	divdu   r3,r3,r4
-	 c60:	4e 80 00 20 	blr
-
-	 c70:	38 60 00 00 	li      r3,0
-	 c74:	4e 80 00 20 	blr
-
-In the first exemple, we see GCC doesn't need to duplicate what
-happens after the trap.
-
-In the second exemple, we see that GCC doesn't need to emit a test
-and a branch in the likely path in addition to the trap.
-
-We've got some WARN_ON() in .softirqentry.text section so it needs
-to be added in the OTHER_TEXT_SECTIONS in modpost.c
+The only need is to add a version of ppc_inst_prefix() for PPC32.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Fix build failure when CONFIG_BUG is not selected.
----
- arch/powerpc/include/asm/book3s/64/kup.h |  2 +-
- arch/powerpc/include/asm/bug.h           | 54 ++++++++++++++++++++----
- arch/powerpc/include/asm/extable.h       | 14 ++++++
- arch/powerpc/include/asm/ppc_asm.h       | 11 +----
- arch/powerpc/kernel/entry_64.S           |  2 +-
- arch/powerpc/kernel/exceptions-64e.S     |  2 +-
- arch/powerpc/kernel/misc_32.S            |  2 +-
- arch/powerpc/kernel/traps.c              |  9 +++-
- scripts/mod/modpost.c                    |  2 +-
- 9 files changed, 72 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/inst.h |  2 ++
+ arch/powerpc/lib/inst.c         | 17 +----------------
+ 2 files changed, 3 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-index 9700da3a4093..a22839cba32e 100644
---- a/arch/powerpc/include/asm/book3s/64/kup.h
-+++ b/arch/powerpc/include/asm/book3s/64/kup.h
-@@ -90,7 +90,7 @@
- 	/* Prevent access to userspace using any key values */
- 	LOAD_REG_IMMEDIATE(\gpr2, AMR_KUAP_BLOCKED)
- 999:	tdne	\gpr1, \gpr2
--	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
-+	EMIT_WARN_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_BOOK3S_KUAP, 67)
- #endif
- .endm
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 101dea4eec8d..e22dc503fb2f 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -4,6 +4,7 @@
- #ifdef __KERNEL__
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 2902d4e6a363..a40c3913a4a3 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -102,6 +102,8 @@ static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
  
- #include <asm/asm-compat.h>
-+#include <asm/extable.h>
+ #define ppc_inst(x) ((struct ppc_inst){ .val = x })
  
- #ifdef CONFIG_BUG
- 
-@@ -30,6 +31,11 @@
- .endm
- #endif /* verbose */
- 
-+.macro EMIT_WARN_ENTRY addr,file,line,flags
-+	EX_TABLE(\addr,\addr+4)
-+	EMIT_BUG_ENTRY \addr,\file,\line,\flags
-+.endm
++#define ppc_inst_prefix(x, y) ppc_inst(x)
 +
- #else /* !__ASSEMBLY__ */
- /* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-    sizeof(struct bug_entry), respectively */
-@@ -58,6 +64,16 @@
- 		  "i" (sizeof(struct bug_entry)),	\
- 		  ##__VA_ARGS__)
- 
-+#define WARN_ENTRY(insn, flags, label, ...)		\
-+	asm_volatile_goto(				\
-+		"1:	" insn "\n"			\
-+		EX_TABLE(1b, %l[label])			\
-+		_EMIT_BUG_ENTRY				\
-+		: : "i" (__FILE__), "i" (__LINE__),	\
-+		  "i" (flags),				\
-+		  "i" (sizeof(struct bug_entry)),	\
-+		  ##__VA_ARGS__ : : label)
-+
- /*
-  * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
-  * optimisations. However depending on the complexity of the condition
-@@ -70,7 +86,15 @@
- } while (0)
- #define HAVE_ARCH_BUG
- 
--#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags))
-+#define __WARN_FLAGS(flags) do {				\
-+	__label__ __label_warn_on;				\
-+								\
-+	WARN_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags), __label_warn_on); \
-+	unreachable();						\
-+								\
-+__label_warn_on:						\
-+	break;							\
-+} while (0)
- 
- #ifdef CONFIG_PPC64
- #define BUG_ON(x) do {						\
-@@ -83,15 +107,24 @@
- } while (0)
- 
- #define WARN_ON(x) ({						\
--	int __ret_warn_on = !!(x);				\
--	if (__builtin_constant_p(__ret_warn_on)) {		\
--		if (__ret_warn_on)				\
-+	bool __ret_warn_on = false;				\
-+	do {							\
-+		if (__builtin_constant_p((x))) {		\
-+			if (!(x)) 				\
-+				break; 				\
- 			__WARN();				\
--	} else {						\
--		BUG_ENTRY(PPC_TLNEI " %4, 0",			\
--			  BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
--			  "r" (__ret_warn_on));	\
--	}							\
-+			__ret_warn_on = true;			\
-+		} else {					\
-+			__label__ __label_warn_on;		\
-+								\
-+			WARN_ENTRY(PPC_TLNEI " %4, 0",		\
-+				   BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
-+				   __label_warn_on, "r" (x));	\
-+			break;					\
-+__label_warn_on:						\
-+			__ret_warn_on = true;			\
-+		}						\
-+	} while (0);						\
- 	unlikely(__ret_warn_on);				\
- })
- 
-@@ -104,8 +137,11 @@
- #ifdef __ASSEMBLY__
- .macro EMIT_BUG_ENTRY addr,file,line,flags
- .endm
-+.macro EMIT_WARN_ENTRY addr,file,line,flags
-+.endm
- #else /* !__ASSEMBLY__ */
- #define _EMIT_BUG_ENTRY
-+#define _EMIT_WARN_ENTRY
- #endif
- #endif /* CONFIG_BUG */
- 
-diff --git a/arch/powerpc/include/asm/extable.h b/arch/powerpc/include/asm/extable.h
-index eb91b2d2935a..26ce2e5c0fa8 100644
---- a/arch/powerpc/include/asm/extable.h
-+++ b/arch/powerpc/include/asm/extable.h
-@@ -17,6 +17,8 @@
- 
- #define ARCH_HAS_RELATIVE_EXTABLE
- 
-+#ifndef __ASSEMBLY__
-+
- struct exception_table_entry {
- 	int insn;
- 	int fixup;
-@@ -28,3 +30,15 @@ static inline unsigned long extable_fixup(const struct exception_table_entry *x)
- }
- 
- #endif
-+
-+/*
-+ * Helper macro for exception table entries
-+ */
-+#define EX_TABLE(_fault, _target)		\
-+	stringify_in_c(.section __ex_table,"a";)\
-+	stringify_in_c(.balign 4;)		\
-+	stringify_in_c(.long (_fault) - . ;)	\
-+	stringify_in_c(.long (_target) - . ;)	\
-+	stringify_in_c(.previous)
-+
-+#endif
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 8998122fc7e2..a74e1561535a 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -10,6 +10,7 @@
+ static inline bool ppc_inst_prefixed(struct ppc_inst x)
+ {
+ 	return false;
+diff --git a/arch/powerpc/lib/inst.c b/arch/powerpc/lib/inst.c
+index c57b3548de37..0dff3ac2d45f 100644
+--- a/arch/powerpc/lib/inst.c
++++ b/arch/powerpc/lib/inst.c
+@@ -8,7 +8,6 @@
+ #include <asm/inst.h>
  #include <asm/ppc-opcode.h>
- #include <asm/firmware.h>
- #include <asm/feature-fixups.h>
-+#include <asm/extable.h>
  
- #ifdef __ASSEMBLY__
- 
-@@ -772,16 +773,6 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
- 
- #endif /*  __ASSEMBLY__ */
- 
--/*
-- * Helper macro for exception table entries
-- */
--#define EX_TABLE(_fault, _target)		\
--	stringify_in_c(.section __ex_table,"a";)\
--	stringify_in_c(.balign 4;)		\
--	stringify_in_c(.long (_fault) - . ;)	\
--	stringify_in_c(.long (_target) - . ;)	\
--	stringify_in_c(.previous)
+-#ifdef CONFIG_PPC64
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src)
+ {
+@@ -18,7 +17,7 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+ 	if (err)
+ 		return err;
+-	if (get_op(val) == OP_PREFIX) {
++	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
+ 		err = copy_from_kernel_nofault(&suffix, (void *)src + 4, 4);
+ 		*inst = ppc_inst_prefix(val, suffix);
+ 	} else {
+@@ -26,17 +25,3 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	}
+ 	return err;
+ }
+-#else /* !CONFIG_PPC64 */
+-int probe_kernel_read_inst(struct ppc_inst *inst,
+-			   struct ppc_inst *src)
+-{
+-	unsigned int val;
+-	int err;
 -
- #ifdef CONFIG_PPC_FSL_BOOK3E
- #define BTB_FLUSH(reg)			\
- 	lis reg,BUCSR_INIT@h;		\
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 6c4d9e276c4d..faa64cc90f02 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -835,7 +835,7 @@ _GLOBAL(enter_rtas)
- 	 */
- 	lbz	r0,PACAIRQSOFTMASK(r13)
- 1:	tdeqi	r0,IRQS_ENABLED
--	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
-+	EMIT_WARN_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 
- 	/* Hard-disable interrupts */
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index e8eb9992a270..3f8c51390a04 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -1249,7 +1249,7 @@ fast_exception_return:
- 	/* The interrupt should not have soft enabled. */
- 	lbz	r7,PACAIRQSOFTMASK(r13)
- 1:	tdeqi	r7,IRQS_ENABLED
--	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
-+	EMIT_WARN_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 	b	fast_exception_return
- 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 6a076bef2932..21390f3119a9 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -237,7 +237,7 @@ _GLOBAL(copy_page)
- 	addi	r3,r3,-4
- 
- 0:	twnei	r5, 0	/* WARN if r3 is not cache aligned */
--	EMIT_BUG_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
-+	EMIT_WARN_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
- 
- 	addi	r4,r4,-4
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index efba99870691..ee40a637313d 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1467,8 +1467,13 @@ static void do_program_check(struct pt_regs *regs)
- 
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
- 		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
--			regs->nip += 4;
--			return;
-+			const struct exception_table_entry *entry;
-+
-+			entry = search_exception_tables(bugaddr);
-+			if (entry) {
-+				regs->nip = extable_fixup(entry) + regs->nip - bugaddr;
-+				return;
-+			}
- 		}
- 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- 		return;
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 24725e50c7b4..34745f239208 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -926,7 +926,7 @@ static void check_section(const char *modname, struct elf_info *elf,
- 		".kprobes.text", ".cpuidle.text", ".noinstr.text"
- #define OTHER_TEXT_SECTIONS ".ref.text", ".head.text", ".spinlock.text", \
- 		".fixup", ".entry.text", ".exception.text", ".text.*", \
--		".coldtext"
-+		".coldtext .softirqentry.text"
- 
- #define INIT_SECTIONS      ".init.*"
- #define MEM_INIT_SECTIONS  ".meminit.*"
+-	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+-	if (!err)
+-		*inst = ppc_inst(val);
+-
+-	return err;
+-}
+-#endif /* CONFIG_PPC64 */
 -- 
 2.25.0
 
