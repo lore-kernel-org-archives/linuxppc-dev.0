@@ -2,63 +2,65 @@ Return-Path: <SRS0=AS1h=JK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CA55C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:34:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D6B7C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:37:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CD9760720
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:34:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CD9760720
+	by mail.kernel.org (Postfix) with ESMTPS id 69E8160720
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Apr 2021 16:37:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69E8160720
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FKWQp2TKjz3bV1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 02:34:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FKWTp32ZFz3bVR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 02:37:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FKWQQ5QJcz2yy7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 02:34:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FKWTR0BWfz2yhK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 02:36:42 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FKWQ85jTzz9tyy6;
- Tue, 13 Apr 2021 18:33:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FKWTL3l94z9v4hC;
+ Tue, 13 Apr 2021 18:36:38 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0dXyJCLmzTLu; Tue, 13 Apr 2021 18:33:52 +0200 (CEST)
+ with ESMTP id DydKvha3r-0P; Tue, 13 Apr 2021 18:36:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FKWQ84QPdz9v20H;
- Tue, 13 Apr 2021 18:33:52 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FKWTL1dSsz9v4h8;
+ Tue, 13 Apr 2021 18:36:38 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ED1198B7AC;
- Tue, 13 Apr 2021 18:33:53 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B63518B7AA;
+ Tue, 13 Apr 2021 18:36:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hU_iZ0QrHbVB; Tue, 13 Apr 2021 18:33:53 +0200 (CEST)
+ with ESMTP id l6EiQIyyQ9dS; Tue, 13 Apr 2021 18:36:39 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7453D8B75F;
- Tue, 13 Apr 2021 18:33:53 +0200 (CEST)
-Subject: Re: [PATCH v1 1/2] powerpc/bitops: Use immediate operand when possible
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5627A8B75F;
+ Tue, 13 Apr 2021 18:36:39 +0200 (CEST)
+Subject: Re: [PATCH v1 2/2] powerpc/atomics: Use immediate operand when
+ possible
 To: Segher Boessenkool <segher@kernel.crashing.org>
 References: <09da6fec57792d6559d1ea64e00be9870b02dab4.1617896018.git.christophe.leroy@csgroup.eu>
- <20210412215428.GM26583@gate.crashing.org>
+ <9f50b5fadeb090553e5c2fae025052d04d52f3c7.1617896018.git.christophe.leroy@csgroup.eu>
+ <20210412220821.GN26583@gate.crashing.org>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <ecb1b1a5-ae92-e8a3-6490-26341edfbccb@csgroup.eu>
-Date: Tue, 13 Apr 2021 18:33:19 +0200
+Message-ID: <063ca819-1276-8deb-0d9b-ea6ec33f9a98@csgroup.eu>
+Date: Tue, 13 Apr 2021 18:36:04 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.9.1
 MIME-Version: 1.0
-In-Reply-To: <20210412215428.GM26583@gate.crashing.org>
+In-Reply-To: <20210412220821.GN26583@gate.crashing.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -81,45 +83,62 @@ Sender: "Linuxppc-dev"
 
 
 
-Le 12/04/2021 à 23:54, Segher Boessenkool a écrit :
+Le 13/04/2021 à 00:08, Segher Boessenkool a écrit :
 > Hi!
 > 
-> On Thu, Apr 08, 2021 at 03:33:44PM +0000, Christophe Leroy wrote:
->> For clear bits, on 32 bits 'rlwinm' can be used instead or 'andc' for
->> when all bits to be cleared are consecutive.
+> On Thu, Apr 08, 2021 at 03:33:45PM +0000, Christophe Leroy wrote:
+>> +#define ATOMIC_OP(op, asm_op, dot, sign)				\
+>>   static __inline__ void atomic_##op(int a, atomic_t *v)			\
+>>   {									\
+>>   	int t;								\
+>>   									\
+>>   	__asm__ __volatile__(						\
+>>   "1:	lwarx	%0,0,%3		# atomic_" #op "\n"			\
+>> -	#asm_op " %0,%2,%0\n"						\
+>> +	#asm_op "%I2" dot " %0,%0,%2\n"					\
+>>   "	stwcx.	%0,0,%3 \n"						\
+>>   "	bne-	1b\n"							\
+>> -	: "=&r" (t), "+m" (v->counter)					\
+>> -	: "r" (a), "r" (&v->counter)					\
+>> +	: "=&b" (t), "+m" (v->counter)					\
+>> +	: "r"#sign (a), "r" (&v->counter)				\
+>>   	: "cc");							\
+>>   }									\
 > 
-> Also on 64-bits, as long as both the top and bottom bits are in the low
-> 32-bit half (for 32 bit mode, it can wrap as well).
+> You need "b" (instead of "r") only for "addi".  You can use "addic"
+> instead, which clobbers XER[CA], but *all* inline asm does, so that is
+> not a downside here (it is also not slower on any CPU that matters).
+> 
+>> @@ -238,14 +238,14 @@ static __inline__ int atomic_fetch_add_unless(atomic_t *v, int a, int u)
+>>   "1:	lwarx	%0,0,%1		# atomic_fetch_add_unless\n\
+>>   	cmpw	0,%0,%3 \n\
+>>   	beq	2f \n\
+>> -	add	%0,%2,%0 \n"
+>> +	add%I2	%0,%0,%2 \n"
+>>   "	stwcx.	%0,0,%1 \n\
+>>   	bne-	1b \n"
+>>   	PPC_ATOMIC_EXIT_BARRIER
+>> -"	subf	%0,%2,%0 \n\
+>> +"	sub%I2	%0,%0,%2 \n\
+>>   2:"
+>> -	: "=&r" (t)
+>> -	: "r" (&v->counter), "r" (a), "r" (u)
+>> +	: "=&b" (t)
+>> +	: "r" (&v->counter), "rI" (a), "r" (u)
+>>   	: "cc", "memory");
+> 
+> Same here.
 
-Yes. But here we are talking about clearing a few bits, all other ones must remain unchanged. An 
-rlwinm on PPC64 will always clear the upper part, which is unlikely what we want.
+Yes, I thought about addic, I didn't find an early solution because I forgot the matching 'addc'.
+
+Now with the couple addc/addic it works well.
+
+Thanks
 
 > 
->> For the time being only
->> handle the single bit case, which we detect by checking whether the
->> mask is a power of two.
+> Nice patches!
 > 
-> You could look at rs6000_is_valid_mask in GCC:
->    <https://gcc.gnu.org/git/?p=gcc.git;a=blob;f=gcc/config/rs6000/rs6000.c;h=48b8efd732b251c059628096314848305deb0c0b;hb=HEAD#l11148>
-> used by rs6000_is_valid_and_mask immediately after it.  You probably
-> want to allow only rlwinm in your case, and please note this checks if
-> something is a valid mask, not the inverse of a valid mask (as you
-> want here).
-
-This check looks more complex than what I need. It is used for both rlw... and rld..., and it 
-calculates the operants. The only thing I need is to validate the mask.
-I found a way: By anding the mask with the complement of itself rotated by left bits to 1, we 
-identify the transitions from 0 to 1. If the result is a power of 2, it means there's only one 
-transition so the mask is as expected.
-
-So I did that in v2.
-
-
+> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
 > 
-> So yes this is pretty involved :-)
-> 
-> Your patch looks good btw.  But please use "n", not "i", as constraint?
-
-Done.
 
 Christophe
