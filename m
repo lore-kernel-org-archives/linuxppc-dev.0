@@ -4,61 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFD82C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C00FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA876611AD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA876611AD
+	by mail.kernel.org (Postfix) with ESMTPS id A8281611CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8281611CC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FL2qn3pMhz3bsL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 23:09:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FL2r724THz3cC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 23:09:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FL2q338dMz302p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 23:08:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FL2q33BH8z303H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 23:08:44 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FL2py3xdvzB09ZY;
- Wed, 14 Apr 2021 15:08:42 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FL2pv5Rq2zB09bJ;
+ Wed, 14 Apr 2021 15:08:39 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id T9jAhsmUFaFO; Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
+ with ESMTP id 0m0rSe163YDQ; Wed, 14 Apr 2021 15:08:39 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FL2px6JX2zB09bL;
- Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FL2pv4QNBzB09ZY;
+ Wed, 14 Apr 2021 15:08:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 452FB8B7C6;
- Wed, 14 Apr 2021 15:08:43 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A5288B7C6;
+ Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vUO9s-WplRpR; Wed, 14 Apr 2021 15:08:43 +0200 (CEST)
+ with ESMTP id 67Kzm74JUhAW; Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D6F868B7C8;
- Wed, 14 Apr 2021 15:08:42 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CD1748B7C4;
+ Wed, 14 Apr 2021 15:08:40 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B3438679D8; Wed, 14 Apr 2021 13:08:42 +0000 (UTC)
-Message-Id: <b783d1f7cdb8914992384a669a2af57051b6bdcf.1618405715.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <5f6f82572242a59bfee1e19a71194d8f7ef5fca4.1618405715.git.christophe.leroy@csgroup.eu>
-References: <5f6f82572242a59bfee1e19a71194d8f7ef5fca4.1618405715.git.christophe.leroy@csgroup.eu>
+ id A0F6F679D8; Wed, 14 Apr 2021 13:08:40 +0000 (UTC)
+Message-Id: <5f6f82572242a59bfee1e19a71194d8f7ef5fca4.1618405715.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 3/4] powerpc: Rename probe_kernel_read_inst()
+Subject: [PATCH v3 1/4] powerpc: Remove probe_user_read_inst()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  jniethe5@gmail.com
-Date: Wed, 14 Apr 2021 13:08:42 +0000 (UTC)
+Date: Wed, 14 Apr 2021 13:08:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,162 +73,88 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When probe_kernel_read_inst() was created, it was to mimic
-probe_kernel_read() function.
+Its name comes from former probe_user_read() function.
+That function is now called copy_from_user_nofault().
 
-Since then, probe_kernel_read() has been renamed
-copy_from_kernel_nofault().
+probe_user_read_inst() uses copy_from_user_nofault() to read only
+a few bytes. It is suboptimal.
 
-Rename probe_kernel_read_inst() into copy_inst_from_kernel_nofault().
+It does the same as get_user_inst() but in addition disables
+page faults.
+
+But on the other hand, it is not used for the time being. So remove it
+for now. If one day it is really needed, we can give it a new name
+more in line with today's naming, and implement it using get_user_inst()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v3: copy_inst_from_kernel_nofault() instead of copy_from_kernel_nofault_inst()
----
- arch/powerpc/include/asm/inst.h    |  3 +--
- arch/powerpc/kernel/align.c        |  2 +-
- arch/powerpc/kernel/trace/ftrace.c | 22 +++++++++++-----------
- arch/powerpc/lib/inst.c            |  3 +--
- 4 files changed, 14 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/inst.h |  3 ---
+ arch/powerpc/lib/inst.c         | 31 -------------------------------
+ 2 files changed, 34 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index a40c3913a4a3..eaf5a6299034 100644
+index 19e18af2fac9..2902d4e6a363 100644
 --- a/arch/powerpc/include/asm/inst.h
 +++ b/arch/powerpc/include/asm/inst.h
-@@ -177,7 +177,6 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], struct ppc_ins
+@@ -175,9 +175,6 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], struct ppc_ins
  	__str;				\
  })
  
--int probe_kernel_read_inst(struct ppc_inst *inst,
--			   struct ppc_inst *src);
-+int copy_inst_from_kernel_nofault(struct ppc_inst *inst, struct ppc_inst *src);
+-int probe_user_read_inst(struct ppc_inst *inst,
+-			 struct ppc_inst __user *nip);
+-
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src);
  
- #endif /* _ASM_POWERPC_INST_H */
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index a97d5f1a3905..8f350d0478e6 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -311,7 +311,7 @@ int fix_alignment(struct pt_regs *regs)
- 	CHECK_FULL_REGS(regs);
- 
- 	if (is_kernel_addr(regs->nip))
--		r = probe_kernel_read_inst(&instr, (void *)regs->nip);
-+		r = copy_inst_from_kernel_nofault(&instr, (void *)regs->nip);
- 	else
- 		r = __get_user_instr(instr, (void __user *)regs->nip);
- 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 42761ebec9f7..ffe9537195aa 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -68,7 +68,7 @@ ftrace_modify_code(unsigned long ip, struct ppc_inst old, struct ppc_inst new)
- 	 */
- 
- 	/* read the text we want to modify */
--	if (probe_kernel_read_inst(&replaced, (void *)ip))
-+	if (copy_inst_from_kernel_nofault(&replaced, (void *)ip))
- 		return -EFAULT;
- 
- 	/* Make sure it is what we expect it to be */
-@@ -130,7 +130,7 @@ __ftrace_make_nop(struct module *mod,
- 	struct ppc_inst op, pop;
- 
- 	/* read where this goes */
--	if (probe_kernel_read_inst(&op, (void *)ip)) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
- 		pr_err("Fetching opcode failed.\n");
- 		return -EFAULT;
- 	}
-@@ -164,7 +164,7 @@ __ftrace_make_nop(struct module *mod,
- 	/* When using -mkernel_profile there is no load to jump over */
- 	pop = ppc_inst(PPC_INST_NOP);
- 
--	if (probe_kernel_read_inst(&op, (void *)(ip - 4))) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)(ip - 4))) {
- 		pr_err("Fetching instruction at %lx failed.\n", ip - 4);
- 		return -EFAULT;
- 	}
-@@ -197,7 +197,7 @@ __ftrace_make_nop(struct module *mod,
- 	 * Check what is in the next instruction. We can see ld r2,40(r1), but
- 	 * on first pass after boot we will see mflr r0.
- 	 */
--	if (probe_kernel_read_inst(&op, (void *)(ip + 4))) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)(ip + 4))) {
- 		pr_err("Fetching op failed.\n");
- 		return -EFAULT;
- 	}
-@@ -349,7 +349,7 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
- 			return -1;
- 
- 	/* New trampoline -- read where this goes */
--	if (probe_kernel_read_inst(&op, (void *)tramp)) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)tramp)) {
- 		pr_debug("Fetching opcode failed.\n");
- 		return -1;
- 	}
-@@ -399,7 +399,7 @@ static int __ftrace_make_nop_kernel(struct dyn_ftrace *rec, unsigned long addr)
- 	struct ppc_inst op;
- 
- 	/* Read where this goes */
--	if (probe_kernel_read_inst(&op, (void *)ip)) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
- 		pr_err("Fetching opcode failed.\n");
- 		return -EFAULT;
- 	}
-@@ -526,10 +526,10 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	struct module *mod = rec->arch.mod;
- 
- 	/* read where this goes */
--	if (probe_kernel_read_inst(op, ip))
-+	if (copy_inst_from_kernel_nofault(op, ip))
- 		return -EFAULT;
- 
--	if (probe_kernel_read_inst(op + 1, ip + 4))
-+	if (copy_inst_from_kernel_nofault(op + 1, ip + 4))
- 		return -EFAULT;
- 
- 	if (!expected_nop_sequence(ip, op[0], op[1])) {
-@@ -592,7 +592,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	unsigned long ip = rec->ip;
- 
- 	/* read where this goes */
--	if (probe_kernel_read_inst(&op, (void *)ip))
-+	if (copy_inst_from_kernel_nofault(&op, (void *)ip))
- 		return -EFAULT;
- 
- 	/* It should be pointing to a nop */
-@@ -648,7 +648,7 @@ static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
- 	}
- 
- 	/* Make sure we have a nop */
--	if (probe_kernel_read_inst(&op, ip)) {
-+	if (copy_inst_from_kernel_nofault(&op, ip)) {
- 		pr_err("Unable to read ftrace location %p\n", ip);
- 		return -EFAULT;
- 	}
-@@ -726,7 +726,7 @@ __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 	}
- 
- 	/* read where this goes */
--	if (probe_kernel_read_inst(&op, (void *)ip)) {
-+	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
- 		pr_err("Fetching opcode failed.\n");
- 		return -EFAULT;
- 	}
 diff --git a/arch/powerpc/lib/inst.c b/arch/powerpc/lib/inst.c
-index 0dff3ac2d45f..e554d1357f2f 100644
+index 9cc17eb62462..c57b3548de37 100644
 --- a/arch/powerpc/lib/inst.c
 +++ b/arch/powerpc/lib/inst.c
-@@ -8,8 +8,7 @@
- #include <asm/inst.h>
+@@ -9,24 +9,6 @@
  #include <asm/ppc-opcode.h>
  
--int probe_kernel_read_inst(struct ppc_inst *inst,
--			   struct ppc_inst *src)
-+int copy_inst_from_kernel_nofault(struct ppc_inst *inst, struct ppc_inst *src)
+ #ifdef CONFIG_PPC64
+-int probe_user_read_inst(struct ppc_inst *inst,
+-			 struct ppc_inst __user *nip)
+-{
+-	unsigned int val, suffix;
+-	int err;
+-
+-	err = copy_from_user_nofault(&val, nip, sizeof(val));
+-	if (err)
+-		return err;
+-	if (get_op(val) == OP_PREFIX) {
+-		err = copy_from_user_nofault(&suffix, (void __user *)nip + 4, 4);
+-		*inst = ppc_inst_prefix(val, suffix);
+-	} else {
+-		*inst = ppc_inst(val);
+-	}
+-	return err;
+-}
+-
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src)
  {
- 	unsigned int val, suffix;
- 	int err;
+@@ -45,19 +27,6 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	return err;
+ }
+ #else /* !CONFIG_PPC64 */
+-int probe_user_read_inst(struct ppc_inst *inst,
+-			 struct ppc_inst __user *nip)
+-{
+-	unsigned int val;
+-	int err;
+-
+-	err = copy_from_user_nofault(&val, nip, sizeof(val));
+-	if (!err)
+-		*inst = ppc_inst(val);
+-
+-	return err;
+-}
+-
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src)
+ {
 -- 
 2.25.0
 
