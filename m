@@ -2,74 +2,64 @@ Return-Path: <SRS0=qW4V=JL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 356A7C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 21:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A1B2C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 23:36:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87B9F61179
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 21:58:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87B9F61179
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id 647AD61132
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 23:36:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 647AD61132
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FLGZ90S00z3c0k
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 07:58:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FLJlg5wxFz2yxT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 09:36:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=YhIim8AA;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=canb.auug.org.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=sfr@canb.auug.org.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=YhIim8AA; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FLGYm2k9Bz2xZM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 07:58:04 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mtapsc-4-PsdLgvNoPOivxmwyvxbtWw-1; Wed, 14 Apr 2021 22:56:40 +0100
-X-MC-Unique: PsdLgvNoPOivxmwyvxbtWw-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.2; Wed, 14 Apr 2021 22:56:39 +0100
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.012; Wed, 14 Apr 2021 22:56:39 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Matthew Wilcox' <willy@infradead.org>, Jesper Dangaard Brouer
- <brouer@redhat.com>
-Subject: RE: [PATCH 1/1] mm: Fix struct page layout on 32-bit systems
-Thread-Topic: [PATCH 1/1] mm: Fix struct page layout on 32-bit systems
-Thread-Index: AQHXMXYmwdfrgigLI0exh4xFUSZq9Kq0jZ3g
-Date: Wed, 14 Apr 2021 21:56:39 +0000
-Message-ID: <a50c3156fe8943ef964db4345344862f@AcuMS.aculab.com>
-References: <20210410205246.507048-1-willy@infradead.org>
- <20210410205246.507048-2-willy@infradead.org>
- <20210411114307.5087f958@carbon>
- <20210411103318.GC2531743@casper.infradead.org>
- <20210412011532.GG2531743@casper.infradead.org>
- <20210414101044.19da09df@carbon>
- <20210414115052.GS2531743@casper.infradead.org>
- <20210414211322.3799afd4@carbon>
- <20210414213556.GY2531743@casper.infradead.org>
-In-Reply-To: <20210414213556.GY2531743@casper.infradead.org>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FLJlG139jz2yyP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 09:36:24 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FLJl50pM3z9sRR;
+ Thu, 15 Apr 2021 09:36:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1618443377;
+ bh=kfv+xc09MV9UVzqaFbOAn65ue91Hf1emN1/qTLwxKdM=;
+ h=Date:From:To:Cc:Subject:From;
+ b=YhIim8AAlSmF8+j9nPRKATlo2BKNKyfUfX6ZBDbpKPeV4AIC4gcPl/wx9SBLb4Sm0
+ qlZH4554zOwQ6dISjGAJw30FAOSfRcZWVcEDnhJVgfv3L8cBJTMf4pxG1x3byXJDri
+ oCqfDM8QKcDSkzqQN3s4TyFGkfME3Ys3onLQMi64JPya5ZfHWq0mnLAKpLAuKQng52
+ 3exst+c3H2ZXSvRZKGCj/dosrATEzPpw2FmrkFs2HWTexUijoscQiBJNJfq13gGSHU
+ uOzGlR7h359puDdq5U12yRUleekMrWV9pjIokUD2J8kaBeapfdldWUc8ISR4CPkrlO
+ S3GVJBuk2vOqA==
+Date: Thu, 15 Apr 2021 09:36:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build warning after merge of the powerpc tree
+Message-ID: <20210415093616.02468ba4@canb.auug.org.au>
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="Sig_/S0UeJ6AcnQylsDPmEgAB3Vr";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,102 +71,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@kernel.org>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Matteo Croce <mcroce@linux.microsoft.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Christoph
- Hellwig <hch@lst.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Yu Kuai <yukuai3@huawei.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Matthew Wilcox
-> Sent: 14 April 2021 22:36
->=20
-> On Wed, Apr 14, 2021 at 09:13:22PM +0200, Jesper Dangaard Brouer wrote:
-> > (If others want to reproduce).  First I could not reproduce on ARM32.
-> > Then I found out that enabling CONFIG_XEN on ARCH=3Darm was needed to
-> > cause the issue by enabling CONFIG_ARCH_DMA_ADDR_T_64BIT.
->=20
-> hmmm ... you should be able to provoke it by enabling ARM_LPAE,
-> which selects PHYS_ADDR_T_64BIT, and
->=20
-> config ARCH_DMA_ADDR_T_64BIT
->         def_bool 64BIT || PHYS_ADDR_T_64BIT
->=20
-> >  struct page {
-> >         long unsigned int          flags;                /*     0     4=
- */
-> >
-> >         /* XXX 4 bytes hole, try to pack */
-> >
-> >         union {
-> >                 struct {
-> >                         struct list_head lru;            /*     8     8=
- */
-> >                         struct address_space * mapping;  /*    16     4=
- */
-> >                         long unsigned int index;         /*    20     4=
- */
-> >                         long unsigned int private;       /*    24     4=
- */
-> >                 };                                       /*     8    20=
- */
-> >                 struct {
-> >                         dma_addr_t dma_addr
+--Sig_/S0UeJ6AcnQylsDPmEgAB3Vr
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Adding __packed here will remove the 4 byte hole before the union
-and the compiler seems clever enough to know that anything following
-a 'long' must also be 'long' aligned.
-So you don't get anything horrid like byte accesses.
-On 64bit dma_addr will remain 64bit aligned.
-On arm32 dma_addr will be 32bit aligned - but forcing two 32bit access
-won't make any difference.
+Hi all,
 
-So definitely the only simple fix.
+After merging the powerpc tree, today's linux-next build (powerpc
+ppc64_defconfig) produced this warning:
 
-=09David
+drivers/macintosh/via-pmu.c:190:12: warning: '__fake_sleep' defined but not=
+ used [-Wunused-variable]
+  190 | static int __fake_sleep;
+      |            ^~~~~~~~~~~~
 
-> >                                            ;             /*     8     8=
- */
-> >                 };                                       /*     8     8=
- */
-> [...]
-> >         } __attribute__((__aligned__(8)));               /*     8    24=
- */
-> >         union {
-> >                 atomic_t           _mapcount;            /*    32     4=
- */
-> >                 unsigned int       page_type;            /*    32     4=
- */
-> >                 unsigned int       active;               /*    32     4=
- */
-> >                 int                units;                /*    32     4=
- */
-> >         };                                               /*    32     4=
- */
-> >         atomic_t                   _refcount;            /*    36     4=
- */
-> >
-> >         /* size: 40, cachelines: 1, members: 4 */
-> >         /* sum members: 36, holes: 1, sum holes: 4 */
-> >         /* forced alignments: 1, forced holes: 1, sum forced holes: 4 *=
-/
-> >         /* last cacheline: 40 bytes */
-> > } __attribute__((__aligned__(8)));
->=20
-> If you also enable CONFIG_MEMCG or enough options to make
-> LAST_CPUPID_NOT_IN_PAGE_FLAGS true, you'll end up with another 4-byte
-> hole at the end.
+Introduced by commit
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+  95d143923379 ("macintosh/via-pmu: Make some symbols static")
 
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/S0UeJ6AcnQylsDPmEgAB3Vr
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmB3fHAACgkQAVBC80lX
+0GwFhggAlMymVViwuP6aw0+tIpMCngJyp8gr9XP/RvT41vVkLWgu4E/kY8r1YZb2
+jJN/w/zpvuAUzMzMr3yrCrv6iKyYsMVPBg1rJMo69JKuGoHA8VPNhcsrkpE779rP
+N9bw1sufjxVxu6pm6bCoTsGTL0Ah9sRN4BSDBvD4DbSdtBnHqdjWSnBifP6Enna3
+GAjW6Jkma5xQGcb4Eqj7JPbFn0JmKUvz59P9ysBOtpjEHaMMjKvqs8es7GGR5V0C
+0RIralJRYOTigItYlAWLr9TfwSouUXKCSqToT9Ub9DhicvW2zPnbDXXF9dPnuwKW
+9wD9H4HMNCniYKRZ30F3bczIW9mNrQ==
+=Zi9X
+-----END PGP SIGNATURE-----
+
+--Sig_/S0UeJ6AcnQylsDPmEgAB3Vr--
