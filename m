@@ -2,65 +2,58 @@ Return-Path: <SRS0=qW4V=JL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24E7FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 17:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28303C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 17:22:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F07A61155
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 17:02:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F07A61155
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 32D1761168
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 17:22:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32D1761168
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FL80l6Ftnz3c5N
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 03:02:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FL80N4Jyjz2yRR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 03:02:12 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FL80J09CXzB09ZG;
- Wed, 14 Apr 2021 19:02:08 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id xPWafQU7SZFF; Wed, 14 Apr 2021 19:02:07 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FL80H4r9FzB09ZC;
- Wed, 14 Apr 2021 19:02:07 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 500948B7D0;
- Wed, 14 Apr 2021 19:02:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 6Ef4GAIzEXxj; Wed, 14 Apr 2021 19:02:09 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B6468B7C4;
- Wed, 14 Apr 2021 19:02:08 +0200 (CEST)
-Subject: Re: [PATCH v2 0/5] powerpc/rtas: miscellaneous cleanups
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20210408140630.205502-1-nathanl@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <231da5db-efdd-0ddd-9ad8-4ddd2bc03ddf@csgroup.eu>
-Date: Wed, 14 Apr 2021 19:02:02 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.1
-MIME-Version: 1.0
-In-Reply-To: <20210408140630.205502-1-nathanl@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FL8SB34qjz3bvZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 03:22:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FL8Rp5xqhz304X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 03:22:29 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 13EHK42L023677;
+ Wed, 14 Apr 2021 12:20:04 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 13EHK3HZ023672;
+ Wed, 14 Apr 2021 12:20:03 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 14 Apr 2021 12:20:03 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH v1 1/2] powerpc/bitops: Use immediate operand when possible
+Message-ID: <20210414172003.GX26583@gate.crashing.org>
+References: <09da6fec57792d6559d1ea64e00be9870b02dab4.1617896018.git.christophe.leroy@csgroup.eu>
+ <20210412215428.GM26583@gate.crashing.org>
+ <ecb1b1a5-ae92-e8a3-6490-26341edfbccb@csgroup.eu>
+ <20210413215803.GT26583@gate.crashing.org>
+ <1618365589.67fxh7cot9.astroid@bobo.none>
+ <20210414122409.GV26583@gate.crashing.org>
+ <daacce9f-1900-1034-980b-be5a58d6be09@csgroup.eu>
+ <20210414151921.GW26583@gate.crashing.org>
+ <efcabc9410cf4d03b203749a02e5a935@AcuMS.aculab.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <efcabc9410cf4d03b203749a02e5a935@AcuMS.aculab.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,47 +65,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, aik@ozlabs.ru,
- aneesh.kumar@linux.ibm.com, npiggin@gmail.com, brking@linux.ibm.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Apr 14, 2021 at 03:32:04PM +0000, David Laight wrote:
+> From: Segher Boessenkool
+> > Sent: 14 April 2021 16:19
+> ...
+> > > Could the kernel use GCC builtin atomic functions instead ?
+> > >
+> > > https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
+> > 
+> > Certainly that should work fine for the simpler cases that the atomic
+> > operations are meant to provide.  But esp. for not-so-simple cases the
+> > kernel may require some behaviour provided by the existing assembler
+> > implementation, and not by the atomic builtins.
+> > 
+> > I'm not saying this cannot work, just that some serious testing will be
+> > needed.  If it works it should be the best of all worlds, so then it is
+> > a really good idea yes :-)
+> 
+> I suspect they just add an extra layer of abstraction that makes it
+> even more difficult to verify and could easily get broken by a compiler
+> update (etc).
+
+I would say it uses an existing facility, instead of creating a kernel-
+specific one.
+
+> The other issue is that the code needs to be correct with compiled
+> with (for example) -O0.
+> That could very easily break anything except the asm implementation
+> if additional memory accesses and/or increased code size cause grief.
+
+The compiler generates correct code.  New versions of the compiler or
+old, -O0 or not, under any phase of the moon.
+
+Of course sometimes the compiler is broken, but there are pre-existing
+ways of dealing with that, and there is no reason at all to think this
+would break more often than random other code.
 
 
-Le 08/04/2021 à 16:06, Nathan Lynch a écrit :
-> This is a reroll of the series posted here:
-> https://lore.kernel.org/linuxppc-dev/20210114220004.1138993-1-nathanl@linux.ibm.com/
-> 
-> Originally this work was prompted by failures on radix MMU PowerVM
-> guests when passing buffers to RTAS that lay outside of its idea of
-> the RMA. In v1 I approached this as a problem to be solved in Linux,
-> but RTAS development has since decided to change their code so that
-> the RMA restriction does not apply with radix.
-> 
-> So in v2 I retain the cleanups and discard the more significant change
-> which accommodated the misbehaving RTAS versions.
-
-Is there a link with https://github.com/linuxppc/issues/issues/252 ?
-
-> 
-> Changes since v1:
-> - Correct missing conversion of RTAS_RMOBUF_MAX ->
->    RTAS_USER_REGION_SIZE in in_rmo_buf().
-> - Remove unnecessary braces in rtas_syscall_filter_init().
-> - Leave expression of RTAS_WORK_AREA_SIZE as-is instead of changing
->    the factors in a confusing way, per discussion with Alexey.
-> - Drop "powerpc/rtas: constrain user region allocation to RMA"
-> 
-> Nathan Lynch (5):
->    powerpc/rtas: improve ppc_rtas_rmo_buf_show documentation
->    powerpc/rtas-proc: remove unused RMO_READ_BUF_MAX
->    powerpc/rtas: remove ibm_suspend_me_token
->    powerpc/rtas: move syscall filter setup into separate function
->    powerpc/rtas: rename RTAS_RMOBUF_MAX to RTAS_USER_REGION_SIZE
-> 
->   arch/powerpc/include/asm/rtas.h |  6 +++---
->   arch/powerpc/kernel/rtas-proc.c | 15 +++++++++++----
->   arch/powerpc/kernel/rtas.c      | 34 +++++++++++++++++----------------
->   3 files changed, 32 insertions(+), 23 deletions(-)
-> 
+Segher
