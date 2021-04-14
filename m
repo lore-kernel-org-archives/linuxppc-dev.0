@@ -7,105 +7,105 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D898C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 09:01:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73D32C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 09:02:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1683E61166
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 09:01:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1683E61166
+	by mail.kernel.org (Postfix) with ESMTPS id C2AB161074
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 09:02:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2AB161074
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FKxKq479yz3cNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 19:01:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FKxLL0MFTz3cbH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 19:02:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SUahZB6O;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aFi8v9Lo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=SUahZB6O; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=aFi8v9Lo; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FKxHg1nxMz30HD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 18:59:43 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13E8XkQq064247; Wed, 14 Apr 2021 04:59:37 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FKxHn4xLXz3bxD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 18:59:49 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13E8Xkjf124782; Wed, 14 Apr 2021 04:59:43 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=TS9igLUj0tKvJs3r312Me+UdojDWEPpC08X+X+DnEi4=;
- b=SUahZB6OXvPqI/HIRT0AgSlBoxHyubrvArSShPHjpw+Zpc4AQk0XnwZSvaGn2k87FBzT
- z5/AwrivIdejNg4bqVecsXmxakYAKga4KaCHS3xC4EL6V5jvL/BtB9lhz7m2xUqBJD6b
- 2fpZbhe2mu66h7RUReYLUuO0w2SRGNlmuLtGdNMu+j18RhV31t2rgoj1qJ2wU3KLsLHS
- EZVG+MxOt6qSxiBBebVUwTDPENAI6ITX0l+77FNSt4po7HGbGXJy4ctMg4XfAgIgZvGR
- y58ecgpnRKUdiMXY7h8oNZlj5JgoEw+UraB9anuUO9Gq8mTAPjuKA+TyQeR8K3YMX05j cQ== 
+ bh=ppX69qfgpEpdCYYSeYLLeK9jnvrs8s/xw9UDSKHOzK4=;
+ b=aFi8v9LohN91Ozwse8TanhQM4T7OxHEyoxrpeVmZZ/ztMRxGWWBg3sc+ebYukSQwai2M
+ OKM7i5Gb2anMH26N1VtYBgVAASWbQYnyZ4NmlGnLh0exAl2k6tiMFPz1R8GaALAUVrcL
+ xVW0GZnlPqfQ98KboIIxUL3it6w5HZeibOEgMmEfxBb8BO4oCRFD08N0apBQD2J+Hobb
+ DZ6gXzF/+BGd+0s+8oqMvYaoK1pDLwTtNtP4jT1WOPJoG9aQ9bGUhowyDQaRLqwNPdQs
+ G/ho+/wHUTKBMKboRGsmvoTsBm3ktculTyHgcV06N9ZoGuu7P8X/qeRvXm2dc3P+momt lQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37w6wnc3td-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37wvvy0ume-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 14 Apr 2021 04:59:37 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13E8Ym4Z067449;
- Wed, 14 Apr 2021 04:59:36 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 37w6wnc3t3-1
+ Wed, 14 Apr 2021 04:59:43 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13E8YTCV127705;
+ Wed, 14 Apr 2021 04:59:43 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 37wvvy0um7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 14 Apr 2021 04:59:36 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13E8wHHZ023250;
- Wed, 14 Apr 2021 08:59:35 GMT
+ Wed, 14 Apr 2021 04:59:43 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13E8wk03010808;
+ Wed, 14 Apr 2021 08:59:42 GMT
 Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma02dal.us.ibm.com with ESMTP id 37u3n9ynr2-1
+ [9.57.198.23]) by ppma04dal.us.ibm.com with ESMTP id 37u3n97pev-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 14 Apr 2021 08:59:35 +0000
+ Wed, 14 Apr 2021 08:59:42 +0000
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13E8xYj010944982
+ 13E8xfEd10944984
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 14 Apr 2021 08:59:34 GMT
+ Wed, 14 Apr 2021 08:59:41 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BE860AE05F;
- Wed, 14 Apr 2021 08:59:34 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6AEF2AE062;
+ Wed, 14 Apr 2021 08:59:41 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3920BAE062;
- Wed, 14 Apr 2021 08:59:32 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DA647AE05F;
+ Wed, 14 Apr 2021 08:59:38 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.77.205.193])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 14 Apr 2021 08:59:31 +0000 (GMT)
+ Wed, 14 Apr 2021 08:59:38 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v4 3/9] mm/mremap: Use pmd/pud_poplulate to update page table
- entries
-Date: Wed, 14 Apr 2021 14:29:09 +0530
-Message-Id: <20210414085915.301189-4-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 5/9] powerpc/mm/book3s64: Update tlb flush routines to take
+ a page walk cache flush argument
+Date: Wed, 14 Apr 2021 14:29:11 +0530
+Message-Id: <20210414085915.301189-6-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210414085915.301189-1-aneesh.kumar@linux.ibm.com>
 References: <20210414085915.301189-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: kQAJFT66Txw2S8b3RxmBtUuAtF5fbQYE
-X-Proofpoint-GUID: RSKvN3ePS9lHykAekPoN5NGSiEep-wUV
+X-Proofpoint-GUID: tLSfMxf32ToQUmpqEbidxVFzUaauMrJN
+X-Proofpoint-ORIG-GUID: QUBG8Mp76pDysRWuKXZTF1AIYgEIfFd2
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-14_03:2021-04-14,
  2021-04-14 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0
- mlxscore=0 suspectscore=0 spamscore=0 bulkscore=0 clxscore=1015
- phishscore=0 lowpriorityscore=0 priorityscore=1501 mlxlogscore=999
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104140060
+ mlxscore=0 lowpriorityscore=0
+ clxscore=1011 impostorscore=0 bulkscore=0 priorityscore=1501 spamscore=0
+ phishscore=0 mlxlogscore=999 suspectscore=0 malwarescore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
+ definitions=main-2104140060
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,49 +124,182 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pmd/pud_populate is the right interface to be used to set the respective
-page table entries. Some architectures like ppc64 do assume that set_pmd/pud_at
-can only be used to set a hugepage PTE. Since we are not setting up a hugepage
-PTE here, use the pmd/pud_populate interface.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- mm/mremap.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ .../include/asm/book3s/64/tlbflush-radix.h    | 19 +++++++-----
+ arch/powerpc/include/asm/book3s/64/tlbflush.h | 23 ++++++++++++---
+ arch/powerpc/mm/book3s64/radix_hugetlbpage.c  |  4 +--
+ arch/powerpc/mm/book3s64/radix_tlb.c          | 29 +++++++------------
+ 4 files changed, 42 insertions(+), 33 deletions(-)
 
-diff --git a/mm/mremap.c b/mm/mremap.c
-index ec8f840399ed..574287f9bb39 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -26,6 +26,7 @@
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index 8b33601cdb9d..171441a43b35 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -56,15 +56,18 @@ static inline void radix__flush_all_lpid_guest(unsigned int lpid)
+ }
+ #endif
  
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
-+#include <asm/pgalloc.h>
+-extern void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma,
+-					   unsigned long start, unsigned long end);
+-extern void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+-					 unsigned long end, int psize);
+-extern void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
+-				       unsigned long start, unsigned long end);
+-extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
++void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma,
++				    unsigned long start, unsigned long end,
++				    bool flush_pwc);
++void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
++				unsigned long start, unsigned long end,
++				bool flush_pwc);
++void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
++				      unsigned long end, int psize, bool flush_pwc);
++void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 			    unsigned long end);
+-extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
++void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
++
  
- #include "internal.h"
+ extern void radix__local_flush_tlb_mm(struct mm_struct *mm);
+ extern void radix__local_flush_all_mm(struct mm_struct *mm);
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index 215973b4cb26..f9f8a3a264f7 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -45,13 +45,30 @@ static inline void tlbiel_all_lpid(bool radix)
+ 		hash__tlbiel_all(TLB_INVAL_SCOPE_LPID);
+ }
  
-@@ -257,9 +258,8 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
- 	pmd_clear(old_pmd);
++static inline void flush_pmd_tlb_pwc_range(struct vm_area_struct *vma,
++					   unsigned long start,
++					   unsigned long end,
++					   bool flush_pwc)
++{
++	if (radix_enabled())
++		return radix__flush_pmd_tlb_range(vma, start, end, flush_pwc);
++	return hash__flush_tlb_range(vma, start, end);
++}
  
- 	VM_BUG_ON(!pmd_none(*new_pmd));
-+	pmd_populate(mm, new_pmd, (pgtable_t)pmd_page_vaddr(pmd));
+ #define __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
+ static inline void flush_pmd_tlb_range(struct vm_area_struct *vma,
+ 				       unsigned long start, unsigned long end)
++{
++	return flush_pmd_tlb_pwc_range(vma, start, end, false);
++}
++
++static inline void flush_hugetlb_tlb_pwc_range(struct vm_area_struct *vma,
++					       unsigned long start,
++					       unsigned long end,
++					       bool flush_pwc)
+ {
+ 	if (radix_enabled())
+-		return radix__flush_pmd_tlb_range(vma, start, end);
++		return radix__flush_hugetlb_tlb_range(vma, start, end, flush_pwc);
+ 	return hash__flush_tlb_range(vma, start, end);
+ }
  
--	/* Set the new pmd */
--	set_pmd_at(mm, new_addr, new_pmd, pmd);
- 	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
- 	if (new_ptl != old_ptl)
- 		spin_unlock(new_ptl);
-@@ -306,8 +306,7 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
+@@ -60,9 +77,7 @@ static inline void flush_hugetlb_tlb_range(struct vm_area_struct *vma,
+ 					   unsigned long start,
+ 					   unsigned long end)
+ {
+-	if (radix_enabled())
+-		return radix__flush_hugetlb_tlb_range(vma, start, end);
+-	return hash__flush_tlb_range(vma, start, end);
++	return flush_hugetlb_tlb_pwc_range(vma, start, end, false);
+ }
  
- 	VM_BUG_ON(!pud_none(*new_pud));
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+diff --git a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
+index cb91071eef52..e62f5679b119 100644
+--- a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
++++ b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
+@@ -26,13 +26,13 @@ void radix__local_flush_hugetlb_page(struct vm_area_struct *vma, unsigned long v
+ }
  
--	/* Set the new pud */
--	set_pud_at(mm, new_addr, new_pud, pud);
-+	pud_populate(mm, new_pud, (pmd_t *)pud_page_vaddr(pud));
- 	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
- 	if (new_ptl != old_ptl)
- 		spin_unlock(new_ptl);
+ void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma, unsigned long start,
+-				   unsigned long end)
++				    unsigned long end, bool flush_pwc)
+ {
+ 	int psize;
+ 	struct hstate *hstate = hstate_file(vma->vm_file);
+ 
+ 	psize = hstate_get_psize(hstate);
+-	radix__flush_tlb_range_psize(vma->vm_mm, start, end, psize);
++	radix__flush_tlb_pwc_range_psize(vma->vm_mm, start, end, psize, flush_pwc);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index 817a02ef6032..5a59e19f9e53 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -1090,7 +1090,7 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ {
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	if (is_vm_hugetlb_page(vma))
+-		return radix__flush_hugetlb_tlb_range(vma, start, end);
++		return radix__flush_hugetlb_tlb_range(vma, start, end, false);
+ #endif
+ 
+ 	__radix__flush_tlb_range(vma->vm_mm, start, end);
+@@ -1151,9 +1151,6 @@ void radix__flush_all_lpid_guest(unsigned int lpid)
+ 	_tlbie_lpid_guest(lpid, RIC_FLUSH_ALL);
+ }
+ 
+-static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
+-				  unsigned long end, int psize);
+-
+ void radix__tlb_flush(struct mmu_gather *tlb)
+ {
+ 	int psize = 0;
+@@ -1177,10 +1174,8 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 		else
+ 			radix__flush_all_mm(mm);
+ 	} else {
+-		if (!tlb->freed_tables)
+-			radix__flush_tlb_range_psize(mm, start, end, psize);
+-		else
+-			radix__flush_tlb_pwc_range_psize(mm, start, end, psize);
++		radix__flush_tlb_pwc_range_psize(mm, start,
++						 end, psize, tlb->freed_tables);
+ 	}
+ }
+ 
+@@ -1254,16 +1249,10 @@ static void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 	preempt_enable();
+ }
+ 
+-void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+-				  unsigned long end, int psize)
++void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
++				      unsigned long end, int psize, bool flush_pwc)
+ {
+-	return __radix__flush_tlb_range_psize(mm, start, end, psize, false);
+-}
+-
+-static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
+-				  unsigned long end, int psize)
+-{
+-	__radix__flush_tlb_range_psize(mm, start, end, psize, true);
++	__radix__flush_tlb_range_psize(mm, start, end, psize, flush_pwc);
+ }
+ 
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+@@ -1315,9 +1304,11 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
+ void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
+-				unsigned long start, unsigned long end)
++				unsigned long start, unsigned long end,
++				bool flush_pwc)
+ {
+-	radix__flush_tlb_range_psize(vma->vm_mm, start, end, MMU_PAGE_2M);
++	__radix__flush_tlb_range_psize(vma->vm_mm, start,
++				       end, MMU_PAGE_2M, flush_pwc);
+ }
+ EXPORT_SYMBOL(radix__flush_pmd_tlb_range);
+ 
 -- 
 2.30.2
 
