@@ -2,69 +2,64 @@ Return-Path: <SRS0=qW4V=JL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 233FDC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 12:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE3FEC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0667561176
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 12:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0667561176
+	by mail.kernel.org (Postfix) with ESMTPS id 03A0060E09
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 13:09:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03A0060E09
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FL2b144ghz3c1G
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 22:58:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FL2qR3YsBz3c0f
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 23:09:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FL2Zf6nChz2xZt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 22:58:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FL2q336Ntz300c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2021 23:08:46 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FL2ZX4sPrz9txMS;
- Wed, 14 Apr 2021 14:57:56 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FL2py2yPqzB09bP;
+ Wed, 14 Apr 2021 15:08:42 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 2SNyNYClAnNU; Wed, 14 Apr 2021 14:57:56 +0200 (CEST)
+ with ESMTP id MM_hZIbR2WB0; Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FL2ZX3NNKz9txMR;
- Wed, 14 Apr 2021 14:57:56 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FL2pw6ngVzB09ZY;
+ Wed, 14 Apr 2021 15:08:40 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C95C28B7C8;
- Wed, 14 Apr 2021 14:57:57 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B1178B7C6;
+ Wed, 14 Apr 2021 15:08:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 53S2lL7lZviC; Wed, 14 Apr 2021 14:57:57 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 147B68B7C4;
- Wed, 14 Apr 2021 14:57:57 +0200 (CEST)
-Subject: Re: [PATCH v2 3/4] powerpc: Rename probe_kernel_read_inst()
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- jniethe5@gmail.com
-References: <857ceb23b6a614aea2522e770b067593d5f9e906.1618331980.git.christophe.leroy@csgroup.eu>
- <e2fbccd1a0b4e8ed7e12936e03be76588202c7a0.1618331980.git.christophe.leroy@csgroup.eu>
- <874kg930di.fsf@linux.ibm.com>
+ with ESMTP id zEMP0ARhlqCi; Wed, 14 Apr 2021 15:08:42 +0200 (CEST)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D183F8B7C4;
+ Wed, 14 Apr 2021 15:08:41 +0200 (CEST)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id AC6DC679D8; Wed, 14 Apr 2021 13:08:41 +0000 (UTC)
+Message-Id: <f7b9dfddef3b3760182c7e5466356c121a293dc9.1618405715.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <5f6f82572242a59bfee1e19a71194d8f7ef5fca4.1618405715.git.christophe.leroy@csgroup.eu>
+References: <5f6f82572242a59bfee1e19a71194d8f7ef5fca4.1618405715.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <9cedd64c-5585-353b-4f8b-eab245950d0f@csgroup.eu>
-Date: Wed, 14 Apr 2021 14:57:57 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.1
-MIME-Version: 1.0
-In-Reply-To: <874kg930di.fsf@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v3 2/4] powerpc: Make probe_kernel_read_inst() common to PPC32
+ and PPC64
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ jniethe5@gmail.com
+Date: Wed, 14 Apr 2021 13:08:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,22 +76,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+We have two independant versions of probe_kernel_read_inst(), one for
+PPC32 and one for PPC64.
 
+The PPC32 is identical to the first part of the PPC64 version.
+The remaining part of PPC64 version is not relevant for PPC32, but
+not contradictory, so we can easily have a common function with
+the PPC64 part opted out via a IS_ENABLED(CONFIG_PPC64).
 
-Le 14/04/2021 à 07:23, Aneesh Kumar K.V a écrit :
-> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> 
->> When probe_kernel_read_inst() was created, it was to mimic
->> probe_kernel_read() function.
->>
->> Since then, probe_kernel_read() has been renamed
->> copy_from_kernel_nofault().
->>
->> Rename probe_kernel_read_inst() into copy_from_kernel_nofault_inst().
-> 
-> At first glance I read it as copy from kernel nofault instruction.
-> How about copy_inst_from_kernel_nofault()?
+The only need is to add a version of ppc_inst_prefix() for PPC32.
 
-Yes good idea.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/inst.h |  2 ++
+ arch/powerpc/lib/inst.c         | 17 +----------------
+ 2 files changed, 3 insertions(+), 16 deletions(-)
 
-Christophe
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 2902d4e6a363..a40c3913a4a3 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -102,6 +102,8 @@ static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
+ 
+ #define ppc_inst(x) ((struct ppc_inst){ .val = x })
+ 
++#define ppc_inst_prefix(x, y) ppc_inst(x)
++
+ static inline bool ppc_inst_prefixed(struct ppc_inst x)
+ {
+ 	return false;
+diff --git a/arch/powerpc/lib/inst.c b/arch/powerpc/lib/inst.c
+index c57b3548de37..0dff3ac2d45f 100644
+--- a/arch/powerpc/lib/inst.c
++++ b/arch/powerpc/lib/inst.c
+@@ -8,7 +8,6 @@
+ #include <asm/inst.h>
+ #include <asm/ppc-opcode.h>
+ 
+-#ifdef CONFIG_PPC64
+ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 			   struct ppc_inst *src)
+ {
+@@ -18,7 +17,7 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+ 	if (err)
+ 		return err;
+-	if (get_op(val) == OP_PREFIX) {
++	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
+ 		err = copy_from_kernel_nofault(&suffix, (void *)src + 4, 4);
+ 		*inst = ppc_inst_prefix(val, suffix);
+ 	} else {
+@@ -26,17 +25,3 @@ int probe_kernel_read_inst(struct ppc_inst *inst,
+ 	}
+ 	return err;
+ }
+-#else /* !CONFIG_PPC64 */
+-int probe_kernel_read_inst(struct ppc_inst *inst,
+-			   struct ppc_inst *src)
+-{
+-	unsigned int val;
+-	int err;
+-
+-	err = copy_from_kernel_nofault(&val, src, sizeof(val));
+-	if (!err)
+-		*inst = ppc_inst(val);
+-
+-	return err;
+-}
+-#endif /* CONFIG_PPC64 */
+-- 
+2.25.0
+
