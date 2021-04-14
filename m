@@ -2,74 +2,59 @@ Return-Path: <SRS0=qW4V=JL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28B3BC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 15:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98D5FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 15:38:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 902966100B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 15:32:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 902966100B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id E7D79613CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Apr 2021 15:37:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7D79613CD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FL60x6gF3z3c0x
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 01:32:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FL67B0QCrz3btv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 01:37:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 66 seconds by postgrey-1.36 at boromir;
+ Thu, 15 Apr 2021 01:37:39 AEST
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FL60b1hZ3z2yRD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 01:32:13 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-260-2ItaeQAlMXO4xATmhgmnXw-1; Wed, 14 Apr 2021 16:32:05 +0100
-X-MC-Unique: 2ItaeQAlMXO4xATmhgmnXw-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.2; Wed, 14 Apr 2021 16:32:05 +0100
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.012; Wed, 14 Apr 2021 16:32:04 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Segher Boessenkool' <segher@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@csgroup.eu>
-Subject: RE: [PATCH v1 1/2] powerpc/bitops: Use immediate operand when possible
-Thread-Topic: [PATCH v1 1/2] powerpc/bitops: Use immediate operand when
- possible
-Thread-Index: AQHXMUHmVAfluj7FfEq84rYmesOs4qq0IuPA
-Date: Wed, 14 Apr 2021 15:32:04 +0000
-Message-ID: <efcabc9410cf4d03b203749a02e5a935@AcuMS.aculab.com>
-References: <09da6fec57792d6559d1ea64e00be9870b02dab4.1617896018.git.christophe.leroy@csgroup.eu>
- <20210412215428.GM26583@gate.crashing.org>
- <ecb1b1a5-ae92-e8a3-6490-26341edfbccb@csgroup.eu>
- <20210413215803.GT26583@gate.crashing.org>
- <1618365589.67fxh7cot9.astroid@bobo.none>
- <20210414122409.GV26583@gate.crashing.org>
- <daacce9f-1900-1034-980b-be5a58d6be09@csgroup.eu>
- <20210414151921.GW26583@gate.crashing.org>
-In-Reply-To: <20210414151921.GW26583@gate.crashing.org>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FL66q1J8Sz2xb3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 01:37:38 +1000 (AEST)
+IronPort-SDR: 9gqtLKk2Y3mwcoZuAgevdsl+cLiafI8t02qYKiHTa1swwWrQNZDiLBPz56Ea5Te2acQ5wztgPJ
+ wxrSSPWoT7iw==
+X-IronPort-AV: E=McAfee;i="6200,9189,9954"; a="258629503"
+X-IronPort-AV: E=Sophos;i="5.82,222,1613462400"; d="scan'208";a="258629503"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2021 08:36:27 -0700
+IronPort-SDR: YOFmNhdSD6rj5biwF6S8sP44DpEx2BRSevzpj+1MtSohxzvtIwMeYXkpeuewHzgOXrKPd0cZ7F
+ V8xmG/XyCDSw==
+X-IronPort-AV: E=Sophos;i="5.82,222,1613462400"; d="scan'208";a="615333128"
+Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
+ by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2021 08:36:26 -0700
+Date: Wed, 14 Apr 2021 08:36:26 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/papr_scm: Reduce error severity if nvdimm stats
+ inaccessible
+Message-ID: <20210414153625.GB1904484@iweiny-DESK2.sc.intel.com>
+References: <20210414124026.332472-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210414124026.332472-1-vaibhav@linux.ibm.com>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,43 +66,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Santosh Sivaraj <santosh@fossix.org>, linux-nvdimm@lists.01.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Segher Boessenkool
-> Sent: 14 April 2021 16:19
-...
-> > Could the kernel use GCC builtin atomic functions instead ?
-> >
-> > https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
->=20
-> Certainly that should work fine for the simpler cases that the atomic
-> operations are meant to provide.  But esp. for not-so-simple cases the
-> kernel may require some behaviour provided by the existing assembler
-> implementation, and not by the atomic builtins.
->=20
-> I'm not saying this cannot work, just that some serious testing will be
-> needed.  If it works it should be the best of all worlds, so then it is
-> a really good idea yes :-)
+On Wed, Apr 14, 2021 at 06:10:26PM +0530, Vaibhav Jain wrote:
+> Currently drc_pmem_qeury_stats() generates a dev_err in case
+> "Enable Performance Information Collection" feature is disabled from
+> HMC. The error is of the form below:
+> 
+> papr_scm ibm,persistent-memory:ibm,pmemory@44104001: Failed to query
+> 	 performance stats, Err:-10
+> 
+> This error message confuses users as it implies a possible problem
+> with the nvdimm even though its due to a disabled feature.
+> 
+> So we fix this by explicitly handling the H_AUTHORITY error from the
+> H_SCM_PERFORMANCE_STATS hcall and generating a warning instead of an
+> error, saying that "Performance stats in-accessible".
+> 
+> Fixes: 2d02bf835e57('powerpc/papr_scm: Fetch nvdimm performance stats from PHYP')
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/papr_scm.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+> index 835163f54244..9216424f8be3 100644
+> --- a/arch/powerpc/platforms/pseries/papr_scm.c
+> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> @@ -277,6 +277,9 @@ static ssize_t drc_pmem_query_stats(struct papr_scm_priv *p,
+>  		dev_err(&p->pdev->dev,
+>  			"Unknown performance stats, Err:0x%016lX\n", ret[0]);
+>  		return -ENOENT;
+> +	} else if (rc == H_AUTHORITY) {
+> +		dev_warn(&p->pdev->dev, "Performance stats in-accessible");
+> +		return -EPERM;
 
-I suspect they just add an extra layer of abstraction that makes it
-even more difficult to verify and could easily get broken by a compiler
-update (etc).
+Is this because of a disabled feature or because of permissions?
 
-The other issue is that the code needs to be correct with compiled
-with (for example) -O0.
-That could very easily break anything except the asm implementation
-if additional memory accesses and/or increased code size cause grief.
+Ira
 
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
-
+>  	} else if (rc != H_SUCCESS) {
+>  		dev_err(&p->pdev->dev,
+>  			"Failed to query performance stats, Err:%lld\n", rc);
+> -- 
+> 2.30.2
+> 
