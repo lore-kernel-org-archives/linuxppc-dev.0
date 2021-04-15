@@ -2,99 +2,109 @@ Return-Path: <SRS0=H68/=JM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 871CCC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 12:10:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C7CAC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 12:10:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9E456124B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 12:10:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9E456124B
+	by mail.kernel.org (Postfix) with ESMTPS id 9E1926124B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 12:10:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E1926124B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FLdT81mSHz3c2F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 22:10:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FLdTf0wnGz3bpQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Apr 2021 22:10:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=V2Y1g+NM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Su+YfmPD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=V2Y1g+NM; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=Su+YfmPD; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FLdSY6QJWz2yYn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 22:09:49 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13FC3thu183105; Thu, 15 Apr 2021 08:09:43 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FLdSv64Y5z30JD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2021 22:10:07 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13FC2Sbp086505; Thu, 15 Apr 2021 08:09:52 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=5ddDQ/clXi0X1sbC3zFmEZgrYe/+8ei9iOL/9N2fDIs=;
- b=V2Y1g+NMed0o+xFSGdCoEdE8Ap/uLlMNbIiw6fHblFSLvGi9i8CrN6aHr1fHvyt0FIa6
- CmTf6sRyrzsUUKkARIexkironG7vOORAlPC8vPrsUB/yx4PsCgxwtsOfMTLEvb7FeBK5
- lpG5ccwKxqVx6s1VIEaR9XRFtQTFG2EDbCgtMhYjMgd4/IlkjTsXB+eiimX9JeyRj1gl
- jxSneyaDWoXKg74tUV/xARQCh879dxhqRe5FdVnSXlP5XugG7xxUA/jJWhU8dibZeJWD
- FElLkGnXcvAG9rr83FebYjQO7EhJwS1hoSGGTi6kHtN2CW+OKpTxXydR1FU+gkrQKEvj sw== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0b-001b2d01.pphosted.com with ESMTP id 37x094gps3-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=mMPINFnXDEisgVDHiuKCEUfiCStJ7PqI/ecvCl27g50=;
+ b=Su+YfmPDRo2P8MCDrRYhWuRyNQ8bKNDZRpuNglNTUaegzZe2H6qNAG2xVUHGVs1bEigo
+ IQ6oIQ3dGVKIZDeL8J5LvCnZUlTYbkaWouqO1El8g+sx2LSVLFUHzPdn0S1Xu6KnWpVf
+ F/3ZB87FSH7qOUd5IJslxrZyPr9SmpxSEriPBpsEKyFX+YMWGVdIOGr0MjqCkN512B/J
+ rfzOuxkWV+Ic1duSOwUZooQSSyZ4XshCxOCmKQssvFhxdAw839HXPgnJmUH02fY9RRpl
+ gO4seMxcG378VPmHNhKcYFtPCy2v3UQOprHNhBOqrsOQZIqumdrliCki0HzbJxFfzxMF lg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37x4dkrwrw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 15 Apr 2021 08:09:42 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13FC898Q020784;
- Thu, 15 Apr 2021 12:09:41 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma02fra.de.ibm.com with ESMTP id 37u3n8j2hk-1
+ Thu, 15 Apr 2021 08:09:52 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13FC388l091932;
+ Thu, 15 Apr 2021 08:09:51 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 37x4dkrwr6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 15 Apr 2021 12:09:40 +0000
+ Thu, 15 Apr 2021 08:09:51 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13FC8cHJ014725;
+ Thu, 15 Apr 2021 12:09:49 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04ams.nl.ibm.com with ESMTP id 37u3n8uv54-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 15 Apr 2021 12:09:49 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13FC9cso12976570
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13FC9k3K46530924
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 15 Apr 2021 12:09:38 GMT
+ Thu, 15 Apr 2021 12:09:46 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3FBA6A4060;
- Thu, 15 Apr 2021 12:09:38 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C6CFAA4054;
+ Thu, 15 Apr 2021 12:09:46 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 04C01A405F;
- Thu, 15 Apr 2021 12:09:37 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 212C9A405B;
+ Thu, 15 Apr 2021 12:09:44 +0000 (GMT)
 Received: from saptagiri.in.ibm.com (unknown [9.85.74.6])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 15 Apr 2021 12:09:36 +0000 (GMT)
+ Thu, 15 Apr 2021 12:09:43 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/3] Reintroduce cpu_core_mask
-Date: Thu, 15 Apr 2021 17:39:31 +0530
-Message-Id: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] Revert "powerpc/topology: Update topology_core_cpumask"
+Date: Thu, 15 Apr 2021 17:39:33 +0530
+Message-Id: <20210415120934.232271-3-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.26.3
+In-Reply-To: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
+References: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: FQnFE0A_Vd_0_iwBV8VXLacZTJqExrJw
-X-Proofpoint-GUID: FQnFE0A_Vd_0_iwBV8VXLacZTJqExrJw
+X-Proofpoint-GUID: 88NmlV0E-O5GBppjdh40PKitS_vB5WI2
+X-Proofpoint-ORIG-GUID: 5jxpv2QamY_ZWJFi5vBiK3scZMMr0UxP
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-15_04:2021-04-15,
  2021-04-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 spamscore=0
- adultscore=0 malwarescore=0 mlxlogscore=999 suspectscore=0 phishscore=0
- priorityscore=1501 clxscore=1015 lowpriorityscore=0 impostorscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxscore=0 priorityscore=1501
+ bulkscore=0 malwarescore=0 phishscore=0 clxscore=1015 suspectscore=0
+ adultscore=0 spamscore=0 lowpriorityscore=0 mlxlogscore=999
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104060000 definitions=main-2104150081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,120 +117,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ Valentin Schneider <valentin.schneider@arm.com>, qemu-ppc@nongnu.org,
+ Cedric Le Goater <clg@kaod.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel had reported that
- QEMU is now unable to see requested topologies in a multi socket single
- NUMA node configurations.
- -smp 8,maxcpus=8,cores=2,threads=2,sockets=2
+Now that cpu_core_mask has been reintroduced, lets revert
+commit 4bce545903fa ("powerpc/topology: Update topology_core_cpumask")
 
-This patchset reintroduces cpu_core_mask so that users can see requested
-topologies while still maintaining the boot time of very large system
-configurations.
+Post this commit, lscpu should reflect topologies as requested by a user
+when a QEMU instance is launched with NUMA spanning multiple sockets.
 
-It includes caching the chip_id as suggested by Michael Ellermann
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: qemu-ppc@nongnu.org
+Cc: Cedric Le Goater <clg@kaod.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Valentin Schneider <valentin.schneider@arm.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Reported-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/topology.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-4 Threads/Core; 4 cores/Socket; 4 Sockets/Node, 2 Nodes in System
-  -numa node,nodeid=0,memdev=m0 \
-  -numa node,nodeid=1,memdev=m1 \
-  -smp 128,sockets=8,threads=4,maxcpus=128  \
-
-5.12.0-rc5 (or any kernel with commit 4ca234a9cbd7)
----------------------------------------------------
-srikar@cloudy:~$ lscpu
-Architecture:                    ppc64le
-Byte Order:                      Little Endian
-CPU(s):                          128
-On-line CPU(s) list:             0-127
-Thread(s) per core:              4
-Core(s) per socket:              16
-Socket(s):                       2                 <<<<<-----
-NUMA node(s):                    2
-Model:                           2.3 (pvr 004e 1203)
-Model name:                      POWER9 (architected), altivec supported
-Hypervisor vendor:               KVM
-Virtualization type:             para
-L1d cache:                       1 MiB
-L1i cache:                       1 MiB
-NUMA node0 CPU(s):               0-15,32-47,64-79,96-111
-NUMA node1 CPU(s):               16-31,48-63,80-95,112-127
---
-srikar@cloudy:~$ dmesg |grep smp
-[    0.010658] smp: Bringing up secondary CPUs ...
-[    0.424681] smp: Brought up 2 nodes, 128 CPUs
---
-
-5.12.0-rc5 + 3 patches
-----------------------
-srikar@cloudy:~$ lscpu
-Architecture:                    ppc64le
-Byte Order:                      Little Endian
-CPU(s):                          128
-On-line CPU(s) list:             0-127
-Thread(s) per core:              4
-Core(s) per socket:              4
-Socket(s):                       8    <<<<-----
-NUMA node(s):                    2
-Model:                           2.3 (pvr 004e 1203)
-Model name:                      POWER9 (architected), altivec supported
-Hypervisor vendor:               KVM
-Virtualization type:             para
-L1d cache:                       1 MiB
-L1i cache:                       1 MiB
-NUMA node0 CPU(s):               0-15,32-47,64-79,96-111
-NUMA node1 CPU(s):               16-31,48-63,80-95,112-127
---
-srikar@cloudy:~$ dmesg |grep smp
-[    0.010372] smp: Bringing up secondary CPUs ...
-[    0.417892] smp: Brought up 2 nodes, 128 CPUs
-
-5.12.0-rc5
-----------
-srikar@cloudy:~$  lscpu
-Architecture:                    ppc64le
-Byte Order:                      Little Endian
-CPU(s):                          1024
-On-line CPU(s) list:             0-1023
-Thread(s) per core:              8
-Core(s) per socket:              128
-Socket(s):                       1
-NUMA node(s):                    1
-Model:                           2.3 (pvr 004e 1203)
-Model name:                      POWER9 (architected), altivec supported
-Hypervisor vendor:               KVM
-Virtualization type:             para
-L1d cache:                       4 MiB
-L1i cache:                       4 MiB
-NUMA node0 CPU(s):               0-1023
-srikar@cloudy:~$ dmesg | grep smp
-[    0.027753 ] smp: Bringing up secondary CPUs ...
-[    2.315193 ] smp: Brought up 1 node, 1024 CPUs
-
-5.12.0-rc5 + 3 patches
-----------------------
-srikar@cloudy:~$ dmesg | grep smp
-[    0.027659 ] smp: Bringing up secondary CPUs ...
-[    2.532739 ] smp: Brought up 1 node, 1024 CPUs
-
-I also have booted and tested the kernels on PowerVM and PowerNV and
-even there I see a very negligible increase in the bringing up time of
-secondary CPUs
-
-Srikar Dronamraju (3):
-  powerpc/smp: Reintroduce cpu_core_mask
-  Revert "powerpc/topology: Update topology_core_cpumask"
-  powerpc/smp: Cache CPU to chip lookup
-
- arch/powerpc/include/asm/smp.h      |  6 ++++
- arch/powerpc/include/asm/topology.h |  2 +-
- arch/powerpc/kernel/prom.c          | 19 +++++++---
- arch/powerpc/kernel/smp.c           | 56 +++++++++++++++++++++++++----
- 4 files changed, 71 insertions(+), 12 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 3beeb030cd78..e4db64c0e184 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -126,7 +126,7 @@ static inline int cpu_to_coregroup_id(int cpu)
+ #define topology_physical_package_id(cpu)	(cpu_to_chip_id(cpu))
+ 
+ #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
+-#define topology_core_cpumask(cpu)	(cpu_cpu_mask(cpu))
++#define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
+ #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
+ 
+ #endif
 -- 
 2.25.1
 
