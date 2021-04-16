@@ -2,61 +2,85 @@ Return-Path: <SRS0=vApQ=JN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB04EC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 03:59:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84A78C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 04:10:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CD7461132
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 03:59:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CD7461132
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E9D0561153
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 04:10:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9D0561153
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FM2X569C3z3bt3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 13:59:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FM2mW3HcRz30Cs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 14:10:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=Z1c6C46e;
+	dkim=pass (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=W2jKOgDe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=cisco.com (client-ip=173.37.86.79; helo=rcdn-iport-8.cisco.com;
+ envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=Z1c6C46e; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FM2Wd2fq7z2yRK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Apr 2021 13:58:53 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4FM2WW5l0wz9sW4; Fri, 16 Apr 2021 13:58:47 +1000 (AEST)
+ unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
+ header.s=iport header.b=W2jKOgDe; dkim-atps=neutral
+Received: from rcdn-iport-8.cisco.com (rcdn-iport-8.cisco.com [173.37.86.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FM2ly0W66z2yqD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Apr 2021 14:09:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1618545527;
- bh=9BjlqH5r6weJwuCUXGxiH9uLf3jEAU4a8RvmtNKkjcM=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Z1c6C46e7WHByMXLXbu8Wfek2AkkZjsEHT27fdMAzHfCfWgFxelOGPgE9JrvXexw/
- VohTQTKych58VMNSJoWtuBdyZX8IYJiGPL8oBobsiAGtBdaJEFXIOPEJ9MybtDu6Vy
- pxAzxUG3JBQb77RD2xT+pJmuPaxR2pIAkb0ReOqA=
-Date: Fri, 16 Apr 2021 13:21:34 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc/smp: Reintroduce cpu_core_mask
-Message-ID: <YHkCvuNfZLQRxjU8@yekko.fritz.box>
-References: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
- <20210415120934.232271-2-srikar@linux.vnet.ibm.com>
+ d=cisco.com; i=@cisco.com; l=4282; q=dns/txt; s=iport;
+ t=1618546174; x=1619755774;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=qPo8os07gANgYc92EpzGmy/chN2RQQ3R6N3KjLTucyI=;
+ b=W2jKOgDe08BrxyXZiLsyoMe246InNDg0LneYmSurYtCGBMWJFtuZn/NI
+ mQaOfAaL2BAG1UEvVAIFNdcBBot2TDUyTwIhpabOltjI22EKleEqFxF7D
+ EFdndCmBvOSevzk/goc2uJIlaCWeeQKXP8BDIrLg8Ro0rzy1zd943OzsN I=;
+IronPort-HdrOrdr: =?us-ascii?q?A9a23=3AsIMqfqGs638gs2jIpLqEdseALOonbusQ8z?=
+ =?us-ascii?q?AX/mp6ICY4TuWzkceykPMHkSLugDEKV3063fyGMq+MQXTTnKQFg7U5EL++UG?=
+ =?us-ascii?q?Dd1leAA5pl6eLZqQHIPw3b2qpj2bx7c654YeeAbmRSqcrh+gG3H5IBzbC8kZ?=
+ =?us-ascii?q?yAvuvVw3dzQQwCUcgJhDtRMBqREUF9WWB9aqYRKZz03Kd6jgvlXXwWa8ihb0?=
+ =?us-ascii?q?NkY8Hz4/vWiZnhfRkKQzkg5QXmt0LN1JfKVz6FwxwZTzRDhY0HzFGAuQn46q?=
+ =?us-ascii?q?K/2svLryPh6w=3D=3D?=
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0BMAAAiDXlg/4sNJK1aHAEBAQEBAQc?=
+ =?us-ascii?q?BARIBAQQEAQGBfgcBAQsBAYIpgU0BOY0YiU2BDJligXwLAQEBDzQEAQGEUIF?=
+ =?us-ascii?q?1AiU0CQ4CAwEBDAEBBQEBAQIBBgRxE4VdQxYBhiMBRoE+AYMDgwisCIIrgQG?=
+ =?us-ascii?q?IM4FEgTkBiGt0hBwcgUlCgROCbIstBIJABQEBgQ8HHoI4QpwtgX+KS5Figxa?=
+ =?us-ascii?q?BJptRDyOkfJUYo2KBVDqBWTMaCBsVgyVPGQ6cLAFbIQNnAgYKAQEDCYlOg0A?=
+ =?us-ascii?q?BAQ?=
+X-IronPort-AV: E=Sophos;i="5.82,226,1613433600"; d="scan'208";a="884877150"
+Received: from alln-core-6.cisco.com ([173.36.13.139])
+ by rcdn-iport-8.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
+ 16 Apr 2021 04:09:25 +0000
+Received: from zorba.cisco.com ([10.24.7.67])
+ by alln-core-6.cisco.com (8.15.2/8.15.2) with ESMTP id 13G49OHf016753;
+ Fri, 16 Apr 2021 04:09:24 GMT
+From: Daniel Walker <danielwa@cisco.com>
+To: Will Deacon <will@kernel.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Rob Herring <robh@kernel.org>,
+ Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+ Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kbuild@vger.kernel.org
+Subject: [PATCH 0/8] generic command line v4
+Date: Thu, 15 Apr 2021 21:09:11 -0700
+Message-Id: <20210416040924.2882771-1-danielwa@cisco.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="rQ4uZrbDJBqhLe/p"
-Content-Disposition: inline
-In-Reply-To: <20210415120934.232271-2-srikar@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-Outbound-SMTP-Client: 10.24.7.67, [10.24.7.67]
+X-Outbound-Node: alln-core-6.cisco.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,215 +92,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- Valentin Schneider <valentin.schneider@arm.com>, qemu-ppc@nongnu.org,
- Cedric Le Goater <clg@kaod.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ingo Molnar <mingo@kernel.org>
+Cc: linux-efi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---rQ4uZrbDJBqhLe/p
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+v4 release changes
 
-On Thu, Apr 15, 2021 at 05:39:32PM +0530, Srikar Dronamraju wrote:
-> Daniel reported that with Commit 4ca234a9cbd7 ("powerpc/smp: Stop
-> updating cpu_core_mask") QEMU was unable to set single NUMA node SMP
-> topologies such as:
->  -smp 8,maxcpus=3D8,cores=3D2,threads=3D2,sockets=3D2
->  i.e he expected 2 sockets in one NUMA node.
+* Updated insert-sys-cert tool to change command line symbols after
+  compilation.
 
-Well, strictly speaking, you can still set that toplogy in qemu but a
-PAPR guest with that commit will show as having 1 socket in lscpu and
-similar things.
+	This tool is used to release binary kernels internally to companies
+	and then later insert certificates for each product by consumers of
+	the binary kernel. Cisco uses this tool for this purpose.
 
-Basically, this is because PAPR has no meaningful distinction between
-cores and sockets.  So it's kind of a cosmetic problem, but it is a
-user-unexpected behaviour that it would be nice to avoid if it's not
-excessively difficult.
+	Cisco has a similar need for the command line to be modified on a
+	binary released kernels similar to how certificates are setup.
 
-> The above commit helped to reduce boot time on Large Systems for
-> example 4096 vCPU single socket QEMU instance. PAPR is silent on
-> having more than one socket within a NUMA node.
->=20
-> cpu_core_mask and cpu_cpu_mask for any CPU would be same unless the
-> number of sockets is different from the number of NUMA nodes.
+* Added global symbols to hold append and prepend values.
 
-Number of sockets being different from number of NUMA nodes is routine
-in qemu, and I don't think it's something we should enforce.
+	These changes follow the system certificate code to allow the
+	insert-sys-cert tool to be used.
 
-> One option is to reintroduce cpu_core_mask but use a slightly
-> different method to arrive at the cpu_core_mask. Previously each CPU's
-> chip-id would be compared with all other CPU's chip-id to verify if
-> both the CPUs were related at the chip level. Now if a CPU 'A' is
-> found related / (unrelated) to another CPU 'B', all the thread
-> siblings of 'A' and thread siblings of 'B' are automatically marked as
-> related / (unrelated).
->=20
-> Also if a platform doesn't support ibm,chip-id property, i.e its
-> cpu_to_chip_id returns -1, cpu_core_map holds a copy of
-> cpu_cpu_mask().
+* Added a test case to confirm functionality.
 
-Yeah, the other weirdness here is that ibm,chip-id isn't a PAPR
-property at all - it was added for powernv.  We then added it to qemu
-for PAPR guests because that was the way at the time to get the guest
-to advertise the expected number of sockets.  It therefore basically
-*only* exists on PAPR/qemu for that purpose, so if it's not serving it
-we need to come up with something else.
+	Seemed sensible to add this to make sure everything is working.
 
->=20
-> Fixes: 4ca234a9cbd7 ("powerpc/smp: Stop updating cpu_core_mask")
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: qemu-ppc@nongnu.org
-> Cc: Cedric Le Goater <clg@kaod.org>
-> Cc: David Gibson <david@gibson.dropbear.id.au>
-> Cc: Nathan Lynch <nathanl@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Valentin Schneider <valentin.schneider@arm.com>
-> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-> Reported-by: Daniel Henrique Barboza <danielhb413@gmail.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/smp.h |  5 +++++
->  arch/powerpc/kernel/smp.c      | 39 ++++++++++++++++++++++++++++------
->  2 files changed, 37 insertions(+), 7 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/sm=
-p.h
-> index 7a13bc20f0a0..47081a9e13ca 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -121,6 +121,11 @@ static inline struct cpumask *cpu_sibling_mask(int c=
-pu)
->  	return per_cpu(cpu_sibling_map, cpu);
->  }
-> =20
-> +static inline struct cpumask *cpu_core_mask(int cpu)
-> +{
-> +	return per_cpu(cpu_core_map, cpu);
-> +}
-> +
->  static inline struct cpumask *cpu_l2_cache_mask(int cpu)
->  {
->  	return per_cpu(cpu_l2_cache_map, cpu);
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 5a4d59a1070d..5c7ce1d50631 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1057,17 +1057,12 @@ void __init smp_prepare_cpus(unsigned int max_cpu=
-s)
->  				local_memory_node(numa_cpu_lookup_table[cpu]));
->  		}
->  #endif
-> -		/*
-> -		 * cpu_core_map is now more updated and exists only since
-> -		 * its been exported for long. It only will have a snapshot
-> -		 * of cpu_cpu_mask.
-> -		 */
-> -		cpumask_copy(per_cpu(cpu_core_map, cpu), cpu_cpu_mask(cpu));
->  	}
-> =20
->  	/* Init the cpumasks so the boot CPU is related to itself */
->  	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
->  	cpumask_set_cpu(boot_cpuid, cpu_l2_cache_mask(boot_cpuid));
-> +	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
-> =20
->  	if (has_coregroup_support())
->  		cpumask_set_cpu(boot_cpuid, cpu_coregroup_mask(boot_cpuid));
-> @@ -1408,6 +1403,9 @@ static void remove_cpu_from_masks(int cpu)
->  			set_cpus_unrelated(cpu, i, cpu_smallcore_mask);
->  	}
-> =20
-> +	for_each_cpu(i, cpu_core_mask(cpu))
-> +		set_cpus_unrelated(cpu, i, cpu_core_mask);
-> +
->  	if (has_coregroup_support()) {
->  		for_each_cpu(i, cpu_coregroup_mask(cpu))
->  			set_cpus_unrelated(cpu, i, cpu_coregroup_mask);
-> @@ -1468,8 +1466,11 @@ static void update_coregroup_mask(int cpu, cpumask=
-_var_t *mask)
-> =20
->  static void add_cpu_to_masks(int cpu)
->  {
-> +	struct cpumask *(*submask_fn)(int) =3D cpu_sibling_mask;
->  	int first_thread =3D cpu_first_thread_sibling(cpu);
-> +	int chip_id =3D cpu_to_chip_id(cpu);
->  	cpumask_var_t mask;
-> +	bool ret;
->  	int i;
-> =20
->  	/*
-> @@ -1485,12 +1486,36 @@ static void add_cpu_to_masks(int cpu)
->  	add_cpu_to_smallcore_masks(cpu);
-> =20
->  	/* In CPU-hotplug path, hence use GFP_ATOMIC */
-> -	alloc_cpumask_var_node(&mask, GFP_ATOMIC, cpu_to_node(cpu));
-> +	ret =3D alloc_cpumask_var_node(&mask, GFP_ATOMIC, cpu_to_node(cpu));
->  	update_mask_by_l2(cpu, &mask);
-> =20
->  	if (has_coregroup_support())
->  		update_coregroup_mask(cpu, &mask);
-> =20
-> +	if (chip_id =3D=3D -1 || !ret) {
-> +		cpumask_copy(per_cpu(cpu_core_map, cpu), cpu_cpu_mask(cpu));
-> +		goto out;
-> +	}
-> +
-> +	if (shared_caches)
-> +		submask_fn =3D cpu_l2_cache_mask;
-> +
-> +	/* Update core_mask with all the CPUs that are part of submask */
-> +	or_cpumasks_related(cpu, cpu, submask_fn, cpu_core_mask);
-> +
-> +	/* Skip all CPUs already part of current CPU core mask */
-> +	cpumask_andnot(mask, cpu_online_mask, cpu_core_mask(cpu));
-> +
-> +	for_each_cpu(i, mask) {
-> +		if (chip_id =3D=3D cpu_to_chip_id(i)) {
-> +			or_cpumasks_related(cpu, i, submask_fn, cpu_core_mask);
-> +			cpumask_andnot(mask, mask, submask_fn(i));
-> +		} else {
-> +			cpumask_andnot(mask, mask, cpu_core_mask(i));
-> +		}
-> +	}
-> +
-> +out:
->  	free_cpumask_var(mask);
->  }
-> =20
+* Dropped powerpc changes
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	Christophe Leroy has reservations about the features for powerpc. I
+	don't think his reservations are founded, and these changes should
+	fully work on powerpc. However, I dropped these changes so Christophe
+	can have more time to get comfortable with the changes.
 
---rQ4uZrbDJBqhLe/p
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
+Enjoy!
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmB5ArwACgkQbDjKyiDZ
-s5INsw/9HPEYbCv++x2h8Ofp8MqOfenTx8DmqR6/G2Qmgk8mxu6NMgD4S80o7CfV
-bh43AHmL7SiASf91yngA6+vLfCxZOGim/l2CP1i/hSc0EjEvEzYVOl+uVykkpBS+
-oMWaXYWkuWmj4kBb3z1NHHIbppxZ90GwkvaD1SI7y80tTscIW9KJ5udUW+nFURxX
-drQ+7LZl6TSYWGiRPoK9j/N4z4UHxZ/gvnxexEwGGj45LxU5LxMux0O8cX9UxMB2
-CylOOqDrX+YlLl3YVjMZb8JuME+r+Zh2yoWAZiQzxBnE82qE9eMozVIq+9NgNxgN
-S9SaTrb2B2yLCSIX6KndZi8vaU7QIW3/dbHjtBV0KCNN/ZFlPnaK6E7rM+gXxzG1
-H1+k0rEEYocStfhX6Sp5uNIE15KwYXCgRU5CFfGOYa2K256YBV5h4Vn+AXPjD8EG
-bFt8s7jxKi4q+3Li7ap+T/PAY153yXGJxqp9D3VTByxOj0VN/fp0V2/Tp3VrqITE
-oxwhenMqEKHEWvaJOSQdayk0JZW6AsGSOZ+ShUuy884jKFRrnDrMvt26HVil9WYg
-dDzG0HVWG9ENuexj3kb16FOxhT3mh49SV/C39EDHEyEjiQmAz2reiaiJOzHB2eEb
-3rgyJpL0uAlVxjr6mKYQ1rz3YHyIRnJy1QKzFs0i5bfgjiUidx8=
-=usdS
------END PGP SIGNATURE-----
 
---rQ4uZrbDJBqhLe/p--
+Daniel Walker (8):
+  CMDLINE: add generic builtin command line
+  scripts: insert-sys-cert: add command line insert capability
+  scripts: insert-sys-cert: change name to insert-symbol
+  CMDLINE: mips: convert to generic builtin command line
+  drivers: firmware: efi: libstub: enable generic commandline
+  CMDLINE: x86: convert to generic builtin command line
+  of: allow sending a NULL value to early_init_dt_scan_chosen
+  CMDLINE: arm64: convert to generic builtin command line
+
+ arch/arm64/Kconfig                            |  33 +--
+ arch/arm64/include/asm/setup.h                |   2 +
+ arch/arm64/kernel/idreg-override.c            |   9 +-
+ arch/mips/Kconfig                             |   4 +-
+ arch/mips/Kconfig.debug                       |  44 ----
+ arch/mips/configs/ar7_defconfig               |   9 +-
+ arch/mips/configs/bcm47xx_defconfig           |   8 +-
+ arch/mips/configs/bcm63xx_defconfig           |  15 +-
+ arch/mips/configs/bmips_be_defconfig          |  11 +-
+ arch/mips/configs/bmips_stb_defconfig         |  11 +-
+ arch/mips/configs/capcella_defconfig          |  11 +-
+ arch/mips/configs/ci20_defconfig              |  10 +-
+ arch/mips/configs/cu1000-neo_defconfig        |  10 +-
+ arch/mips/configs/cu1830-neo_defconfig        |  10 +-
+ arch/mips/configs/e55_defconfig               |   4 +-
+ arch/mips/configs/generic_defconfig           |   6 +-
+ arch/mips/configs/gpr_defconfig               |  18 +-
+ arch/mips/configs/loongson3_defconfig         |  13 +-
+ arch/mips/configs/mpc30x_defconfig            |   7 +-
+ arch/mips/configs/tb0219_defconfig            |   7 +-
+ arch/mips/configs/tb0226_defconfig            |   7 +-
+ arch/mips/configs/tb0287_defconfig            |   7 +-
+ arch/mips/configs/workpad_defconfig           |  11 +-
+ arch/mips/include/asm/setup.h                 |   2 +
+ arch/mips/kernel/relocate.c                   |  17 +-
+ arch/mips/kernel/setup.c                      |  36 +--
+ arch/mips/pic32/pic32mzda/early_console.c     |   2 +-
+ arch/mips/pic32/pic32mzda/init.c              |   3 +-
+ arch/x86/Kconfig                              |  44 +---
+ arch/x86/kernel/setup.c                       |  18 +-
+ .../firmware/efi/libstub/efi-stub-helper.c    |  29 +++
+ drivers/firmware/efi/libstub/efi-stub.c       |   9 +
+ drivers/firmware/efi/libstub/efistub.h        |   1 +
+ drivers/firmware/efi/libstub/x86-stub.c       |  13 +-
+ drivers/of/fdt.c                              |  44 ++--
+ include/linux/cmdline.h                       | 103 ++++++++
+ init/Kconfig                                  |  78 ++++++
+ lib/Kconfig                                   |   4 +
+ lib/Makefile                                  |   3 +
+ lib/generic_cmdline.S                         |  53 ++++
+ lib/test_cmdline1.c                           | 139 ++++++++++
+ scripts/Makefile                              |   2 +-
+ .../{insert-sys-cert.c => insert-symbol.c}    | 243 ++++++++++++------
+ 43 files changed, 716 insertions(+), 394 deletions(-)
+ create mode 100644 include/linux/cmdline.h
+ create mode 100644 lib/generic_cmdline.S
+ create mode 100644 lib/test_cmdline1.c
+ rename scripts/{insert-sys-cert.c => insert-symbol.c} (72%)
+
+-- 
+2.25.1
+
