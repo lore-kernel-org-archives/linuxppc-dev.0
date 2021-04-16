@@ -2,71 +2,68 @@ Return-Path: <SRS0=vApQ=JN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 844CBC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 08:53:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99387C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 09:06:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1D2D61107
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 08:53:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1D2D61107
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=walle.cc
+	by mail.kernel.org (Postfix) with ESMTPS id DA29F6115B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 09:06:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA29F6115B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FM93X1Gplz3c2x
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 18:53:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FM9L92Wcfz3c3c
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Apr 2021 19:06:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=EUtjzMP9;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=N5K+P5uI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=walle.cc (client-ip=176.9.125.105; helo=ssl.serverraum.org;
- envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=EUtjzMP9; 
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=N5K+P5uI; 
  dkim-atps=neutral
-Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FM7Ch11WFz2yjL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Apr 2021 17:30:21 +1000 (AEST)
-Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id 49EE022172;
- Fri, 16 Apr 2021 09:29:59 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1618558211;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=PbMduC+y8U2TnYB1yFy6DIbM598uMx2+jq28dZXHweQ=;
- b=EUtjzMP9GqVLqpUQjKAWkwn0o1sw8EWtxSv8YMRSVD0469vqt05Io1/SVJgobjz7HB/r6y
- Vjk/Jn7gR9cbQkm/qxqSnOY+yQWCWcha3iHS/TQBkEhMmvcdPKJxGg9UyvHCIIkZANcb/g
- 63rLgVagJ+mEmiydqQVNecyvEgF/m50=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FM9Kh4njLz3bSv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Apr 2021 19:05:43 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FM9KY0PN8z9sRR;
+ Fri, 16 Apr 2021 19:05:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1618563938;
+ bh=ODI74klkPteUtUE2RViGCzX+1GpV6bkKxunEM80VHEQ=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=N5K+P5uI8zLBgHhpJPdrouDzj3Tny9rxGnD0pO2rxvh6hAcHhkrH2GnJzAHuxkDUY
+ QhdfK8K1Z0Pumw3BaNMxLkURu41hYxQScn1jm+DC+Y0/YWQnJDQnggSf+N6VK9MTgy
+ xPXEKynNnpM618/eFJ4jzWxZJluP/fyzeYrFH3X6FVIhmKUAHFv5TtBR+JNIgx7IY9
+ miVOR70+UkJncVLS75fElHdIOMFkcnkH1Vw1y2NNvol0YkXopOT5kVxkpBbMoBq1Po
+ /ksN+pHOxpvoTo5Qrp14GAUQXaHJfklM7hV8vLg8FT/wX73M/5gvI1JxiRSBYFh26h
+ peuneCnGS+9Gg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Axtens <dja@axtens.net>, Lakshmi Ramasubramanian
+ <nramas@linux.microsoft.com>, robh@kernel.org, dan.carpenter@oracle.com
+Subject: Re: [PATCH] powerpc: Initialize local variable fdt to NULL in
+ elf64_load()
+In-Reply-To: <87eefag241.fsf@linkitivity.dja.id.au>
+References: <20210415191437.20212-1-nramas@linux.microsoft.com>
+ <4edb1433-4d1e-5719-ec9c-fd232b7cf71f@linux.microsoft.com>
+ <87eefag241.fsf@linkitivity.dja.id.au>
+Date: Fri, 16 Apr 2021 19:05:32 +1000
+Message-ID: <87tuo6eh0j.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Fri, 16 Apr 2021 09:29:59 +0200
-From: Michael Walle <michael@walle.cc>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH net-next v4 2/2] of: net: fix of_get_mac_addr_nvmem() for
- non-platform devices
-In-Reply-To: <730d603b12e590c56770309b4df2bd668f7afbe3.camel@kernel.crashing.org>
-References: <20210412174718.17382-1-michael@walle.cc>
- <20210412174718.17382-3-michael@walle.cc>
- <730d603b12e590c56770309b4df2bd668f7afbe3.camel@kernel.crashing.org>
-User-Agent: Roundcube Webmail/1.4.11
-Message-ID: <8157eba9317609294da80472622deb28@walle.cc>
-X-Sender: michael@walle.cc
-X-Mailman-Approved-At: Fri, 16 Apr 2021 18:53:01 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,130 +75,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>,
- Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>,
- linux-stm32@st-md-mailman.stormreply.com, Jerome Brunet <jbrunet@baylibre.com>,
- Neil Armstrong <narmstrong@baylibre.com>,
- Michal Simek <michal.simek@xilinx.com>, Jose Abreu <joabreu@synopsys.com>,
- NXP Linux Team <linux-imx@nxp.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
- Vadym Kochan <vkochan@marvell.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- Lorenzo Bianconi <lorenzo.bianconi83@gmail.com>, linux-omap@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Vladimir Oltean <olteanv@gmail.com>,
- Claudiu Beznea <claudiu.beznea@microchip.com>,
- =?UTF-8?Q?J=C3=A9r=C3=B4me?= =?UTF-8?Q?_Pouiller?=
- <jerome.pouiller@silabs.com>,
- Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
- Chris Snook <chris.snook@gmail.com>, Frank Rowand <frowand.list@gmail.com>,
- Gregory Clement <gregory.clement@bootlin.com>,
- Madalin Bucur <madalin.bucur@nxp.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Murali Karicheri <m-karicheri2@ti.com>, Yisen Zhuang <yisen.zhuang@huawei.com>,
- Alexandre Torgue <alexandre.torgue@st.com>, Wingman Kwok <w-kwok2@ti.com>,
- Sean Wang <sean.wang@mediatek.com>, Maxime Ripard <mripard@kernel.org>,
- Claudiu Manoil <claudiu.manoil@nxp.com>, linux-amlogic@lists.infradead.org,
- Kalle Valo <kvalo@codeaurora.org>, Mirko Lindner <mlindner@marvell.com>,
- Fugang Duan <fugang.duan@nxp.com>,
- Bryan Whitehead <bryan.whitehead@microchip.com>, ath9k-devel@qca.qualcomm.com,
- UNGLinuxDriver@microchip.com, Taras Chornyi <tchornyi@marvell.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Kevin Hilman <khilman@baylibre.com>, Heiner Kallweit <hkallweit1@gmail.com>,
- Andreas Larsson <andreas@gaisler.com>,
- Giuseppe Cavallaro <peppe.cavallaro@st.com>,
- Fabio Estevam <festevam@gmail.com>, Stanislaw Gruszka <stf_xl@wp.pl>,
- Florian Fainelli <f.fainelli@gmail.com>, linux-staging@lists.linux.dev,
- Chen-Yu Tsai <wens@csie.org>, bcm-kernel-feedback-list@broadcom.com,
- linux-arm-kernel@lists.infradead.org,
- Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>,
- Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>, John Crispin <john@phrozen.org>,
- Salil Mehta <salil.mehta@huawei.com>,
- Sergei Shtylyov <sergei.shtylyov@gmail.com>, linux-oxnas@groups.io,
- Shawn Guo <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>,
- Helmut Schaa <helmut.schaa@googlemail.com>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- linux-renesas-soc@vger.kernel.org, Ryder Lee <ryder.lee@mediatek.com>,
- Russell King <linux@armlinux.org.uk>, Hauke Mehrtens <hauke@hauke-m.de>,
- Jakub Kicinski <kuba@kernel.org>, Vivien Didelot <vivien.didelot@gmail.com>,
- Sunil Goutham <sgoutham@marvell.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>,
- Jernej Skrabec <jernej.skrabec@siol.net>, netdev@vger.kernel.org,
- Nicolas Ferre <nicolas.ferre@microchip.com>, Li Yang <leoyang.li@nxp.com>,
- Stephen Hemminger <stephen@networkplumber.org>, Vinod Koul <vkoul@kernel.org>,
- Joyce Ooi <joyce.ooi@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Felix Fietkau <nbd@nbd.name>
+Cc: devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ kbuild-all@lists.01.org, bauerman@linux.ibm.com, lkp@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am 2021-04-16 05:24, schrieb Benjamin Herrenschmidt:
-> On Mon, 2021-04-12 at 19:47 +0200, Michael Walle wrote:
->> 
->>  /**
->>   * of_get_phy_mode - Get phy mode for given device_node
->> @@ -59,15 +60,39 @@ static int of_get_mac_addr(struct device_node *np, 
->> const char *name, u8 *addr)
->>  static int of_get_mac_addr_nvmem(struct device_node *np, u8 *addr)
->>  {
->>         struct platform_device *pdev = of_find_device_by_node(np);
->> +       struct nvmem_cell *cell;
->> +       const void *mac;
->> +       size_t len;
->>         int ret;
->> 
->> -       if (!pdev)
->> -               return -ENODEV;
->> +       /* Try lookup by device first, there might be a 
->> nvmem_cell_lookup
->> +        * associated with a given device.
->> +        */
->> +       if (pdev) {
->> +               ret = nvmem_get_mac_address(&pdev->dev, addr);
->> +               put_device(&pdev->dev);
->> +               return ret;
->> +       }
->> +
-> 
-> This smells like the wrong band aid :)
-> 
-> Any struct device can contain an OF node pointer these days.
+Daniel Axtens <dja@axtens.net> writes:
+>> On 4/15/21 12:14 PM, Lakshmi Ramasubramanian wrote:
+>>
+>> Sorry - missed copying device-tree and powerpc mailing lists.
+>>
+>>> There are a few "goto out;" statements before the local variable "fdt"
+>>> is initialized through the call to of_kexec_alloc_and_setup_fdt() in
+>>> elf64_load(). This will result in an uninitialized "fdt" being passed
+>>> to kvfree() in this function if there is an error before the call to
+>>> of_kexec_alloc_and_setup_fdt().
+>>> 
+>>> Initialize the local variable "fdt" to NULL.
+>>>
+> I'm a huge fan of initialising local variables! But I'm struggling to
+> find the code path that will lead to an uninit fdt being returned...
+>
+> The out label reads in part:
+>
+> 	/* Make kimage_file_post_load_cleanup free the fdt buffer for us. */
+> 	return ret ? ERR_PTR(ret) : fdt;
+>
+> As far as I can tell, any time we get a non-zero ret, we're going to
+> return an error pointer rather than the uninitialised value...
+>
+> (btw, it does look like we might leak fdt if we have an error after we
+> successfully kmalloc it.)
+>
+> Am I missing something? Can you link to the report for the kernel test
+> robot or from Dan? 
+>
+> FWIW, I think it's worth including this patch _anyway_ because initing
+> local variables is good practice, but I'm just not sure on the
+> justification.
 
-But not all nodes might have an associated device, see DSA for example.
-And as the name suggests of_get_mac_address() operates on a node. So
-if a driver calls of_get_mac_address() it should work on the node. What
-is wrong IMHO, is that the ethernet drivers where the corresponding 
-board
-has a nvmem_cell_lookup registered is calling of_get_mac_address(node).
-It should rather call eth_get_mac_address(dev) in the first place.
+Why is it good practice?
 
-One would need to figure out if there is an actual device (with an
-assiciated of_node), then call eth_get_mac_address(dev) and if there
-isn't a device call of_get_mac_address(node).
+It defeats -Wuninitialized. So you're guaranteed to be returning
+something initialised, but not necessarily initialised to the right
+value.
 
-But I don't know if that is easy to figure out. Well, one could start
-with just the device where nvmem_cell_lookup is used. Then we could
-drop the workaround above.
+In a case like this NULL seems like a safe choice, but it's still wrong.
+The function is meant to return a pointer to the successfully allocated
+fdt, or an ERR_PTR() value. NULL is neither of those.
 
-> This seems all backwards. I think we are dealing with bad evolution.
-> 
-> We need to do a lookup for the device because we get passed an of_node.
-> We should just get passed a device here... or rather stop calling
-> of_get_mac_addr() from all those drivers and instead call
-> eth_platform_get_mac_address() which in turns calls of_get_mac_addr().
-> 
-> Then the nvmem stuff gets put in eth_platform_get_mac_address().
-> 
-> of_get_mac_addr() becomes a low-level thingy that most drivers don't
-> care about.
+I agree there are security reasons that initialising stack variables is
+desirable, but I think that should be handled by the compiler, not at
+the source level.
 
-The NVMEM thing is just another (optional) way how the MAC address
-is fetched from the device tree. Thus, if the drivers have the
-of_get_mac_address() call they should automatically get the NVMEM
-method, too.
-
--michael
+cheers
