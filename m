@@ -2,86 +2,78 @@ Return-Path: <SRS0=JxsT=JO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8E2EC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 16:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6674BC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 17:31:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DCB460234
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 16:40:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DCB460234
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=ti.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7AF5E6109F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 17:31:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AF5E6109F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FMzNJ4X1Sz3c6C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 02:40:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FN0VJ5xcKz30Hp
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 03:31:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256 header.s=ti-com-17Q1 header.b=q6CHJQ5y;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pokeBsO6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=ti.com
- (client-ip=198.47.19.141; helo=fllv0015.ext.ti.com;
- envelope-from=grygorii.strashko@ti.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256
- header.s=ti-com-17Q1 header.b=q6CHJQ5y; 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=pokeBsO6; 
  dkim-atps=neutral
-X-Greylist: delayed 112366 seconds by postgrey-1.36 at boromir;
- Sun, 18 Apr 2021 02:40:22 AEST
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FMzMp5STPz302y
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Apr 2021 02:40:21 +1000 (AEST)
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
- by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 13G9QoXq061900;
- Fri, 16 Apr 2021 04:26:50 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
- s=ti-com-17Q1; t=1618565210;
- bh=iUN+ZAwoZO98VUtAbHnorakjrh71xOPMrXkAMJ4Hqpo=;
- h=Subject:To:CC:References:From:Date:In-Reply-To;
- b=q6CHJQ5yHhCUxTvsb7LWnrHojwq4z5fdGhcq05XBA0YlrsKJOlZL44mFXdrMXAW0R
- wUKB5uUpmeYwcbTk0M0RI9dOZ3CPFoP6cgHnph+X7GsjlxLhWiVAP157Q4A/cGg0Yj
- nGxzGQi4XUQ1CBnf2HhNuMpn9s6wtsVxUbfTVjAk=
-Received: from DLEE103.ent.ti.com (dlee103.ent.ti.com [157.170.170.33])
- by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 13G9Qotj047995
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 16 Apr 2021 04:26:50 -0500
-Received: from DLEE106.ent.ti.com (157.170.170.36) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2176.2; Fri, 16
- Apr 2021 04:26:49 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE106.ent.ti.com
- (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2176.2 via
- Frontend Transport; Fri, 16 Apr 2021 04:26:49 -0500
-Received: from [10.250.100.73] (ileax41-snat.itg.ti.com [10.172.224.153])
- by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 13G9QjO8101592;
- Fri, 16 Apr 2021 04:26:46 -0500
-Subject: Re: Bogus struct page layout on 32-bit
-To: Ilias Apalodimas <ilias.apalodimas@linaro.org>, Jesper Dangaard Brouer
- <brouer@redhat.com>, Christoph Hellwig <hch@lst.de>
-References: <20210409185105.188284-3-willy@infradead.org>
- <202104100656.N7EVvkNZ-lkp@intel.com>
- <20210410024313.GX2531743@casper.infradead.org>
- <20210410082158.79ad09a6@carbon>
- <CAC_iWjLXZ6-hhvmvee6r4R_N64u-hrnLqE_CSS1nQk+YaMQQnA@mail.gmail.com>
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Message-ID: <ab9f1a6c-4099-2b59-457d-fcc45d2396f4@ti.com>
-Date: Fri, 16 Apr 2021 12:26:44 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FN0Tp6jNGz301F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Apr 2021 03:30:38 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D56226128B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Apr 2021 17:30:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1618680635;
+ bh=ugaFr7ubcYoZlftrOW8+is8PkeVPg/pgdCmBuE+ol64=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=pokeBsO6dVRMBkqi8/yu+5t2S6RsKZsuEFRWuOmUllxciYCV/hKsZJPlPIFAn+dFS
+ Lhbp0UYxa+8GNR0jx5rxoIRI19RblhevJhFutJTxtVnnBXTDHcOBAJ9YrYRvhz/ZIQ
+ L0jcpMc04X7RUawJc+GPJ09O1vUXNSxv8aJIKKiK0DnoePGq/How3WpglmniU4DxaZ
+ aM3UgZ/ri2h3v7xS4jm9thXDeLzXtS9YuOOLqr9ghK8DfiZ0bXj/XZNQjjHq4NjZNU
+ iM2DFOrqUDZJrOTKy/CU0rm/zjTn1+nt9fX5AHG1CX2cZw6XqnfgnhxJ9sHCr3nBMG
+ 5Yn65E7dZ6PvA==
+Received: by mail-wm1-f46.google.com with SMTP id
+ y20-20020a1c4b140000b029011f294095d3so18173918wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Apr 2021 10:30:35 -0700 (PDT)
+X-Gm-Message-State: AOAM532aHYxukQ/iAzHZl6ac1bIsc708qW2vrXAOTC50uDhRVRJ12L3V
+ Zmia/M8/KEgz3jKIukNpy27pxvIRkkKQNIvObMM=
+X-Google-Smtp-Source: ABdhPJx5c7/qiwMYT0ir136uPjUzW1fYOXrUhmuWfobdjxZ7ZRW1mvPQs0zb5XctbTVKp2LKwzYcR2xXWnxiB9rv6sM=
+X-Received: by 2002:a7b:c14a:: with SMTP id z10mr13072983wmi.75.1618680634529; 
+ Sat, 17 Apr 2021 10:30:34 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAC_iWjLXZ6-hhvmvee6r4R_N64u-hrnLqE_CSS1nQk+YaMQQnA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20210411103318.GC2531743@casper.infradead.org>
+ <20210412011532.GG2531743@casper.infradead.org>
+ <20210414101044.19da09df@carbon>
+ <20210414115052.GS2531743@casper.infradead.org>
+ <20210414211322.3799afd4@carbon>
+ <20210414213556.GY2531743@casper.infradead.org>
+ <a50c3156fe8943ef964db4345344862f@AcuMS.aculab.com>
+ <20210415200832.32796445@carbon>
+ <20210416152755.GL2531743@casper.infradead.org>
+ <CAK8P3a2dekzohOrHpLq6yyuaoyC4UOxxucu6kX2oddeq5Jdqfg@mail.gmail.com>
+ <20210417135642.GR2531743@casper.infradead.org>
+In-Reply-To: <20210417135642.GR2531743@casper.infradead.org>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Sat, 17 Apr 2021 19:30:21 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a2M1fk-CAAjpLSNsobpOKKiHt_ffoKUNv3aqfie09d_PQ@mail.gmail.com>
+Message-ID: <CAK8P3a2M1fk-CAAjpLSNsobpOKKiHt_ffoKUNv3aqfie09d_PQ@mail.gmail.com>
+Subject: Re: [PATCH 1/1] mm: Fix struct page layout on 32-bit systems
+To: Matthew Wilcox <willy@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,134 +85,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kbuild-all@lists.01.org, kernel test robot <lkp@intel.com>,
- clang-built-linux@googlegroups.com, open list <linux-kernel@vger.kernel.org>,
- Matthew Wilcox <willy@infradead.org>, Linux-MM <linux-mm@kvack.org>,
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org,
- Matteo Croce <mcroce@linux.microsoft.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ David Laight <David.Laight@aculab.com>,
+ Jesper Dangaard Brouer <brouer@redhat.com>,
+ Matteo Croce <mcroce@linux.microsoft.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Christoph Hellwig <hch@lst.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ilias, All,
+On Sat, Apr 17, 2021 at 3:58 PM Matthew Wilcox <willy@infradead.org> wrote:
+> I wouldn't like to make that assumption.  I've come across IOMMUs (maybe
+> on parisc?  powerpc?) that like to encode fun information in the top
+> few bits.  So we could get it down to 52 bits, but I don't think we can
+> get all the way down to 32 bits.  Also, we need to keep the bottom bit
+> clear for PageTail, so that further constrains us.
 
-On 10/04/2021 11:52, Ilias Apalodimas wrote:
-> +CC Grygorii for the cpsw part as Ivan's email is not valid anymore
-> 
-> Thanks for catching this. Interesting indeed...
-> 
-> On Sat, 10 Apr 2021 at 09:22, Jesper Dangaard Brouer <brouer@redhat.com> wrote:
->>
->> On Sat, 10 Apr 2021 03:43:13 +0100
->> Matthew Wilcox <willy@infradead.org> wrote:
->>
->>> On Sat, Apr 10, 2021 at 06:45:35AM +0800, kernel test robot wrote:
->>>>>> include/linux/mm_types.h:274:1: error: static_assert failed due to requirement '__builtin_offsetof(struct page, lru) == __builtin_offsetof(struct folio, lru)' "offsetof(struct page, lru) == offsetof(struct folio, lru)"
->>>>     FOLIO_MATCH(lru, lru);
->>>>     include/linux/mm_types.h:272:2: note: expanded from macro 'FOLIO_MATCH'
->>>>             static_assert(offsetof(struct page, pg) == offsetof(struct folio, fl))
->>>
->>> Well, this is interesting.  pahole reports:
->>>
->>> struct page {
->>>          long unsigned int          flags;                /*     0     4 */
->>>          /* XXX 4 bytes hole, try to pack */
->>>          union {
->>>                  struct {
->>>                          struct list_head lru;            /*     8     8 */
->>> ...
->>> struct folio {
->>>          union {
->>>                  struct {
->>>                          long unsigned int flags;         /*     0     4 */
->>>                          struct list_head lru;            /*     4     8 */
->>>
->>> so this assert has absolutely done its job.
->>>
->>> But why has this assert triggered?  Why is struct page layout not what
->>> we thought it was?  Turns out it's the dma_addr added in 2019 by commit
->>> c25fff7171be ("mm: add dma_addr_t to struct page").  On this particular
->>> config, it's 64-bit, and ppc32 requires alignment to 64-bit.  So
->>> the whole union gets moved out by 4 bytes.
->>
->> Argh, good that you are catching this!
->>
->>> Unfortunately, we can't just fix this by putting an 'unsigned long pad'
->>> in front of it.  It still aligns the entire union to 8 bytes, and then
->>> it skips another 4 bytes after the pad.
->>>
->>> We can fix it like this ...
->>>
->>> +++ b/include/linux/mm_types.h
->>> @@ -96,11 +96,12 @@ struct page {
->>>                          unsigned long private;
->>>                  };
->>>                  struct {        /* page_pool used by netstack */
->>> +                       unsigned long _page_pool_pad;
->>
->> I'm fine with this pad.  Matteo is currently proposing[1] to add a 32-bit
->> value after @dma_addr, and he could use this area instead.
->>
->> [1] https://lore.kernel.org/netdev/20210409223801.104657-3-mcroce@linux.microsoft.com/
->>
->> When adding/changing this, we need to make sure that it doesn't overlap
->> member @index, because network stack use/check page_is_pfmemalloc().
->> As far as my calculations this is safe to add.  I always try to keep an
->> eye out for this, but I wonder if we could have a build check like yours.
->>
->>
->>>                          /**
->>>                           * @dma_addr: might require a 64-bit value even on
->>>                           * 32-bit architectures.
->>>                           */
->>> -                       dma_addr_t dma_addr;
->>> +                       dma_addr_t dma_addr __packed;
->>>                  };
->>>                  struct {        /* slab, slob and slub */
->>>                          union {
->>>
->>> but I don't know if GCC is smart enough to realise that dma_addr is now
->>> on an 8 byte boundary and it can use a normal instruction to access it,
->>> or whether it'll do something daft like use byte loads to access it.
->>>
->>> We could also do:
->>>
->>> +                       dma_addr_t dma_addr __packed __aligned(sizeof(void *));
->>>
->>> and I see pahole, at least sees this correctly:
->>>
->>>                  struct {
->>>                          long unsigned int _page_pool_pad; /*     4     4 */
->>>                          dma_addr_t dma_addr __attribute__((__aligned__(4))); /*     8     8 */
->>>                  } __attribute__((__packed__)) __attribute__((__aligned__(4)));
->>>
->>> This presumably affects any 32-bit architecture with a 64-bit phys_addr_t
->>> / dma_addr_t.  Advice, please?
->>
->> I'm not sure that the 32-bit behavior is with 64-bit (dma) addrs.
->>
->> I don't have any 32-bit boards with 64-bit DMA.  Cc. Ivan, wasn't your
->> board (572x ?) 32-bit with driver 'cpsw' this case (where Ivan added
->> XDP+page_pool) ?
+I'd be surprised to find such an IOMMU on a 32-bit machine, given that
+the main reason for using an IOMMU on these is to avoid the 32-bit
+address limit in DMA masters.
 
-Sry, for delayed reply.
+I see that parisc32 does not enable 64-bit dma_addr_t, while powerpc32
+does not support any IOMMU, so it wouldn't be either of those two.
 
-The TI platforms am3/4/5 (cpsw) and Keystone 2 (netcp) can do only 32bit DMA even in case of LPAE (dma-ranges are used).
-Originally, as I remember, CONFIG_ARCH_DMA_ADDR_T_64BIT has not been selected for the LPAE case
-on TI platforms and the fact that it became set is the result of multi-paltform/allXXXconfig/DMA
-optimizations and unification.
-(just checked - not set in 4.14)
+I do remember some powerpc systems that encode additional flags
+(transaction ordering, caching, ...) into the high bits of the physical
+address in the IOTLB, but not the virtual address used for looking
+them up.
 
-Probable commit 4965a68780c5 ("arch: define the ARCH_DMA_ADDR_T_64BIT config symbol in lib/Kconfig").
+> Anyway, I like the "two unsigned longs" approach I posted yesterday,
+> but thanks for the suggestion.
 
-The TI drivers have been updated, finally to accept ARCH_DMA_ADDR_T_64BIT=y by using things like (__force u32)
-for example.
+Ok, fair enough. As long as there are enough bits in this branch of
+'struct page', I suppose it is the safe choice.
 
-Honestly, I've done sanity check of CPSW with LPAE=y (ARCH_DMA_ADDR_T_64BIT=y) very long time ago.
-
--- 
-Best regards,
-grygorii
+        Arnd
