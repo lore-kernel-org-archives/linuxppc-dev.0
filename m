@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6063DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 21:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 754F8C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 22:46:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9601161210
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 21:29:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9601161210
+	by mail.kernel.org (Postfix) with ESMTPS id C504761207
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Apr 2021 22:46:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C504761207
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FN5nd2Pm4z3bVb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 07:29:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FN7Tw2Z15z3brH
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 08:46:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=kjCBnWRn;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XkP7ELYU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -28,39 +28,40 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=kjCBnWRn; 
+ header.s=casper.20170209 header.b=XkP7ELYU; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FN5n75pJBz2yxk
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Apr 2021 07:29:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FN7TQ11xgz2yxW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Apr 2021 08:45:41 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=tdMd9G9wD3dHdDB049z0mEp3bwlE87mJ0J7o89xl/iU=; b=kjCBnWRnNfJ4jh1gNX/lQqFZaV
- PIt6sDdbkDGzgmh71GE65C7gRjevycey4DoCtbejN9tL9oy21OFCEaAalEL1tJX2o90jMIunwvzlT
- aw6WnoUC4xKa/S6Fo+ZMatucihabyUEWmzgS2fQA3KuKU2AamMDSAvwzszyCc5I4TnWdPWLrwWCKi
- rVT5becyLy4eWu5C3CPFKJcjpScabeN83QGn+BwxjvQCu6su18nAbnPuTOLaKIYZFme9zSXfjcKXe
- HVFpVtf65QAh/PF06VB9QUA3eZMEV6/SGt6UIGiIg++xfTnOleyRsiTg4gP470cAho43TKpegokfh
- QjMDTCHQ==;
+ bh=tPQBiu2Bdtxs3AC+E5Cm2VSUt8tWo9GnLe6NW3THH9A=; b=XkP7ELYUdkWzIzouAO8xPq8S7N
+ GjhLlDfD3y6VNei69ths2oEltTt7VNjkaFD3kWa5YfSrMcxcQ1iVWUb/gASCBUMnk26hTvxsGcZHP
+ LmMVlNo9qjiA2rXreK8yWQYyX7o6/OtiLfYOaaN9A6kBfQL7H7z+dojys6K1K5C4Hlo6Q1BwKfx6v
+ 3VOY2eaj9oDYuG2iFBRZJwiloByx98Wd7tPgW2ms6UJEbSMnemsL/vRvgFUw9tA9idCrdgpWi2l75
+ pWbZSIdmfWoFb2mq+sdPpyKhbcnM/fMhIc2cA/kjhWA/hgymZC/OH2xGJGRDdWwwZOxlXZFOO//LW
+ H9eSAzQw==;
 Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat
- Linux)) id 1lXsUd-00BiOm-RD; Sat, 17 Apr 2021 21:28:45 +0000
-Date: Sat, 17 Apr 2021 22:28:43 +0100
+ Linux)) id 1lXtgp-00BmXi-PV; Sat, 17 Apr 2021 22:45:26 +0000
+Date: Sat, 17 Apr 2021 23:45:23 +0100
 From: Matthew Wilcox <willy@infradead.org>
 To: David Laight <David.Laight@aculab.com>
-Subject: Re: [PATCH 2/2] mm: Indicate pfmemalloc pages in compound_head
-Message-ID: <20210417212843.GT2531743@casper.infradead.org>
+Subject: Re: [PATCH 1/2] mm: Fix struct page layout on 32-bit systems
+Message-ID: <20210417224523.GU2531743@casper.infradead.org>
 References: <20210416230724.2519198-1-willy@infradead.org>
- <20210416230724.2519198-3-willy@infradead.org>
- <2a531a42f23e4046833e0feb8faef0b5@AcuMS.aculab.com>
+ <20210416230724.2519198-2-willy@infradead.org>
+ <20210417024522.GP2531743@casper.infradead.org>
+ <386d009232dc42bdaf83d4cc36b13864@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2a531a42f23e4046833e0feb8faef0b5@AcuMS.aculab.com>
+In-Reply-To: <386d009232dc42bdaf83d4cc36b13864@AcuMS.aculab.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,26 +91,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 17, 2021 at 09:13:45PM +0000, David Laight wrote:
-> >  		struct {	/* page_pool used by netstack */
-> > -			/**
-> > -			 * @dma_addr: might require a 64-bit value on
-> > -			 * 32-bit architectures.
-> > -			 */
-> > +			unsigned long pp_magic;
-> > +			unsigned long xmi;
-> > +			unsigned long _pp_mapping_pad;
-> >  			unsigned long dma_addr[2];
-> >  		};
-> 
-> You've deleted the comment.
+On Sat, Apr 17, 2021 at 09:18:57PM +0000, David Laight wrote:
+> Ugly as well.
 
-Yes.  It no longer added any value.  You can see dma_addr now occupies
-two words.
-
-> I also think there should be a comment that dma_addr[0]
-> must be aliased to ->index.
-
-That's not a requirement.  Moving the pfmemalloc indicator is a
-requirement so that we _can_ use index, but there's no requirement about
-how index is used.
+Thank you for expressing your opinion.  Again.
