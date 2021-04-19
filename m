@@ -2,114 +2,65 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89CBAC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:26:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52359C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:47:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC7F661008
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:26:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC7F661008
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B321F6101D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:47:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B321F6101D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FP2zY2DK1z30DW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 20:26:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ci3v8RAv;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FP3S9321vz30Ff
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 20:47:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Ci3v8RAv; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FP2z34c0Bz2xMw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 20:26:07 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13JA5WE3128267; Mon, 19 Apr 2021 06:26:00 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=/Q/z9CmIU0bc14oP77ckvkImt3QVaQuoxewGw0EqTWM=;
- b=Ci3v8RAv3cTeQ71JjVZv7fCXmw6dVqRtCJRtiBS0YuFZWgSCJ05UHnk0hpll/5Jj2aaB
- 5YpQhzn31HOt95rG08JKcKXff3+Ym4yQ/GdJ6qEc3xgsQUC20B4tOHc3g6yJ0mO/d/lj
- e+LNryu+ZS/umTfzD2JBtrVXI8k1OeGiCnvb0r5SP4+OcSvmIYHu7t66meZLixfhgkUl
- A6cqxwSBjYmTHEfNVCTOMsBY1XHdIF74D5F9z/6bHSQYvC2iLhevUsQ2ALhSgr34aD/O
- S1Hd0YJl3djiee3wM9esp2gnRXHtFhsy4VhAyn3MX36T+880/ljcDzURuOtf3t9sOq0M dw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380cramc05-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 06:26:00 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13JA5XFG128312;
- Mon, 19 Apr 2021 06:25:59 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380crambyt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 06:25:59 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13JAM6U7000940;
- Mon, 19 Apr 2021 10:25:58 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01wdc.us.ibm.com with ESMTP id 37yqa8h4u5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 10:25:58 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13JAPwA627394500
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 19 Apr 2021 10:25:58 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2B2ACAE05C;
- Mon, 19 Apr 2021 10:25:58 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12F1EAE05F;
- Mon, 19 Apr 2021 10:25:55 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.38.52])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 19 Apr 2021 10:25:54 +0000 (GMT)
-Subject: Re: [PATCH] perf vendor events: Initial json/events list for power10
- platform
-To: "Paul A. Clarke" <pc@us.ibm.com>
-References: <20210417091850.596023-1-kjain@linux.ibm.com>
- <20210418210838.GA1845018@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
-From: kajoljain <kjain@linux.ibm.com>
-Message-ID: <130f4181-a5ba-a24a-5d1f-7694999c324a@linux.ibm.com>
-Date: Mon, 19 Apr 2021 15:55:53 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
-MIME-Version: 1.0
-In-Reply-To: <20210418210838.GA1845018@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: jRQIvlOWSQIoGOZd15OC992mM78ZyOeH
-X-Proofpoint-GUID: otI7imAesBe4e_OgYg6xLLBfZi7Eco3r
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-19_07:2021-04-16,
- 2021-04-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- priorityscore=1501 bulkscore=0 clxscore=1015 malwarescore=0 mlxscore=0
- mlxlogscore=999 spamscore=0 adultscore=0 suspectscore=0 impostorscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104190069
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FP3Rp4Ybtz2xYb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 20:47:30 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FP3RZ1t4YzB09b3;
+ Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 9QVuXNyI7_rG; Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FP3RZ0mYfzB09Zy;
+ Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EF5F18B7BB;
+ Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ZHZ7-PNlqPXU; Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C10348B7B4;
+ Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B9BAC679FC; Mon, 19 Apr 2021 10:47:26 +0000 (UTC)
+Message-Id: <c433e358190fb5d47650463ea1ab755fc7b73e6e.1618828806.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+References: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 2/4] powerpc/mm: Leave a gap between early allocated IO
+ areas
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ Steven Price <steven.price@arm.com>, akpm@linux-foundation.org, dja@axtens.net
+Date: Mon, 19 Apr 2021 10:47:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,39 +72,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, atrajeev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, acme@kernel.org,
- linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, jolsa@redhat.com
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Oliver O'Halloran <oohall@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Vmalloc system leaves a gap between allocated areas. It helps catching
+overflows.
 
+Do the same for IO areas which are allocated with early_ioremap_range()
+until slab_is_available().
 
-On 4/19/21 2:38 AM, Paul A. Clarke wrote:
-> On Sat, Apr 17, 2021 at 02:48:50PM +0530, Kajol Jain wrote:
->> Patch adds initial json/events for POWER10.
-> 
-> I was able to apply, build, and run perf with these changes,
-> and every new event at least ran successfully with
-> `perf stat`.
-> 
-> Pedantically, there is a lot of inconsistency as to whether
-> the `BriefDescription` ends with a period or not, and whether
-> there is an extra space at the end.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/mm/ioremap_32.c | 4 ++--
+ arch/powerpc/mm/ioremap_64.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Hi Paul,
-Thanks for reviewing the patch. Sure I will remove this inconsistency
-and send v2 patch for the same, with your Tested-by and Reviewed-by tag.
+diff --git a/arch/powerpc/mm/ioremap_32.c b/arch/powerpc/mm/ioremap_32.c
+index 743e11384dea..9d13143b8be4 100644
+--- a/arch/powerpc/mm/ioremap_32.c
++++ b/arch/powerpc/mm/ioremap_32.c
+@@ -70,10 +70,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *call
+ 	 */
+ 	pr_warn("ioremap() called early from %pS. Use early_ioremap() instead\n", caller);
+ 
+-	err = early_ioremap_range(ioremap_bot - size, p, size, prot);
++	err = early_ioremap_range(ioremap_bot - size - PAGE_SIZE, p, size, prot);
+ 	if (err)
+ 		return NULL;
+-	ioremap_bot -= size;
++	ioremap_bot -= size + PAGE_SIZE;
+ 
+ 	return (void __iomem *)ioremap_bot + offset;
+ }
+diff --git a/arch/powerpc/mm/ioremap_64.c b/arch/powerpc/mm/ioremap_64.c
+index ba5cbb0d66bd..3acece00b33e 100644
+--- a/arch/powerpc/mm/ioremap_64.c
++++ b/arch/powerpc/mm/ioremap_64.c
+@@ -38,7 +38,7 @@ void __iomem *__ioremap_caller(phys_addr_t addr, unsigned long size,
+ 		return NULL;
+ 
+ 	ret = (void __iomem *)ioremap_bot + offset;
+-	ioremap_bot += size;
++	ioremap_bot += size + PAGE_SIZE;
+ 
+ 	return ret;
+ }
+-- 
+2.25.0
 
-Thanks,
-Kajol Jain
-
-> 
-> Regardless, LGTM.
-> 
-> Tested-by: Paul A. Clarke <pc@us.ibm.com>
-> Reviewed-by: Paul A. Clarke <pc@us.ibm.com>
-> 
-> PC
-> 
