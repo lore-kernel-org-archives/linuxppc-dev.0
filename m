@@ -6,41 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85949C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A4FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E34A610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E34A610A1
+	by mail.kernel.org (Postfix) with ESMTPS id DCEC5610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCEC5610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtZD6QmCz3f3Y
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:07:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtZZ4GgXz3f56
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:07:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVT3kz2z3cFX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVV5WDpz3c17
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:18 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVS6yCjz9vH2; Mon, 19 Apr 2021 14:04:16 +1000 (AEST)
+ id 4FNtVT5PRGz9vGv; Mon, 19 Apr 2021 14:04:17 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Bixuan Cui <cuibixuan@huawei.com>, Nathan Lynch <nathanl@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-In-Reply-To: <20210409090114.59396-1-cuibixuan@huawei.com>
-References: <20210409090114.59396-1-cuibixuan@huawei.com>
-Subject: Re: [PATCH -next] powerpc/pseries/pmem: Make symbol 'drc_pmem_match'
- static
-Message-Id: <161880479788.1398509.10114956156127750502.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:57 +1000
+To: Dmitry Safonov <dima@arista.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20210326191720.138155-1-dima@arista.com>
+References: <20210326191720.138155-1-dima@arista.com>
+Subject: Re: [PATCH] powerpc/vdso: Separate vvar vma from vdso
+Message-Id: <161880478605.1398509.2763333717274966533.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:46 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,24 +51,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Dmitry Safonov <0x7f454c46@gmail.com>, stable@vger.kernel.org,
+ Andrei Vagin <avagin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Laurent Dufour <ldufour@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 9 Apr 2021 17:01:14 +0800, Bixuan Cui wrote:
-> The sparse tool complains as follows:
+On Fri, 26 Mar 2021 19:17:20 +0000, Dmitry Safonov wrote:
+> Since commit 511157ab641e ("powerpc/vdso: Move vdso datapage up front")
+> VVAR page is in front of the VDSO area. In result it breaks CRIU
+> (Checkpoint Restore In Userspace) [1], where CRIU expects that "[vdso]"
+> from /proc/../maps points at ELF/vdso image, rather than at VVAR data page.
+> Laurent made a patch to keep CRIU working (by reading aux vector).
+> But I think it still makes sence to separate two mappings into different
+> VMAs. It will also make ppc64 less "special" for userspace and as
+> a side-bonus will make VVAR page un-writable by debugger (which previously
+> would COW page and can be unexpected).
 > 
-> arch/powerpc/platforms/pseries/pmem.c:142:27: warning:
->  symbol 'drc_pmem_match' was not declared. Should it be static?
-> 
-> This symbol is not used outside of pmem.c, so this
-> commit marks it static.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/pmem: Make symbol 'drc_pmem_match' static
-      https://git.kernel.org/powerpc/c/2235dea17d56238642121a8085b71d68598534bb
+[1/1] powerpc/vdso: Separate vvar vma from vdso
+      https://git.kernel.org/powerpc/c/1c4bce6753857dc409a0197342d18764e7f4b741
 
 cheers
