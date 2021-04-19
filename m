@@ -6,44 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C0FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 102E6C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDDC4610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDDC4610A1
+	by mail.kernel.org (Postfix) with ESMTPS id A630E61106
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A630E61106
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNthj3jCpz3gWS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:13:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtj331M8z3c6C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:13:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtW742k3z3ckB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtW75DZgz3clY
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:51 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVq4zx6z9vHr; Mon, 19 Apr 2021 14:04:35 +1000 (AEST)
+ id 4FNtVr5w9cz9vH8; Mon, 19 Apr 2021 14:04:36 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, mahesh@linux.ibm.com, alistair@popple.id.au,
- ravi.bangoria@linux.ibm.com, rppt@kernel.org, aneesh.kumar@linux.ibm.com,
- benh@kernel.crashing.org, christophe.leroy@csgroup.eu, peterz@infradead.org,
- sourabhjain@linux.ibm.com, haren@linux.ibm.com, mpe@ellerman.id.au,
- aik@ozlabs.ru, mikey@neuling.org, hbathini@linux.ibm.com, jniethe5@gmail.com,
- atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, maddy@linux.ibm.com,
- paulus@samba.org, Xiongwei Song <sxwjean@me.com>, kan.liang@linux.intel.com,
- leobras.c@gmail.com, akpm@linux-foundation.org, nathan@kernel.org,
- walken@google.com
-In-Reply-To: <1618398033-13025-1-git-send-email-sxwjean@me.com>
-References: <1618398033-13025-1-git-send-email-sxwjean@me.com>
-Subject: Re: [PATCH v5] powerpc/traps: Enhance readability for trap types
-Message-Id: <161880480749.1398509.13854338250258784964.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Ambardar <tony.ambardar@gmail.com>
+In-Reply-To: <20200917135437.1238787-1-Tony.Ambardar@gmail.com>
+References: <20200917000757.1232850-1-Tony.Ambardar@gmail.com>
+ <20200917135437.1238787-1-Tony.Ambardar@gmail.com>
+Subject: Re: [PATCH v3] powerpc: fix EDEADLOCK redefinition error in
+ uapi/asm/errno.h
+Message-Id: <161880480720.1398509.14927712402293166726.b4-ty@ellerman.id.au>
 Date: Mon, 19 Apr 2021 14:00:07 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -59,24 +54,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Tony Ambardar <Tony.Ambardar@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Stable <stable@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Rosen Penev <rosenp@gmail.com>, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 14 Apr 2021 19:00:33 +0800, Xiongwei Song wrote:
-> Define macros to list ppc interrupt types in interttupt.h, replace the
-> reference of the trap hex values with these macros.
-> 
-> Referred the hex numbers in arch/powerpc/kernel/exceptions-64e.S,
-> arch/powerpc/kernel/exceptions-64s.S, arch/powerpc/kernel/head_*.S,
-> arch/powerpc/kernel/head_booke.h and arch/powerpc/include/asm/kvm_asm.h.
+On Thu, 17 Sep 2020 06:54:37 -0700, Tony Ambardar wrote:
+> A few archs like powerpc have different errno.h values for macros
+> EDEADLOCK and EDEADLK. In code including both libc and linux versions of
+> errno.h, this can result in multiple definitions of EDEADLOCK in the
+> include chain. Definitions to the same value (e.g. seen with mips) do
+> not raise warnings, but on powerpc there are redefinitions changing the
+> value, which raise warnings and errors (if using "-Werror").
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/traps: Enhance readability for trap types
-      https://git.kernel.org/powerpc/c/7153d4bf0b373428d0393c001019da4d0483fddb
+[1/1] powerpc: fix EDEADLOCK redefinition error in uapi/asm/errno.h
+      https://git.kernel.org/powerpc/c/7de21e679e6a789f3729e8402bc440b623a28eae
 
 cheers
