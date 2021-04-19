@@ -2,76 +2,92 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55BD2C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 13:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 323CBC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 13:14:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 806916100B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 13:00:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 806916100B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3BBBC613DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 13:14:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BBBC613DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FP6Nl14pzz2yRy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 23:00:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FP6jM5HmVz309X
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 23:14:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=OWdOkS/H;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
+ helo=mail-qk1-x735.google.com; envelope-from=danielhb413@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=OWdOkS/H; dkim-atps=neutral
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
+ [IPv6:2607:f8b0:4864:20::735])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FP5RB1XQtz2xYd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 22:17:09 +1000 (AEST)
-Received: from mail-ej1-f46.google.com ([209.85.218.46]) by
- mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1N5CMP-1lfv3q1lLR-011DHD for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr
- 2021 14:17:03 +0200
-Received: by mail-ej1-f46.google.com with SMTP id v6so51270470ejo.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 05:17:02 -0700 (PDT)
-X-Gm-Message-State: AOAM53188vvapMT83ADkci9QKKN9Utlxq/SUVlBFQAFg2ffIJI/Ap3R7
- jEFQFkwTsL+pZiMfdMGS9F2jyAzxuVoWF0Bid2o=
-X-Google-Smtp-Source: ABdhPJw4F20QerTwfst1rAMwc6NWiXDSUWeUkZ8E4j2sezaYrIv6atAni45jIwUzsYws7AyLO9D3pu8QFGIGztgXd7o=
-X-Received: by 2002:a05:6000:1843:: with SMTP id
- c3mr14679907wri.361.1618834612186; 
- Mon, 19 Apr 2021 05:16:52 -0700 (PDT)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FP6ht46Ztz2xYc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 23:14:04 +1000 (AEST)
+Received: by mail-qk1-x735.google.com with SMTP id q136so14683364qka.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 06:14:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=Vp6TRh47W+W8Mp4RUVmGra3Xea62bVyXoRWBVCyrngw=;
+ b=OWdOkS/HxdWIdAcAnplJBZulDRfpQs/3ebfnlstIppBO0TKwzDRfP9d268sXVVtqPX
+ u6DdYpA5lslZtVd0hnQW8Ud48GASG/TC3srqjNqAWqdg511BnXJGIpebrVpAVn9tcfmm
+ zWQBVOXbQu8gH+hXSaNpc5HjM58Hd9EWdD1A9E54ot4+5tf5enPyF/jXrcro6tm141dY
+ F22q9gKE0F+2NE3gGBYGUqpeT8qLHyqpvgMmk4pmUR5j9ooUbMaH2XxcDrSGPHxakQDi
+ Zv6Nynob15Lu0LeXYx5izB5R0XejQsRxLlk8tyx/ZUGa89+7prwTS322KzjRvqBH0/0I
+ oC8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=Vp6TRh47W+W8Mp4RUVmGra3Xea62bVyXoRWBVCyrngw=;
+ b=USnD1AWgtTWTos69oW8SoFUypzDCXsH2tvHC3jkaf1Ov8QGKXvnH6kaVfaeK8txRmN
+ xKgFhOU9fuWzAYgwvdxhMxa8ZqwsZ4bxEwDwg84420ppYXtibIB8SERTq7/3vJXCDGW3
+ 5a/XDoF6+9QiaoZ2O8IE+4r/XYPsaf04N3H0pps+HS2+/ftmjgnKxHhekj7F2Vg+p8w+
+ vLSnVJlKfZi1XdPv0f62rV54uVSJ7DEksmtv+HNhQIsDzrikPT0A4v4gKZyLgg7yIhBS
+ MVTI6IzjMzh3NKg2oXtgSk/xN+GmCcslz/pjWMzIm3U9N9c311xkwbCdWYdfLVWZbbPD
+ YDSg==
+X-Gm-Message-State: AOAM531ZPJCe3SFUPTTOGfHHfKQicZ+IIMvDYTEusiel8PkhEP6yvc6b
+ I90MpCXUoY3Xm8r+n0OQLGe4EurTKvrBqg==
+X-Google-Smtp-Source: ABdhPJzXC8jO6NFtV4W8+dmSFiFBO4b1fRtJd5PJL0YKvS398+wPcYHdpe67KMPQknCjsa5/n+Yfbg==
+X-Received: by 2002:a37:910:: with SMTP id 16mr11616698qkj.229.1618838040641; 
+ Mon, 19 Apr 2021 06:14:00 -0700 (PDT)
+Received: from ?IPv6:2804:431:c7c7:8811:45c7:4abc:f19a:be81?
+ ([2804:431:c7c7:8811:45c7:4abc:f19a:be81])
+ by smtp.gmail.com with ESMTPSA id n6sm9054169qtx.22.2021.04.19.06.13.59
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 19 Apr 2021 06:14:00 -0700 (PDT)
+Subject: Re: [PATCH 2/2] hotplug-cpu.c: set UNISOLATE on dlpar_cpu_remove()
+ failure
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20210416210216.380291-1-danielhb413@gmail.com>
+ <20210416210216.380291-3-danielhb413@gmail.com>
+ <87v98icuek.fsf@mpe.ellerman.id.au>
+From: Daniel Henrique Barboza <danielhb413@gmail.com>
+Message-ID: <f4d65cf6-08d1-0bcc-cba2-845099a82aa4@gmail.com>
+Date: Mon, 19 Apr 2021 10:13:57 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-References: <20210419042722.27554-1-alice.guo@oss.nxp.com>
- <20210419042722.27554-4-alice.guo@oss.nxp.com>
- <YH0O907dfGY9jQRZ@atmark-techno.com>
- <CAMuHMdVY1SLZ0K30T2pimyrR6Mm=VoSTO=L-xxCy2Bj7_kostw@mail.gmail.com>
- <YH1OeFy+SepIYYG0@atmark-techno.com>
-In-Reply-To: <YH1OeFy+SepIYYG0@atmark-techno.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 19 Apr 2021 14:16:36 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a1Mu2F0irDDCL-50HiHth29iYFL5b7WHZ=UX6W7zzoxAg@mail.gmail.com>
-Message-ID: <CAK8P3a1Mu2F0irDDCL-50HiHth29iYFL5b7WHZ=UX6W7zzoxAg@mail.gmail.com>
-Subject: Re: [RFC v1 PATCH 3/3] driver: update all the code that use
- soc_device_match
-To: Dominique MARTINET <dominique.martinet@atmark-techno.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:bFav/xEC3Tj835Cs0Gs5YB0Fs1KJY/yqkTcaiEmKQtB8CaAMoDY
- WfkzN03ANEaPa9dwmD+Oujq1iG9Im6/WwtXQIWARul5N7fwwSUPcwZmEu273i1vKFYJ93gz
- WkXW4Iujfq6IuYWu0A2AgHfHznwjRMCSZudaF0D+GvRrAj/TFcLX4oyIjIuIdOQ9asWKgqX
- ukogxUiYDhFObQoaBiNRw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:MTagkLDkmls=:ADvznjIkuHV9jc9bNiGULr
- oNjC+1Ps6SD3sCYAB/aoRxiN4GI5y0/ewJbIPr3MSzGIGq7XF5OWnF2ktZRwY8ujo29Tm8dpb
- rsNwxBQguOb/EoWEFSRsRH2wmuB1+P5neiC4MOBQ8sQVCn1rCrXJy2d4rPhY+pWO1OEpdgsTD
- qydFUVsFhdQRejN3/5oM3TTVk+wNHhsrv8b5eIuPML4wN/gtCNuASex9rDbZHIYmA8nQrc2gJ
- Kd3Lp5RLmn26VCLC/M/wpr5Y6k5iIjo9hxIK69C9lBUzOxLLywYvqJdUH1J62OmCVJ4P4pr9C
- Rx1HCCQYcfF6p6sTUZICN8bttzT1Qg0rClIzsyqLaFSDOj0PXFqIudL33MsUfXyu/whiTF4qq
- A0iAsh3pECvMYHNFVa7Xnmls6pbj/naIu3chfPhzzDA+YVlFeL08BWY/qW/M7kr1mWSwEdanm
- bAOt7RFfdAub4WblUzNKHOUsvabSWizRrXYBWShIUErQlp5rLKNk72CJnsM+MLa+CUieYO4dX
- t9l9f8dVMN0VZEPi/DiUOW2neH5qZBqVgodB4UM/EkQv/fZh0j5TZdPeavJZT4IaevqCOPzCT
- Oj4FP4C7osvADoCDv1I8YU/AzQxz5+PVSQsMd79K3EbPC7IHMMe+AI/98jlSaGH43AEY3OXdX
- +hPA=
-X-Mailman-Approved-At: Mon, 19 Apr 2021 22:59:43 +1000
+In-Reply-To: <87v98icuek.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,92 +99,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, aymen.sghaier@nxp.com,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Rafael Wysocki <rafael@kernel.org>, David Airlie <airlied@linux.ie>,
- Michael Turquette <mturquette@baylibre.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andrzej Hajda <a.hajda@samsung.com>, Networking <netdev@vger.kernel.org>,
- linux-phy@lists.infradead.org, peter.ujfalusi@gmail.com,
- linux-clk <linux-clk@vger.kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Wim Van Sebroeck <wim@linux-watchdog.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
- Kevin Hilman <khilman@baylibre.com>, Joerg Roedel <joro@8bytes.org>,
- Neil Armstrong <narmstrong@baylibre.com>, linux-staging@lists.linux.dev,
- "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Kishon <kishon@ti.com>, Tony Lindgren <tony@atomide.com>,
- linux-omap <linux-omap@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Jakub Kicinski <kuba@kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>, Guenter Roeck <linux@roeck-us.net>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- LINUXWATCHDOG <linux-watchdog@vger.kernel.org>, Will Deacon <will@kernel.org>,
- Linux PM list <linux-pm@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Eduardo Valentin <edubezval@gmail.com>,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- "open list:ARM/Amlogic Meson SoC support" <linux-amlogic@lists.infradead.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- "Alice Guo \(OSS\)" <alice.guo@oss.nxp.com>, Felipe Balbi <balbi@kernel.org>,
- tomba@kernel.org, Stephen Boyd <sboyd@kernel.org>,
- gregkh <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>,
- USB list <linux-usb@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>, Robert Foss <robert.foss@linaro.org>,
- Leo Li <leoyang.li@nxp.com>, Tony Prisk <linux@prisktech.co.nz>,
- Vinod Koul <vkoul@kernel.org>,
- "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
- <linux-crypto@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Keerthy <j-keerthy@ti.com>, dmaengine@vger.kernel.org,
- Roy Pledge <Roy.Pledge@nxp.com>, jyri.sarha@iki.fi,
- David Miller <davem@davemloft.net>
+Cc: david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 19, 2021 at 11:33 AM Dominique MARTINET
-<dominique.martinet@atmark-techno.com> wrote:
-> Geert Uytterhoeven wrote on Mon, Apr 19, 2021 at 11:03:24AM +0200:
->
-> > soc_device_match() should only be used as a last resort, to identify
-> > systems that cannot be identified otherwise.  Typically this is used for
-> > quirks, which should only be enabled on a very specific subset of
-> > systems.  IMHO such systems should make sure soc_device_match()
-> > is available early, by registering their SoC device early.
->
-> I definitely agree there, my suggestion to defer was only because I know
-> of no other way to influence the ordering of drivers loading reliably
-> and gave up on soc being init'd early.
 
-In some cases, you can use the device_link infrastructure to deal
-with dependencies between devices. Not sure if this would help
-in your case, but have a look at device_link_add() etc in drivers/base/core.c
 
-> In this particular case the problem is that since 7d981405d0fd ("soc:
-> imx8m: change to use platform driver") the soc probe tries to use the
-> nvmem driver for ocotp fuses for imx8m devices, which isn't ready yet.
-> So soc loading gets pushed back to the end of the list because it gets
-> defered and other drivers relying on soc_device_match get confused
-> because they wrongly think a device doesn't match a quirk when it
-> actually does.
->
-> If there is a way to ensure the nvmem driver gets loaded before the soc,
-> that would also solve the problem nicely, and avoid the need to mess
-> with all the ~50 drivers which use it.
->
-> Is there a way to control in what order drivers get loaded? Something in
-> the dtb perhaps?
+On 4/19/21 9:48 AM, Michael Ellerman wrote:
+> Daniel Henrique Barboza <danielhb413@gmail.com> writes:
+>> The RTAS set-indicator call, when attempting to UNISOLATE a DRC that is
+>> already UNISOLATED or CONFIGURED, returns RTAS_OK and does nothing else
+>> for both QEMU and phyp. This gives us an opportunity to use this
+>> behavior to signal the hypervisor layer when an error during device
+>> removal happens, allowing it to do a proper error handling, while not
+>> breaking QEMU/phyp implementations that don't have this support.
+>>
+>> This patch introduces this idea by unisolating all CPU DRCs that failed
+>> to be removed by dlpar_cpu_remove_by_index(), when handling the
+>> PSERIES_HP_ELOG_ID_DRC_INDEX event. This is being done for this event
+>> only because its the only CPU removal event QEMU uses, and there's no
+>> need at this moment to add this mechanism for phyp only code.
+> 
+> Have you also confirmed that phyp is not bothered by it? ie. everything
+> seems to continue working when you trigger this path on phyp.
 
-For built-in drivers, load order depends on the initcall level and
-link order (how things are lined listed in the Makefile hierarchy).
+Yes. Daniel Bueso (dbuesom@us.ibm.com) from the partition firmware team
+helped me with that. We confirmed that phyp returns RTAS_OK under these
+conditions (Unisolating an unisolated/configured DRC).
 
-For loadable modules, this is up to user space in the end.
 
-Which of the drivers in this scenario are loadable modules?
+Thanks,
 
-        Arnd
+
+DHB
+
+> 
+> cheers
+> 
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> index 12cbffd3c2e3..ed66895c2f51 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> @@ -802,8 +802,15 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>>   	case PSERIES_HP_ELOG_ACTION_REMOVE:
+>>   		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+>>   			rc = dlpar_cpu_remove_by_count(count);
+>> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+>> +		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+>>   			rc = dlpar_cpu_remove_by_index(drc_index);
+>> +			/* Setting the isolation state of an UNISOLATED/CONFIGURED
+>> +			 * device to UNISOLATE is a no-op, but the hypervison can
+>> +			 * use it as a hint that the cpu removal failed.
+>> +			 */
+>> +			if (rc)
+>> +				dlpar_unisolate_drc(drc_index);
+>> +		}
+>>   		else
+>>   			rc = -EINVAL;
+>>   		break;
+>> -- 
+>> 2.30.2
