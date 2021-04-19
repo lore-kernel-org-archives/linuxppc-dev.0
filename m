@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 102E6C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEF97C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A630E61106
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A630E61106
+	by mail.kernel.org (Postfix) with ESMTPS id 6D12E61106
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:13:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D12E61106
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtj331M8z3c6C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:13:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtjP1LYrz3dXQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:13:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,20 +26,18 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtW75DZgz3clY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtW75bQKz3cX1
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:51 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVr5w9cz9vH8; Mon, 19 Apr 2021 14:04:36 +1000 (AEST)
+ id 4FNtVt45cXz9vHc; Mon, 19 Apr 2021 14:04:37 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Tony Ambardar <tony.ambardar@gmail.com>
-In-Reply-To: <20200917135437.1238787-1-Tony.Ambardar@gmail.com>
-References: <20200917000757.1232850-1-Tony.Ambardar@gmail.com>
- <20200917135437.1238787-1-Tony.Ambardar@gmail.com>
-Subject: Re: [PATCH v3] powerpc: fix EDEADLOCK redefinition error in
- uapi/asm/errno.h
-Message-Id: <161880480720.1398509.14927712402293166726.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 14:00:07 +1000
+To: mpe@ellerman.id.au, Tyrel Datwyler <tyreld@linux.ibm.com>
+In-Reply-To: <20210211182435.47968-1-tyreld@linux.ibm.com>
+References: <20210211182435.47968-1-tyreld@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: extract host bridge from pci_bus prior
+ to bus removal
+Message-Id: <161880480588.1398509.15016110780432522314.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 14:00:05 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -54,28 +52,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Tony Ambardar <Tony.Ambardar@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Stable <stable@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Rosen Penev <rosenp@gmail.com>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Sep 2020 06:54:37 -0700, Tony Ambardar wrote:
-> A few archs like powerpc have different errno.h values for macros
-> EDEADLOCK and EDEADLK. In code including both libc and linux versions of
-> errno.h, this can result in multiple definitions of EDEADLOCK in the
-> include chain. Definitions to the same value (e.g. seen with mips) do
-> not raise warnings, but on powerpc there are redefinitions changing the
-> value, which raise warnings and errors (if using "-Werror").
+On Thu, 11 Feb 2021 12:24:35 -0600, Tyrel Datwyler wrote:
+> The pci_bus->bridge reference may no longer be valid after
+> pci_bus_remove() resulting in passing a bad value to device_unregister()
+> for the associated bridge device.
 > 
-> [...]
+> Store the host_bridge reference in a separate variable prior to
+> pci_bus_remove().
 
 Applied to powerpc/next.
 
-[1/1] powerpc: fix EDEADLOCK redefinition error in uapi/asm/errno.h
-      https://git.kernel.org/powerpc/c/7de21e679e6a789f3729e8402bc440b623a28eae
+[1/1] powerpc/pseries: extract host bridge from pci_bus prior to bus removal
+      https://git.kernel.org/powerpc/c/38d0b1c9cec71e6d0f3bddef0bbce41d05a3e796
 
 cheers
