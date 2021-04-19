@@ -7,69 +7,142 @@ X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F8F6C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 21:40:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D098C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 21:56:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD38761354
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 21:40:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD38761354
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 87D3060E0C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 21:56:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87D3060E0C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FPKxC6GXJz2yS0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 07:40:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FPLHw1Dryz30Gc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 07:56:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=FirAgyY6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=QxxIckYE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::22e;
+ helo=mail-oi1-x22e.google.com; envelope-from=groeck7@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=FirAgyY6; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=QxxIckYE; dkim-atps=neutral
+Received: from mail-oi1-x22e.google.com (mail-oi1-x22e.google.com
+ [IPv6:2607:f8b0:4864:20::22e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FPKwj0l3Hz2xZJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 07:39:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
- :Reply-To:Content-ID:Content-Description;
- bh=E/xf1ymngxrR9B9vXqBprFs35Mu6lZQnfAEYqkVQYPc=; b=FirAgyY6nuc4InDydB9E9sc58r
- op6kCcejmQYjEO2jMO7A7HEHM9UaD1jqKnL5lUi3j1iBDOc4GfYNTW2+CR31/zRrAiMSEFjIBkJRp
- vhVp0FQ0gygcWaNu6cQSVc0DtzZo0krKQusU8JjgA1tbZxHPGKCjrR35w5SRkIUQkYck9yFA+q4PT
- /Kj7bfoNiw3Yj8XRjkbzno9sTq0tP0POrp+F5qXfis3jDl5VBOnqX93cPrwn/h53BXye+1VQiDtdx
- IXHeGcJQZVj1CfeeX1kA4o3q2ZxO/UyOoWAisE/jLl3KrCjb3eswVSCtgLkLklUshPCCbmiifQFwl
- Jw7B4bag==;
-Received: from [2601:1c0:6280:3f0::df68]
- by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lYbcB-00EJua-P4; Mon, 19 Apr 2021 21:39:42 +0000
-Subject: Re: PPC_FPU, ALTIVEC: enable_kernel_fp, put_vr, get_vr
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <7107fcae-5c7a-ac94-8d89-326f2cd4cd33@infradead.org>
- <8b1cb0a2-ed3a-7da0-a73a-febbda528703@csgroup.eu>
- <20210418174648.GN26583@gate.crashing.org>
- <bf119bfe-7db1-e7f3-d837-f910635eeebb@infradead.org>
- <87sg3mct3x.fsf@mpe.ellerman.id.au>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <bd83b06d-ed36-e600-e988-c1e0014fb9cf@infradead.org>
-Date: Mon, 19 Apr 2021 14:39:28 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FP7C36CvMz2xYl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 23:36:46 +1000 (AEST)
+Received: by mail-oi1-x22e.google.com with SMTP id u80so1855496oia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 06:36:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:subject:to:cc:references:from:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=O4YSIccK0/khECcBMp5SF3VOcTD2gCbWGRlUmk7xgdE=;
+ b=QxxIckYEZwj2Mgtp8u/3/qf16jg+yLNElvzMoUENyE8FhR5U4F1ImpG/uaCtWn7nXx
+ 3ekx6eAkEakamER9JUPZziOdMQ7cYIuzBpwC+MIodRuraJb5f0wtBtlttjdMsO0OEX0E
+ Vue3b/0hVrm5zjzOUHcm6P75oFT95tz5ssNtuxTY3PQLptg6JPDnftllvhB2Akc/5H8y
+ av6fIYScX75LKL5qkqONXuqkqvYupnGtLtfVyUxiqnViV9v0xN4vlzzeNtuLPVgBdG2+
+ d5B/Yoi0FpivPTjvf4I9ia64JPbHQGMn5TtlPyrfIob5emmTl96+6TFcARCxBPY5ie5j
+ vdPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:subject:to:cc:references:from:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=O4YSIccK0/khECcBMp5SF3VOcTD2gCbWGRlUmk7xgdE=;
+ b=G8+cGlAX+Kbhvtg5plqEdEsOSrnLHULeZJvoGtkjQobZLxLTZJZWv0KrCiETSOW7+e
+ QJQ26rASISPVO82Yn6S1U+Ccu5ph9hLRRaMtD75N1PeykCxCHC23GbId7WkcNEtnS3BW
+ 5uo9spVcNVk8C9bERs3nqpHqQM+xUy+6nYAKrbiidUBaioiwYELkpopEKIPOLlz4Te8N
+ P02miK3YP0X5Ueb57iF6rBk3mE18+OiLxSsX7LinVBG/726JDs3U+4kNVIWmM21gY5uP
+ JJ+CDdIMtnnJjl5rZVCOyqpvL4yfJOPhOUqVNkzmp01JPhTH9F5HVXoU+87GlMDquC8N
+ CJ6A==
+X-Gm-Message-State: AOAM531xYExRmLVxHigNR9K2hX4jK4Xz3P3AOc0bRf6uXqHfV6De4Qt0
+ I+brxqqIiySUJdBXHTwLH08=
+X-Google-Smtp-Source: ABdhPJzaWk38LeqfKmLypaOGl7ffmdvt0c0bJk6i9AejEUNHdMbwxgKF0PlxU0vz+DQ2qmfzA+b1OQ==
+X-Received: by 2002:aca:ef84:: with SMTP id n126mr15301837oih.78.1618839402271; 
+ Mon, 19 Apr 2021 06:36:42 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id
+ p22sm3563941otf.25.2021.04.19.06.36.36
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 19 Apr 2021 06:36:41 -0700 (PDT)
+Subject: Re: [RFC v1 PATCH 3/3] driver: update all the code that use
+ soc_device_match
+To: "Alice Guo (OSS)" <alice.guo@oss.nxp.com>, gregkh@linuxfoundation.org,
+ rafael@kernel.org, horia.geanta@nxp.com, aymen.sghaier@nxp.com,
+ herbert@gondor.apana.org.au, davem@davemloft.net, tony@atomide.com,
+ geert+renesas@glider.be, mturquette@baylibre.com, sboyd@kernel.org,
+ vkoul@kernel.org, peter.ujfalusi@gmail.com, a.hajda@samsung.com,
+ narmstrong@baylibre.com, robert.foss@linaro.org, airlied@linux.ie,
+ daniel@ffwll.ch, khilman@baylibre.com, tomba@kernel.org, jyri.sarha@iki.fi,
+ joro@8bytes.org, will@kernel.org, mchehab@kernel.org,
+ ulf.hansson@linaro.org, adrian.hunter@intel.com, kishon@ti.com,
+ kuba@kernel.org, linus.walleij@linaro.org, Roy.Pledge@nxp.com,
+ leoyang.li@nxp.com, ssantosh@kernel.org, matthias.bgg@gmail.com,
+ edubezval@gmail.com, j-keerthy@ti.com, balbi@kernel.org,
+ linux@prisktech.co.nz, stern@rowland.harvard.edu, wim@linux-watchdog.org
+References: <20210419042722.27554-1-alice.guo@oss.nxp.com>
+ <20210419042722.27554-4-alice.guo@oss.nxp.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+Message-ID: <5a6550d9-083a-cc50-a6c0-ce035ceb1b2f@roeck-us.net>
+Date: Mon, 19 Apr 2021 06:36:35 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <87sg3mct3x.fsf@mpe.ellerman.id.au>
+In-Reply-To: <20210419042722.27554-4-alice.guo@oss.nxp.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 20 Apr 2021 07:56:16 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,91 +154,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ linux-gpio@vger.kernel.org, netdev@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-renesas-soc@vger.kernel.org, linux-phy@lists.infradead.org,
+ iommu@lists.linux-foundation.org, linux-mediatek@lists.infradead.org,
+ linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+ linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/19/21 6:16 AM, Michael Ellerman wrote:
-> Randy Dunlap <rdunlap@infradead.org> writes:
-
->> Sure.  I'll post them later today.
->> They keep FPU and ALTIVEC as independent (build) features.
+On 4/18/21 9:27 PM, Alice Guo (OSS) wrote:
+> From: Alice Guo <alice.guo@nxp.com>
 > 
-> Those patches look OK.
+> Update all the code that use soc_device_match because add support for
+> soc_device_match returning -EPROBE_DEFER.
 > 
-> But I don't think it makes sense to support that configuration, FPU=n
-> ALTVEC=y. No one is ever going to make a CPU like that. We have enough
-> testing surface due to configuration options, without adding artificial
-> combinations that no one is ever going to use.
+> Signed-off-by: Alice Guo <alice.guo@nxp.com>
+> ---
+[ ... ]
+>  drivers/watchdog/renesas_wdt.c                |  2 +-
+>  48 files changed, 131 insertions(+), 52 deletions(-)
 > 
-> IMHO :)
+[ ... ]
+> diff --git a/drivers/watchdog/renesas_wdt.c b/drivers/watchdog/renesas_wdt.c
+> index 5791198960e6..fdc534dc4024 100644
+> --- a/drivers/watchdog/renesas_wdt.c
+> +++ b/drivers/watchdog/renesas_wdt.c
+> @@ -197,7 +197,7 @@ static bool rwdt_blacklisted(struct device *dev)
+>  	const struct soc_device_attribute *attr;
+>  
+>  	attr = soc_device_match(rwdt_quirks_match);
+> -	if (attr && setup_max_cpus > (uintptr_t)attr->data) {
+> +	if (!IS_ERR(attr) && attr && setup_max_cpus > (uintptr_t)attr->data) {
+
+This is wrong. We can not make the decision below without having access
+to attr. The function may wrongly return false if soc_device_match()
+returns an error.
+
+Guenter
+
+>  		dev_info(dev, "Watchdog blacklisted on %s %s\n", attr->soc_id,
+>  			 attr->revision);
+>  		return true;
 > 
-> So I'd rather we just make ALTIVEC depend on FPU.
-
-That's rather simple. See below.
-I'm doing a bunch of randconfig builds with it now.
-
----
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH] powerpc: make ALTIVEC depend PPC_FPU
-
-On a kernel config with ALTIVEC=y and PPC_FPU not set/enabled,
-there are build errors:
-
-drivers/cpufreq/pmac32-cpufreq.c:262:2: error: implicit declaration of function 'enable_kernel_fp' [-Werror,-Wimplicit-function-declaration]
-           enable_kernel_fp();
-../arch/powerpc/lib/sstep.c: In function 'do_vec_load':
-../arch/powerpc/lib/sstep.c:637:3: error: implicit declaration of function 'put_vr' [-Werror=implicit-function-declaration]
-  637 |   put_vr(rn, &u.v);
-      |   ^~~~~~
-../arch/powerpc/lib/sstep.c: In function 'do_vec_store':
-../arch/powerpc/lib/sstep.c:660:3: error: implicit declaration of function 'get_vr'; did you mean 'get_oc'? [-Werror=implicit-function-declaration]
-  660 |   get_vr(rn, &u.v);
-      |   ^~~~~~
-
-In theory ALTIVEC is independent of PPC_FPU but in practice nobody
-is going to build such a machine, so make ALTIVEC require PPC_FPU
-by depending on PPC_FPU.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: lkp@intel.com
----
- arch/powerpc/platforms/86xx/Kconfig    |    1 +
- arch/powerpc/platforms/Kconfig.cputype |    2 ++
- 2 files changed, 3 insertions(+)
-
---- linux-next-20210416.orig/arch/powerpc/platforms/86xx/Kconfig
-+++ linux-next-20210416/arch/powerpc/platforms/86xx/Kconfig
-@@ -4,6 +4,7 @@ menuconfig PPC_86xx
- 	bool "86xx-based boards"
- 	depends on PPC_BOOK3S_32
- 	select FSL_SOC
-+	select PPC_FPU
- 	select ALTIVEC
- 	help
- 	  The Freescale E600 SoCs have 74xx cores.
---- linux-next-20210416.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-next-20210416/arch/powerpc/platforms/Kconfig.cputype
-@@ -186,6 +186,7 @@ config E300C3_CPU
- config G4_CPU
- 	bool "G4 (74xx)"
- 	depends on PPC_BOOK3S_32
-+	select PPC_FPU
- 	select ALTIVEC
- 
- endchoice
-@@ -309,6 +310,7 @@ config PHYS_64BIT
- 
- config ALTIVEC
- 	bool "AltiVec Support"
-+	depends on PPC_FPU
- 	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64 || (PPC_E500MC && PPC64)
- 	help
- 	  This option enables kernel support for the Altivec extensions to the
