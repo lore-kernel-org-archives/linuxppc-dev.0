@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C805C43460
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:06:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DEBDC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A006C60241
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:06:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A006C60241
+	by mail.kernel.org (Postfix) with ESMTPS id 27D16610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27D16610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtYX34n0z3dsL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:06:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtYt6M1Cz3f00
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:07:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVR6dp2z3c0M
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVT0FKbz3cGB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:17 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVR03sGz9vGs; Mon, 19 Apr 2021 14:04:14 +1000 (AEST)
+ id 4FNtVR5nzHz9tl3; Mon, 19 Apr 2021 14:04:15 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
- Qinglang Miao <miaoqinglang@huawei.com>, Bixuan Cui <cuibixuan@huawei.com>
-In-Reply-To: <20210409063855.57347-1-cuibixuan@huawei.com>
-References: <20210409063855.57347-1-cuibixuan@huawei.com>
-Subject: Re: [PATCH -next] powerpc/powernv: make symbol 'mpipl_kobj' static
-Message-Id: <161880479893.1398509.5196822029182381609.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:58 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, Bixuan Cui <cuibixuan@huawei.com>,
+ Liu Shixin <liushixin2@huawei.com>
+In-Reply-To: <20210409090109.59347-1-cuibixuan@huawei.com>
+References: <20210409090109.59347-1-cuibixuan@huawei.com>
+Subject: Re: [PATCH -next] powerpc/pseries: Make symbol
+ '__pcpu_scope_hcall_stats' static
+Message-Id: <161880479761.1398509.15398715314309643145.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,17 +59,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 9 Apr 2021 14:38:55 +0800, Bixuan Cui wrote:
+On Fri, 9 Apr 2021 17:01:09 +0800, Bixuan Cui wrote:
 > The sparse tool complains as follows:
 > 
-> arch/powerpc/platforms/powernv/opal-core.c:74:16: warning:
->  symbol 'mpipl_kobj' was not declared.
+> arch/powerpc/platforms/pseries/hvCall_inst.c:29:1: warning:
+>  symbol '__pcpu_scope_hcall_stats' was not declared. Should it be static?
 > 
-> This symbol is not used outside of opal-core.c, so marks it static.
+> This symbol is not used outside of hvCall_inst.c, so this
+> commit marks it static.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv: make symbol 'mpipl_kobj' static
-      https://git.kernel.org/powerpc/c/ff0b4155ae9903539d1299a9a4c8717fb7eb6009
+[1/1] powerpc/pseries: Make symbol '__pcpu_scope_hcall_stats' static
+      https://git.kernel.org/powerpc/c/193e4cd8ed9dd01092d01df7706a6b344c946af4
 
 cheers
