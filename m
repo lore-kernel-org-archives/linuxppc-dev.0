@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECF73C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8CE3C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 851E961106
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 851E961106
+	by mail.kernel.org (Postfix) with ESMTPS id 4EF23610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EF23610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtky1nlNz3h4v
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:15:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtlL0Zbgz3ddb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:15:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtWD3XBgz3cPd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtWD3XWFz3ccd
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:56 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtW36lkFz9vGg; Mon, 19 Apr 2021 14:04:43 +1000 (AEST)
+ id 4FNtVz10WGz9vHf; Mon, 19 Apr 2021 14:04:42 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Yu Kuai <yukuai3@huawei.com>, benh@kernel.crashing.org
-In-Reply-To: <20210407125738.4138480-1-yukuai3@huawei.com>
-References: <20210407125738.4138480-1-yukuai3@huawei.com>
-Subject: Re: [PATCH] windfarm: make symbol 'wf_thread' static
-Message-Id: <161880479082.1398509.3847359134460061965.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:50 +1000
+To: Yu Kuai <yukuai3@huawei.com>, mpe@ellerman.id.au
+In-Reply-To: <20210407125903.4139663-1-yukuai3@huawei.com>
+References: <20210407125903.4139663-1-yukuai3@huawei.com>
+Subject: Re: [PATCH] powerpc/smp: Make some symbols static
+Message-Id: <161880479136.1398509.6657730746176929719.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:51 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -57,18 +57,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 7 Apr 2021 20:57:38 +0800, Yu Kuai wrote:
+On Wed, 7 Apr 2021 20:59:03 +0800, Yu Kuai wrote:
 > The sparse tool complains as follows:
 > 
-> drivers/macintosh/windfarm_core.c:59:20: warning:
->  symbol 'wf_thread' was not declared. Should it be static?
+> arch/powerpc/kernel/smp.c:86:1: warning:
+>  symbol '__pcpu_scope_cpu_coregroup_map' was not declared. Should it be static?
+> arch/powerpc/kernel/smp.c:125:1: warning:
+>  symbol '__pcpu_scope_thread_group_l1_cache_map' was not declared. Should it be static?
+> arch/powerpc/kernel/smp.c:132:1: warning:
+>  symbol '__pcpu_scope_thread_group_l2_cache_map' was not declared. Should it be static?
 > 
-> This symbol is not used outside of windfarm_core.c, so this
-> commit marks it static.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] windfarm: make symbol 'wf_thread' static
-      https://git.kernel.org/powerpc/c/4204ecd598cb0a044e6fcfd48e569080955347f4
+[1/1] powerpc/smp: Make some symbols static
+      https://git.kernel.org/powerpc/c/078277acbd7c3fdb25c01a3cd5b4a1a875a1ab2f
 
 cheers
