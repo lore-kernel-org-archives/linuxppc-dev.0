@@ -2,63 +2,74 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74BF7C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 15:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA03CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 16:41:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4D0561246
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 15:49:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4D0561246
+	by mail.kernel.org (Postfix) with ESMTPS id 2DF0061090
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 16:41:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DF0061090
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FPB7n4cCCz3bx5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 01:49:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FPCJQ5FRYz30Qb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 02:41:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FPB6l6XM9z2xZn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 01:48:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FPCJ30HP6z2xZc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 02:41:19 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FPB6Y6hfxz9vBLl;
- Mon, 19 Apr 2021 17:48:05 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FPCHr05Bbz9vBmZ;
+ Mon, 19 Apr 2021 18:41:12 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0s39wdQb51ZY; Mon, 19 Apr 2021 17:48:05 +0200 (CEST)
+ with ESMTP id ByG0UeFaG4_7; Mon, 19 Apr 2021 18:41:11 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FPB6Y5vjvz9vBLc;
- Mon, 19 Apr 2021 17:48:05 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FPCHq6Dlmz9vBmY;
+ Mon, 19 Apr 2021 18:41:11 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BD8BA8B7C9;
- Mon, 19 Apr 2021 17:48:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3D43E8B7C9;
+ Mon, 19 Apr 2021 18:41:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id qKJyktnjQU4U; Mon, 19 Apr 2021 17:48:10 +0200 (CEST)
-Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 64A868B7C6;
- Mon, 19 Apr 2021 17:48:10 +0200 (CEST)
-Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3EDA067A2A; Mon, 19 Apr 2021 15:48:10 +0000 (UTC)
-Message-Id: <bd80ace67757f489fc4ecdb76dd1a71511daba94.1618847273.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <e1147287bf6f2fb0693048fe8db0298c7870e419.1618847273.git.christophe.leroy@csgroup.eu>
-References: <e1147287bf6f2fb0693048fe8db0298c7870e419.1618847273.git.christophe.leroy@csgroup.eu>
+ with ESMTP id nDGl7TOpMiLz; Mon, 19 Apr 2021 18:41:17 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 56BD68B7C6;
+ Mon, 19 Apr 2021 18:41:16 +0200 (CEST)
+Subject: Re: [PATCH v1 3/5] mm: ptdump: Provide page size to notepage()
+To: Steven Price <steven.price@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ akpm@linux-foundation.org
+References: <cover.1618506910.git.christophe.leroy@csgroup.eu>
+ <1ef6b954fb7b0f4dfc78820f1e612d2166c13227.1618506910.git.christophe.leroy@csgroup.eu>
+ <41819925-3ee5-4771-e98b-0073e8f095cf@arm.com>
+ <da53d2f2-b472-0c38-bdd5-99c5a098675d@csgroup.eu>
+ <1102cda1-b00f-b6ef-6bf3-22068cc11510@arm.com>
+ <627ee414-2f78-94e3-b77b-1013f52e77e3@csgroup.eu>
+ <4a76fbda-aa9d-867b-e2eb-a1951780aeec@arm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 2/3] powerpc/32s: Enhance readability of trap types
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- sxwjean@gmail.com
-Date: Mon, 19 Apr 2021 15:48:10 +0000 (UTC)
+Message-ID: <4cdd8dc0-34d6-11a3-f3b2-d6eb58c435c7@csgroup.eu>
+Date: Mon, 19 Apr 2021 18:41:16 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.1
+MIME-Version: 1.0
+In-Reply-To: <4a76fbda-aa9d-867b-e2eb-a1951780aeec@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,204 +81,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch makes use of trap types in head_book3s_32.S
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/interrupt.h |  6 ++++
- arch/powerpc/kernel/head_book3s_32.S | 43 ++++++++++++++--------------
- 2 files changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index cf2c5c3ae716..8970990e3b08 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -27,6 +27,7 @@
- #ifdef CONFIG_PPC_BOOK3S
- #define INTERRUPT_DOORBELL        0xa00
- #define INTERRUPT_PERFMON         0xf00
-+#define INTERRUPT_ALTIVEC_UNAVAIL	0xf20
- #endif
- 
- /* BookE/BookS/4xx/8xx */
-@@ -57,6 +58,11 @@
- #define INTERRUPT_DATA_BREAKPOINT_8xx	0x1c00
- #define INTERRUPT_INST_BREAKPOINT_8xx	0x1d00
- 
-+/* 603 */
-+#define INTERRUPT_INST_TLB_MISS_603		0x1000
-+#define INTERRUPT_DATA_LOAD_TLB_MISS_603	0x1100
-+#define INTERRUPT_DATA_STORE_TLB_MISS_603	0x1200
-+
- #ifndef __ASSEMBLY__
- 
- #include <linux/context_tracking.h>
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index 18f4ae163f34..065178f19a3d 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -31,6 +31,7 @@
- #include <asm/kvm_book3s_asm.h>
- #include <asm/export.h>
- #include <asm/feature-fixups.h>
-+#include <asm/interrupt.h>
- 
- #include "head_32.h"
- 
-@@ -239,7 +240,7 @@ __secondary_hold_acknowledge:
- /* System reset */
- /* core99 pmac starts the seconary here by changing the vector, and
-    putting it back to what it was (unknown_async_exception) when done.  */
--	EXCEPTION(0x100, Reset, unknown_async_exception)
-+	EXCEPTION(INTERRUPT_SYSTEM_RESET, Reset, unknown_async_exception)
- 
- /* Machine check */
- /*
-@@ -255,7 +256,7 @@ __secondary_hold_acknowledge:
-  * pointer when we take an exception from supervisor mode.)
-  *	-- paulus.
-  */
--	START_EXCEPTION(0x200, MachineCheck)
-+	START_EXCEPTION(INTERRUPT_MACHINE_CHECK, MachineCheck)
- 	EXCEPTION_PROLOG_0
- #ifdef CONFIG_PPC_CHRP
- 	mtspr	SPRN_SPRG_SCRATCH2,r1
-@@ -276,7 +277,7 @@ __secondary_hold_acknowledge:
- 	b	interrupt_return
- 
- /* Data access exception. */
--	START_EXCEPTION(0x300, DataAccess)
-+	START_EXCEPTION(INTERRUPT_DATA_STORAGE, DataAccess)
- #ifdef CONFIG_PPC_BOOK3S_604
- BEGIN_MMU_FTR_SECTION
- 	mtspr	SPRN_SPRG_SCRATCH2,r10
-@@ -297,7 +298,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_HPTE_TABLE)
- #endif
- 1:	EXCEPTION_PROLOG_0 handle_dar_dsisr=1
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2 0x300 DataAccess handle_dar_dsisr=1
-+	EXCEPTION_PROLOG_2 INTERRUPT_DATA_STORAGE DataAccess handle_dar_dsisr=1
- 	prepare_transfer_to_handler
- 	lwz	r5, _DSISR(r11)
- 	andis.	r0, r5, DSISR_DABRMATCH@h
-@@ -310,7 +311,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_HPTE_TABLE)
- 
- 
- /* Instruction access exception. */
--	START_EXCEPTION(0x400, InstructionAccess)
-+	START_EXCEPTION(INTERRUPT_INST_STORAGE, InstructionAccess)
- 	mtspr	SPRN_SPRG_SCRATCH0,r10
- 	mtspr	SPRN_SPRG_SCRATCH1,r11
- 	mfspr	r10, SPRN_SPRG_THREAD
-@@ -330,7 +331,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 	andi.	r11, r11, MSR_PR
- 
- 	EXCEPTION_PROLOG_1
--	EXCEPTION_PROLOG_2 0x400 InstructionAccess
-+	EXCEPTION_PROLOG_2 INTERRUPT_INST_STORAGE InstructionAccess
- 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
- 	stw	r5, _DSISR(r11)
- 	stw	r12, _DAR(r11)
-@@ -339,19 +340,19 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 	b	interrupt_return
- 
- /* External interrupt */
--	EXCEPTION(0x500, HardwareInterrupt, do_IRQ)
-+	EXCEPTION(INTERRUPT_EXTERNAL, HardwareInterrupt, do_IRQ)
- 
- /* Alignment exception */
--	START_EXCEPTION(0x600, Alignment)
--	EXCEPTION_PROLOG 0x600 Alignment handle_dar_dsisr=1
-+	START_EXCEPTION(INTERRUPT_ALIGNMENT, Alignment)
-+	EXCEPTION_PROLOG INTERRUPT_ALIGNMENT Alignment handle_dar_dsisr=1
- 	prepare_transfer_to_handler
- 	bl	alignment_exception
- 	REST_NVGPRS(r1)
- 	b	interrupt_return
- 
- /* Program check exception */
--	START_EXCEPTION(0x700, ProgramCheck)
--	EXCEPTION_PROLOG 0x700 ProgramCheck
-+	START_EXCEPTION(INTERRUPT_PROGRAM, ProgramCheck)
-+	EXCEPTION_PROLOG INTERRUPT_PROGRAM ProgramCheck
- 	prepare_transfer_to_handler
- 	bl	program_check_exception
- 	REST_NVGPRS(r1)
-@@ -367,7 +368,7 @@ BEGIN_FTR_SECTION
-  */
- 	b 	ProgramCheck
- END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
--	EXCEPTION_PROLOG 0x800 FPUnavailable
-+	EXCEPTION_PROLOG INTERRUPT_FP_UNAVAIL FPUnavailable
- 	beq	1f
- 	bl	load_up_fpu		/* if from user, just load it up */
- 	b	fast_exception_return
-@@ -379,16 +380,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
- #endif
- 
- /* Decrementer */
--	EXCEPTION(0x900, Decrementer, timer_interrupt)
-+	EXCEPTION(INTERRUPT_DECREMENTER, Decrementer, timer_interrupt)
- 
- 	EXCEPTION(0xa00, Trap_0a, unknown_exception)
- 	EXCEPTION(0xb00, Trap_0b, unknown_exception)
- 
- /* System call */
--	START_EXCEPTION(0xc00, SystemCall)
--	SYSCALL_ENTRY	0xc00
-+	START_EXCEPTION(INTERRUPT_SYSCALL, SystemCall)
-+	SYSCALL_ENTRY	INTERRUPT_SYSCALL
- 
--	EXCEPTION(0xd00, SingleStep, single_step_exception)
-+	EXCEPTION(INTERRUPT_TRACE, SingleStep, single_step_exception)
- 	EXCEPTION(0xe00, Trap_0e, unknown_exception)
- 
- /*
-@@ -399,10 +400,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
-  * non-altivec kernel running on a machine with altivec just
-  * by executing an altivec instruction.
-  */
--	START_EXCEPTION(0xf00, PerformanceMonitorTrap)
-+	START_EXCEPTION(INTERRUPT_PERFMON, PerformanceMonitorTrap)
- 	b	PerformanceMonitor
- 
--	START_EXCEPTION(0xf20, AltiVecUnavailableTrap)
-+	START_EXCEPTION(INTERRUPT_ALTIVEC_UNAVAIL, AltiVecUnavailableTrap)
- 	b	AltiVecUnavailable
- 
- 	__HEAD
-@@ -410,7 +411,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
-  * Handle TLB miss for instruction on 603/603e.
-  * Note: we get an alternate set of r0 - r3 to use automatically.
-  */
--	. = 0x1000
-+	. = INTERRUPT_INST_TLB_MISS_603
- InstructionTLBMiss:
- /*
-  * r0:	scratch
-@@ -476,7 +477,7 @@ InstructionAddressInvalid:
- /*
-  * Handle TLB miss for DATA Load operation on 603/603e
-  */
--	. = 0x1100
-+	. = INTERRUPT_DATA_LOAD_TLB_MISS_603
- DataLoadTLBMiss:
- /*
-  * r0:	scratch
-@@ -554,7 +555,7 @@ DataAddressInvalid:
- /*
-  * Handle TLB miss for DATA Store on 603/603e
-  */
--	. = 0x1200
-+	. = INTERRUPT_DATA_STORE_TLB_MISS_603
- DataStoreTLBMiss:
- /*
-  * r0:	scratch
--- 
-2.25.0
+Le 19/04/2021 à 16:00, Steven Price a écrit :
+> On 19/04/2021 14:14, Christophe Leroy wrote:
+>>
+>>
+>> Le 16/04/2021 à 12:51, Steven Price a écrit :
+>>> On 16/04/2021 11:38, Christophe Leroy wrote:
+>>>>
+>>>>
+>>>> Le 16/04/2021 à 11:28, Steven Price a écrit :
+>>>>> On 15/04/2021 18:18, Christophe Leroy wrote:
+>>>>>
+>>>>> To be honest I don't fully understand why powerpc requires the page_size - it appears to be 
+>>>>> using it purely to find "holes" in the calls to note_page(), but I haven't worked out why such 
+>>>>> holes would occur.
+>>>>
+>>>> I was indeed introduced for KASAN. We have a first commit 
+>>>> https://github.com/torvalds/linux/commit/cabe8138 which uses page size to detect whether it is a 
+>>>> KASAN like stuff.
+>>>>
+>>>> Then came https://github.com/torvalds/linux/commit/b00ff6d8c as a fix. I can't remember what the 
+>>>> problem was exactly, something around the use of hugepages for kernel memory, came as part of 
+>>>> the series 
+>>>> https://patchwork.ozlabs.org/project/linuxppc-dev/cover/cover.1589866984.git.christophe.leroy@csgroup.eu/ 
+>>>
+>>>
+>>>
+>>>
+>>> Ah, that's useful context. So it looks like powerpc took a different route to reducing the KASAN 
+>>> output to x86.
+>>>
+>>> Given the generic ptdump code has handling for KASAN already it should be possible to drop that 
+>>> from the powerpc arch code, which I think means we don't actually need to provide page size to 
+>>> notepage(). Hopefully that means more code to delete ;)
+>>>
+>>
+>> Looking at how the generic ptdump code handles KASAN, I'm a bit sceptic.
+>>
+>> IIUC, it is checking that kasan_early_shadow_pte is in the same page as the pgtable referred by 
+>> the PMD entry. But what happens if that PMD entry is referring another pgtable which is inside the 
+>> same page as kasan_early_shadow_pte ?
+>>
+>> Shouldn't the test be
+>>
+>>      if (pmd_page_vaddr(val) == lm_alias(kasan_early_shadow_pte))
+>>          return note_kasan_page_table(walk, addr);
+> 
+> Now I come to look at this code again, I think you're right. On arm64 this doesn't cause a problem - 
+> page tables are page sized and page aligned, so there couldn't be any non-KASAN pgtables sharing the 
+> page. Obviously that's not necessarily true of other architectures.
+> 
+> Feel free to add a patch to your series ;)
+> 
 
+Ok.
+
+I'll leave that outside of the series, it is not a show stopper because early shadow page 
+directories are all tagged __bss_page_aligned so we can't have two of them in the same page and it 
+is really unlikely that we'll have any other statically defined page directory in the same pages either.
+
+And for the special case of powerpc 8xx which is the only one for which we have both KASAN and 
+HUGEPD at the time being, there are only two levels of page directories so no issue.
+
+Christophe
