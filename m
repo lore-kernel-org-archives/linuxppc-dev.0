@@ -1,113 +1,63 @@
-Return-Path: <SRS0=Xpyi=JP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD17CC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 21:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB4EC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 03:08:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05A3F61019
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Apr 2021 21:09:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05A3F61019
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CA37B6102A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 03:08:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA37B6102A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNjHl3YZYz3bvj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 07:09:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNsFn0Qspz3bxS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 13:08:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nulhOh7+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=WyWGtrmK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=pc@us.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=nulhOh7+; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=WyWGtrmK; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNjHD0dDjz2yxT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 07:08:55 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13IL4EN8140026; Sun, 18 Apr 2021 17:08:45 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=GlpfFybMxhX3l/tszkEhB1wun0R3HDvFs5Opdi6MidI=;
- b=nulhOh7+FwMip4woMgONOjsRlUKMV0pY9QO9QMAxKCsZ7hKHNdVfm6+utRRZp4s5DWU1
- JrTXMHMIStlv3KfK+VGnrOZGhUUl0zzyGvt2jooed7NWi9+ZnhBYZLcscOrNhnRfjc2L
- p6qZBZC02ha2n9wuV/gOufnn+paH86e2tZ1afs0x9+yEGJ+tnpYYKiW635pPbj/EoYEm
- aStsTVXJ6Avt+aGeFMfC14KYRNNm64pJ65DR+98gajM+t2k9LsMxaThQoDtSfGiwZ8+d
- rZvUTzHwhI0GU97Wva67QdQFNewfQgEBgaUuKMIY4OEGzljRq1j/nZy7iuSbCDQ5em20 fQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380d6u4wbb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 18 Apr 2021 17:08:45 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13IL8WUq151285;
- Sun, 18 Apr 2021 17:08:44 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380d6u4way-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 18 Apr 2021 17:08:44 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13IL6MsT016479;
- Sun, 18 Apr 2021 21:08:43 GMT
-Received: from b03cxnp07027.gho.boulder.ibm.com
- (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by ppma04wdc.us.ibm.com with ESMTP id 37yqa94vpb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 18 Apr 2021 21:08:43 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13IL8gXw31654160
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 18 Apr 2021 21:08:42 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 33FAA6E04C;
- Sun, 18 Apr 2021 21:08:42 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F09FE6E052;
- Sun, 18 Apr 2021 21:08:40 +0000 (GMT)
-Received: from li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com (unknown
- [9.80.215.120])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Sun, 18 Apr 2021 21:08:40 +0000 (GMT)
-Date: Sun, 18 Apr 2021 16:08:38 -0500
-From: "Paul A. Clarke" <pc@us.ibm.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH] perf vendor events: Initial json/events list for power10
- platform
-Message-ID: <20210418210838.GA1845018@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
-References: <20210417091850.596023-1-kjain@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNsFG4rztz304D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 13:07:46 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 4FNsFD4bfyz9vG3; Mon, 19 Apr 2021 13:07:44 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1618801664;
+ bh=5b9p2pFUf9CvasgQR2C2eohBtdxAe1bRW7b9lyDorGc=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=WyWGtrmKuwtXAtyzrGCxvTcsYEIYhyJcRn20YmgITLthNgn+InvHIwnvrGeQn87Cc
+ eg4/3u/WBtgBNOzObBzhE7NcEu01tk2u/eF6DXCKSHh/Op5RSJ3D9jnq3aPwcXq4fT
+ HDjUItbxKh1bjibsvw9RZfObetf3yvw1ayP29SVQ=
+Date: Mon, 19 Apr 2021 11:17:37 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc/smp: Reintroduce cpu_core_mask
+Message-ID: <YHzaMVm3nJfTtDrs@yekko.fritz.box>
+References: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
+ <20210415120934.232271-2-srikar@linux.vnet.ibm.com>
+ <YHkCvuNfZLQRxjU8@yekko.fritz.box>
+ <20210416054549.GF2633526@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="MFiVFzh7bcjXr8e3"
 Content-Disposition: inline
-In-Reply-To: <20210417091850.596023-1-kjain@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: iTPRTMvvFGLqYmLdim0CnCBl82P3s02-
-X-Proofpoint-ORIG-GUID: L5DE-voB-aJlTPQ_WJmS-rh889xGRRmB
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-18_14:2021-04-16,
- 2021-04-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0
- mlxlogscore=999 spamscore=0 impostorscore=0 malwarescore=0 bulkscore=0
- clxscore=1011 phishscore=0 mlxscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104180151
+In-Reply-To: <20210416054549.GF2633526@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,27 +69,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, atrajeev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, acme@kernel.org,
- linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, jolsa@redhat.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ hegdevasant@linux.vnet.ibm.com, qemu-ppc@nongnu.org,
+ Cedric Le Goater <clg@kaod.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 17, 2021 at 02:48:50PM +0530, Kajol Jain wrote:
-> Patch adds initial json/events for POWER10.
 
-I was able to apply, build, and run perf with these changes,
-and every new event at least ran successfully with
-`perf stat`.
+--MFiVFzh7bcjXr8e3
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Pedantically, there is a lot of inconsistency as to whether
-the `BriefDescription` ends with a period or not, and whether
-there is an extra space at the end.
+On Fri, Apr 16, 2021 at 11:15:49AM +0530, Srikar Dronamraju wrote:
+> * David Gibson <david@gibson.dropbear.id.au> [2021-04-16 13:21:34]:
+>=20
+> Thanks for having a look at the patches.
+>=20
+> > On Thu, Apr 15, 2021 at 05:39:32PM +0530, Srikar Dronamraju wrote:
+> > > Daniel reported that with Commit 4ca234a9cbd7 ("powerpc/smp: Stop
+> > > updating cpu_core_mask") QEMU was unable to set single NUMA node SMP
+> > > topologies such as:
+> > >  -smp 8,maxcpus=3D8,cores=3D2,threads=3D2,sockets=3D2
+> > >  i.e he expected 2 sockets in one NUMA node.
+> >=20
+> > Well, strictly speaking, you can still set that toplogy in qemu but a
+> > PAPR guest with that commit will show as having 1 socket in lscpu and
+> > similar things.
+> >=20
+>=20
+> Right, I did mention the o/p of lscpu in QEMU with the said commit and
+> with the new patches in the cover letter. Somehow I goofed up the cc
+> list for the cover letter.
+>=20
+> Reference for the cover letter:
+> https://lore.kernel.org/linuxppc-dev/20210415120934.232271-1-srikar@linux=
+=2Evnet.ibm.com/t/#u
+>=20
+> > Basically, this is because PAPR has no meaningful distinction between
+> > cores and sockets.  So it's kind of a cosmetic problem, but it is a
+> > user-unexpected behaviour that it would be nice to avoid if it's not
+> > excessively difficult.
+> >=20
+> > > The above commit helped to reduce boot time on Large Systems for
+> > > example 4096 vCPU single socket QEMU instance. PAPR is silent on
+> > > having more than one socket within a NUMA node.
+> > >=20
+> > > cpu_core_mask and cpu_cpu_mask for any CPU would be same unless the
+> > > number of sockets is different from the number of NUMA nodes.
+> >=20
+> > Number of sockets being different from number of NUMA nodes is routine
+> > in qemu, and I don't think it's something we should enforce.
+> >=20
+> > > One option is to reintroduce cpu_core_mask but use a slightly
+> > > different method to arrive at the cpu_core_mask. Previously each CPU's
+> > > chip-id would be compared with all other CPU's chip-id to verify if
+> > > both the CPUs were related at the chip level. Now if a CPU 'A' is
+> > > found related / (unrelated) to another CPU 'B', all the thread
+> > > siblings of 'A' and thread siblings of 'B' are automatically marked as
+> > > related / (unrelated).
+> > >=20
+> > > Also if a platform doesn't support ibm,chip-id property, i.e its
+> > > cpu_to_chip_id returns -1, cpu_core_map holds a copy of
+> > > cpu_cpu_mask().
+> >=20
+> > Yeah, the other weirdness here is that ibm,chip-id isn't a PAPR
+> > property at all - it was added for powernv.  We then added it to qemu
+> > for PAPR guests because that was the way at the time to get the guest
+> > to advertise the expected number of sockets.  It therefore basically
+> > *only* exists on PAPR/qemu for that purpose, so if it's not serving it
+> > we need to come up with something else.
+> >=20
+>=20
+> Do you have ideas on what that something could be like?
 
-Regardless, LGTM.
+Not really, sorry.
 
-Tested-by: Paul A. Clarke <pc@us.ibm.com>
-Reviewed-by: Paul A. Clarke <pc@us.ibm.com>
+> So if that's
+> more beneficial then we could move over to that scheme. Also apart
+> from ibm,chip-id being not a PAPR property, do you have any other
+> concerns with it.
 
-PC
+I think if we can keep ibm,chip-id doing this job, that would be
+simplest - as long as our PAPR usage isn't implying semantics which
+contradict what it does on powernv.  AIUI C=E9dric thought it did that,
+but with further discussion it seems like that might have been a
+misunderstanding incorrectly conflating chip-id with NUMA nodes.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--MFiVFzh7bcjXr8e3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmB82jEACgkQbDjKyiDZ
+s5L7sxAAhOOsv20tBp2GK9H74lgiIMHzZYvxtL8LXsmmEllEszIn4NFHtlXS5Kj9
+33rre6qjE8mqITuBW0678YHDmbaLssYUrSfWuSLHvhN1aFQc84jMUDYf0wkG3MvW
+hb4sXwrSE4AYmWzWQFQ9No1fqIxITRqJbx1xmu6I+/dn4T0mbWzVBI4GPcq05wjK
+VrHVjaFbZ+i0CQJfvMImDWdT4ALump4nKz/99am4JctJ3YgOQMhbb4nQaYdmrBGL
+/wh47cbBF6x8iBZU/F2KCAGfT5cefBhiRs1KYQkqXoG4NJuDlQXNcVPA6ozrmCec
+qdah3VGQ3uTc5LgKzDBJ8RtCHd3Dz/xD3mB+Wr0b/HCc9uhGjeOb82z44T0jkWB7
++Dhgd804L1elKr3W8xApXVbeC0Z654mqbX8vlFaaNtgZb9hghVcpQutIM+SjGXtE
+VIxDSWDTGIWU6OerLDYGH4JkAVCA84HXzmrg5Y7mcPqB3EwCoOLXdFeAfdTG2WI9
+SXk7D+4UF1oV2Sr63L9kJQOUEpNcV/SgGexc5FM74+zunaTh4tC+SG7dYTL59a4Z
+wnbypGc4evJNsbma22I+Ae8+q5boTf+cltBjKDeMbldokc2lz29lKFuRA+YdTuTd
+hq6zhjcBKfblduNq1rSMJER+ud+ZtqagRz1dlBjYXeJZ04mLzO0=
+=VaNN
+-----END PGP SIGNATURE-----
+
+--MFiVFzh7bcjXr8e3--
