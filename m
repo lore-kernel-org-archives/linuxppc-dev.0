@@ -2,116 +2,154 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9F86C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 06:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 811CEC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 06:21:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4ED261104
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 06:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4ED261104
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77A4760FDB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 06:21:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77A4760FDB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNxPn6HmFz3c00
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 16:15:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNxYH6g0Gz3bw4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 16:21:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o9pKviH8;
+	dkim=pass (1024-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-NXP1-onmicrosoft-com header.b=j+dOYrXf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=o9pKviH8; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=oss.nxp.com (client-ip=40.107.0.45;
+ helo=eur02-am5-obe.outbound.protection.outlook.com;
+ envelope-from=alice.guo@oss.nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-NXP1-onmicrosoft-com header.b=j+dOYrXf;
+ dkim-atps=neutral
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00045.outbound.protection.outlook.com [40.107.0.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNxPB2F6zz30Cw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 16:14:53 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13J62fQp106653; Mon, 19 Apr 2021 02:14:42 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=xkMdzWE54EfwUtKVXS/TXmVllMjccCELL3fNxFxcf8g=;
- b=o9pKviH808TkXJ17qpHlug/vxLpp2Fbw7172mJhdK0lED0TUNF5O2JEv+uqhXIVQhas1
- mEWLBr2rkHpO+PXVyNz+23oOzKWO3t2PXlE5iK2R162T+3lB1TfQHR/MvxzvFV8EuEfr
- Fs2e86Jp7UCzmoYFnRFtu3+YDW3OxnE9xkHqAF3/ePaozZ/gg+/0tw5drOxdZL3Owqy/
- fOetAYh9DOutNk0q3NacYWDbGFs0s2kR9gwU/lWu38kricER4lqGNPwj+jZEZlFQdMlN
- C1kNdAej/Ug5Q0kwDDJjCsh97kMVHi0kOsQB0edMikEEShZiH7B4cMBbWZpdf46D+IOj KQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380cnxwvvv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 02:14:42 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13J637WF108408;
- Mon, 19 Apr 2021 02:14:42 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 380cnxwvvb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 02:14:41 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13J692q4009923;
- Mon, 19 Apr 2021 06:14:40 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01wdc.us.ibm.com with ESMTP id 37yqa8fswf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Apr 2021 06:14:40 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13J6EdAt37421406
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 19 Apr 2021 06:14:39 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B02B76E04C;
- Mon, 19 Apr 2021 06:14:39 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8AE3C6E050;
- Mon, 19 Apr 2021 06:14:38 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.77.203.69])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 19 Apr 2021 06:14:38 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 01BF12E2EAB; Mon, 19 Apr 2021 11:44:28 +0530 (IST)
-Date: Mon, 19 Apr 2021 11:44:28 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Mel Gorman <mgorman@techsingularity.net>
-Subject: Re: [RFC/PATCH] powerpc/smp: Add SD_SHARE_PKG_RESOURCES flag to MC
- sched-domain
-Message-ID: <20210419061428.GA24456@in.ibm.com>
-References: <1617341874-1205-1-git-send-email-ego@linux.vnet.ibm.com>
- <20210412062436.GB2633526@linux.vnet.ibm.com>
- <20210412093722.GS3697@techsingularity.net>
- <871rbfom04.mognet@arm.com>
- <20210412104819.GT3697@techsingularity.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNv100FvQz2xYp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:27:13 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=BIfUylbF1u6g42Ih0vw50xP6D7xRSLWW2I9zIv8xpPfI+8QTA+Yvqs8rcEhgkShhN1F5VCTfikyuN00lU7MYQpLyAi61zSBXde+lBtKtZ91KF4JkDryrkKImQc4jtArTgkvv22rGSlWBi+316rG07ozzVX8yH+lrNaB4Y76q0iQ4zUQW6K3d9JzIJkWsU1QsvjfqMy2v6XzsDlch5VnExSBZi1Fditx7GwrKrLI7E/sfpEmjrnivx/IpLa9EXSocY6lD/yML7X4WAKNF1EY300fyMYpWitucXgZ/XL8CLbbwDx1OQw7Fi2QoTb2TSXTWyC1GIFPgb1qOvwl4cLPWlA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EGsFEeNS52w1ZRf0E7RmTdDzsa/XGegT9oBy+olcLfY=;
+ b=hGFFrgJo2nl82ALdcCWukVL33RkUM6iFcTbkS0Q6cbKM62pdvYnFsqLLOtlF+2o2VdYauLw4dwP2SOeHtc3aZK7MlLjtddm7LhJTrWTkIj6VkevHMcvevTOm0Iaa1xW8T6J+3i8PR8ODJ/vsRcMpNN5h52SiwRYematUkUoYYgadgMtAVfcWh/leBm2L8Tg51aG1SFFROj7+y2jsXIW81DOM/gOKW31vHMKMqX6qmnynX8F75iYwa4zb9oeycrCf1V0DNBxu5cGiiQ81HZj1l4KbQ6UDlERn6Pd76e3un4zKWXsAtWQNRqdFc0IAvJ55fTvey3xfXI4mXsOkubJDog==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com; 
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EGsFEeNS52w1ZRf0E7RmTdDzsa/XGegT9oBy+olcLfY=;
+ b=j+dOYrXfIk7Kfa0Fobi8pj2zSP1kRkdYvZPRfIcM8F+/XY2p5O6m146Lg8uw11qr8f1XCxfgzTkNhGiUBKIwzqfro+IOGzrsiOB/EFGQjxCT+tmokcK5gMw090mHbYn4cAawbUShERe9QsYw1J905qk2uPKxj/G1mOjHNwIbMt4=
+Authentication-Results: linuxfoundation.org; dkim=none (message not signed)
+ header.d=none;linuxfoundation.org; dmarc=none action=none
+ header.from=oss.nxp.com;
+Received: from AM6PR04MB6053.eurprd04.prod.outlook.com (2603:10a6:20b:b9::10)
+ by AS8PR04MB7912.eurprd04.prod.outlook.com (2603:10a6:20b:2ae::21)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4042.16; Mon, 19 Apr
+ 2021 04:27:06 +0000
+Received: from AM6PR04MB6053.eurprd04.prod.outlook.com
+ ([fe80::b034:690:56aa:7b18]) by AM6PR04MB6053.eurprd04.prod.outlook.com
+ ([fe80::b034:690:56aa:7b18%4]) with mapi id 15.20.4042.024; Mon, 19 Apr 2021
+ 04:26:59 +0000
+From: "Alice Guo (OSS)" <alice.guo@oss.nxp.com>
+To: gregkh@linuxfoundation.org, rafael@kernel.org, horia.geanta@nxp.com,
+ aymen.sghaier@nxp.com, herbert@gondor.apana.org.au, davem@davemloft.net,
+ tony@atomide.com, geert+renesas@glider.be, mturquette@baylibre.com,
+ sboyd@kernel.org, vkoul@kernel.org, peter.ujfalusi@gmail.com,
+ a.hajda@samsung.com, narmstrong@baylibre.com, robert.foss@linaro.org,
+ airlied@linux.ie, daniel@ffwll.ch, khilman@baylibre.com, tomba@kernel.org,
+ jyri.sarha@iki.fi, joro@8bytes.org, will@kernel.org, mchehab@kernel.org,
+ ulf.hansson@linaro.org, adrian.hunter@intel.com, kishon@ti.com,
+ kuba@kernel.org, linus.walleij@linaro.org, Roy.Pledge@nxp.com,
+ leoyang.li@nxp.com, ssantosh@kernel.org, matthias.bgg@gmail.com,
+ edubezval@gmail.com, j-keerthy@ti.com, balbi@kernel.org,
+ linux@prisktech.co.nz, stern@rowland.harvard.edu, wim@linux-watchdog.org,
+ linux@roeck-us.net
+Subject: [RFC v1 PATCH 0/3] support soc_device_match to return -EPROBE_DEFER
+Date: Mon, 19 Apr 2021 12:27:19 +0800
+Message-Id: <20210419042722.27554-1-alice.guo@oss.nxp.com>
+X-Mailer: git-send-email 2.17.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [119.31.174.71]
+X-ClientProxiedBy: AM0PR02CA0207.eurprd02.prod.outlook.com
+ (2603:10a6:20b:28f::14) To AM6PR04MB6053.eurprd04.prod.outlook.com
+ (2603:10a6:20b:b9::10)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210412104819.GT3697@techsingularity.net>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: AlW94Q4h-J0CO_TPTLG9dqDlm62lEXVJ
-X-Proofpoint-ORIG-GUID: Z5iYiWVV2IYnHQw6B5pz0_4JEqpBuppn
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-19_02:2021-04-16,
- 2021-04-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 suspectscore=0
- priorityscore=1501 mlxscore=0 phishscore=0 mlxlogscore=726 spamscore=0
- impostorscore=0 clxscore=1015 bulkscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104190041
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from nxf55104-OptiPlex-7060.ap.freescale.net (119.31.174.71) by
+ AM0PR02CA0207.eurprd02.prod.outlook.com (2603:10a6:20b:28f::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4042.19 via Frontend
+ Transport; Mon, 19 Apr 2021 04:26:40 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 9896ff12-c5b4-421f-f9a1-08d902eb5f30
+X-MS-TrafficTypeDiagnostic: AS8PR04MB7912:
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <AS8PR04MB7912513CE4C6A5F1A16187D3A3499@AS8PR04MB7912.eurprd04.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: AK1XnEs7EIU/2ApqujL4ENEsdD7cfE1FbgcvAaPgea6Hbv0vJgmkFlrJQc9Zwe0hRvg6ODWJqw7DeYSJRkwBUI6Dg9CvBg76tQsc/zECgFN9N0rU1PraAub2z1SmPXooxUEKWedxX5mry6PHesrXtLa56siBXEvmuwr/ay92Ty2P7nHxHjCjlwvncBhFzscBGAd2Tlz6ly4vsWI7jjwFt5zemq9s1tZzujO+pRaFFN0jLicObMUjXbOCYpNjld7qp3nLx4wkcfdipmjFsCJXiTk+x7LXtjQ3SFz3tJFe1/gciMsGU9oMwC2wF7hUdL1RdpiZLDgJVep6zFnA56/ISZh0nJOUfxYyH5cueA1KZK3QNB6PMI7kZ0ex8+hoQL0dXjtTG6c4tOkauz1CuRnqiQ/2rBiwXb+SekuC44XZa1J4ady1C9t8Mg9honhFO5TtLtkNxiEbL90A14r7TxjM2Q61qy6OxOtFSpF1+lPl2Gkvxu+yivq0TNugxczd2YY6WAE1PONiwqP0D3oJlk28nEJrxZ1QsCEJrWIDpRmBdvt7cHDmn2IGnX0rbRNtHwm5Vj50Bwo2EmrqFvgMs/NwPESfADARD49yW+UCIFJAQxRl681Nbj7s55lka7wcQkZinoUggVYz1CbaryPIzm2Z/V/Nb1WtEpnxWWjL8aF5R7M=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AM6PR04MB6053.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(376002)(346002)(136003)(396003)(366004)(39860400002)(1076003)(66946007)(7406005)(478600001)(52116002)(66556008)(66476007)(2906002)(7366002)(7416002)(8936002)(921005)(8676002)(4326008)(5660300002)(16526019)(26005)(38100700002)(83380400001)(956004)(2616005)(38350700002)(6486002)(6666004)(6506007)(6512007)(186003)(316002)(86362001);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?aVdtSGVXV002Y2NaaDlsL2RhYzBTbFFsLzI0RnNqcmI3U2hjTTg1LzQvMEFx?=
+ =?utf-8?B?VE0ySXJiSmRSNEVPMG9SZ1p4OUxzb3hSbGkwK1VuZmJzcExSUkVXbmp1dUR1?=
+ =?utf-8?B?WlNoVFVCdmFpdEZ5KzNjV3ZhdkwrUG10L3IzQ3ViMndabVJPMHVjTUlLb210?=
+ =?utf-8?B?OTdnNFhLVUd6TEpwajVpdzdFaFRzVTVaTXUvMWFwa1J3V0RuS3FBalV6bkMw?=
+ =?utf-8?B?REtXbEh0RGR4cGlxMHpxN1ZmNFBmT3dBR285Q2k2QjZUSU9mUDZ4VzgvelpR?=
+ =?utf-8?B?bVhwVGZsT0hITTdha09TVnoyYnZCWVQvdUFhemJibnB4UXp1UTd3Z21xWHNO?=
+ =?utf-8?B?S2VDRm1oandzWHpTVjc0Qks2NFpuYmsxaUpRRlMyTTVhVHNvTXVJN0cvZURD?=
+ =?utf-8?B?c294ODZVaDdHb2ZRaVRNQXV4N1B4dmgxcHM5NXh4UFRVYWlGdTRmeTYwVjRX?=
+ =?utf-8?B?elpNU3VUMzNud2UrNFlxRFpQUytHVmorOFRRb2N6dlVMQ0t4Vmdua2lVQy80?=
+ =?utf-8?B?dWRZMDBJdWNZRjJZRlVRWlZKczdaK1hPSFlxOWJ0cC94aFo0eEk4czhkZDA2?=
+ =?utf-8?B?Q0NCdExiWXFGb1B3U3YyeXFRYjZjdmpTM1RJYTZIaVhiY1JTRDFVcXNobUIr?=
+ =?utf-8?B?Q3dDS2xHTHNZd1A5dy9rS29Jc0MvSVhMeU9LeFU1WllrSi9ZVFNoQWJvcHNw?=
+ =?utf-8?B?NlpKOFZXdnd1Y2YzcEJoOW1JYTVMRFhwcjdJQUlKRUp1S1RPUmd5L0R5cXAz?=
+ =?utf-8?B?WVRSbnRsNmZUM2hTeVRHdFdpdCtIMkJkZ0x2aitSdTJPVjNCTVRaU0w1dzBR?=
+ =?utf-8?B?SnNqZHBVREdVb25lVHVzTlpZSFcxMjRGb2JZNFhvU1hjc0tXWHk3clJMTEt5?=
+ =?utf-8?B?YVdqNEp0NENmT0RTcTNFZ3dWUjc4Z0UwUkdTSGdKeUNXRi94ZEI0RFQrTTdW?=
+ =?utf-8?B?UVVZY1pTSVpyMkg5VEZVM1hMUmdXTWF4WDJ3UTN3dEZzRmpEQUhrMTNtY2tM?=
+ =?utf-8?B?dHVOSitKdWpYWWcybmprNUl1N2Eyclp1T29rUlRsVnNIdzJmeVBSdjloTVhN?=
+ =?utf-8?B?RXk2cXZIR2RsQ2pBMHRreUw1TnBLYUZOWENzSGtTUXlnZlFnSDJUNXR1QzVV?=
+ =?utf-8?B?YVJlbXZFMFVFTXZjOVRtQlJlMkJXTzNad0NPRjlkRGd5UzlXdGRMd2FEdUFk?=
+ =?utf-8?B?bTJSVGVueTk1Q290MmFSN1dkSzlCYWxhVnhqZUdYb3Q1RTQ1eldkbkdVa1N6?=
+ =?utf-8?B?TXovZERmclBxY0xjemkrbUNHVjRNMU1GOW4vMXFjc3pnR0wrd201dmpqSllU?=
+ =?utf-8?B?SVIxV2Y2MlhaU2svdzVvMldRcUdyK2hRVitkUUpPeVd1S2hNNlRxMkpSUDE1?=
+ =?utf-8?B?OUY0UEFoUmNEMWVCdS9aeUFURG56bngrYWVSMUJoTFhSMmVqdjAvM05mblVn?=
+ =?utf-8?B?bVYxYm5LeWNXbWNGeHFZQXdBZlZHd2JXbTFhWVNWR2taTzZnQTZQV2hVOFhJ?=
+ =?utf-8?B?QjMyYXNTcy9ab0x3eHdhS3lUd2pQUkJZWXFocU14Q2tTTGFwY3ZvZWlzYkpk?=
+ =?utf-8?B?ZkFwMXI0VHlxRXZ5SkdtZW1iMW04blZWTlVuWWRtV1MydkdTYUp4UDF0ZkVq?=
+ =?utf-8?B?V3hJSm1UQ0Jqc2xqSkNXZ2ZWT05JdVBKQStUVzI5RWRwU2dvRVcybXh5cWFy?=
+ =?utf-8?B?TllJSDNqVENVSExBZmVSd3g0NzJvenVsUUZVU3dpbGhISjd6WmlmYytnNEpN?=
+ =?utf-8?Q?QGHOnxCgvOAwMkAbgHRHefjr/WYqcT969phCLa9?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9896ff12-c5b4-421f-f9a1-08d902eb5f30
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB6053.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Apr 2021 04:26:59.4616 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1IYHRUj96ZFPUGM224m5kKukwj6GivUjSaU/anOesbfoQxqSi1R6BEaAG0+PdVaFc474JX9J+PecEtTuEmLjOw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB7912
+X-Mailman-Approved-At: Mon, 19 Apr 2021 16:21:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,96 +161,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>,
- LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, Parth Shah <parth@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Valentin Schneider <valentin.schneider@arm.com>
+Cc: linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ linux-gpio@vger.kernel.org, netdev@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-renesas-soc@vger.kernel.org, linux-phy@lists.infradead.org,
+ iommu@lists.linux-foundation.org, linux-mediatek@lists.infradead.org,
+ linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+ linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Mel,
+From: Alice Guo <alice.guo@nxp.com>
 
-On Mon, Apr 12, 2021 at 11:48:19AM +0100, Mel Gorman wrote:
-> On Mon, Apr 12, 2021 at 11:06:19AM +0100, Valentin Schneider wrote:
-> > On 12/04/21 10:37, Mel Gorman wrote:
-> > > On Mon, Apr 12, 2021 at 11:54:36AM +0530, Srikar Dronamraju wrote:
-> > >> * Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2021-04-02 11:07:54]:
-> > >>
-> > >> >
-> > >> > To remedy this, this patch proposes that the LLC be moved to the MC
-> > >> > level which is a group of cores in one half of the chip.
-> > >> >
-> > >> >       SMT (SMT4) --> MC (Hemisphere)[LLC] --> DIE
-> > >> >
-> > >>
-> > >> I think marking Hemisphere as a LLC in a P10 scenario is a good idea.
-> > >>
-> > >> > While there is no cache being shared at this level, this is still the
-> > >> > level where some amount of cache-snooping takes place and it is
-> > >> > relatively faster to access the data from the caches of the cores
-> > >> > within this domain. With this change, we no longer see regressions on
-> > >> > P10 for applications which require single threaded performance.
-> > >>
-> > >> Peter, Valentin, Vincent, Mel, etal
-> > >>
-> > >> On architectures where we have multiple levels of cache access latencies
-> > >> within a DIE, (For example: one within the current LLC or SMT core and the
-> > >> other at MC or Hemisphere, and finally across hemispheres), do you have any
-> > >> suggestions on how we could handle the same in the core scheduler?
-> > >>
-> > >
-> > > Minimally I think it would be worth detecting when there are multiple
-> > > LLCs per node and detecting that in generic code as a static branch. In
-> > > select_idle_cpu, consider taking two passes -- first on the LLC domain
-> > > and if no idle CPU is found then taking a second pass if the search depth
-> > > allows within the node with the LLC CPUs masked out.
-> > 
-> > I think that's actually a decent approach. Tying SD_SHARE_PKG_RESOURCES to
-> > something other than pure cache topology in a generic manner is tough (as
-> > it relies on murky, ill-defined hardware fabric properties).
-> > 
-> 
-> Agreed. The LLC->node scan idea has been on my TODO list to try for
-> a while.
+In patch "soc: imx8m: change to use platform driver", change soc-imx8m.c to use
+module platform driver and use NVMEM APIs to ocotp register, the reason is that
+directly reading ocotp egister causes kexec kernel hang because kernel will
+disable unused clks after kernel boots up. This patch makes the SoC driver
+ready. This patch makes the SoC driver ready later than before, and causes device
+depends on soc_device_match() for initialization are affected, resulting in
+kernel boot error.
 
-If you have any patches for these, I will be happy to test them on
-POWER10. Though, on POWER10, there will be an additional sd between
-the LLC and the DIE domain. 
+CAAM driver is one of these affected drivers. It uses soc_device_match() to find
+the first matching entry of caam_imx_soc_table, if none of them match, the next
+instruction will be executed without any processing because CAAM driver is used
+not only on i.MX and LS, but also PPC and Vybrid. We hope that
+soc_device_match() could support to return -EPROBE_DEFER(or some other error
+code, e.g. -ENODEV, but not NULL) in case of “no SoC device registered” to SoC
+bus. We tried it and updated all the code that is using soc_device_match()
+throughout the tree.
 
+Alice Guo (3):
+  drivers: soc: add support for soc_device_match returning -EPROBE_DEFER
+  caam: add defer probe when the caam driver cannot identify SoC
+  driver: update all the code that use soc_device_match
 
+ drivers/base/soc.c                            |  5 +++++
+ drivers/bus/ti-sysc.c                         |  2 +-
+ drivers/clk/renesas/r8a7795-cpg-mssr.c        |  4 +++-
+ drivers/clk/renesas/rcar-gen2-cpg.c           |  2 +-
+ drivers/clk/renesas/rcar-gen3-cpg.c           |  2 +-
+ drivers/crypto/caam/ctrl.c                    |  3 +++
+ drivers/dma/fsl-dpaa2-qdma/dpaa2-qdma.c       |  7 ++++++-
+ drivers/dma/ti/k3-psil.c                      |  3 +++
+ drivers/dma/ti/k3-udma.c                      |  2 +-
+ drivers/gpu/drm/bridge/nwl-dsi.c              |  2 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  4 +++-
+ drivers/gpu/drm/omapdrm/dss/dispc.c           |  2 +-
+ drivers/gpu/drm/omapdrm/dss/dpi.c             |  4 +++-
+ drivers/gpu/drm/omapdrm/dss/dsi.c             |  3 +++
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  3 +++
+ drivers/gpu/drm/omapdrm/dss/hdmi4_core.c      |  3 +++
+ drivers/gpu/drm/omapdrm/dss/venc.c            |  4 +++-
+ drivers/gpu/drm/omapdrm/omap_drv.c            |  3 +++
+ drivers/gpu/drm/rcar-du/rcar_du_crtc.c        |  4 +++-
+ drivers/gpu/drm/rcar-du/rcar_lvds.c           |  2 +-
+ drivers/gpu/drm/tidss/tidss_dispc.c           |  4 +++-
+ drivers/iommu/ipmmu-vmsa.c                    |  7 +++++--
+ drivers/media/platform/rcar-vin/rcar-core.c   |  2 +-
+ drivers/media/platform/rcar-vin/rcar-csi2.c   |  2 +-
+ drivers/media/platform/vsp1/vsp1_uif.c        |  4 +++-
+ drivers/mmc/host/renesas_sdhi_core.c          |  2 +-
+ drivers/mmc/host/renesas_sdhi_internal_dmac.c |  2 +-
+ drivers/mmc/host/sdhci-of-esdhc.c             | 21 ++++++++++++++-----
+ drivers/mmc/host/sdhci-omap.c                 |  2 +-
+ drivers/mmc/host/sdhci_am654.c                |  2 +-
+ drivers/net/ethernet/renesas/ravb_main.c      |  4 +++-
+ drivers/net/ethernet/ti/am65-cpsw-nuss.c      |  2 +-
+ drivers/net/ethernet/ti/cpsw.c                |  2 +-
+ drivers/net/ethernet/ti/cpsw_new.c            |  2 +-
+ drivers/phy/ti/phy-omap-usb2.c                |  4 +++-
+ drivers/pinctrl/renesas/core.c                |  2 +-
+ drivers/pinctrl/renesas/pfc-r8a7790.c         |  5 ++++-
+ drivers/pinctrl/renesas/pfc-r8a7794.c         |  5 ++++-
+ drivers/soc/fsl/dpio/dpio-driver.c            | 13 ++++++++----
+ drivers/soc/renesas/r8a774c0-sysc.c           |  5 ++++-
+ drivers/soc/renesas/r8a7795-sysc.c            |  2 +-
+ drivers/soc/renesas/r8a77990-sysc.c           |  5 ++++-
+ drivers/soc/ti/k3-ringacc.c                   |  2 +-
+ drivers/staging/mt7621-pci/pci-mt7621.c       |  2 +-
+ drivers/thermal/rcar_gen3_thermal.c           |  4 +++-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c   | 10 +++++++--
+ drivers/usb/gadget/udc/renesas_usb3.c         |  2 +-
+ drivers/usb/host/ehci-platform.c              |  4 +++-
+ drivers/usb/host/xhci-rcar.c                  |  2 +-
+ drivers/watchdog/renesas_wdt.c                |  2 +-
+ 50 files changed, 139 insertions(+), 52 deletions(-)
 
+-- 
+2.17.1
 
-> 
-> > Last I tried thinking about that, I stopped at having a core-to-core
-> > latency matrix, building domains off of that, and having some knob
-> > specifying the highest distance value below which we'd set
-> > SD_SHARE_PKG_RESOURCES. There's a few things I 'hate' about that; for one
-> > it makes cpus_share_cache() somewhat questionable.
-> > 
-> 
-> And I thought about something like this too but worried it might get
-> complex, particularly on chiplets where we do not necessarily have
-> hardware info on latency depending on how it's wired up. It also might
-> lead to excessive cpumask manipulation in a fast path if we have to
-> traverse multiple distances with search cost exceeding gains from latency
-> reduction. Hence -- keeping it simple with two level only, LLC then node
-> within the allowed search depth and see what that gets us. It might be
-> "good enough" in most cases and would be a basis for comparison against
-> complex approaches.
-
-
-> 
-> At minimum, I expect IBM can evaluate the POWER10 aspect and I can run
-> an evaluation on Zen generations.
-
-
-> 
-> -- 
-> Mel Gorman
-> SUSE Labs
