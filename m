@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8CE3C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0733CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EF23610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EF23610A1
+	by mail.kernel.org (Postfix) with ESMTPS id A22B561107
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A22B561107
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtlL0Zbgz3ddb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:15:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtlg38Fpz3hFV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:15:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtWD3XWFz3ccd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNthC1L5hz3gL7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:12:43 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVz10WGz9vHf; Mon, 19 Apr 2021 14:04:42 +1000 (AEST)
+ id 4FNthB1dmYz9vGW; Mon, 19 Apr 2021 14:12:36 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Yu Kuai <yukuai3@huawei.com>, mpe@ellerman.id.au
-In-Reply-To: <20210407125903.4139663-1-yukuai3@huawei.com>
-References: <20210407125903.4139663-1-yukuai3@huawei.com>
-Subject: Re: [PATCH] powerpc/smp: Make some symbols static
-Message-Id: <161880479136.1398509.6657730746176929719.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:51 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20210416111209.765444-1-mpe@ellerman.id.au>
+References: <20210416111209.765444-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/configs: Add PAPR_SCM to pseries_defconfig
+Message-Id: <161880554346.1408818.1615696308719769611.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 14:12:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,27 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, zhangxiaoxu5@huawei.com,
- linux-kernel@vger.kernel.org, yi.zhang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 7 Apr 2021 20:59:03 +0800, Yu Kuai wrote:
-> The sparse tool complains as follows:
-> 
-> arch/powerpc/kernel/smp.c:86:1: warning:
->  symbol '__pcpu_scope_cpu_coregroup_map' was not declared. Should it be static?
-> arch/powerpc/kernel/smp.c:125:1: warning:
->  symbol '__pcpu_scope_thread_group_l1_cache_map' was not declared. Should it be static?
-> arch/powerpc/kernel/smp.c:132:1: warning:
->  symbol '__pcpu_scope_thread_group_l2_cache_map' was not declared. Should it be static?
-> 
-> [...]
+On Fri, 16 Apr 2021 21:12:08 +1000, Michael Ellerman wrote:
+> This is a pseries only driver, it should be built by default as part of
+> pseries_defconfig to get some build coverage.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/smp: Make some symbols static
-      https://git.kernel.org/powerpc/c/078277acbd7c3fdb25c01a3cd5b4a1a875a1ab2f
+[1/2] powerpc/configs: Add PAPR_SCM to pseries_defconfig
+      https://git.kernel.org/powerpc/c/d6481a7195df4a8c828f9ee0b382f2dd36d3575c
+[2/2] powerpc/papr_scm: Fix build error due to wrong printf specifier
+      https://git.kernel.org/powerpc/c/7767d9ac89cee29c68f5dd278b3bb411d1c69287
 
 cheers
