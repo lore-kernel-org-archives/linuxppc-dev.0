@@ -2,62 +2,47 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69A96C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE077C43460
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:04:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD7C6610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:03:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD7C6610A1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 72A6660E09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:04:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72A6660E09
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtTk2r0lz3bp3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:03:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=FRCuBCO3;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtVh140wz3cMx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:04:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=FRCuBCO3; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtSM30JSz2yj0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:02:26 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4FNtSL3ZyKz9vG3; Mon, 19 Apr 2021 14:02:26 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1618804946;
- bh=Zx6ot/vowM5EALz0Xk90Vj1LY/0oghNPCWwwL/hFBZE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=FRCuBCO39LYliGLN9LltT7VdY/LXL55G9ZgMIkhK1P2PQ3l1kSGaRrGsI73M1mvNB
- 48CZqBjSzS8P3oRjrNWHBiKhoK3Bx5huiMdaDoSrLcxV6/7RjR/pDzmGEk67LRPNBz
- Ykb0z47nlBQUx13iVW4/WfMKKeoIXCRPOGi1cSHo=
-Date: Mon, 19 Apr 2021 14:02:18 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Daniel Henrique Barboza <danielhb413@gmail.com>
-Subject: Re: [PATCH 2/2] hotplug-cpu.c: set UNISOLATE on dlpar_cpu_remove()
- failure
-Message-ID: <YH0AyoAxLuLsWLUI@yekko.fritz.box>
-References: <20210416210216.380291-1-danielhb413@gmail.com>
- <20210416210216.380291-3-danielhb413@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVJ5NG0z30FD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:08 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4FNtVJ3l0Wz9vDw; Mon, 19 Apr 2021 14:04:08 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, jniethe5@gmail.com,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <0c3d5cb8a4dfdf6ca1b8aeb385c01470d6628d55.1617283827.git.christophe.leroy@csgroup.eu>
+References: <0c3d5cb8a4dfdf6ca1b8aeb385c01470d6628d55.1617283827.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/3] powerpc/modules: Load modules closer to kernel text
+Message-Id: <161880478975.1398509.1364784415611338894.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:49 +1000
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="H9fwAAWRe5DuyPx5"
-Content-Disposition: inline
-In-Reply-To: <20210416210216.380291-3-danielhb413@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,91 +54,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, 1 Apr 2021 13:30:41 +0000 (UTC), Christophe Leroy wrote:
+> On book3s/32, when STRICT_KERNEL_RWX is selected, modules are
+> allocated on the segment just before kernel text, ie on the
+> 0xb0000000-0xbfffffff when PAGE_OFFSET is 0xc0000000.
+> 
+> On the 8xx, TASK_SIZE is 0x80000000. The space between TASK_SIZE and
+> PAGE_OFFSET is not used and could be used for modules.
+> 
+> [...]
 
---H9fwAAWRe5DuyPx5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied to powerpc/next.
 
-On Fri, Apr 16, 2021 at 06:02:16PM -0300, Daniel Henrique Barboza wrote:
-> The RTAS set-indicator call, when attempting to UNISOLATE a DRC that is
-> already UNISOLATED or CONFIGURED, returns RTAS_OK and does nothing else
-> for both QEMU and phyp. This gives us an opportunity to use this
-> behavior to signal the hypervisor layer when an error during device
-> removal happens, allowing it to do a proper error handling, while not
-> breaking QEMU/phyp implementations that don't have this support.
->=20
-> This patch introduces this idea by unisolating all CPU DRCs that failed
-> to be removed by dlpar_cpu_remove_by_index(), when handling the
-> PSERIES_HP_ELOG_ID_DRC_INDEX event. This is being done for this event
-> only because its the only CPU removal event QEMU uses, and there's no
-> need at this moment to add this mechanism for phyp only code.
->=20
-> Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+[1/3] powerpc/modules: Load modules closer to kernel text
+      https://git.kernel.org/powerpc/c/2ec13df167040cd153c25c4d96d0ffc573ac4c40
+[2/3] powerpc/8xx: Define a MODULE area below kernel text
+      https://git.kernel.org/powerpc/c/9132a2e82adc6e5a1c7c7385df3bfb25576bdd80
+[3/3] powerpc/32s: Define a MODULE area below kernel text all the time
+      https://git.kernel.org/powerpc/c/80edc68e0479bafdc4869ec3351e42316b824596
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-except...
-
-> ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index 12cbffd3c2e3..ed66895c2f51 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -802,8 +802,15 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->  	case PSERIES_HP_ELOG_ACTION_REMOVE:
->  		if (hp_elog->id_type =3D=3D PSERIES_HP_ELOG_ID_DRC_COUNT)
->  			rc =3D dlpar_cpu_remove_by_count(count);
-> -		else if (hp_elog->id_type =3D=3D PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		else if (hp_elog->id_type =3D=3D PSERIES_HP_ELOG_ID_DRC_INDEX) {
->  			rc =3D dlpar_cpu_remove_by_index(drc_index);
-> +			/* Setting the isolation state of an UNISOLATED/CONFIGURED
-> +			 * device to UNISOLATE is a no-op, but the hypervison can
-
-typo here s/hypervison/hypervisor/
-
-> +			 * use it as a hint that the cpu removal failed.
-> +			 */
-> +			if (rc)
-> +				dlpar_unisolate_drc(drc_index);
-> +		}
->  		else
->  			rc =3D -EINVAL;
->  		break;
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---H9fwAAWRe5DuyPx5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmB9AMoACgkQbDjKyiDZ
-s5ID7A/+MFpgabS9TEPWI0Arkpd9FEdc6yQDsaQyfIeT4BwIA8kxz/ZzHnfJnyq9
-N7fcMwb+SgezuVSal2PDEHY4yM4chyoxGWNuzB21ArNwVjBKN5onm2pkqKG7EHbQ
-D9Pvc8aON+aDNsxY+ZG9/X8Xrjvt0VbR2KGS9tvW4F5AJREVSSfN7PPBcjVXPUFk
-4GQaWQbqdNzx96MLmAKbZ0L4/V2x7ocnBGfQ5NylJrDC7CPApRGkOhQl1/z0v/cc
-tY6vbMYyHFuXdDVyQQVu9sKpu/m1B/tkcSu6GfCQrJ0DPfMqzkuGFNTQrXvsx056
-wgbV8nP2WCdwd+34zKhj3I6I1654OHVj/jW1B9DGH495/7sAT8rj9JITBki83NtY
-C2dYu287v89LBA6LAPeE/2Zib25taaoMJTX52119W8s5mMsb25dRCbjOkN6JxYlj
-Stvs9+/bZFQ88BqntFTQGapSz3z7lb7vPHAFc/VQ0DK2u1JQP9LltkY/QTxDHUap
-wenorwVsRo83s82UGd4tHP4EZFC1a53pIiLDdC113QVfF3/NcHhgRwUhZWSN9K1f
-KAlZCJCPNSiryFovSDKJ9P6rCBOsf8Z6g/BzIkPPjkf5T5ScixjMykJjvOe+6ZZe
-TwiFtUGUE4UOD/tlqvWOCje30utnVBkPewPhbBKEo4F63Blg2oY=
-=5aHK
------END PGP SIGNATURE-----
-
---H9fwAAWRe5DuyPx5--
+cheers
