@@ -4,43 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 745B7C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:11:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDD9BC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:12:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC98A610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:11:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC98A610A1
+	by mail.kernel.org (Postfix) with ESMTPS id 689B8610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:12:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 689B8610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtgG500Yz3dBm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:11:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtgf1PJrz3gFW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:12:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVx6V3Nz3cZd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVy2PDyz3cYh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:42 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVl5gQ4z9tl3; Mon, 19 Apr 2021 14:04:31 +1000 (AEST)
+ id 4FNtVn71wLz9vHb; Mon, 19 Apr 2021 14:04:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- alistair@popple.id.au, maddy@linux.ibm.com, christophe.leroy@csgroup.eu,
- ravi.bangoria@linux.ibm.com, rppt@kernel.org, paulus@samba.org,
- john.ogness@linutronix.de, jniethe5@gmail.com, pmladek@suse.com,
- Pu Lehui <pulehui@huawei.com>
-In-Reply-To: <20210409070151.163424-1-pulehui@huawei.com>
-References: <20210409070151.163424-1-pulehui@huawei.com>
-Subject: Re: [PATCH -next] powerpc/xmon: Make symbol 'spu_inst_dump' static
-Message-Id: <161880479868.1398509.405544111450941367.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:58 +1000
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
+References: <20210415120934.232271-1-srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] Reintroduce cpu_core_mask
+Message-Id: <161880480693.1398509.4708894086317354098.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 14:00:06 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,23 +52,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: zhangjinhao2@huawei.com, yangjihong1@huawei.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 9 Apr 2021 15:01:51 +0800, Pu Lehui wrote:
-> Fix sparse warning:
+On Thu, 15 Apr 2021 17:39:31 +0530, Srikar Dronamraju wrote:
+> Daniel had reported that
+>  QEMU is now unable to see requested topologies in a multi socket single
+>  NUMA node configurations.
+>  -smp 8,maxcpus=8,cores=2,threads=2,sockets=2
 > 
-> arch/powerpc/xmon/xmon.c:4216:1: warning:
->  symbol 'spu_inst_dump' was not declared. Should it be static?
+> This patchset reintroduces cpu_core_mask so that users can see requested
+> topologies while still maintaining the boot time of very large system
+> configurations.
 > 
-> This symbol is not used outside of xmon.c, so make it static.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xmon: Make symbol 'spu_inst_dump' static
-      https://git.kernel.org/powerpc/c/f234ad405a35262ed2d8dd2d29fc633908dce955
+[1/3] powerpc/smp: Reintroduce cpu_core_mask
+      https://git.kernel.org/powerpc/c/c47f892d7aa62765bf0689073f75990b4517a4cf
+[2/3] Revert "powerpc/topology: Update topology_core_cpumask"
+      https://git.kernel.org/powerpc/c/131c82b6a1d261705a6f98368e501d43d994018d
+[3/3] powerpc/smp: Cache CPU to chip lookup
+      https://git.kernel.org/powerpc/c/c1e53367dab15e41814cff4e37df8ec4ac8fb9d7
 
 cheers
