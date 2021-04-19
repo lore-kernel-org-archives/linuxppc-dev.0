@@ -2,44 +2,67 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0733CC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CC33C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 05:16:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A22B561107
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:15:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A22B561107
+	by mail.kernel.org (Postfix) with ESMTPS id C168560E09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 05:16:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C168560E09
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtlg38Fpz3hFV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:15:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNw631sw8z3c2B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 15:16:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YEwatwHr;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=YEwatwHr; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNthC1L5hz3gL7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:12:43 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNthB1dmYz9vGW; Mon, 19 Apr 2021 14:12:36 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20210416111209.765444-1-mpe@ellerman.id.au>
-References: <20210416111209.765444-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/configs: Add PAPR_SCM to pseries_defconfig
-Message-Id: <161880554346.1408818.1615696308719769611.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 14:12:23 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNw5c4lQSz30GD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 15:16:19 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FNw5T5D3pz9vFF;
+ Mon, 19 Apr 2021 15:16:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1618809373;
+ bh=cXoy7YS4JrMayWNsMdbz6qfRJ7CAR8vlkXbrePE3yBI=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=YEwatwHr9NkiOnfnmeEsunHTBs87Pwt9oIEUTGuEpvorfu2NCON0rr5dWJ1aNtFKp
+ mfawEMW57YO4RJMcFFUg6Wher41cGaviUBJJcfrRMEOl5oTlaAo8i3JGTkJ6xqLyr1
+ o57tHLuCmzO2GLwZ17OdFMAlVL/yRifVRJLBhDbqAQ35gbOTsKpUo8FaAGSKev719q
+ i0bJ62JNlE19QOVocYgAhwkcZQwiGAmC5oKQQ+UxFlDQzGl/FWossfYTLTvbvWClUr
+ XT0rruolTajQWVVCFmdEblXeN4h5Mn0Y+98S7HRucvp/UDWrxOek6GvBSiUEkPMekz
+ 3BRq9G1Z3c/xQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: power4 nap fixup in C
+In-Reply-To: <161806492607.1467223.7549979604946856102.b4-ty@ellerman.id.au>
+References: <20210312012044.3660743-1-npiggin@gmail.com>
+ <161806492607.1467223.7549979604946856102.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 15:16:12 +1000
+Message-ID: <87czuqetwj.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,15 +78,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Apr 2021 21:12:08 +1000, Michael Ellerman wrote:
-> This is a pseries only driver, it should be built by default as part of
-> pseries_defconfig to get some build coverage.
+Michael Ellerman <patch-notifications@ellerman.id.au> writes:
+> On Fri, 12 Mar 2021 11:20:44 +1000, Nicholas Piggin wrote:
+>> There is no need for this to be in asm, use the new intrrupt entry wrapper.
+>
+> Applied to powerpc/next.
+>
+> [1/1] powerpc/64s: power4 nap fixup in C
+>       https://git.kernel.org/powerpc/c/98db179a78dd8379e9d2cbfc3f00224168a9344c
 
-Applied to powerpc/next.
-
-[1/2] powerpc/configs: Add PAPR_SCM to pseries_defconfig
-      https://git.kernel.org/powerpc/c/d6481a7195df4a8c828f9ee0b382f2dd36d3575c
-[2/2] powerpc/papr_scm: Fix build error due to wrong printf specifier
-      https://git.kernel.org/powerpc/c/7767d9ac89cee29c68f5dd278b3bb411d1c69287
+Script is drunk again, v2 was applied, not this one.
 
 cheers
