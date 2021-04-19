@@ -3,59 +3,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A1F3C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:02:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B3CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:03:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0812860E09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:02:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0812860E09
+	by mail.kernel.org (Postfix) with ESMTPS id 4F5E7610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:03:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F5E7610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtSq43gQz3bpH
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:02:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtTG6YYYz30RG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:03:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=iMAQleUA;
+	dkim=pass (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=KQLCwILx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=iMAQleUA; 
+ header.a=rsa-sha256 header.s=201602 header.b=KQLCwILx; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtSM17Khz2yRJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:02:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtSM2y6Fz2yhd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:02:27 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4FNtSL0cNhz9tl3; Mon, 19 Apr 2021 14:02:26 +1000 (AEST)
+ id 4FNtSL22fhz9vFw; Mon, 19 Apr 2021 14:02:26 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1618804946;
- bh=h1lD9ZfJ6513fw43PlQ/e69VG6+6TuSyTkZm/RCseuA=;
+ bh=K7OcbPfANGv6nhbBkJWpQIZAq820+l+/A6AozuMgdWk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=iMAQleUAxRTO2XlP2sEjsoj8VI3JBc11G/xOv3yQpDcxWtHYDWyimY/nqV2eozHTM
- yUTK2n+lAiYttIU+BuFOeMGOvppcr75tYUbjAeM8tAOM2Gt1HW4mOyxCouSNW5hF1Y
- qWcg+Hsqfcu5cuj5mDV7BQ9jU290gEI7iVj06EoE=
-Date: Mon, 19 Apr 2021 13:59:03 +1000
+ b=KQLCwILxwEMR6gzbo78Xe8LGWcDuMEsc0wOul8n2JNp+9zyllgCB9uZkt8M0Bp8FP
+ sqYk+lLPc0OPes+DsmMe1WJXeKh9Io9kUHR1KcyON8lJfXhrWoBQ5hqNLOXAuA3OAh
+ S50GyyypqiGU2FpPRtjU9RWe2vdycp/pUxFW4Ww8=
+Date: Mon, 19 Apr 2021 14:01:43 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Daniel Henrique Barboza <danielhb413@gmail.com>
-Subject: Re: [PATCH 0/2] pseries: UNISOLATE DRCs to signal device removal error
-Message-ID: <YH0ABwVgA/+iA+Fd@yekko.fritz.box>
+Subject: Re: [PATCH 1/2] dlpar.c: introduce dlpar_unisolate_drc()
+Message-ID: <YH0Ap7nXGpYWWzw/@yekko.fritz.box>
 References: <20210416210216.380291-1-danielhb413@gmail.com>
+ <20210416210216.380291-2-danielhb413@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="5WlJd1S45a6toUEh"
+ protocol="application/pgp-signature"; boundary="HmuWYEr+xd5UZ4R1"
 Content-Disposition: inline
-In-Reply-To: <20210416210216.380291-1-danielhb413@gmail.com>
+In-Reply-To: <20210416210216.380291-2-danielhb413@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,127 +74,66 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---5WlJd1S45a6toUEh
+--HmuWYEr+xd5UZ4R1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 16, 2021 at 06:02:14PM -0300, Daniel Henrique Barboza wrote:
-> At this moment, PAPR [1] does not have a way to report errors during a de=
-vice
-> removal operation. This puts a strain in the hypervisor, which needs extra
-> mechanisms to try to fallback and recover from an error that might have
-> happened during the removal. The QEMU community has dealt with it during =
-these
-> years by either trying to preempt the error before sending the HP event o=
-r, in
-> case of a guest side failure, reboot the guest to complete the removal pr=
-ocess.
+On Fri, Apr 16, 2021 at 06:02:15PM -0300, Daniel Henrique Barboza wrote:
+> Next patch will execute a set-indicator call in hotplug-cpu.c.
 >=20
-> This started to change with QEMU commit fe1831eff8a4 ("spapr_drc.c: use D=
-RC
-> reconfiguration to cleanup DIMM unplug state"), where a way to fallback f=
-rom a
-> memory removal error was introduced. In this case, when QEMU detects that=
- the
-> kernel is reconfiguring LMBs DRCs that were marked as pending removal, the
-> entire process is reverted from the QEMU side as well. Around the same ti=
-me,
-> other discussions in the QEMU mailing discussed an alternative for other =
-device
-> as well.
+> Create a dlpar_unisolate_drc() helper to avoid spreading more
+> rtas_set_indicator() calls outside of dlpar.c.
 >=20
-> In [2] the idea of using RTAS set-indicator for this role was first intro=
-duced.
-> The RTAS set-indicator call, when attempting to UNISOLATE a DRC that is a=
-lready
-> UNISOLATED or CONFIGURED, returns RTAS_OK and does nothing else for both =
-QEMU
-> and phyp. This gives us an opportunity to use this behavior to signal the
-> hypervisor layer when a device removal happens, allowing it to do a
-> proper
+> Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
 
-Nit: it's not when a device removal happens, but when it *fails* to happen.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-> error handling knowing for sure that the removal failed in the kernel. Us=
-ing
-> set-indicator to report HP errors isn't strange to PAPR, as per R1-13.5.3=
-=2E4-4.
-> of table 13.7 of [1]:
-
-> "For all DR options: If this is a DR operation that involves the user ins=
-ert-
-> ing a DR entity, then if the firmware can determine that the inserted ent=
-ity
-> would cause a system disturbance, then the set-indicator RTAS call must n=
-ot
-> unisolate the entity and must return an error status which is unique to t=
-he
-> particular error."
+> ---
+>  arch/powerpc/platforms/pseries/dlpar.c   | 14 ++++++++++++++
+>  arch/powerpc/platforms/pseries/pseries.h |  1 +
+>  2 files changed, 15 insertions(+)
 >=20
-> PAPR does not make any restrictions or considerations about setting an al=
-ready
-> Unisolated/Configured DRC to 'unisolate', meaning we have a chance to use=
- it
-> for this purpose - signal an OS side error when attempting to remove a DR
-> entity.  To validate the design, this is being implemented only for CPUs.
->=20
-> QEMU will use this mechanism to rollback the device removal (hotunplug) s=
-tate,
-> allowing for a better error handling mechanism. A implementation of how Q=
-EMU
-> can do it is in [3]. When using a kernel with this series applied, togeth=
-er
-> with this QEMU build, this is what happens in a common CPU removal/hotunp=
-lug
-> error scenario (trying to remove the last online CPU):
->=20
-> ( QEMU command line: qemu-system-ppc64 -machine pseries,accel=3Dkvm,usb=
-=3Doff
-> -smp 1,maxcpus=3D2,threads=3D1,cores=3D2,sockets=3D1 ... )
->=20
-> [root@localhost ~]# QEMU 5.2.92 monitor - type 'help' for more information
-> (qemu) device_add host-spapr-cpu-core,core-id=3D1,id=3Dcore1
-> (qemu)=20
->=20
-> [root@localhost ~]# echo 0 > /sys/devices/system/cpu/cpu0/online
-> [   77.548442][   T13] IRQ 19: no longer affine to CPU0
-> [   77.548452][   T13] IRQ 20: no longer affine to CPU0
-> [   77.548458][   T13] IRQ 256: no longer affine to CPU0
-> [   77.548465][   T13] IRQ 258: no longer affine to CPU0
-> [   77.548472][   T13] IRQ 259: no longer affine to CPU0
-> [   77.548479][   T13] IRQ 260: no longer affine to CPU0
-> [   77.548485][   T13] IRQ 261: no longer affine to CPU0
-> [   77.548590][    T0] cpu 0 (hwid 0) Ready to die...
-> [root@localhost ~]# (qemu)=20
-> (qemu) device_del core1
-> (qemu) [   83.214073][  T100] pseries-hotplug-cpu: Failed to offline CPU =
-PowerPC,POWER9, rc: -16
-> qemu-system-ppc64: Device hotunplug rejected by the guest for device core1
->=20
-> (qemu)=20
->=20
-> As soon as the CPU removal fails in dlpar_cpu(), QEMU becames aware of
-> it and is able to do error recovery.
->=20
-> If this solution is well received, I'll push for an architecture change
-> request internally at IBM to make this mechanism PAPR official.
->=20
->=20
-> [1] https://openpowerfoundation.org/wp-content/uploads/2020/07/LoPAR-2020=
-0611.pdf
-> [2] https://lists.gnu.org/archive/html/qemu-devel/2021-02/msg06395.html
-> [3] https://github.com/danielhb/qemu/tree/unisolate_drc_callback_v1
->=20
-> Daniel Henrique Barboza (2):
->   dlpar.c: introduce dlpar_unisolate_drc()
->   hotplug-cpu.c: set UNISOLATE on dlpar_cpu_remove() failure
->=20
->  arch/powerpc/platforms/pseries/dlpar.c       | 14 ++++++++++++++
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |  9 ++++++++-
->  arch/powerpc/platforms/pseries/pseries.h     |  1 +
->  3 files changed, 23 insertions(+), 1 deletion(-)
->=20
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platfo=
+rms/pseries/dlpar.c
+> index 233503fcf8f0..3ac70790ec7a 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -329,6 +329,20 @@ int dlpar_release_drc(u32 drc_index)
+>  	return 0;
+>  }
+> =20
+> +int dlpar_unisolate_drc(u32 drc_index)
+> +{
+> +	int dr_status, rc;
+> +
+> +	rc =3D rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
+> +				DR_ENTITY_SENSE, drc_index);
+> +	if (rc || dr_status !=3D DR_ENTITY_PRESENT)
+> +		return -1;
+> +
+> +	rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
+> +
+> +	return 0;
+> +}
+> +
+>  int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+>  {
+>  	int rc;
+> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/plat=
+forms/pseries/pseries.h
+> index 4fe48c04c6c2..4ea12037c920 100644
+> --- a/arch/powerpc/platforms/pseries/pseries.h
+> +++ b/arch/powerpc/platforms/pseries/pseries.h
+> @@ -55,6 +55,7 @@ extern int dlpar_attach_node(struct device_node *, stru=
+ct device_node *);
+>  extern int dlpar_detach_node(struct device_node *);
+>  extern int dlpar_acquire_drc(u32 drc_index);
+>  extern int dlpar_release_drc(u32 drc_index);
+> +extern int dlpar_unisolate_drc(u32 drc_index);
+> =20
+>  void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
+>  int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -201,24 +141,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---5WlJd1S45a6toUEh
+--HmuWYEr+xd5UZ4R1
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmB9AAUACgkQbDjKyiDZ
-s5Kgpw//SGX28rhZsxXWWJl8U3o0WsOgXApzExnjG8XWjP7ZIoZhWKoQOPKFfMPM
-iFHMdUM96C5cvCDr/FcwcGvE7rjMoDqEtGGTMQiFezzqb9uaZpbay5EVydJA5a0C
-qblKlnVX6j5clCSbfKI3C9AjnFPZOba4gagNKgKxQOE3qqXmekZFrdf2aDXhndu2
-O/VsN+BmWIafZExaeW3KVyQp5Bo1Nx233G6rcJ0zJ750axleQbIjyQjBS1yLK4Z5
-Z5doV5SjAB9P6jthMztdxm6wsx9FCpsz9Enzg8dOhHZ1PVq6peyCC9DdnZ6sLVZ0
-mkIeQ7RzVF+xOT3uOkgd2W6njpTkIQ6Ca1O83hlmUGT3DkkVhlQ7sBcsxKFrGJST
-yB7sNNEIHFV3pTj3dQE2DHKoHsGcV2c9vsDqW4tMZgeECduA6C4QO8NBGB50CwHQ
-dAARwTf/AR3BU5QDxTgws2+nr5EJFx5e8YK8SA0O+BQxK40BTwhd8Nf4gXP5n04G
-cbW6T/miExl2Wmu3VCvwITlNjzUMiAMgEPJ7Wpqu9IFz8+iJ4jrJSDvJFUiLeyF7
-ZkC62Bf0TB8k7jZDcng8qzbUksrZA/NFwwIwPl7C54MTmQ7nMjOW5O5q//f3+x62
-VVZFKYIpixD7ACpID98eZU5xnY5eobajbZ4pJUmSKxpNfBeOk0M=
-=KULJ
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmB9AKcACgkQbDjKyiDZ
+s5JmKA/+JL9nBqTxhHet7wdRd2jBXqlLJry/PhFiZ9tYSoxtNQBTtsLtWWizX2Xi
+gNx9GA7dgcQmc4KjGJC0qzyjVLRblyoIROF9XOHc5cSc4QvzcCEQabfqn+XX+CBl
+DWk/anKhvDEPBB1v7R2tgbHdwUJXt5z0NwjxW4AqHWl+cwBsck56NFxEMO2oVXS3
+nO+ZIFBDgKGLgg9zBaaY41yKvTW+/8m7jDVKsLMVEPk/bZi4T12q9gVQLgIGJhIX
+GxvzhVbKpZb6/2J5enrezwbul4IESxcPQEd7xY4gqjfWYsrlGKQ4CfYq4fnU9qbO
+IZ7m1Z1BLzYOFgteF+z6FUzqHj5msohgWSmXT1pe79PgBE5xFeNSV9D/sjcuuiwl
+UqzxWuNQGjbilKf9NrW/U5EUAH0mxKUTluKkgbKZ87QzCmbBzgK4Oe1n8ZLGbQO3
+yNrI9X3Kw1XIuiaQaDUVP87zsTTwE6qnL9RIlyrJNKxdOmWAOkecWDSKtGlNQgtP
+k4gb6OC1+qoSIUYpqSfl0yrRp3cRmMgyowrJkf+97g1NX4U0cgZ7RHtwYgpdpMHt
+zMSrLluSvokvMixZ3AWSIyULyJ2Q/8A/QZLv7rUQys8izw0uj8EN0/UWrahgrFwi
+kujA2hPJxIGDLaVBKBQIfAtCiMbaAVVpZxardmumsqmAdBP/lcE=
+=4F+m
 -----END PGP SIGNATURE-----
 
---5WlJd1S45a6toUEh--
+--HmuWYEr+xd5UZ4R1--
