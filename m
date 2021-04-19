@@ -2,65 +2,61 @@ Return-Path: <SRS0=9r0M=JQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52359C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:47:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 598BBC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:48:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B321F6101D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:47:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B321F6101D
+	by mail.kernel.org (Postfix) with ESMTPS id ABE026101E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 10:48:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABE026101E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FP3S9321vz30Ff
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 20:47:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FP3SW35dhz3brf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 20:48:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FP3Rp4Ybtz2xYb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FP3Rp4cyHz2xYd
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 20:47:30 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FP3RZ1t4YzB09b3;
- Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FP3RX3d3FzB09b1;
+ Mon, 19 Apr 2021 12:47:20 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 9QVuXNyI7_rG; Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+ with ESMTP id PNvDtWqSfhJq; Mon, 19 Apr 2021 12:47:20 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FP3RZ0mYfzB09Zy;
- Mon, 19 Apr 2021 12:47:22 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FP3RX2Dw7zB09Zy;
+ Mon, 19 Apr 2021 12:47:20 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EF5F18B7BB;
- Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2023B8B7BB;
+ Mon, 19 Apr 2021 12:47:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ZHZ7-PNlqPXU; Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+ with ESMTP id vL0j2I5OqooE; Mon, 19 Apr 2021 12:47:25 +0200 (CEST)
 Received: from po16121vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C10348B7B4;
- Mon, 19 Apr 2021 12:47:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D2F1A8B7B4;
+ Mon, 19 Apr 2021 12:47:24 +0200 (CEST)
 Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B9BAC679FC; Mon, 19 Apr 2021 10:47:26 +0000 (UTC)
-Message-Id: <c433e358190fb5d47650463ea1ab755fc7b73e6e.1618828806.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1618828806.git.christophe.leroy@csgroup.eu>
-References: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+ id B2CDC679FC; Mon, 19 Apr 2021 10:47:24 +0000 (UTC)
+Message-Id: <cover.1618828806.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 2/4] powerpc/mm: Leave a gap between early allocated IO
- areas
+Subject: [PATCH v2 0/4] Convert powerpc to GENERIC_PTDUMP
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  Steven Price <steven.price@arm.com>, akpm@linux-foundation.org, dja@axtens.net
-Date: Mon, 19 Apr 2021 10:47:26 +0000 (UTC)
+Date: Mon, 19 Apr 2021 10:47:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,48 +75,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Vmalloc system leaves a gap between allocated areas. It helps catching
-overflows.
+This series converts powerpc to generic PTDUMP.
 
-Do the same for IO areas which are allocated with early_ioremap_range()
-until slab_is_available().
+For that, we first need to add missing hugepd support
+to pagewalk and ptdump.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/mm/ioremap_32.c | 4 ++--
- arch/powerpc/mm/ioremap_64.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+v2:
+- Reworked the pagewalk modification to add locking and check ops->pte_entry
+- Modified powerpc early IO mapping to have gaps between mappings
+- Removed the logic that checked for contiguous physical memory
+- Removed the articial level calculation in ptdump_pte_entry(), level 4 is ok for all.
+- Removed page_size argument to note_page()
 
-diff --git a/arch/powerpc/mm/ioremap_32.c b/arch/powerpc/mm/ioremap_32.c
-index 743e11384dea..9d13143b8be4 100644
---- a/arch/powerpc/mm/ioremap_32.c
-+++ b/arch/powerpc/mm/ioremap_32.c
-@@ -70,10 +70,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *call
- 	 */
- 	pr_warn("ioremap() called early from %pS. Use early_ioremap() instead\n", caller);
- 
--	err = early_ioremap_range(ioremap_bot - size, p, size, prot);
-+	err = early_ioremap_range(ioremap_bot - size - PAGE_SIZE, p, size, prot);
- 	if (err)
- 		return NULL;
--	ioremap_bot -= size;
-+	ioremap_bot -= size + PAGE_SIZE;
- 
- 	return (void __iomem *)ioremap_bot + offset;
- }
-diff --git a/arch/powerpc/mm/ioremap_64.c b/arch/powerpc/mm/ioremap_64.c
-index ba5cbb0d66bd..3acece00b33e 100644
---- a/arch/powerpc/mm/ioremap_64.c
-+++ b/arch/powerpc/mm/ioremap_64.c
-@@ -38,7 +38,7 @@ void __iomem *__ioremap_caller(phys_addr_t addr, unsigned long size,
- 		return NULL;
- 
- 	ret = (void __iomem *)ioremap_bot + offset;
--	ioremap_bot += size;
-+	ioremap_bot += size + PAGE_SIZE;
- 
- 	return ret;
- }
+Christophe Leroy (4):
+  mm: pagewalk: Fix walk for hugepage tables
+  powerpc/mm: Leave a gap between early allocated IO areas
+  powerpc/mm: Properly coalesce pages in ptdump
+  powerpc/mm: Convert powerpc to GENERIC_PTDUMP
+
+ arch/powerpc/Kconfig              |   2 +
+ arch/powerpc/Kconfig.debug        |  30 -----
+ arch/powerpc/mm/Makefile          |   2 +-
+ arch/powerpc/mm/ioremap_32.c      |   4 +-
+ arch/powerpc/mm/ioremap_64.c      |   2 +-
+ arch/powerpc/mm/mmu_decl.h        |   2 +-
+ arch/powerpc/mm/ptdump/8xx.c      |   6 +-
+ arch/powerpc/mm/ptdump/Makefile   |   9 +-
+ arch/powerpc/mm/ptdump/book3s64.c |   6 +-
+ arch/powerpc/mm/ptdump/ptdump.c   | 187 ++++++++----------------------
+ arch/powerpc/mm/ptdump/shared.c   |   6 +-
+ mm/pagewalk.c                     |  58 ++++++++-
+ 12 files changed, 127 insertions(+), 187 deletions(-)
+
 -- 
 2.25.0
 
