@@ -6,37 +6,41 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A4FC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64882C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:08:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCEC5610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:07:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCEC5610A1
+	by mail.kernel.org (Postfix) with ESMTPS id 0195C610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:08:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0195C610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtZZ4GgXz3f56
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:07:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtZx5LKlz3fDS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:08:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVV5WDpz3c17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVY6XLCz30Ng
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:21 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVT5PRGz9vGv; Mon, 19 Apr 2021 14:04:17 +1000 (AEST)
+ id 4FNtVW1MKxz9vH8; Mon, 19 Apr 2021 14:04:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Dmitry Safonov <dima@arista.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20210326191720.138155-1-dima@arista.com>
-References: <20210326191720.138155-1-dima@arista.com>
-Subject: Re: [PATCH] powerpc/vdso: Separate vvar vma from vdso
-Message-Id: <161880478605.1398509.2763333717274966533.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:46 +1000
+To: Paul Mackerras <paulus@samba.org>, brking@linux.vnet.ibm.com,
+ Leonardo Bras <leobras.c@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20210408201915.174217-1-leobras.c@gmail.com>
+References: <20210408201915.174217-1-leobras.c@gmail.com>
+Subject: Re: [PATCH v3 1/1] powerpc/iommu: Enable remaining IOMMU Pagesizes
+ present in LoPAR
+Message-Id: <161880479738.1398509.9530172524794582983.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,30 +55,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dmitry Safonov <0x7f454c46@gmail.com>, stable@vger.kernel.org,
- Andrei Vagin <avagin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, Laurent Dufour <ldufour@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Mar 2021 19:17:20 +0000, Dmitry Safonov wrote:
-> Since commit 511157ab641e ("powerpc/vdso: Move vdso datapage up front")
-> VVAR page is in front of the VDSO area. In result it breaks CRIU
-> (Checkpoint Restore In Userspace) [1], where CRIU expects that "[vdso]"
-> from /proc/../maps points at ELF/vdso image, rather than at VVAR data page.
-> Laurent made a patch to keep CRIU working (by reading aux vector).
-> But I think it still makes sence to separate two mappings into different
-> VMAs. It will also make ppc64 less "special" for userspace and as
-> a side-bonus will make VVAR page un-writable by debugger (which previously
-> would COW page and can be unexpected).
+On Thu, 8 Apr 2021 17:19:16 -0300, Leonardo Bras wrote:
+> According to LoPAR, ibm,query-pe-dma-window output named "IO Page Sizes"
+> will let the OS know all possible pagesizes that can be used for creating a
+> new DDW.
+> 
+> Currently Linux will only try using 3 of the 8 available options:
+> 4K, 64K and 16M. According to LoPAR, Hypervisor may also offer 32M, 64M,
+> 128M, 256M and 16G.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/vdso: Separate vvar vma from vdso
-      https://git.kernel.org/powerpc/c/1c4bce6753857dc409a0197342d18764e7f4b741
+[1/1] powerpc/iommu: Enable remaining IOMMU Pagesizes present in LoPAR
+      https://git.kernel.org/powerpc/c/472724111f0f72042deb6a9dcee9578e5398a1a1
 
 cheers
