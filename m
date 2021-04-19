@@ -4,43 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BB27C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:09:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2714C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:09:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0C5E610A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:09:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0C5E610A1
+	by mail.kernel.org (Postfix) with ESMTPS id 656B860241
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 04:09:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 656B860241
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtcT36NHz3fZQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:09:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FNtcq1PvXz3fY3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Apr 2021 14:09:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVm5sMnz3cTZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:32 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4FNtVc3l2Xz9vGd; Mon, 19 Apr 2021 14:04:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FNtVn6vVnz3cRY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Apr 2021 14:04:33 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FNtVb50Htz9vGW; Mon, 19 Apr 2021 14:04:23 +1000 (AEST)
+ id 4FNtVf3BZYz9vHL; Mon, 19 Apr 2021 14:04:25 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Mahesh Salgaonkar <mahesh@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-In-Reply-To: <161821396263.48361.2796709239866588652.stgit@jupiter>
-References: <161821396263.48361.2796709239866588652.stgit@jupiter>
-Subject: Re: [PATCH v2] powerpc/eeh: Fix EEH handling for hugepages in ioremap
- space.
-Message-Id: <161880479477.1398509.366681090347824239.b4-ty@ellerman.id.au>
-Date: Mon, 19 Apr 2021 13:59:54 +1000
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210408140630.205502-1-nathanl@linux.ibm.com>
+References: <20210408140630.205502-1-nathanl@linux.ibm.com>
+Subject: Re: [PATCH v2 0/5] powerpc/rtas: miscellaneous cleanups
+Message-Id: <161880479617.1398509.1154162955998163040.b4-ty@ellerman.id.au>
+Date: Mon, 19 Apr 2021 13:59:56 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,30 +51,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, stable@vger.kernel.org
+Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, aik@ozlabs.ru,
+ aneesh.kumar@linux.ibm.com, npiggin@gmail.com, brking@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 12 Apr 2021 13:22:50 +0530, Mahesh Salgaonkar wrote:
-> During the EEH MMIO error checking, the current implementation fails to map
-> the (virtual) MMIO address back to the pci device on radix with hugepage
-> mappings for I/O. This results into failure to dispatch EEH event with no
-> recovery even when EEH capability has been enabled on the device.
+On Thu, 8 Apr 2021 09:06:25 -0500, Nathan Lynch wrote:
+> This is a reroll of the series posted here:
+> https://lore.kernel.org/linuxppc-dev/20210114220004.1138993-1-nathanl@linux.ibm.com/
 > 
-> eeh_check_failure(token)		# token = virtual MMIO address
->   addr = eeh_token_to_phys(token);
->   edev = eeh_addr_cache_get_dev(addr);
->   if (!edev)
-> 	return 0;
->   eeh_dev_check_failure(edev);	<= Dispatch the EEH event
+> Originally this work was prompted by failures on radix MMU PowerVM
+> guests when passing buffers to RTAS that lay outside of its idea of
+> the RMA. In v1 I approached this as a problem to be solved in Linux,
+> but RTAS development has since decided to change their code so that
+> the RMA restriction does not apply with radix.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/eeh: Fix EEH handling for hugepages in ioremap space.
-      https://git.kernel.org/powerpc/c/5ae5bc12d0728db60a0aa9b62160ffc038875f1a
+[1/5] powerpc/rtas: improve ppc_rtas_rmo_buf_show documentation
+      https://git.kernel.org/powerpc/c/c13ff6f3251318f5e1ff5b1a6d05f76996db672a
+[2/5] powerpc/rtas-proc: remove unused RMO_READ_BUF_MAX
+      https://git.kernel.org/powerpc/c/01c1b9984a12a379f332c39c4b1fd96e473b93b0
+[3/5] powerpc/rtas: remove ibm_suspend_me_token
+      https://git.kernel.org/powerpc/c/0ab1c929ae38262c4deb18b4a2e03a4f0cb5c5ed
+[4/5] powerpc/rtas: move syscall filter setup into separate function
+      https://git.kernel.org/powerpc/c/0649cdc8237943c15fc977e96033dc8ae28cc2bd
+[5/5] powerpc/rtas: rename RTAS_RMOBUF_MAX to RTAS_USER_REGION_SIZE
+      https://git.kernel.org/powerpc/c/e5d56763525e65417dad0d46572b234fa0008e40
 
 cheers
