@@ -2,60 +2,116 @@ Return-Path: <SRS0=xixs=JR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2E10C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 04:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E9B5C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 04:31:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 152B061002
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 04:22:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 152B061002
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6F87F613AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 04:31:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F87F613AB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FPVs74ny8z30D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 14:22:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FPW3P5Lb6z30CT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 14:31:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fjAwTCB7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mYTB8af5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=fjAwTCB7; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=mYTB8af5; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FPVrj0Cgnz2xZJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 14:22:12 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FPVrg5rL7z9vDw; Tue, 20 Apr 2021 14:22:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1618892531;
- bh=eG0KUi7A8nxMvygE5u3+9pIkoyrku1X/q6Oa56NEKsc=;
- h=From:To:Subject:Date:From;
- b=fjAwTCB7JaSaAqLgNDNyZ/yCBjzYPD+RsinjIPg8Vop9mZ7fP3hhCvxXzu7dRmAln
- sMvd+H/P4V8BZS4m6fwwikBUA31WAeXEJ8Cv4QYtN0re94fTI0rgrR3OCnhebhQ8a/
- 3VtlaDNZLRJkyqxZhgCqVfmIDo5yLPhyAV8tISYmqUi36ZmkWrnOwXLAZLQDUra6hr
- ZzlptX/Sjgrdnm0LE9dpm1Uo8R6U55EgulkPR1p8qh+o9Fp6TGG0dX4Zvtdm0nFwyc
- VaqXL8oDywjYd7YKhD6yydQZTCefAAWoXjTEXFYUnQLNIPdEBOZ0/0a7mqBYEpyZBS
- xDQHiVd0LkDzg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/64s: Add FA_DUMP to defconfig
-Date: Tue, 20 Apr 2021 14:22:09 +1000
-Message-Id: <20210420042209.1641634-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FPW2v2Lnqz2xfs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 14:31:02 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13K43boO042247; Tue, 20 Apr 2021 00:30:55 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=sih98mTZAIYnyeSLTC2gyp6bq6iMluxVfiiv3Vdb94w=;
+ b=mYTB8af5BMvZ52K3kx6jTcbnYH15luJ89VETeNp7yXfKSZNbHmiRqsiW/fwR8xlfZkyj
+ A9A3y5v91u/g2Rp3FMB5duKTpzcSJosAthwLytlQNM+n6jrOHWqJjNOXDeZ9f/QVe/YQ
+ agR2sj7b7q6E8L3iUzwcj9V5+vhBuTuQ9AwsSOb74jzfZjKCLJStblWu0yzMwCmmWPxk
+ Kz+nY32hGjQ4o77Eou8o9sr5Hc4AC9kea+hwjeqeguspLB+fcXxhu6fDRYmT6ti1Esoj
+ 9Z1DoFHl5XILtkQizEGKJyFkJGHO1njWuwFwxYkQ6nY4v90Uh3SjBusm3cEBANygyD63 9Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 381nj7axj4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Apr 2021 00:30:54 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13K4UlZB129872;
+ Tue, 20 Apr 2021 00:30:54 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 381nj7axhr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Apr 2021 00:30:53 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13K4MoCf018133;
+ Tue, 20 Apr 2021 04:30:52 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04ams.nl.ibm.com with ESMTP id 37yqa8hemw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Apr 2021 04:30:52 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13K4Unur23724304
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 20 Apr 2021 04:30:50 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E1417A405B;
+ Tue, 20 Apr 2021 04:30:49 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3FF08A4065;
+ Tue, 20 Apr 2021 04:30:48 +0000 (GMT)
+Received: from [9.199.43.214] (unknown [9.199.43.214])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 20 Apr 2021 04:30:48 +0000 (GMT)
+Subject: Re: [PATCH v4 8/9] mm/mremap: Allow arch runtime override
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
+ akpm@linux-foundation.org
+References: <20210414085915.301189-1-aneesh.kumar@linux.ibm.com>
+ <20210414085915.301189-9-aneesh.kumar@linux.ibm.com>
+ <87bla9d34m.fsf@mpe.ellerman.id.au>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Message-ID: <aa3d090c-0785-08b9-3c91-d8c5cf564937@linux.ibm.com>
+Date: Tue, 20 Apr 2021 10:00:47 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <87bla9d34m.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 8Jr_IZcIoTWcQEmigRXKyFDOWBbYf-un
+X-Proofpoint-ORIG-GUID: fUzxqS6LAaGGU7TsJoEBrg72ikUKUKcX
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-20_01:2021-04-19,
+ 2021-04-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0
+ phishscore=0 malwarescore=0 clxscore=1015 mlxscore=0 adultscore=0
+ spamscore=0 priorityscore=1501 mlxlogscore=999 lowpriorityscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104200028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,30 +123,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: joel@joelfernandes.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ kaleshsingh@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-FA_DUMP (Firmware Assisted Dump) is a powerpc only feature that should
-be enabled in our defconfig to get some build / test coverage.
+On 4/20/21 9:22 AM, Michael Ellerman wrote:
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+>> Architectures like ppc64 support faster mremap only with radix
+>> translation. Hence allow a runtime check w.r.t support for fast mremap.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/tlb.h |  6 ++++++
+>>   mm/mremap.c                    | 15 ++++++++++++++-
+>>   2 files changed, 20 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+>> index 160422a439aa..058918a7cd3c 100644
+>> --- a/arch/powerpc/include/asm/tlb.h
+>> +++ b/arch/powerpc/include/asm/tlb.h
+>> @@ -83,5 +83,11 @@ static inline int mm_is_thread_local(struct mm_struct *mm)
+>>   }
+>>   #endif
+>>   
+>> +#define arch_supports_page_tables_move arch_supports_page_tables_move
+>> +static inline bool arch_supports_page_tables_move(void)
+>> +{
+>> +	return radix_enabled();
+>> +}
+> 
+> Not sure it's worth a respin on its own, but page table*s* move is
+> slightly strange phrasing.
+> 
+> arch_supports_move_page_tables() or arch_supports_page_table_move()
+> would be more typical.
+> 
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/configs/ppc64_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+I will switch to arch_supports_page_table_move()
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 4f05a6652478..72b235ef6f3b 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -50,6 +50,7 @@ CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
- CONFIG_KEXEC_FILE=y
- CONFIG_CRASH_DUMP=y
-+CONFIG_FA_DUMP=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_PPC_64K_PAGES=y
- CONFIG_SCHED_SMT=y
--- 
-2.25.1
+-aneesh
 
