@@ -2,73 +2,63 @@ Return-Path: <SRS0=xixs=JR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5198CC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 13:15:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E1F9C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 13:33:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66C3B61155
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 13:15:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66C3B61155
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 4EFE461026
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 13:33:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EFE461026
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FPkhH34pfz30Df
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 23:15:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k2bus5aw;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FPl4c1GKlz30KJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Apr 2021 23:33:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=k2bus5aw; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FPkgr3VQHz2xfY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 23:15:19 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FPkgp73Lkz9tlB;
- Tue, 20 Apr 2021 23:15:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1618924519;
- bh=UI0o3Fd/uLM07Bexdon7KWXa2iOf9VNOAMVICkVRMOA=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=k2bus5awbaMgVM0Ns6wKbxineVVY2j79KhrIvn74R1fA7QXHOG7MZiUtSLeY1NpF9
- pEJTQvp5tDNN74LoICIwNbIhw7YrKRlO9ev37YKmiLwowDUoGWG6ogRN82qVU1S7qY
- JqfJDtpsbubG0TfDqzpXgac7CQq2jTPHO5XVvtAzNz+aaNu0iW2GGr8mYoAGrAX3Bc
- wSFlRM+bohB+xjJQX041uxKVOp/4XhFCIknd/o5xjpk6iukabU3Bq6LF+jwn7BYtQc
- uWFI+pSAm07Xdv1lkWq0XvrC7y0yGMBoFxCPEYC1iQbYIV9VjXbXtbJ8XP9eLCVBNd
- wu14uXGQlZ9+A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Randy Dunlap
- <rdunlap@infradead.org>, Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: PPC_FPU, ALTIVEC: enable_kernel_fp, put_vr, get_vr
-In-Reply-To: <1f337b4c-940e-110c-d0a2-2ad95cfb2dc8@csgroup.eu>
-References: <7107fcae-5c7a-ac94-8d89-326f2cd4cd33@infradead.org>
- <8b1cb0a2-ed3a-7da0-a73a-febbda528703@csgroup.eu>
- <20210418174648.GN26583@gate.crashing.org>
- <bf119bfe-7db1-e7f3-d837-f910635eeebb@infradead.org>
- <87sg3mct3x.fsf@mpe.ellerman.id.au>
- <bd83b06d-ed36-e600-e988-c1e0014fb9cf@infradead.org>
- <1f337b4c-940e-110c-d0a2-2ad95cfb2dc8@csgroup.eu>
-Date: Tue, 20 Apr 2021 23:15:14 +1000
-Message-ID: <871rb5cd25.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FPl492vcSz2xfr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2021 23:32:54 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FPl402GBrz9vBL3;
+ Tue, 20 Apr 2021 15:32:48 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id CdJ_Rbk7WgIU; Tue, 20 Apr 2021 15:32:48 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FPl401SmBz9vBKm;
+ Tue, 20 Apr 2021 15:32:48 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 905058B7ED;
+ Tue, 20 Apr 2021 15:32:49 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 1E2egr5WWqn7; Tue, 20 Apr 2021 15:32:49 +0200 (CEST)
+Received: from po16121vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 47FDF8B807;
+ Tue, 20 Apr 2021 15:32:49 +0200 (CEST)
+Received: by po16121vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 28B6B6770B; Tue, 20 Apr 2021 13:32:49 +0000 (UTC)
+Message-Id: <103ed8ee9e5973c958ec1da2d0b0764f69395d01.1618925560.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <0d51620eacf036d683d1a3c41328f69adb601dc0.1618925560.git.christophe.leroy@csgroup.eu>
+References: <0d51620eacf036d683d1a3c41328f69adb601dc0.1618925560.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 2/2] powerpc/legacy_serial: Use early_ioremap()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ chris.packham@alliedtelesis.co.nz
+Date: Tue, 20 Apr 2021 13:32:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,109 +70,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 19/04/2021 =C3=A0 23:39, Randy Dunlap a =C3=A9crit=C2=A0:
->> On 4/19/21 6:16 AM, Michael Ellerman wrote:
->>> Randy Dunlap <rdunlap@infradead.org> writes:
->>=20
->>>> Sure.  I'll post them later today.
->>>> They keep FPU and ALTIVEC as independent (build) features.
->>>
->>> Those patches look OK.
->>>
->>> But I don't think it makes sense to support that configuration, FPU=3Dn
->>> ALTVEC=3Dy. No one is ever going to make a CPU like that. We have enough
->>> testing surface due to configuration options, without adding artificial
->>> combinations that no one is ever going to use.
->>>
->>> IMHO :)
->>>
->>> So I'd rather we just make ALTIVEC depend on FPU.
->>=20
->> That's rather simple. See below.
->> I'm doing a bunch of randconfig builds with it now.
->>=20
->> ---
->> From: Randy Dunlap <rdunlap@infradead.org>
->> Subject: [PATCH] powerpc: make ALTIVEC depend PPC_FPU
->>=20
->> On a kernel config with ALTIVEC=3Dy and PPC_FPU not set/enabled,
->> there are build errors:
->>=20
->> drivers/cpufreq/pmac32-cpufreq.c:262:2: error: implicit declaration of f=
-unction 'enable_kernel_fp' [-Werror,-Wimplicit-function-declaration]
->>             enable_kernel_fp();
->> ../arch/powerpc/lib/sstep.c: In function 'do_vec_load':
->> ../arch/powerpc/lib/sstep.c:637:3: error: implicit declaration of functi=
-on 'put_vr' [-Werror=3Dimplicit-function-declaration]
->>    637 |   put_vr(rn, &u.v);
->>        |   ^~~~~~
->> ../arch/powerpc/lib/sstep.c: In function 'do_vec_store':
->> ../arch/powerpc/lib/sstep.c:660:3: error: implicit declaration of functi=
-on 'get_vr'; did you mean 'get_oc'? [-Werror=3Dimplicit-function-declaratio=
-n]
->>    660 |   get_vr(rn, &u.v);
->>        |   ^~~~~~
->>=20
->> In theory ALTIVEC is independent of PPC_FPU but in practice nobody
->> is going to build such a machine, so make ALTIVEC require PPC_FPU
->> by depending on PPC_FPU.
->>=20
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->> Reported-by: kernel test robot <lkp@intel.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
->> Cc: Segher Boessenkool <segher@kernel.crashing.org>
->> Cc: lkp@intel.com
->> ---
->>   arch/powerpc/platforms/86xx/Kconfig    |    1 +
->>   arch/powerpc/platforms/Kconfig.cputype |    2 ++
->>   2 files changed, 3 insertions(+)
->>=20
->> --- linux-next-20210416.orig/arch/powerpc/platforms/86xx/Kconfig
->> +++ linux-next-20210416/arch/powerpc/platforms/86xx/Kconfig
->> @@ -4,6 +4,7 @@ menuconfig PPC_86xx
->>   	bool "86xx-based boards"
->>   	depends on PPC_BOOK3S_32
->>   	select FSL_SOC
->> +	select PPC_FPU
->>   	select ALTIVEC
->>   	help
->>   	  The Freescale E600 SoCs have 74xx cores.
->> --- linux-next-20210416.orig/arch/powerpc/platforms/Kconfig.cputype
->> +++ linux-next-20210416/arch/powerpc/platforms/Kconfig.cputype
->> @@ -186,6 +186,7 @@ config E300C3_CPU
->>   config G4_CPU
->>   	bool "G4 (74xx)"
->>   	depends on PPC_BOOK3S_32
->> +	select PPC_FPU
->>   	select ALTIVEC
->>=20=20=20
->>   endchoice
->> @@ -309,6 +310,7 @@ config PHYS_64BIT
->>=20=20=20
->>   config ALTIVEC
->>   	bool "AltiVec Support"
->> +	depends on PPC_FPU
->
-> Shouldn't we do it the other way round ? In extenso make ALTIVEC select P=
-PC_FPU and avoid the two=20
-> selects that are above ?
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Yes, ALTIVEC should select PPC_FPU.
+[    0.000000] ioremap() called early from find_legacy_serial_ports+0x3cc/0x474. Use early_ioremap() instead
 
-The latter is (generally) not user selectable, so there's no issue with
-selecting it, whereas the reverse is not true.
+find_legacy_serial_ports() is called early from setup_arch(), before
+paging_init(). vmalloc is not available yet, ioremap shouldn't be
+used that early.
 
-For 64-bit Book3S I think we could just always enable ALTIVEC these
-days. It's only Power5 that doesn't have it, and essentially no one is
-running mainline on those AFAIK. But that can be done separately.
+Use early_ioremap() and switch to a regular ioremap() later.
 
-cheers
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/legacy_serial.c | 33 +++++++++++++++++++++++++----
+ 1 file changed, 29 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index f061e06e9f51..8b2c1a8553a0 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -15,6 +15,7 @@
+ #include <asm/udbg.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
++#include <asm/early_ioremap.h>
+ 
+ #undef DEBUG
+ 
+@@ -34,6 +35,7 @@ static struct legacy_serial_info {
+ 	unsigned int			clock;
+ 	int				irq_check_parent;
+ 	phys_addr_t			taddr;
++	void __iomem			*early_addr;
+ } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
+ 
+ static const struct of_device_id legacy_serial_parents[] __initconst = {
+@@ -325,17 +327,16 @@ static void __init setup_legacy_serial_console(int console)
+ {
+ 	struct legacy_serial_info *info = &legacy_serial_infos[console];
+ 	struct plat_serial8250_port *port = &legacy_serial_ports[console];
+-	void __iomem *addr;
+ 	unsigned int stride;
+ 
+ 	stride = 1 << port->regshift;
+ 
+ 	/* Check if a translated MMIO address has been found */
+ 	if (info->taddr) {
+-		addr = ioremap(info->taddr, 0x1000);
+-		if (addr == NULL)
++		info->early_addr = early_ioremap(info->taddr, 0x1000);
++		if (info->early_addr == NULL)
+ 			return;
+-		udbg_uart_init_mmio(addr, stride);
++		udbg_uart_init_mmio(info->early_addr, stride);
+ 	} else {
+ 		/* Check if it's PIO and we support untranslated PIO */
+ 		if (port->iotype == UPIO_PORT && isa_io_special)
+@@ -353,6 +354,30 @@ static void __init setup_legacy_serial_console(int console)
+ 	udbg_uart_setup(info->speed, info->clock);
+ }
+ 
++static int __init ioremap_legacy_serial_console(void)
++{
++	struct legacy_serial_info *info = &legacy_serial_infos[legacy_serial_console];
++	struct plat_serial8250_port *port = &legacy_serial_ports[legacy_serial_console];
++	void __iomem *vaddr;
++
++	if (legacy_serial_console < 0)
++		return 0;
++
++	if (!info->early_addr)
++		return 0;
++
++	vaddr = ioremap(info->taddr, 0x1000);
++	if (WARN_ON(!vaddr))
++		return -ENOMEM;
++
++	udbg_uart_init_mmio(vaddr, 1 << port->regshift);
++	early_iounmap(info->early_addr, 0x1000);
++	info->early_addr = NULL;
++
++	return 0;
++}
++early_initcall(ioremap_legacy_serial_console);
++
+ /*
+  * This is called very early, as part of setup_system() or eventually
+  * setup_arch(), basically before anything else in this file. This function
+-- 
+2.25.0
+
