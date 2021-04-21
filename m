@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 648A3C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 13:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2B55C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 13:12:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C42BD601FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 13:11:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C42BD601FD
+	by mail.kernel.org (Postfix) with ESMTPS id 16C826144A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 13:12:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16C826144A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FQLYB1hZLz3cZy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 23:11:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FQLYX3xrlz3d3y
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 23:12:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,18 +26,18 @@ Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FQLVL0TMPz30Cy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Apr 2021 23:09:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FQLVL4VNVz2yy9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Apr 2021 23:09:14 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FQLVJ4Fwhz9vFT; Wed, 21 Apr 2021 23:09:12 +1000 (AEST)
+ id 4FQLVK4GTYz9vFX; Wed, 21 Apr 2021 23:09:13 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Daniel Henrique Barboza <danielhb413@gmail.com>,
+To: Ganesh Goudar <ganeshgr@linux.ibm.com>, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210416210216.380291-1-danielhb413@gmail.com>
-References: <20210416210216.380291-1-danielhb413@gmail.com>
-Subject: Re: [PATCH 0/2] pseries: UNISOLATE DRCs to signal device removal error
-Message-Id: <161901049952.1961279.13963329908976762036.b4-ty@ellerman.id.au>
-Date: Wed, 21 Apr 2021 23:08:19 +1000
+In-Reply-To: <20210407045816.352276-1-ganeshgr@linux.ibm.com>
+References: <20210407045816.352276-1-ganeshgr@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/mce: save ignore_event flag unconditionally for UE
+Message-Id: <161901050296.1961279.14875938612170335400.b4-ty@ellerman.id.au>
+Date: Wed, 21 Apr 2021 23:08:22 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -52,26 +52,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: david@gibson.dropbear.id.au
+Cc: mahesh@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Apr 2021 18:02:14 -0300, Daniel Henrique Barboza wrote:
-> At this moment, PAPR [1] does not have a way to report errors during a device
-> removal operation. This puts a strain in the hypervisor, which needs extra
-> mechanisms to try to fallback and recover from an error that might have
-> happened during the removal. The QEMU community has dealt with it during these
-> years by either trying to preempt the error before sending the HP event or, in
-> case of a guest side failure, reboot the guest to complete the removal process.
+On Wed, 7 Apr 2021 10:28:16 +0530, Ganesh Goudar wrote:
+> When we hit an UE while using machine check safe copy routines,
+> ignore_event flag is set and the event is ignored by mce handler,
+> And the flag is also saved for defered handling and printing of
+> mce event information, But as of now saving of this flag is done
+> on checking if the effective address is provided or physical address
+> is calculated, which is not right.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] dlpar.c: introduce dlpar_unisolate_drc()
-      https://git.kernel.org/powerpc/c/0e3b3ff83ce24a7a01e467ca42e3e33e87195c0d
-[2/2] hotplug-cpu.c: set UNISOLATE on dlpar_cpu_remove() failure
-      https://git.kernel.org/powerpc/c/29c9a2699e71a7866a98ebdf6ea38135d31b4e1f
+[1/1] powerpc/mce: save ignore_event flag unconditionally for UE
+      https://git.kernel.org/powerpc/c/92d9d61be519f32f16c07602db5bcbe30a0836fe
 
 cheers
