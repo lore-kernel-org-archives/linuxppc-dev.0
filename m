@@ -2,67 +2,62 @@ Return-Path: <SRS0=3Onk=JS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B937C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 12:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A68AAC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 12:54:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A8F061413
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 12:30:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A8F061413
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 860C961409
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 12:54:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 860C961409
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FQKdC4gQKz30Gp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 22:30:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FQL9Q6pZDz30Hr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Apr 2021 22:54:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=USMpRNM0;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=USMpRNM0; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FQKcm2xLbz2xZS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Apr 2021 22:29:41 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FQKcc4dPYz9tvqS;
- Wed, 21 Apr 2021 14:29:36 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id CeELRF3p2Hho; Wed, 21 Apr 2021 14:29:36 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FQKcc3hDwz9tvq9;
- Wed, 21 Apr 2021 14:29:36 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D6FBC8B825;
- Wed, 21 Apr 2021 14:29:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id T1yXWHZXlfsX; Wed, 21 Apr 2021 14:29:37 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 62B1F8B770;
- Wed, 21 Apr 2021 14:29:37 +0200 (CEST)
-Subject: Re: [PATCH v11 6/6] powerpc: Book3S 64-bit outline-only KASAN support
-To: Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- kasan-dev@googlegroups.com, aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
-References: <20210319144058.772525-1-dja@axtens.net>
- <20210319144058.772525-7-dja@axtens.net>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <fc849719-e2c0-bbcb-c58e-f4ff3e9c5f18@csgroup.eu>
-Date: Wed, 21 Apr 2021 14:29:38 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FQL906T1qz2y0L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Apr 2021 22:54:12 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4FQL8y6H0Fz9sj5; Wed, 21 Apr 2021 22:54:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1619009650;
+ bh=UNn+k+YHMI77WeDfeohXf8pe8DFCTIt9IK6+gRZP4yA=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=USMpRNM0q/89MVXGyLSS0ns2sPQRmntkpmUnuM8oc02AkO/GTaPjlhFZpEKQ0TGwH
+ yz0O0cq27FDColT3VDfsiYVo0v1Od/fDu2JiOx6P0/D9o5dLdjsF3RnK96tb3oKglP
+ eBkkZcxx6g1Mpc9nGWGmDUfoCBuTAbMcMuBuWgqlJ49WfmXCgkZdptG5ljS46lQHAY
+ xxzdENOoVqeDmEVrXZoN0kEPDt8RZNGuzUKdhEbGOh6h+WtXmJTOdJIQXv+snrveUs
+ u5LfhG8gGAhZL4TgLgyOrFFVe0WoKs8nLhwg/XdQNnRYutu2q9Uj3cq5ZSW6jmftId
+ oYiTl8AUndMlw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/powernv: Fix type of opal_mpipl_query_tag() addr
+ argument
+Date: Wed, 21 Apr 2021 22:54:02 +1000
+Message-Id: <20210421125402.1955013-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210421125402.1955013-1-mpe@ellerman.id.au>
+References: <20210421125402.1955013-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20210319144058.772525-7-dja@axtens.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,54 +70,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+opal_mpipl_query_tag() takes a pointer to a 64-bit value, which firmware
+writes a value to. As OPAL is traditionally big endian this value will
+be big endian.
 
+This can be confirmed by looking at the implementation in skiboot:
 
-Le 19/03/2021 à 15:40, Daniel Axtens a écrit :
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-> index aca354fb670b..63672aa656e8 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.c
-> +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> @@ -20,6 +20,7 @@
->   #include <linux/seq_file.h>
->   #include <asm/fixmap.h>
->   #include <linux/const.h>
-> +#include <linux/kasan.h>
->   #include <asm/page.h>
->   #include <asm/hugetlb.h>
->   
-> @@ -317,6 +318,23 @@ static void walk_pud(struct pg_state *st, p4d_t *p4d, unsigned long start)
->   	unsigned long addr;
->   	unsigned int i;
->   
-> +#if defined(CONFIG_KASAN) && defined(CONFIG_PPC_BOOK3S_64)
-> +	/*
-> +	 * On radix + KASAN, we want to check for the KASAN "early" shadow
-> +	 * which covers huge quantities of memory with the same set of
-> +	 * read-only PTEs. If it is, we want to note the first page (to see
-> +	 * the status change), and then note the last page. This gives us good
-> +	 * results without spending ages noting the exact same PTEs over 100s of
-> +	 * terabytes of memory.
-> +	 */
-> +	if (p4d_page(*p4d) == virt_to_page(lm_alias(kasan_early_shadow_pud))) {
-> +		walk_pmd(st, pud, start);
-> +		addr = start + (PTRS_PER_PUD - 1) * PUD_SIZE;
-> +		walk_pmd(st, pud, addr);
-> +		return;
-> +	}
-> +#endif
-> +
->   	for (i = 0; i < PTRS_PER_PUD; i++, pud++) {
->   		addr = start + i * PUD_SIZE;
->   		if (!pud_none(*pud) && !pud_is_leaf(*pud))
+  static uint64_t opal_mpipl_query_tag(enum opal_mpipl_tags tag, __be64 *tag_val)
+  {
+  	...
+  	*tag_val = cpu_to_be64(opal_mpipl_tags[tag]);
+  	return OPAL_SUCCESS;
+  }
 
+Fix the declaration to annotate that the value is big endian.
 
-The above changes should not be necessary once PPC_PTDUMP is converted to GENERIC_PTDUMP.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/opal.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-See https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=239795
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9986ac34b8e2..c76157237e22 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -307,7 +307,7 @@ int opal_secvar_enqueue_update(const char *key, uint64_t key_len, u8 *data,
+ 
+ s64 opal_mpipl_update(enum opal_mpipl_ops op, u64 src, u64 dest, u64 size);
+ s64 opal_mpipl_register_tag(enum opal_mpipl_tags tag, u64 addr);
+-s64 opal_mpipl_query_tag(enum opal_mpipl_tags tag, u64 *addr);
++s64 opal_mpipl_query_tag(enum opal_mpipl_tags tag, __be64 *addr);
+ 
+ s64 opal_signal_system_reset(s32 cpu);
+ s64 opal_quiesce(u64 shutdown_type, s32 cpu);
+-- 
+2.25.1
 
-
-Christophe
