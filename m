@@ -2,102 +2,68 @@ Return-Path: <SRS0=xMs2=JT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 014ADC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 15:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37F10C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 15:28:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D2DD61417
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 15:27:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D2DD61417
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E63A361417
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 15:28:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E63A361417
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FR1Vr4GQFz3021
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 01:27:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tqlDcIg1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=tqlDcIg1; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FR1Wz3BJ6z3bVS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 01:27:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FR1VM359rz2yZM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 01:26:34 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13MFJKNZ074998; Thu, 22 Apr 2021 11:26:25 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject : date : message-id; s=pp1;
- bh=yKJ2+PqDzOEUpqjEsmvdovopMFWQRYr3+kfeNLKRfk4=;
- b=tqlDcIg1qcbjg0hii3S4pzMMc03SMnMRRDh2qx3ypkmPYoYowfKnJjA0o7pUHmKXdki5
- xuvFupy8N2XMKNxbShrmUPjDOHGMU9Gcq/bCi3T4KTHWLN4TvOZCEHGbTnegimB1w+2+
- eGe/CkSl2LZzmjj+fSNHDg11mNzhn2fBB8a2Ae24BRt3iqO2pm42DrGBtYEDVKvSJMPq
- n57xyXqKk+CK7uYEPW6ue1gIsq6BPTpVJCB9mN4Kk4jupAckJ6po+moapYx42g2Xk45D
- o1utkLRD+6+dSB3NSUqcBQATw9Tmuw35FjiFPjfoMlI5g5WTaDPO9ugd7YVT3BWkunN3 cg== 
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3838by02ep-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 22 Apr 2021 11:26:24 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13MF2eOB029908;
- Thu, 22 Apr 2021 15:26:24 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma04wdc.us.ibm.com with ESMTP id 3813tb3a0d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 22 Apr 2021 15:26:24 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13MFQNFm35455404
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 22 Apr 2021 15:26:23 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9FBC6AC05F;
- Thu, 22 Apr 2021 15:26:23 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 458E1AC05B;
- Thu, 22 Apr 2021 15:26:23 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.85.68.114])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 22 Apr 2021 15:26:23 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 4805E2E2EE0; Thu, 22 Apr 2021 20:37:44 +0530 (IST)
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle/pseries: Fixup CEDE0 latency only for POWER10 onwards
-Date: Thu, 22 Apr 2021 20:37:29 +0530
-Message-Id: <1619104049-5118-1-git-send-email-ego@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WKU2eVXCss5iPN0ei4XY1NBuKM0NE3_s
-X-Proofpoint-ORIG-GUID: WKU2eVXCss5iPN0ei4XY1NBuKM0NE3_s
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-22_06:2021-04-22,
- 2021-04-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0
- priorityscore=1501 mlxscore=0 suspectscore=0 lowpriorityscore=0
- adultscore=0 clxscore=1011 spamscore=0 mlxlogscore=999 malwarescore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104220120
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FR1Wc2M5Pz2xZN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 01:27:37 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FR1WR6Ykrz9v4h8;
+ Thu, 22 Apr 2021 17:27:31 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 5X18jCbvHMHQ; Thu, 22 Apr 2021 17:27:31 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FR1WR5bvkz9v4gH;
+ Thu, 22 Apr 2021 17:27:31 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DCF898B846;
+ Thu, 22 Apr 2021 17:27:32 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 5QPcsvrhPnYt; Thu, 22 Apr 2021 17:27:32 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 34D3D8B845;
+ Thu, 22 Apr 2021 17:27:32 +0200 (CEST)
+Subject: Re: [PATCH 1/2] powerpc: Make the code in __show_regs nice-looking
+To: Xiongwei Song <sxwjean@me.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
+ ravi.bangoria@linux.ibm.com, mikey@neuling.org, aneesh.kumar@linux.ibm.com,
+ 0x7f454c46@gmail.com
+References: <20210422151022.17868-1-sxwjean@me.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <15aac264-8626-ad15-7301-044c622d7f60@csgroup.eu>
+Date: Thu, 22 Apr 2021 17:27:14 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.1
+MIME-Version: 1.0
+In-Reply-To: <20210422151022.17868-1-sxwjean@me.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,59 +75,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- joedecke@de.ibm.com, linux-pm@vger.kernel.org
+Cc: Xiongwei Song <sxwjean@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
-CEDE(0)") sets the exit latency of CEDE(0) based on the latency values
-of the Extended CEDE states advertised by the platform
 
-On some of the POWER9 LPARs, the older firmwares advertise a very low
-value of 2us for CEDE1 exit latency on a Dedicated LPAR. However the
-measured value is 5us on an average. Due to the low advertised exit
-latency, we are entering CEDE(0) more aggressively on such
-platforms. While this helps achieve SMT folding faster, we pay the
-penalty of having to send an IPI to wakeup the CPU when the target
-residency is very short. This is showing up as a performance
-regression on the newer kernels running on the LPARs with older
-firmware.
+Le 22/04/2021 à 17:10, Xiongwei Song a écrit :
+> From: Xiongwei Song <sxwjean@gmail.com>
+> 
+> Create a new function named interrupt_detail_printable to judge which
+> interrupts can print esr/dsisr register.
 
-Hence, set the exit latency of CEDE(0) based on the latency values
-advertized by platform only from POWER10 onwards. The values
-advertized on POWER10 platforms is more realistic and informed by the
-latency measurements.
+What is the benefit of that function ? It may be interesting if the test was done at several places, 
+but as it is done at only one place, I don't thing it is an improvement.
 
-For platforms older than POWER10, retain the hardcoded value of exit
-latency, which is 10us. Though this is higher than the measured
-values, we would be erring on the side of caution.
+Until know, you new immediately what was the traps that would print it. Now you have to go and look 
+into a sub-function.
 
-Reported-by: Enrico Joedecke <joedecke@de.ibm.com>
-Fixes: commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
-CEDE(0)")
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+And the name is not nice either. All other functions testing anything on the trap type are called 
+trap_is_something()
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index a2b5c6f..7207467 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -419,7 +419,8 @@ static int pseries_idle_probe(void)
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
--			fixup_cede0_latency();
-+			if (pvr_version_is(PVR_POWER10))
-+				fixup_cede0_latency();
- 			cpuidle_state_table = dedicated_states;
- 			max_idle_state = NR_DEDICATED_STATES;
- 		}
--- 
-1.9.4
+Here your function would be better called something like trap_sets_dsisr()
 
+> 
+> Signed-off-by: Xiongwei Song <sxwjean@gmail.com>
+> ---
+>   arch/powerpc/kernel/process.c | 21 ++++++++++++++++-----
+>   1 file changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 89e34aa273e2..5c3830837f3a 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1453,9 +1453,23 @@ static void print_msr_bits(unsigned long val)
+>   #define REGS_PER_LINE	8
+>   #endif
+>   
+> +static bool interrupt_detail_printable(int trap)
+> +{
+> +	switch (trap) {
+> +	case INTERRUPT_MACHINE_CHECK:
+> +	case INTERRUPT_DATA_STORAGE:
+> +	case INTERRUPT_ALIGNMENT:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +
+> +	return false;
+
+That's redundant with the default case inside the switch.
+
+> +}
+> +
+>   static void __show_regs(struct pt_regs *regs)
+>   {
+> -	int i, trap;
+> +	int i;
+>   
+>   	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
+>   	       regs->nip, regs->link, regs->ctr);
+> @@ -1464,12 +1478,9 @@ static void __show_regs(struct pt_regs *regs)
+>   	printk("MSR:  "REG" ", regs->msr);
+>   	print_msr_bits(regs->msr);
+>   	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
+> -	trap = TRAP(regs);
+>   	if (!trap_is_syscall(regs) && cpu_has_feature(CPU_FTR_CFAR))
+>   		pr_cont("CFAR: "REG" ", regs->orig_gpr3);
+> -	if (trap == INTERRUPT_MACHINE_CHECK ||
+> -	    trap == INTERRUPT_DATA_STORAGE ||
+> -	    trap == INTERRUPT_ALIGNMENT) {
+> +	if (interrupt_detail_printable(TRAP(regs))) {
+>   		if (IS_ENABLED(CONFIG_4xx) || IS_ENABLED(CONFIG_BOOKE))
+>   			pr_cont("DEAR: "REG" ESR: "REG" ", regs->dar, regs->dsisr);
+>   		else
+> 
