@@ -2,44 +2,111 @@ Return-Path: <SRS0=xMs2=JT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CDDFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 09:36:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F95EC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 10:02:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A257600EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 09:36:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A257600EF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 767A161426
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 10:02:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 767A161426
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FQskT43b4z3bVF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 19:36:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FQtHq4RcDz2yy9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 20:01:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSe2pVDh;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-X-Greylist: delayed 509 seconds by postgrey-1.36 at boromir;
- Thu, 22 Apr 2021 19:36:14 AEST
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4FQsk64VRDz2xfl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 19:36:14 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 562BFAE80049;
- Thu, 22 Apr 2021 05:27:39 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/makefile: Do not redefine $(CPP) for
- preprocessor
-Date: Thu, 22 Apr 2021 19:27:37 +1000
-Message-Id: <20210422092737.895392-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.25.1
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=TSe2pVDh; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FQtHL41qXz2xfl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 20:01:33 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13M9YcE1053501; Thu, 22 Apr 2021 06:01:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : subject :
+ to : references : in-reply-to : mime-version : message-id : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=bua06TQZiUZW96KKFivBQiVW6dbvhdkNvHUA9amRvo8=;
+ b=TSe2pVDhyOjjAMlFWrZGAAep921y74aj4HMqJP3FxTWI88Jma7qj0GMV3z5/XVsrfTEz
+ CtgmY6D6OZkENslijYEzxS30zgxMPou+t3mGNUYWXrQ0gME+CrioQV/lxW6B8e3GoMnt
+ aW40bADspXwDU+cTMGvRH80C1Ft5phBxeUZRJaz7zvgUDdd5qjCGw7fXOEEqyzsI2q4w
+ InGHnsxQ7zGtDXY1BvvpQN9qEhfHYnPXtVvrhUiuZwEEGc5TlYJA1FdWsbIH4TL+Wzd8
+ rqgvYYNSXEvzo/Fsw48FmAL5lim0H5ODxgW5+Gfv/xu8eyBzNnk/UtqChRk3CYf5VZKU bA== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3832cmqtpc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Apr 2021 06:01:23 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13M9wY8a011290;
+ Thu, 22 Apr 2021 10:01:21 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03ams.nl.ibm.com with ESMTP id 37yqa8jsj8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Apr 2021 10:01:21 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13MA1J0L26542468
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 22 Apr 2021 10:01:19 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3355AA407E;
+ Thu, 22 Apr 2021 10:01:19 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 79107A4072;
+ Thu, 22 Apr 2021 10:01:17 +0000 (GMT)
+Received: from localhost (unknown [9.85.113.232])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 22 Apr 2021 10:01:17 +0000 (GMT)
+Date: Thu, 22 Apr 2021 15:31:15 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/sstep: Add emulation support for
+ =?CP1251?B?kXNldGKS?= instruction
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Sathvika Vasireddy
+ <sathvika@linux.vnet.ibm.com>
+References: <cover.1618469454.git.sathvika@linux.vnet.ibm.com>
+ <767e53c4c27da024ca277e21ffcd0cff131f5c73.1618469454.git.sathvika@linux.vnet.ibm.com>
+ <875z0mfzbf.fsf@linkitivity.dja.id.au>
+ <1618899164.u2uju6vw3c.naveen@linux.ibm.com>
+ <87lf9caycg.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87lf9caycg.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/v0.15-23-gcdc62b30 (https://github.com/astroidmail/astroid)
+Message-Id: <1619085028.flue8xv2n9.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: tmYQt7VhlZ1tdfct1HX74QXQT82Y57gz
+X-Proofpoint-ORIG-GUID: tmYQt7VhlZ1tdfct1HX74QXQT82Y57gz
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-22_01:2021-04-21,
+ 2021-04-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1011
+ adultscore=0 bulkscore=0 suspectscore=0 mlxscore=0 phishscore=0
+ lowpriorityscore=0 priorityscore=1501 spamscore=0 mlxlogscore=999
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104220080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,43 +118,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The $(CPP) (do only preprocessing) macro is already defined in Makefile.
-However POWERPC redefines it and adds $(KBUILD_CFLAGS) which results
-in flags duplication. Which is not a big deal by itself except for
-the flags which depend on other flags and the compiler checks them
-as it parses the command line.
+Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.ibm.com> writes:
+>> Daniel Axtens wrote:
+>>> Sathvika Vasireddy <sathvika@linux.vnet.ibm.com> writes:
+>>>=20
+>>>> This adds emulation support for the following instruction:
+>>>>    * Set Boolean (setb)
+>>>>
+>>>> Signed-off-by: Sathvika Vasireddy <sathvika@linux.vnet.ibm.com>
+> ...
+>>>=20
+>>> If you do end up respinning the patch, I think it would be good to make
+>>> the maths a bit clearer. I think it works because a left shift of 2 is
+>>> the same as multiplying by 4, but it would be easier to follow if you
+>>> used a temporary variable for btf.
+>>
+>> Indeed. I wonder if it is better to follow the ISA itself. Per the ISA,=20
+>> the bit we are interested in is:
+>> 	4 x BFA + 32
+>>
+>> So, if we use that along with the PPC_BIT() macro, we get:
+>> 	if (regs->ccr & PPC_BIT(ra + 32))
+>=20
+> Use of PPC_BIT risks annoying your maintainer :)
 
-Specifically, scripts/Makefile.build:304 generates ksyms for .S files.
-If clang+llvm+sanitizer are enabled, this results in
--fno-lto -flto -fsanitize=cfi-mfcall  .... -fno-lto -flto -fsanitize=cfi-mfcall
-in the clang command line and triggers error:
+Uh oh... that isn't good :)
 
-clang-13: error: invalid argument '-fsanitize=cfi-mfcall' only allowed with '-flto'
+I looked up previous discussions and I think I now understand why you=20
+don't prefer it.
 
-This removes unnecessary CPP redifinition.
+But, I feel it helps make it easy to follow the code when referring to=20
+the ISA. I'm wondering if it is just the name you dislike and if so,=20
+does it make sense to rename PPC_BIT() to something else? We have=20
+BIT_ULL(), so perhaps BIT_MSB_ULL() or MSB_BIT_ULL()?
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/Makefile | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index c9d2c7825cd6..3a2f2001c62b 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -214,7 +214,6 @@ KBUILD_CPPFLAGS	+= -I $(srctree)/arch/$(ARCH) $(asinstr)
- KBUILD_AFLAGS	+= $(AFLAGS-y)
- KBUILD_CFLAGS	+= $(call cc-option,-msoft-float)
- KBUILD_CFLAGS	+= -pipe $(CFLAGS-y)
--CPP		= $(CC) -E $(KBUILD_CFLAGS)
- 
- CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
- ifdef CONFIG_CPU_BIG_ENDIAN
--- 
-2.25.1
+- Naveen
 
