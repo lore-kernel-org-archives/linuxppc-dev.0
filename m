@@ -2,26 +2,26 @@ Return-Path: <SRS0=xMs2=JT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2553C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEFA8C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:21:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16446611CD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:20:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16446611CD
+	by mail.kernel.org (Postfix) with ESMTPS id 1923E6142F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:21:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1923E6142F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FQpjm4qysz3cDG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 17:20:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FQpkD51Hnz3btR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 17:21:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=uebudFWL;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=jzhBxobm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -30,36 +30,34 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=uebudFWL; 
+ header.s=bombadil.20210309 header.b=jzhBxobm; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FQphk5DTmz3bby
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FQphk51Wxz3bTc
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 17:19:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=mQKOkV7O/cQZUeeS2ywVjzBgZ2gsXE3uYRnoQOufOWY=; b=uebudFWLuE7bflMDQQdSHpip3B
- XJBkAvt2kX2G6MchzpNWjh2R5I5XUFdiU9YEccqUF4kwnqBT3m4sBkXQnHY9jHNuENyd0DCmXMTZN
- dBJOdK44cce23/YdS7uP/U8DAILaoZKRL9UpKZjV12NYQkp/tF5xNjHAfhtREAB42GK2cPt59erj+
- tSye60ezBe7oalDxD5wTkF/SJvwbJs5HXXv+xq4rYo4ueA78wnZB3d83Oztierm4iFQ19mw/9DrkA
- DjDnoSkiQsnQNtwCys4BZhCzdt0vHegfZjJoWaoeydlI294lUbZ2HKrrreZNLkVdBQGWu0/XnueMs
- ek06CYVA==;
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:In-Reply-To:References;
+ bh=aEdQBTMaUl2RRYZxc6tzp9x+ou0hYnPrwcHo24gdihQ=; b=jzhBxobmLoI0NNUrL8/EfTlash
+ db9hFe8bub19NNsbPLexbUbQ/0Oek+2WiesnCwx+loiACq5t8ge/EL9W4DSMZFpoY87u/RPIoJkV0
+ skPkrzEfku4t6XaFVhJGfYG1YSfoV53RnF9KVwcg5ui97sd7esymHU1XwRs6WoLw1zeQ/xSUREnAc
+ pLvhgSOCyQ9FtJwrIeBOmivQMw3NSJjC5ztzsFnOy7RFUbjIm1NeQM1uhJ+ll3xBSMmyBBrUfwNnU
+ aNTNXR8y7wle+wwoQB70hJnfC//sRMKPPOusASzTKEHs37fKR/o1nitVIKirzjTWHnkI4mspElf5g
+ mAplpQhw==;
 Received: from [2001:4bb8:19b:f845:15fc:cef6:715a:fb03] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lZTca-00DRkx-Hb; Thu, 22 Apr 2021 07:19:32 +0000
+ id 1lZTcS-00DRkA-CT; Thu, 22 Apr 2021 07:19:24 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 3/7] swiotlb: use swiotlb_adjust_size in setup_io_tlb_npages
-Date: Thu, 22 Apr 2021 09:19:17 +0200
-Message-Id: <20210422071921.1428607-4-hch@lst.de>
+Subject: cleanup and fix swiotlb sizing
+Date: Thu, 22 Apr 2021 09:19:14 +0200
+Message-Id: <20210422071921.1428607-1-hch@lst.de>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210422071921.1428607-1-hch@lst.de>
-References: <20210422071921.1428607-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -84,34 +82,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the proper helper to do the proper alignment of the buffer size
-to the requirements of the swiotlb allocator instead of open coding
-the logic.
+Hi all,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- kernel/dma/swiotlb.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+based on a report from Tom that overriding the default sizing provided
+by the x86 SEV code on the command line doesn't work anymore, this series
+cleans up how we handle default and command line sizes for the swiotlb
+buffer and then fixes the recently introduced bug in a straight-forward
+way.
 
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 27461fd63e0330..93737d0932fbf2 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -76,11 +76,9 @@ static unsigned long default_nslabs = IO_TLB_DEFAULT_SIZE >> IO_TLB_SHIFT;
- static int __init
- setup_io_tlb_npages(char *str)
- {
--	if (isdigit(*str)) {
--		/* avoid tail segment of size < IO_TLB_SEGSIZE */
--		default_nslabs =
--			ALIGN(simple_strtoul(str, &str, 0), IO_TLB_SEGSIZE);
--	}
-+	if (isdigit(*str))
-+		swiotlb_adjust_size(
-+			simple_strtoul(str, &str, 0) << IO_TLB_SHIFT);
- 	if (*str == ',')
- 		++str;
- 	if (!strcmp(str, "force"))
--- 
-2.30.1
-
+Diffstat:
+ arch/mips/cavium-octeon/dma-octeon.c      |   16 +--------------
+ arch/mips/include/asm/octeon/pci-octeon.h |    1 
+ arch/mips/pci/pci-octeon.c                |    2 -
+ arch/powerpc/platforms/pseries/svm.c      |   13 ++----------
+ drivers/xen/swiotlb-xen.c                 |    2 -
+ include/linux/swiotlb.h                   |    2 -
+ kernel/dma/swiotlb.c                      |   32 +++++++++++++++---------------
+ 7 files changed, 25 insertions(+), 43 deletions(-)
