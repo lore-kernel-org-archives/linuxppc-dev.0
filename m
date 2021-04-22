@@ -2,92 +2,68 @@ Return-Path: <SRS0=xMs2=JT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC8A1C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE646C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:20:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 553586145C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:19:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 553586145C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 59F336142F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 07:20:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59F336142F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FQphZ5ywVz3bVP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 17:19:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FQpjJ6nHtz3c5X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Apr 2021 17:20:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=rqBPuGDi;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=hl0mLAPt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72a;
- helo=mail-qk1-x72a.google.com; envelope-from=leobras.c@gmail.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+ccca8c562e79e8576e72+6451+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=rqBPuGDi; dkim-atps=neutral
-Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com
- [IPv6:2607:f8b0:4864:20::72a])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=hl0mLAPt; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FQph549ZKz2xZQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 17:19:16 +1000 (AEST)
-Received: by mail-qk1-x72a.google.com with SMTP id 66so5836425qkf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 00:19:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=tRowv8wxxfn7LKcCXBCPH2fw92UrkVfTs9LAhx2zwW4=;
- b=rqBPuGDijGlcgeeSrcqMV1iHACarctXQVFSHVNohKRVqVaW2V/km0Ffw0Lk6C0lpRU
- +8TXNzNkADx2FhIN9EQaRqRKn2D5dELw3xt7K7ffQyr8ow4ydTPFduOuQu37mKa2Ueoe
- jBfQYbb6UyUMbvF2srLyRx6EbbaCzjILqzmajlZCqds+6tADLKh4zUA5TtHkUrrHSGNU
- hmDC8a31NWPDxlAgYM/hLjWknGvLQ/fkl30vwYg6k0Yq+QfVxNCbEzmbbHt6tIwHBz0j
- NvKGj/Edg+3Lb2VOx86YhpGiQMg1uPi37QfyTBbF5cilJ9leUaoKELCuEM+P3wNNh9d+
- 1oBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=tRowv8wxxfn7LKcCXBCPH2fw92UrkVfTs9LAhx2zwW4=;
- b=TI/5DPI4pbN/zOIej3HG0wDY8YX4Nyrl1Z0kAIrfj7qtNemfy4vyLXNsQIYDvGq6b3
- qFtgxTwF013iBiB15eW2G6HdedBpNNBDw5LzPDaZoqzRw+fJanX7ayylIzV+9L8oR2Lk
- vN3UvHIVVC4XofxH49Mi0g0M5l54q4MuWTT3A6cJANf25k3FJcBUt3JNZLtCODPZcgOf
- k0RJZ4u0MpxqbOTFlSWh7U3IzrmVMeQqyrYUgUQdqTUUR33Mig4vdnKTgWD0ZILl8hi0
- YdAl5kTmIx6l8M33qjmqtHWo9FlXibCzBorjV+APGnen01lrCXwSe7/cdVVV8GobjZ06
- 78EA==
-X-Gm-Message-State: AOAM531VlK5NPXYvw6IW5zEicXycUi/OcgaBFlcidyXhy3qF9ovZzX3m
- czCqSTgI4BnvujgrkEkXkUk=
-X-Google-Smtp-Source: ABdhPJxpUP6mg5biT0KoJEiJ0GzW1avdrE1AgZSKJj+lSCOWjiKxKo624hu9DXn2Z9/joM5twXGkKg==
-X-Received: by 2002:a05:620a:652:: with SMTP id
- a18mr2225875qka.475.1619075953281; 
- Thu, 22 Apr 2021 00:19:13 -0700 (PDT)
-Received: from li-908e0a4c-2250-11b2-a85c-f027e903211b.ibm.com
- ([177.35.200.187])
- by smtp.gmail.com with ESMTPSA id i6sm1651941qkf.96.2021.04.22.00.19.09
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 22 Apr 2021 00:19:12 -0700 (PDT)
-Message-ID: <2ea1fde7020cfb1492223a37eb0cfc2251718e8a.camel@gmail.com>
-Subject: Re: [PATCH v3 00/11] DDW + Indirect Mapping
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Joel Stanley
- <joel@jms.id.au>, Christophe Leroy <christophe.leroy@c-s.fr>, Alexey
- Kardashevskiy <aik@ozlabs.ru>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Niklas Schnelle <schnelle@linux.ibm.com>
-Date: Thu, 22 Apr 2021 04:19:09 -0300
-In-Reply-To: <20210422070721.463912-1-leobras.c@gmail.com>
-References: <20210422070721.463912-1-leobras.c@gmail.com>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FQphk4y2Yz3bSk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Apr 2021 17:19:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=xD8ROuypRPJNh1m/ueF1N/0zbojT8vOodof5U8gwwPw=; b=hl0mLAPtI4EUUTxHX9rKGAwXEe
+ oymWWAiTedNj4Ts234A61u45CuUHmD7rWNj3wG+PoV/7AYwMnLUP2uFHT2aAwoE7YvYPxjrbRDmHx
+ r2JtfJC0WOShuUl81WCs1Y7d6eYIczxE5z8zT2V3NyEX9qwU4tEEbArvXb5X+QGbZjOu3xc8AHXWJ
+ wZ9YNoqEWYD2Bhdffx+5mRsV6gNmsqZm/TmyxKfCZtA0zBIgQT6B7C54T5t31g365WE2u8rBllDOT
+ KibaOsAYfbEmn7HqDwTN2geflsIvhw6FBUXjrPzT6SjsT7cOwIv0uW39tQ9rBtgIKvCdbiJb2SY61
+ zOiYWgug==;
+Received: from [2001:4bb8:19b:f845:15fc:cef6:715a:fb03] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1lZTcf-00DRlY-M8; Thu, 22 Apr 2021 07:19:38 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 5/7] MIPS/octeon: simplify swiotlb initialization
+Date: Thu, 22 Apr 2021 09:19:19 +0200
+Message-Id: <20210422071921.1428607-6-hch@lst.de>
+X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210422071921.1428607-1-hch@lst.de>
+References: <20210422071921.1428607-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,106 +75,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Stefano Stabellini <sstabellini@kernel.org>,
+ xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changes since v2:
-- Some patches got removed from the series and sent by themselves,
-- New tbl created for DDW + indirect mapping reserves MMIO32 space,
-- Improved reserved area algorithm,
-- Improved commit messages,
-- Removed define for default DMA window prop name,
-- Avoided some unnecessary renaming,
-- Removed some unnecessary empty lines,
-- Changed some code moving to forward declarations.
-v2
-Link: http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=201210&state=%2A&archive=both
+Just use swiotlb_adjust_size and swiotlb_init to initialize
+swiotlb instead of doing a lot of manual work.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/mips/cavium-octeon/dma-octeon.c      | 16 ++--------------
+ arch/mips/include/asm/octeon/pci-octeon.h |  1 -
+ arch/mips/pci/pci-octeon.c                |  2 +-
+ 3 files changed, 3 insertions(+), 16 deletions(-)
+
+diff --git a/arch/mips/cavium-octeon/dma-octeon.c b/arch/mips/cavium-octeon/dma-octeon.c
+index 020b8ce5b8ff7c..6bc9ef5e3790ec 100644
+--- a/arch/mips/cavium-octeon/dma-octeon.c
++++ b/arch/mips/cavium-octeon/dma-octeon.c
+@@ -186,15 +186,12 @@ phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ 	return daddr;
+ }
  
-
-On Thu, 2021-04-22 at 04:07 -0300, Leonardo Bras wrote:
-> So far it's assumed possible to map the guest RAM 1:1 to the bus, which
-> works with a small number of devices. SRIOV changes it as the user can
-> configure hundreds VFs and since phyp preallocates TCEs and does not
-> allow IOMMU pages bigger than 64K, it has to limit the number of TCEs
-> per a PE to limit waste of physical pages.
-> 
-> As of today, if the assumed direct mapping is not possible, DDW creation
-> is skipped and the default DMA window "ibm,dma-window" is used instead.
-> 
-> Using the DDW instead of the default DMA window may allow to expand the
-> amount of memory that can be DMA-mapped, given the number of pages (TCEs)
-> may stay the same (or increase) and the default DMA window offers only
-> 4k-pages while DDW may offer larger pages (4k, 64k, 16M ...).
-> 
-> Patch #1 replaces hard-coded 4K page size with a variable containing the
-> correct page size for the window.
-> 
-> Patch #2 introduces iommu_table_in_use(), and replace manual bit-field
-> checking where it's used. It will be used for aborting enable_ddw() if
-> there is any current iommu allocation and we are trying single window
-> indirect mapping.
-> 
-> Patch #3 introduces iommu_pseries_alloc_table() that will be helpful
-> when indirect mapping needs to replace the iommu_table.
-> 
-> Patch #4 adds helpers for adding DDWs in the list.
-> 
-> Patch #5 refactors enable_ddw() so it returns if direct mapping is
-> possible, instead of DMA offset. It helps for next patches on
-> indirect DMA mapping and also allows DMA windows starting at 0x00.
-> 
-> Patch #6 bring new helper to simplify enable_ddw(), allowing
-> some reorganization for introducing indirect mapping DDW.
-> 
-> Patch #7 adds new helper _iommu_table_setparms() and use it in other
-> *setparams*() to fill iommu_table. It will also be used for creating a
-> new iommu_table for indirect mapping.
-> 
-> Patch #8 updates remove_dma_window() to accept different property names,
-> so we can introduce a new property for indirect mapping.
-> 
-> Patch #9 extracts find_existing_ddw_windows() into
-> find_existing_ddw_windows_named(), and calls it by it's property name.
-> This will be useful when the property for indirect mapping is created,
-> so we can search the device-tree for both properties.
-> 
-> Patch #10:
-> Instead of destroying the created DDW if it doesn't map the whole
-> partition, make use of it instead of the default DMA window as it improves
-> performance. Also, update the iommu_table and re-generate the pools.
-> It introduces a new property name for DDW with indirect DMA mapping.
-> 
-> Patch #11:
-> Does some renaming of 'direct window' to 'dma window', given the DDW
-> created can now be also used in indirect mapping if direct mapping is not
-> available.
-> 
-> All patches were tested into an LPAR with an virtio-net interface that
-> allows default DMA window and DDW to coexist.
-> 
-> Leonardo Bras (11):
->   powerpc/pseries/iommu: Replace hard-coded page shift
->   powerpc/kernel/iommu: Add new iommu_table_in_use() helper
->   powerpc/pseries/iommu: Add iommu_pseries_alloc_table() helper
->   powerpc/pseries/iommu: Add ddw_list_new_entry() helper
->   powerpc/pseries/iommu: Allow DDW windows starting at 0x00
->   powerpc/pseries/iommu: Add ddw_property_create() and refactor
->     enable_ddw()
->   powerpc/pseries/iommu: Reorganize iommu_table_setparms*() with new
->     helper
->   powerpc/pseries/iommu: Update remove_dma_window() to accept property
->     name
->   powerpc/pseries/iommu: Find existing DDW with given property name
->   powerpc/pseries/iommu: Make use of DDW for indirect mapping
->   powerpc/pseries/iommu: Rename "direct window" to "dma window"
-> 
->  arch/powerpc/include/asm/iommu.h       |   1 +
->  arch/powerpc/include/asm/tce.h         |   8 -
->  arch/powerpc/kernel/iommu.c            |  65 ++--
->  arch/powerpc/platforms/pseries/iommu.c | 504 +++++++++++++++----------
->  4 files changed, 338 insertions(+), 240 deletions(-)
-> 
-
+-char *octeon_swiotlb;
+-
+ void __init plat_swiotlb_setup(void)
+ {
+ 	phys_addr_t start, end;
+ 	phys_addr_t max_addr;
+ 	phys_addr_t addr_size;
+ 	size_t swiotlbsize;
+-	unsigned long swiotlb_nslabs;
+ 	u64 i;
+ 
+ 	max_addr = 0;
+@@ -236,15 +233,6 @@ void __init plat_swiotlb_setup(void)
+ 	if (OCTEON_IS_OCTEON2() && max_addr >= 0x100000000ul)
+ 		swiotlbsize = 64 * (1<<20);
+ #endif
+-	swiotlb_nslabs = swiotlbsize >> IO_TLB_SHIFT;
+-	swiotlb_nslabs = ALIGN(swiotlb_nslabs, IO_TLB_SEGSIZE);
+-	swiotlbsize = swiotlb_nslabs << IO_TLB_SHIFT;
+-
+-	octeon_swiotlb = memblock_alloc_low(swiotlbsize, PAGE_SIZE);
+-	if (!octeon_swiotlb)
+-		panic("%s: Failed to allocate %zu bytes align=%lx\n",
+-		      __func__, swiotlbsize, PAGE_SIZE);
+-
+-	if (swiotlb_init_with_tbl(octeon_swiotlb, swiotlbsize, 1) == -ENOMEM)
+-		panic("Cannot allocate SWIOTLB buffer");
++	swiotlb_adjust_size(swiotlbsize);
++	swiotlb_init(false);
+ }
+diff --git a/arch/mips/include/asm/octeon/pci-octeon.h b/arch/mips/include/asm/octeon/pci-octeon.h
+index b12d9a3fbfb6c0..a2f20a44fb6143 100644
+--- a/arch/mips/include/asm/octeon/pci-octeon.h
++++ b/arch/mips/include/asm/octeon/pci-octeon.h
+@@ -64,6 +64,5 @@ enum octeon_dma_bar_type {
+ extern enum octeon_dma_bar_type octeon_dma_bar_type;
+ 
+ void octeon_pci_dma_init(void);
+-extern char *octeon_swiotlb;
+ 
+ #endif
+diff --git a/arch/mips/pci/pci-octeon.c b/arch/mips/pci/pci-octeon.c
+index fc29b85cfa926d..ff26cd9dc083f6 100644
+--- a/arch/mips/pci/pci-octeon.c
++++ b/arch/mips/pci/pci-octeon.c
+@@ -664,7 +664,7 @@ static int __init octeon_pci_setup(void)
+ 
+ 		/* BAR1 movable regions contiguous to cover the swiotlb */
+ 		octeon_bar1_pci_phys =
+-			virt_to_phys(octeon_swiotlb) & ~((1ull << 22) - 1);
++			io_tlb_default_mem->start & ~((1ull << 22) - 1);
+ 
+ 		for (index = 0; index < 32; index++) {
+ 			union cvmx_pci_bar1_indexx bar1_index;
+-- 
+2.30.1
 
