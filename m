@@ -2,70 +2,60 @@ Return-Path: <SRS0=+E7l=JU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9328C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A967FC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:52:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0D7A6145A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:51:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0D7A6145A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id DBDBA613C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:52:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBDBA613C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FRbKw4MWFz30C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:51:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bzjegyk9;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FRbMQ3KmVz309p
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:52:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=bzjegyk9; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FRbKT48VSz2xZH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:50:52 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FRbKR0kq4z9sRR;
- Fri, 23 Apr 2021 23:50:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1619185851;
- bh=NBR0doxevZcspE7GMPniJrjcztr5jXz2a0JCNWCT7jw=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=bzjegyk9DXvu/3ti2c56HI7OdoN+5+TWGLWWSvKQ052n4AcUgH0UDudeNu8zHVdkX
- GUpiiO25ILL3aXaVpitzkEtKShm/l0Zq+FAo1x5yvQNUADIx5Pn1hpxEqjv/wY9RAT
- aEMNwYdu7TMK5kU2x6EpEmElHNWjwdXo2xm+zDcgnyRFQ9qZzhulj5tMEmqi4hHYV9
- NINnxG2dHpdpoBiP+MI3OQe4b8cRfqZMIWHcJoRVyTpaXR4GyPa7QRJpf1zPPhe5Ns
- Cqi0PE1gKDaPt+NQH25TZM97GhV/PMe4pLuRiTrbEkJ8+r6DQWMKlxUky8djYGeYIZ
- nSQcxHYLPUHAw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, Lakshmi Ramasubramanian
- <nramas@linux.microsoft.com>, robh@kernel.org, dan.carpenter@oracle.com
-Subject: Re: [PATCH] powerpc: Initialize local variable fdt to NULL in
- elf64_load()
-In-Reply-To: <87r1j3ys8i.fsf@dja-thinkpad.axtens.net>
-References: <20210415191437.20212-1-nramas@linux.microsoft.com>
- <4edb1433-4d1e-5719-ec9c-fd232b7cf71f@linux.microsoft.com>
- <87eefag241.fsf@linkitivity.dja.id.au>
- <87r1j3ys8i.fsf@dja-thinkpad.axtens.net>
-Date: Fri, 23 Apr 2021 23:50:49 +1000
-Message-ID: <875z0daz46.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FRbM41JDxz2xYd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:52:13 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4FRbLx0RLgz9ttC6;
+ Fri, 23 Apr 2021 15:52:09 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id nksP2VPKskja; Fri, 23 Apr 2021 15:52:09 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FRbLw6llJz9ttC5;
+ Fri, 23 Apr 2021 15:52:08 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E9C678B865;
+ Fri, 23 Apr 2021 15:52:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id iidl2mxlih71; Fri, 23 Apr 2021 15:52:10 +0200 (CEST)
+Received: from po15610vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B435C8B765;
+ Fri, 23 Apr 2021 15:52:10 +0200 (CEST)
+Received: by po15610vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 763D96397D; Fri, 23 Apr 2021 13:52:10 +0000 (UTC)
+Message-Id: <a29aadc54c93bcbf069a83615fa102ca0f59c3ae.1619185912.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/signal32: Fix erroneous SIGSEGV on RT signal return
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 23 Apr 2021 13:52:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,44 +67,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- kbuild-all@lists.01.org, bauerman@linux.ibm.com, lkp@intel.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Axtens <dja@axtens.net> writes:
-> Daniel Axtens <dja@axtens.net> writes:
->
->> Hi Lakshmi,
->>
->>> On 4/15/21 12:14 PM, Lakshmi Ramasubramanian wrote:
->>>
->>> Sorry - missed copying device-tree and powerpc mailing lists.
->>>
->>>> There are a few "goto out;" statements before the local variable "fdt"
->>>> is initialized through the call to of_kexec_alloc_and_setup_fdt() in
->>>> elf64_load(). This will result in an uninitialized "fdt" being passed
->>>> to kvfree() in this function if there is an error before the call to
->>>> of_kexec_alloc_and_setup_fdt().
->>>> 
->>>> Initialize the local variable "fdt" to NULL.
->>>>
->> I'm a huge fan of initialising local variables! But I'm struggling to
->> find the code path that will lead to an uninit fdt being returned...
->
-> OK, so perhaps this was putting it too strongly. I have been bitten
-> by uninitialised things enough in C that I may have taken a slightly
-> overly-agressive view of fixing them in the source rather than the
-> compiler. I do think compiler-level mitigations are better, and I take
-> the point that we don't want to defeat compiler checking.
->
-> (Does anyone - and by anyone I mean any large distro - compile with
-> local variables inited by the compiler?)
+Return of user_read_access_begin() is tested the wrong way,
+leading to a SIGSEGV when the user address is valid and likely
+an Oops when the user address is bad.
 
-This is where I say, "yes, Android" and you say "ugh no I meant a real
-distro", and I say "well ...".
+Fix the test.
 
-But yeah doesn't help us much.
+Fixes: 887f3ceb51cd ("powerpc/signal32: Convert do_setcontext[_tm]() to user access block")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/signal_32.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index fc41c58f0cbb..8f05ed0da292 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -967,7 +967,7 @@ static int do_setcontext(struct ucontext __user *ucp, struct pt_regs *regs, int
+ 	sigset_t set;
+ 	struct mcontext __user *mcp;
+ 
+-	if (user_read_access_begin(ucp, sizeof(*ucp)))
++	if (!user_read_access_begin(ucp, sizeof(*ucp)))
+ 		return -EFAULT;
+ 
+ 	unsafe_get_sigset_t(&set, &ucp->uc_sigmask, failed);
+@@ -1005,7 +1005,7 @@ static int do_setcontext_tm(struct ucontext __user *ucp,
+ 	u32 cmcp;
+ 	u32 tm_cmcp;
+ 
+-	if (user_read_access_begin(ucp, sizeof(*ucp)))
++	if (!user_read_access_begin(ucp, sizeof(*ucp)))
+ 		return -EFAULT;
+ 
+ 	unsafe_get_sigset_t(&set, &ucp->uc_sigmask, failed);
+-- 
+2.25.0
+
