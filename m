@@ -2,71 +2,97 @@ Return-Path: <SRS0=+E7l=JU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6024C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02564C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:44:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3847561184
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:42:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3847561184
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 44FF061163
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:44:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44FF061163
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=isovalent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FRb7N4bCGz2yy4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:42:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FRbBT5nTWz30F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:44:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nMR63KQ6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=isovalent-com.20150623.gappssmtp.com header.i=@isovalent-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=aSb/o1mV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+ smtp.mailfrom=isovalent.com (client-ip=2a00:1450:4864:20::32b;
+ helo=mail-wm1-x32b.google.com; envelope-from=quentin@isovalent.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=nMR63KQ6; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ unprotected) header.d=isovalent-com.20150623.gappssmtp.com
+ header.i=@isovalent-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=aSb/o1mV; dkim-atps=neutral
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com
+ [IPv6:2a00:1450:4864:20::32b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FRb6x11v2z2xfy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:41:45 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FRb6s4FK3z9sWc;
- Fri, 23 Apr 2021 23:41:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1619185303;
- bh=xscDS3zmPdEEDKyvP0DL/tNXfdme/0WkA7LPHuZrTMs=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=nMR63KQ6ehdkv04REDsumgQtqAa52dJBu+vpYFehHpUWu5O7dFqJeLkXV0EQp2VFj
- IMM7yv/E6tQNue1knBqldjHxAdeKWHubOGzsTIn4CNMbrdiE17Kc7fdgxfNO7XyGl5
- yxG9qaohC5QCJHYwWgs33bnvtviM2YEEZBoBobqFeF9tIBJKoPyvaouHsoytS5wOMO
- 891jm1VZual8yv9BU0nLfrtk/Mt1t/xTDEdQfR92n8u6q9iDCtIhWP15LnJK0Qe1pi
- 0dRTp0BLJ3lbExNacOcFdNX76ZbzJC5hUJIu0sCxFik6tKDhs702tVkrAMFICmG19m
- HzRRoMaZMdfKg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Daniel Axtens
- <dja@axtens.net>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH kernel] powerpc/makefile: Do not redefine $(CPP) for
- preprocessor
-In-Reply-To: <593f0a59-c91e-573a-e37c-b710ca7891f8@csgroup.eu>
-References: <20210422092737.895392-1-aik@ozlabs.ru>
- <87mttqylho.fsf@dja-thinkpad.axtens.net>
- <593f0a59-c91e-573a-e37c-b710ca7891f8@csgroup.eu>
-Date: Fri, 23 Apr 2021 23:41:39 +1000
-Message-ID: <878s59azjg.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FRVnc5z6vz2xfh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 20:26:26 +1000 (AEST)
+Received: by mail-wm1-x32b.google.com with SMTP id n127so13908134wmb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 03:26:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=isovalent-com.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=pZC3bOQbN5+fqyuA7H9ye81q8uOWfqddKhA+GXdAbe0=;
+ b=aSb/o1mV8h0CcE9ai+0+GIlXRSGlsJTPumKNmGEJ88Z4i3bGRbY+GZu4y+9bXJ2Ej0
+ Gnr1pQPVFxw/OkuLgXzy8PcFfaYDEZW1fihUNP/VtK/ltQ5OgS+ABY7Byb2o9rvuH3w9
+ aiiyIdPgdOTZ+hKQKeseFBSIHuPOG3wEViDcm9o+RO0YnIbhhMqz+iQQf7AY04+ybwHf
+ 2nC4MhrVKh/73RRSCeoHklo+CLEPmhYLF8BmrTl+dusVmM5VfEfslHL7IoEnP1IXaaeU
+ +VlpWeuLfKHGTov0axRspP5fwSgIZ4r+kUdG1PRmBmRYDbmUFoGKlyjNhDcKQj1tRsaO
+ 5EEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=pZC3bOQbN5+fqyuA7H9ye81q8uOWfqddKhA+GXdAbe0=;
+ b=pXtvEvhJVJpc/vSyFc0YMcSquRJKYS4yVjDiRwOMLovsfCRGPGeMLSAy/eEQUzYRbf
+ G6qHy1i1rICA5vFyco7VOehA8zmuMx8QNUxwNYPxyd8kFvpCRvNZ0AnDp95qcaqOy5Z4
+ UKKUcjcEKFxvS47ev7f2GBbIkfBu2gby6edv+GI8Yo9aY6Uzmfdhq1IgfZwZKwM0mENR
+ hV7ipSuHDBKMVaZnBRZUkRvoJLr4eqokSopMrBe3PC3TGgPt1uEGbrj2JYR8v8YnHd3e
+ 0aRlMs12IVpWGO7Bzk9W3f2+7MxpIsN0wHFrTMKasXeta1s4TjcKS+yYVIyM3OZ9KPsr
+ Qlqw==
+X-Gm-Message-State: AOAM530TA7DJuhklaLxel6WkV4iS4JMUoSD0hQMqiEUI8xz/IqujX3pH
+ +qUK2aj/3DdbLoOIO5E/Mv7Dwg==
+X-Google-Smtp-Source: ABdhPJwzRkVz3Ofbfxh8n0buCkcX7vCmdhQBvEZ1KP3t4/FvoWzwFRVeYSa0K9So4C2Yfv4k3szanw==
+X-Received: by 2002:a1c:b743:: with SMTP id h64mr3431829wmf.35.1619173579445; 
+ Fri, 23 Apr 2021 03:26:19 -0700 (PDT)
+Received: from [192.168.1.8] ([149.86.88.56])
+ by smtp.gmail.com with ESMTPSA id b15sm8464544wrt.57.2021.04.23.03.26.17
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 23 Apr 2021 03:26:18 -0700 (PDT)
+Subject: Re: [PATCH bpf-next 1/2] bpf: Remove bpf_jit_enable=2 debugging mode
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>
+References: <20210415093250.3391257-1-Jianlin.Lv@arm.com>
+ <9c4a78d2-f73c-832a-e6e2-4b4daa729e07@iogearbox.net>
+ <d3949501-8f7d-57c4-b3fe-bcc3b24c09d8@isovalent.com>
+ <CAADnVQJ2oHbYfgY9jqM_JMxUsoZxaNrxKSVFYfgCXuHVpDehpQ@mail.gmail.com>
+ <0dea05ba-9467-0d84-4515-b8766f60318e@csgroup.eu>
+ <CAADnVQ+oQT6C7Qv7P5TV-x7im54omKoCYYKtYhcnhb1Uv3LPMQ@mail.gmail.com>
+ <be132117-f267-5817-136d-e1aeb8409c2a@csgroup.eu>
+From: Quentin Monnet <quentin@isovalent.com>
+Message-ID: <58296f87-ad00-a0f5-954b-2150aa84efc4@isovalent.com>
+Date: Fri, 23 Apr 2021 11:26:16 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.0
 MIME-Version: 1.0
+In-Reply-To: <be132117-f267-5817-136d-e1aeb8409c2a@csgroup.eu>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 23 Apr 2021 23:44:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,50 +104,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Ian Rogers <irogers@google.com>, Song Liu <songliubraving@fb.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Zi Shen Lim <zlim.lnx@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>,
+ Paul Mackerras <paulus@samba.org>, Sandipan Das <sandipan@linux.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Shubham Bansal <illusionist.neo@gmail.com>,
+ Mahesh Bandewar <maheshb@google.com>, Will Deacon <will@kernel.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Ilya Leoshkevich <iii@linux.ibm.com>,
+ paulburton@kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ Masahiro Yamada <masahiroy@kernel.org>, X86 ML <x86@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>,
+ Jakub Kicinski <kuba@kernel.org>, Tobias Klauser <tklauser@distanz.ch>,
+ grantseltzer@gmail.com, Xi Wang <xi.wang@gmail.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>,
+ Vasily Gorbik <gor@linux.ibm.com>, Luke Nelson <luke.r.nels@gmail.com>,
+ Heiko Carstens <hca@linux.ibm.com>, KP Singh <kpsingh@kernel.org>,
+ iecedge@gmail.com, Simon Horman <horms@verge.net.au>,
+ Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Jianlin Lv <Jianlin.Lv@arm.com>,
+ Nicolas Dichtel <nicolas.dichtel@6wind.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Wang YanQing <udknight@gmail.com>, tsbogend@alpha.franken.de,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+ Network Development <netdev@vger.kernel.org>, David Ahern <dsahern@kernel.org>,
+ linux-mips@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Yonghong Song <yhs@fb.com>,
+ =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, bpf <bpf@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Martin KaFai Lau <kafai@fb.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 23/04/2021 =C3=A0 00:58, Daniel Axtens a =C3=A9crit=C2=A0:
->>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->>> index c9d2c7825cd6..3a2f2001c62b 100644
->>> --- a/arch/powerpc/Makefile
->>> +++ b/arch/powerpc/Makefile
->>> @@ -214,7 +214,6 @@ KBUILD_CPPFLAGS	+=3D -I $(srctree)/arch/$(ARCH) $(a=
-sinstr)
->>>   KBUILD_AFLAGS	+=3D $(AFLAGS-y)
->>>   KBUILD_CFLAGS	+=3D $(call cc-option,-msoft-float)
->>>   KBUILD_CFLAGS	+=3D -pipe $(CFLAGS-y)
->>> -CPP		=3D $(CC) -E $(KBUILD_CFLAGS)
->>=20
->> I was trying to check the history to see why powerpc has its own
->> definition. It seems to date back at least as far as merging the two
->> powerpc platforms into one, maybe it was helpful then. I agree it
->> doesn't seem to be needed now.
->>=20
->
-> I digged a bit deaper. It has been there since the introduction of arch/p=
-pc/ in Linux 1.3.45
-> At the time, there was the exact same CPP definition in arch/mips/Makefile
->
-> The CPP definition in mips disappeared is Linux 2.1.44pre3.
-> Since that version, ppc has been the only one with such CPP re-definition.
->
->> Snowpatch claims that this breaks the build, but I haven't been able to
->> reproduce the issue in either pmac32 or ppc64 defconfig. I have sent it
->> off to a fork of mpe's linux-ci repo to see if any of those builds hit
->> any issues: https://github.com/daxtens/linux-ci/actions
->>=20
->
-> By the way, I find snowpatch quite useless these days. It seems to delete=
- the reports a few minutes=20
-> after the test. We are less than one day after the patch was submitted an=
-d the report of the build=20
-> failures are already gone.
+2021-04-23 09:19 UTC+0200 ~ Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Yeah, it's pretty annoying. It needs to send emails to the list with its
-results, with a link to a location that retains the logs for some
-reasonable period.
+[...]
 
-cheers
+> I finally managed to cross compile bpftool with libbpf, libopcodes,
+> readline, ncurses, libcap, libz and all needed stuff. Was not easy but I
+> made it.
+
+Libcap is optional and bpftool does not use readline or ncurses. May I
+ask how you tried to build it?
+
+> 
+> Now, how do I use it ?
+> 
+> Let say I want to dump the jitted code generated from a call to
+> 'tcpdump'. How do I do that with 'bpftool prog dump jited' ?
+> 
+> I thought by calling this line I would then get programs dumped in a way
+> or another just like when setting 'bpf_jit_enable=2', but calling that
+> line just provides me some bpftool help text.
+
+Well the purpose of this text is to help you find the way to call
+bpftool to do what you want :). For dumping your programs' instructions,
+you need to tell bpftool what program to dump: Bpftool isn't waiting
+until you load a program to dump it, instead you need to load your
+program first and then tell bpftool to retrieve the instructions from
+the kernel. To reference your program you could use a pinned path, or
+first list the programs on your system with "bpftool prog show":
+
+
+    # bpftool prog show
+    138: tracing  name foo  tag e54c922dfa54f65f  gpl
+            loaded_at 2021-02-25T01:32:30+0000  uid 0
+            xlated 256B  jited 154B  memlock 4096B  map_ids 64
+            btf_id 235
+
+Then you can use for example the program id displayed on the first line
+to reference and dump your program:
+
+    # bpftool prog dump jited id 138
+
+You should find additional documentation under
+tools/bpf/bpftool/Documentation.
+
+> 
+> By the way, I would be nice to have a kernel OPTION that selects all
+> OPTIONS required for building bpftool. Because you discover them one by
+> one at every build failure. I had to had CONFIG_IPV6, CONFIG_DEBUG_BTF,
+> CONFIG_CGROUPS, ... If there could be an option like "Build a 'bpftool'
+> ready kernel" that selected all those, it would be great.
+> 
+> Christophe
+
+I do not believe any of these are required to build bpftool.
+
+Quentin
