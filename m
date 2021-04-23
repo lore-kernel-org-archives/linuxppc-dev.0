@@ -2,76 +2,56 @@ Return-Path: <SRS0=+E7l=JU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F59BC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED120C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:46:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AFBC061163
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:46:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AFBC061163
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 6930A611BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:46:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6930A611BE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FRbCr27mcz3c14
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:46:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FRXC56930z2xYY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 21:30:06 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4FRXBx1lS5z9ttBV;
- Fri, 23 Apr 2021 13:30:01 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id YdSTSv2p5ZBt; Fri, 23 Apr 2021 13:30:01 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FRXBx0Vjkz9ttBQ;
- Fri, 23 Apr 2021 13:30:01 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B81628B84D;
- Fri, 23 Apr 2021 13:30:02 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id PdVzE1YVA3q8; Fri, 23 Apr 2021 13:30:02 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9748F8B765;
- Fri, 23 Apr 2021 13:29:59 +0200 (CEST)
-Subject: Re: [PATCH bpf-next 1/2] bpf: Remove bpf_jit_enable=2 debugging mode
-To: Quentin Monnet <quentin@isovalent.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
-References: <20210415093250.3391257-1-Jianlin.Lv@arm.com>
- <9c4a78d2-f73c-832a-e6e2-4b4daa729e07@iogearbox.net>
- <d3949501-8f7d-57c4-b3fe-bcc3b24c09d8@isovalent.com>
- <CAADnVQJ2oHbYfgY9jqM_JMxUsoZxaNrxKSVFYfgCXuHVpDehpQ@mail.gmail.com>
- <0dea05ba-9467-0d84-4515-b8766f60318e@csgroup.eu>
- <CAADnVQ+oQT6C7Qv7P5TV-x7im54omKoCYYKtYhcnhb1Uv3LPMQ@mail.gmail.com>
- <be132117-f267-5817-136d-e1aeb8409c2a@csgroup.eu>
- <58296f87-ad00-a0f5-954b-2150aa84efc4@isovalent.com>
- <6a809d3f-c9e3-0eb7-9c1d-a202ad848424@csgroup.eu>
- <ab1c3803-179c-7882-2bba-9eeda5211ad1@isovalent.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <90e2da42-6924-4246-f2f6-cfb2778cd804@csgroup.eu>
-Date: Fri, 23 Apr 2021 13:29:59 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FRbDw66p1z3c2P
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:46:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FRbDX6w6fz2xZH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:46:36 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9E1CE1063;
+ Fri, 23 Apr 2021 06:46:34 -0700 (PDT)
+Received: from [10.57.62.63] (unknown [10.57.62.63])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 903A33F73B;
+ Fri, 23 Apr 2021 06:46:27 -0700 (PDT)
+Subject: Re: [PATCH v5 14/16] dma-direct: Allocate memory from restricted DMA
+ pool if available
+To: Claire Chang <tientzu@chromium.org>, Joerg Roedel <joro@8bytes.org>,
+ Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
+ jgross@suse.com, Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+References: <20210422081508.3942748-1-tientzu@chromium.org>
+ <20210422081508.3942748-15-tientzu@chromium.org>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <70b895c2-4a39-bbbd-a719-5c8b6b922026@arm.com>
+Date: Fri, 23 Apr 2021 14:46:25 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
  Thunderbird/78.10.0
 MIME-Version: 1.0
-In-Reply-To: <ab1c3803-179c-7882-2bba-9eeda5211ad1@isovalent.com>
+In-Reply-To: <20210422081508.3942748-15-tientzu@chromium.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 23 Apr 2021 23:44:23 +1000
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,79 +63,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, Song Liu <songliubraving@fb.com>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Zi Shen Lim <zlim.lnx@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
- Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>,
- Paul Mackerras <paulus@samba.org>, Sandipan Das <sandipan@linux.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Shubham Bansal <illusionist.neo@gmail.com>,
- Mahesh Bandewar <maheshb@google.com>, Will Deacon <will@kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Ilya Leoshkevich <iii@linux.ibm.com>,
- paulburton@kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- Masahiro Yamada <masahiroy@kernel.org>, X86 ML <x86@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>,
- Jakub Kicinski <kuba@kernel.org>, Tobias Klauser <tklauser@distanz.ch>,
- grantseltzer@gmail.com, Xi Wang <xi.wang@gmail.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>,
- Vasily Gorbik <gor@linux.ibm.com>, Luke Nelson <luke.r.nels@gmail.com>,
- Heiko Carstens <hca@linux.ibm.com>, KP Singh <kpsingh@kernel.org>,
- iecedge@gmail.com, Simon Horman <horms@verge.net.au>,
- Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Paul Walmsley <paul.walmsley@sifive.com>, Jianlin Lv <Jianlin.Lv@arm.com>,
- Nicolas Dichtel <nicolas.dichtel@6wind.com>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Wang YanQing <udknight@gmail.com>, tsbogend@alpha.franken.de,
- Daniel Borkmann <daniel@iogearbox.net>,
- Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
- Network Development <netdev@vger.kernel.org>, David Ahern <dsahern@kernel.org>,
- linux-mips@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Yonghong Song <yhs@fb.com>,
- =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, bpf <bpf@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Martin KaFai Lau <kafai@fb.com>
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
+ jani.nikula@linux.intel.com, Nicolas Boichat <drinkcat@chromium.org>,
+ rodrigo.vivi@intel.com, bhelgaas@google.com,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ nouveau@lists.freedesktop.org, Greg KH <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+ tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 23/04/2021 à 12:59, Quentin Monnet a écrit :
-> 2021-04-23 12:46 UTC+0200 ~ Christophe Leroy <christophe.leroy@csgroup.eu>
->>
->>
->> Le 23/04/2021 à 12:26, Quentin Monnet a écrit :
->>> 2021-04-23 09:19 UTC+0200 ~ Christophe Leroy
->>> <christophe.leroy@csgroup.eu>
->>>
->>> [...]
->>>
->>>> I finally managed to cross compile bpftool with libbpf, libopcodes,
->>>> readline, ncurses, libcap, libz and all needed stuff. Was not easy but I
->>>> made it.
->>>
->>> Libcap is optional and bpftool does not use readline or ncurses. May I
->>> ask how you tried to build it?
->>
->> cd tools/bpf/
->>
->> make ARCH=powerpc CROSS_COMPILE=ppc-linux-
+On 2021-04-22 09:15, Claire Chang wrote:
+> The restricted DMA pool is preferred if available.
 > 
-> Ok, you could try running directly from tools/bpf/bpftool/ next time
-> instead.
+> The restricted DMA pools provide a basic level of protection against the
+> DMA overwriting buffer contents at unexpected times. However, to protect
+> against general data leakage and system memory corruption, the system
+> needs to provide a way to lock down the memory access, e.g., MPU.
 > 
-> Readline at least is for a different tool under tools/bpf/, bpf_dbg (But
-> I'm still not sure where that ncurses requirement was pulled from). The
-> requirements for specific kernel options probably came from yet another
-> tool (runqslower, I think).
+> Signed-off-by: Claire Chang <tientzu@chromium.org>
+> ---
+>   kernel/dma/direct.c | 35 ++++++++++++++++++++++++++---------
+>   1 file changed, 26 insertions(+), 9 deletions(-)
 > 
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 7a27f0510fcc..29523d2a9845 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -78,6 +78,10 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+>   static void __dma_direct_free_pages(struct device *dev, struct page *page,
+>   				    size_t size)
+>   {
+> +#ifdef CONFIG_DMA_RESTRICTED_POOL
+> +	if (swiotlb_free(dev, page, size))
+> +		return;
+> +#endif
+>   	dma_free_contiguous(dev, page, size);
+>   }
+>   
+> @@ -92,7 +96,17 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
+>   
+>   	gfp |= dma_direct_optimal_gfp_mask(dev, dev->coherent_dma_mask,
+>   					   &phys_limit);
+> -	page = dma_alloc_contiguous(dev, size, gfp);
+> +
+> +#ifdef CONFIG_DMA_RESTRICTED_POOL
+> +	page = swiotlb_alloc(dev, size);
+> +	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+> +		__dma_direct_free_pages(dev, page, size);
+> +		page = NULL;
+> +	}
+> +#endif
+> +
+> +	if (!page)
+> +		page = dma_alloc_contiguous(dev, size, gfp);
+>   	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+>   		dma_free_contiguous(dev, page, size);
+>   		page = NULL;
+> @@ -148,7 +162,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>   		gfp |= __GFP_NOWARN;
+>   
+>   	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev)) {
+> +	    !force_dma_unencrypted(dev) && !is_dev_swiotlb_force(dev)) {
+>   		page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO);
+>   		if (!page)
+>   			return NULL;
+> @@ -161,8 +175,8 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>   	}
+>   
+>   	if (!IS_ENABLED(CONFIG_ARCH_HAS_DMA_SET_UNCACHED) &&
+> -	    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
+> -	    !dev_is_dma_coherent(dev))
+> +	    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) && !dev_is_dma_coherent(dev) &&
+> +	    !is_dev_swiotlb_force(dev))
+>   		return arch_dma_alloc(dev, size, dma_handle, gfp, attrs);
+>   
+>   	/*
+> @@ -172,7 +186,9 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>   	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
+>   	    !gfpflags_allow_blocking(gfp) &&
+>   	    (force_dma_unencrypted(dev) ||
+> -	     (IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) && !dev_is_dma_coherent(dev))))
+> +	     (IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
+> +	      !dev_is_dma_coherent(dev))) &&
+> +	    !is_dev_swiotlb_force(dev))
+>   		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>   
+>   	/* we always manually zero the memory once we are done */
+> @@ -253,15 +269,15 @@ void dma_direct_free(struct device *dev, size_t size,
+>   	unsigned int page_order = get_order(size);
+>   
+>   	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev)) {
+> +	    !force_dma_unencrypted(dev) && !is_dev_swiotlb_force(dev)) {
+>   		/* cpu_addr is a struct page cookie, not a kernel address */
+>   		dma_free_contiguous(dev, cpu_addr, size);
+>   		return;
+>   	}
+>   
+>   	if (!IS_ENABLED(CONFIG_ARCH_HAS_DMA_SET_UNCACHED) &&
+> -	    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
+> -	    !dev_is_dma_coherent(dev)) {
+> +	    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) && !dev_is_dma_coherent(dev) &&
+> +	    !is_dev_swiotlb_force(dev)) {
+>   		arch_dma_free(dev, size, cpu_addr, dma_addr, attrs);
+>   		return;
+>   	}
+> @@ -289,7 +305,8 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>   	void *ret;
+>   
+>   	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
+> -	    force_dma_unencrypted(dev) && !gfpflags_allow_blocking(gfp))
+> +	    force_dma_unencrypted(dev) && !gfpflags_allow_blocking(gfp) &&
+> +	    !is_dev_swiotlb_force(dev))
+>   		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
-ncurses (or termcap) is required by readline
+Wait, this seems broken for non-coherent devices - in that case we need 
+to return a non-cacheable address, but we can't simply fall through into 
+the remapping path below in GFP_ATOMIC context. That's why we need the 
+atomic pool concept in the first place :/
 
-Christophe
+Unless I've overlooked something, we're still using the regular 
+cacheable linear map address of the dma_io_tlb_mem buffer, no?
+
+Robin.
+
+>   
+>   	page = __dma_direct_alloc_pages(dev, size, gfp);
+> 
