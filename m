@@ -2,73 +2,56 @@ Return-Path: <SRS0=+E7l=JU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A49ADC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:29:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F8CC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:31:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08FB5601FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:29:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08FB5601FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C18C6601FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 13:31:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C18C6601FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FRZsG0rNLz30HK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:29:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FRZvb2HwSz30Dk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Apr 2021 23:31:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qFx7kWXg;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=qFx7kWXg; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FRZrq03Jpz2xZy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:29:30 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FRZrg1Gg9z9sVb;
- Fri, 23 Apr 2021 23:29:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1619184563;
- bh=ctdLTNJD26/Vx2uPmq5QR17DiC7Mea9nDlu1tsH6rI0=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=qFx7kWXgn2UQTr9F9SaArfdV6w7mDrWsH79JmeYUI8/skQp9u2FTC0QCoq95mHxHr
- COinSKQ1Jj9r1GMv4iOPrr8REFOsJtLYLwCtzckrhd/6Tu8NY0Q3g+W2F8k/fNmmJT
- UnDG4389RAs6YyGd6/8HfwAoxLGh1M27kJYCcebMONWHyRKgK/cGlfm5n3BaV64dqK
- /2HlyCSGZj/+EBW8c9X1xwH1hRaTV+lu6NVVmbo/Q2aSi83c0HzuwFN/KNXCPMLDlL
- n3xIcup2RQdnX9k0BRCqsnNp1Uh68cRx/1FmaXcrUu3HJ+EGvIKcqTKpgWo/D60aIW
- kwrRMsCnAj6AA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Daniel Axtens
- <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org, Sathvika Vasireddy
- <sathvika@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/sstep: Add emulation support for
- =?utf-8?B?4oCYc2V0YuKAmQ==?= instruction
-In-Reply-To: <1619085028.flue8xv2n9.naveen@linux.ibm.com>
-References: <cover.1618469454.git.sathvika@linux.vnet.ibm.com>
- <767e53c4c27da024ca277e21ffcd0cff131f5c73.1618469454.git.sathvika@linux.vnet.ibm.com>
- <875z0mfzbf.fsf@linkitivity.dja.id.au>
- <1618899164.u2uju6vw3c.naveen@linux.ibm.com>
- <87lf9caycg.fsf@mpe.ellerman.id.au>
- <1619085028.flue8xv2n9.naveen@linux.ibm.com>
-Date: Fri, 23 Apr 2021 23:29:18 +1000
-Message-ID: <87bla5b041.fsf@mpe.ellerman.id.au>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FRZvD19Fwz2xZy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Apr 2021 23:31:34 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4DBFB1396;
+ Fri, 23 Apr 2021 06:31:31 -0700 (PDT)
+Received: from [10.57.62.63] (unknown [10.57.62.63])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3B58A3F73B;
+ Fri, 23 Apr 2021 06:31:22 -0700 (PDT)
+Subject: Re: [PATCH v5 08/16] swiotlb: Update is_swiotlb_active to add a
+ struct device argument
+To: Claire Chang <tientzu@chromium.org>, Joerg Roedel <joro@8bytes.org>,
+ Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
+ jgross@suse.com, Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+References: <20210422081508.3942748-1-tientzu@chromium.org>
+ <20210422081508.3942748-9-tientzu@chromium.org>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <1f84aa4c-f966-0986-b5a4-eecbf3b454ec@arm.com>
+Date: Fri, 23 Apr 2021 14:31:16 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.0
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20210422081508.3942748-9-tientzu@chromium.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,83 +63,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
+ jani.nikula@linux.intel.com, Nicolas Boichat <drinkcat@chromium.org>,
+ rodrigo.vivi@intel.com, bhelgaas@google.com,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ nouveau@lists.freedesktop.org, Greg KH <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+ tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Naveen N. Rao" <naveen.n.rao@linux.ibm.com> writes:
-> Michael Ellerman wrote:
->> "Naveen N. Rao" <naveen.n.rao@linux.ibm.com> writes:
->>> Daniel Axtens wrote:
->>>> Sathvika Vasireddy <sathvika@linux.vnet.ibm.com> writes:
->>>> 
->>>>> This adds emulation support for the following instruction:
->>>>>    * Set Boolean (setb)
->>>>>
->>>>> Signed-off-by: Sathvika Vasireddy <sathvika@linux.vnet.ibm.com>
->> ...
->>>> 
->>>> If you do end up respinning the patch, I think it would be good to make
->>>> the maths a bit clearer. I think it works because a left shift of 2 is
->>>> the same as multiplying by 4, but it would be easier to follow if you
->>>> used a temporary variable for btf.
->>>
->>> Indeed. I wonder if it is better to follow the ISA itself. Per the ISA, 
->>> the bit we are interested in is:
->>> 	4 x BFA + 32
->>>
->>> So, if we use that along with the PPC_BIT() macro, we get:
->>> 	if (regs->ccr & PPC_BIT(ra + 32))
->> 
->> Use of PPC_BIT risks annoying your maintainer :)
->
-> Uh oh... that isn't good :)
->
-> I looked up previous discussions and I think I now understand why you 
-> don't prefer it.
+On 2021-04-22 09:15, Claire Chang wrote:
+> Update is_swiotlb_active to add a struct device argument. This will be
+> useful later to allow for restricted DMA pool.
+> 
+> Signed-off-by: Claire Chang <tientzu@chromium.org>
+> ---
+>   drivers/gpu/drm/i915/gem/i915_gem_internal.c | 2 +-
+>   drivers/gpu/drm/nouveau/nouveau_ttm.c        | 2 +-
+>   drivers/pci/xen-pcifront.c                   | 2 +-
+>   include/linux/swiotlb.h                      | 4 ++--
+>   kernel/dma/direct.c                          | 2 +-
+>   kernel/dma/swiotlb.c                         | 4 ++--
+>   6 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_internal.c b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> index ce6b664b10aa..7d48c433446b 100644
+> --- a/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> +++ b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> @@ -42,7 +42,7 @@ static int i915_gem_object_get_pages_internal(struct drm_i915_gem_object *obj)
+>   
+>   	max_order = MAX_ORDER;
+>   #ifdef CONFIG_SWIOTLB
+> -	if (is_swiotlb_active()) {
+> +	if (is_swiotlb_active(NULL)) {
+>   		unsigned int max_segment;
+>   
+>   		max_segment = swiotlb_max_segment();
+> diff --git a/drivers/gpu/drm/nouveau/nouveau_ttm.c b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> index e8b506a6685b..2a2ae6d6cf6d 100644
+> --- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> +++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> @@ -321,7 +321,7 @@ nouveau_ttm_init(struct nouveau_drm *drm)
+>   	}
+>   
+>   #if IS_ENABLED(CONFIG_SWIOTLB) && IS_ENABLED(CONFIG_X86)
+> -	need_swiotlb = is_swiotlb_active();
+> +	need_swiotlb = is_swiotlb_active(NULL);
+>   #endif
+>   
+>   	ret = ttm_device_init(&drm->ttm.bdev, &nouveau_bo_driver, drm->dev->dev,
+> diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
+> index b7a8f3a1921f..6d548ce53ce7 100644
+> --- a/drivers/pci/xen-pcifront.c
+> +++ b/drivers/pci/xen-pcifront.c
+> @@ -693,7 +693,7 @@ static int pcifront_connect_and_init_dma(struct pcifront_device *pdev)
+>   
+>   	spin_unlock(&pcifront_dev_lock);
+>   
+> -	if (!err && !is_swiotlb_active()) {
+> +	if (!err && !is_swiotlb_active(NULL)) {
+>   		err = pci_xen_swiotlb_init_late();
+>   		if (err)
+>   			dev_err(&pdev->xdev->dev, "Could not setup SWIOTLB!\n");
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index 2a6cca07540b..c530c976d18b 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -123,7 +123,7 @@ static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr)
+>   void __init swiotlb_exit(void);
+>   unsigned int swiotlb_max_segment(void);
+>   size_t swiotlb_max_mapping_size(struct device *dev);
+> -bool is_swiotlb_active(void);
+> +bool is_swiotlb_active(struct device *dev);
+>   void __init swiotlb_adjust_size(unsigned long size);
+>   #else
+>   #define swiotlb_force SWIOTLB_NO_FORCE
+> @@ -143,7 +143,7 @@ static inline size_t swiotlb_max_mapping_size(struct device *dev)
+>   	return SIZE_MAX;
+>   }
+>   
+> -static inline bool is_swiotlb_active(void)
+> +static inline bool is_swiotlb_active(struct device *dev)
+>   {
+>   	return false;
+>   }
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 84c9feb5474a..7a88c34d0867 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -495,7 +495,7 @@ int dma_direct_supported(struct device *dev, u64 mask)
+>   size_t dma_direct_max_mapping_size(struct device *dev)
+>   {
+>   	/* If SWIOTLB is active, use its maximum mapping size */
+> -	if (is_swiotlb_active() &&
+> +	if (is_swiotlb_active(dev) &&
+>   	    (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE))
 
-Hah, I'd forgotten I'd written (ranted :D) about this in the past.
+I wonder if it's worth trying to fold these other conditions into 
+is_swiotlb_active() itself? I'm not entirely sure what matters for Xen, 
+but for the other cases it seems like they probably only care about 
+whether bouncing may occur for their particular device or not (possibly 
+they want to be using dma_max_mapping_size() now anyway - TBH I'm 
+struggling to make sense of what the swiotlb_max_segment business is 
+supposed to mean).
 
-> But, I feel it helps make it easy to follow the code when referring to 
-> the ISA.
+Otherwise, patch #9 will need to touch here as well to make sure that 
+per-device forced bouncing is reflected correctly.
 
-That's true. But I think that's much much less common than people
-reading the code in isolation.
+Robin.
 
-And ultimately it doesn't matter if the code (appears to) match the ISA,
-it matters that the code works. My worry is that too much use of those
-type of macros obscures what's actually happening.
-
-> I'm wondering if it is just the name you dislike and if so, 
-> does it make sense to rename PPC_BIT() to something else? We have 
-> BIT_ULL(), so perhaps BIT_MSB_ULL() or MSB_BIT_ULL()?
-
-The name is part of it. But I don't really like BIT_ULL() either, it
-hides in a macro something that could just be there in front of you
-ie. (1ull << x).
-
-
-For this case of setb, I think I'd go with something like below. It
-doesn't exactly match the ISA, but I think there's minimal obfuscation
-of what's actually going on.
-
-    	// ra is now bfa
-	ra = (ra >> 2);
-
-	// Extract 4-bit CR field
-	val = regs->ccr >> (CR0_SHIFT - 4 * ra);
-
-	if (val & 8)
-		op->val = -1;
-	else if (val & 4)
-		op->val = 1;
-	else
-		op->val = 0;
-
-
-If anything could use a macro it would be the 8 and 4, eg. CR_LT, CR_GT.
-
-Of course that's probably got a bug in it, because I just wrote it by
-eye and it's 11:28 pm :)
-
-cheers
+>   		return swiotlb_max_mapping_size(dev);
+>   	return SIZE_MAX;
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index ffbb8724e06c..1d221343f1c8 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -659,9 +659,9 @@ size_t swiotlb_max_mapping_size(struct device *dev)
+>   	return ((size_t)IO_TLB_SIZE) * IO_TLB_SEGSIZE;
+>   }
+>   
+> -bool is_swiotlb_active(void)
+> +bool is_swiotlb_active(struct device *dev)
+>   {
+> -	return io_tlb_default_mem != NULL;
+> +	return get_io_tlb_mem(dev) != NULL;
+>   }
+>   EXPORT_SYMBOL_GPL(is_swiotlb_active);
+>   
+> 
