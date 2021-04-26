@@ -2,61 +2,69 @@ Return-Path: <SRS0=DjYV=JX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 591B9C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 20:36:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43CA2C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 21:25:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DD7B613AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 20:36:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DD7B613AB
+	by mail.kernel.org (Postfix) with ESMTPS id 58D7361182
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 21:25:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58D7361182
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FTc9b41K1z304N
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Apr 2021 06:36:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JZKpcTWI;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FTdH053Wjz2yyL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Apr 2021 07:25:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=JZKpcTWI; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.53; helo=mail-ot1-f53.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com
+ [209.85.210.53])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FTc974Zwmz2yxN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Apr 2021 06:35:39 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id E89D1601FC;
- Mon, 26 Apr 2021 20:35:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1619469336;
- bh=dWUS68fI1Cq65yaAuW1711yZzsjTCGo01+dzI5wZyOg=;
- h=From:To:Cc:Subject:Date:From;
- b=JZKpcTWIGHvo2ju0xvHbAMfO5KD+YY7U0Ui2tsf0R8vzyMCIIX4Es+MJ/kJu3w4sQ
- hEBHl4Hir0hPig9Yd6IFN/QA8hi47gloUMqvjkMg8RNUSuIcJnwQReMWBsJ2MRC/t7
- hs5aKoR7KFQTl/8p43SZ/goygTlKXmI67ojsC1OSth5uJ+13flim6wBCM4BgwwE8u4
- t7Qa59jYacCAtUZTSHUGS2y0CDeuGPuV9N3HZ0r49JE/HZdxDXo50zf/ypLQjwX31l
- YGLCzjzY6pVmvSKGzx4aFzxoScRtAcEbHUwok6qArwK1TbFvYwoy+vznqZroQ9XmPh
- h2PBbdE72lW/g==
-From: Nathan Chancellor <nathan@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Avoid clang uninitialized warning in
- __get_user_size_allowed
-Date: Mon, 26 Apr 2021 13:35:18 -0700
-Message-Id: <20210426203518.981550-1-nathan@kernel.org>
-X-Mailer: git-send-email 2.31.1.362.g311531c9de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FTdGc3KPgz2yR4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Apr 2021 07:25:26 +1000 (AEST)
+Received: by mail-ot1-f53.google.com with SMTP id
+ f75-20020a9d03d10000b0290280def9ab76so48384143otf.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 14:25:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=if+kpOrEBMc7EsjeYPdnBYrLSadizKO99PTh1HWp/+w=;
+ b=GZEcN8sl+n6/iHDATKEM5n31kS9UT2AhTEh7XRp03Qxr93bOXBAyVoIE7diHXN+PKP
+ WSn9odmYwmxXEG/u88pcLRTmqAdfouU9EBEY+X0P+BcMcx8nzw3Gcr+KSTsXtvJ/wq1a
+ V0IvfNCUm77nOXwhoLbiX1BnOIrr+pchleCiMSKsEw8SBisMnY9D38VmoRPF1HXTESaa
+ Lyk9anGycGzgtgOFgQDGnzeqhr4Vy9r3vp/G+u0ei3hGS9Z18xGEgqL7N2Hg5upa3KI/
+ 5fKz3rlASa1DjhAdQDmYU+Qj8TLkfL2kgq/iS/eQe1argMdd/Ci8XM10XoaHWMTCljw+
+ Wfxw==
+X-Gm-Message-State: AOAM5304zz4wmT2yzWnAs3fPJL8WVCO4evsyhosLVxvuB3eEZLzhXgON
+ t/PNu5JFMEsar3ci2VPYJg==
+X-Google-Smtp-Source: ABdhPJytQsNTWy1y3O3rVhWawKgoMbsNBLoMOI596n65aAt19DCMYv0gC0X7OPoXraB6/B6TdKT2Yw==
+X-Received: by 2002:a9d:4616:: with SMTP id y22mr6630504ote.250.1619472322465; 
+ Mon, 26 Apr 2021 14:25:22 -0700 (PDT)
+Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.gmail.com with ESMTPSA id p2sm227792ool.15.2021.04.26.14.25.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 26 Apr 2021 14:25:21 -0700 (PDT)
+Received: (nullmailer pid 4112837 invoked by uid 1000);
+ Mon, 26 Apr 2021 21:25:20 -0000
+Date: Mon, 26 Apr 2021 16:25:20 -0500
+From: Rob Herring <robh@kernel.org>
+To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Subject: Re: [PATCH v2 1/2] powerpc: Free fdt on error in elf64_load()
+Message-ID: <20210426212520.GA4112479@robh.at.kernel.org>
+References: <20210421163610.23775-1-nramas@linux.microsoft.com>
 MIME-Version: 1.0
-X-Patchwork-Bot: notify
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210421163610.23775-1-nramas@linux.microsoft.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,61 +76,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Nathan Chancellor <nathan@kernel.org>, clang-built-linux@googlegroups.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, kbuild-all@lists.01.org, lkp@intel.com,
+ bauerman@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ dan.carpenter@oracle.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 9975f852ce1b ("powerpc/uaccess: Remove calls to __get_user_bad()
-and __put_user_bad()") switch to BUILD_BUG() in the default case, which
-leaves x uninitialized. This will not be an issue because the build will
-be broken in that case but clang does static analysis before it realizes
-the default case will be done so it warns about x being uninitialized
-(trimmed for brevity):
+On Wed, 21 Apr 2021 09:36:09 -0700, Lakshmi Ramasubramanian wrote:
+> There are a few "goto out;" statements before the local variable "fdt"
+> is initialized through the call to of_kexec_alloc_and_setup_fdt() in
+> elf64_load().  This will result in an uninitialized "fdt" being passed
+> to kvfree() in this function if there is an error before the call to
+> of_kexec_alloc_and_setup_fdt().
+> 
+> If there is any error after fdt is allocated, but before it is
+> saved in the arch specific kimage struct, free the fdt.
+> 
+> Reported-by: kernel test robot <lkp@intel.com>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+> ---
+>  arch/powerpc/kexec/elf_64.c | 16 ++++++----------
+>  1 file changed, 6 insertions(+), 10 deletions(-)
+> 
 
- In file included from mm/mprotect.c:13:
- In file included from ./include/linux/hugetlb.h:28:
- In file included from ./include/linux/mempolicy.h:16:
- ./include/linux/pagemap.h:772:16: warning: variable '__gu_val' is used
- uninitialized whenever switch default is taken [-Wsometimes-uninitialized]
-                 if (unlikely(__get_user(c, uaddr) != 0))
-                              ^~~~~~~~~~~~~~~~~~~~
- ./arch/powerpc/include/asm/uaccess.h:266:2: note: expanded from macro '__get_user'
-         __get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err);      \
-         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ./arch/powerpc/include/asm/uaccess.h:235:2: note: expanded from macro
- '__get_user_size_allowed'
-        default: BUILD_BUG();                                   \
-        ^~~~~~~
-
-Commit 5cd29b1fd3e8 ("powerpc/uaccess: Use asm goto for get_user when
-compiler supports it") added an initialization for x because of the same
-reason. Do the same thing here so there is no warning across all
-versions of clang.
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/1359
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
----
- arch/powerpc/include/asm/uaccess.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index a4e791bcd3fe..a09e4240c5b1 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -232,7 +232,7 @@ do {								\
- 	case 2: __get_user_asm(x, (u16 __user *)ptr, retval, "lhz"); break;	\
- 	case 4: __get_user_asm(x, (u32 __user *)ptr, retval, "lwz"); break;	\
- 	case 8: __get_user_asm2(x, (u64 __user *)ptr, retval);  break;	\
--	default: BUILD_BUG();					\
-+	default: x = 0; BUILD_BUG();				\
- 	}							\
- } while (0)
- 
-
-base-commit: ee6b25fa7c037e42cc5f3b5c024b2a779edab6dd
--- 
-2.31.1.362.g311531c9de
-
+Applied, thanks!
