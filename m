@@ -2,90 +2,89 @@ Return-Path: <SRS0=DjYV=JX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8491CC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 12:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0FB8C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 16:38:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34D2060BBB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 12:46:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34D2060BBB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+	by mail.kernel.org (Postfix) with ESMTPS id A38E361009
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 16:38:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A38E361009
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FTPm871fHz30Gl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 22:46:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FTVvl0Mzkz30Cw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Apr 2021 02:38:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=EIyPOAWK;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=hQyrvIvY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.dk (client-ip=2607:f8b0:4864:20::533;
- helo=mail-pg1-x533.google.com; envelope-from=axboe@kernel.dk;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d32;
+ helo=mail-io1-xd32.google.com; envelope-from=tientzu@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel-dk.20150623.gappssmtp.com
- header.i=@kernel-dk.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=EIyPOAWK; dkim-atps=neutral
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com
- [IPv6:2607:f8b0:4864:20::533])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=hQyrvIvY; dkim-atps=neutral
+Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com
+ [IPv6:2607:f8b0:4864:20::d32])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FTPlg6Wc6z2ysm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 22:46:21 +1000 (AEST)
-Received: by mail-pg1-x533.google.com with SMTP id y32so39963248pga.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 05:46:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel-dk.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=vBwj4uVXhHL7JLV9W7jcaKiEoNSYfcenJXMDu4IEgb4=;
- b=EIyPOAWKOCj1qnQXj5/vN7SitJydh8ksy/yWGwQIbgSR521++d+8lcitRG5F43ZRN8
- QlIz2IYMDdvrq7GEPn+gbkkJo04dJ0eNOGdIV2+9B+1mpqeIRsndnuCrYH08c3QM78uF
- nvFlamzqa7lgpVbeGBjuZqGvlFXZczbfXeRdg8ijj5aaoc2K7x+xsoarcOUdzAtPDS15
- +BNGv7x7jZknt+Xa8dES1Hbq64WeYF4K/CXeIUpdVGE9UhhkJ3STv92QHNSVzp59g8XW
- luhApgxmd+mV9uDhUYSmVempN7kd2Ind88+SJbRpU5DHToCqxClSyKlfolvZaayn9rty
- 7eTA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FTVvD1W4Bz2yRX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Apr 2021 02:38:15 +1000 (AEST)
+Received: by mail-io1-xd32.google.com with SMTP id t21so5801133iob.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 09:38:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=cFKXKq/sKurvSVgvNvGkxgOiMlOZ5bG92GQyZxG6/Ow=;
+ b=hQyrvIvY0OkwlUkO65L/o3TMJboyrA/EOLuUe0Pq7KgqeFtR8O9LJWrjeU2EQISYlu
+ bJHPBsPqEo2jNERM7Qly7inrbryADiFPyU5whSnn5mfATXbgH1UnC4GjWrov7E7itgl/
+ y/vmAUUGiGEmxu0IFynSQLccMWdifgG50rRhw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=vBwj4uVXhHL7JLV9W7jcaKiEoNSYfcenJXMDu4IEgb4=;
- b=ND1tn0OUvFp84HctWmbV0FU0+S3T3QYOLXXzCt5l4hFUlQV7UsZTcIhZ5v6BEs4MQ+
- GS6RAtHAYb7vsUSnsZJfNGVwDdcoCP4srgIlS1G07gnPZcNamToxW9hatmFSeWFjI8uo
- eVtTzO9Q0P59Gj9HNfnev17PwpIzIBvxHR6m1NvxbkG8A1TiBuZbsUsvxLi6GQHIYBUE
- VRd85hQbsHUTQhDlzUyvGlVVTtYdNhzdme+lRYzUVtoE4ggTFpbUYyMpjjVAA9D1pcrp
- M2yhNze3a22ucuY7T5hbu1JPF3dgkxdhPfmRaFZflFTdotsFBIn0jg7txC14jSkm1Hk/
- ZDdg==
-X-Gm-Message-State: AOAM532GY0x3Nj7K2iFKXsvNpTDIgG4WuU7mVS1OKw//YPL3vx7FdL6Z
- HQsDiOmTzAVsqhO2PuBO5lHlHg==
-X-Google-Smtp-Source: ABdhPJygv6nf3XPJmGVk0TrnyRzt5cckGF0TuhEKL/xCK66Iuw/v0yRZic7hhP9dbBy7CQRGKbKpQA==
-X-Received: by 2002:a63:1b5c:: with SMTP id b28mr16454750pgm.444.1619441177945; 
- Mon, 26 Apr 2021 05:46:17 -0700 (PDT)
-Received: from [192.168.1.134] ([66.219.217.173])
- by smtp.gmail.com with ESMTPSA id q6sm11136437pfs.33.2021.04.26.05.46.16
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=cFKXKq/sKurvSVgvNvGkxgOiMlOZ5bG92GQyZxG6/Ow=;
+ b=YT4pAHQau3X8gdqWlc7J4IKQY37yCgi7vp618YiSm4fOYzVTNwYxUTWctqdH2kLZzn
+ aVaemZEUppjnoBJLufd5NIKzb7kBoNChOrSUk693yiwD1Rfbc0G0kcGHnZru05chZE03
+ lf4ACh+xqAKngRzLNN05ncIo09sH7se33X3G9Z1+A0aOUj/F4ODxV9NWhZiKVctdHfc5
+ P+zN3skuWj5p/3Q6NS1vHMKh/kUsxyctBIZkaKNjH5VppOeJfeC0sriJMUDLxbgVr7B0
+ JlDV7eFILCfwRDnWmMNh3Mlq6mc3aPev2o0YAHBwTANR1tF0WrUnn806Zcq8f4sixVZa
+ stTA==
+X-Gm-Message-State: AOAM530ElXVU93VkzZhZUoozQgUJHX9n6PDr1BM/wolqqE1UEe3PJgcO
+ Vb0HUlE9uhALsmUpMUsrYpc8eIi2sMUhaA==
+X-Google-Smtp-Source: ABdhPJwXy8B1HwZYNTGfF5zFSg13X8mq0yaqzz3jNlNzwGDiv8dRY4N9zHcIUziWcHLRHU9kpXdyUQ==
+X-Received: by 2002:a05:6602:1689:: with SMTP id
+ s9mr14725210iow.171.1619455090915; 
+ Mon, 26 Apr 2021 09:38:10 -0700 (PDT)
+Received: from mail-il1-f175.google.com (mail-il1-f175.google.com.
+ [209.85.166.175])
+ by smtp.gmail.com with ESMTPSA id j20sm174501ilo.17.2021.04.26.09.38.08
+ for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 26 Apr 2021 05:46:17 -0700 (PDT)
-Subject: Re: linux-next: boot failure in today's linux-next
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20210426163606.36a97253@canb.auug.org.au>
- <20210426174310.6f03345b@canb.auug.org.au>
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <387b26fe-81f5-1bb1-33fd-7fccb7b73823@kernel.dk>
-Date: Mon, 26 Apr 2021 06:46:20 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ Mon, 26 Apr 2021 09:38:10 -0700 (PDT)
+Received: by mail-il1-f175.google.com with SMTP id a9so1530617ilh.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 09:38:08 -0700 (PDT)
+X-Received: by 2002:a92:7307:: with SMTP id o7mr14655769ilc.5.1619455077553;
+ Mon, 26 Apr 2021 09:37:57 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20210426174310.6f03345b@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20210422081508.3942748-1-tientzu@chromium.org>
+ <20210422081508.3942748-9-tientzu@chromium.org>
+ <1f84aa4c-f966-0986-b5a4-eecbf3b454ec@arm.com>
+In-Reply-To: <1f84aa4c-f966-0986-b5a4-eecbf3b454ec@arm.com>
+From: Claire Chang <tientzu@chromium.org>
+Date: Tue, 27 Apr 2021 00:37:46 +0800
+X-Gmail-Original-Message-ID: <CALiNf29N3U5GZKNN90NzjSeQ0WG4dxyRzU97fJ-r9OuChzLWKA@mail.gmail.com>
+Message-ID: <CALiNf29N3U5GZKNN90NzjSeQ0WG4dxyRzU97fJ-r9OuChzLWKA@mail.gmail.com>
+Subject: Re: [PATCH v5 08/16] swiotlb: Update is_swiotlb_active to add a
+ struct device argument
+To: Robin Murphy <robin.murphy@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,97 +96,164 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linus <torvalds@linux-foundation.org>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Changheun Lee <nanich.lee@samsung.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, lkml <linux-kernel@vger.kernel.org>,
+ grant.likely@arm.com, paulus@samba.org, Will Deacon <will@kernel.org>,
+ mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ xypron.glpk@gmx.de, Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ Jianxiong Gao <jxgao@google.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, jani.nikula@linux.intel.com,
+ Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
+ Bjorn Helgaas <bhelgaas@google.com>, boris.ostrovsky@oracle.com,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
+ chris@chris-wilson.co.uk, nouveau@lists.freedesktop.org,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Frank Rowand <frowand.list@gmail.com>, Tomasz Figa <tfiga@chromium.org>,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/26/21 1:43 AM, Stephen Rothwell wrote:
-> Hi all,
-> 
-> On Mon, 26 Apr 2021 16:36:06 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> Today's linux-next build (ipowerpc_pseries_le_defconfig)
->> failed its qemu boot tests like this:
->>
->> [    1.833361][    T1] ibmvscsi 71000003: SRP_VERSION: 16.a
->> [    1.834439][    T1] ibmvscsi 71000003: Maximum ID: 64 Maximum LUN: 32 Maximum Channel: 3
->> [    1.834683][    T1] scsi host0: IBM POWER Virtual SCSI Adapter 1.5.9
->> [    1.842605][    C0] ibmvscsi 71000003: partner initialization complete
->> [    1.844979][    C0] ibmvscsi 71000003: host srp version: 16.a, host partition qemu (0), OS 2, max io 2097152
->> [    1.845502][    C0] ibmvscsi 71000003: sent SRP login
->> [    1.845853][    C0] ibmvscsi 71000003: SRP_LOGIN succeeded
->> [    1.851447][    T1] BUG: Kernel NULL pointer dereference on write at 0x00000390
->> [    1.851577][    T1] Faulting instruction address: 0xc00000000070386c
->> [    1.852171][    T1] Oops: Kernel access of bad area, sig: 11 [#1]
->> [    1.852324][    T1] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
->> [    1.852689][    T1] Modules linked in:
->> [    1.853136][    T1] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.12.0 #2
->> [    1.853555][    T1] NIP:  c00000000070386c LR: c000000000703a6c CTR: 0000000000000000
->> [    1.853679][    T1] REGS: c0000000063a2f40 TRAP: 0380   Not tainted  (5.12.0)
->> [    1.853870][    T1] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44002240  XER: 00000000
->> [    1.854305][    T1] CFAR: c000000000703a68 IRQMASK: 0 
->> [    1.854305][    T1] GPR00: c000000000703a6c c0000000063a31e0 c00000000146b200 c0000000080ca800 
->> [    1.854305][    T1] GPR04: c000000006067380 c00c000000020180 0000000000000024 0000000000008500 
->> [    1.854305][    T1] GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
->> [    1.854305][    T1] GPR12: 0000000000002000 c000000001640000 c000000008068508 0000000000000020 
->> [    1.854305][    T1] GPR16: 0000000000000000 0000000000000024 c000000000f85f78 c000000000f0d998 
->> [    1.854305][    T1] GPR20: c0000000013b59e0 0000000000000003 c0000000063a340c 0000000000000001 
->> [    1.854305][    T1] GPR24: 0000000000000000 c0000000084a3000 c0000000080ca800 c00c000000020180 
->> [    1.854305][    T1] GPR28: 0000000000008500 c0000000080ca800 0000000000000024 c000000006067380 
->> [    1.855486][    T1] NIP [c00000000070386c] bio_add_hw_page+0x7c/0x240
->> [    1.856357][    T1] LR [c000000000703a6c] bio_add_pc_page+0x3c/0x70
->> [    1.856723][    T1] Call Trace:
->> [    1.856890][    T1] [c0000000063a31e0] [0000000000000c00] 0xc00 (unreliable)
->> [    1.857390][    T1] [c0000000063a3230] [c00000000070105c] bio_kmalloc+0x3c/0xd0
->> [    1.857514][    T1] [c0000000063a3260] [c000000000713014] blk_rq_map_kern+0x164/0x4a0
->> [    1.857630][    T1] [c0000000063a32d0] [c0000000008e17dc] __scsi_execute+0x1cc/0x270
->> [    1.857746][    T1] [c0000000063a3350] [c0000000008e7bf0] scsi_probe_and_add_lun+0x250/0xd90
->> [    1.857887][    T1] [c0000000063a34c0] [c0000000008e921c] __scsi_scan_target+0x17c/0x630
->> [    1.858007][    T1] [c0000000063a35d0] [c0000000008e9900] scsi_scan_channel+0x90/0xe0
->> [    1.858133][    T1] [c0000000063a3620] [c0000000008e9ba8] scsi_scan_host_selected+0x138/0x1a0
->> [    1.858258][    T1] [c0000000063a3670] [c0000000008e9fec] scsi_scan_host+0x2dc/0x320
->> [    1.858367][    T1] [c0000000063a3710] [c00000000091b2a0] ibmvscsi_probe+0xa70/0xa80
->> [    1.858487][    T1] [c0000000063a3800] [c0000000000eb8ac] vio_bus_probe+0x9c/0x460
->> [    1.858616][    T1] [c0000000063a38a0] [c0000000008979bc] really_probe+0x12c/0x6b0
->> [    1.858749][    T1] [c0000000063a3950] [c000000000897fd4] driver_probe_device+0x94/0x130
->> [    1.858874][    T1] [c0000000063a3980] [c00000000089896c] device_driver_attach+0x11c/0x130
->> [    1.858999][    T1] [c0000000063a39c0] [c000000000898a38] __driver_attach+0xb8/0x1a0
->> [    1.859123][    T1] [c0000000063a3a10] [c0000000008941a8] bus_for_each_dev+0xa8/0x130
->> [    1.859257][    T1] [c0000000063a3a70] [c000000000896ef4] driver_attach+0x34/0x50
->> [    1.859381][    T1] [c0000000063a3a90] [c000000000896510] bus_add_driver+0x170/0x2b0
->> [    1.859503][    T1] [c0000000063a3b20] [c000000000899b04] driver_register+0xb4/0x1c0
->> [    1.859626][    T1] [c0000000063a3b90] [c0000000000ea808] __vio_register_driver+0x68/0x90
->> [    1.859754][    T1] [c0000000063a3bb0] [c0000000010cee74] ibmvscsi_module_init+0xa4/0xdc
->> [    1.859931][    T1] [c0000000063a3bf0] [c000000000012190] do_one_initcall+0x60/0x2c0
->> [    1.860071][    T1] [c0000000063a3cc0] [c0000000010846e4] kernel_init_freeable+0x300/0x3a0
->> [    1.860207][    T1] [c0000000063a3da0] [c000000000012764] kernel_init+0x2c/0x168
->> [    1.860336][    T1] [c0000000063a3e10] [c00000000000d5ec] ret_from_kernel_thread+0x5c/0x70
->> [    1.860690][    T1] Instruction dump:
->> [    1.861072][    T1] fba10038 7cbb2b78 7c7d1b78 7cfc3b78 a1440048 2c2a0000 4082008c a13f004a 
->> [    1.861328][    T1] 7c095040 40810110 e93f0008 811f0028 <e9290390> e9290050 812903d8 7d3e4850 
->> [    1.863000][    T1] ---[ end trace c49ca2d91ee47d7f ]---
->> [    1.879456][    T1] 
->> [    2.880941][    T1] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
->>
->> I don't know what caused this, but it is some change since Friday.
->>
->> I have left it like this.
-> 
-> Bisections leads to commit
-> 
->   42fb54fbc707 ("bio: limit bio max size")
-> 
-> from the block tree.  Reverting that commit on top of today's
-> linux-next allows to the boot to work again.
+On Fri, Apr 23, 2021 at 9:31 PM Robin Murphy <robin.murphy@arm.com> wrote:
+>
+> On 2021-04-22 09:15, Claire Chang wrote:
+> > Update is_swiotlb_active to add a struct device argument. This will be
+> > useful later to allow for restricted DMA pool.
+> >
+> > Signed-off-by: Claire Chang <tientzu@chromium.org>
+> > ---
+> >   drivers/gpu/drm/i915/gem/i915_gem_internal.c | 2 +-
+> >   drivers/gpu/drm/nouveau/nouveau_ttm.c        | 2 +-
+> >   drivers/pci/xen-pcifront.c                   | 2 +-
+> >   include/linux/swiotlb.h                      | 4 ++--
+> >   kernel/dma/direct.c                          | 2 +-
+> >   kernel/dma/swiotlb.c                         | 4 ++--
+> >   6 files changed, 8 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/i915/gem/i915_gem_internal.c b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> > index ce6b664b10aa..7d48c433446b 100644
+> > --- a/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> > +++ b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> > @@ -42,7 +42,7 @@ static int i915_gem_object_get_pages_internal(struct drm_i915_gem_object *obj)
+> >
+> >       max_order = MAX_ORDER;
+> >   #ifdef CONFIG_SWIOTLB
+> > -     if (is_swiotlb_active()) {
+> > +     if (is_swiotlb_active(NULL)) {
+> >               unsigned int max_segment;
+> >
+> >               max_segment = swiotlb_max_segment();
+> > diff --git a/drivers/gpu/drm/nouveau/nouveau_ttm.c b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> > index e8b506a6685b..2a2ae6d6cf6d 100644
+> > --- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> > +++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> > @@ -321,7 +321,7 @@ nouveau_ttm_init(struct nouveau_drm *drm)
+> >       }
+> >
+> >   #if IS_ENABLED(CONFIG_SWIOTLB) && IS_ENABLED(CONFIG_X86)
+> > -     need_swiotlb = is_swiotlb_active();
+> > +     need_swiotlb = is_swiotlb_active(NULL);
+> >   #endif
+> >
+> >       ret = ttm_device_init(&drm->ttm.bdev, &nouveau_bo_driver, drm->dev->dev,
+> > diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
+> > index b7a8f3a1921f..6d548ce53ce7 100644
+> > --- a/drivers/pci/xen-pcifront.c
+> > +++ b/drivers/pci/xen-pcifront.c
+> > @@ -693,7 +693,7 @@ static int pcifront_connect_and_init_dma(struct pcifront_device *pdev)
+> >
+> >       spin_unlock(&pcifront_dev_lock);
+> >
+> > -     if (!err && !is_swiotlb_active()) {
+> > +     if (!err && !is_swiotlb_active(NULL)) {
+> >               err = pci_xen_swiotlb_init_late();
+> >               if (err)
+> >                       dev_err(&pdev->xdev->dev, "Could not setup SWIOTLB!\n");
+> > diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> > index 2a6cca07540b..c530c976d18b 100644
+> > --- a/include/linux/swiotlb.h
+> > +++ b/include/linux/swiotlb.h
+> > @@ -123,7 +123,7 @@ static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr)
+> >   void __init swiotlb_exit(void);
+> >   unsigned int swiotlb_max_segment(void);
+> >   size_t swiotlb_max_mapping_size(struct device *dev);
+> > -bool is_swiotlb_active(void);
+> > +bool is_swiotlb_active(struct device *dev);
+> >   void __init swiotlb_adjust_size(unsigned long size);
+> >   #else
+> >   #define swiotlb_force SWIOTLB_NO_FORCE
+> > @@ -143,7 +143,7 @@ static inline size_t swiotlb_max_mapping_size(struct device *dev)
+> >       return SIZE_MAX;
+> >   }
+> >
+> > -static inline bool is_swiotlb_active(void)
+> > +static inline bool is_swiotlb_active(struct device *dev)
+> >   {
+> >       return false;
+> >   }
+> > diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> > index 84c9feb5474a..7a88c34d0867 100644
+> > --- a/kernel/dma/direct.c
+> > +++ b/kernel/dma/direct.c
+> > @@ -495,7 +495,7 @@ int dma_direct_supported(struct device *dev, u64 mask)
+> >   size_t dma_direct_max_mapping_size(struct device *dev)
+> >   {
+> >       /* If SWIOTLB is active, use its maximum mapping size */
+> > -     if (is_swiotlb_active() &&
+> > +     if (is_swiotlb_active(dev) &&
+> >           (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE))
+>
+> I wonder if it's worth trying to fold these other conditions into
+> is_swiotlb_active() itself? I'm not entirely sure what matters for Xen,
+> but for the other cases it seems like they probably only care about
+> whether bouncing may occur for their particular device or not (possibly
+> they want to be using dma_max_mapping_size() now anyway - TBH I'm
+> struggling to make sense of what the swiotlb_max_segment business is
+> supposed to mean).
 
-The patch has been dropped, thanks Stephen.
+I think leaving those conditions outside of is_swiotlb_active() might
+help avoid confusion with is_dev_swiotlb_force() in patch #9? We need
+is_dev_swiotlb_force() only because the restricted DMA pool supports
+memory allocation, but the default swiotlb doesn't.
 
--- 
-Jens Axboe
+>
+> Otherwise, patch #9 will need to touch here as well to make sure that
+> per-device forced bouncing is reflected correctly.
 
+You're right. Otherwise, is_dev_swiotlb_force is needed here.
+
+
+>
+> Robin.
+>
+> >               return swiotlb_max_mapping_size(dev);
+> >       return SIZE_MAX;
+> > diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> > index ffbb8724e06c..1d221343f1c8 100644
+> > --- a/kernel/dma/swiotlb.c
+> > +++ b/kernel/dma/swiotlb.c
+> > @@ -659,9 +659,9 @@ size_t swiotlb_max_mapping_size(struct device *dev)
+> >       return ((size_t)IO_TLB_SIZE) * IO_TLB_SEGSIZE;
+> >   }
+> >
+> > -bool is_swiotlb_active(void)
+> > +bool is_swiotlb_active(struct device *dev)
+> >   {
+> > -     return io_tlb_default_mem != NULL;
+> > +     return get_io_tlb_mem(dev) != NULL;
+> >   }
+> >   EXPORT_SYMBOL_GPL(is_swiotlb_active);
+> >
+> >
