@@ -2,82 +2,84 @@ Return-Path: <SRS0=DjYV=JX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23776C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 11:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99524C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 11:30:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2475F61159
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 11:28:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2475F61159
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 79A3661159
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 11:30:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79A3661159
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FTN1D0fZgz30Gp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 21:28:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FTN493Ycsz30DW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Apr 2021 21:30:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=J0qyEGaT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=coA7t6ZU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635;
- helo=mail-pl1-x635.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::331;
+ helo=mail-wm1-x331.google.com; envelope-from=maennich@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=J0qyEGaT; dkim-atps=neutral
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
- [IPv6:2607:f8b0:4864:20::635])
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=coA7t6ZU; dkim-atps=neutral
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com
+ [IPv6:2a00:1450:4864:20::331])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FTN0k1Nlnz2ysm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 21:27:31 +1000 (AEST)
-Received: by mail-pl1-x635.google.com with SMTP id v13so15170384ple.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 04:27:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:mime-version:message-id
- :content-transfer-encoding;
- bh=WojHIOCE9IiTbGPzqxYFTTTCnqu0elAJH1s4+uNOyEQ=;
- b=J0qyEGaT/rxkDjFcDO08MAVfnAPIxzrvr3SopwvSmi8Kg5iAdQfEtv74oiHHIQS1iS
- CGLqfsIBlnJrP/15yYko6TCtMHOz/ntk1azufroxAT5BsYlXp+RtQsaUbD73K+FQ1vZV
- zzsLUUNiT2vCss/eeZyE1ZUEL+trqdkNsenJcyDOQU44ca1oN7Rmvf5RUPhUPgWdhPJJ
- eqiWkRep4QEiwst/6jC0mQwsISQbu7EK5mJzTLyAmyJhEGlGuMBSU1sJvw6BJ5tfgRww
- XKx3RV+jNz+GN4YfzuCgcg0+VGRvXHeoWlC1N2IuwJYL4ggS7AYew65Xi8VPNUYfphvi
- RzZQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FTLRh6QQMz2xgN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 20:17:17 +1000 (AEST)
+Received: by mail-wm1-x331.google.com with SMTP id n127so17858018wmb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Apr 2021 03:17:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=8+5RmGaKx5Tt6qhKXUKXBTfFBE8HCr3VUmHINr25V7Q=;
+ b=coA7t6ZU+3D3rzonl2MD8DtCSIxY3Bhr4uKsu96mtDdzfd1ReGK6wCZtVh38ADMexc
+ h0iVGJEbrn8P6LyrozH4sDaKslxXLK0zCaGUMo+2rH5MQkagWl25RZRfRiQ64WRP6j8Z
+ S5BMEvU9z3yuqIaqKcSwNUSWYp8KvdUTE/q5unzz04xJK+hpibQiiS3sL7aRWXrgqXa7
+ rz7Mm1vD68LG1OBJeXHCGzk+Cafabfw0o6DCvXYZ60tdQ2uzZXztGBnggqfYRT9S2QQv
+ fO5Iq5fyEsYMu54iVrhMLQty7HKqWSkdq8XmUOL4gMGVdswNg6+e71e996Lm3mlZZFJP
+ Bx2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:mime-version:message-id
- :content-transfer-encoding;
- bh=WojHIOCE9IiTbGPzqxYFTTTCnqu0elAJH1s4+uNOyEQ=;
- b=VCqGrBYDBKO08tm+w6kmmRWf79SDNZw4WPiExZIbj91JRvpJyq/Riibl2epMGG9ezK
- MPz7KpB7Aug99911pzaiTHEslapRwKkWB8xjO2IuDMfN+FJ7FW15PuqSGHz2uG8gRrG3
- h/TVwAivUvFyFg0aK5c94j9h+qSzMY36tzhDUXdCWqNOMDMoPJXpuZFF2actdiw8apAn
- RL8wZ8QUUb+Fcuf0PKn7He49xBjy83UUJe6n1kIi8k54MAIzomyy1G0PQkW1dmcQApYB
- HGwMnxHWkCWkgg2v4qufnFiPGfGKxmyW91X9NGziTs5FMPsfkF1PHIe1DGuGDj31gOkT
- cvHA==
-X-Gm-Message-State: AOAM532ENd0luGU8TrPrxXmASC0HntXsb8v9iiJQjtWvfn8+kKCU0qlV
- C0Aqpy3jTvy5xcoy8ISPsvY=
-X-Google-Smtp-Source: ABdhPJxhCUd6Iz5KibdnBFl8Aeh3Pkjodv3kU3GM9TTu89lVrTHu03yLezPM6rMYrMwwWgtdYFJtGQ==
-X-Received: by 2002:a17:90a:d707:: with SMTP id
- y7mr22928289pju.50.1619436444496; 
- Mon, 26 Apr 2021 04:27:24 -0700 (PDT)
-Received: from localhost ([59.102.87.99])
- by smtp.gmail.com with ESMTPSA id a7sm11167389pfg.65.2021.04.26.04.27.23
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=8+5RmGaKx5Tt6qhKXUKXBTfFBE8HCr3VUmHINr25V7Q=;
+ b=fnF/HNBSjEkbQvfFHCLGoqsEFUboqo8H5vGpDDlLCtrgq8pDDEqrcYDtLPn0Zvn6SR
+ 2FhLM6oNB3HvL/ebf21xOnt72k2LvBiOC0DhDYTPPh0F793bhZMVOfOFZAc4xrUkJkiS
+ 8W80th87AgDqUqxzE3Uh0EguNJd6koMklXYzy6HshMe5BmBjr2vIrH4qi9iBh+/Qqy5Q
+ w0MwGCwrzWRzHu0DESRVuSx0FkIFO0xLVbHGUh9rkzpxnfsJ/5784MyKB4bNxmRqwYCE
+ VtFUWRJB4/wMS2sKUV8EIpC6YQ7OdeEzvkQZ4Ordlw4DYwKFoqJfaScvNnCW0DS9m+UE
+ +PZw==
+X-Gm-Message-State: AOAM532Ws6uSGl/WfhCF0dt13LN82d0Jxa4KtPZs7s8hXceng7IySoOW
+ HVVPIbmZqUmmkEBpvX2dIxajHw==
+X-Google-Smtp-Source: ABdhPJwYsZ5Bdm0jMDlAvLoRue+X2IuYqd6A0q8UkP92NgRfMr63EtUQ2jnm3b8u++7Sr4Bji8w4vg==
+X-Received: by 2002:a1c:6244:: with SMTP id w65mr20538092wmb.27.1619432229857; 
+ Mon, 26 Apr 2021 03:17:09 -0700 (PDT)
+Received: from google.com ([2a00:79e0:d:210:de72:8b77:f30e:ff1e])
+ by smtp.gmail.com with ESMTPSA id a2sm20837694wrt.82.2021.04.26.03.17.08
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 26 Apr 2021 04:27:24 -0700 (PDT)
-Date: Mon, 26 Apr 2021 21:27:18 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Guest entry/exit performance work and observations
-To: kvm-ppc@vger.kernel.org
+ Mon, 26 Apr 2021 03:17:09 -0700 (PDT)
+Date: Mon, 26 Apr 2021 11:17:08 +0100
+From: Matthias Maennich <maennich@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>
+Subject: Re: [PATCH] kbuild: replace LANG=C with LC_ALL=C
+Message-ID: <YIaTJE5iZ75eGSSO@google.com>
+References: <20210424114841.394239-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-Message-Id: <1619432976.tfqsjlu7r9.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20210424114841.394239-1-masahiroy@kernel.org>
+X-Mailman-Approved-At: Mon, 26 Apr 2021 21:30:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,79 +91,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
+ Mat Martineau <mathew.j.martineau@linux.intel.com>,
+ linux-kernel@vger.kernel.org, mptcp@lists.01.org,
+ Paul Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>,
+ Matthieu Baerts <matthieu.baerts@tessares.net>, netdev@vger.kernel.org,
+ Shuah Khan <shuah@kernel.org>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I'm looking at KVM HV P9 path guest exit/entry performance with the Cify
-patches, plus some further work to see what we can do.
+On Sat, Apr 24, 2021 at 08:48:41PM +0900, Masahiro Yamada wrote:
+>LANG gives a weak default to each LC_* in case it is not explicitly
+>defined. LC_ALL, if set, overrides all other LC_* variables.
+>
+>  LANG  <  LC_CTYPE, LC_COLLATE, LC_MONETARY, LC_NUMERIC, ...  <  LC_ALL
+>
+>This is why documentation such as [1] suggests to set LC_ALL in build
+>scripts to get the deterministic result.
+>
+>LANG=C is not strong enough to override LC_* that may be set by end
+>users.
+>
+>[1]: https://reproducible-builds.org/docs/locales/
+>
+>Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 
-Measurement is done in the guest making a "NULL hcall" and return back=20
-to a non-nested guest. Two cases considered: First, returning to guest=20
-at the "try_real_mode" hcall handler. Second, returning back to guest=20
-after going around a loop in kvmppc_vcpu_run_hv (i.e., exit into full=20
-host kernel context, but not to host usermode).
+Reviewed-by: Matthias Maennich <maennich@google.com>
 
-The real-mode test is a proxy for real mode hcall and other interrupt
-handlers, and the full exit is a proxy for virtual mode hcalls and=20
-interrupt handlers.
+Cheers,
+Matthias
 
-The test was done with powernv_defconfig, radix guest and radix host on
-a POWER9 with meltdown mitigations disabled. A minor hack was made
-just to get the immediate return / NULL hcall behaviour to measure
-performance.
-
-* Upstream try_real_mode return	-  509 cycles
-* Upstream virt NULL hcall	- 9587 cycles
-* KVM Cify virt NULL hcall	- 9333 cycles
-* KVM Cify+opt virt NULL hcall	- 5754 cycles (167% faster than upstream,
-				               or 60% the cycles required)
-
-The KVM Cify series (which you have already seen) plus the further
-optimisations patch series is here:
-
-https://github.com/npiggin/linux/tree/kvm-in-c-new
-
-Some of the important / major further optimisation patches have
-individual cycle time improvement contribution annotated. In many cases
-things are inter-dependent, e.g., patch A might improve 100 cycles and
-B 50 cycles but A+B might be 250 due to together avoiding an SPR stall.
-So take the individual numbers with a grain of salt, and the cumulative
-result above is most important.
-
-In summary the Cify series does not hurt performance of entry/exit,=20
-which is good. It actually helps a bit, I'm not sure exactly where.
-And we can make quite a lot more improvement with this series.
-
-HOWEVER! The Cify series removes the very fast real mode hcall and=20
-interrupt handlers (except some things like machine check). So any real=20
-mode handler will be handled as a virt mode handler on P9 after Cify.
-
-Now I have some further patches in progress that should shave about 1000=20
-more cycles more from the full exit, but beyond that it gets pretty=20
-tough to improve. That still leaves it an order of magnitude slower. =20
-
-Now I did say this doesn't matter so much with a P9/radix/xive guest
-which is true, except possibly for TCE hcalls that Alexey brought to my
-attention (any other important cases?). So we will have to think about=20
-that.
-
-Alexey did say that the real mode TCE hcalls were added for P8, and
-were less important for P9, but it is something to keep an eye on. We=20
-might end up adding a faster handler back, but I would much prefer if
-wasn't entirely run in guest context as they do today (maybe switch
-MMU context, TB, and a few other important SPRs, and enable translation
-so it can run practically as host kernel context). But I think we should
-wait and see, and add the complexity only if it comes up as a problem.
-
-The other thing is the P9 path now implements the P9 hash guest support=20
-after the Cify series. Hash does a lot more exits due to translation=20
-hcalls and interrupts. I did do some basic measurements (e.g., kernel=20
-compile) and couldn't see a significant slowdown. But in any case I=20
-think the P9 hash code is not important to micro optimise, it was only
-done to simplify code and remove asm, so I would rather not add=20
-complexity for that.
-
-Thanks,
-Nick
+>---
+>
+> arch/powerpc/boot/wrapper                          | 2 +-
+> scripts/nsdeps                                     | 2 +-
+> scripts/recordmcount.pl                            | 2 +-
+> scripts/setlocalversion                            | 2 +-
+> scripts/tags.sh                                    | 2 +-
+> tools/testing/selftests/net/mptcp/mptcp_connect.sh | 2 +-
+> usr/gen_initramfs.sh                               | 2 +-
+> 7 files changed, 7 insertions(+), 7 deletions(-)
+>
+>diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+>index 41fa0a8715e3..cdb796b76e2e 100755
+>--- a/arch/powerpc/boot/wrapper
+>+++ b/arch/powerpc/boot/wrapper
+>@@ -191,7 +191,7 @@ if [ -z "$kernel" ]; then
+>     kernel=vmlinux
+> fi
+>
+>-LANG=C elfformat="`${CROSS}objdump -p "$kernel" | grep 'file format' | awk '{print $4}'`"
+>+LC_ALL=C elfformat="`${CROSS}objdump -p "$kernel" | grep 'file format' | awk '{print $4}'`"
+> case "$elfformat" in
+>     elf64-powerpcle)	format=elf64lppc	;;
+>     elf64-powerpc)	format=elf32ppc	;;
+>diff --git a/scripts/nsdeps b/scripts/nsdeps
+>index e8ce2a4d704a..04c4b96e95ec 100644
+>--- a/scripts/nsdeps
+>+++ b/scripts/nsdeps
+>@@ -44,7 +44,7 @@ generate_deps() {
+> 		for source_file in $mod_source_files; do
+> 			sed '/MODULE_IMPORT_NS/Q' $source_file > ${source_file}.tmp
+> 			offset=$(wc -l ${source_file}.tmp | awk '{print $1;}')
+>-			cat $source_file | grep MODULE_IMPORT_NS | LANG=C sort -u >> ${source_file}.tmp
+>+			cat $source_file | grep MODULE_IMPORT_NS | LC_ALL=C sort -u >> ${source_file}.tmp
+> 			tail -n +$((offset +1)) ${source_file} | grep -v MODULE_IMPORT_NS >> ${source_file}.tmp
+> 			if ! diff -q ${source_file} ${source_file}.tmp; then
+> 				mv ${source_file}.tmp ${source_file}
+>diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+>index 867860ea57da..0a7fc9507d6f 100755
+>--- a/scripts/recordmcount.pl
+>+++ b/scripts/recordmcount.pl
+>@@ -497,7 +497,7 @@ sub update_funcs
+> #
+> # Step 2: find the sections and mcount call sites
+> #
+>-open(IN, "LANG=C $objdump -hdr $inputfile|") || die "error running $objdump";
+>+open(IN, "LC_ALL=C $objdump -hdr $inputfile|") || die "error running $objdump";
+>
+> my $text;
+>
+>diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+>index bb709eda96cd..db941f6d9591 100755
+>--- a/scripts/setlocalversion
+>+++ b/scripts/setlocalversion
+>@@ -126,7 +126,7 @@ scm_version()
+> 	fi
+>
+> 	# Check for svn and a svn repo.
+>-	if rev=$(LANG= LC_ALL= LC_MESSAGES=C svn info 2>/dev/null | grep '^Last Changed Rev'); then
+>+	if rev=$(LC_ALL=C svn info 2>/dev/null | grep '^Last Changed Rev'); then
+> 		rev=$(echo $rev | awk '{print $NF}')
+> 		printf -- '-svn%s' "$rev"
+>
+>diff --git a/scripts/tags.sh b/scripts/tags.sh
+>index fd96734deff1..db8ba411860a 100755
+>--- a/scripts/tags.sh
+>+++ b/scripts/tags.sh
+>@@ -326,5 +326,5 @@ esac
+>
+> # Remove structure forward declarations.
+> if [ -n "$remove_structs" ]; then
+>-    LANG=C sed -i -e '/^\([a-zA-Z_][a-zA-Z0-9_]*\)\t.*\t\/\^struct \1;.*\$\/;"\tx$/d' $1
+>+    LC_ALL=C sed -i -e '/^\([a-zA-Z_][a-zA-Z0-9_]*\)\t.*\t\/\^struct \1;.*\$\/;"\tx$/d' $1
+> fi
+>diff --git a/tools/testing/selftests/net/mptcp/mptcp_connect.sh b/tools/testing/selftests/net/mptcp/mptcp_connect.sh
+>index 10a030b53b23..1d2a6e7b877c 100755
+>--- a/tools/testing/selftests/net/mptcp/mptcp_connect.sh
+>+++ b/tools/testing/selftests/net/mptcp/mptcp_connect.sh
+>@@ -273,7 +273,7 @@ check_mptcp_disabled()
+> 	ip netns exec ${disabled_ns} sysctl -q net.mptcp.enabled=0
+>
+> 	local err=0
+>-	LANG=C ip netns exec ${disabled_ns} ./mptcp_connect -t $timeout -p 10000 -s MPTCP 127.0.0.1 < "$cin" 2>&1 | \
+>+	LC_ALL=C ip netns exec ${disabled_ns} ./mptcp_connect -t $timeout -p 10000 -s MPTCP 127.0.0.1 < "$cin" 2>&1 | \
+> 		grep -q "^socket: Protocol not available$" && err=1
+> 	ip netns delete ${disabled_ns}
+>
+>diff --git a/usr/gen_initramfs.sh b/usr/gen_initramfs.sh
+>index 8ae831657e5d..63476bb70b41 100755
+>--- a/usr/gen_initramfs.sh
+>+++ b/usr/gen_initramfs.sh
+>@@ -147,7 +147,7 @@ dir_filelist() {
+> 	header "$1"
+>
+> 	srcdir=$(echo "$1" | sed -e 's://*:/:g')
+>-	dirlist=$(find "${srcdir}" -printf "%p %m %U %G\n" | LANG=C sort)
+>+	dirlist=$(find "${srcdir}" -printf "%p %m %U %G\n" | LC_ALL=C sort)
+>
+> 	# If $dirlist is only one line, then the directory is empty
+> 	if [  "$(echo "${dirlist}" | wc -l)" -gt 1 ]; then
+>-- 
+>2.27.0
+>
