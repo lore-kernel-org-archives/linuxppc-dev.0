@@ -2,68 +2,116 @@ Return-Path: <SRS0=n52k=JZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FCDEC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 10:21:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AB93C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 11:35:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64211613F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 10:21:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64211613F8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id D0B7B61040
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 11:35:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0B7B61040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FVZRg0Fnqz3bpQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 20:21:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FVc500dgrz2yxv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 21:35:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EjRpuqMT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=EjRpuqMT; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FVZQv2ZxWz2yS0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2021 20:20:55 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4FVZQq457Cz9tT1;
- Wed, 28 Apr 2021 12:20:51 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lI0TKj8XhRxZ; Wed, 28 Apr 2021 12:20:51 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FVX2T0p7Cz9w8C;
- Wed, 28 Apr 2021 10:33:05 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ABB708B800;
- Wed, 28 Apr 2021 10:33:04 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ul-3gbgTjQKo; Wed, 28 Apr 2021 10:33:04 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 857FE8B799;
- Wed, 28 Apr 2021 10:33:03 +0200 (CEST)
-Subject: Re: [PATCH v13 06/14] mm: HUGE_VMAP arch support cleanup
-To: Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>
-References: <20210317062402.533919-1-npiggin@gmail.com>
- <20210317062402.533919-7-npiggin@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <303a93df-6b32-1b3e-d293-b569e1a4b03e@csgroup.eu>
-Date: Wed, 28 Apr 2021 10:32:58 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FVc4S03Cyz2xZW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2021 21:35:02 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13SBXYC4091583; Wed, 28 Apr 2021 07:34:53 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : content-transfer-encoding : in-reply-to; s=pp1;
+ bh=I55X0CdaUgMVHQCqOIgPqXXEVDROHQTqeezqdG5jalI=;
+ b=EjRpuqMTqVoHDLjtCvGF8hidyVLq4lzRKX9rqMAoSfSv74Qpsn+dvwjFq7O2IKD4kY+/
+ D+AhEoxhpBe9ve01c5ejArNyKbri0N1UACPQB7Riw2nRsPNYJjeI6UoFNgeDGSazl2Kg
+ iXBviXZgCFj3zRJZic1FNnS6N+IlkJGS1EG7Hqk10ahWU4HrMCrOqCVbMtppYYkvXdVq
+ Zvz0/WBvUz0OXF3qiHF1FdL8pHbFlbXSstG2wqM8s35c5ypInOvGu+d/WkL7lKNm4/oI
+ ZVIBsmbH1Ms80oKhHKrYY6c96S5tGvICsme+Q2NawYu/VtcjTnWAZRvOuMl7gSD8W+7p 0w== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3876n1ggtc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Apr 2021 07:34:53 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13SBXBtD016703;
+ Wed, 28 Apr 2021 11:34:52 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma04dal.us.ibm.com with ESMTP id 384ay9ujun-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Apr 2021 11:34:52 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13SBYpL927132196
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 28 Apr 2021 11:34:52 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DEE436A047;
+ Wed, 28 Apr 2021 11:34:51 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6717D6A057;
+ Wed, 28 Apr 2021 11:34:51 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.102.0.233])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 28 Apr 2021 11:34:51 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 11D862E2E70; Wed, 28 Apr 2021 17:04:48 +0530 (IST)
+Date: Wed, 28 Apr 2021 17:04:48 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Subject: Re: [PATCH] cpuidle/pseries: Fixup CEDE0 latency only for POWER10
+ onwards
+Message-ID: <20210428113447.GA24644@in.ibm.com>
+References: <1619104049-5118-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20210423073551.GZ6564@kitsune.suse.cz>
+ <YILu6/GK+RwpskCc@drishya.in.ibm.com>
+ <20210423174505.GE6564@kitsune.suse.cz>
+ <YIMSCjTzcSwjQtRi@drishya.in.ibm.com>
+ <20210423184216.GG6564@kitsune.suse.cz>
+ <YIPKrIb+tY39taZv@drishya.in.ibm.com>
+ <20210425110714.GH6564@kitsune.suse.cz>
+ <20210428055848.GA6675@in.ibm.com>
+ <20210428080326.GL6564@kitsune.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20210317062402.533919-7-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210428080326.GL6564@kitsune.suse.cz>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: X_gIJ3C2IQUDTPNjsxX-P-23rzK4OVFE
+X-Proofpoint-ORIG-GUID: X_gIJ3C2IQUDTPNjsxX-P-23rzK4OVFE
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-04-28_05:2021-04-27,
+ 2021-04-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 mlxscore=0
+ bulkscore=0 phishscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
+ mlxlogscore=780 priorityscore=1501 clxscore=1015 spamscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104280077
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,120 +123,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Jonathan Cameron <Jonathan.Cameron@Huawei.com>, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Ding Tianhong <dingtianhong@huawei.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, joedecke@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello Michal,
+
+On Wed, Apr 28, 2021 at 10:03:26AM +0200, Michal Such�nek wrote:
+
+> > 
+> That's a nice detailed explanation. Maybe you could summarize it in the
+> commit message so that people looking at the patch in the future can
+> tell where the value comes from.
+
+Sure, I will do that and send a v2 with the updated commit message.
 
 
-Le 17/03/2021 à 07:23, Nicholas Piggin a écrit :
-> This changes the awkward approach where architectures provide init
-> functions to determine which levels they can provide large mappings for,
-> to one where the arch is queried for each call.
 > 
-> This removes code and indirection, and allows constant-folding of dead
-> code for unsupported levels.
+> Thanks
 > 
-> This also adds a prot argument to the arch query. This is unused
-> currently but could help with some architectures (e.g., some powerpc
-> processors can't map uncacheable memory with large pages).
-> 
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: x86@kernel.org
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Reviewed-by: Ding Tianhong <dingtianhong@huawei.com>
-> Acked-by: Catalin Marinas <catalin.marinas@arm.com> [arm64]
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->   arch/arm64/include/asm/vmalloc.h         |  8 ++
->   arch/arm64/mm/mmu.c                      | 10 +--
->   arch/powerpc/include/asm/vmalloc.h       |  8 ++
->   arch/powerpc/mm/book3s64/radix_pgtable.c |  8 +-
->   arch/x86/include/asm/vmalloc.h           |  7 ++
->   arch/x86/mm/ioremap.c                    | 12 +--
->   include/linux/io.h                       |  9 ---
->   include/linux/vmalloc.h                  |  6 ++
->   init/main.c                              |  1 -
->   mm/debug_vm_pgtable.c                    |  4 +-
->   mm/ioremap.c                             | 94 ++++++++++--------------
->   11 files changed, 87 insertions(+), 80 deletions(-)
-> 
-
-> diff --git a/mm/ioremap.c b/mm/ioremap.c
-> index 3f4d36f9745a..3264d0203785 100644
-> --- a/mm/ioremap.c
-> +++ b/mm/ioremap.c
-> @@ -16,49 +16,16 @@
->   #include "pgalloc-track.h"
->   
->   #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
-> -static int __read_mostly ioremap_p4d_capable;
-> -static int __read_mostly ioremap_pud_capable;
-> -static int __read_mostly ioremap_pmd_capable;
-> -static int __read_mostly ioremap_huge_disabled;
-> +static bool __ro_after_init iomap_max_page_shift = PAGE_SHIFT;
-
-Must be an int, not a bool.
-
->   
->   static int __init set_nohugeiomap(char *str)
->   {
-> -	ioremap_huge_disabled = 1;
-> +	iomap_max_page_shift = P4D_SHIFT;
->   	return 0;
->   }
->   early_param("nohugeiomap", set_nohugeiomap);
-> -
-> -void __init ioremap_huge_init(void)
-> -{
-> -	if (!ioremap_huge_disabled) {
-> -		if (arch_ioremap_p4d_supported())
-> -			ioremap_p4d_capable = 1;
-> -		if (arch_ioremap_pud_supported())
-> -			ioremap_pud_capable = 1;
-> -		if (arch_ioremap_pmd_supported())
-> -			ioremap_pmd_capable = 1;
-> -	}
-> -}
-> -
-> -static inline int ioremap_p4d_enabled(void)
-> -{
-> -	return ioremap_p4d_capable;
-> -}
-> -
-> -static inline int ioremap_pud_enabled(void)
-> -{
-> -	return ioremap_pud_capable;
-> -}
-> -
-> -static inline int ioremap_pmd_enabled(void)
-> -{
-> -	return ioremap_pmd_capable;
-> -}
-> -
-> -#else	/* !CONFIG_HAVE_ARCH_HUGE_VMAP */
-> -static inline int ioremap_p4d_enabled(void) { return 0; }
-> -static inline int ioremap_pud_enabled(void) { return 0; }
-> -static inline int ioremap_pmd_enabled(void) { return 0; }
-> +#else /* CONFIG_HAVE_ARCH_HUGE_VMAP */
-> +static const bool iomap_max_page_shift = PAGE_SHIFT;
->   #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
->   
->   static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-
-Christophe
+> Michal
