@@ -2,61 +2,65 @@ Return-Path: <SRS0=n52k=JZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5E15C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 16:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1C2DC43460
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 16:47:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFA43613FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 16:47:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFA43613FF
+	by mail.kernel.org (Postfix) with ESMTPS id 1694B6144F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Apr 2021 16:47:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1694B6144F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FVl0j2Tm7z3bwb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 02:47:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FVl13317Jz3c0F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 02:47:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FVkzc2Q5qz2yqC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 02:46:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FVkzc2SGdz2ysk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 02:46:18 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4FVkzS05MQz9tcb;
- Wed, 28 Apr 2021 18:46:12 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FVkzV4qlxz9tcX;
+ Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0mBuk7O_7kHk; Wed, 28 Apr 2021 18:46:11 +0200 (CEST)
+ with ESMTP id rGxpY2iI8zAH; Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4FVkzR6Cxgz9tcY;
- Wed, 28 Apr 2021 18:46:11 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FVkzV3vmDz9tcV;
+ Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 720158B839;
- Wed, 28 Apr 2021 18:46:11 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6F0128B837;
+ Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ikFClZJogkW5; Wed, 28 Apr 2021 18:46:11 +0200 (CEST)
+ with ESMTP id 4PWl6TcHRv8j; Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 Received: from po15610vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EDB278B831;
- Wed, 28 Apr 2021 18:46:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 083158B831;
+ Wed, 28 Apr 2021 18:46:14 +0200 (CEST)
 Received: by po15610vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B90C16428C; Wed, 28 Apr 2021 16:46:10 +0000 (UTC)
-Message-Id: <cover.1619628001.git.christophe.leroy@csgroup.eu>
+ id D8D336428C; Wed, 28 Apr 2021 16:46:13 +0000 (UTC)
+Message-Id: <6f482b6722f7a891ce335db7e02ecbdb42574e8b.1619628001.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1619628001.git.christophe.leroy@csgroup.eu>
+References: <cover.1619628001.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 0/4] Implement huge VMAP and VMALLOC on powerpc 8xx
+Subject: [RFC PATCH v1 3/4] mm/pgtable: Add stubs for
+ {pmd/pub}_{set/clear}_huge
 To: Andrew Morton <akpm@linux-foundation.org>,
  Nicholas Piggin <npiggin@gmail.com>,
  Mike Kravetz <mike.kravetz@oracle.com>, Mike Rapoport <rppt@kernel.org>
-Date: Wed, 28 Apr 2021 16:46:10 +0000 (UTC)
+Date: Wed, 28 Apr 2021 16:46:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,52 +79,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series is a first tentative to implement huge VMAP and VMALLOC
-on powerpc 8xx. This series applies on Linux next.
-For the time being the 8xx specificities are plugged directly into
-generic mm functions. I have no real idea on how to make it a nice
-beautiful generic implementation for the time being, hence this RFC
-in order to get suggestions.
+For architectures with no PMD and/or no PUD, add stubs
+similar to what we have for architectures without P4D.
 
-powerpc 8xx has 4 page sizes:
-- 4k
-- 16k
-- 512k
-- 8M
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ include/linux/pgtable.h | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-At the time being, vmalloc and vmap only support huge pages which are
-leaf at PMD level.
-
-Here the PMD level is 4M, it doesn't correspond to any supported
-page size.
-
-For the time being, implement use of 16k and 512k pages which is done
-at PTE level.
-
-Support of 8M pages will be implemented later, it requires use of
-hugepd tables.
-
-Christophe Leroy (4):
-  mm/ioremap: Fix iomap_max_page_shift
-  mm/hugetlb: Change parameters of arch_make_huge_pte()
-  mm/pgtable: Add stubs for {pmd/pub}_{set/clear}_huge
-  mm/vmalloc: Add support for huge pages on VMAP and VMALLOC for powerpc
-    8xx
-
- arch/arm64/include/asm/hugetlb.h              |  3 +-
- arch/arm64/mm/hugetlbpage.c                   |  5 +-
- arch/powerpc/Kconfig                          |  3 +-
- .../include/asm/nohash/32/hugetlb-8xx.h       |  5 +-
- arch/sparc/include/asm/pgtable_64.h           |  3 +-
- arch/sparc/mm/hugetlbpage.c                   |  6 +-
- include/linux/hugetlb.h                       |  4 +-
- include/linux/pgtable.h                       | 26 ++++++-
- mm/hugetlb.c                                  |  6 +-
- mm/ioremap.c                                  |  6 +-
- mm/migrate.c                                  |  4 +-
- mm/vmalloc.c                                  | 74 ++++++++++++++++---
- 12 files changed, 111 insertions(+), 34 deletions(-)
-
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 46b13780c2c8..d41474a2d255 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -1371,10 +1371,34 @@ static inline int p4d_clear_huge(p4d_t *p4d)
+ }
+ #endif /* !__PAGETABLE_P4D_FOLDED */
+ 
++#ifndef __PAGETABLE_PUD_FOLDED
+ int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot);
+-int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot);
+ int pud_clear_huge(pud_t *pud);
++#else
++static inline int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
++{
++	return 0;
++}
++static inline int pud_clear_huge(pud_t *pud)
++{
++	return 0;
++}
++#endif /* !__PAGETABLE_PUD_FOLDED */
++
++#ifndef __PAGETABLE_PMD_FOLDED
++int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot);
+ int pmd_clear_huge(pmd_t *pmd);
++#else
++static inline int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
++{
++	return 0;
++}
++static inline int pmd_clear_huge(pmd_t *pmd)
++{
++	return 0;
++}
++#endif /* !__PAGETABLE_PMD_FOLDED */
++
+ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr);
+ int pud_free_pmd_page(pud_t *pud, unsigned long addr);
+ int pmd_free_pte_page(pmd_t *pmd, unsigned long addr);
 -- 
 2.25.0
 
