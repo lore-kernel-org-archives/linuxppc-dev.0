@@ -2,60 +2,67 @@ Return-Path: <SRS0=zlGz=J2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11CCCC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 928C7C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:35:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2CC2B613D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:35:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CC2B613D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluescreens.de
+	by mail.kernel.org (Postfix) with ESMTPS id CD1E1613D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:35:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD1E1613D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6j95lxxz3dK2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:35:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6jn2mvWz3drx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:35:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bluescreens.de (client-ip=2001:67c:2050:1::465:111;
- helo=mout-y-111.mailbox.org; envelope-from=cmr@bluescreens.de;
- receiver=<UNKNOWN>)
-Received: from mout-y-111.mailbox.org (mout-y-111.mailbox.org
- [IPv6:2001:67c:2050:1::465:111])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6ck5VMlz30B3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:18 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:2:0])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mout-y-111.mailbox.org (Postfix) with ESMTPS id 4FW6PX17FyzQjp6;
- Thu, 29 Apr 2021 09:21:36 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp2.mailbox.org ([80.241.60.241])
- by spamfilter01.heinlein-hosting.de (spamfilter01.heinlein-hosting.de
- [80.241.56.115]) (amavisd-new, port 10030)
- with ESMTP id yS90OHEXOS7O; Thu, 29 Apr 2021 09:21:32 +0200 (CEST)
-From: "Christopher M. Riedl" <cmr@bluescreens.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 06/11] powerpc: Introduce temporary mm
-Date: Thu, 29 Apr 2021 02:20:52 -0500
-Message-Id: <20210429072057.8870-7-cmr@bluescreens.de>
-In-Reply-To: <20210429072057.8870-1-cmr@bluescreens.de>
-References: <20210429072057.8870-1-cmr@bluescreens.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6fQ5tDbz3c8X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:32:44 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 4FW6fD4NZkz9vMG;
+ Thu, 29 Apr 2021 09:32:36 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id obvgDa1NObxO; Thu, 29 Apr 2021 09:32:36 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4FW6fD3Mccz9vMD;
+ Thu, 29 Apr 2021 09:32:36 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 616658B84B;
+ Thu, 29 Apr 2021 09:32:36 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ZU_vJh7bEvhP; Thu, 29 Apr 2021 09:32:36 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AB4D28B849;
+ Thu, 29 Apr 2021 09:32:35 +0200 (CEST)
+Subject: Re: [PATCH v11 1/9] powerpc/mm: Implement set_memory() routines
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20210429031602.2606654-1-jniethe5@gmail.com>
+ <20210429031602.2606654-2-jniethe5@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <eef1fef9-515c-3d7c-dbb7-6b93d97e35a1@csgroup.eu>
+Date: Thu, 29 Apr 2021 09:32:33 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.0
 MIME-Version: 1.0
+In-Reply-To: <20210429031602.2606654-2-jniethe5@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-MBO-SPAM-Probability: *
-X-Rspamd-Score: 0.57 / 15.00 / 15.00
-X-Rspamd-Queue-Id: 3282917FD
-X-Rspamd-UID: df5873
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,170 +74,219 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tglx@linutronix.de, x86@kernel.org, linux-hardening@vger.kernel.org,
- keescook@chromium.org
+Cc: ajd@linux.ibm.com, npiggin@gmail.com, cmr@codefail.de,
+ aneesh.kumar@linux.ibm.com, naveen.n.rao@linux.ibm.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86 supports the notion of a temporary mm which restricts access to
-temporary PTEs to a single CPU. A temporary mm is useful for situations
-where a CPU needs to perform sensitive operations (such as patching a
-STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
-said mappings to other CPUs. A side benefit is that other CPU TLBs do
-not need to be flushed when the temporary mm is torn down.
 
-Mappings in the temporary mm can be set in the userspace portion of the
-address-space.
 
-Interrupts must be disabled while the temporary mm is in use. HW
-breakpoints, which may have been set by userspace as watchpoints on
-addresses now within the temporary mm, are saved and disabled when
-loading the temporary mm. The HW breakpoints are restored when unloading
-the temporary mm. All HW breakpoints are indiscriminately disabled while
-the temporary mm is in use.
+Le 29/04/2021 à 05:15, Jordan Niethe a écrit :
+> From: Russell Currey <ruscur@russell.cc>
+> 
+> The set_memory_{ro/rw/nx/x}() functions are required for
+> STRICT_MODULE_RWX, and are generally useful primitives to have.  This
+> implementation is designed to be generic across powerpc's many MMUs.
+> It's possible that this could be optimised to be faster for specific
+> MMUs.
+> 
+> This implementation does not handle cases where the caller is attempting
+> to change the mapping of the page it is executing from, or if another
+> CPU is concurrently using the page being altered.  These cases likely
+> shouldn't happen, but a more complex implementation with MMU-specific code
+> could safely handle them.
+> 
+> On hash, the linear mapping is not kept in the linux pagetable, so this
+> will not change the protection if used on that range. Currently these
+> functions are not used on the linear map so just WARN for now.
+> 
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> [jpn: - Allow set memory functions to be used without Strict RWX
+>        - Hash: Disallow certain regions
+>        - Have change_page_attr() take function pointers to manipulate ptes
 
-With the Book3s64 Hash MMU the SLB is preloaded with entries from the
-current thread_info struct during switch_slb(). This could cause a
-Machine Check (MCE) due to an SLB Multihit when creating arbitrary
-userspace mappings in the temporary mm later. Disable SLB preload from
-the thread_info struct for any temporary mm to avoid this.
+Did you look at the resulting generated code ? I find it awful.
 
-Based on x86 implementation:
+pte manipulation helpers are meant to be inlined. Here you force the compiler to outline them. This 
+also means that the input and output goes through memory.
 
-commit cefa929c034e
-("x86/mm: Introduce temporary mm structs")
+And now set_memory_xx are not tiny inlined functions anymore.
 
-Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
+What is the reason you abandonned the way it was done up to now, through the use of an 'action' 
+value ? With the previous approach the generated code was a lot lighter.
 
----
-
-v4:  * Pass the prev mm instead of NULL to switch_mm_irqs_off() when
-       using/unusing the temp mm as suggested by Jann Horn to keep
-       the context.active counter in-sync on mm/nohash.
-     * Disable SLB preload in the temporary mm when initializing the
-       temp_mm struct.
-     * Include asm/debug.h header to fix build issue with
-       ppc44x_defconfig.
----
- arch/powerpc/include/asm/debug.h |  1 +
- arch/powerpc/kernel/process.c    |  5 +++
- arch/powerpc/lib/code-patching.c | 67 ++++++++++++++++++++++++++++++++
- 3 files changed, 73 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
-index 86a14736c76c3..dfd82635ea8b3 100644
---- a/arch/powerpc/include/asm/debug.h
-+++ b/arch/powerpc/include/asm/debug.h
-@@ -46,6 +46,7 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
- #endif
- 
- void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk);
-+void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk);
- bool ppc_breakpoint_available(void);
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- extern void do_send_trap(struct pt_regs *regs, unsigned long address,
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 89e34aa273e21..8e94cabaea3c3 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -864,6 +864,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
- 	return 0;
- }
- 
-+void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk)
-+{
-+	memcpy(brk, this_cpu_ptr(&current_brk[nr]), sizeof(*brk));
-+}
-+
- void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
- {
- 	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 2b1b3e9043ade..cbdfba8a39360 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -17,6 +17,8 @@
- #include <asm/code-patching.h>
- #include <asm/setup.h>
- #include <asm/inst.h>
-+#include <asm/mmu_context.h>
-+#include <asm/debug.h>
- 
- static int __patch_instruction(struct ppc_inst *exec_addr, struct ppc_inst instr,
- 			       struct ppc_inst *patch_addr)
-@@ -46,6 +48,71 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
-+
-+struct temp_mm {
-+	struct mm_struct *temp;
-+	struct mm_struct *prev;
-+	struct arch_hw_breakpoint brk[HBP_NUM_MAX];
-+};
-+
-+static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
-+{
-+	/* Do not preload SLB entries from the thread_info struct */
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !radix_enabled())
-+		skip_slb_preload_mm(mm);
-+
-+	temp_mm->temp = mm;
-+	temp_mm->prev = NULL;
-+	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
-+}
-+
-+static inline void use_temporary_mm(struct temp_mm *temp_mm)
-+{
-+	lockdep_assert_irqs_disabled();
-+
-+	temp_mm->prev = current->active_mm;
-+	switch_mm_irqs_off(temp_mm->prev, temp_mm->temp, current);
-+
-+	WARN_ON(!mm_is_thread_local(temp_mm->temp));
-+
-+	if (ppc_breakpoint_available()) {
-+		struct arch_hw_breakpoint null_brk = {0};
-+		int i = 0;
-+
-+		for (; i < nr_wp_slots(); ++i) {
-+			__get_breakpoint(i, &temp_mm->brk[i]);
-+			if (temp_mm->brk[i].type != 0)
-+				__set_breakpoint(i, &null_brk);
-+		}
-+	}
-+}
-+
-+static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
-+{
-+	lockdep_assert_irqs_disabled();
-+
-+	switch_mm_irqs_off(temp_mm->temp, temp_mm->prev, current);
-+
-+	/*
-+	 * On book3s64 the active_cpus counter increments in
-+	 * switch_mm_irqs_off(). With the Hash MMU this counter affects if TLB
-+	 * flushes are local. We have to manually decrement that counter here
-+	 * along with removing our current CPU from the mm's cpumask so that in
-+	 * the future a different CPU can reuse the temporary mm and still rely
-+	 * on local TLB flushes.
-+	 */
-+	dec_mm_active_cpus(temp_mm->temp);
-+	cpumask_clear_cpu(smp_processor_id(), mm_cpumask(temp_mm->temp));
-+
-+	if (ppc_breakpoint_available()) {
-+		int i = 0;
-+
-+		for (; i < nr_wp_slots(); ++i)
-+			if (temp_mm->brk[i].type != 0)
-+				__set_breakpoint(i, &temp_mm->brk[i]);
-+	}
-+}
-+
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
- 
- #if IS_BUILTIN(CONFIG_LKDTM)
--- 
-2.26.1
-
+>        - Radix: Add ptesync after set_pte_at()]
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+> v10: WARN if trying to change the hash linear map
+> v11: - Update copywrite dates
+>       - Allow set memory functions to be used without Strict RWX
+>       - Hash: Disallow certain regions and add comment explaining why
+>       - Have change_page_attr() take function pointers to manipulate ptes
+>       - Clarify change_page_attr()'s comment
+>       - Radix: Add ptesync after set_pte_at()
+> ---
+>   arch/powerpc/Kconfig                  |   1 +
+>   arch/powerpc/include/asm/set_memory.h |  10 +++
+>   arch/powerpc/mm/Makefile              |   2 +-
+>   arch/powerpc/mm/pageattr.c            | 105 ++++++++++++++++++++++++++
+>   4 files changed, 117 insertions(+), 1 deletion(-)
+>   create mode 100644 arch/powerpc/include/asm/set_memory.h
+>   create mode 100644 arch/powerpc/mm/pageattr.c
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index cb2d44ee4e38..94c34932a74b 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -138,6 +138,7 @@ config PPC
+>   	select ARCH_HAS_MEMBARRIER_CALLBACKS
+>   	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+>   	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
+> +	select ARCH_HAS_SET_MEMORY
+>   	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !HIBERNATION)
+>   	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+>   	select ARCH_HAS_UACCESS_FLUSHCACHE
+> diff --git a/arch/powerpc/include/asm/set_memory.h b/arch/powerpc/include/asm/set_memory.h
+> new file mode 100644
+> index 000000000000..d1cd69b1a43a
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/set_memory.h
+> @@ -0,0 +1,10 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_SET_MEMORY_H
+> +#define _ASM_POWERPC_SET_MEMORY_H
+> +
+> +int set_memory_ro(unsigned long addr, int numpages);
+> +int set_memory_rw(unsigned long addr, int numpages);
+> +int set_memory_nx(unsigned long addr, int numpages);
+> +int set_memory_x(unsigned long addr, int numpages);
+> +
+> +#endif
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index c3df3a8501d4..9142cf1fb0d5 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -5,7 +5,7 @@
+>   
+>   ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+>   
+> -obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o \
+> +obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
+>   				   init_$(BITS).o pgtable_$(BITS).o \
+>   				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
+>   				   init-common.o mmu_context.o drmem.o \
+> diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
+> new file mode 100644
+> index 000000000000..3b4aa72e555e
+> --- /dev/null
+> +++ b/arch/powerpc/mm/pageattr.c
+> @@ -0,0 +1,105 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +/*
+> + * MMU-generic set_memory implementation for powerpc
+> + *
+> + * Copyright 2019-2021, IBM Corporation.
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/set_memory.h>
+> +
+> +#include <asm/mmu.h>
+> +#include <asm/page.h>
+> +#include <asm/pgtable.h>
+> +
+> +
+> +/*
+> + * Updates the attributes of a page in three steps:
+> + *
+> + * 1. invalidate the page table entry
+> + * 2. flush the TLB
+> + * 3. install the new entry with the updated attributes
+> + *
+> + * Invalidating the pte means there are situations where this will not work
+> + * when in theory it should.
+> + * For example:
+> + * - removing write from page whilst it is being executed
+> + * - setting a page read-only whilst it is being read by another CPU
+> + *
+> + */
+> +static int change_page_attr(pte_t *ptep, unsigned long addr, void *data)
+> +{
+> +	pte_t (*fn)(pte_t) = data;
+> +	pte_t pte;
+> +
+> +	spin_lock(&init_mm.page_table_lock);
+> +
+> +	/* invalidate the PTE so it's safe to modify */
+> +	pte = ptep_get_and_clear(&init_mm, addr, ptep);
+> +	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> +
+> +	/* modify the PTE bits as desired, then apply */
+> +	pte = fn(pte);
+> +
+> +	set_pte_at(&init_mm, addr, ptep, pte);
+> +
+> +	/* See ptesync comment in radix__set_pte_at() */
+> +	if (radix_enabled())
+> +		asm volatile("ptesync": : :"memory");
+> +	spin_unlock(&init_mm.page_table_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int change_memory_attr(unsigned long addr, int numpages, pte_t (*fn)(pte_t))
+> +{
+> +	unsigned long start = ALIGN_DOWN(addr, PAGE_SIZE);
+> +	unsigned long size = numpages * PAGE_SIZE;
+> +
+> +	if (!numpages)
+> +		return 0;
+> +
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	/*
+> +	 * On hash, the linear mapping is not in the Linux page table so
+> +	 * apply_to_existing_page_range() will have no effect. If in the future
+> +	 * the set_memory_* functions are used on the linear map this will need
+> +	 * to be updated.
+> +	 */
+> +	if (!radix_enabled()) {
+> +		int region = get_region_id(addr);
+> +
+> +		if (WARN_ON_ONCE(region != VMALLOC_REGION_ID && region != IO_REGION_ID))
+> +			return -EINVAL;
+> +	}
+> +#endif
+> +
+> +	return apply_to_existing_page_range(&init_mm, start, size,
+> +					    change_page_attr, fn);
+> +}
+> +
+> +int set_memory_ro(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_attr(addr, numpages, pte_wrprotect);
+> +}
+> +
+> +static pte_t pte_mkdirtywrite(pte_t pte)
+> +{
+> +	return pte_mkwrite(pte_mkdirty(pte));
+> +}
+> +
+> +int set_memory_rw(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_attr(addr, numpages, pte_mkdirtywrite);
+> +}
+> +
+> +int set_memory_nx(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_attr(addr, numpages, pte_exprotect);
+> +}
+> +
+> +int set_memory_x(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_attr(addr, numpages, pte_mkexec);
+> +}
+> 
