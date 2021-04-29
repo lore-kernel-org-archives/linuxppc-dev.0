@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB057C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:33:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8686C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:33:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C4176143E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:33:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C4176143E
+	by mail.kernel.org (Postfix) with ESMTPS id 3727561440
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:33:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3727561440
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluescreens.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6gJ2CBsz3bVR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:33:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6gf5fNfz3cnC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:33:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bluescreens.de (client-ip=2001:67c:2050:1::465:111;
  helo=mout-y-111.mailbox.org; envelope-from=cmr@bluescreens.de;
@@ -29,32 +29,33 @@ Received: from mout-y-111.mailbox.org (mout-y-111.mailbox.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cg6bjJz2yxT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cg6b7yz2yxP
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:15 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [80.241.60.241])
+Received: from smtp2.mailbox.org (smtp2.mailbox.org
+ [IPv6:2001:67c:2050:105:465:1:2:0])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-y-111.mailbox.org (Postfix) with ESMTPS id 4FW6PS1czjzQjnw;
- Thu, 29 Apr 2021 09:21:32 +0200 (CEST)
+ by mout-y-111.mailbox.org (Postfix) with ESMTPS id 4FW6PV1TFHzQjp4;
+ Thu, 29 Apr 2021 09:21:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp2.mailbox.org ([80.241.60.241])
  by spamfilter01.heinlein-hosting.de (spamfilter01.heinlein-hosting.de
  [80.241.56.115]) (amavisd-new, port 10030)
- with ESMTP id jeGwFLgB-vWb; Thu, 29 Apr 2021 09:21:25 +0200 (CEST)
+ with ESMTP id wUODJZPqggbl; Thu, 29 Apr 2021 09:21:31 +0200 (CEST)
 From: "Christopher M. Riedl" <cmr@bluescreens.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 02/11] lkdtm/powerpc: Add test to hijack a patch mapping
-Date: Thu, 29 Apr 2021 02:20:48 -0500
-Message-Id: <20210429072057.8870-3-cmr@bluescreens.de>
+Subject: [PATCH v4 05/11] powerpc/64s: Add ability to skip SLB preload
+Date: Thu, 29 Apr 2021 02:20:51 -0500
+Message-Id: <20210429072057.8870-6-cmr@bluescreens.de>
 In-Reply-To: <20210429072057.8870-1-cmr@bluescreens.de>
 References: <20210429072057.8870-1-cmr@bluescreens.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-MBO-SPAM-Probability: *
-X-Rspamd-Score: 0.64 / 15.00 / 15.00
-X-Rspamd-Queue-Id: EF9C617FB
-X-Rspamd-UID: 0b1fe7
+X-Rspamd-Score: 0.57 / 15.00 / 15.00
+X-Rspamd-Queue-Id: 418D917F6
+X-Rspamd-UID: ea0d8a
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,232 +73,158 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When live patching with STRICT_KERNEL_RWX the CPU doing the patching
-must temporarily remap the page(s) containing the patch site with +W
-permissions. While this temporary mapping is in use, another CPU could
-write to the same mapping and maliciously alter kernel text. Implement a
-LKDTM test to attempt to exploit such an opening during code patching.
-The test is implemented on powerpc and requires LKDTM built into the
-kernel (building LKDTM as a module is insufficient).
+Switching to a different mm with Hash translation causes SLB entries to
+be preloaded from the current thread_info. This reduces SLB faults, for
+example when threads share a common mm but operate on different address
+ranges.
 
-The LKDTM "hijack" test works as follows:
-
-  1. A CPU executes an infinite loop to patch an instruction. This is
-     the "patching" CPU.
-  2. Another CPU attempts to write to the address of the temporary
-     mapping used by the "patching" CPU. This other CPU is the
-     "hijacker" CPU. The hijack either fails with a fault/error or
-     succeeds, in which case some kernel text is now overwritten.
-
-The virtual address of the temporary patch mapping is provided via an
-LKDTM-specific accessor to the hijacker CPU. This test assumes a
-hypothetical situation where this address was leaked previously.
-
-How to run the test:
-
-	mount -t debugfs none /sys/kernel/debug
-	(echo HIJACK_PATCH > /sys/kernel/debug/provoke-crash/DIRECT)
-
-A passing test indicates that it is not possible to overwrite kernel
-text from another CPU by using the temporary mapping established by
-a CPU for patching.
+Preloading entries from the thread_info struct may not always be
+appropriate - such as when switching to a temporary mm. Introduce a new
+boolean in mm_context_t to skip the SLB preload entirely. Also move the
+SLB preload code into a separate function since switch_slb() is already
+quite long. The default behavior (preloading SLB entries from the
+current thread_info struct) remains unchanged.
 
 Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
 
 ---
 
-v4:  * Separate the powerpc and x86_64 bits into individual patches.
-     * Use __put_kernel_nofault() when attempting to hijack the mapping
-     * Use raw_smp_processor_id() to avoid triggering the BUG() when
-       calling smp_processor_id() in preemptible code - the only thing
-       that matters is that one of the threads is bound to a different
-       CPU - we are not using smp_processor_id() to access any per-cpu
-       data or similar where preemption should be disabled.
-     * Rework the patching_cpu() kthread stop condition to avoid:
-       https://lwn.net/Articles/628628/
+v4:  * New to series.
 ---
- drivers/misc/lkdtm/core.c  |   1 +
- drivers/misc/lkdtm/lkdtm.h |   1 +
- drivers/misc/lkdtm/perms.c | 135 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 137 insertions(+)
+ arch/powerpc/include/asm/book3s/64/mmu.h |  3 ++
+ arch/powerpc/include/asm/mmu_context.h   | 13 ++++++
+ arch/powerpc/mm/book3s64/mmu_context.c   |  2 +
+ arch/powerpc/mm/book3s64/slb.c           | 56 ++++++++++++++----------
+ 4 files changed, 50 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index b2aff4d87c014..857d218840eb8 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -146,6 +146,7 @@ static const struct crashtype crashtypes[] = {
- 	CRASHTYPE(WRITE_RO),
- 	CRASHTYPE(WRITE_RO_AFTER_INIT),
- 	CRASHTYPE(WRITE_KERN),
-+	CRASHTYPE(HIJACK_PATCH),
- 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-index 5ae48c64df24d..c8de54d189c27 100644
---- a/drivers/misc/lkdtm/lkdtm.h
-+++ b/drivers/misc/lkdtm/lkdtm.h
-@@ -61,6 +61,7 @@ void lkdtm_EXEC_USERSPACE(void);
- void lkdtm_EXEC_NULL(void);
- void lkdtm_ACCESS_USERSPACE(void);
- void lkdtm_ACCESS_NULL(void);
-+void lkdtm_HIJACK_PATCH(void);
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index eace8c3f7b0a1..b23a9dcdee5af 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -130,6 +130,9 @@ typedef struct {
+ 	u32 pkey_allocation_map;
+ 	s16 execute_only_pkey; /* key holding execute-only protection */
+ #endif
++
++	/* Do not preload SLB entries from thread_info during switch_slb() */
++	bool skip_slb_preload;
+ } mm_context_t;
  
- /* refcount.c */
- void lkdtm_REFCOUNT_INC_OVERFLOW(void);
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 2dede2ef658f3..c6f96ebffccfd 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -9,6 +9,7 @@
- #include <linux/vmalloc.h>
- #include <linux/mman.h>
- #include <linux/uaccess.h>
-+#include <linux/kthread.h>
- #include <asm/cacheflush.h>
- 
- /* Whether or not to fill the target memory area with do_nothing(). */
-@@ -222,6 +223,140 @@ void lkdtm_ACCESS_NULL(void)
- 	pr_err("FAIL: survived bad write\n");
+ static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 4bc45d3ed8b0e..264787e90b1a1 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -298,6 +298,19 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
+ 	return 0;
  }
  
-+#if (IS_BUILTIN(CONFIG_LKDTM) && defined(CONFIG_STRICT_KERNEL_RWX) && \
-+	defined(CONFIG_PPC))
-+/*
-+ * This is just a dummy location to patch-over.
-+ */
-+static void patching_target(void)
++#ifdef CONFIG_PPC_BOOK3S_64
++
++static inline void skip_slb_preload_mm(struct mm_struct *mm)
 +{
-+	return;
-+}
-+
-+#include <asm/code-patching.h>
-+struct ppc_inst * const patch_site = (struct ppc_inst *)&patching_target;
-+
-+static inline int lkdtm_do_patch(u32 data)
-+{
-+	return patch_instruction(patch_site, ppc_inst(data));
-+}
-+
-+static inline u32 lkdtm_read_patch_site(void)
-+{
-+	struct ppc_inst inst = READ_ONCE(*patch_site);
-+	return ppc_inst_val(ppc_inst_read(&inst));
-+}
-+
-+/* Returns True if the write succeeds */
-+static inline bool lkdtm_try_write(u32 data, u32 *addr)
-+{
-+	__put_kernel_nofault(addr, &data, u32, err);
-+	return true;
-+
-+err:
-+	return false;
-+}
-+
-+static int lkdtm_patching_cpu(void *data)
-+{
-+	int err = 0;
-+	u32 val = 0xdeadbeef;
-+
-+	pr_info("starting patching_cpu=%d\n", raw_smp_processor_id());
-+
-+	do {
-+		err = lkdtm_do_patch(val);
-+	} while (lkdtm_read_patch_site() == val && !err && !kthread_should_stop());
-+
-+	if (err)
-+		pr_warn("XFAIL: patch_instruction returned error: %d\n", err);
-+
-+	while (!kthread_should_stop()) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule();
-+	}
-+
-+	return err;
-+}
-+
-+void lkdtm_HIJACK_PATCH(void)
-+{
-+	struct task_struct *patching_kthrd;
-+	int patching_cpu, hijacker_cpu, attempts;
-+	unsigned long addr;
-+	bool hijacked;
-+	const u32 bad_data = 0xbad00bad;
-+	const u32 original_insn = lkdtm_read_patch_site();
-+
-+	if (!IS_ENABLED(CONFIG_SMP)) {
-+		pr_err("XFAIL: this test requires CONFIG_SMP\n");
-+		return;
-+	}
-+
-+	if (num_online_cpus() < 2) {
-+		pr_warn("XFAIL: this test requires at least two cpus\n");
-+		return;
-+	}
-+
-+	hijacker_cpu = raw_smp_processor_id();
-+	patching_cpu = cpumask_any_but(cpu_online_mask, hijacker_cpu);
-+
-+	patching_kthrd = kthread_create_on_node(&lkdtm_patching_cpu, NULL,
-+						cpu_to_node(patching_cpu),
-+						"lkdtm_patching_cpu");
-+	kthread_bind(patching_kthrd, patching_cpu);
-+	wake_up_process(patching_kthrd);
-+
-+	addr = offset_in_page(patch_site) | read_cpu_patching_addr(patching_cpu);
-+
-+	pr_info("starting hijacker_cpu=%d\n", hijacker_cpu);
-+	for (attempts = 0; attempts < 100000; ++attempts) {
-+		/* Try to write to the other CPU's temp patch mapping */
-+		hijacked = lkdtm_try_write(bad_data, (u32 *)addr);
-+
-+		if (hijacked) {
-+			if (kthread_stop(patching_kthrd)) {
-+				pr_info("hijack attempts: %d\n", attempts);
-+				pr_err("XFAIL: error stopping patching cpu\n");
-+				return;
-+			}
-+			break;
-+		}
-+	}
-+	pr_info("hijack attempts: %d\n", attempts);
-+
-+	if (hijacked) {
-+		if (lkdtm_read_patch_site() == bad_data)
-+			pr_err("overwrote kernel text\n");
-+		/*
-+		 * There are window conditions where the hijacker cpu manages to
-+		 * write to the patch site but the site gets overwritten again by
-+		 * the patching cpu. We still consider that a "successful" hijack
-+		 * since the hijacker cpu did not fault on the write.
-+		 */
-+		pr_err("FAIL: wrote to another cpu's patching area\n");
-+	} else {
-+		kthread_stop(patching_kthrd);
-+	}
-+
-+	/* Restore the original data to be able to run the test again */
-+	lkdtm_do_patch(original_insn);
++	mm->context.skip_slb_preload = true;
 +}
 +
 +#else
 +
-+void lkdtm_HIJACK_PATCH(void)
++static inline void skip_slb_preload_mm(struct mm_struct *mm) {}
++
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
+ #include <asm-generic/mmu_context.h>
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/mm/book3s64/mmu_context.c b/arch/powerpc/mm/book3s64/mmu_context.c
+index c10fc8a72fb37..3479910264c59 100644
+--- a/arch/powerpc/mm/book3s64/mmu_context.c
++++ b/arch/powerpc/mm/book3s64/mmu_context.c
+@@ -202,6 +202,8 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 	atomic_set(&mm->context.active_cpus, 0);
+ 	atomic_set(&mm->context.copros, 0);
+ 
++	mm->context.skip_slb_preload = false;
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index c91bd85eb90e3..da0836cb855af 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -441,10 +441,39 @@ static void slb_cache_slbie_user(unsigned int index)
+ 	asm volatile("slbie %0" : : "r" (slbie_data));
+ }
+ 
++static void preload_slb_entries(struct task_struct *tsk, struct mm_struct *mm)
 +{
-+	if (!IS_ENABLED(CONFIG_PPC))
-+		pr_err("XFAIL: this test only runs on powerpc\n");
-+	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX))
-+		pr_err("XFAIL: this test requires CONFIG_STRICT_KERNEL_RWX\n");
-+	if (!IS_BUILTIN(CONFIG_LKDTM))
-+		pr_err("XFAIL: this test requires CONFIG_LKDTM=y (not =m!)\n");
++	struct thread_info *ti = task_thread_info(tsk);
++	unsigned char i;
++
++	/*
++	 * We gradually age out SLBs after a number of context switches to
++	 * reduce reload overhead of unused entries (like we do with FP/VEC
++	 * reload). Each time we wrap 256 switches, take an entry out of the
++	 * SLB preload cache.
++	 */
++	tsk->thread.load_slb++;
++	if (!tsk->thread.load_slb) {
++		unsigned long pc = KSTK_EIP(tsk);
++
++		preload_age(ti);
++		preload_add(ti, pc);
++	}
++
++	for (i = 0; i < ti->slb_preload_nr; i++) {
++		unsigned char idx;
++		unsigned long ea;
++
++		idx = (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
++		ea = (unsigned long)ti->slb_preload_esid[idx] << SID_SHIFT;
++
++		slb_allocate_user(mm, ea);
++	}
 +}
 +
-+#endif
-+
- void __init lkdtm_perms_init(void)
+ /* Flush all user entries from the segment table of the current processor. */
+ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
  {
- 	/* Make sure we can write to __ro_after_init values during __init */
+-	struct thread_info *ti = task_thread_info(tsk);
+ 	unsigned char i;
+ 
+ 	/*
+@@ -502,29 +531,8 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 
+ 	copy_mm_to_paca(mm);
+ 
+-	/*
+-	 * We gradually age out SLBs after a number of context switches to
+-	 * reduce reload overhead of unused entries (like we do with FP/VEC
+-	 * reload). Each time we wrap 256 switches, take an entry out of the
+-	 * SLB preload cache.
+-	 */
+-	tsk->thread.load_slb++;
+-	if (!tsk->thread.load_slb) {
+-		unsigned long pc = KSTK_EIP(tsk);
+-
+-		preload_age(ti);
+-		preload_add(ti, pc);
+-	}
+-
+-	for (i = 0; i < ti->slb_preload_nr; i++) {
+-		unsigned char idx;
+-		unsigned long ea;
+-
+-		idx = (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
+-		ea = (unsigned long)ti->slb_preload_esid[idx] << SID_SHIFT;
+-
+-		slb_allocate_user(mm, ea);
+-	}
++	if (!mm->context.skip_slb_preload)
++		preload_slb_entries(tsk, mm);
+ 
+ 	/*
+ 	 * Synchronize slbmte preloads with possible subsequent user memory
 -- 
 2.26.1
 
