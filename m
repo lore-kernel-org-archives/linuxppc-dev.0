@@ -2,61 +2,84 @@ Return-Path: <SRS0=zlGz=J2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F370AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 00:54:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D61C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B3116141E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 00:54:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B3116141E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 326FF61419
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 326FF61419
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FVxpX329Cz30Fb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 10:54:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW0zN4DrMz2yys
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 13:17:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=GTME8irL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=B67SvtJq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a;
+ helo=mail-pj1-x102a.google.com; envelope-from=jniethe5@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=GTME8irL; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=B67SvtJq; dkim-atps=neutral
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com
+ [IPv6:2607:f8b0:4864:20::102a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FVxp14jY4z2xg1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 10:53:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
- Content-Description:In-Reply-To:References;
- bh=ias16OQcBsl8ZkDBEGSPojETSjzryLxJi3zCN7d/i4E=; b=GTME8irLh4yirVajHMss5bhE0m
- 7i1RAaFww73oFMbbYd0JrHof4s+TMXrucW6CGr3kkbhsBf8q6s5DdEMDqGDJGD0LWfOKw5Wj6+hXJ
- gpb68XEd42+3C5w2QFfuLtvXv/1ExB9xhRjty8Wc5BsnGBX/32nQiIQlP78e31U/5YRWDyCIwQLxs
- UBQ/lr6+8zb8wwDxweO7GwWWjEVzEb/QKLsU34ZkxKy6Wt3lhT4YV4tr0/OTWb/oxitrSkJzYBj/N
- aMp6SjGofFyNorhZU3fAsN//GPO+gx9GiFBOObxJHnXKrWN3XPozkuT9WBmaOffhc9TgtjUqUKnB0
- e5+LOTsg==;
-Received: from [2601:1c0:6280:3f0::3bc5] (helo=casper.infradead.org)
- by casper.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
- id 1lbuvn-0090nA-OF; Thu, 29 Apr 2021 00:53:35 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: mpc52xx: fix some pr_debug() issues
-Date: Wed, 28 Apr 2021 17:53:23 -0700
-Message-Id: <20210429005323.8195-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.26.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW0yt33yVz2y0N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 13:16:37 +1000 (AEST)
+Received: by mail-pj1-x102a.google.com with SMTP id md17so6473710pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2021 20:16:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=IMQgOsq05TPE7kTgk0iHtKv4vFlBvlJtSrzQ55RZOfc=;
+ b=B67SvtJqt53P3RFMz85G0/Nl2EcLZBG9c6nvHf6W3/M2kS46MhFkHcUEwAUh1PbspD
+ pYZESoXCO7VQJw1Rh35d3g72Y6HxZbkpQQCLT0PTt8D8Czh68yr031CFjPLQBpJEaF6U
+ xpn/7iljVSPglk7VpAPLive42Jbqp7dvPOxGUyFMmuHFoSVkT8mtRcZafEtp++SAeKSX
+ VEBQT0uJUFLzG1fBrzw0NDYJfwqgOdC0rWjVlKNIYF+kD6hli7MjEd3cYkPWbl343GSl
+ aAcaYgEBAaUsPVhQzKMifEviNnp2q6HR5BKCFnhO5N6Vbswi8jqBF/CczNmt4K+MGQ6E
+ BfEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=IMQgOsq05TPE7kTgk0iHtKv4vFlBvlJtSrzQ55RZOfc=;
+ b=YQlZI76gzGeHODakYrWIkLNu1GdbPWEfV8XNfyluivTwMdJ2Yk3bdFdKIm0k4KHonI
+ 1fr14EmsEvwrm9p7ZvNfda8dVdVwim/oHBNUR3laVsYsnm+ds+ZQ+GifHPqvZfdSxQkT
+ rSjP1FsQGipx3iPcDGHxk0119U2k3pUR8FEX/YjkAGJ2G6tXEnWZfXgg7porO5oA1S0I
+ eUHX4cuBHtLD8EnRBgNU/0JFrtnHVopl7V6Rya9wUJwJ3z6qZblN+ja7IkwsyR2yFsjm
+ hTlB+cHTTDxcV+BsMEGqXj+TgLr3ERxlb2TYJ1yfrcdEeQHkqyFjusXAOk5uo+Audzvo
+ 0svg==
+X-Gm-Message-State: AOAM531Y4NTg4URPCec/tGD1wibRUb/ZCiNffh8tQPi7dwKBAcuGYU3H
+ chJGON1f2BHj6YcDVoPsXKDLXe4a8RM=
+X-Google-Smtp-Source: ABdhPJyK98YNXIXKhLJi6q/SrvroA63MBAQFQNrqzH1x9VBenDKQdFuQ5rk6wiBDifHAP1gFsyw3SQ==
+X-Received: by 2002:a17:90b:190f:: with SMTP id
+ mp15mr4662804pjb.225.1619666195456; 
+ Wed, 28 Apr 2021 20:16:35 -0700 (PDT)
+Received: from tee480.ozlabs.ibm.com
+ (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
+ by smtp.gmail.com with ESMTPSA id l16sm3650742pjl.32.2021.04.28.20.16.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 28 Apr 2021 20:16:35 -0700 (PDT)
+From: Jordan Niethe <jniethe5@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v11 1/9] powerpc/mm: Implement set_memory() routines
+Date: Thu, 29 Apr 2021 13:15:54 +1000
+Message-Id: <20210429031602.2606654-2-jniethe5@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210429031602.2606654-1-jniethe5@gmail.com>
+References: <20210429031602.2606654-1-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,110 +93,208 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Anatolij Gustschin <agust@denx.de>
+Cc: ajd@linux.ibm.com, cmr@codefail.de, npiggin@gmail.com,
+ aneesh.kumar@linux.ibm.com, naveen.n.rao@linux.ibm.com,
+ Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix some pr_debug() issues in mpc52xx_pci.c:
+From: Russell Currey <ruscur@russell.cc>
 
-- use __func__ to print function names
-- use "%pr" to print struct resource entries
-- use "%pa" to print a resource_size_t (phys_addr_t)
+The set_memory_{ro/rw/nx/x}() functions are required for
+STRICT_MODULE_RWX, and are generally useful primitives to have.  This
+implementation is designed to be generic across powerpc's many MMUs.
+It's possible that this could be optimised to be faster for specific
+MMUs.
 
-The latter two fix several build warnings:
+This implementation does not handle cases where the caller is attempting
+to change the mapping of the page it is executing from, or if another
+CPU is concurrently using the page being altered.  These cases likely
+shouldn't happen, but a more complex implementation with MMU-specific code
+could safely handle them.
 
-../arch/powerpc/platforms/52xx/mpc52xx_pci.c: In function 'mpc52xx_pci_setup':
-../include/linux/kern_levels.h:5:18: warning: format '%x' expects argument of type 'unsigned int', but argument 2 has type 'resource_size_t' {aka 'long long unsigned int'} [-Wformat=]
-../arch/powerpc/platforms/52xx/mpc52xx_pci.c:277:40: note: format string is defined here
-  277 |   pr_debug("mem_resource[1] = {.start=%x, .end=%x, .flags=%lx}\n",
-      |                                       ~^
-      |                                        |
-      |                                        unsigned int
-      |                                       %llx
-../include/linux/kern_levels.h:5:18: warning: format '%x' expects argument of type 'unsigned int', but argument 3 has type 'resource_size_t' {aka 'long long unsigned int'} [-Wformat=]
-../arch/powerpc/platforms/52xx/mpc52xx_pci.c:277:49: note: format string is defined here
-  277 |   pr_debug("mem_resource[1] = {.start=%x, .end=%x, .flags=%lx}\n",
-      |                                                ~^
-      |                                                 |
-      |                                                 unsigned int
-      |                                                %llx
+On hash, the linear mapping is not kept in the linux pagetable, so this
+will not change the protection if used on that range. Currently these
+functions are not used on the linear map so just WARN for now.
 
-../arch/powerpc/platforms/52xx/mpc52xx_pci.c:299:36: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  299 |    (unsigned long long)res->flags, (void*)hose->io_base_phys);
-      |                                    ^
-../arch/powerpc/platforms/52xx/mpc52xx_pci.c:295:2: note: in expansion of macro 'pr_debug'
-  295 |  pr_debug(".io_resource={.start=%llx,.end=%llx,.flags=%llx} "
-      |  ^~~~~~~~
-
-The change to print mem_resource[0] is for consistency within this
-source file and to use the kernel API -- there were no warnings here.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+[jpn: - Allow set memory functions to be used without Strict RWX
+      - Hash: Disallow certain regions
+      - Have change_page_attr() take function pointers to manipulate ptes
+      - Radix: Add ptesync after set_pte_at()]
+Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 ---
- arch/powerpc/platforms/52xx/mpc52xx_pci.c |   22 ++++++--------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+v10: WARN if trying to change the hash linear map
+v11: - Update copywrite dates
+     - Allow set memory functions to be used without Strict RWX
+     - Hash: Disallow certain regions and add comment explaining why
+     - Have change_page_attr() take function pointers to manipulate ptes
+     - Clarify change_page_attr()'s comment
+     - Radix: Add ptesync after set_pte_at()
+---
+ arch/powerpc/Kconfig                  |   1 +
+ arch/powerpc/include/asm/set_memory.h |  10 +++
+ arch/powerpc/mm/Makefile              |   2 +-
+ arch/powerpc/mm/pageattr.c            | 105 ++++++++++++++++++++++++++
+ 4 files changed, 117 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+ create mode 100644 arch/powerpc/mm/pageattr.c
 
---- linux-next-20210427.orig/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ linux-next-20210427/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -242,7 +242,7 @@ mpc52xx_pci_setup(struct pci_controller
- 	u32 tmp;
- 	int iwcr0 = 0, iwcr1 = 0, iwcr2 = 0;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index cb2d44ee4e38..94c34932a74b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -138,6 +138,7 @@ config PPC
+ 	select ARCH_HAS_MEMBARRIER_CALLBACKS
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
++	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !HIBERNATION)
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_UACCESS_FLUSHCACHE
+diff --git a/arch/powerpc/include/asm/set_memory.h b/arch/powerpc/include/asm/set_memory.h
+new file mode 100644
+index 000000000000..d1cd69b1a43a
+--- /dev/null
++++ b/arch/powerpc/include/asm/set_memory.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_POWERPC_SET_MEMORY_H
++#define _ASM_POWERPC_SET_MEMORY_H
++
++int set_memory_ro(unsigned long addr, int numpages);
++int set_memory_rw(unsigned long addr, int numpages);
++int set_memory_nx(unsigned long addr, int numpages);
++int set_memory_x(unsigned long addr, int numpages);
++
++#endif
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index c3df3a8501d4..9142cf1fb0d5 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -5,7 +5,7 @@
  
--	pr_debug("mpc52xx_pci_setup(hose=%p, pci_regs=%p)\n", hose, pci_regs);
-+	pr_debug("%s(hose=%p, pci_regs=%p)\n", __func__, hose, pci_regs);
+ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
  
- 	/* pci_process_bridge_OF_ranges() found all our addresses for us;
- 	 * now store them in the right places */
-@@ -257,11 +257,7 @@ mpc52xx_pci_setup(struct pci_controller
- 	/* Memory windows */
- 	res = &hose->mem_resources[0];
- 	if (res->flags) {
--		pr_debug("mem_resource[0] = "
--		         "{.start=%llx, .end=%llx, .flags=%llx}\n",
--		         (unsigned long long)res->start,
--			 (unsigned long long)res->end,
--			 (unsigned long long)res->flags);
-+		pr_debug("mem_resource[0] = %pr\n", res);
- 		out_be32(&pci_regs->iw0btar,
- 		         MPC52xx_PCI_IWBTAR_TRANSLATION(res->start, res->start,
- 							resource_size(res)));
-@@ -274,8 +270,7 @@ mpc52xx_pci_setup(struct pci_controller
- 
- 	res = &hose->mem_resources[1];
- 	if (res->flags) {
--		pr_debug("mem_resource[1] = {.start=%x, .end=%x, .flags=%lx}\n",
--		         res->start, res->end, res->flags);
-+		pr_debug("mem_resource[1] = %pr\n", res);
- 		out_be32(&pci_regs->iw1btar,
- 		         MPC52xx_PCI_IWBTAR_TRANSLATION(res->start, res->start,
- 							resource_size(res)));
-@@ -292,11 +287,8 @@ mpc52xx_pci_setup(struct pci_controller
- 		printk(KERN_ERR "%s: Didn't find IO resources\n", __FILE__);
- 		return;
- 	}
--	pr_debug(".io_resource={.start=%llx,.end=%llx,.flags=%llx} "
--	         ".io_base_phys=0x%p\n",
--	         (unsigned long long)res->start,
--		 (unsigned long long)res->end,
--		 (unsigned long long)res->flags, (void*)hose->io_base_phys);
-+	pr_debug(".io_resource = %pr .io_base_phys=0x%pa\n",
-+			res, &hose->io_base_phys);
- 	out_be32(&pci_regs->iw2btar,
- 	         MPC52xx_PCI_IWBTAR_TRANSLATION(hose->io_base_phys,
- 	                                        res->start,
-@@ -336,8 +328,8 @@ mpc52xx_pci_fixup_resources(struct pci_d
- {
- 	int i;
- 
--	pr_debug("mpc52xx_pci_fixup_resources() %.4x:%.4x\n",
--	         dev->vendor, dev->device);
-+	pr_debug("%s() %.4x:%.4x\n",
-+	         __func__, dev->vendor, dev->device);
- 
- 	/* We don't rely on boot loader for PCI and resets all
- 	   devices */
+-obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o \
++obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
+ 				   init_$(BITS).o pgtable_$(BITS).o \
+ 				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
+ 				   init-common.o mmu_context.o drmem.o \
+diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
+new file mode 100644
+index 000000000000..3b4aa72e555e
+--- /dev/null
++++ b/arch/powerpc/mm/pageattr.c
+@@ -0,0 +1,105 @@
++// SPDX-License-Identifier: GPL-2.0
++
++/*
++ * MMU-generic set_memory implementation for powerpc
++ *
++ * Copyright 2019-2021, IBM Corporation.
++ */
++
++#include <linux/mm.h>
++#include <linux/set_memory.h>
++
++#include <asm/mmu.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++
++
++/*
++ * Updates the attributes of a page in three steps:
++ *
++ * 1. invalidate the page table entry
++ * 2. flush the TLB
++ * 3. install the new entry with the updated attributes
++ *
++ * Invalidating the pte means there are situations where this will not work
++ * when in theory it should.
++ * For example:
++ * - removing write from page whilst it is being executed
++ * - setting a page read-only whilst it is being read by another CPU
++ *
++ */
++static int change_page_attr(pte_t *ptep, unsigned long addr, void *data)
++{
++	pte_t (*fn)(pte_t) = data;
++	pte_t pte;
++
++	spin_lock(&init_mm.page_table_lock);
++
++	/* invalidate the PTE so it's safe to modify */
++	pte = ptep_get_and_clear(&init_mm, addr, ptep);
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
++
++	/* modify the PTE bits as desired, then apply */
++	pte = fn(pte);
++
++	set_pte_at(&init_mm, addr, ptep, pte);
++
++	/* See ptesync comment in radix__set_pte_at() */
++	if (radix_enabled())
++		asm volatile("ptesync": : :"memory");
++	spin_unlock(&init_mm.page_table_lock);
++
++	return 0;
++}
++
++static int change_memory_attr(unsigned long addr, int numpages, pte_t (*fn)(pte_t))
++{
++	unsigned long start = ALIGN_DOWN(addr, PAGE_SIZE);
++	unsigned long size = numpages * PAGE_SIZE;
++
++	if (!numpages)
++		return 0;
++
++#ifdef CONFIG_PPC_BOOK3S_64
++	/*
++	 * On hash, the linear mapping is not in the Linux page table so
++	 * apply_to_existing_page_range() will have no effect. If in the future
++	 * the set_memory_* functions are used on the linear map this will need
++	 * to be updated.
++	 */
++	if (!radix_enabled()) {
++		int region = get_region_id(addr);
++
++		if (WARN_ON_ONCE(region != VMALLOC_REGION_ID && region != IO_REGION_ID))
++			return -EINVAL;
++	}
++#endif
++
++	return apply_to_existing_page_range(&init_mm, start, size,
++					    change_page_attr, fn);
++}
++
++int set_memory_ro(unsigned long addr, int numpages)
++{
++	return change_memory_attr(addr, numpages, pte_wrprotect);
++}
++
++static pte_t pte_mkdirtywrite(pte_t pte)
++{
++	return pte_mkwrite(pte_mkdirty(pte));
++}
++
++int set_memory_rw(unsigned long addr, int numpages)
++{
++	return change_memory_attr(addr, numpages, pte_mkdirtywrite);
++}
++
++int set_memory_nx(unsigned long addr, int numpages)
++{
++	return change_memory_attr(addr, numpages, pte_exprotect);
++}
++
++int set_memory_x(unsigned long addr, int numpages)
++{
++	return change_memory_attr(addr, numpages, pte_mkexec);
++}
+-- 
+2.25.1
+
