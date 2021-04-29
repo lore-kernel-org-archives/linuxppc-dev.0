@@ -3,23 +3,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_NONE autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FFB3C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C821AC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53852613D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53852613D9
+	by mail.kernel.org (Postfix) with ESMTPS id 0B5F461440
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B5F461440
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluescreens.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6f42WnSz30Gb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:32:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6fQ4bCjz3c8T
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:32:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bluescreens.de (client-ip=2001:67c:2050:1::465:209;
  helo=mout-y-209.mailbox.org; envelope-from=cmr@bluescreens.de;
@@ -29,33 +29,31 @@ Received: from mout-y-209.mailbox.org (mout-y-209.mailbox.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cZ4vvcz2ym4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cZ50mGz2ypn
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:09 +1000 (AEST)
 Received: from smtp2.mailbox.org (smtp2.mailbox.org
  [IPv6:2001:67c:2050:105:465:1:2:0])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-y-209.mailbox.org (Postfix) with ESMTPS id 4FW6Pg3f0DzQjnl;
- Thu, 29 Apr 2021 09:21:43 +0200 (CEST)
+ by mout-y-209.mailbox.org (Postfix) with ESMTPS id 4FW6PJ0HC6zQjPj;
+ Thu, 29 Apr 2021 09:21:24 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp2.mailbox.org ([80.241.60.241])
- by hefe.heinlein-support.de (hefe.heinlein-support.de [91.198.250.172])
- (amavisd-new, port 10030)
- with ESMTP id v834sNmQtOMS; Thu, 29 Apr 2021 09:21:40 +0200 (CEST)
+ by spamfilter06.heinlein-hosting.de (spamfilter06.heinlein-hosting.de
+ [80.241.56.125]) (amavisd-new, port 10030)
+ with ESMTP id rGefw_lcfphY; Thu, 29 Apr 2021 09:21:20 +0200 (CEST)
 From: "Christopher M. Riedl" <cmr@bluescreens.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 10/11] powerpc: Protect patching_mm with a lock
-Date: Thu, 29 Apr 2021 02:20:56 -0500
-Message-Id: <20210429072057.8870-11-cmr@bluescreens.de>
-In-Reply-To: <20210429072057.8870-1-cmr@bluescreens.de>
-References: <20210429072057.8870-1-cmr@bluescreens.de>
+Subject: [PATCH v4 00/11] Use per-CPU temporary mappings for patching
+Date: Thu, 29 Apr 2021 02:20:46 -0500
+Message-Id: <20210429072057.8870-1-cmr@bluescreens.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-MBO-SPAM-Probability: *
-X-Rspamd-Score: 0.57 / 15.00 / 15.00
-X-Rspamd-Queue-Id: 8DD251802
-X-Rspamd-UID: 15d1c2
+X-MBO-SPAM-Probability: 
+X-Rspamd-Score: -1.58 / 15.00 / 15.00
+X-Rspamd-Queue-Id: 9CC1D1810
+X-Rspamd-UID: 7651b5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,231 +71,138 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Powerpc allows for multiple CPUs to patch concurrently. When patching
-with STRICT_KERNEL_RWX a single patching_mm is allocated for use by all
-CPUs for the few times that patching occurs. Use a spinlock to protect
-the patching_mm from concurrent use.
+When compiled with CONFIG_STRICT_KERNEL_RWX, the kernel must create
+temporary mappings when patching itself. These mappings temporarily
+override the strict RWX text protections to permit a write. Currently,
+powerpc allocates a per-CPU VM area for patching. Patching occurs as
+follows:
 
-Modify patch_instruction() to acquire the lock, perform the patch op,
-and then release the lock.
+	1. Map page in per-CPU VM area w/ PAGE_KERNEL protection
+	2. Patch text
+	3. Remove the temporary mapping
 
-Also introduce {lock,unlock}_patching() along with
-patch_instruction_unlocked() to avoid per-iteration lock overhead when
-patch_instruction() is called in a loop. A follow-up patch converts some
-uses of patch_instruction() to use patch_instruction_unlocked() instead.
+While the VM area is per-CPU, the mapping is actually inserted into the
+kernel page tables. Presumably, this could allow another CPU to access
+the normally write-protected text - either malicously or accidentally -
+via this same mapping if the address of the VM area is known. Ideally,
+the mapping should be kept local to the CPU doing the patching [0].
 
-Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
+x86 introduced "temporary mm" structs which allow the creation of
+mappings local to a particular CPU [1]. This series intends to bring the
+notion of a temporary mm to powerpc and harden powerpc by using such a
+mapping for patching a kernel with strict RWX permissions.
 
----
+The first four patches implement an LKDTM test "proof-of-concept" which
+exploits the potential vulnerability (ie. the temporary mapping during
+patching is exposed in the kernel page tables and accessible by other
+CPUs) using a simple brute-force approach. This test is implemented for
+both powerpc and x86_64. The test passes on powerpc with this new
+series, fails on upstream powerpc, passes on upstream x86_64, and fails
+on an older (ancient) x86_64 tree without the x86_64 temporary mm
+patches. The remaining patches add support for and use a temporary mm
+for code patching on powerpc.
 
-v4:  * New to series.
----
- arch/powerpc/include/asm/code-patching.h |  4 ++
- arch/powerpc/lib/code-patching.c         | 85 +++++++++++++++++++++---
- 2 files changed, 79 insertions(+), 10 deletions(-)
+Tested boot, ftrace, and repeated LKDTM "hijack":
+	- QEMU+KVM (host: POWER9 Blackbird): Radix MMU w/ KUAP
+	- QEMU+KVM (host: POWER9 Blackbird): Hash MMU w/o KUAP
+	- QEMU+KVM (host: POWER9 Blackbird): Hash MMU w/ KUAP
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index e51c81e4a9bda..2efa11b68cd8f 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -28,8 +28,12 @@ int create_branch(struct ppc_inst *instr, const struct ppc_inst *addr,
- int create_cond_branch(struct ppc_inst *instr, const struct ppc_inst *addr,
- 		       unsigned long target, int flags);
- int patch_branch(struct ppc_inst *addr, unsigned long target, int flags);
-+int patch_branch_unlocked(struct ppc_inst *addr, unsigned long target, int flags);
- int patch_instruction(struct ppc_inst *addr, struct ppc_inst instr);
-+int patch_instruction_unlocked(struct ppc_inst *addr, struct ppc_inst instr);
- int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr);
-+unsigned long lock_patching(void);
-+void unlock_patching(unsigned long flags);
- 
- static inline unsigned long patch_site_addr(s32 *site)
- {
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 7e15abc09ec04..0a496bb52bbf4 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -52,13 +52,17 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
- 
-+static DEFINE_SPINLOCK(patching_lock);
-+
- struct temp_mm {
- 	struct mm_struct *temp;
- 	struct mm_struct *prev;
- 	struct arch_hw_breakpoint brk[HBP_NUM_MAX];
-+	spinlock_t *lock; /* protect access to the temporary mm */
- };
- 
--static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
-+static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm,
-+				spinlock_t *lock)
- {
- 	/* Do not preload SLB entries from the thread_info struct */
- 	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !radix_enabled())
-@@ -66,12 +70,14 @@ static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
- 
- 	temp_mm->temp = mm;
- 	temp_mm->prev = NULL;
-+	temp_mm->lock = lock;
- 	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
- }
- 
- static inline void use_temporary_mm(struct temp_mm *temp_mm)
- {
- 	lockdep_assert_irqs_disabled();
-+	lockdep_assert_held(temp_mm->lock);
- 
- 	temp_mm->prev = current->active_mm;
- 	switch_mm_irqs_off(temp_mm->prev, temp_mm->temp, current);
-@@ -93,11 +99,13 @@ static inline void use_temporary_mm(struct temp_mm *temp_mm)
- static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
- {
- 	lockdep_assert_irqs_disabled();
-+	lockdep_assert_held(temp_mm->lock);
- 
- 	switch_mm_irqs_off(temp_mm->temp, temp_mm->prev, current);
- 
- 	/*
--	 * On book3s64 the active_cpus counter increments in
-+	 * The temporary mm can only be in use on a single CPU at a time due to
-+	 * the temp_mm->lock. On book3s64 the active_cpus counter increments in
- 	 * switch_mm_irqs_off(). With the Hash MMU this counter affects if TLB
- 	 * flushes are local. We have to manually decrement that counter here
- 	 * along with removing our current CPU from the mm's cpumask so that in
-@@ -230,7 +238,7 @@ static int map_patch(const void *addr, struct patch_mapping *patch_mapping)
- 	pte = pte_mkdirty(pte);
- 	set_pte_at(patching_mm, patching_addr, patch_mapping->ptep, pte);
- 
--	init_temp_mm(&patch_mapping->temp_mm, patching_mm);
-+	init_temp_mm(&patch_mapping->temp_mm, patching_mm, &patching_lock);
- 	use_temporary_mm(&patch_mapping->temp_mm);
- 
- 	/*
-@@ -258,7 +266,6 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- {
- 	int err;
- 	struct ppc_inst *patch_addr = NULL;
--	unsigned long flags;
- 	struct patch_mapping patch_mapping;
- 
- 	/*
-@@ -269,11 +276,12 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- 	if (!patching_mm)
- 		return raw_patch_instruction(addr, instr);
- 
--	local_irq_save(flags);
-+	lockdep_assert_held(&patching_lock);
-+	lockdep_assert_irqs_disabled();
- 
- 	err = map_patch(addr, &patch_mapping);
- 	if (err)
--		goto out;
-+		return err;
- 
- 	patch_addr = (struct ppc_inst *)(patching_addr | offset_in_page(addr));
- 
-@@ -287,11 +295,33 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- 
- 	WARN_ON(!ppc_inst_equal(ppc_inst_read(addr), instr));
- 
--out:
--	local_irq_restore(flags);
--
- 	return err;
- }
-+
-+unsigned long lock_patching(void)
-+{
-+	unsigned long flags;
-+
-+	/* We don't need the lock if we're not using the patching_mm. */
-+	if (!patching_mm)
-+		return 0;
-+
-+	spin_lock_irqsave(&patching_lock, flags);
-+	return flags;
-+}
-+
-+void unlock_patching(const unsigned long flags)
-+{
-+	/* We never held the lock if we're not using the patching_mm. */
-+	if (!patching_mm)
-+		return;
-+
-+	lockdep_assert_held(&patching_lock);
-+	lockdep_assert_irqs_disabled();
-+
-+	spin_unlock_irqrestore(&patching_lock, flags);
-+}
-+
- #else /* !CONFIG_STRICT_KERNEL_RWX */
- 
- static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
-@@ -299,19 +329,46 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- 	return raw_patch_instruction(addr, instr);
- }
- 
-+unsigned long lock_patching(void)
-+{
-+	return 0;
-+}
-+
-+void unlock_patching(const unsigned long flags) {}
-+
- #endif /* CONFIG_STRICT_KERNEL_RWX */
- 
- int patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- {
-+	int err;
-+	unsigned long flags;
-+
- 	/* Make sure we aren't patching a freed init section */
- 	if (init_mem_is_free && init_section_contains(addr, 4)) {
- 		pr_debug("Skipping init section patching addr: 0x%px\n", addr);
- 		return 0;
- 	}
--	return do_patch_instruction(addr, instr);
-+
-+	flags = lock_patching();
-+	err = do_patch_instruction(addr, instr);
-+	unlock_patching(flags);
-+
-+	return err;
- }
- NOKPROBE_SYMBOL(patch_instruction);
- 
-+int patch_instruction_unlocked(struct ppc_inst *addr, struct ppc_inst instr)
-+{
-+	/* Make sure we aren't patching a freed init section */
-+	if (init_mem_is_free && init_section_contains(addr, 4)) {
-+		pr_debug("Skipping init section patching addr: 0x%p\n", addr);
-+		return 0;
-+	}
-+
-+	return do_patch_instruction(addr, instr);
-+}
-+NOKPROBE_SYMBOL(patch_instruction_unlocked);
-+
- int patch_branch(struct ppc_inst *addr, unsigned long target, int flags)
- {
- 	struct ppc_inst instr;
-@@ -320,6 +377,14 @@ int patch_branch(struct ppc_inst *addr, unsigned long target, int flags)
- 	return patch_instruction(addr, instr);
- }
- 
-+int patch_branch_unlocked(struct ppc_inst *addr, unsigned long target, int flags)
-+{
-+	struct ppc_inst instr;
-+
-+	create_branch(&instr, addr, target, flags);
-+	return patch_instruction_unlocked(addr, instr);
-+}
-+
- bool is_offset_in_branch_range(long offset)
- {
- 	/*
+Tested repeated LKDTM "hijack":
+	- QEMU+KVM (host: AMD desktop): x86_64 upstream
+	- QEMU+KVM (host: AMD desktop): x86_64 w/o percpu temp mm to
+	  verify the LKDTM "hijack" fails
+
+Tested boot and ftrace:
+	- QEMU+TCG: ppc44x (bamboo)
+	- QEMU+TCG: g5 (mac99)
+
+I also tested with various extra config options enabled as suggested in
+section 12) in Documentation/process/submit-checklist.rst.
+
+v4:	* It's time to revisit this series again since @jpn and @mpe fixed
+	  our known STRICT_*_RWX bugs on powerpc/64s.
+	* Rebase on linuxppc/next:
+          commit ee1bc694fbaec ("powerpc/kvm: Fix build error when PPC_MEM_KEYS/PPC_PSERIES=n")
+	* Completely rework how map_patch() works on book3s64 Hash MMU
+	* Split the LKDTM x86_64 and powerpc bits into separate patches
+	* Annotate commit messages with changes from v3 instead of
+	  listing them here completely out-of context...
+
+v3:	* Rebase on linuxppc/next: commit 9123e3a74ec7 ("Linux 5.9-rc1")
+	* Move temporary mm implementation into code-patching.c where it
+	  belongs
+	* Implement LKDTM hijacker test on x86_64 (on IBM time oof) Do
+	* not use address zero for the patching address in the
+	  temporary mm (thanks @dja for pointing this out!)
+	* Wrap the LKDTM test w/ CONFIG_SMP as suggested by Christophe
+	  Leroy
+	* Comments to clarify PTE pre-allocation and patching addr
+	  selection
+
+v2:	* Rebase on linuxppc/next:
+	  commit 105fb38124a4 ("powerpc/8xx: Modify ptep_get()")
+	* Always dirty pte when mapping patch
+	* Use `ppc_inst_len` instead of `sizeof` on instructions
+	* Declare LKDTM patching addr accessor in header where it belongs	
+
+v1:	* Rebase on linuxppc/next (4336b9337824)
+	* Save and restore second hw watchpoint
+	* Use new ppc_inst_* functions for patching check and in LKDTM test
+
+rfc-v2:	* Many fixes and improvements mostly based on extensive feedback
+          and testing by Christophe Leroy (thanks!).
+	* Make patching_mm and patching_addr static and move
+	  '__ro_after_init' to after the variable name (more common in
+	  other parts of the kernel)
+	* Use 'asm/debug.h' header instead of 'asm/hw_breakpoint.h' to
+	  fix PPC64e compile
+	* Add comment explaining why we use BUG_ON() during the init
+	  call to setup for patching later
+	* Move ptep into patch_mapping to avoid walking page tables a
+	  second time when unmapping the temporary mapping
+	* Use KUAP under non-radix, also manually dirty the PTE for patch
+	  mapping on non-BOOK3S_64 platforms
+	* Properly return any error from __patch_instruction
+        * Do not use 'memcmp' where a simple comparison is appropriate
+	* Simplify expression for patch address by removing pointer maths
+	* Add LKDTM test
+
+[0]: https://github.com/linuxppc/issues/issues/224
+[1]: https://lore.kernel.org/kernel-hardening/20190426232303.28381-1-nadav.amit@gmail.com/
+
+Christopher M. Riedl (11):
+  powerpc: Add LKDTM accessor for patching addr
+  lkdtm/powerpc: Add test to hijack a patch mapping
+  x86_64: Add LKDTM accessor for patching addr
+  lkdtm/x86_64: Add test to hijack a patch mapping
+  powerpc/64s: Add ability to skip SLB preload
+  powerpc: Introduce temporary mm
+  powerpc/64s: Make slb_allocate_user() non-static
+  powerpc: Initialize and use a temporary mm for patching
+  lkdtm/powerpc: Fix code patching hijack test
+  powerpc: Protect patching_mm with a lock
+  powerpc: Use patch_instruction_unlocked() in loops
+
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   3 +
+ arch/powerpc/include/asm/code-patching.h      |   8 +
+ arch/powerpc/include/asm/debug.h              |   1 +
+ arch/powerpc/include/asm/mmu_context.h        |  13 +
+ arch/powerpc/kernel/epapr_paravirt.c          |   9 +-
+ arch/powerpc/kernel/optprobes.c               |  22 +-
+ arch/powerpc/kernel/process.c                 |   5 +
+ arch/powerpc/lib/code-patching.c              | 348 +++++++++++++-----
+ arch/powerpc/lib/feature-fixups.c             | 114 ++++--
+ arch/powerpc/mm/book3s64/mmu_context.c        |   2 +
+ arch/powerpc/mm/book3s64/slb.c                |  60 +--
+ arch/powerpc/xmon/xmon.c                      |  22 +-
+ arch/x86/include/asm/text-patching.h          |   4 +
+ arch/x86/kernel/alternative.c                 |   7 +
+ drivers/misc/lkdtm/core.c                     |   1 +
+ drivers/misc/lkdtm/lkdtm.h                    |   1 +
+ drivers/misc/lkdtm/perms.c                    | 149 ++++++++
+ 18 files changed, 608 insertions(+), 162 deletions(-)
+
 -- 
 2.26.1
 
