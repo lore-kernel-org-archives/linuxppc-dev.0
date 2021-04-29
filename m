@@ -4,59 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0698C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FFB3C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD7AD613D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD7AD613D9
+	by mail.kernel.org (Postfix) with ESMTPS id 53852613D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:32:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53852613D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluescreens.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6dj3KGCz3bwW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:32:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6f42WnSz30Gb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:32:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bluescreens.de (client-ip=2001:67c:2050:1::465:209;
  helo=mout-y-209.mailbox.org; envelope-from=cmr@bluescreens.de;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 574 seconds by postgrey-1.36 at boromir;
- Thu, 29 Apr 2021 17:31:10 AEST
 Received: from mout-y-209.mailbox.org (mout-y-209.mailbox.org
  [IPv6:2001:67c:2050:1::465:209])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cZ4gp5z2yjc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cZ4vvcz2ym4
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:09 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [80.241.60.241])
+Received: from smtp2.mailbox.org (smtp2.mailbox.org
+ [IPv6:2001:67c:2050:105:465:1:2:0])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-y-209.mailbox.org (Postfix) with ESMTPS id 4FW6PS25tRzQjnf;
- Thu, 29 Apr 2021 09:21:32 +0200 (CEST)
+ by mout-y-209.mailbox.org (Postfix) with ESMTPS id 4FW6Pg3f0DzQjnl;
+ Thu, 29 Apr 2021 09:21:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp2.mailbox.org ([80.241.60.241])
- by spamfilter01.heinlein-hosting.de (spamfilter01.heinlein-hosting.de
- [80.241.56.115]) (amavisd-new, port 10030)
- with ESMTP id NN2a4URMhZGs; Thu, 29 Apr 2021 09:21:29 +0200 (CEST)
+ by hefe.heinlein-support.de (hefe.heinlein-support.de [91.198.250.172])
+ (amavisd-new, port 10030)
+ with ESMTP id v834sNmQtOMS; Thu, 29 Apr 2021 09:21:40 +0200 (CEST)
 From: "Christopher M. Riedl" <cmr@bluescreens.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 04/11] lkdtm/x86_64: Add test to hijack a patch mapping
-Date: Thu, 29 Apr 2021 02:20:50 -0500
-Message-Id: <20210429072057.8870-5-cmr@bluescreens.de>
+Subject: [PATCH v4 10/11] powerpc: Protect patching_mm with a lock
+Date: Thu, 29 Apr 2021 02:20:56 -0500
+Message-Id: <20210429072057.8870-11-cmr@bluescreens.de>
 In-Reply-To: <20210429072057.8870-1-cmr@bluescreens.de>
 References: <20210429072057.8870-1-cmr@bluescreens.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-MBO-SPAM-Probability: *
-X-Rspamd-Score: 1.26 / 15.00 / 15.00
-X-Rspamd-Queue-Id: 519EF17E8
-X-Rspamd-UID: c86d02
+X-Rspamd-Score: 0.57 / 15.00 / 15.00
+X-Rspamd-Queue-Id: 8DD251802
+X-Rspamd-UID: 15d1c2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,91 +73,231 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A previous commit implemented an LKDTM test on powerpc to exploit the
-temporary mapping established when patching code with STRICT_KERNEL_RWX
-enabled. Extend the test to work on x86_64 as well.
+Powerpc allows for multiple CPUs to patch concurrently. When patching
+with STRICT_KERNEL_RWX a single patching_mm is allocated for use by all
+CPUs for the few times that patching occurs. Use a spinlock to protect
+the patching_mm from concurrent use.
+
+Modify patch_instruction() to acquire the lock, perform the patch op,
+and then release the lock.
+
+Also introduce {lock,unlock}_patching() along with
+patch_instruction_unlocked() to avoid per-iteration lock overhead when
+patch_instruction() is called in a loop. A follow-up patch converts some
+uses of patch_instruction() to use patch_instruction_unlocked() instead.
 
 Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
----
- drivers/misc/lkdtm/perms.c | 29 ++++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index c6f96ebffccfd..55c3bec6d3b72 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -224,7 +224,7 @@ void lkdtm_ACCESS_NULL(void)
- }
+---
+
+v4:  * New to series.
+---
+ arch/powerpc/include/asm/code-patching.h |  4 ++
+ arch/powerpc/lib/code-patching.c         | 85 +++++++++++++++++++++---
+ 2 files changed, 79 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index e51c81e4a9bda..2efa11b68cd8f 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -28,8 +28,12 @@ int create_branch(struct ppc_inst *instr, const struct ppc_inst *addr,
+ int create_cond_branch(struct ppc_inst *instr, const struct ppc_inst *addr,
+ 		       unsigned long target, int flags);
+ int patch_branch(struct ppc_inst *addr, unsigned long target, int flags);
++int patch_branch_unlocked(struct ppc_inst *addr, unsigned long target, int flags);
+ int patch_instruction(struct ppc_inst *addr, struct ppc_inst instr);
++int patch_instruction_unlocked(struct ppc_inst *addr, struct ppc_inst instr);
+ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr);
++unsigned long lock_patching(void);
++void unlock_patching(unsigned long flags);
  
- #if (IS_BUILTIN(CONFIG_LKDTM) && defined(CONFIG_STRICT_KERNEL_RWX) && \
--	defined(CONFIG_PPC))
-+	(defined(CONFIG_PPC) || defined(CONFIG_X86_64)))
- /*
-  * This is just a dummy location to patch-over.
-  */
-@@ -233,28 +233,51 @@ static void patching_target(void)
- 	return;
- }
+ static inline unsigned long patch_site_addr(s32 *site)
+ {
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 7e15abc09ec04..0a496bb52bbf4 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -52,13 +52,17 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
  
-+#ifdef CONFIG_PPC
- #include <asm/code-patching.h>
- struct ppc_inst * const patch_site = (struct ppc_inst *)&patching_target;
-+#endif
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ 
++static DEFINE_SPINLOCK(patching_lock);
 +
-+#ifdef CONFIG_X86_64
-+#include <asm/text-patching.h>
-+u32 * const patch_site = (u32 *)&patching_target;
-+#endif
+ struct temp_mm {
+ 	struct mm_struct *temp;
+ 	struct mm_struct *prev;
+ 	struct arch_hw_breakpoint brk[HBP_NUM_MAX];
++	spinlock_t *lock; /* protect access to the temporary mm */
+ };
  
- static inline int lkdtm_do_patch(u32 data)
+-static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
++static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm,
++				spinlock_t *lock)
  {
-+#ifdef CONFIG_PPC
- 	return patch_instruction(patch_site, ppc_inst(data));
-+#endif
-+#ifdef CONFIG_X86_64
-+	text_poke(patch_site, &data, sizeof(u32));
+ 	/* Do not preload SLB entries from the thread_info struct */
+ 	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !radix_enabled())
+@@ -66,12 +70,14 @@ static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
+ 
+ 	temp_mm->temp = mm;
+ 	temp_mm->prev = NULL;
++	temp_mm->lock = lock;
+ 	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
+ }
+ 
+ static inline void use_temporary_mm(struct temp_mm *temp_mm)
+ {
+ 	lockdep_assert_irqs_disabled();
++	lockdep_assert_held(temp_mm->lock);
+ 
+ 	temp_mm->prev = current->active_mm;
+ 	switch_mm_irqs_off(temp_mm->prev, temp_mm->temp, current);
+@@ -93,11 +99,13 @@ static inline void use_temporary_mm(struct temp_mm *temp_mm)
+ static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
+ {
+ 	lockdep_assert_irqs_disabled();
++	lockdep_assert_held(temp_mm->lock);
+ 
+ 	switch_mm_irqs_off(temp_mm->temp, temp_mm->prev, current);
+ 
+ 	/*
+-	 * On book3s64 the active_cpus counter increments in
++	 * The temporary mm can only be in use on a single CPU at a time due to
++	 * the temp_mm->lock. On book3s64 the active_cpus counter increments in
+ 	 * switch_mm_irqs_off(). With the Hash MMU this counter affects if TLB
+ 	 * flushes are local. We have to manually decrement that counter here
+ 	 * along with removing our current CPU from the mm's cpumask so that in
+@@ -230,7 +238,7 @@ static int map_patch(const void *addr, struct patch_mapping *patch_mapping)
+ 	pte = pte_mkdirty(pte);
+ 	set_pte_at(patching_mm, patching_addr, patch_mapping->ptep, pte);
+ 
+-	init_temp_mm(&patch_mapping->temp_mm, patching_mm);
++	init_temp_mm(&patch_mapping->temp_mm, patching_mm, &patching_lock);
+ 	use_temporary_mm(&patch_mapping->temp_mm);
+ 
+ 	/*
+@@ -258,7 +266,6 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ {
+ 	int err;
+ 	struct ppc_inst *patch_addr = NULL;
+-	unsigned long flags;
+ 	struct patch_mapping patch_mapping;
+ 
+ 	/*
+@@ -269,11 +276,12 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ 	if (!patching_mm)
+ 		return raw_patch_instruction(addr, instr);
+ 
+-	local_irq_save(flags);
++	lockdep_assert_held(&patching_lock);
++	lockdep_assert_irqs_disabled();
+ 
+ 	err = map_patch(addr, &patch_mapping);
+ 	if (err)
+-		goto out;
++		return err;
+ 
+ 	patch_addr = (struct ppc_inst *)(patching_addr | offset_in_page(addr));
+ 
+@@ -287,11 +295,33 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ 
+ 	WARN_ON(!ppc_inst_equal(ppc_inst_read(addr), instr));
+ 
+-out:
+-	local_irq_restore(flags);
+-
+ 	return err;
+ }
++
++unsigned long lock_patching(void)
++{
++	unsigned long flags;
++
++	/* We don't need the lock if we're not using the patching_mm. */
++	if (!patching_mm)
++		return 0;
++
++	spin_lock_irqsave(&patching_lock, flags);
++	return flags;
++}
++
++void unlock_patching(const unsigned long flags)
++{
++	/* We never held the lock if we're not using the patching_mm. */
++	if (!patching_mm)
++		return;
++
++	lockdep_assert_held(&patching_lock);
++	lockdep_assert_irqs_disabled();
++
++	spin_unlock_irqrestore(&patching_lock, flags);
++}
++
+ #else /* !CONFIG_STRICT_KERNEL_RWX */
+ 
+ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+@@ -299,19 +329,46 @@ static int do_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ 	return raw_patch_instruction(addr, instr);
+ }
+ 
++unsigned long lock_patching(void)
++{
 +	return 0;
-+#endif
++}
++
++void unlock_patching(const unsigned long flags) {}
++
+ #endif /* CONFIG_STRICT_KERNEL_RWX */
+ 
+ int patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ {
++	int err;
++	unsigned long flags;
++
+ 	/* Make sure we aren't patching a freed init section */
+ 	if (init_mem_is_free && init_section_contains(addr, 4)) {
+ 		pr_debug("Skipping init section patching addr: 0x%px\n", addr);
+ 		return 0;
+ 	}
+-	return do_patch_instruction(addr, instr);
++
++	flags = lock_patching();
++	err = do_patch_instruction(addr, instr);
++	unlock_patching(flags);
++
++	return err;
+ }
+ NOKPROBE_SYMBOL(patch_instruction);
+ 
++int patch_instruction_unlocked(struct ppc_inst *addr, struct ppc_inst instr)
++{
++	/* Make sure we aren't patching a freed init section */
++	if (init_mem_is_free && init_section_contains(addr, 4)) {
++		pr_debug("Skipping init section patching addr: 0x%p\n", addr);
++		return 0;
++	}
++
++	return do_patch_instruction(addr, instr);
++}
++NOKPROBE_SYMBOL(patch_instruction_unlocked);
++
+ int patch_branch(struct ppc_inst *addr, unsigned long target, int flags)
+ {
+ 	struct ppc_inst instr;
+@@ -320,6 +377,14 @@ int patch_branch(struct ppc_inst *addr, unsigned long target, int flags)
+ 	return patch_instruction(addr, instr);
  }
  
- static inline u32 lkdtm_read_patch_site(void)
++int patch_branch_unlocked(struct ppc_inst *addr, unsigned long target, int flags)
++{
++	struct ppc_inst instr;
++
++	create_branch(&instr, addr, target, flags);
++	return patch_instruction_unlocked(addr, instr);
++}
++
+ bool is_offset_in_branch_range(long offset)
  {
-+#ifdef CONFIG_PPC
- 	struct ppc_inst inst = READ_ONCE(*patch_site);
- 	return ppc_inst_val(ppc_inst_read(&inst));
-+#endif
-+#ifdef CONFIG_X86_64
-+	return READ_ONCE(*patch_site);
-+#endif
- }
- 
- /* Returns True if the write succeeds */
- static inline bool lkdtm_try_write(u32 data, u32 *addr)
- {
-+#ifdef CONFIG_PPC
- 	__put_kernel_nofault(addr, &data, u32, err);
- 	return true;
- 
- err:
- 	return false;
-+#endif
-+#ifdef CONFIG_X86_64
-+	return !__put_user(data, addr);
-+#endif
- }
- 
- static int lkdtm_patching_cpu(void *data)
-@@ -347,8 +370,8 @@ void lkdtm_HIJACK_PATCH(void)
- 
- void lkdtm_HIJACK_PATCH(void)
- {
--	if (!IS_ENABLED(CONFIG_PPC))
--		pr_err("XFAIL: this test only runs on powerpc\n");
-+	if (!IS_ENABLED(CONFIG_PPC) && !IS_ENABLED(CONFIG_X86_64))
-+		pr_err("XFAIL: this test only runs on powerpc and x86_64\n");
- 	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX))
- 		pr_err("XFAIL: this test requires CONFIG_STRICT_KERNEL_RWX\n");
- 	if (!IS_BUILTIN(CONFIG_LKDTM))
+ 	/*
 -- 
 2.26.1
 
