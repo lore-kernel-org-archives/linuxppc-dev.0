@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52F00C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:34:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E43C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:34:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5186E6143E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:34:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5186E6143E
+	by mail.kernel.org (Postfix) with ESMTPS id 3C24F6143E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 07:34:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C24F6143E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluescreens.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6h20Hyrz3brN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:34:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW6hN50LDz3dY9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 17:34:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bluescreens.de (client-ip=2001:67c:2050:1::465:111;
+ smtp.mailfrom=bluescreens.de (client-ip=91.198.250.236;
  helo=mout-y-111.mailbox.org; envelope-from=cmr@bluescreens.de;
  receiver=<UNKNOWN>)
-Received: from mout-y-111.mailbox.org (mout-y-111.mailbox.org
- [IPv6:2001:67c:2050:1::465:111])
+Received: from mout-y-111.mailbox.org (mout-y-111.mailbox.org [91.198.250.236])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6cg75KFz303J
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:15 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [80.241.60.241])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW6ch479gz3046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 17:31:16 +1000 (AEST)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org
+ [IPv6:2001:67c:2050:105:465:1:2:0])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-y-111.mailbox.org (Postfix) with ESMTPS id 4FW6PY4fMlzQjvt;
- Thu, 29 Apr 2021 09:21:37 +0200 (CEST)
+ by mout-y-111.mailbox.org (Postfix) with ESMTPS id 4FW6PQ2cNrzQjn5;
+ Thu, 29 Apr 2021 09:21:30 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
 Received: from smtp2.mailbox.org ([80.241.60.241])
  by spamfilter01.heinlein-hosting.de (spamfilter01.heinlein-hosting.de
  [80.241.56.115]) (amavisd-new, port 10030)
- with ESMTP id ku7miv09OT2r; Thu, 29 Apr 2021 09:21:34 +0200 (CEST)
+ with ESMTP id vXW0DGaQY74F; Thu, 29 Apr 2021 09:21:27 +0200 (CEST)
 From: "Christopher M. Riedl" <cmr@bluescreens.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 07/11] powerpc/64s: Make slb_allocate_user() non-static
-Date: Thu, 29 Apr 2021 02:20:53 -0500
-Message-Id: <20210429072057.8870-8-cmr@bluescreens.de>
+Subject: [PATCH v4 03/11] x86_64: Add LKDTM accessor for patching addr
+Date: Thu, 29 Apr 2021 02:20:49 -0500
+Message-Id: <20210429072057.8870-4-cmr@bluescreens.de>
 In-Reply-To: <20210429072057.8870-1-cmr@bluescreens.de>
 References: <20210429072057.8870-1-cmr@bluescreens.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-MBO-SPAM-Probability: *
-X-Rspamd-Score: 0.90 / 15.00 / 15.00
-X-Rspamd-Queue-Id: B056D17DF
-X-Rspamd-UID: 3ff631
+X-MBO-SPAM-Probability: **
+X-Rspamd-Score: 1.59 / 15.00 / 15.00
+X-Rspamd-Queue-Id: 6FA3117F3
+X-Rspamd-UID: cf277a
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,59 +72,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With Book3s64 Hash translation, manually inserting a PTE requires
-updating the Linux PTE, inserting a SLB entry, and inserting the hashed
-page. The first is handled via the usual kernel abstractions, the second
-requires slb_allocate_user() which is currently 'static', and the third
-is available via hash_page_mm() already.
-
-Make slb_allocate_user() non-static and add a prototype so the next
-patch can use it during code-patching.
+When live patching with STRICT_KERNEL_RWX a mapping is installed at a
+"patching address" with temporary write permissions. Provide a
+LKDTM-only accessor function for this address in preparation for a LKDTM
+test which attempts to "hijack" this mapping by writing to it from
+another CPU.
 
 Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
-
 ---
+ arch/x86/include/asm/text-patching.h | 4 ++++
+ arch/x86/kernel/alternative.c        | 7 +++++++
+ 2 files changed, 11 insertions(+)
 
-v4:  * New to series.
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 1 +
- arch/powerpc/mm/book3s64/slb.c                | 4 +---
- 2 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 3004f3323144d..189854eebba77 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -525,6 +525,7 @@ void slb_dump_contents(struct slb_entry *slb_ptr);
- extern void slb_vmalloc_update(void);
- extern void slb_set_size(u16 size);
- void preload_new_slb_context(unsigned long start, unsigned long sp);
-+long slb_allocate_user(struct mm_struct *mm, unsigned long ea);
- #endif /* __ASSEMBLY__ */
- 
- /*
-diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
-index da0836cb855af..532eb51bc5211 100644
---- a/arch/powerpc/mm/book3s64/slb.c
-+++ b/arch/powerpc/mm/book3s64/slb.c
-@@ -29,8 +29,6 @@
- #include "internal.h"
- 
- 
--static long slb_allocate_user(struct mm_struct *mm, unsigned long ea);
--
- bool stress_slb_enabled __initdata;
- 
- static int __init parse_stress_slb(char *p)
-@@ -791,7 +789,7 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
- 	return slb_insert_entry(ea, context, flags, ssize, true);
+diff --git a/arch/x86/include/asm/text-patching.h b/arch/x86/include/asm/text-patching.h
+index b7421780e4e92..f0caf9ee13bd8 100644
+--- a/arch/x86/include/asm/text-patching.h
++++ b/arch/x86/include/asm/text-patching.h
+@@ -167,4 +167,8 @@ void int3_emulate_ret(struct pt_regs *regs)
  }
+ #endif /* !CONFIG_UML_X86 */
  
--static long slb_allocate_user(struct mm_struct *mm, unsigned long ea)
-+long slb_allocate_user(struct mm_struct *mm, unsigned long ea)
++#if IS_BUILTIN(CONFIG_LKDTM)
++unsigned long read_cpu_patching_addr(unsigned int cpu);
++#endif
++
+ #endif /* _ASM_X86_TEXT_PATCHING_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index 8d778e46725d2..4c95fdd9b1965 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -852,6 +852,13 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
+ __ro_after_init struct mm_struct *poking_mm;
+ __ro_after_init unsigned long poking_addr;
+ 
++#if IS_BUILTIN(CONFIG_LKDTM)
++unsigned long read_cpu_patching_addr(unsigned int cpu)
++{
++	return poking_addr;
++}
++#endif
++
+ static void *__text_poke(void *addr, const void *opcode, size_t len)
  {
- 	unsigned long context;
- 	unsigned long flags;
+ 	bool cross_page_boundary = offset_in_page(addr) + len > PAGE_SIZE;
 -- 
 2.26.1
 
