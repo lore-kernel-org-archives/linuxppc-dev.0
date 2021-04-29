@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8AC8C43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:02:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3148C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:02:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D14F461400
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:02:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D14F461400
+	by mail.kernel.org (Postfix) with ESMTPS id 40E9661400
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:02:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40E9661400
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHJF14yfz3bSs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:02:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHJZ6CC5z3bpc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:02:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,17 +26,17 @@ Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHHt6d11z2xfY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHHv0l72z2xfY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:19 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FWHHs754mz9sXM; Fri, 30 Apr 2021 00:02:17 +1000 (AEST)
+ id 4FWHHt4NsXz9sj5; Fri, 30 Apr 2021 00:02:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <20210301063653.51003-1-aik@ozlabs.ru>
-References: <20210301063653.51003-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v2] powerpc/iommu: Annotate nested lock for lockdep
-Message-Id: <161970488550.4033873.235569973862535887.b4-ty@ellerman.id.au>
-Date: Fri, 30 Apr 2021 00:01:25 +1000
+To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <1614858937-1485-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+References: <1614858937-1485-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Fix sampled instruction type for larx/stcx
+Message-Id: <161970488279.4033873.4063562696529131848.b4-ty@ellerman.id.au>
+Date: Fri, 30 Apr 2021 00:01:22 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,26 +51,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, kvm-ppc@vger.kernel.org
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 1 Mar 2021 17:36:53 +1100, Alexey Kardashevskiy wrote:
-> The IOMMU table is divided into pools for concurrent mappings and each
-> pool has a separate spinlock. When taking the ownership of an IOMMU group
-> to pass through a device to a VM, we lock these spinlocks which triggers
-> a false negative warning in lockdep (below).
+On Thu, 4 Mar 2021 06:55:37 -0500, Athira Rajeev wrote:
+> Sampled Instruction Event Register (SIER) field [46:48]
+> identifies the sampled instruction type. ISA v3.1 says value
+> of 0b111 for this field as reserved, but in POWER10 it denotes
+> LARX/STCX type which will hopefully be fixed in ISA v3.1 update.
 > 
-> This fixes it by annotating the large pool's spinlock as a nest lock
-> which makes lockdep not complaining when locking nested locks if
-> the nest lock is locked already.
-> 
-> [...]
+> Patch fixes the functions to handle type value 7 for
+> CPU_FTR_ARCH_31.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/iommu: Annotate nested lock for lockdep
-      https://git.kernel.org/powerpc/c/cc7130bf119add37f36238343a593b71ef6ecc1e
+[1/1] powerpc/perf: Fix sampled instruction type for larx/stcx
+      https://git.kernel.org/powerpc/c/b4ded42268ee3d703da208278342b9901abe145a
 
 cheers
