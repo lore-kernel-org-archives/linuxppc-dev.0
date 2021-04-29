@@ -2,81 +2,86 @@ Return-Path: <SRS0=zlGz=J2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9498EC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 628F0C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E52BC61411
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E52BC61411
+	by mail.kernel.org (Postfix) with ESMTPS id D66A461411
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 03:17:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D66A461411
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FW0zr3FxCz3bT5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 13:17:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FW10K2NhRz3btK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 13:17:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=PBuFlSE/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=uUOMUb1t;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b;
- helo=mail-pj1-x102b.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d;
+ helo=mail-pj1-x102d.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=PBuFlSE/; dkim-atps=neutral
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com
- [IPv6:2607:f8b0:4864:20::102b])
+ header.s=20161025 header.b=uUOMUb1t; dkim-atps=neutral
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com
+ [IPv6:2607:f8b0:4864:20::102d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FW0yt28g3z2y0J
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 13:16:35 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id
- f11-20020a17090a638bb02901524d3a3d48so10118702pjj.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2021 20:16:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FW0yy2qbvz2yx4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Apr 2021 13:16:42 +1000 (AEST)
+Received: by mail-pj1-x102d.google.com with SMTP id
+ t2-20020a17090a0242b0290155433387beso4192473pje.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2021 20:16:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=1uGkd+2Hw/3qGp7jNFABfj0N7L8s7hCqyFHj5IEXo6s=;
- b=PBuFlSE/uGaki9bGKybhqUen3tXFleOO4VA8KaINTXdmugaHohtwsrVTq05OKn7x5p
- 15ptoHJThhDMfQBoY72HCvJ/mVj8bnG6tFeIUOj7JXrI82ct417StegK8W6N5YmDp2Yr
- rGTrFcJhDJHXAhC/UYJKx8k1e4Jn9CA+4NF0shKBdGyo65CP4A/k5UfXs2blanMjg8AE
- HQ1/OmFTvNU5ApWi3o1+uIUs9XX5M+zLYtElWUOvPa6xq6M1tmAsan/Vb0dQKlhVfLxz
- Ub9+2Z67RhouCKHvFGkHg0+GKyd1cWY58iI96aQOqPLJpbaKgdQvegD9UdRhF9MiQ0Pe
- OyaA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=firInY1utLEOJgk3tnG7I7HN8k3/o1DnCo9RF5GGjnk=;
+ b=uUOMUb1tRlxgQRQ0m+g3qfZZnO3xddPId8U+AWc4PH7Gv9JhZlBgTY0iZTFHWni4qr
+ L8pYBN2shqI8WlJfh7InhnHAMZS0583Tcb6LXLR9zAYjW5PiaJaxZ8BePLBVyABkMrUF
+ vpdiiQ2ZTZRwS4G/AdOPr3y6xafynL8H5oycBNtPzSbRWDV/csZUXRydKmvmryq/DU3i
+ 3Qn2QLpujEHYzXFPTBwb+AcHq34sRuJstQoN6wV0XeAdqplvNySFKYKD29vNTM0fnATj
+ g5TfgkP6+pYqUIQd9+eHv6T0xQ53pi3B84wo7oVjVzzoVREcDaFTz1ZX3Q0hyEIDoVPR
+ wVNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=1uGkd+2Hw/3qGp7jNFABfj0N7L8s7hCqyFHj5IEXo6s=;
- b=QInoxevAgarqMb3aIh7AxiwvKMNOhqafQrouldr8GrDumdUTgaTYRsv+bWCpDkPV8W
- 8sQtp9wpfnUGf9qwTSeaiSM3RM8kyW78kgKm2CrGvwsOE+fQ+lvieFHhd88914uO7JQ3
- dA/B297e2Sractvc+LB8Luk1j51e9q+qbNwfUxI3suw143qWWad7SAvQn6Ausk84J2WR
- GAWynh9pWZdCxGGdMUF2ZEoGd1JbHTAsMA0jgJc3RyhHXZUtawL24hmCNjvihQpYowcp
- U8k4nLjXSORKrLrHxjcyz4BEuqQVixtILllECLLeoEIj9pC2W36fAnUwTwb707am7fI8
- dTrA==
-X-Gm-Message-State: AOAM532CI9e1Hb+vVFxVmSwm2Ip72n0ej9niKmEddDwWvlhegzKfkk+G
- wIPZvA2nMvGwpMF/jqupgUUmH1RgrA8=
-X-Google-Smtp-Source: ABdhPJyjr5ZTwooF81BVAIDDPcWwkBhmk2fEfSFKLG4ysFhKDQXayUXg0OiOAoRJLPNdkBnvaq1pLA==
-X-Received: by 2002:a17:90a:6682:: with SMTP id m2mr394068pjj.90.1619666190406; 
- Wed, 28 Apr 2021 20:16:30 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=firInY1utLEOJgk3tnG7I7HN8k3/o1DnCo9RF5GGjnk=;
+ b=GHfOGiU975SW9vvPYqsVXlvGueXN7U81Mh9dbeyqYiuRnDh6BsJWFv1zkDjI604tGp
+ 2sy3MkWjZPED2stsKkvC51GxDkm0OFtYb29cFUZqwX43Bn8Pgf/fTm1RjL4vkE82Obz2
+ uUuEBG6jXtk6O2PEfgWkwyOOZSWIY56Ng/zNxAjaTx18tm5VbYGvyQKdDk5JIH57YA/c
+ 15069x4aM17Iyh9ra2awdCw5sCzXLAvJqHjJRWa93/x0eogrR6Gory5rXY7qbMoR+Ek6
+ 4aNr6KKGo1VsalHdfN+q42suVknGI4OXiiem50S9/ujkeh+3FQKpZVgS3O0LdACShKmw
+ uYog==
+X-Gm-Message-State: AOAM533wrXJ0vpyxGVL7dO49iHdGUXcfsb8kJWTtpznb7q4xL7FzNVOo
+ DXhqMrK9OwNhutqBuO88aknn7ozitpk=
+X-Google-Smtp-Source: ABdhPJyeoPjMO5dW27hNz4OzxK3TMQ9Q3yW4FCNPvwSEc5YrSe79adGaCjDNphmUeTxg78hsnYCACg==
+X-Received: by 2002:a17:90a:850c:: with SMTP id
+ l12mr7112049pjn.224.1619666199897; 
+ Wed, 28 Apr 2021 20:16:39 -0700 (PDT)
 Received: from tee480.ozlabs.ibm.com
  (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
- by smtp.gmail.com with ESMTPSA id l16sm3650742pjl.32.2021.04.28.20.16.24
+ by smtp.gmail.com with ESMTPSA id l16sm3650742pjl.32.2021.04.28.20.16.35
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Apr 2021 20:16:29 -0700 (PDT)
+ Wed, 28 Apr 2021 20:16:39 -0700 (PDT)
 From: Jordan Niethe <jniethe5@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v11 0/9] powerpc: Further Strict RWX support 
-Date: Thu, 29 Apr 2021 13:15:53 +1000
-Message-Id: <20210429031602.2606654-1-jniethe5@gmail.com>
+Subject: [PATCH v11 2/9] powerpc/lib/code-patching: Set up Strict RWX patching
+ earlier
+Date: Thu, 29 Apr 2021 13:15:55 +1000
+Message-Id: <20210429031602.2606654-3-jniethe5@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210429031602.2606654-1-jniethe5@gmail.com>
+References: <20210429031602.2606654-1-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,64 +102,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Adding more Strict RWX support on powerpc, in particular Strict Module RWX.
-Thanks for all of the feedback everyone.
-It is now rebased on linux-next.
+setup_text_poke_area() is a late init call so it runs before
+mark_rodata_ro() and after the init calls. This lets all the init code
+patching simply write to their locations. In the future, kprobes is
+going to allocate its instruction pages RO which means they will need
+setup_text__poke_area() to have been already called for their code
+patching. However, init_kprobes() (which allocates and patches some
+instruction pages) is an early init call so it happens before
+setup_text__poke_area().
 
-For reference the previous revision is available here: 
-https://lore.kernel.org/linuxppc-dev/20210330045132.722243-1-jniethe5@gmail.com/
+start_kernel() calls poking_init() before any of the init calls. On
+powerpc, poking_init() is currently a nop. setup_text_poke_area() relies
+on kernel virtual memory, cpu hotplug and per_cpu_areas being setup.
+setup_per_cpu_areas(), boot_cpu_hotplug_init() and mm_init() are called
+before poking_init().
 
-The changes in v11 for each patch:
+Turn setup_text_poke_area() into poking_init().
 
-Christophe Leroy (2):
-  powerpc/mm: implement set_memory_attr()
-  powerpc/32: use set_memory_attr()
+Reviewed-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+---
+v9: New to series
+---
+ arch/powerpc/lib/code-patching.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-Jordan Niethe (4):
-  powerpc/lib/code-patching: Set up Strict RWX patching earlier
-  powerpc: Always define MODULES_{VADDR,END}
-    v11: - Consider more places MODULES_VADDR was being used
-  powerpc/bpf: Remove bpf_jit_free()
-    v11: - New to series
-  powerpc/bpf: Write protect JIT code
-    v11: - Remove CONFIG_STRICT_MODULE_RWX conditional
-
-Russell Currey (3):
-  powerpc/mm: Implement set_memory() routines
-    v11: - Update copywrite dates
-         - Allow set memory functions to be used without Strict RW
-         - Hash: Disallow certain regions and add comment explaining why
-         - Have change_page_attr() take function pointers to manipulate ptes
-         - Clarify change_page_attr()'s comment
-         - Radix: Add ptesync after set_pte_at()
-  powerpc/kprobes: Mark newly allocated probes as ROX
-    v11: Neaten up
-  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
-    v11: Neaten up
-
-Some patches were dropped from this revision:
-  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
-    - Will use Christophe's generic ptdump series
-  powerpc/configs: Enable STRICT_MODULE_RWX in skiroot_defconfig
-    - Will enable STRICT_MODULE_RWX by default later
-
-
- arch/powerpc/Kconfig                  |   2 +
- arch/powerpc/include/asm/pgtable.h    |  11 ++
- arch/powerpc/include/asm/set_memory.h |  12 +++
- arch/powerpc/kernel/kprobes.c         |  11 ++
- arch/powerpc/kernel/module.c          |  14 +--
- arch/powerpc/lib/code-patching.c      |  12 +--
- arch/powerpc/mm/Makefile              |   2 +-
- arch/powerpc/mm/kasan/kasan_init_32.c |  10 +-
- arch/powerpc/mm/pageattr.c            | 138 ++++++++++++++++++++++++++
- arch/powerpc/mm/pgtable_32.c          |  60 ++---------
- arch/powerpc/mm/ptdump/ptdump.c       |   4 +-
- arch/powerpc/net/bpf_jit_comp.c       |  13 +--
- 12 files changed, 204 insertions(+), 85 deletions(-)
- create mode 100644 arch/powerpc/include/asm/set_memory.h
- create mode 100644 arch/powerpc/mm/pageattr.c
-
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 870b30d9be2f..15296207e1ba 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -70,14 +70,11 @@ static int text_area_cpu_down(unsigned int cpu)
+ }
+ 
+ /*
+- * Run as a late init call. This allows all the boot time patching to be done
+- * simply by patching the code, and then we're called here prior to
+- * mark_rodata_ro(), which happens after all init calls are run. Although
+- * BUG_ON() is rude, in this case it should only happen if ENOMEM, and we judge
+- * it as being preferable to a kernel that will crash later when someone tries
+- * to use patch_instruction().
++ * Although BUG_ON() is rude, in this case it should only happen if ENOMEM, and
++ * we judge it as being preferable to a kernel that will crash later when
++ * someone tries to use patch_instruction().
+  */
+-static int __init setup_text_poke_area(void)
++int __init poking_init(void)
+ {
+ 	BUG_ON(!cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
+ 		"powerpc/text_poke:online", text_area_cpu_up,
+@@ -85,7 +82,6 @@ static int __init setup_text_poke_area(void)
+ 
+ 	return 0;
+ }
+-late_initcall(setup_text_poke_area);
+ 
+ /*
+  * This can be called for kernel text or a module.
 -- 
 2.25.1
 
