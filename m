@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E75C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41991C43617
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:07:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D0E36105A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:06:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D0E36105A
+	by mail.kernel.org (Postfix) with ESMTPS id D85D661420
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:07:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D85D661420
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHP80DWbz3fHg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:06:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHPT3XjBz3fK7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:07:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,17 +26,18 @@ Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHJK3nzWz3bVF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHJL5VrNz3bc8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:42 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FWHJH11s0z9sxS; Fri, 30 Apr 2021 00:02:38 +1000 (AEST)
+ id 4FWHJK3XBVz9sj0; Fri, 30 Apr 2021 00:02:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210302020954.2980046-1-mpe@ellerman.id.au>
-References: <20210302020954.2980046-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/configs: Add IBMVNIC to some 64-bit configs
-Message-Id: <161970488368.4033873.8863484716187913670.b4-ty@ellerman.id.au>
-Date: Fri, 30 Apr 2021 00:01:23 +1000
+In-Reply-To: <20210425115831.2818434-1-mpe@ellerman.id.au>
+References: <20210425115831.2818434-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/kvm: Fix build error when
+ PPC_MEM_KEYS/PPC_PSERIES=n
+Message-Id: <161970488683.4033873.339237153439763431.b4-ty@ellerman.id.au>
+Date: Fri, 30 Apr 2021 00:01:26 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,13 +56,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2 Mar 2021 13:09:54 +1100, Michael Ellerman wrote:
-> This is an IBM specific driver that we should enable to get some
-> build/boot testing.
+On Sun, 25 Apr 2021 21:58:31 +1000, Michael Ellerman wrote:
+> lkp reported a randconfig failure:
+> 
+>      In file included from arch/powerpc/include/asm/book3s/64/pkeys.h:6,
+>                     from arch/powerpc/kvm/book3s_64_mmu_host.c:15:
+>      arch/powerpc/include/asm/book3s/64/hash-pkey.h: In function 'hash__vmflag_to_pte_pkey_bits':
+>   >> arch/powerpc/include/asm/book3s/64/hash-pkey.h:10:23: error: 'VM_PKEY_BIT0' undeclared
+>         10 |  return (((vm_flags & VM_PKEY_BIT0) ? H_PTE_PKEY_BIT0 : 0x0UL) |
+>          |                       ^~~~~~~~~~~~
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/configs: Add IBMVNIC to some 64-bit configs
-      https://git.kernel.org/powerpc/c/421a7483878cf3f356ebb871effe81997a45dda7
+[1/1] powerpc/kvm: Fix build error when PPC_MEM_KEYS/PPC_PSERIES=n
+      https://git.kernel.org/powerpc/c/ee1bc694fbaec1a662770703fc34a74abf418938
 
 cheers
