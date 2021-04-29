@@ -4,39 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8EB1C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:08:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED4B3C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:08:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EDCC6141E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:08:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EDCC6141E
+	by mail.kernel.org (Postfix) with ESMTPS id 5072C61420
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Apr 2021 14:08:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5072C61420
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHQp5Njwz3fpF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:08:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWHR86dykz3fvM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 00:08:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHJT4gncz3bqy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWHJZ32W3z3bpm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 00:02:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FWHJQ73ngz9tD5; Fri, 30 Apr 2021 00:02:46 +1000 (AEST)
+ id 4FWHJZ0GBWz9tk3; Fri, 30 Apr 2021 00:02:49 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-In-Reply-To: <20210412112218.128183-1-ravi.bangoria@linux.ibm.com>
-References: <20210412112218.128183-1-ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH v3 0/4] powerpc/selftests: Add Power10 2nd DAWR selftests
-Message-Id: <161970488433.4033873.12531351983196456423.b4-ty@ellerman.id.au>
-Date: Fri, 30 Apr 2021 00:01:24 +1000
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linux-nvdimm@lists.01.org,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210329113103.476760-1-vaibhav@linux.ibm.com>
+References: <20210329113103.476760-1-vaibhav@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/papr_scm: Mark nvdimm as unarmed if needed during
+ probe
+Message-Id: <161970488717.4033873.11862743130806736936.b4-ty@ellerman.id.au>
+Date: Fri, 30 Apr 2021 00:01:27 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,32 +53,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, shuah@kernel.org,
- linux-kselftest@vger.kernel.org, dja@axtens.net
+Cc: Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 12 Apr 2021 16:52:14 +0530, Ravi Bangoria wrote:
-> Power10 introduced 2nd watchpoint (DAWR). ISA 3.1, Book 3S, Ch 9 -
-> 'Debug Facilities' covers the feature in detail. Kernel patches to
-> enable the 2nd DAWR are already in[1], including kvm enablement[2].
-> These patches adds selftests for 2nd DAWR.
+On Mon, 29 Mar 2021 17:01:03 +0530, Vaibhav Jain wrote:
+> In case an nvdimm is found to be unarmed during probe then set its
+> NDD_UNARMED flag before nvdimm_create(). This would enforce a
+> read-only access to the ndimm region. Presently even if an nvdimm is
+> unarmed its not marked as read-only on ppc64 guests.
 > 
-> [1]: https://git.kernel.org/torvalds/c/deb2bd9bcc8428d4b65b6ba640ba8b57c1b20b17
-> [2]: https://git.kernel.org/torvalds/c/bd1de1a0e6eff4bde5ceae969673b85b8446fd6a
-> 
-> [...]
+> The patch updates papr_scm_nvdimm_init() to force query of nvdimm
+> health via __drc_pmem_query_health() and if nvdimm is found to be
+> unarmed then set the nvdimm flag ND_UNARMED for nvdimm_create().
 
 Applied to powerpc/next.
 
-[1/4] powerpc/selftests/ptrace-hwbreak: Add testcases for 2nd DAWR
-      https://git.kernel.org/powerpc/c/dae4ff8031b49af4721101d6298fc14cb9c16a4c
-[2/4] powerpc/selftests/perf-hwbreak: Coalesce event creation code
-      https://git.kernel.org/powerpc/c/c9cb0afb4eaa03801322f48dad4093979ff45e88
-[3/4] powerpc/selftests/perf-hwbreak: Add testcases for 2nd DAWR
-      https://git.kernel.org/powerpc/c/c65c64cc7bbd273121edf96a7a5a0269038ab454
-[4/4] powerpc/selftests: Add selftest to test concurrent perf/ptrace events
-      https://git.kernel.org/powerpc/c/290f7d8ce2b1eea5413bb120e0d9d610675b7fba
+[1/1] powerpc/papr_scm: Mark nvdimm as unarmed if needed during probe
+      https://git.kernel.org/powerpc/c/adb68c38d8d49a3d60805479c558649bb2182473
 
 cheers
