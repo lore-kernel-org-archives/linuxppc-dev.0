@@ -2,110 +2,104 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B45AEC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:14:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6584C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A8DF61466
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:14:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A8DF61466
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1140361420
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:19:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1140361420
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWy9j6rhRz2yyj
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 May 2021 02:14:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWyHp5G1Bz2yy9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 May 2021 02:19:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N0ul8jnC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=DkVi50Av;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ smtp.mailfrom=embeddedor.com (client-ip=192.185.45.95;
+ helo=gateway21.websitewelcome.com; envelope-from=gustavo@embeddedor.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=N0ul8jnC; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ unprotected) header.d=embeddedor.com header.i=@embeddedor.com
+ header.a=rsa-sha256 header.s=default header.b=DkVi50Av; 
+ dkim-atps=neutral
+X-Greylist: delayed 1364 seconds by postgrey-1.36 at boromir;
+ Sat, 01 May 2021 02:19:07 AEST
+Received: from gateway21.websitewelcome.com (gateway21.websitewelcome.com
+ [192.185.45.95])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWy9B2Rvcz2y6N
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 May 2021 02:13:49 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13UG4fp9098661; Fri, 30 Apr 2021 12:13:35 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=EOZHrgGSMmfA8sfZIsPC7o2SDQRDRpbJl5mRXAW0OUU=;
- b=N0ul8jnCilykbevS0aNrDQfE7i1yaogwee8oO5/GkD3WQhVbQhRkUdSaD0FKcDOoSopJ
- yaTFKzASX14+eKPafEqWP/HfSvK+6zYCBncoFoz+NAfHCL8kWnF7z0K8MnFnfYCQDpbf
- X1IOMfhWnJqpBgeAOw8MxaHvJhAFOH2TpRLmvv/kPDdCwVuC3FxN6Q2EcCvDEMsgD9SB
- mJomJta1qdYMLW3Et/s+dplXaLdHgExMvOFOQvYtBjH4BI3pIk5VzTKh6LtBPrzs199C
- MsrV1mnGB9BEWm8koH3PdMK/SnpcDCVazvgfU8kOkAYv5Y+WtMMn0kopQZVs+OUSKmjr sQ== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 388mer9t8c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 12:13:34 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13UG44ju008864;
- Fri, 30 Apr 2021 16:13:32 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03ams.nl.ibm.com with ESMTP id 384ay8kafc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 16:13:32 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13UGDTo840239550
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 16:13:29 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3A336A4051;
- Fri, 30 Apr 2021 16:13:29 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E102DA4040;
- Fri, 30 Apr 2021 16:13:28 +0000 (GMT)
-Received: from pomme.local (unknown [9.145.168.97])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 30 Apr 2021 16:13:28 +0000 (GMT)
-Subject: Re: [PATCH v3] pseries/drmem: update LMBs after LPM
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org
-References: <20210428094758.28665-1-ldufour@linux.ibm.com>
- <87fsz95qso.fsf@linux.ibm.com>
- <9d29bf8c-9e97-c179-6897-8e25fa4eb516@linux.ibm.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-Message-ID: <271ef351-b89c-ba68-3b6d-baa24cc0021b@linux.ibm.com>
-Date: Fri, 30 Apr 2021 18:13:28 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWyHH0Rqsz2xZG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 May 2021 02:19:07 +1000 (AEST)
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+ by gateway21.websitewelcome.com (Postfix) with ESMTP id 9EEE7400CAC7E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 10:56:17 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id cVV3lE5HTb8LycVV3l6ywG; Fri, 30 Apr 2021 10:56:17 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=Om4ZY5IbR19QUfg7UpptCRqjveQax7WqnKvkVNKEw60=; b=DkVi50Avya1CiFlM/pC74kdFZb
+ DC5++rKV2ax2Pj+xzqzHZIp0+MzKKyA9u7coLXcUQ3S19AIyxbS0UXXkenkHuhghE9mjzRyNElVzb
+ EiaXYAIefqo22e44jo5Gt+BnoZvFiKQexMpOdYL2Gpx6qKIf7NvSfKP4QpDKFy/cRyS/ceK4t5zEf
+ BP9mJydmEVVwIpXm1EDvjEoi2yb5IKBzilP4xtQpAMKV4YmyS99k14k00wozGpCM2zZKA6DyabKj9
+ VutcrxfmfxU+t2FWRHBzUllg6XvZdWWynd3nL20MWZjruty9oOVOR1tBUtFfUzvE1BpiWCdJn8bWs
+ A9j85RSg==;
+Received: from 187-162-31-110.static.axtel.net ([187.162.31.110]:33768
+ helo=[192.168.15.8])
+ by gator4166.hostgator.com with esmtpsa (TLS1.2) tls
+ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.94)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1lcVUy-003wNy-PP; Fri, 30 Apr 2021 10:56:12 -0500
+Subject: Re: Radeon NI: GIT kernel with the nislands_smc commit doesn't boot
+ on a Freescale P5040 board and P.A.Semi Nemo board
+To: "Deucher, Alexander" <Alexander.Deucher@amd.com>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>,
+ "gustavoars@kernel.org" <gustavoars@kernel.org>,
+ "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>
+References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
+ <MN2PR12MB44881C5F5E24888E2590BF74F75E9@MN2PR12MB4488.namprd12.prod.outlook.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Message-ID: <eaf27853-916c-e095-7b7a-afb5256a6f67@embeddedor.com>
+Date: Fri, 30 Apr 2021 10:56:43 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-In-Reply-To: <9d29bf8c-9e97-c179-6897-8e25fa4eb516@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <MN2PR12MB44881C5F5E24888E2590BF74F75E9@MN2PR12MB4488.namprd12.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ejYf8IUz8E6jXXe4R_z-qeDTsBweZaE5
-X-Proofpoint-GUID: ejYf8IUz8E6jXXe4R_z-qeDTsBweZaE5
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-30_10:2021-04-30,
- 2021-04-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 mlxscore=0
- spamscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0 phishscore=0
- suspectscore=0 bulkscore=0 priorityscore=1501 malwarescore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
- definitions=main-2104300108
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 187.162.31.110
+X-Source-L: No
+X-Exim-ID: 1lcVUy-003wNy-PP
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: 187-162-31-110.static.axtel.net ([192.168.15.8])
+ [187.162.31.110]:33768
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 8
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,162 +111,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
+ Maling list - DRI developers <dri-devel@lists.freedesktop.org>,
+ mad skateman <madskateman@gmail.com>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 29/04/2021 à 21:12, Tyrel Datwyler a écrit :
-> On 4/29/21 3:27 AM, Aneesh Kumar K.V wrote:
->> Laurent Dufour <ldufour@linux.ibm.com> writes:
->>
->>> After a LPM, the device tree node ibm,dynamic-reconfiguration-memory may be
->>> updated by the hypervisor in the case the NUMA topology of the LPAR's
->>> memory is updated.
->>>
->>> This is caught by the kernel, but the memory's node is updated because
->>> there is no way to move a memory block between nodes.
->>>
->>> If later a memory block is added or removed, drmem_update_dt() is called
->>> and it is overwriting the DT node to match the added or removed LMB. But
->>> the LMB's associativity node has not been updated after the DT node update
->>> and thus the node is overwritten by the Linux's topology instead of the
->>> hypervisor one.
->>>
->>> Introduce a hook called when the ibm,dynamic-reconfiguration-memory node is
->>> updated to force an update of the LMB's associativity.
->>>
->>> Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
->>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
->>> ---
->>>
->>> V3:
->>>   - Check rd->dn->name instead of rd->dn->full_name
->>> V2:
->>>   - Take Tyrel's idea to rely on OF_RECONFIG_UPDATE_PROPERTY instead of
->>>   introducing a new hook mechanism.
->>> ---
->>>   arch/powerpc/include/asm/drmem.h              |  1 +
->>>   arch/powerpc/mm/drmem.c                       | 35 +++++++++++++++++++
->>>   .../platforms/pseries/hotplug-memory.c        |  4 +++
->>>   3 files changed, 40 insertions(+)
->>>
->>> diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
->>> index bf2402fed3e0..4265d5e95c2c 100644
->>> --- a/arch/powerpc/include/asm/drmem.h
->>> +++ b/arch/powerpc/include/asm/drmem.h
->>> @@ -111,6 +111,7 @@ int drmem_update_dt(void);
->>>   int __init
->>>   walk_drmem_lmbs_early(unsigned long node, void *data,
->>>   		      int (*func)(struct drmem_lmb *, const __be32 **, void *));
->>> +void drmem_update_lmbs(struct property *prop);
->>>   #endif
->>>   
->>>   static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
->>> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
->>> index 9af3832c9d8d..f0a6633132af 100644
->>> --- a/arch/powerpc/mm/drmem.c
->>> +++ b/arch/powerpc/mm/drmem.c
->>> @@ -307,6 +307,41 @@ int __init walk_drmem_lmbs_early(unsigned long node, void *data,
->>>   	return ret;
->>>   }
->>>   
->>> +/*
->>> + * Update the LMB associativity index.
->>> + */
->>> +static int update_lmb(struct drmem_lmb *updated_lmb,
->>> +		      __maybe_unused const __be32 **usm,
->>> +		      __maybe_unused void *data)
->>> +{
->>> +	struct drmem_lmb *lmb;
->>> +
->>> +	/*
->>> +	 * Brut force there may be better way to fetch the LMB
->>> +	 */
->>> +	for_each_drmem_lmb(lmb) {
->>> +		if (lmb->drc_index != updated_lmb->drc_index)
->>> +			continue;
->>> +
->>> +		lmb->aa_index = updated_lmb->aa_index;
->>> +		break;
->>> +	}
->>> +	return 0;
->>> +}
->>> +
->>> +/*
->>> + * Update the LMB associativity index.
->>> + *
->>> + * This needs to be called when the hypervisor is updating the
->>> + * dynamic-reconfiguration-memory node property.
->>> + */
->>> +void drmem_update_lmbs(struct property *prop)
->>> +{
->>> +	if (!strcmp(prop->name, "ibm,dynamic-memory"))
->>> +		__walk_drmem_v1_lmbs(prop->value, NULL, NULL, update_lmb);
->>> +	else if (!strcmp(prop->name, "ibm,dynamic-memory-v2"))
->>> +		__walk_drmem_v2_lmbs(prop->value, NULL, NULL, update_lmb);
->>> +}
->>>   #endif
->>>   
->>>   static int init_drmem_lmb_size(struct device_node *dn)
->>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> index 8377f1f7c78e..672ffbee2e78 100644
->>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>> @@ -949,6 +949,10 @@ static int pseries_memory_notifier(struct notifier_block *nb,
->>>   	case OF_RECONFIG_DETACH_NODE:
->>>   		err = pseries_remove_mem_node(rd->dn);
->>>   		break;
->>> +	case OF_RECONFIG_UPDATE_PROPERTY:
->>> +		if (!strcmp(rd->dn->name,
->>> +			    "ibm,dynamic-reconfiguration-memory"))
->>> +			drmem_update_lmbs(rd->prop);
->>>   	}
->>>   	return notifier_from_errno(err);
->>
->> How will this interact with DLPAR memory? When we dlpar memory,
->> ibm,configure-connector is used to fetch the new associativity details
->> and set drmem_lmb->aa_index correctly there. Once that is done kernel
->> then call drmem_update_dt() which will result in the above notifier
->> callback?
->>
->> IIUC, the call back then will update drmem_lmb->aa_index again?
+
+
+On 4/30/21 10:26, Deucher, Alexander wrote:
+> [AMD Public Use]
 > 
-> After digging through some of this code I'm a bit concerned about all the kernel
-> device tree manipulation around memory DLPAR both with the assoc-lookup-array
-> prop update and post dynamic-memory prop updating. We build a drmem_info array
-> of the LMBs from the device-tree at boot. I don't really understand why we are
-> manipulating the device tree property every time we add/remove an LMB. Not sure
-> the reasoning was to write back in particular the aa_index and flags for each
-> LMB into the device tree when we already have them in the drmem_info array. On
-> the other hand the assoc-lookup-array I suppose would need to have an in kernel
-> representation to avoid updating the device tree property every time.
-
-I think the reason is to keep the device tree in sync with the current set of LMBs.
-
-My understanding is that the kernel is not really using the 
-'ibm,dynamic-memory*' DT property once the boot is done. But user space tools 
-(like lsslot and drmgr) read it to built the LMB tree and get the DRC index for 
-each LMBs as it is not available in SYSFS.
-
-> Changes to the device tree should be things reported to the system from the
-> hypervisor through the proper interfaces, and as a result any code that cares
-> can register an of_reconfig_notifier to resepond to device tree updates. The
-> memory dlpar code seems to be needlessly manipulating the device-tree which
-> leads to the problem here where a notifier callback is now duplicating work.
-
-I don't think the hypervisor is expected to update the 'ibm,dynamic-memory' each 
-time a LMB is added, this is not design this way AFAIK.
-
-Laurent.
-
-> Just my two cents FWIW.
+> + Gustavo, amd-gfx
 > 
-> -Tyrel
-> 
+>> -----Original Message-----
+>> From: Christian Zigotzky <chzigotzky@xenosoft.de>
+>> Sent: Friday, April 30, 2021 8:00 AM
+>> To: gustavoars@kernel.org; Deucher, Alexander 
+>> <Alexander.Deucher@amd.com>
+>> Cc: R.T.Dickinson <rtd2@xtra.co.nz>; Darren Stevens <darren@stevens- 
+>> zone.net>; mad skateman <madskateman@gmail.com>; linuxppc-dev 
+>> <linuxppc-dev@lists.ozlabs.org>; Olof Johansson <olof@lixom.net>; 
+>> Maling list - DRI developers <dri-devel@lists.freedesktop.org>; Michel 
+>> Dänzer <michel@daenzer.net>; Christian Zigotzky <info@xenosoft.de>
+>> Subject: Radeon NI: GIT kernel with the nislands_smc commit doesn't 
+>> boot on a Freescale P5040 board and P.A.Semi Nemo board
 >>
->> -aneesh
+>> Hello,
 >>
-> 
+>> The Nemo board (A-EON AmigaOne X1000) [1] and the FSL P5040 Cyrus+ 
+>> board (A-EON AmigaOne X5000) [2] with installed AMD Radeon HD6970 NI 
+>> graphics cards (Cayman XT) [3] don't boot with the latest git kernel 
+>> anymore after the commit "drm/radeon/nislands_smc.h: Replace 
+>> one-element array with flexible-array member in struct NISLANDS_SMC_SWSTATE branch" [4].
+>> This git kernel boots in a virtual e5500 QEMU machine with a VirtIO-GPU [5].
+>>
+>> I bisected today [6].
+>>
+>> Result: drm/radeon/nislands_smc.h: Replace one-element array with 
+>> flexible-array member in struct NISLANDS_SMC_SWSTATE branch
+>> (434fb1e7444a2efc3a4ebd950c7f771ebfcffa31) [4] is the first bad commit.
+>>
+>> I was able to revert this commit [7] and after a new compiling, the 
+>> kernel boots without any problems on my AmigaOnes.
+>>
+>> After that I created a patch for reverting this commit for new git test kernels.
+>> [3]
+>>
+>> The kernel compiles and boots with this patch on my AmigaOnes. Please 
+>> find attached the kernel config files.
+>>
+>> Please check the first bad commit.
 
+I'll have a look.
+
+Thanks for the report!
+--
+Gustavo
+
+>>
+>> Thanks,
+>> Christian
+>>
+>> [1]
+>> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fen.
+>> wikipedia.org%2Fwiki%2FAmigaOne_X1000&amp;data=04%7C01%7Calexand
+>> er.deucher%40amd.com%7C0622549383fb4320346b08d90bcf7be1%7C3dd89
+>> 61fe4884e608e11a82d994e183d%7C0%7C0%7C637553808670161651%7CUnkn
+>> own%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik
+>> 1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=PNSrApUdMrku20hH7dEKlJJ
+>> TBi7Qp5JOkqpA4MvKqdE%3D&amp;reserved=0
+>> [2]
+>> https://nam11.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwiki.
+>> a miga.org%2Findex.php%3Ftitle%3DX5000&amp;data=04%7C01%7Calexander
+>> .deucher%40amd.com%7C0622549383fb4320346b08d90bcf7be1%7C3dd8961f
+>> e4884e608e11a82d994e183d%7C0%7C0%7C637553808670161651%7CUnknow
+>> n%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1ha
+>> WwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=B8Uvhs25%2FP3RfnL1AgICN3Y4
+>> CEXeCE1yIoi3vvwvGto%3D&amp;reserved=0
+>> [3]
+>> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fforu
+>> m.hyperion-
+>> entertainment.com%2Fviewtopic.php%3Ff%3D35%26t%3D4377&amp;data=
+>> 04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346b08d
+>> 90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C63755380
+>> 8670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIj
+>> oiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=TokXplD
+>> Tvg3%2BZMPLCgR1fs%2BN2X9MIfLXLW67MAM2Qsk%3D&amp;reserved=0
+>> [4]
+>> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.
+>> k ernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git%
+>> 2Fcommit%2F%3Fid%3D434fb1e7444a2efc3a4ebd950c7f771ebfcffa31&amp;d
+>> ata=04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346
+>> b08d90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C6375
+>> 53808670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiL
+>> CJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=JC
+>> M4xvPEnWdckcTPbQ2Ujv%2FAiMMsFMzzl4Pr%2FRPlcMQ%3D&amp;reserve
+>> d=0
+>> [5] qemu-system-ppc64 -M ppce500 -cpu e5500 -m 1024 -kernel uImage - 
+>> drive format=raw,file=MintPPC32-X5000.img,index=0,if=virtio -netdev
+>> user,id=mynet0 -device virtio-net-pci,netdev=mynet0 -append "rw 
+>> root=/dev/vda" -device virtio-vga -usb -device usb-ehci,id=ehci 
+>> -device usb- tablet -device virtio-keyboard-pci -smp 4 -vnc :1 [6] 
+>> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fforu
+>> m.hyperion-
+>> entertainment.com%2Fviewtopic.php%3Fp%3D53074%23p53074&amp;data
+>> =04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346b08
+>> d90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C6375538
+>> 08670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQ
+>> IjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=RXfSlY
+>> A3bDEFas0%2Fk2vMWsl2l0nuhS2ecjZgSBLc%2Bs4%3D&amp;reserved=0
+>> [7] git revert 434fb1e7444a2efc3a4ebd950c7f771ebfcffa3
