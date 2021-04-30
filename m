@@ -2,90 +2,106 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABFCEC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:15:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2844C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:16:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AD3061186
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:15:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AD3061186
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 217F0613EA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:16:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 217F0613EA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlYb60wBz3gPw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:15:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlZ65jmHz3gT5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:16:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GYTt21Yg;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=GYTt21Yg; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlKJ378Wz30GN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:05:08 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13U84i8v069460; Fri, 30 Apr 2021 04:04:57 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 388bddmhw8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlP33CQYz3c0C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:08:23 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13U84UR4182102; Fri, 30 Apr 2021 04:08:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=vvo1pSCVS7zMsZ8Ln/uUqypFHGnWS/LCsiBgVa0A7W4=;
+ b=GYTt21Yg/vX9pUPuWd/mA8lOmsVDMZOk+OOoEtrleAy//HrEig1fbfNpLt4NucwJB1Px
+ hFcciudpMpgWh8EGOD852qVExvYkbd8e1UFYVTk+gr133f4KA7waoIr3KDBAu0Sx4Js2
+ sTw5Hq3PXSwusAuDCbqfIonHz5+plHh+otuRj0w11gttz9ZmVLswjvM8WSstM5UflzmP
+ yz6rF7p+MzEZQ8ybQDlBFuxVc8YKs3JQ9ZtzxWk9HsxhDiEY+GJM/OxTu5Pl79Dtnb+f
+ znY5EIaM8t7Q4vEIbS7P+oZGA1veopBILPJ2OfyggZiNYEAgMswA1WUV2bBvC+m4mWib xA== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 388e1v03p0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 04:04:56 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U84OYn018126;
- Fri, 30 Apr 2021 08:04:24 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04fra.de.ibm.com with ESMTP id 384ay8hn3d-1
+ Fri, 30 Apr 2021 04:08:17 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U87qGm025468;
+ Fri, 30 Apr 2021 08:08:15 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 384akhaxsv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 08:04:23 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13U84Ld652822380
+ Fri, 30 Apr 2021 08:08:15 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 13U87lNj17891618
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 08:04:21 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B5CD242049;
- Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 92B4F42041;
- Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
-Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
-Received: from yukon.ibmuc.com (unknown [9.171.40.192])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 1DF63220193;
- Fri, 30 Apr 2021 10:04:21 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 19/31] powerpc/xics: Add debug logging to the set_irq_affinity
- handlers
-Date: Fri, 30 Apr 2021 10:03:55 +0200
-Message-Id: <20210430080407.4030767-20-clg@kaod.org>
-X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20210430080407.4030767-1-clg@kaod.org>
-References: <20210430080407.4030767-1-clg@kaod.org>
+ Fri, 30 Apr 2021 08:07:47 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 277B7A4055;
+ Fri, 30 Apr 2021 08:08:12 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CF0B7A4051;
+ Fri, 30 Apr 2021 08:08:11 +0000 (GMT)
+Received: from pomme.local (unknown [9.145.168.97])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Apr 2021 08:08:11 +0000 (GMT)
+Subject: Re: [PATCH] ppc64/numa: consider the max numa node for migratable LPAR
+To: Tyrel Datwyler <tyreld@linux.ibm.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org
+References: <20210429181901.17674-1-ldufour@linux.ibm.com>
+ <ae59de4d-17a3-6c39-ddb5-a151909992c3@linux.ibm.com>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+Message-ID: <a8199d1d-33f5-62cb-646f-fa3630bc1681@linux.ibm.com>
+Date: Fri, 30 Apr 2021 10:08:11 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <ae59de4d-17a3-6c39-ddb5-a151909992c3@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: fLZa00Md8Mqv14djqto21VpXenrwQem2
-X-Proofpoint-ORIG-GUID: fLZa00Md8Mqv14djqto21VpXenrwQem2
+X-Proofpoint-GUID: -WpW5l8oCQh3SFVLWwkjN04P_O54GsAz
+X-Proofpoint-ORIG-GUID: -WpW5l8oCQh3SFVLWwkjN04P_O54GsAz
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-30_05:2021-04-28,
+ definitions=2021-04-30_03:2021-04-28,
  2021-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1034
- priorityscore=1501 mlxscore=0 lowpriorityscore=0 suspectscore=0
- adultscore=0 impostorscore=0 phishscore=0 mlxlogscore=969 spamscore=0
+ clxscore=1015
+ priorityscore=1501 impostorscore=0 lowpriorityscore=0 spamscore=0
+ mlxscore=0 mlxlogscore=999 adultscore=0 suspectscore=0 phishscore=0
  bulkscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104060000 definitions=main-2104300056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,49 +115,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It really helps to know how the HW is configured when tweaking the IRQ
-subsystem.
+Le 29/04/2021 à 21:29, Tyrel Datwyler a écrit :
+> On 4/29/21 11:19 AM, Laurent Dufour wrote:
+>> When a LPAR is migratable, we should consider the maximum possible NUMA
+>> node instead the number of NUMA node from the actual system.
+>>
+>> The DT property 'ibm,current-associativity-domains' is defining the maximum
+>> number of nodes the LPAR can see when running on that box. But if the LPAR
+>> is being migrated on another box, it may seen up to the nodes defined by
+>> 'ibm,max-associativity-domains'. So if a LPAR is migratable, that value
+>> should be used.
+>>
+>> Unfortunately, there is no easy way to know if a LPAR is migratable or
+>> not. The hypervisor is exporting the property 'ibm,migratable-partition' in
+>> the case it set to migrate partition, but that would not mean that the
+>> current partition is migratable.
+> 
+> Wording is a little hard to follow for me here. From PAPR the
+> 'ibm,migratable-partition' property presence indicates that the platform
+> supports the potential migration of the partition. I guess maybe the point is
+> that all migratable partitions define 'ibm,migratable-partition', but all
+> partitions that define 'ibm,migratable-partition' are not necessarily migratable.
 
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xics/ics-opal.c | 2 +-
- arch/powerpc/sysdev/xics/ics-rtas.c | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+That's what I meant.
 
-diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xi=
-cs/ics-opal.c
-index 8c7ddcc718b6..bf26cae1b982 100644
---- a/arch/powerpc/sysdev/xics/ics-opal.c
-+++ b/arch/powerpc/sysdev/xics/ics-opal.c
-@@ -133,7 +133,7 @@ static int ics_opal_set_affinity(struct irq_data *d,
- 	}
- 	server =3D ics_opal_mangle_server(wanted_server);
-=20
--	pr_devel("ics-hal: set-affinity irq %d [hw 0x%x] server: 0x%x/0x%x\n",
-+	pr_debug("ics-hal: set-affinity irq %d [hw 0x%x] server: 0x%x/0x%x\n",
- 		 d->irq, hw_irq, wanted_server, server);
-=20
- 	rc =3D opal_set_xive(hw_irq, server, priority);
-diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xi=
-cs/ics-rtas.c
-index 6d19d711ed35..b50c6341682e 100644
---- a/arch/powerpc/sysdev/xics/ics-rtas.c
-+++ b/arch/powerpc/sysdev/xics/ics-rtas.c
-@@ -133,6 +133,9 @@ static int ics_rtas_set_affinity(struct irq_data *d,
- 		return -1;
- 	}
-=20
-+	pr_debug("%s: irq %d [hw 0x%x] server: 0x%x\n", __func__, d->irq,
-+		 hw_irq, irq_server);
-+
- 	status =3D rtas_call_reentrant(ibm_set_xive, 3, 1, NULL,
- 				     hw_irq, irq_server, xics_status[1]);
-=20
---=20
-2.26.3
+Laurent
+
+> -Tyrel
+> 
+>>
+>> Without that patch, when a LPAR is started on a 2 nodes box and then
+>> migrated to a 3 nodes box, the hypervisor may spread the LPAR's CPUs on the
+>> 3rd node. In that case if a CPU from that 3rd node is added to the LPAR, it
+>> will be wrongly assigned to the node because the kernel has been set to use
+>> up to 2 nodes (the configuration of the departure node). With that patch
+>> applies, the CPU is correctly added to the 3rd node.
+>>
+>> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+>> ---
+>>   arch/powerpc/mm/numa.c | 14 +++++++++++---
+>>   1 file changed, 11 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index f2bf98bdcea2..673fa6e47850 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -893,7 +893,7 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+>>   static void __init find_possible_nodes(void)
+>>   {
+>>   	struct device_node *rtas;
+>> -	const __be32 *domains;
+>> +	const __be32 *domains = NULL;
+>>   	int prop_length, max_nodes;
+>>   	u32 i;
+>>
+>> @@ -909,9 +909,14 @@ static void __init find_possible_nodes(void)
+>>   	 * it doesn't exist, then fallback on ibm,max-associativity-domains.
+>>   	 * Current denotes what the platform can support compared to max
+>>   	 * which denotes what the Hypervisor can support.
+>> +	 *
+>> +	 * If the LPAR is migratable, new nodes might be activated after a LPM,
+>> +	 * so we should consider the max number in that case.
+>>   	 */
+>> -	domains = of_get_property(rtas, "ibm,current-associativity-domains",
+>> -					&prop_length);
+>> +	if (!of_get_property(of_root, "ibm,migratable-partition", NULL))
+>> +		domains = of_get_property(rtas,
+>> +					  "ibm,current-associativity-domains",
+>> +					  &prop_length);
+>>   	if (!domains) {
+>>   		domains = of_get_property(rtas, "ibm,max-associativity-domains",
+>>   					&prop_length);
+>> @@ -920,6 +925,9 @@ static void __init find_possible_nodes(void)
+>>   	}
+>>
+>>   	max_nodes = of_read_number(&domains[min_common_depth], 1);
+>> +	printk(KERN_INFO "Partition configured for %d NUMA nodes.\n",
+>> +	       max_nodes);
+>> +
+>>   	for (i = 0; i < max_nodes; i++) {
+>>   		if (!node_possible(i))
+>>   			node_set(i, node_possible_map);
+>>
+> 
 
