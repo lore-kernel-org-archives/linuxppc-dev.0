@@ -2,107 +2,91 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60926C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1F37C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:04:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ACC6661186
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:04:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACC6661186
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9321561186
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:04:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9321561186
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlJB0pY7z30G7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:04:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlJw14SSz302g
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:04:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rz1qhrmE;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=rz1qhrmE; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlHg309Kz2yRS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:03:42 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13U831It057480; Fri, 30 Apr 2021 04:03:37 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=aVSZFSydPsEFS09rZyUyqtuvyDTUyq1Btcmgk0wOsuk=;
- b=rz1qhrmEjcqwAEafBQe1f58Oq0UnTKkbg+evDJBnAVhcIGn0hfnhkLXb3BD1dgknrh/P
- rg6SZE/O5AdVcIXIXbacTntRt3gkYy6QwIRlo1E61H9s6ovfXm4EMcBocuaOQR9Ef6kG
- poGbRlqim3EY0JQr8ZjoIyA+yE2n9IyS4mt9bUJXig6cTHCoH6QNZfz5NKNUwjr+NQ6M
- 7MIdWepvNWblPTyv9hpL6fSizwvRr5/HzPh8597TMjPO5g3jmH723O5LdWv9OEZemLoj
- SPjZVE05M8lJtcsFRISEkpisdBYBKZaRufLkfkN87XBjRQDoTeIuXRWnduX4JijlH/sw JA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 388dv0gaa7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJW29Jfz2yRS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:04:26 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13U83IBm076259; Fri, 30 Apr 2021 04:04:20 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 388dxgg71f-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 04:03:37 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 13U83bTK063344;
- Fri, 30 Apr 2021 04:03:37 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0b-001b2d01.pphosted.com with ESMTP id 388dv0ga9t-1
+ Fri, 30 Apr 2021 04:04:19 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U80ND3032463;
+ Fri, 30 Apr 2021 08:04:17 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 384ay8jy9d-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 04:03:37 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U7xAHD008955;
- Fri, 30 Apr 2021 08:03:36 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma03wdc.us.ibm.com with ESMTP id 3882p7ksmn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 08:03:36 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13U83acT11862852
+ Fri, 30 Apr 2021 08:04:17 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13U84Fes32178636
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 08:03:36 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0950928067;
- Fri, 30 Apr 2021 08:03:36 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F2FEA28059;
- Fri, 30 Apr 2021 08:03:33 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.85.69.54])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 30 Apr 2021 08:03:33 +0000 (GMT)
-X-Mailer: emacs 28.0.50 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Sandipan Das <sandipan@linux.ibm.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/powernv/memtrace: Fix dcache flushing
-In-Reply-To: <20210430075557.893819-1-sandipan@linux.ibm.com>
-References: <20210430075557.893819-1-sandipan@linux.ibm.com>
-Date: Fri, 30 Apr 2021 13:33:31 +0530
-Message-ID: <87zgxg8ai4.fsf@linux.ibm.com>
+ Fri, 30 Apr 2021 08:04:15 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 537AEA405B;
+ Fri, 30 Apr 2021 08:04:15 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2F787A4054;
+ Fri, 30 Apr 2021 08:04:15 +0000 (GMT)
+Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Fri, 30 Apr 2021 08:04:15 +0000 (GMT)
+Received: from yukon.ibmuc.com (unknown [9.171.40.192])
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id A58952200B7;
+ Fri, 30 Apr 2021 10:04:14 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 06/31] powerpc/xive: Drop unmask of MSIs at startup
+Date: Fri, 30 Apr 2021 10:03:42 +0200
+Message-Id: <20210430080407.4030767-7-clg@kaod.org>
+X-Mailer: git-send-email 2.26.3
+In-Reply-To: <20210430080407.4030767-1-clg@kaod.org>
+References: <20210430080407.4030767-1-clg@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: kIM01j149GhZqrsxHc__6FwpQe6hYZiR
-X-Proofpoint-GUID: SKd3z2jVkGoprZlGEG4RPTnDAH39OOwC
+X-Proofpoint-ORIG-GUID: uh9nVkqD1qNUmYOUIZ2VAMWzYoGv9fZU
+X-Proofpoint-GUID: uh9nVkqD1qNUmYOUIZ2VAMWzYoGv9fZU
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-30_03:2021-04-28,
  2021-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0
- malwarescore=0 spamscore=0 bulkscore=0 mlxlogscore=999 impostorscore=0
- priorityscore=1501 mlxscore=0 suspectscore=0 adultscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ phishscore=0 bulkscore=0
+ suspectscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501
+ clxscore=1034 impostorscore=0 adultscore=0 mlxlogscore=999 mlxscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104060000 definitions=main-2104300056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,41 +99,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jniethe5@gmail.com, rashmica.g@gmail.com, linuxppc-dev@lists.ozlabs.org,
- david@redhat.com
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sandipan Das <sandipan@linux.ibm.com> writes:
+That was a workaround in the XIVE domain because of the lack of MSI
+domain. This is now handled.
 
-> Trace memory is cleared and the corresponding dcache lines
-> are flushed after allocation. However, this should not be
-> done using the PFN. This adds the missing __va() conversion.
+Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/sysdev/xive/common.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 9cb7ae728b46..96737938e8e3 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -616,16 +616,6 @@ static unsigned int xive_irq_startup(struct irq_data=
+ *d)
+ 	pr_devel("xive_irq_startup: irq %d [0x%x] data @%p\n",
+ 		 d->irq, hw_irq, d);
+=20
+-#ifdef CONFIG_PCI_MSI
+-	/*
+-	 * The generic MSI code returns with the interrupt disabled on the
+-	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
+-	 * at that level, so we do it here by hand.
+-	 */
+-	if (irq_data_get_msi_desc(d))
+-		pci_msi_unmask_irq(d);
+-#endif
+-
+ 	/* Pick a target */
+ 	target =3D xive_pick_irq_target(d, irq_data_get_affinity_mask(d));
+ 	if (target =3D=3D XIVE_INVALID_TARGET) {
+--=20
+2.26.3
 
->
-> Fixes: 2ac02e5ecec0 ("powerpc/mm: Remove dcache flush from memory remove.")
-> Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/memtrace.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-> index 71c1262589fe..a31f13814f2e 100644
-> --- a/arch/powerpc/platforms/powernv/memtrace.c
-> +++ b/arch/powerpc/platforms/powernv/memtrace.c
-> @@ -104,8 +104,8 @@ static void memtrace_clear_range(unsigned long start_pfn,
->  	 * Before we go ahead and use this range as cache inhibited range
->  	 * flush the cache.
->  	 */
-> -	flush_dcache_range_chunked(PFN_PHYS(start_pfn),
-> -				   PFN_PHYS(start_pfn + nr_pages),
-> +	flush_dcache_range_chunked((unsigned long)__va(PFN_PHYS(start_pfn)),
-> +				   (unsigned long)__va(PFN_PHYS(start_pfn + nr_pages)),
->  				   FLUSH_CHUNK_SIZE);
->  }
->  
-> -- 
-> 2.25.1
