@@ -7,66 +7,69 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4730C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3517CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:08:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45FC6613CA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:07:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45FC6613CA
+	by mail.kernel.org (Postfix) with ESMTPS id 9E48C610FA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:08:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E48C610FA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlNS6b7mz3dDM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:07:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlNr2Qymz3cmM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:08:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJc1bjHz2xZ2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJc5b2jz30FD
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:04:32 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13U84G7i016719; Fri, 30 Apr 2021 04:04:20 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 388du6rdtw-1
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13U84HLP191384; Fri, 30 Apr 2021 04:04:25 -0400
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 388cm3jn4g-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 04:04:19 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U849tF023345;
- Fri, 30 Apr 2021 08:04:15 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 384akhaxqn-1
+ Fri, 30 Apr 2021 04:04:25 -0400
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U84OWF025991;
+ Fri, 30 Apr 2021 08:04:24 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma01fra.de.ibm.com with ESMTP id 384ay81npw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 08:04:15 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 13U83mle33554868
+ Fri, 30 Apr 2021 08:04:23 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 13U83u8034930960
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 08:03:48 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4E35752050;
- Fri, 30 Apr 2021 08:04:13 +0000 (GMT)
+ Fri, 30 Apr 2021 08:03:56 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3FA50AE05D;
+ Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26AA5AE053;
+ Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 2B57B52051;
- Fri, 30 Apr 2021 08:04:13 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Fri, 30 Apr 2021 08:04:21 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.40.192])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id B660C2200B7;
- Fri, 30 Apr 2021 10:04:12 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 95B692200B7;
+ Fri, 30 Apr 2021 10:04:20 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/31] powerpc/pseries/pci: Introduce rtas_prepare_msi_irqs()
-Date: Fri, 30 Apr 2021 10:03:38 +0200
-Message-Id: <20210430080407.4030767-3-clg@kaod.org>
+Subject: [PATCH 18/31] powerpc/xics: Give a name to the default XICS IRQ domain
+Date: Fri, 30 Apr 2021 10:03:54 +0200
+Message-Id: <20210430080407.4030767-19-clg@kaod.org>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210430080407.4030767-1-clg@kaod.org>
 References: <20210430080407.4030767-1-clg@kaod.org>
@@ -74,17 +77,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: b-_AZWZ6SKdkOV779DJN0xxgFvP9w6G_
-X-Proofpoint-ORIG-GUID: b-_AZWZ6SKdkOV779DJN0xxgFvP9w6G_
+X-Proofpoint-ORIG-GUID: bUlyvDRR3Vy_985GWVhdzhGqtYWJvehf
+X-Proofpoint-GUID: bUlyvDRR3Vy_985GWVhdzhGqtYWJvehf
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-30_05:2021-04-28,
  2021-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- phishscore=0 priorityscore=1501 mlxlogscore=908 malwarescore=0
- adultscore=0 mlxscore=0 bulkscore=0 impostorscore=0 spamscore=0
- suspectscore=0 clxscore=1034 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104060000 definitions=main-2104300056
+ suspectscore=0
+ mlxlogscore=889 clxscore=1034 bulkscore=0 adultscore=0 phishscore=0
+ spamscore=0 impostorscore=0 priorityscore=1501 malwarescore=0 mlxscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2104300056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,66 +104,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This splits the routine setting the MSIs in two parts: allocation of
-MSIs for the PCI device at the FW level (RTAS) and the actual mapping
-and activation of the IRQs.
-
-rtas_prepare_msi_irqs() will serve as a handler for the MSI domain.
+and clean up the error path.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/pseries/msi.c | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ arch/powerpc/sysdev/xics/xics-common.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platform=
-s/pseries/msi.c
-index d2d090e04745..4bf14f27e1aa 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -373,12 +373,11 @@ static void rtas_hack_32bit_msi_gen2(struct pci_dev=
- *pdev)
- 	pci_write_config_dword(pdev, pdev->msi_cap + PCI_MSI_ADDRESS_HI, 0);
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev=
+/xics/xics-common.c
+index 2fa45cd12a82..9815873333c7 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -412,11 +412,22 @@ static const struct irq_domain_ops xics_host_ops =3D=
+ {
+ 	.xlate =3D xics_host_xlate,
+ };
+=20
+-static void __init xics_init_host(void)
++static int __init xics_allocate_domain(void)
+ {
+-	xics_host =3D irq_domain_add_tree(NULL, &xics_host_ops, NULL);
+-	BUG_ON(xics_host =3D=3D NULL);
++	struct fwnode_handle *fn;
++
++	fn =3D irq_domain_alloc_named_fwnode("XICS");
++	if (!fn)
++		return -ENOMEM;
++
++	xics_host =3D irq_domain_create_tree(fn, &xics_host_ops, NULL);
++	if (!xics_host) {
++		irq_domain_free_fwnode(fn);
++		return -ENOMEM;
++	}
++
+ 	irq_set_default_host(xics_host);
++	return 0;
  }
 =20
--static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int ty=
-pe)
-+static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int =
-type,
-+				 msi_alloc_info_t *arg)
- {
- 	struct pci_dn *pdn;
--	int hwirq, virq, i, quota, rc;
--	struct msi_desc *entry;
--	struct msi_msg msg;
-+	int quota, rc;
- 	int nvec =3D nvec_in;
- 	int use_32bit_msi_hack =3D 0;
-=20
-@@ -456,6 +455,22 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev,=
- int nvec_in, int type)
- 		return rc;
- 	}
-=20
-+	return 0;
-+}
-+
-+static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int ty=
-pe)
-+{
-+	struct pci_dn *pdn;
-+	int hwirq, virq, i;
-+	int rc;
-+	struct msi_desc *entry;
-+	struct msi_msg msg;
-+
-+	rc =3D rtas_prepare_msi_irqs(pdev, nvec_in, type, NULL);
-+	if (rc)
-+		return rc;
-+
-+	pdn =3D pci_get_pdn(pdev);
- 	i =3D 0;
- 	for_each_pci_msi_entry(entry, pdev) {
- 		hwirq =3D rtas_query_irq_number(pdn, i++);
+ void __init xics_register_ics(struct ics *ics)
+@@ -478,6 +489,8 @@ void __init xics_init(void)
+ 	/* Initialize common bits */
+ 	xics_get_server_size();
+ 	xics_update_irq_servers();
+-	xics_init_host();
++	rc =3D xics_allocate_domain();
++	if (rc < 0)
++		pr_err("XICS: Failed to create IRQ domain");
+ 	xics_setup_cpu();
+ }
 --=20
 2.26.3
 
