@@ -2,75 +2,75 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 989ACC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:11:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D750FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:11:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2A58610FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:11:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2A58610FA
+	by mail.kernel.org (Postfix) with ESMTPS id 4E93961186
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:11:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E93961186
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlSP4mgrz3fNJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:11:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlSm75cCz3fQH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:11:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJl4mH5z3bT7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:04:39 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13U840v6087781; Fri, 30 Apr 2021 04:04:25 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 388cek2u5n-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJl6n1gz30C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:04:38 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 13U83sLc021910; Fri, 30 Apr 2021 04:04:21 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 388dap9ddq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 04:04:24 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U7xFWw030828;
- Fri, 30 Apr 2021 08:04:22 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma03ams.nl.ibm.com with ESMTP id 384ay8jy9g-1
+ Fri, 30 Apr 2021 04:04:21 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U80XGc027724;
+ Fri, 30 Apr 2021 08:04:19 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04ams.nl.ibm.com with ESMTP id 384ay8jxym-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Apr 2021 08:04:22 +0000
+ Fri, 30 Apr 2021 08:04:19 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13U84Kx621299580
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 13U84HNd40239378
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 08:04:20 GMT
+ Fri, 30 Apr 2021 08:04:17 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E0948A405B;
- Fri, 30 Apr 2021 08:04:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E4780A405B;
+ Fri, 30 Apr 2021 08:04:16 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B1137A4060;
- Fri, 30 Apr 2021 08:04:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BA8E2A4054;
+ Fri, 30 Apr 2021 08:04:16 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Fri, 30 Apr 2021 08:04:19 +0000 (GMT)
+ Fri, 30 Apr 2021 08:04:16 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.40.192])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 20BF7220193;
- Fri, 30 Apr 2021 10:04:19 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 380DF220193;
+ Fri, 30 Apr 2021 10:04:16 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 15/31] KVM: PPC: Book3S HV: XIVE: Fix mapping of passthrough
- interrupts
-Date: Fri, 30 Apr 2021 10:03:51 +0200
-Message-Id: <20210430080407.4030767-16-clg@kaod.org>
+Subject: [PATCH 09/31] powerpc/pseries/pci: Add a msi_free() handler to clear
+ XIVE data
+Date: Fri, 30 Apr 2021 10:03:45 +0200
+Message-Id: <20210430080407.4030767-10-clg@kaod.org>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210430080407.4030767-1-clg@kaod.org>
 References: <20210430080407.4030767-1-clg@kaod.org>
@@ -78,17 +78,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 5OwiyfrCFyu080MC75KCxXaCZI0XaEaZ
-X-Proofpoint-ORIG-GUID: 5OwiyfrCFyu080MC75KCxXaCZI0XaEaZ
+X-Proofpoint-ORIG-GUID: y9SPtOU_DcT7EYrU4v5ZfOC0S1M4man6
+X-Proofpoint-GUID: y9SPtOU_DcT7EYrU4v5ZfOC0S1M4man6
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-04-30_05:2021-04-28,
  2021-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- phishscore=0 clxscore=1034 spamscore=0 priorityscore=1501 adultscore=0
- bulkscore=0 mlxlogscore=720 lowpriorityscore=0 malwarescore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104060000 definitions=main-2104300056
+ malwarescore=0 adultscore=0
+ suspectscore=0 priorityscore=1501 mlxscore=0 phishscore=0 clxscore=1034
+ spamscore=0 impostorscore=0 bulkscore=0 mlxlogscore=999 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
+ definitions=main-2104300056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,51 +106,114 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PCI MSI interrupt numbers are now mapped in a PCI-MSI domain but the
-underlying calls handling the passthrough of the interrupt in the
-guest need a number in the XIVE IRQ domain.
+The MSI domain clears the IRQ with msi_domain_free(), which calls
+irq_domain_free_irqs_top(), which clears the handler data. This is a
+problem for the XIVE controller since we need to unmap MMIO pages and
+free a specific XIVE structure.
 
-Use the IRQ data mapped in the XIVE IRQ domain and not the one in the
-PCI-MSI domain.
-
-Exporting irq_get_default_host() might not be the best solution.
+The 'msi_free()' handler is called before irq_domain_free_irqs_top()
+when the handler data is still available. Use that to clear the XIVE
+controller data.
 
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s_xive.c | 3 ++-
- kernel/irq/irqdomain.c         | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/xive.h      |  1 +
+ arch/powerpc/platforms/pseries/msi.c | 16 +++++++++++++++-
+ arch/powerpc/sysdev/xive/common.c    |  5 ++++-
+ 3 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xiv=
-e.c
-index 3a7da42bed57..81b9f4fc3978 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -861,7 +861,8 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned =
-long guest_irq,
- 	struct kvmppc_xive *xive =3D kvm->arch.xive;
- 	struct kvmppc_xive_src_block *sb;
- 	struct kvmppc_xive_irq_state *state;
--	struct irq_data *host_data =3D irq_get_irq_data(host_irq);
-+	struct irq_data *host_data =3D
-+		irq_domain_get_irq_data(irq_get_default_host(), host_irq);
- 	unsigned int hw_irq =3D (unsigned int)irqd_to_hwirq(host_data);
- 	u16 idx;
- 	u8 prio;
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index d10ab1d689d5..8a073d1ce611 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -481,6 +481,7 @@ struct irq_domain *irq_get_default_host(void)
- {
- 	return irq_default_domain;
- }
-+EXPORT_SYMBOL_GPL(irq_get_default_host);
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+index aa094a8655b0..20ae50ab083c 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -111,6 +111,7 @@ void xive_native_free_vp_block(u32 vp_base);
+ int xive_native_populate_irq_data(u32 hw_irq,
+ 				  struct xive_irq_data *data);
+ void xive_cleanup_irq_data(struct xive_irq_data *xd);
++void xive_irq_free_data(unsigned int virq);
+ void xive_native_free_irq(u32 irq);
+ int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_ir=
+q);
 =20
- static void irq_domain_clear_mapping(struct irq_domain *domain,
- 				     irq_hw_number_t hwirq)
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platform=
+s/pseries/msi.c
+index a41c448520d4..da9d63a088bb 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -529,6 +529,19 @@ static int pseries_msi_ops_prepare(struct irq_domain=
+ *domain, struct device *dev
+ 	return rtas_prepare_msi_irqs(pdev, nvec, type, arg);
+ }
+=20
++/*
++ * ->msi_free() is called before irq_domain_free_irqs_top() when the
++ * handler data is still available. Use that to clear the XIVE
++ * controller data.
++ */
++static void pseries_msi_ops_msi_free(struct irq_domain *domain,
++				     struct msi_domain_info *info,
++				     unsigned int irq)
++{
++	if (xive_enabled())
++		xive_irq_free_data(irq);
++}
++
+ /*
+  * RTAS can not disable one MSI at a time. It's all or nothing. Do it
+  * at the end after all IRQs have been freed.
+@@ -546,6 +559,7 @@ static void pseries_msi_domain_free_irqs(struct irq_d=
+omain *domain,
+=20
+ static struct msi_domain_ops pseries_pci_msi_domain_ops =3D {
+ 	.msi_prepare	=3D pseries_msi_ops_prepare,
++	.msi_free	=3D pseries_msi_ops_msi_free,
+ 	.domain_free_irqs =3D pseries_msi_domain_free_irqs,
+ };
+=20
+@@ -660,7 +674,7 @@ static void pseries_irq_domain_free(struct irq_domain=
+ *domain, unsigned int virq
+=20
+ 	pr_debug("%s bridge %pOF %d #%d\n", __func__, phb->dn, virq, nr_irqs);
+=20
+-	irq_domain_free_irqs_parent(domain, virq, nr_irqs);
++	/* XIVE domain data is cleared through ->msi_free() */
+ }
+=20
+ static const struct irq_domain_ops pseries_irq_domain_ops =3D {
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index 3485baf9ec8c..191cd80ec534 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -980,6 +980,8 @@ EXPORT_SYMBOL_GPL(is_xive_irq);
+=20
+ void xive_cleanup_irq_data(struct xive_irq_data *xd)
+ {
++	pr_debug("%s for HW %x\n", __func__, xd->hw_irq);
++
+ 	if (xd->eoi_mmio) {
+ 		unmap_kernel_range((unsigned long)xd->eoi_mmio,
+ 				   1u << xd->esb_shift);
+@@ -1025,7 +1027,7 @@ static int xive_irq_alloc_data(unsigned int virq, i=
+rq_hw_number_t hw)
+ 	return 0;
+ }
+=20
+-static void xive_irq_free_data(unsigned int virq)
++void xive_irq_free_data(unsigned int virq)
+ {
+ 	struct xive_irq_data *xd =3D irq_get_handler_data(virq);
+=20
+@@ -1035,6 +1037,7 @@ static void xive_irq_free_data(unsigned int virq)
+ 	xive_cleanup_irq_data(xd);
+ 	kfree(xd);
+ }
++EXPORT_SYMBOL_GPL(xive_irq_free_data);
+=20
+ #ifdef CONFIG_SMP
+=20
 --=20
 2.26.3
 
