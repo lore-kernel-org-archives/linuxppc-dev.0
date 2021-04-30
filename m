@@ -2,80 +2,82 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8681C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 12:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF994C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 12:10:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14C496147E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 12:09:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14C496147E
+	by mail.kernel.org (Postfix) with ESMTPS id CB67D61477
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 12:10:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB67D61477
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWrlp2tQwz302D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 22:09:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWrmL32Kfz3bVM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 22:10:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=OxP8F5I1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=mNqisGyU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
- helo=mail-qk1-x735.google.com; envelope-from=danielhb413@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f32;
+ helo=mail-qv1-xf32.google.com; envelope-from=danielhb413@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=OxP8F5I1; dkim-atps=neutral
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
- [IPv6:2607:f8b0:4864:20::735])
+ header.s=20161025 header.b=mNqisGyU; dkim-atps=neutral
+Received: from mail-qv1-xf32.google.com (mail-qv1-xf32.google.com
+ [IPv6:2607:f8b0:4864:20::f32])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWrlN00bKz2yjc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 22:09:34 +1000 (AEST)
-Received: by mail-qk1-x735.google.com with SMTP id 66so30768149qkf.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWrlM5qQKz2xMd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 22:09:35 +1000 (AEST)
+Received: by mail-qv1-xf32.google.com with SMTP id a30so7487727qvb.12
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 05:09:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=wuvEwLcH/dvtw0Uv4RHD3+0Kld2VHKIHHcVpswqfzHQ=;
- b=OxP8F5I1/oIWgma0EDbhlTk8gdm2XtB0FbqAe+1xrs33VxAsP4kXwkanmvZDluXYKv
- 7HEaE8RE/q8+5CnpU3hJPvSpIWsbnh1i2uJ02NLLH+/NmBHVR/5PPnsOCavGs4KQXKZA
- SW6V5pGsNWvRo2Nd+q+APpwtfWojx2uUToAuP4/Gq9Z/MOqU44IZe1Ry9jpor2uJb0Co
- XfQ7XifetbOt6sGqD0pCzWe7MuALpRD5ndb2X+6YABCANTbb394JjBrhlFSOrVhDnRw7
- oV0dKnexmOGgnc0NKOnnRTnXIxi9yc2RuXXvjwjdbusprHC4LxMM1cP4PMeBZ5VmLe9C
- 3fRA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=FCHEd8Oh4sCwiIDjkXQVGV2uAW8LNQRKR2dIMMW/YVA=;
+ b=mNqisGyUH3dJi+bN/KUV3DwODntofLI7rFtbngQQ1nIR4Eu7uapEv3QmBLkBsoidAb
+ Nh7+H87wEe12m8N3grJ7QdH854m1QMjOSHCK7MHFqUI40YQukrrFy2DecdGkDyo/qNDj
+ L/v7vb/KCNxu8sgKOJn2IfvCgVMpRh04huj+Haed5SSLnj1Q6IfUnuCLKvLyfxcUCS33
+ IYawWWHenCJw+7Um7cwNvPKOmor4jtlrE6wmPU4tJ/zXPTaBYto92aHkwC8Kek9OFxI1
+ qaGGgAXsHeZECk1sFlAXT62pVjtAdP5NeIovoNwJcdW90633FXN9VVD96CcaF2hn5Lef
+ Rx9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=wuvEwLcH/dvtw0Uv4RHD3+0Kld2VHKIHHcVpswqfzHQ=;
- b=jqH4j1xEisaCweBvgol9B1Q9aMYQInHNAAJ3Q+Nci0RGYaLR4P0o1fNw98NX8QBeah
- ZufOaM38QOLercn37fzCmCOfOofxtKRrI1e6mTCUD1yMeZvOGzzLmnPoDkTw2ayrkfhk
- GCSpWspNs8eqIxVxyEI06VuWwCvhLnTiqmiCO+pMa38XCyIA2BWCsJqngqJ9FUo7qFXF
- It1/nhv0jbo3yXB4aVehSEa20icu6OnAXRvoy15HwGqiEscaBHrNX63OyvguWM3cHGLr
- zDUHCZbAIwxGXb2DcDOIQkz7XjJazG3Q6Q3CzmTjQZ0WcBSsCgYmaCArJhiCj8Y7WNDw
- A9dQ==
-X-Gm-Message-State: AOAM5328QLnxUWL+eEI7CdxkHZIHhJx4t20y3Q8iyjg5LvoYWrFTTBG0
- vVpSQaZX4eiiJRJPmglqODYcz9kmq2eAWA==
-X-Google-Smtp-Source: ABdhPJwjFSq2tL5EK0ogD2JJzlpq+otaSLQVDyKpz6OslD0XBG8Pjf0yHEdZAHlCFixCICPBkWTrYw==
-X-Received: by 2002:a05:620a:a98:: with SMTP id
- v24mr5079838qkg.374.1619784568977; 
- Fri, 30 Apr 2021 05:09:28 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=FCHEd8Oh4sCwiIDjkXQVGV2uAW8LNQRKR2dIMMW/YVA=;
+ b=DHbHNuU+jqz2xaTJ5EAmKSaGVhw/pWJnl/dmHKC19VCQWv9CgZO42vZfbtH6P7sE2T
+ 6OmGr0wb/dA2H3HGBx41UD+5qsBy0pWzV9UWVb0hZqVJTgUVHLShf/W1K869B1r6jrQr
+ 1Du/JYROAXwR1rrMIByZAyjhxjqUs1Z7zZh7skuTd0qKLtTjUlIJnTZ9qvGzgEYjH9Eb
+ Rj16m6gxXkdZgn7V2bxB+t36nfSiBWtgKqzIMp7TkWUvj7cOtuK+ctZ09DeSE1yyS2CU
+ gPO9jK4rJjZvzod5WbHQaXu7DqvHNXcKAaQHWgvuS83m53+hGFUbZZyvds7No0+AzqsH
+ JUmQ==
+X-Gm-Message-State: AOAM533kMesU/dc6Rfa/hqDuOFd3uM7IViowbAEEfodnupTyg1AaoENf
+ A51dV4cOwRYrAa5J9S5NcXoObkQTtiazSw==
+X-Google-Smtp-Source: ABdhPJzycOGUzsZ66+ljhJQeLti3DPpXtuu2D00aaJN3x01NpFKDJVB7EEj/OumbB3XlCDEVyJ9H8g==
+X-Received: by 2002:a0c:9e17:: with SMTP id p23mr5264983qve.7.1619784572456;
+ Fri, 30 Apr 2021 05:09:32 -0700 (PDT)
 Received: from rekt.ibmuc.com ([2804:431:c7c7:6de0:3db1:1b8e:b097:6036])
- by smtp.gmail.com with ESMTPSA id p190sm928951qke.13.2021.04.30.05.09.27
+ by smtp.gmail.com with ESMTPSA id p190sm928951qke.13.2021.04.30.05.09.31
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 30 Apr 2021 05:09:28 -0700 (PDT)
+ Fri, 30 Apr 2021 05:09:32 -0700 (PDT)
 From: Daniel Henrique Barboza <danielhb413@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] Unisolate LMBs DRC on removal error + cleanups
-Date: Fri, 30 Apr 2021 09:09:14 -0300
-Message-Id: <20210430120917.217951-1-danielhb413@gmail.com>
+Subject: [PATCH 2/3] hotplug-memory.c: enhance dlpar_memory_remove* LMB checks
+Date: Fri, 30 Apr 2021 09:09:16 -0300
+Message-Id: <20210430120917.217951-3-danielhb413@gmail.com>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210430120917.217951-1-danielhb413@gmail.com>
+References: <20210430120917.217951-1-danielhb413@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,23 +97,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+dlpar_memory_remove_by_ic() validates the amount of LMBs to be removed
+by checking !DRCONF_MEM_RESERVED, and in the following loop before
+dlpar_remove_lmb() a check for DRCONF_MEM_ASSIGNED is made before
+removing it. This means that a LMB that is both !DRCONF_MEM_RESERVED and
+!DRCONF_MEM_ASSIGNED will be counted as valid, but then not being
+removed.  The function will end up not removing all 'lmbs_to_remove'
+LMBs while also not reporting any errors.
 
-This is a follow-up of the work done in dlpar_cpu_remove() to
-report CPU removal error by unisolating the DRC. This time I'm
-doing it for LMBs. Patch 01 handles this.
+Comparing it to dlpar_memory_remove_by_count(), the validation is done
+via lmb_is_removable(), which checks for DRCONF_MEM_ASSIGNED and fadump
+constraints. No additional check is made afterwards, and
+DRCONF_MEM_RESERVED is never checked before dlpar_remove_lmb(). The
+function doesn't have the same 'check A for validation, then B for
+removal' issue as remove_by_ic(), but it's not checking if the LMB is
+reserved.
 
-Patches 2 and 3 are cleanups I consider worth posting.
+There is no reason for these functions to validate the same operation in
+two different manners. This patch addresses that by changing
+lmb_is_removable() to also check for DRCONF_MEM_RESERVED to tell if a
+lmb is removable, making dlpar_memory_remove_by_count() take the
+reservation state into account when counting the LMBs.
+lmb_is_removable() is then used in the validation step of
+dlpar_memory_remove_by_ic(), which is already checking for both states
+but in different stages, to avoid counting a LMB that is not assigned as
+eligible for removal. We can then skip the check before
+dlpar_remove_lmb() since we're validating all LMBs beforehand.
 
+Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Daniel Henrique Barboza (3):
-  powerpc/pseries: Set UNISOLATE on dlpar_memory_remove_by_ic() error
-  hotplug-memory.c: enhance dlpar_memory_remove* LMB checks
-  pseries/hotplug-memory.c: adding dlpar_memory_remove_lmbs_common()
-
- .../platforms/pseries/hotplug-memory.c        | 162 ++++++++----------
- 1 file changed, 69 insertions(+), 93 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index bb98574a84a2..4e6d162c3f1a 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -348,7 +348,8 @@ static int pseries_remove_mem_node(struct device_node *np)
+ 
+ static bool lmb_is_removable(struct drmem_lmb *lmb)
+ {
+-	if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
++	if ((lmb->flags & DRCONF_MEM_RESERVED) ||
++		!(lmb->flags & DRCONF_MEM_ASSIGNED))
+ 		return false;
+ 
+ #ifdef CONFIG_FA_DUMP
+@@ -523,7 +524,7 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ 
+ 	/* Validate that there are enough LMBs to satisfy the request */
+ 	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+-		if (lmb->flags & DRCONF_MEM_RESERVED)
++		if (!lmb_is_removable(lmb))
+ 			break;
+ 
+ 		lmbs_available++;
+@@ -533,9 +534,6 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ 		return -EINVAL;
+ 
+ 	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+-		if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
+-			continue;
+-
+ 		rc = dlpar_remove_lmb(lmb);
+ 		if (rc)
+ 			break;
 -- 
 2.30.2
 
