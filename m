@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 471D4C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F314C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:05:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53ECE6135B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:05:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53ECE6135B
+	by mail.kernel.org (Postfix) with ESMTPS id 76B906135B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 08:05:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76B906135B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlKM5r62z3btr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:05:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWlKl18hgz3byZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 18:05:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -29,46 +29,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJW2HSGz2yx9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWlJW2FTlz2ysq
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 18:04:26 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 13U83amQ195982; Fri, 30 Apr 2021 04:04:18 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 388drsrh42-1
+ 13U82oeS087288; Fri, 30 Apr 2021 04:04:19 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 388du00ew9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Fri, 30 Apr 2021 04:04:18 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U842Wq023317;
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 13U80ajk027752;
  Fri, 30 Apr 2021 08:04:16 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06ams.nl.ibm.com with ESMTP id 384akhaxqp-1
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 384ay8jxyj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Fri, 30 Apr 2021 08:04:16 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 13U84DtZ42009004
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 13U83nXn25362702
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Apr 2021 08:04:13 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C3B1942047;
- Fri, 30 Apr 2021 08:04:13 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A06DF42041;
- Fri, 30 Apr 2021 08:04:13 +0000 (GMT)
+ Fri, 30 Apr 2021 08:03:49 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4676CA4065;
+ Fri, 30 Apr 2021 08:04:14 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 20FA3A4062;
+ Fri, 30 Apr 2021 08:04:14 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Fri, 30 Apr 2021 08:04:13 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Fri, 30 Apr 2021 08:04:14 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.40.192])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 2D8D7220193;
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 97BEF2200B7;
  Fri, 30 Apr 2021 10:04:13 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 03/31] powerpc/xive: Add support for IRQ domain hierarchy
-Date: Fri, 30 Apr 2021 10:03:39 +0200
-Message-Id: <20210430080407.4030767-4-clg@kaod.org>
+Subject: [PATCH 04/31] powerpc/xive: Ease debugging of xive_irq_set_affinity()
+Date: Fri, 30 Apr 2021 10:03:40 +0200
+Message-Id: <20210430080407.4030767-5-clg@kaod.org>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210430080407.4030767-1-clg@kaod.org>
 References: <20210430080407.4030767-1-clg@kaod.org>
@@ -76,16 +77,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: cXk-cFjY2rzsHfnzs9z6ekp68QWybTVT
-X-Proofpoint-GUID: cXk-cFjY2rzsHfnzs9z6ekp68QWybTVT
+X-Proofpoint-ORIG-GUID: UztuprgwN9HB1tcgPr3Tcwd_RI8fnOuX
+X-Proofpoint-GUID: UztuprgwN9HB1tcgPr3Tcwd_RI8fnOuX
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-04-30_05:2021-04-28,
+ definitions=2021-04-30_03:2021-04-28,
  2021-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- impostorscore=0 mlxscore=0 bulkscore=0 spamscore=0 malwarescore=0
- clxscore=1034 suspectscore=0 adultscore=0 priorityscore=1501
- mlxlogscore=999 phishscore=0 classifier=spam adjust=0 reason=mlx
+ bulkscore=0
+ lowpriorityscore=0 adultscore=0 mlxlogscore=999 suspectscore=0
+ phishscore=0 clxscore=1034 malwarescore=0 spamscore=0 impostorscore=0
+ priorityscore=1501 mlxscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2104060000 definitions=main-2104300056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,96 +104,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds handlers to allocate/free IRQs in a domain hierarchy. We
-could try to use xive_irq_domain_map() in xive_irq_domain_alloc() but
-we rely on xive_irq_alloc_data() to set the IRQ handler data and
-duplicating the code is simpler.
-
-xive_irq_free_data() needs to be called when IRQ are freed to clear
-the MMIO mappings and free the XIVE handler data, xive_irq_data
-structure. This is going to be a problem with MSI domains which we
-will address later.
+pr_debug() is easier to activate and it helps to know how the HW is
+configured when tweaking the IRQ subsystem.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 60 +++++++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ arch/powerpc/sysdev/xive/common.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
 /common.c
-index 5acd76403ee7..6ad26243bc33 100644
+index 6ad26243bc33..9cb7ae728b46 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1372,7 +1372,67 @@ static void xive_irq_domain_debug_show(struct seq_=
-file *m, struct irq_domain *d,
- }
- #endif
+@@ -713,7 +713,7 @@ static int xive_irq_set_affinity(struct irq_data *d,
+ 	u32 target, old_target;
+ 	int rc =3D 0;
 =20
-+static int xive_irq_domain_translate(struct irq_domain *d,
-+				     struct irq_fwspec *fwspec,
-+				     unsigned long *hwirq,
-+				     unsigned int *type)
-+{
-+	return xive_irq_domain_xlate(d, to_of_node(fwspec->fwnode),
-+				     fwspec->param, fwspec->param_count,
-+				     hwirq, type);
-+}
-+
-+static int xive_irq_domain_alloc(struct irq_domain *domain, unsigned int=
- virq,
-+				 unsigned int nr_irqs, void *arg)
-+{
-+	struct irq_fwspec *fwspec =3D arg;
-+	irq_hw_number_t hwirq;
-+	unsigned int type =3D IRQ_TYPE_NONE;
-+	int i, rc;
-+
-+	rc =3D xive_irq_domain_translate(domain, fwspec, &hwirq, &type);
-+	if (rc)
-+		return rc;
-+
-+	pr_debug("%s %d/%lx #%d\n", __func__, virq, hwirq, nr_irqs);
-+
-+	for (i =3D 0; i < nr_irqs; i++) {
-+		/* TODO: call xive_irq_domain_map() */
-+
-+		/*
-+		 * Mark interrupts as edge sensitive by default so that resend
-+		 * actually works. Will fix that up below if needed.
-+		 */
-+		irq_clear_status_flags(virq, IRQ_LEVEL);
-+
-+		/* allocates and sets handler data */
-+		rc =3D xive_irq_alloc_data(virq + i, hwirq + i);
-+		if (rc)
-+			return rc;
-+
-+		irq_domain_set_hwirq_and_chip(domain, virq + i, hwirq + i,
-+					      &xive_irq_chip, domain->host_data);
-+		irq_set_handler(virq + i, handle_fasteoi_irq);
-+	}
-+
-+	return 0;
-+}
-+
-+static void xive_irq_domain_free(struct irq_domain *domain,
-+				 unsigned int virq, unsigned int nr_irqs)
-+{
-+	int i;
-+
-+	pr_debug("%s %d #%d\n", __func__, virq, nr_irqs);
-+
-+	for (i =3D 0; i < nr_irqs; i++)
-+		xive_irq_free_data(virq + i);
-+}
-+
- static const struct irq_domain_ops xive_irq_domain_ops =3D {
-+	.alloc	=3D xive_irq_domain_alloc,
-+	.free	=3D xive_irq_domain_free,
-+	.translate =3D xive_irq_domain_translate,
- 	.match =3D xive_irq_domain_match,
- 	.map =3D xive_irq_domain_map,
- 	.unmap =3D xive_irq_domain_unmap,
+-	pr_devel("xive_irq_set_affinity: irq %d\n", d->irq);
++	pr_debug("%s: irq %d/%x\n", __func__, d->irq, hw_irq);
+=20
+ 	/* Is this valid ? */
+ 	if (cpumask_any_and(cpumask, cpu_online_mask) >=3D nr_cpu_ids)
+@@ -758,7 +758,7 @@ static int xive_irq_set_affinity(struct irq_data *d,
+ 		return rc;
+ 	}
+=20
+-	pr_devel("  target: 0x%x\n", target);
++	pr_debug("  target: 0x%x\n", target);
+ 	xd->target =3D target;
+=20
+ 	/* Give up previous target */
 --=20
 2.26.3
 
