@@ -2,104 +2,88 @@ Return-Path: <SRS0=0xlf=J3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6584C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63164C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:32:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1140361420
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:19:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1140361420
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	by mail.kernel.org (Postfix) with ESMTPS id E289A60233
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Apr 2021 16:32:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E289A60233
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FWyHp5G1Bz2yy9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 May 2021 02:19:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FWyZp28kFz30Dk
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 May 2021 02:32:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=DkVi50Av;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=KVk4ryPU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=embeddedor.com (client-ip=192.185.45.95;
- helo=gateway21.websitewelcome.com; envelope-from=gustavo@embeddedor.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f29;
+ helo=mail-qv1-xf29.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=embeddedor.com header.i=@embeddedor.com
- header.a=rsa-sha256 header.s=default header.b=DkVi50Av; 
- dkim-atps=neutral
-X-Greylist: delayed 1364 seconds by postgrey-1.36 at boromir;
- Sat, 01 May 2021 02:19:07 AEST
-Received: from gateway21.websitewelcome.com (gateway21.websitewelcome.com
- [192.185.45.95])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=KVk4ryPU; dkim-atps=neutral
+Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com
+ [IPv6:2607:f8b0:4864:20::f29])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FWyHH0Rqsz2xZG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 May 2021 02:19:07 +1000 (AEST)
-Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
- by gateway21.websitewelcome.com (Postfix) with ESMTP id 9EEE7400CAC7E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 10:56:17 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id cVV3lE5HTb8LycVV3l6ywG; Fri, 30 Apr 2021 10:56:17 -0500
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=Om4ZY5IbR19QUfg7UpptCRqjveQax7WqnKvkVNKEw60=; b=DkVi50Avya1CiFlM/pC74kdFZb
- DC5++rKV2ax2Pj+xzqzHZIp0+MzKKyA9u7coLXcUQ3S19AIyxbS0UXXkenkHuhghE9mjzRyNElVzb
- EiaXYAIefqo22e44jo5Gt+BnoZvFiKQexMpOdYL2Gpx6qKIf7NvSfKP4QpDKFy/cRyS/ceK4t5zEf
- BP9mJydmEVVwIpXm1EDvjEoi2yb5IKBzilP4xtQpAMKV4YmyS99k14k00wozGpCM2zZKA6DyabKj9
- VutcrxfmfxU+t2FWRHBzUllg6XvZdWWynd3nL20MWZjruty9oOVOR1tBUtFfUzvE1BpiWCdJn8bWs
- A9j85RSg==;
-Received: from 187-162-31-110.static.axtel.net ([187.162.31.110]:33768
- helo=[192.168.15.8])
- by gator4166.hostgator.com with esmtpsa (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.94)
- (envelope-from <gustavo@embeddedor.com>)
- id 1lcVUy-003wNy-PP; Fri, 30 Apr 2021 10:56:12 -0500
-Subject: Re: Radeon NI: GIT kernel with the nislands_smc commit doesn't boot
- on a Freescale P5040 board and P.A.Semi Nemo board
-To: "Deucher, Alexander" <Alexander.Deucher@amd.com>,
- Christian Zigotzky <chzigotzky@xenosoft.de>,
- "gustavoars@kernel.org" <gustavoars@kernel.org>,
- "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>
-References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
- <MN2PR12MB44881C5F5E24888E2590BF74F75E9@MN2PR12MB4488.namprd12.prod.outlook.com>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Message-ID: <eaf27853-916c-e095-7b7a-afb5256a6f67@embeddedor.com>
-Date: Fri, 30 Apr 2021 10:56:43 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FWyZK0scQz2xZG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 May 2021 02:32:06 +1000 (AEST)
+Received: by mail-qv1-xf29.google.com with SMTP id q5so590244qvv.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Apr 2021 09:32:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=mXl9TXxVJ9ZoOKdTz5acN42lAgeZGmOu/NfPJbITIgY=;
+ b=KVk4ryPUxovH5g+4PI/OhD3YTlt+ZsjpbPXay1UVQQiZy5NqzRWo9XpzV2oL+9sgok
+ QYF8R4aYTd8aFDvBtwSbhbzR9BY4AO+oJ3+fHvC78ePgjDvRmqkOY++/Euez8PEhX14/
+ ByIteixks64eXimHCL6FZ/UEug6EElKRmLu0O5jMAqqJWPCaAhNnlX6d7STyQGSYESfr
+ 4Bj+Ran7/xeTuoYjEsSScvqkWx9GZM9XVeC0nL62tF7/OjEupMarJtZaJ2FYH15UbqHr
+ nkq/LeOI4XZAtTYQOa5dZCnTodJxTV+wmfFqDMaydyCWb5qbArmF3ZpNOO5POv79aDA/
+ BoNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=mXl9TXxVJ9ZoOKdTz5acN42lAgeZGmOu/NfPJbITIgY=;
+ b=AHDRGxcflQej/1YTt53ZqGiKdO2YKaFrJQyvdPjDR4twoUQX+xTlsp0fGDzCI+UE/c
+ z5b/Iodft2AcHOGHV9nAGjnsq3VbUX/esCirlKdDZtYWUZeM3X7QbfcQFAEKjWDQ+JZi
+ g6XTmjrayP+Z4KKP4Ip7p60tohrqL8xYLiUCEDQ7v/4TfM6EZC8Ly73FC5W/g8MEMhuy
+ anSvqReUDu3o8kHY/lRXhlKLWmQQDRdRWTrK2I6O2xuBzWZhhdh1DfgHlHXyb31LEiWX
+ oZUMOC+PFou7gjY7IOihhBZR28vJBHl7ViHx3ieKDoIZl8GZ3yoCP3gyrvPj6mhMxEWL
+ +VPw==
+X-Gm-Message-State: AOAM530U4TzU2VMIDEjQ7RO0D8AEFnHTGnTvemB80R+LjnnBTHhiCZ7l
+ p1Sb/eNB8BmhWG21Bp88MSo=
+X-Google-Smtp-Source: ABdhPJxCn4n5c7NWTvW22Rt+ze6/yWTg5sBVX4VPrqCZGBqWwOMSQdHOUU8sJKXBzUCXQP1HgRvCyA==
+X-Received: by 2002:ad4:538a:: with SMTP id i10mr6135443qvv.9.1619800322608;
+ Fri, 30 Apr 2021 09:32:02 -0700 (PDT)
+Received: from li-908e0a4c-2250-11b2-a85c-f027e903211b.ibm.com.com
+ ([2804:14c:482:7b04::1001])
+ by smtp.gmail.com with ESMTPSA id p1sm2624334qtu.89.2021.04.30.09.31.59
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 30 Apr 2021 09:32:01 -0700 (PDT)
+From: Leonardo Bras <leobras.c@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Leonardo Bras <leobras.c@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Niklas Schnelle <schnelle@linux.ibm.com>
+Subject: [PATCH v4 00/11] DDW + Indirect Mapping
+Date: Fri, 30 Apr 2021 13:31:35 -0300
+Message-Id: <20210430163145.146984-1-leobras.c@gmail.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-In-Reply-To: <MN2PR12MB44881C5F5E24888E2590BF74F75E9@MN2PR12MB4488.namprd12.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse,
- please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 187.162.31.110
-X-Source-L: No
-X-Exim-ID: 1lcVUy-003wNy-PP
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: 187-162-31-110.static.axtel.net ([192.168.15.8])
- [187.162.31.110]:33768
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 8
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,118 +95,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
- Maling list - DRI developers <dri-devel@lists.freedesktop.org>,
- mad skateman <madskateman@gmail.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christian Zigotzky <info@xenosoft.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+So far it's assumed possible to map the guest RAM 1:1 to the bus, which
+works with a small number of devices. SRIOV changes it as the user can
+configure hundreds VFs and since phyp preallocates TCEs and does not
+allow IOMMU pages bigger than 64K, it has to limit the number of TCEs
+per a PE to limit waste of physical pages.
 
+As of today, if the assumed direct mapping is not possible, DDW creation
+is skipped and the default DMA window "ibm,dma-window" is used instead.
 
-On 4/30/21 10:26, Deucher, Alexander wrote:
-> [AMD Public Use]
-> 
-> + Gustavo, amd-gfx
-> 
->> -----Original Message-----
->> From: Christian Zigotzky <chzigotzky@xenosoft.de>
->> Sent: Friday, April 30, 2021 8:00 AM
->> To: gustavoars@kernel.org; Deucher, Alexander 
->> <Alexander.Deucher@amd.com>
->> Cc: R.T.Dickinson <rtd2@xtra.co.nz>; Darren Stevens <darren@stevens- 
->> zone.net>; mad skateman <madskateman@gmail.com>; linuxppc-dev 
->> <linuxppc-dev@lists.ozlabs.org>; Olof Johansson <olof@lixom.net>; 
->> Maling list - DRI developers <dri-devel@lists.freedesktop.org>; Michel 
->> Dänzer <michel@daenzer.net>; Christian Zigotzky <info@xenosoft.de>
->> Subject: Radeon NI: GIT kernel with the nislands_smc commit doesn't 
->> boot on a Freescale P5040 board and P.A.Semi Nemo board
->>
->> Hello,
->>
->> The Nemo board (A-EON AmigaOne X1000) [1] and the FSL P5040 Cyrus+ 
->> board (A-EON AmigaOne X5000) [2] with installed AMD Radeon HD6970 NI 
->> graphics cards (Cayman XT) [3] don't boot with the latest git kernel 
->> anymore after the commit "drm/radeon/nislands_smc.h: Replace 
->> one-element array with flexible-array member in struct NISLANDS_SMC_SWSTATE branch" [4].
->> This git kernel boots in a virtual e5500 QEMU machine with a VirtIO-GPU [5].
->>
->> I bisected today [6].
->>
->> Result: drm/radeon/nislands_smc.h: Replace one-element array with 
->> flexible-array member in struct NISLANDS_SMC_SWSTATE branch
->> (434fb1e7444a2efc3a4ebd950c7f771ebfcffa31) [4] is the first bad commit.
->>
->> I was able to revert this commit [7] and after a new compiling, the 
->> kernel boots without any problems on my AmigaOnes.
->>
->> After that I created a patch for reverting this commit for new git test kernels.
->> [3]
->>
->> The kernel compiles and boots with this patch on my AmigaOnes. Please 
->> find attached the kernel config files.
->>
->> Please check the first bad commit.
+Using the DDW instead of the default DMA window may allow to expand the
+amount of memory that can be DMA-mapped, given the number of pages (TCEs)
+may stay the same (or increase) and the default DMA window offers only
+4k-pages while DDW may offer larger pages (4k, 64k, 16M ...).
 
-I'll have a look.
+Patch #1 replaces hard-coded 4K page size with a variable containing the
+correct page size for the window.
 
-Thanks for the report!
---
-Gustavo
+Patch #2 introduces iommu_table_in_use(), and replace manual bit-field
+checking where it's used. It will be used for aborting enable_ddw() if
+there is any current iommu allocation and we are trying single window
+indirect mapping.
 
->>
->> Thanks,
->> Christian
->>
->> [1]
->> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fen.
->> wikipedia.org%2Fwiki%2FAmigaOne_X1000&amp;data=04%7C01%7Calexand
->> er.deucher%40amd.com%7C0622549383fb4320346b08d90bcf7be1%7C3dd89
->> 61fe4884e608e11a82d994e183d%7C0%7C0%7C637553808670161651%7CUnkn
->> own%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik
->> 1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=PNSrApUdMrku20hH7dEKlJJ
->> TBi7Qp5JOkqpA4MvKqdE%3D&amp;reserved=0
->> [2]
->> https://nam11.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwiki.
->> a miga.org%2Findex.php%3Ftitle%3DX5000&amp;data=04%7C01%7Calexander
->> .deucher%40amd.com%7C0622549383fb4320346b08d90bcf7be1%7C3dd8961f
->> e4884e608e11a82d994e183d%7C0%7C0%7C637553808670161651%7CUnknow
->> n%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1ha
->> WwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=B8Uvhs25%2FP3RfnL1AgICN3Y4
->> CEXeCE1yIoi3vvwvGto%3D&amp;reserved=0
->> [3]
->> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fforu
->> m.hyperion-
->> entertainment.com%2Fviewtopic.php%3Ff%3D35%26t%3D4377&amp;data=
->> 04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346b08d
->> 90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C63755380
->> 8670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIj
->> oiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=TokXplD
->> Tvg3%2BZMPLCgR1fs%2BN2X9MIfLXLW67MAM2Qsk%3D&amp;reserved=0
->> [4]
->> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.
->> k ernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git%
->> 2Fcommit%2F%3Fid%3D434fb1e7444a2efc3a4ebd950c7f771ebfcffa31&amp;d
->> ata=04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346
->> b08d90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C6375
->> 53808670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiL
->> CJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=JC
->> M4xvPEnWdckcTPbQ2Ujv%2FAiMMsFMzzl4Pr%2FRPlcMQ%3D&amp;reserve
->> d=0
->> [5] qemu-system-ppc64 -M ppce500 -cpu e5500 -m 1024 -kernel uImage - 
->> drive format=raw,file=MintPPC32-X5000.img,index=0,if=virtio -netdev
->> user,id=mynet0 -device virtio-net-pci,netdev=mynet0 -append "rw 
->> root=/dev/vda" -device virtio-vga -usb -device usb-ehci,id=ehci 
->> -device usb- tablet -device virtio-keyboard-pci -smp 4 -vnc :1 [6] 
->> https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fforu
->> m.hyperion-
->> entertainment.com%2Fviewtopic.php%3Fp%3D53074%23p53074&amp;data
->> =04%7C01%7Calexander.deucher%40amd.com%7C0622549383fb4320346b08
->> d90bcf7be1%7C3dd8961fe4884e608e11a82d994e183d%7C0%7C0%7C6375538
->> 08670161651%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQ
->> IjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=RXfSlY
->> A3bDEFas0%2Fk2vMWsl2l0nuhS2ecjZgSBLc%2Bs4%3D&amp;reserved=0
->> [7] git revert 434fb1e7444a2efc3a4ebd950c7f771ebfcffa3
+Patch #3 introduces iommu_pseries_alloc_table() that will be helpful
+when indirect mapping needs to replace the iommu_table.
+
+Patch #4 adds helpers for adding DDWs in the list.
+
+Patch #5 refactors enable_ddw() so it returns if direct mapping is
+possible, instead of DMA offset. It helps for next patches on
+indirect DMA mapping and also allows DMA windows starting at 0x00.
+
+Patch #6 bring new helper to simplify enable_ddw(), allowing
+some reorganization for introducing indirect mapping DDW.
+
+Patch #7 adds new helper _iommu_table_setparms() and use it in other
+*setparams*() to fill iommu_table. It will also be used for creating a
+new iommu_table for indirect mapping.
+
+Patch #8 updates remove_dma_window() to accept different property names,
+so we can introduce a new property for indirect mapping.
+
+Patch #9 extracts find_existing_ddw_windows() into
+find_existing_ddw_windows_named(), and calls it by it's property name.
+This will be useful when the property for indirect mapping is created,
+so we can search the device-tree for both properties.
+
+Patch #10:
+Instead of destroying the created DDW if it doesn't map the whole
+partition, make use of it instead of the default DMA window as it improves
+performance. Also, update the iommu_table and re-generate the pools.
+It introduces a new property name for DDW with indirect DMA mapping.
+
+Patch #11:
+Does some renaming of 'direct window' to 'dma window', given the DDW
+created can now be also used in indirect mapping if direct mapping is not
+available.
+
+All patches were tested into an LPAR with an virtio-net interface that
+allows default DMA window and DDW to coexist.
+
+Changes since v3:
+- Fixed inverted free order at ddw_property_create()
+- Updated goto tag naming
+
+Changes since v2:
+- Some patches got removed from the series and sent by themselves,
+- New tbl created for DDW + indirect mapping reserves MMIO32 space,
+- Improved reserved area algorithm,
+- Improved commit messages,
+- Removed define for default DMA window prop name,
+- Avoided some unnecessary renaming,
+- Removed some unnecessary empty lines,
+- Changed some code moving to forward declarations.
+v2
+Link: http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=201210&state=%2A&archive=both
+ 
+
+Leonardo Bras (11):
+  powerpc/pseries/iommu: Replace hard-coded page shift
+  powerpc/kernel/iommu: Add new iommu_table_in_use() helper
+  powerpc/pseries/iommu: Add iommu_pseries_alloc_table() helper
+  powerpc/pseries/iommu: Add ddw_list_new_entry() helper
+  powerpc/pseries/iommu: Allow DDW windows starting at 0x00
+  powerpc/pseries/iommu: Add ddw_property_create() and refactor
+    enable_ddw()
+  powerpc/pseries/iommu: Reorganize iommu_table_setparms*() with new
+    helper
+  powerpc/pseries/iommu: Update remove_dma_window() to accept property
+    name
+  powerpc/pseries/iommu: Find existing DDW with given property name
+  powerpc/pseries/iommu: Make use of DDW for indirect mapping
+  powerpc/pseries/iommu: Rename "direct window" to "dma window"
+
+ arch/powerpc/include/asm/iommu.h       |   1 +
+ arch/powerpc/include/asm/tce.h         |   8 -
+ arch/powerpc/kernel/iommu.c            |  65 ++--
+ arch/powerpc/platforms/pseries/iommu.c | 504 +++++++++++++++----------
+ 4 files changed, 338 insertions(+), 240 deletions(-)
+
+-- 
+2.30.2
+
