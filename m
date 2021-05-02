@@ -2,95 +2,69 @@ Return-Path: <SRS0=XhkK=J5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1034C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 May 2021 21:43:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D317C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 May 2021 22:32:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1332861176
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 May 2021 21:43:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1332861176
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6289F61244
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 May 2021 22:32:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6289F61244
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FYKNf2qvmz3014
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 07:43:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FYLTP6L0nz30Dk
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 08:32:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=JU9W/xnD;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=udzO03mH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::236;
- helo=mail-lj1-x236.google.com; envelope-from=ali.kaasinen@gmail.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=JU9W/xnD; dkim-atps=neutral
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com
- [IPv6:2a00:1450:4864:20::236])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=udzO03mH; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FYJYc4cCDz2yZL
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 May 2021 07:06:10 +1000 (AEST)
-Received: by mail-lj1-x236.google.com with SMTP id b21so4485156ljf.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 May 2021 14:06:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:date:mime-version:user-agent:subject:content-language:to
- :cc:references:from:in-reply-to:content-transfer-encoding;
- bh=N7Yqh79l2fm2YthqZGJy/4v3jPHgVVehObKuu0oKfEI=;
- b=JU9W/xnDmpy9qH74iotexdN48jCFjPv+eFhuUnAbFENynmfWePJbMoBnfQSm7XWs+l
- o8h/uhfhqzWMJucn92gIG9Okv5/MyMdAFj2mj7nt+cf/PUl4ozBbnj4iRRnn2qRmPeYX
- HW5qvgcm5HgATizwthp/ysQOaJv5NnA/Iw05Csrr8LTZwMyjVjZDWxZDXHR++SNsZ5dd
- Bxv4xEfiFqpFfNOX/lOivJrw2OTWJAwvkJhZX+ybmEPFw2Ec4YLpmibqAWyfso69ukgu
- t7nX2a9FsyxFJr7ckPwClPzE479B0NUPXkLM+QhMTGmzYY5d8bSaL2riGmpDnsolJLpU
- H39g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=N7Yqh79l2fm2YthqZGJy/4v3jPHgVVehObKuu0oKfEI=;
- b=naktQQ5lBbE0mCx4ocMgz4OsAvVRhqwTOZEvNKqilf9dRc/qToVu9QVgntK0Ld5phU
- mi75/qK+R41D1/lysr0tHTak3s9vVeKyGsAEYHnKKsylBw9wFCpgZ2qdJ6j1eGsO9ZPc
- h7eTxtDHDOmZrxfZMO00pDTozvNmYWVg27a2ko1DGOy3VQhGj2bJ7u4tDfrD9Y9czRHz
- ATcNVCnzBsNpYiyYo6nybtE6Rb0McBGDSe/pU4UhmhOAOaCX0RE//yDzaHa1JsDCeSly
- 0iBxEEtd8+vnT+A7y5TBK2u8FFc0VBUL4BJ1Dqd9Kw9yLhHISZdWfwij8B28k3upPSwD
- Av1A==
-X-Gm-Message-State: AOAM530kEGGiFmd8IsJ7ytD+LmN91JhxhBkn03kp1mYO197yV8hGlFmY
- 12z6B4ZsSQD79i5y4jC687Y=
-X-Google-Smtp-Source: ABdhPJyFdolNvSlvoH3O9+/CNW7drmqIFS0V+aTPiSan0DUukLYT6G12bs4xGHCF2oOGcHObWcQ3mA==
-X-Received: by 2002:a2e:6e13:: with SMTP id j19mr6110327ljc.116.1619989559570; 
- Sun, 02 May 2021 14:05:59 -0700 (PDT)
-Received: from [192.168.1.218] (dsl-trebng21-58c191-211.dhcp.inet.fi.
- [88.193.145.211])
- by smtp.gmail.com with UTF8SMTPSA id m17sm944171lfg.171.2021.05.02.14.05.58
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sun, 02 May 2021 14:05:59 -0700 (PDT)
-Message-ID: <9198344a-f318-55b4-62b6-22354227ff2d@gmail.com>
-Date: Mon, 3 May 2021 00:05:59 +0300
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101
- Thunderbird/89.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FYLSm5bKfz2xZ9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 May 2021 08:32:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=sxg9T1l2P1TCAt0KGvVd11DgxmUSs0be5EJPC9/f71E=; b=udzO03mH7WI7B+E+YTdUOwtAf1
+ pjHtqAcqFvgk6A/VPnylKxmrsD2lIsft1hfQrFKrFeNBtjNS6w+ZE+mHiu5d5gHPflr/5ZEY0rMY3
+ j/Vp83jF/iLnG6XdNPzIyF+mF5/lYl4l1cbzzG1WNvagPbMrY6WOJxtjqyegDj+NUVKUcLudh1Jxj
+ aIs6ARBcGAieZGWtA+1xInBrNjRM1WzTAXphw3z434iaMpsXozUAAxgXsgOVhK/ROYowwzYtHNMjt
+ qTvAIs7sHWprczN8zI56TNESOK3PApv5dUV0ZiJ8bjyK89wcLViH+1YjrBh3jVl2hZIW2BIswvKuA
+ GSIUL4Rg==;
+Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat
+ Linux)) id 1ldKbH-00EKpr-87; Sun, 02 May 2021 22:30:19 +0000
+Date: Sun, 2 May 2021 23:30:07 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH] Raise the minimum GCC version to 5.2
-Content-Language: en-US
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Joe Perches <joe@perches.com>
+Message-ID: <20210502223007.GZ1847222@casper.infradead.org>
 References: <20210501151538.145449-1-masahiroy@kernel.org>
  <CANiq72k1hB3X6+Nc_iu=f=BoB-F9JW2j_B4ZMcv8_UpW5QQ2Og@mail.gmail.com>
  <3943bc020f6227c8801907317fc113aa13ad4bad.camel@perches.com>
  <20210502183030.GF10366@gate.crashing.org>
  <81a926a3bdb70debe3ae2b13655ea8d249fb9991.camel@perches.com>
  <20210502203253.GH10366@gate.crashing.org>
-From: Ali Kaasinen <ali.kaasinen@gmail.com>
-In-Reply-To: <20210502203253.GH10366@gate.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Mon, 03 May 2021 07:43:03 +1000
+ <CAHk-=wjGJskk5EwnDCccs6DcLytE2yx76+P_W-n1-B5zq0M3KA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wjGJskk5EwnDCccs6DcLytE2yx76+P_W-n1-B5zq0M3KA@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,47 +85,30 @@ Cc: Albert Ou <aou@eecs.berkeley.edu>,
  linux-kernel <linux-kernel@vger.kernel.org>,
  Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Will Deacon <will@kernel.org>,
  Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Miguel Ojeda <ojeda@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
+ Joe Perches <joe@perches.com>, Paul Mackerras <paulus@samba.org>,
+ linux-riscv@lists.infradead.org, Miguel Ojeda <ojeda@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/05/2021 23.32, Segher Boessenkool wrote:
+On Sun, May 02, 2021 at 02:08:31PM -0700, Linus Torvalds wrote:
+> What is relevant is what version of gcc various distributions actually
+> have reasonably easily available, and how old and relevant the
+> distributions are. We did decide that (just as an example) RHEL 7 was
+> too old to worry about when we updated the gcc version requirement
+> last time.
+> 
+> Last year, Arnd and Kirill (maybe others were involved too) made a
+> list of distros and older gcc versions. But I don't think anybody
+> actually _maintains_ such a list. It would be perhaps interesting to
+> have some way to check what compiler versions are being offered by
+> different distros.
 
-> On Sun, May 02, 2021 at 01:00:28PM -0700, Joe Perches wrote:
->> On Sun, 2021-05-02 at 13:30 -0500, Segher Boessenkool wrote:
->>> On Sat, May 01, 2021 at 07:41:53PM -0700, Joe Perches wrote:
->>>> Why not raise the minimum gcc compiler version even higher?
->> On Sun, 2021-05-02 at 13:37 -0500, Segher Boessenkool wrote:
->>> Everyone should always use an as new release as practical
->> []
->>
->>> The latest GCC 5 release is only three and a half years old.
->> You argue slightly against yourself here.
-> I don't?
->
->> Yes, it's mostly a question of practicality vs latest.
->>
->> clang requires a _very_ recent version.
->> gcc _could_ require a later version.
->> Perhaps 8 might be best as that has a __diag warning control mechanism.
-> I have no idea what you mean?
->
->> gcc 8.1 is now 3 years old today.
-> And there will be a new GCC 8 release very soon now!
->
-> The point is, you inconvenience users if you require a compiler version
-> they do not already have.  Five years might be fine, but three years is
-> not.
->
->
-> Segher
+fwiw, Debian 9 aka Stretch released June 2017 had gcc 6.3
+Debian 10 aka Buster released June 2019 had gcc 7.4 *and* 8.3.
+Debian 8 aka Jessie had gcc-4.8.4 and gcc-4.9.2.
 
-Users & especially devs should upgrade then. 3 years of not updating 
-your compiler - if you regularly build the kernel - seems nonsensical.
-
-
-Ali
+So do we care about people who haven't bothered to upgrade userspace
+since 2017?  If so, we can't go past 4.9.
