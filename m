@@ -2,85 +2,85 @@ Return-Path: <SRS0=S2bx=J6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F378EC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 00:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A33C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 00:52:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4288961026
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 00:44:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4288961026
+	by mail.kernel.org (Postfix) with ESMTPS id A794261221
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 00:52:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A794261221
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FYPPR5NcHz30Dl
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 10:44:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FYPZV0PMsz2yyQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 May 2021 10:52:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=vUe8KnV7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=fOPxxZQB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f;
- helo=mail-pf1-x42f.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529;
+ helo=mail-pg1-x529.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=vUe8KnV7; dkim-atps=neutral
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
- [IPv6:2607:f8b0:4864:20::42f])
+ header.s=20161025 header.b=fOPxxZQB; dkim-atps=neutral
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com
+ [IPv6:2607:f8b0:4864:20::529])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FYPNr14gZz2xVt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 May 2021 10:43:53 +1000 (AEST)
-Received: by mail-pf1-x42f.google.com with SMTP id v191so3014761pfc.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 May 2021 17:43:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FYPZ11Bbqz2xZB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 May 2021 10:51:50 +1000 (AEST)
+Received: by mail-pg1-x529.google.com with SMTP id d29so1760376pgd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 May 2021 17:51:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :message-id:content-transfer-encoding;
- bh=fpmzZpvJQO4/lm0f1UurHWqxbKqO5UQScohRkn/ls3Y=;
- b=vUe8KnV7gcaBeLT6/pjpZbZZcyW5DGfYOVK6kgON8QcQbDfrz9CHaeY2mxpdmIsXke
- PuWPjmF0/kd8AYmMKEzjxStY1Db4dzWTeMW5Z5Z8l6eOQrGCm3/nz+A7YDdlc1C4vC/Y
- 7WxLNXXY/Fcsvm2JmKdHNxIMywzRD1pfUWpaVSSiX7wVaO8C+ORSM/xPeMPaKbKr1ijO
- /pYDT9Skq+ZnEjr9hQwuFN7HL0rtEFr9g0JXXtWZCV2CmOzf8F3DhQh/l3uSogrZP130
- rBSfazh3hkkvy6deVcECBY8KQRyKOg0gJoWoVJXF/rc5mks9/+lSb1WqRQTrRazPbvV/
- rAMA==
+ bh=izGt57y2YQAnZqBDnYVADfYd5K9xkYSv3S21aSrnD4w=;
+ b=fOPxxZQBipF0z3Eyn4m5WXwe2xQhj08Sn76S2gbztajnWwa6TZQ690CEaumwtL8yUh
+ 4JdKLEVpOVIvNmD/pyK/orHwevhiOPlZki/5Ee4V6n3QFDmezn2oTlQFHvMnFWf3LNIv
+ y93bh5AK8mSz7+BxTs3rUiN4yESIWqnOhHOmsm5OZWIyLVh0uhRJpbhudNF78mAVsVyp
+ x1SKGd4Fbkw2f5CkHYs7TAG9Pe1sx968eNumJAQ81X/d7/WgifgbDchH8TT5DZul6A3u
+ GiOORUE8JRc4lZRA7pYIQTcT0r30fsXU1mdgreZTo9nKBA/zdsnCf2tDPeI3zo7NT6tZ
+ 095w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:message-id:content-transfer-encoding;
- bh=fpmzZpvJQO4/lm0f1UurHWqxbKqO5UQScohRkn/ls3Y=;
- b=afvLB3h/b0vQLwhb+UhEaZ3TIAvyn2keIJ9AD7AE5oXuRL8DJO32w51cnizBXLyje+
- xmTdJPxqzH/EnxMR2KpIhwep0lo/tjMicPpZkLEQzwytGjbOuo/jA0o9JH6p1dVII035
- ApxU5Wm1kK8rkw73qzDVVesElG0zJdpRyzK0TtEYcRVF4HfgLcatsfeNvkViuIAuhH1j
- EeFw90EGK+RftsNZRnEG/xAtZX3GP6+BeJ/N706d+b+m7hmOIAo6y0JRAF9Tx75xsWi+
- pTS6Z/SgZWjhg/WhefwMIu7mgRkILzTzDH8j6X6IZGNWo/bi+8CtS/aNhzxR2tQtQf09
- 4jUA==
-X-Gm-Message-State: AOAM530bcv9YOpnlvuw8KDojCgnmQCMg5lvwqBnm/3iY5OePwP27acbt
- o9nEWQN2bgvA1ZgxkRY4Unao0YfERVU=
-X-Google-Smtp-Source: ABdhPJwfJJ1Hale3qXPv4sMZUfGJJPDstkmDEqU2RY/ucGkmoDzmAOVZ8byIseV02ENVR1GpPAVuTQ==
-X-Received: by 2002:a05:6a00:1c5b:b029:28e:650d:7f9a with SMTP id
- s27-20020a056a001c5bb029028e650d7f9amr7656180pfw.70.1620002629979; 
- Sun, 02 May 2021 17:43:49 -0700 (PDT)
+ bh=izGt57y2YQAnZqBDnYVADfYd5K9xkYSv3S21aSrnD4w=;
+ b=ZK8KWtIv5LjRK8MDL/w9QT2Wyn3zVF0FtArj1IR8QdedHH1kDjhJnnEL9FZddt05Li
+ 7UGg/Re/CSzwZEXuVSFcRAP5oBMD4owrn1RrauJDiQlhikQtb0KBnA6PfBID6cH65GC+
+ Zl+UqSRK7OUGcAJcSKS0QMh5Tpi2VpZ23cienwcRhnyBLJxVImBM3r9WTOkxk79KHdBI
+ JER5K+NSH5JM8PfADlbFKhprjaXwB02Dp+Ef4uuh4JaBHM8D14efQ6Od/F9ovivWx27+
+ JbJCMEDGPLtRv0s5CD4QDlM+wII4zvMgw46Yor7t8SmOnDvT5YnhKZC3Nkd3BlfIiMH8
+ aX7A==
+X-Gm-Message-State: AOAM533HWG6ZgdPPNDFb4UoMSIq8f7X8hn/l6IvUxjIUaVm+B+MCi6GN
+ /ZhWa6vs8xde6p6DFATzVv5RGeMksOk=
+X-Google-Smtp-Source: ABdhPJxqckR9LKnKwmkCy03nCcFOh0ExND84Fk8QUn7Zz9mPEgP75da99m9UismrpR2WfUqf7mfbRw==
+X-Received: by 2002:a65:67d5:: with SMTP id b21mr15842330pgs.117.1620003106967; 
+ Sun, 02 May 2021 17:51:46 -0700 (PDT)
 Received: from localhost ([61.68.127.20])
- by smtp.gmail.com with ESMTPSA id ne20sm5645253pjb.52.2021.05.02.17.43.48
+ by smtp.gmail.com with ESMTPSA id ms2sm3887197pjb.8.2021.05.02.17.51.45
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 02 May 2021 17:43:49 -0700 (PDT)
-Date: Mon, 03 May 2021 10:43:43 +1000
+ Sun, 02 May 2021 17:51:46 -0700 (PDT)
+Date: Mon, 03 May 2021 10:51:41 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2] powerpc/64s/radix: Enable huge vmalloc mappings
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org
-References: <20210502110050.324953-1-npiggin@gmail.com>
- <5d2548a4-876e-ac11-87f5-b8a2e8a04232@csgroup.eu>
-In-Reply-To: <5d2548a4-876e-ac11-87f5-b8a2e8a04232@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/64: BE option to use ELFv2 ABI for big endian
+ kernels
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <20200428112517.1402927-1-npiggin@gmail.com>
+ <20200428234046.GP17645@gate.crashing.org>
+ <1588121596.7zej1imag0.astroid@bobo.none>
+ <20210502175506.GE10366@gate.crashing.org>
+In-Reply-To: <20210502175506.GE10366@gate.crashing.org>
 MIME-Version: 1.0
-Message-Id: <1620002526.pn3l97mk14.astroid@bobo.none>
+Message-Id: <1620002801.0iaahdk9xn.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,121 +94,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Christophe Leroy's message of May 3, 2021 3:11 am:
+Excerpts from Segher Boessenkool's message of May 3, 2021 3:55 am:
+> On Wed, Apr 29, 2020 at 10:57:16AM +1000, Nicholas Piggin wrote:
+>> Excerpts from Segher Boessenkool's message of April 29, 2020 9:40 am:
+>> I blame toolchain for -mabi=3Delfv2 ! And also some blame on ABI documen=
+t=20
+>> which is called ELF V2 ABI rather than ELF ABI V2 which would have been=20
+>> unambiguous.
 >=20
+> At least ELFv2 ABI is correct.  "ELF ABI v2" is not.
 >=20
-> Le 02/05/2021 =C3=A0 13:00, Nicholas Piggin a =C3=A9crit=C2=A0:
->> This reduces TLB misses by nearly 30x on a `git diff` workload on a
->> 2-node POWER9 (59,800 -> 2,100) and reduces CPU cycles by 0.54%, due
->> to vfs hashes being allocated with 2MB pages.
->>=20
->> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> ---
->> Since v1:
->> - Don't define MODULES_VADDR which has some other side effect (e.g.,
->>    ptdump).
->> - Fixed (hopefully) kbuild warning.
->> - Keep __vmalloc_node_range call on 3 lines.
->>=20
->>   .../admin-guide/kernel-parameters.txt          |  2 ++
->>   arch/powerpc/Kconfig                           |  1 +
->>   arch/powerpc/kernel/module.c                   | 18 +++++++++++++-----
->>   3 files changed, 16 insertions(+), 5 deletions(-)
->>=20
->> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documenta=
-tion/admin-guide/kernel-parameters.txt
->> index 1c0a3cf6fcc9..1be38b25c485 100644
->> --- a/Documentation/admin-guide/kernel-parameters.txt
->> +++ b/Documentation/admin-guide/kernel-parameters.txt
->> @@ -3250,6 +3250,8 @@
->>  =20
->>   	nohugeiomap	[KNL,X86,PPC,ARM64] Disable kernel huge I/O mappings.
->>  =20
->> +	nohugevmalloc	[PPC] Disable kernel huge vmalloc mappings.
->> +
->>   	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
->>   			Equivalent to smt=3D1.
->>  =20
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 1e6230bea09d..c547a9d6a2dd 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -185,6 +185,7 @@ config PPC
->>   	select GENERIC_VDSO_TIME_NS
->>   	select HAVE_ARCH_AUDITSYSCALL
->>   	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
->> +	select HAVE_ARCH_HUGE_VMALLOC		if HAVE_ARCH_HUGE_VMAP
->>   	select HAVE_ARCH_JUMP_LABEL
->>   	select HAVE_ARCH_JUMP_LABEL_RELATIVE
->>   	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <=3D 14
->> diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
->> index fab84024650c..ea1fa55a6897 100644
->> --- a/arch/powerpc/kernel/module.c
->> +++ b/arch/powerpc/kernel/module.c
->> @@ -8,6 +8,7 @@
->>   #include <linux/moduleloader.h>
->>   #include <linux/err.h>
->>   #include <linux/vmalloc.h>
->> +#include <linux/mm.h>
->>   #include <linux/bug.h>
->>   #include <asm/module.h>
->>   #include <linux/uaccess.h>
->> @@ -88,17 +89,22 @@ int module_finalize(const Elf_Ehdr *hdr,
->>   	return 0;
->>   }
->>  =20
->> -#ifdef MODULES_VADDR
->>   static __always_inline void *
->>   __module_alloc(unsigned long size, unsigned long start, unsigned long =
-end)
->>   {
->> -	return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL,
->> -				    PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
->> -				    __builtin_return_address(0));
->> +	/*
->> +	 * Don't do huge page allocations for modules yet until more testing
->> +	 * is done. STRICT_MODULE_RWX may require extra work to support this
->> +	 * too.
->> +	 */
->> +	return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL, PAGE_KERN=
-EL_EXEC,
->> +				    VM_FLUSH_RESET_PERMS | VM_NO_HUGE_VMAP,
->> +				    NUMA_NO_NODE, __builtin_return_address(0));
->>   }
->>  =20
->>   void *module_alloc(unsigned long size)
->>   {
->> +#ifdef CONFIG_PPC32
+>> I can go through and change all my stuff and config options to ELF_ABI_v=
+2.
 >=20
-> What then happens to PPC32 platforms that doesn't define MODULES_VADDR, f=
-or instance 4xx or booke ?
->=20
-> I think it should be:
->=20
-> #ifdef MODULES_VADDR
+> Please don't.  It is wrong.
 
-Yes the kernel build robot agrees with you. I'll respin.
+Then I'm not sure what the point of your previous mail was, what did I=20
+miss?
+
+> Both the original PowerPC ELF ABI and the
+> ELFv2 one have versions themselves.  Also, the base ELF standard has a
+> version, and is set up so there can be incompatible versions even!  Of
+> course it still is version 1 to this day, but :-)
+
+The point was for people who don't know ELFv2 has a specific meaning for=20
+powerpc, then ELF ABIv2 is more explanatory about it being an abi change
+rather than base elf change, even if it's not the "correct" name.
+
+If you don't want that then good, I also prefer to just use ELFv2. I=20
+think people who change this option can easily look up the name in=20
+toolchain and other docs.
 
 Thanks,
 Nick
-
->=20
->>   	unsigned long limit =3D (unsigned long)_etext - SZ_32M;
->>   	void *ptr =3D NULL;
->>  =20
->> @@ -112,5 +118,7 @@ void *module_alloc(unsigned long size)
->>   		ptr =3D __module_alloc(size, MODULES_VADDR, MODULES_END);
->>  =20
->>   	return ptr;
->> -}
->> +#else
->> +	return __module_alloc(size, VMALLOC_START, VMALLOC_END);
->>   #endif
->> +}
->>=20
->=20
