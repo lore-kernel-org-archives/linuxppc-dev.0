@@ -2,55 +2,96 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCEE6C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:09:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61333C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:13:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39B736117A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:09:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39B736117A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id B0EAC610E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:13:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0EAC610E9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZTtN04S1z3c2B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 05:09:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZTy42xbpz3bTZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 05:13:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pRnWiQvl;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=pRnWiQvl; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZTrn47nvz2yxX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 05:08:25 +1000 (AEST)
-IronPort-SDR: UWiN2kcRdGIibnbrdIv7XaPrVoYg+5mDqA+w7mApSsvsjK6THmEAgDEoR5+NoLq3eDkzp8qfvJ
- lbBjza1feChA==
-X-IronPort-AV: E=McAfee;i="6200,9189,9974"; a="283467388"
-X-IronPort-AV: E=Sophos;i="5.82,272,1613462400"; d="scan'208";a="283467388"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 May 2021 12:07:18 -0700
-IronPort-SDR: 5t1wJq0ned5QVzhquYFXXy/H3YaNTACGOfa3FXOh7/O0IBPXKL050SdG2cXy0mi49ncGZT1wuI
- uIrLgMe4pCnw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,272,1613462400"; d="scan'208";a="618591763"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
- by fmsmga006.fm.intel.com with ESMTP; 04 May 2021 12:07:18 -0700
-From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- Borislav Petkov <bp@suse.de>
-Subject: [RFC PATCH v5 15/16] watchdog: Expose lockup_detector_reconfigure()
-Date: Tue,  4 May 2021 12:05:25 -0700
-Message-Id: <20210504190526.22347-16-ricardo.neri-calderon@linux.intel.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210504190526.22347-1-ricardo.neri-calderon@linux.intel.com>
-References: <20210504190526.22347-1-ricardo.neri-calderon@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZTxZ2T2bz2yjP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 05:12:33 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 144J2eau017279; Tue, 4 May 2021 15:12:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject : date : message-id; s=pp1;
+ bh=W/DDofSv+SSI5N7+3mGgxYdQHMS5JRW9elxDZ9ZXkok=;
+ b=pRnWiQvl3fyBOLfv3h0K/Kc9Kt4pjSo9TeMOUITFuaqzebePi3AhsHEGNDwtVDN+2OjC
+ Xza8Qr0eOCa2NVlc5AX2uFDdTQF8mg89C+apDvIxFT0BSk2awYjqfbUcC6t+VbTzqkld
+ 6gUCsnkBAC0m9LoPrgUNQgrswjf0vMdWxu5HkLpSIgdGmcNWrNvMriR68Lzddw+3NlFb
+ ygPR+f4g6bovo4WgRUoRqpmmkGbw3/L5SwB4ofVmjFP4OBRfkMNLb+cv5vZz/9G/j+Fc
+ EYA1+jBqGH/RI9g14jtYBRRcWpXN1JfhPopNwawiuXR0Qd1yO0Wj0XWfzROX/PY0AvBp Lg== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38b99t616a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 May 2021 15:12:23 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 144J7ShL012422;
+ Tue, 4 May 2021 19:12:22 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma03wdc.us.ibm.com with ESMTP id 38aym44k1j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 May 2021 19:12:22 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 144JCM7Y41877976
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 4 May 2021 19:12:22 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F20DAAC05B;
+ Tue,  4 May 2021 19:12:21 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 41021AC05E;
+ Tue,  4 May 2021 19:12:21 +0000 (GMT)
+Received: from ltcalpine2-lp16.aus.stglabs.ibm.com (unknown [9.40.193.182])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  4 May 2021 19:12:21 +0000 (GMT)
+From: Dany Madden <drt@linux.ibm.com>
+To: davem@davemloft.net, kuba@kernel.org
+Subject: [PATCH net v3] ibmvnic: Continue with reset if set link down failed
+Date: Tue,  4 May 2021 15:11:42 -0400
+Message-Id: <20210504191142.2872696-1-drt@linux.ibm.com>
+X-Mailer: git-send-email 2.18.2
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: KEU1bcz2c0iIzLtgR32U2QCCkATpsV0g
+X-Proofpoint-GUID: KEU1bcz2c0iIzLtgR32U2QCCkATpsV0g
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-04_12:2021-05-04,
+ 2021-05-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ mlxlogscore=999 suspectscore=0 mlxscore=0 bulkscore=0 malwarescore=0
+ phishscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ lowpriorityscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2104060000 definitions=main-2105040125
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,102 +103,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
- Tony Luck <tony.luck@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, x86@kernel.org,
- Ricardo Neri <ricardo.neri@intel.com>, Nicholas Piggin <npiggin@gmail.com>,
- linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
- Stephane Eranian <eranian@google.com>,
- Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi.kleen@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: tlfalcon@linux.ibm.com, netdev@vger.kernel.org, paulus@samba.org,
+ drt@linux.ibm.com, sukadev@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When there are more than one implementation of the NMI watchdog, there may
-be situations in which switching from one to another is needed. For
-if the time-stamp counter becomes unstable, the HPET-based NMI watchdog
-an no longer be used.
+When ibmvnic gets a FATAL error message from the vnicserver, it marks
+the Command Respond Queue (CRQ) inactive and resets the adapter. If this
+FATAL reset fails and a transmission timeout reset follows, the CRQ is
+still inactive, ibmvnic's attempt to set link down will also fail. If
+ibmvnic abandons the reset because of this failed set link down and this
+is the last reset in the workqueue, then this adapter will be left in an
+inoperable state.
 
-Switching to another hardlockup detector can be done cleanly by updating
-the arch-specific stub and then reconfiguring the whole lockup detector.
-Expose lockup_detector_reconfigure() to achieve this goal.
+Instead, make the driver ignore this link down failure and continue to
+free and re-register CRQ so that the adapter has an opportunity to
+recover.
 
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ashok Raj <ashok.raj@intel.com>
-Cc: Andi Kleen <andi.kleen@intel.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
-Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
-Cc: x86@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Fixes: ed651a10875f ("ibmvnic: Updated reset handling")
+Signed-off-by: Dany Madden <drt@linux.ibm.com>
+Reviewed-by: Rick Lindsley <ricklind@linux.ibm.com>
+Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
 ---
-Changes since v4:
- * Switching to the perf-based lockup detector under the hood is hacky.
-   Instead, reconfigure the whole lockup detector.
-
-Changes since v3:
- * None
-
-Changes since v2:
- * Introduced this patch.
-
-Changes since v1:
- * N/A
+Changes in V2:
+- Update description to clarify background for the patch
+- Include Reviewed-by tags
+Changes in V3:
+- Add comment above the code change
 ---
- include/linux/nmi.h | 2 ++
- kernel/watchdog.c   | 4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/nmi.h b/include/linux/nmi.h
-index cf12380e51b3..73827a477288 100644
---- a/include/linux/nmi.h
-+++ b/include/linux/nmi.h
-@@ -16,6 +16,7 @@ void lockup_detector_init(void);
- void lockup_detector_soft_poweroff(void);
- void lockup_detector_cleanup(void);
- bool is_hardlockup(void);
-+void lockup_detector_reconfigure(void);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 5788bb956d73..9e005a08d43b 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -2017,8 +2017,15 @@ static int do_reset(struct ibmvnic_adapter *adapter,
+ 			rtnl_unlock();
+ 			rc = set_link_state(adapter, IBMVNIC_LOGICAL_LNK_DN);
+ 			rtnl_lock();
+-			if (rc)
+-				goto out;
++
++			/* Attempted to set the link down. It could fail if the
++			 * vnicserver has already torn down the CRQ. We will
++			 * note it and continue with reset to reinit the CRQ.
++			 */
++			if (rc) {
++				netdev_dbg(netdev,
++					   "Setting link down failed rc=%d. Continue anyway\n", rc);
++			}
  
- extern int watchdog_user_enabled;
- extern int nmi_watchdog_user_enabled;
-@@ -37,6 +38,7 @@ extern int sysctl_hardlockup_all_cpu_backtrace;
- static inline void lockup_detector_init(void) { }
- static inline void lockup_detector_soft_poweroff(void) { }
- static inline void lockup_detector_cleanup(void) { }
-+static inline void lockup_detector_reconfigure(void) { }
- #endif /* !CONFIG_LOCKUP_DETECTOR */
- 
- #ifdef CONFIG_SOFTLOCKUP_DETECTOR
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 4615064ee282..96f06938dc83 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -531,7 +531,7 @@ int lockup_detector_offline_cpu(unsigned int cpu)
- 	return 0;
- }
- 
--static void lockup_detector_reconfigure(void)
-+void lockup_detector_reconfigure(void)
- {
- 	cpus_read_lock();
- 	watchdog_nmi_stop();
-@@ -577,7 +577,7 @@ static __init void lockup_detector_setup(void)
- }
- 
- #else /* CONFIG_SOFTLOCKUP_DETECTOR */
--static void lockup_detector_reconfigure(void)
-+void lockup_detector_reconfigure(void)
- {
- 	cpus_read_lock();
- 	watchdog_nmi_stop();
+ 			if (adapter->state == VNIC_OPEN) {
+ 				/* When we dropped rtnl, ibmvnic_open() got
 -- 
-2.17.1
+2.18.2
 
