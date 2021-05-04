@@ -2,68 +2,118 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A087BC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:42:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B74F9C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:06:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D0653613B3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:42:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0653613B3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id C19FE610E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 19:06:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C19FE610E9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZTGg1vKFz30GN
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 04:42:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZTpP2B8Mz30Dy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 05:06:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XvIZGS60;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=XvIZGS60; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZTGF519Cz2ysp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 04:41:55 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4FZTG842cFz9sWF;
- Tue,  4 May 2021 20:41:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F3wZgbFmhloe; Tue,  4 May 2021 20:41:52 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4FZTG832frz9sWD;
- Tue,  4 May 2021 20:41:52 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 441C28B7B2;
- Tue,  4 May 2021 20:41:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uKQT-f3ZD8C7; Tue,  4 May 2021 20:41:52 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C74E68B78D;
- Tue,  4 May 2021 20:41:51 +0200 (CEST)
-Subject: Re: [powerpc:next-test 8/8] arch/powerpc/lib/feature-fixups.c:304:30:
- error: cast to smaller integer type 'enum l1d_flush_type' from 'void
- *'
-To: kernel test robot <lkp@intel.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <202105050231.wjhXNTzu-lkp@intel.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <c6f6d3d7-8331-9be0-6f15-271f9c5755a1@csgroup.eu>
-Date: Tue, 4 May 2021 20:41:42 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZTnl1vY1z2yjP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 05:05:46 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 144J2eIN017295; Tue, 4 May 2021 15:05:42 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=mime-version :
+ content-type : content-transfer-encoding : date : from : to : cc : subject
+ : in-reply-to : references : message-id; s=pp1;
+ bh=iQCVI9fVjb8+Qcrt7V8dfDFOPmoAemrEfQmmDk7YUCk=;
+ b=XvIZGS60YmlLTT+/leut7nr+297u1zxtfUojTyKC68fXCvkbL7RvasbKXjvmkSDqQyLF
+ yzvieRtoTlSsLPl1cynCvTckdcqdJvj4V0Jb48rMxTvSLJEVYZLV9CD3Kg5ugPM2FdIz
+ SbWYEhfZmna0lSfKvf1YS45qZ+sRTJ7g5lLJF5jJ2tIGYXPQa7Ll615kiB0rD4W9W5Yx
+ U6Ln/lUDinP8QqAzoMMpu2Du7NZPkD2cLQ/TTsoXyByp6qUev7KBeAJnL8Uu2oxnB4BQ
+ ycEnB3VIVzX4vmhj+IAhMTviGHqHMpU5a/WJVGb7nhr8PD8Uek57w9FA99ximk4kUJAr TQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38b99t5t3p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 May 2021 15:05:42 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 144J3IjZ021048;
+ Tue, 4 May 2021 15:05:42 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38b99t5t2t-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 May 2021 15:05:42 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 144IveVF002356;
+ Tue, 4 May 2021 19:05:40 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma04wdc.us.ibm.com with ESMTP id 388xm8yh2d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 May 2021 19:05:40 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 144J5dcT18481620
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 4 May 2021 19:05:39 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7EE207805E;
+ Tue,  4 May 2021 19:05:39 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BDA047805F;
+ Tue,  4 May 2021 19:05:38 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.10.229.42])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue,  4 May 2021 19:05:38 +0000 (GMT)
 MIME-Version: 1.0
-In-Reply-To: <202105050231.wjhXNTzu-lkp@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
 Content-Transfer-Encoding: 8bit
+Date: Tue, 04 May 2021 12:05:38 -0700
+From: Dany Madden <drt@linux.ibm.com>
+To: Rick Lindsley <ricklind@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 net] ibmvnic: Continue with reset if set link down
+ failed
+In-Reply-To: <9e46d7ad-55dd-7caf-0a39-344b80bdceb3@linux.vnet.ibm.com>
+References: <20210420213517.24171-1-drt@linux.ibm.com>
+ <60C99F56-617D-455B-9ACF-8CE1EED64D92@linux.vnet.ibm.com>
+ <20210421064527.GA2648262@us.ibm.com>
+ <CAOhMmr4ckVFTZtSeHFHNgGPUA12xYO8WcUoakx7WdwQfSKBJhA@mail.gmail.com>
+ <20210422172135.GY6564@kitsune.suse.cz>
+ <9e46d7ad-55dd-7caf-0a39-344b80bdceb3@linux.vnet.ibm.com>
+Message-ID: <82a656fa1dd1efdfa196da8ffff19563@imap.linux.ibm.com>
+X-Sender: drt@linux.ibm.com
+User-Agent: Roundcube Webmail/1.1.12
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: trEV6iAN75pMQy618XXq-Qq-RrAVEUoA
+X-Proofpoint-GUID: DsgpkAi3l2hycl_a1PuaphM2e0or0_l8
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-04_12:2021-05-04,
+ 2021-05-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ mlxlogscore=999 suspectscore=0 mlxscore=0 bulkscore=0 malwarescore=0
+ phishscore=0 priorityscore=1501 clxscore=1011 spamscore=0
+ lowpriorityscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2104060000 definitions=main-2105040125
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,132 +125,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clang-built-linux@googlegroups.com, kbuild-all@lists.01.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
+ Lijun Pan <lijunp213@gmail.com>, netdev@vger.kernel.org,
+ Lijun Pan <ljp@linux.vnet.ibm.com>, Tom Falcon <tlfalcon@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Jakub Kicinski <kuba@kernel.org>,
+ Sukadev Bhattiprolu <sukadev@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 2021-04-22 19:26, Rick Lindsley wrote:
+> On 4/22/21 10:21 AM, Michal SuchÃ¡nek wrote:
+> 
+>> Merging do_reset and do_hard_reset might be a good code cleanup which 
+>> is
+>> out of the scope of this fix.
+> 
+> I agree, on both points. Accepting the patch, and improving the reset
+> path are not in conflict with each other.
+> 
+> My position is that improving the reset path is certainly on the table,
+> but not with this bug or this fix.  Within the context of this 
+> discovered
+> problem, the issue is well understood, the fix is small and addresses 
+> the
+> immediate problem, and it has not generated new bugs under subsequent
+> testing.  For those reasons, the submitted patch has my support.
+> 
+> Rick
 
+Thanks for all the feedback on the patch. Refactoring the ibmvnic reset 
+functions is something we plan to evaluate, as this would potentially 
+simplify the reset code. In the mean time, the proposed patch is simple, 
+and has been validated in our test environment to solve an issue 
+resulting in vnic interfaces getting stuck in an offline state following 
+a vnic timeout reset. Given that, I suggest we merge this patch while we 
+look at further optimizations in future. I will submit a V3 patch 
+shortly.
 
-Le 04/05/2021 à 20:31, kernel test robot a écrit :
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-> head:   a5014a5c936a2a9a223e699e1f3abd54d5f68d2c
-> commit: a5014a5c936a2a9a223e699e1f3abd54d5f68d2c [8/8] powerpc/64s: Fix crashes when toggling entry flush barrier
-> config: powerpc-randconfig-r022-20210503 (attached as .config)
-> compiler: clang version 13.0.0 (https://github.com/llvm/llvm-project 8f5a2a5836cc8e4c1def2bdeb022e7b496623439)
-> reproduce (this is a W=1 build):
->          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # install powerpc cross compiling tool for clang build
->          # apt-get install binutils-powerpc-linux-gnu
->          # https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=a5014a5c936a2a9a223e699e1f3abd54d5f68d2c
->          git remote add powerpc https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
->          git fetch --no-tags powerpc next-test
->          git checkout a5014a5c936a2a9a223e699e1f3abd54d5f68d2c
->          # save the attached .config to linux build tree
->          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 ARCH=powerpc
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
->     arch/powerpc/lib/feature-fixups.c:233:32: error: cast to smaller integer type 'enum stf_barrier_type' from 'void *' [-Werror,-Wvoid-pointer-to-enum-cast]
->             enum stf_barrier_type types = (enum stf_barrier_type)data;
->                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->>> arch/powerpc/lib/feature-fixups.c:304:30: error: cast to smaller integer type 'enum l1d_flush_type' from 'void *' [-Werror,-Wvoid-pointer-to-enum-cast]
->             enum l1d_flush_type types = (enum l1d_flush_type)data;
->                                         ^~~~~~~~~~~~~~~~~~~~~~~~~
->     2 errors generated.
-> 
-> 
-> vim +304 arch/powerpc/lib/feature-fixups.c
-> 
->     301	
->     302	static int __do_entry_flush_fixups(void *data)
->     303	{
->   > 304		enum l1d_flush_type types = (enum l1d_flush_type)data;
-
-That looks strange to use an enumeration for 'types', as we perform logical ops with it below (eg: 
-types & L1D_FLUSH_ORI).
-
-I think it should be an int.
-
->     305		unsigned int instrs[3], *dest;
->     306		long *start, *end;
->     307		int i;
->     308	
->     309		instrs[0] = 0x60000000; /* nop */
->     310		instrs[1] = 0x60000000; /* nop */
->     311		instrs[2] = 0x60000000; /* nop */
->     312	
->     313		i = 0;
->     314		if (types == L1D_FLUSH_FALLBACK) {
->     315			instrs[i++] = 0x7d4802a6; /* mflr r10		*/
->     316			instrs[i++] = 0x60000000; /* branch patched below */
->     317			instrs[i++] = 0x7d4803a6; /* mtlr r10		*/
->     318		}
->     319	
->     320		if (types & L1D_FLUSH_ORI) {
->     321			instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
->     322			instrs[i++] = 0x63de0000; /* ori 30,30,0 L1d flush*/
->     323		}
->     324	
->     325		if (types & L1D_FLUSH_MTTRIG)
->     326			instrs[i++] = 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
->     327	
->     328		start = PTRRELOC(&__start___entry_flush_fixup);
->     329		end = PTRRELOC(&__stop___entry_flush_fixup);
->     330		for (i = 0; start < end; start++, i++) {
->     331			dest = (void *)start + *start;
->     332	
->     333			pr_devel("patching dest %lx\n", (unsigned long)dest);
->     334	
->     335			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
->     336	
->     337			if (types == L1D_FLUSH_FALLBACK)
->     338				patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&entry_flush_fallback,
->     339					     BRANCH_SET_LINK);
->     340			else
->     341				patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
->     342	
->     343			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
->     344		}
->     345	
->     346		start = PTRRELOC(&__start___scv_entry_flush_fixup);
->     347		end = PTRRELOC(&__stop___scv_entry_flush_fixup);
->     348		for (; start < end; start++, i++) {
->     349			dest = (void *)start + *start;
->     350	
->     351			pr_devel("patching dest %lx\n", (unsigned long)dest);
->     352	
->     353			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
->     354	
->     355			if (types == L1D_FLUSH_FALLBACK)
->     356				patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&scv_entry_flush_fallback,
->     357					     BRANCH_SET_LINK);
->     358			else
->     359				patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
->     360	
->     361			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
->     362		}
->     363	
->     364	
->     365		printk(KERN_DEBUG "entry-flush: patched %d locations (%s flush)\n", i,
->     366			(types == L1D_FLUSH_NONE)       ? "no" :
->     367			(types == L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
->     368			(types &  L1D_FLUSH_ORI)        ? (types & L1D_FLUSH_MTTRIG)
->     369								? "ori+mttrig type"
->     370								: "ori type" :
->     371			(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
->     372							: "unknown");
->     373	
->     374		return 0;
->     375	}
->     376	
-> 
-> ---
-> 0-DAY CI Kernel Test Service, Intel Corporation
-> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
-> 
+Dany
