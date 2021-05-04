@@ -6,54 +6,68 @@ X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D58FFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11E39C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:58:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F00DB611CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:55:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F00DB611CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=codethink.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 40BE1611AD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:58:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40BE1611AD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZDF43VVkz30Cw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:55:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZDKK41VTz30CY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:58:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codethink.co.uk (client-ip=176.9.8.87;
- helo=imap3.hz.codethink.co.uk; envelope-from=ben.dooks@codethink.co.uk;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 2142 seconds by postgrey-1.36 at boromir;
- Tue, 04 May 2021 18:32:57 AEST
-Received: from imap3.hz.codethink.co.uk (imap3.hz.codethink.co.uk [176.9.8.87])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZClY1gL3z2xZM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 18:32:55 +1000 (AEST)
-Received: from cpc79921-stkp12-2-0-cust288.10-2.cable.virginm.net
- ([86.16.139.33] helo=[192.168.0.18])
- by imap3.hz.codethink.co.uk with esmtpsa  (Exim 4.92 #3 (Debian))
- id 1ldpvR-0000zx-0F; Tue, 04 May 2021 08:57:01 +0100
-Subject: Re: [PATCH] Raise the minimum GCC version to 5.2
-To: Joe Perches <joe@perches.com>,
- Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
- Masahiro Yamada <masahiroy@kernel.org>
-References: <20210501151538.145449-1-masahiroy@kernel.org>
- <CANiq72k1hB3X6+Nc_iu=f=BoB-F9JW2j_B4ZMcv8_UpW5QQ2Og@mail.gmail.com>
- <3943bc020f6227c8801907317fc113aa13ad4bad.camel@perches.com>
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Organization: Codethink Limited.
-Message-ID: <65cda2bb-1b02-6ebc-0ea2-c48927524aa0@codethink.co.uk>
-Date: Tue, 4 May 2021 08:56:59 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZDJy2Hymz2xZM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 18:58:23 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4FZDJr5BZNz9sVk;
+ Tue,  4 May 2021 10:58:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Lgq-uMdin7q6; Tue,  4 May 2021 10:58:20 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4FZDJq4FLBz9sSX;
+ Tue,  4 May 2021 10:58:19 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5C5748B792;
+ Tue,  4 May 2021 10:58:19 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id mmHh7DYM-r4W; Tue,  4 May 2021 10:58:19 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E66708B78D;
+ Tue,  4 May 2021 10:58:18 +0200 (CEST)
+Subject: Re: [FSL P50x0] Xorg always restarts again and again after the the
+ PowerPC updates 5.13-1
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
+ <c5b0ac7c-525f-0208-7587-c90427eae137@xenosoft.de>
+ <0886c1dc-e946-69cb-a0a9-57247acfd080@csgroup.eu>
+ <9864cd72-f1aa-4cf5-1cda-b3a10233b24d@xenosoft.de>
+ <1b0307be-05cd-ab62-8b22-75ffb59ff76b@csgroup.eu>
+ <daace050-6233-77ea-4517-0fd3c4b21057@xenosoft.de>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <30f559f4-b50a-de63-94e1-761022468684@csgroup.eu>
+Date: Tue, 4 May 2021 10:58:14 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.10.0
 MIME-Version: 1.0
-In-Reply-To: <3943bc020f6227c8801907317fc113aa13ad4bad.camel@perches.com>
+In-Reply-To: <daace050-6233-77ea-4517-0fd3c4b21057@xenosoft.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 04 May 2021 18:54:44 +1000
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,44 +79,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jonathan Corbet <corbet@lwn.net>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Miguel Ojeda <ojeda@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Will Deacon <will@kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Darren Stevens <darren@stevens-zone.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/05/2021 03:41, Joe Perches wrote:
-> On Sat, 2021-05-01 at 17:52 +0200, Miguel Ojeda wrote:
->> On Sat, May 1, 2021 at 5:17 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
->>>
->>> More cleanups will be possible as follow-up patches, but this one must
->>> be agreed and applied to the mainline first.
+
+
+Le 04/05/2021 à 10:29, Christian Zigotzky a écrit :
+> On 04 May 2021 at 09:47am, Christophe Leroy wrote:
+>> Hi
 >>
->> +1 This will allow me to remove the __has_attribute hack in
->> include/linux/compiler_attributes.h.
+>> Le 04/05/2021 à 09:21, Christian Zigotzky a écrit :
+>>> Hi Christophe,
+>>>
+>>> Thanks for your answer but I think I don't know how it works with the cherry-pick.
+>>>
+>>> $ git bisect start
+>>
+>> As you suspect the problem to be specific to powerpc, I can do
+>>
+>> git bisect start -- arch/powerpc
+>>
+>>
+>>> $ git bisect good 68a32ba14177d4a21c4a9a941cf1d7aea86d436f
+>>> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
+>>
+>> You said that powerpc-5.13-1 is bad so you can narrow the search I think:
+>>
+>> git bisect bad powerpc-5.13-1
+>> git bisect good 887f3ceb51cd3~
+> I tried it but without any success.
 > 
-> Why not raise the minimum gcc compiler version even higher?
+> git bisect bad powerpc-5.13-1
 > 
-> https://gcc.gnu.org/releases.html
+> Output:
+> fatal: Needed a single revision
+> Bad rev input: powerpc-5.13-1
 
-Some of us are a bit stuck as either customer refuses to upgrade
-their build infrastructure or has paid for some old but safety
-blessed version of gcc. These often lag years behind the recent
-gcc releases :(
+I don't understand, on my side it works. Maybe a difference between your version of git and mine.
 
+In that case, just use the SHA corresponding to the merge:
 
--- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
 
-https://www.codethink.co.uk/privacy.html
+Christophe
