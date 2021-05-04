@@ -3,100 +3,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA8EC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0942C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:05:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3F1B6121D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:04:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3F1B6121D
+	by mail.kernel.org (Postfix) with ESMTPS id C76836121D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:05:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C76836121D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZ4Sh34Lbz30BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:04:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZ4TK3VXrz30G0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:05:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h7eKCl+0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qQrAouoa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=h7eKCl+0; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=qQrAouoa; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZ4S66xCmz2xZF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZ4S71p4Gz2xfy
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 13:04:06 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1442YNoe001145; Mon, 3 May 2021 23:04:00 -0400
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14433I0f173759; Mon, 3 May 2021 23:04:02 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=cJxTTxW5L8WMgXDQVQBT3lVEq+6YZ898pKCFch4ZPpM=;
- b=h7eKCl+0ZQNg9ZzpzllujBtseJNjbfIkp3RJiztF1HPuUJgChOefMjaHUV9XfisA3eFd
- fwlztDn9hhNIlrs6U7cQoswxnZRB9yevRZ+Q73tjKyE1vmzVeZN/kxTUk4nb7LbVpf4s
- 6xcghGuT8n4P8j1KGta9uOZHF0J+JHhfT0iCFNJF99bZ2n+OhZK0vj0ddK/B8hhbsn0B
- XHP3/WONO42jW+IrOj5WgeQT/a3NNLCaOrVV+aQy1XCDe2MWA5b4598AyyoPEcB4sBRK
- Ga+kr7eRRSt64vKld5e9R9lXvd8DFAimbOQlSkIiJdeDLwiWN3bLiKQ6pYQBV15kb8Fl nQ== 
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38av8f9wbk-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=cgrtNwr82batY/zrHpi8JvxWhhhGQ4hKF+seRmK3CD8=;
+ b=qQrAouoa6dKLpTJr7UsScuQyTgQlC1LcIgHKXp3rcLAsP+GzZOhb119hAA86IkMXf6+m
+ hhjb1lmIaYFU21z+TZQeuPbI5M09TnNW3QhnHe3DPM0LUWpwDQad4CUVhgrfGFUtdZ1+
+ fBDk6U6S0IFNpcmwQbALOHJJ/MksjMR9I7phdwDgCAxkZQQtOgNvRrVAaXSU2liJ+XTH
+ L4Dz7pPEeYqpjJSAMxWMhQp/zwFARNd9VN+lUHeWV8QniFRupykkFoxD3xfrFrrts+FR
+ Lvt23TFnGBg11ZOqV9Wdd4MWJOn2ZyjFHAv1ILLKUkhRQBf0PfUWQFdsAngRK6qX3beu fA== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38awr509ws-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 May 2021 23:04:00 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1442vPqB029105;
- Tue, 4 May 2021 03:03:59 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma03wdc.us.ibm.com with ESMTP id 388xma2j0j-1
+ Mon, 03 May 2021 23:04:02 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1442va8a016838;
+ Tue, 4 May 2021 03:04:01 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma04dal.us.ibm.com with ESMTP id 388xm9q1yr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 04 May 2021 03:03:59 +0000
+ Tue, 04 May 2021 03:04:01 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14433xpf37552468
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 144340Wa34079092
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 4 May 2021 03:03:59 GMT
+ Tue, 4 May 2021 03:04:01 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4A144AC059;
- Tue,  4 May 2021 03:03:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E4602AC05F;
+ Tue,  4 May 2021 03:04:00 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 13E48AC05B;
- Tue,  4 May 2021 03:03:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A1DCAAC05E;
+ Tue,  4 May 2021 03:04:00 +0000 (GMT)
 Received: from localhost (unknown [9.211.126.236])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  4 May 2021 03:03:58 +0000 (GMT)
+ Tue,  4 May 2021 03:04:00 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC 00/10] powerpc/rtas: improved busy and extended delay status
- handling
-Date: Mon,  3 May 2021 22:03:48 -0500
-Message-Id: <20210504030358.1715034-1-nathanl@linux.ibm.com>
+Subject: [RFC 02/10] powerpc/rtas: do not schedule in rtas_os_term()
+Date: Mon,  3 May 2021 22:03:50 -0500
+Message-Id: <20210504030358.1715034-3-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.30.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YGhySf7oeJ8LItz1Ra8ZQHecaOOTFHHm
-X-Proofpoint-ORIG-GUID: YGhySf7oeJ8LItz1Ra8ZQHecaOOTFHHm
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20210504030358.1715034-1-nathanl@linux.ibm.com>
+References: <20210504030358.1715034-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: sM8JqZQN5QdI4NZqZsf1shXh5MD220tF
+X-Proofpoint-ORIG-GUID: sM8JqZQN5QdI4NZqZsf1shXh5MD220tF
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-04_01:2021-05-03,
  2021-05-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0
- mlxlogscore=955 spamscore=0 bulkscore=0 lowpriorityscore=0 adultscore=0
- phishscore=0 clxscore=1011 mlxscore=0 priorityscore=1501 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
- definitions=main-2105040018
+ lowpriorityscore=0
+ impostorscore=0 spamscore=0 mlxlogscore=782 priorityscore=1501 bulkscore=0
+ mlxscore=0 clxscore=1015 suspectscore=0 adultscore=0 phishscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2105040023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,67 +114,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an attempt at providing clearer names as discussed here:
+rtas_os_term() is called in the panic path and should immediately
+re-call the RTAS ibm,os-term function as long as it returns a busy
+status. It's not safe to use rtas_busy_delay() in this context, which
+potentially can schedule away. Use rtas_spin_if_busy().
 
-https://github.com/linuxppc/issues/issues/164
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/kernel/rtas.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-as well as providing better behavior for RTAS_BUSY (-2) and small
-extended delay values, which in my experience seem more common than
-the larger ones. In testing PREEMPT_NONE kernels with CPUs busy, I see
-the elapsed time for memory add operations roughly halved, while
-memory remove operations' elapsed time shrinks by about ~25%. This is
-achieved without significantly more time spent on CPU:
-
-(- is before, + is after)
-
-  Performance counter stats for 'drmgr -c mem -a -q 10' (10 runs):
-
--             1,898      probe:rtas_call           #    0.003 M/sec                    ( +-  2.20% )
--            751.57 msec task-clock                #    0.289 CPUs utilized            ( +-  1.56% )
-+             1,969      probe:rtas_call           #    0.003 M/sec                    ( +-  2.69% )
-+            766.20 msec task-clock                #    0.688 CPUs utilized            ( +-  1.99% )
-
--             2.605 +- 0.148 seconds time elapsed  ( +-  5.70% )
-+            1.1129 +- 0.0660 seconds time elapsed  ( +-  5.93% )
-
-  Performance counter stats for 'drmgr -c mem -r -q 10' (10 runs):
-
--               673      probe:rtas_call           #    0.002 M/sec                    ( +-  0.55% )
--            318.36 msec task-clock                #    0.234 CPUs utilized            ( +-  0.42% )
-+               692      probe:rtas_call           #    0.002 M/sec                    ( +-  0.73% )
-+            320.87 msec task-clock                #    0.309 CPUs utilized            ( +-  0.34% )
-
--             1.362 +- 0.100 seconds time elapsed  ( +-  7.37% )
-+            1.0372 +- 0.0468 seconds time elapsed  ( +-  4.51% )
-
-Questions / concerns / to do:
-* I don't love the new API function names.
-* Introduces three new APIs when two likely would suffice.
-* Need to convert eeh_pseries and scanlog.
-* rtas_busy_delay() and rtas_busy_delay_time() not yet removed.
-
-Nathan Lynch (10):
-  powerpc/rtas: new APIs for busy and extended delay statuses
-  powerpc/rtas: do not schedule in rtas_os_term()
-  powerpc/rtas-rtc: convert get-time-of-day to rtas_force_spin_if_busy()
-  powerpc/rtas-rtc: convert set-time-of-day to rtas_sched_if_busy()
-  powerpc/pseries/fadump: convert to rtas_sched_if_busy()
-  powerpc/pseries/msi: convert to rtas_sched_if_busy()
-  powerpc/pseries/iommu: convert to rtas_sched_if_busy()
-  powerpc/pseries/dlpar: convert to rtas_sched_if_busy()
-  powerpc/rtas: convert to rtas_sched_if_busy()
-  powerpc/rtas_flash: convert to rtas_sched_if_busy()
-
- arch/powerpc/include/asm/rtas.h              |   4 +
- arch/powerpc/kernel/rtas-rtc.c               |  38 +---
- arch/powerpc/kernel/rtas.c                   | 178 ++++++++++++++++++-
- arch/powerpc/kernel/rtas_flash.c             |   4 +-
- arch/powerpc/platforms/pseries/dlpar.c       |   2 +-
- arch/powerpc/platforms/pseries/iommu.c       |   2 +-
- arch/powerpc/platforms/pseries/msi.c         |   4 +-
- arch/powerpc/platforms/pseries/rtas-fadump.c |  22 +--
- 8 files changed, 190 insertions(+), 64 deletions(-)
-
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 4a1dfbfa51ba..4177f7385ea2 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -960,7 +960,7 @@ void rtas_os_term(char *str)
+ 	do {
+ 		status = rtas_call(rtas_token("ibm,os-term"), 1, 1, NULL,
+ 				   __pa(rtas_os_term_buf));
+-	} while (rtas_busy_delay(status));
++	} while (rtas_spin_if_busy(status));
+ 
+ 	if (status != 0)
+ 		printk(KERN_EMERG "ibm,os-term call failed %d\n", status);
 -- 
 2.30.2
 
