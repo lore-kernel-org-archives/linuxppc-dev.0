@@ -7,97 +7,97 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED6FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05060C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:09:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AFD2C6139A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:08:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AFD2C6139A
+	by mail.kernel.org (Postfix) with ESMTPS id 80C6061176
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 03:09:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80C6061176
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZ4YJ3VtPz30JW
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:08:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZ4Yv29swz3d63
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:09:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JoivmUzx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r7UPI/8d;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=JoivmUzx; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=r7UPI/8d; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZ4SC4MR8z2yxl
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 13:04:11 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1442Xcdj030742; Mon, 3 May 2021 23:04:07 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZ4SF00fbz3005
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 13:04:12 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14432k6b152217; Mon, 3 May 2021 23:04:09 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=haBzhXr52fg9euBbc9MlyZfqNX+NfiIG4V7cLouuBxc=;
- b=JoivmUzxJOqNnl5/N6zftsxt8fFPg5yyety7waji5PzYu8mtLdinFXQCgYk799Jnycq6
- smgZhg5TbMKQAtq1/QJeeGMNICbUvk+DONgMYASE+oKTOFacE9TvaQO8YXRvftjcq70P
- zf1VT5ynGO8d8sw7N8t8JQ8oQwgjcmN/5BwLj7oqCoCk6MhrRCqhOr21d+EYkSetjc3J
- ADAj52m77Q9yhnHtjwguJl0C3iGz4vs5IjOwxURpiP1SB+mHInZ2CBenIb+jNBlQ+Vt6
- J4V0wjMDqoOdNAHHxxEhdnUyuGXqhsdssfrior7Buywma+eaG0A8J36VN+lpvpAIgm56 ZQ== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38awe7gmbn-1
+ bh=WiEr7S6HAFkq9Ytp0m+amn449sv6uOK0HAHhFh2gIFo=;
+ b=r7UPI/8d4UGUhqpoJWxFS0cA5O/Lcs/vvVC6aUcwGVwrzOuStAIA3YhQ76xue9H44iP0
+ R0+egVROdSOalurC6L/fGJgBZaQ7KlesS9wk0SCwIlpIy3g6dYT2ZEmEB70uN5EHVAsr
+ IMnaXuqBsy9dwtDDTHvowJ26TBWn2+jJF67eSJOOraOJRYwELxrpEdZGElIdmoGjMjUW
+ 05uoTRRaccheETxJQZxAkvKnOB0WoXMJYtBtueVI/Zgadow9QhAXXnJbQMo5ndxJ5UmK
+ +XIzlNCMqaGdlYTQ1WcX/6AhC5w8GhWiQyFeruoC5f4Y3WijFTriU8JR4kQXYBQ6qphy wA== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38awgv8gpc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 03 May 2021 23:04:06 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1442vucx008648;
- Tue, 4 May 2021 03:04:06 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma05wdc.us.ibm.com with ESMTP id 38a9xfpsg3-1
+ Mon, 03 May 2021 23:04:09 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1442vqsG001282;
+ Tue, 4 May 2021 03:04:08 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma02dal.us.ibm.com with ESMTP id 388xm972p7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 04 May 2021 03:04:06 +0000
+ Tue, 04 May 2021 03:04:08 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 144345m47143850
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 144347Cq39518472
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 4 May 2021 03:04:06 GMT
+ Tue, 4 May 2021 03:04:07 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CA488AC05F;
- Tue,  4 May 2021 03:04:05 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 79153AC05B;
+ Tue,  4 May 2021 03:04:07 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 927E7AC062;
- Tue,  4 May 2021 03:04:05 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 41A48AC059;
+ Tue,  4 May 2021 03:04:07 +0000 (GMT)
 Received: from localhost (unknown [9.211.126.236])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  4 May 2021 03:04:05 +0000 (GMT)
+ Tue,  4 May 2021 03:04:07 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC 08/10] powerpc/pseries/dlpar: convert to rtas_sched_if_busy()
-Date: Mon,  3 May 2021 22:03:56 -0500
-Message-Id: <20210504030358.1715034-9-nathanl@linux.ibm.com>
+Subject: [RFC 10/10] powerpc/rtas_flash: convert to rtas_sched_if_busy()
+Date: Mon,  3 May 2021 22:03:58 -0500
+Message-Id: <20210504030358.1715034-11-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210504030358.1715034-1-nathanl@linux.ibm.com>
 References: <20210504030358.1715034-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: VbPkFtiyh4Jcjg2FJzEvOqVPQPU0kagn
-X-Proofpoint-GUID: VbPkFtiyh4Jcjg2FJzEvOqVPQPU0kagn
+X-Proofpoint-GUID: csBv_A_S8VBfiOmWvl5xBlZRs5atqD9p
+X-Proofpoint-ORIG-GUID: csBv_A_S8VBfiOmWvl5xBlZRs5atqD9p
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-04_01:2021-05-03,
  2021-05-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxscore=0
- malwarescore=0 bulkscore=0 mlxlogscore=999 impostorscore=0
- priorityscore=1501 phishscore=0 clxscore=1015 spamscore=0
- lowpriorityscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104060000 definitions=main-2105040018
+ mlxlogscore=929 spamscore=0
+ lowpriorityscore=0 phishscore=0 malwarescore=0 clxscore=1015
+ priorityscore=1501 bulkscore=0 impostorscore=0 mlxscore=0 adultscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2105040023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,22 +119,31 @@ extended delay values.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/rtas_flash.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 3ac70790ec7a..3ba77bc09a6e 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -167,7 +167,7 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index a99179d83538..bedefb9178ec 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -378,7 +378,7 @@ static void manage_flash(struct rtas_manage_flash_t *args_buf, unsigned int op)
+ 	do {
+ 		rc = rtas_call(rtas_token("ibm,manage-flash-image"), 1, 1,
+ 			       NULL, op);
+-	} while (rtas_busy_delay(rc));
++	} while (rtas_sched_if_busy(rc));
  
+ 	args_buf->status = rc;
+ }
+@@ -456,7 +456,7 @@ static void validate_flash(struct rtas_validate_flash_t *args_buf)
+ 			       (u32) __pa(rtas_data_buf), args_buf->buf_size);
+ 		memcpy(args_buf->buf, rtas_data_buf, VALIDATE_BUF_SIZE);
  		spin_unlock(&rtas_data_buf_lock);
+-	} while (rtas_busy_delay(rc));
++	} while (rtas_sched_if_busy(rc));
  
--		if (rtas_busy_delay(rc))
-+		if (rtas_sched_if_busy(rc))
- 			continue;
- 
- 		switch (rc) {
+ 	args_buf->status = rc;
+ 	args_buf->update_results = update_results;
 -- 
 2.30.2
 
