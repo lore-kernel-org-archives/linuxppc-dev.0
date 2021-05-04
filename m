@@ -2,103 +2,91 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C84DC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECA8BC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:36:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FD6D613B3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:30:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FD6D613B3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 33592611AC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 08:36:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33592611AC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZCj70Yp2z30D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:30:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZCqc64Vgz30DR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 18:36:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=MSI6d3nm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=oW0knTSs;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=85.215.255.20;
- helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f;
+ helo=mail-pf1-x42f.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=MSI6d3nm; 
- dkim-atps=neutral
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
- [85.215.255.20])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=oW0knTSs; dkim-atps=neutral
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
+ [IPv6:2607:f8b0:4864:20::42f])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZChW3lk2z2xYt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 18:30:17 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1620116982; cv=none;
- d=strato.com; s=strato-dkim-0002;
- b=KflHQ4aGul8HCs2egcS+iDXWPg8RzubI4a2hoOBRJ73dOe98LoI8gO4wniqHwdGNvr
- F25PeRHwCtxlzIgl1pE/PaNxx3aAP6u71m+xeqnQU9m2AwvRfn/fOyyM6Hwfbq01G4Fd
- 1mn3DR/qE0WaDJerB6i3XlQcVMT+H4vhiR1cwyYtaXbjBVvXyxY6sWr+GmOezIrZZB+m
- UC9bDW5Jpa1sPt5wBAPlfJE+m1kjgMy/rjT26u/pLGVDWHR6S1u21rxLNuY8nWkystA0
- EhJBHLFf0TC4RcM9AYfIqgTpRCO/ujfPmqZGCHoA5hiaM6PbZqqv7cJq3SRl20WKJt2U
- GmOg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1620116982;
- s=strato-dkim-0002; d=strato.com;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
- From:Subject:Sender;
- bh=em+8YYe9In9BiERf0mzKfA5MiyZ3aldSQGnxUgzcQBs=;
- b=njQDT+vasNdr1gYM+HsR22p0IAEeO4FuXzAOru5UhX8LtjXmsgm5SUeUEgPnA4pTEv
- uWYZvajtvcQ5wPkuYs0mHfQh/hjkh2fNH5+jbkjtMegN5GN0/t4y2ikbfsFRO4f1BMXI
- 4NlT89fmXAK0R7kRWN5ehvRzH2cnJenOKfQ/Xj220ciCBUORsO1/ZAxQweT3g8zoOINK
- Ryt6PEfOMfshFNH9pG0C7TLyvQ0LJpORSS7bTi6STXRzJPaVF3jQyCTVaDXcxF7+qip7
- Rz3F+PDZJ9jX1wYqb1FYkoup6qxGMJeOTTiP1oUCjxUK1YcuSzwq9p1dpp76BMWvzK9i
- X+Ow==
-ARC-Authentication-Results: i=1; strato.com;
-    dkim=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1620116982;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
- From:Subject:Sender;
- bh=em+8YYe9In9BiERf0mzKfA5MiyZ3aldSQGnxUgzcQBs=;
- b=MSI6d3nmbR2TztIz33WasAXJm95i4ouxNqZmZT2juYj4B43TgQThsLAwRHEyuA975H
- WzbpHVBevYlL5OrxJFHUOptoeEsFjVF4vGliTgSZalJruRF8ZiQE/+vTKjZW78QQNK93
- ZNJ8/jIT/h/Wky4IacuRI2jNuvAW4RAJ1SwUNbitT2p1qVwfmaA7hYmt6Vs86cNmn/9o
- X8K0tG0xh2hpEUkm8yCnfxp/BJx/etbZhD80iYoHoutMapftDkQA3ciTVRFlHWA5EieU
- o4olo3S8/J7Vl4KDBwXIjUugCl6NlSe/CUlFgz55qU1416OkYrDGU8851ubjemEMgk2v
- 8CtQ==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSIhsJhhV/a8MrHM5J4CoqSoOzBQ=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:89c0:ebfc:14dd:6e8f:db34:91bd]
- by smtp.strato.de (RZmta 47.25.6 AUTH)
- with ESMTPSA id D075c0x448Tf0TH
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Tue, 4 May 2021 10:29:41 +0200 (CEST)
-Subject: Re: [FSL P50x0] Xorg always restarts again and again after the the
- PowerPC updates 5.13-1
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
- <c5b0ac7c-525f-0208-7587-c90427eae137@xenosoft.de>
- <0886c1dc-e946-69cb-a0a9-57247acfd080@csgroup.eu>
- <9864cd72-f1aa-4cf5-1cda-b3a10233b24d@xenosoft.de>
- <1b0307be-05cd-ab62-8b22-75ffb59ff76b@csgroup.eu>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <daace050-6233-77ea-4517-0fd3c4b21057@xenosoft.de>
-Date: Tue, 4 May 2021 10:29:41 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZCq60mL5z2xYf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 18:35:59 +1000 (AEST)
+Received: by mail-pf1-x42f.google.com with SMTP id 10so6745471pfl.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 May 2021 01:35:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=fe0GYzmRD8PfrD3V//nnvca5ULVgNGmjTaoUcBDPjV8=;
+ b=oW0knTSst+xrwj3UsFwCiSF9NMWQWxdHf1LdLMEWMWXeItaXrJadvh747e7jHLL7qr
+ Ji1DL21kDw6J20GTZ4vg2Q1D7+C1/7Xc2TX4s3vTxmaxf+L3HYgJ77D9YEBiGOOTfOYm
+ b5S1ktsn+bA2Pk528rw6jVg1zs3FzEjeE1g9q9JTMdMoi4qn2AQF+1u9DY6WSpEdvsT8
+ lyrLgJ79c3PU1Bbaf7KaCrrYwFA96Cn9cktqKJxbcxq1xoIgK3vhxMV6RXeBYatfbTJF
+ ELXumCWkp25Y/i2pjtn2y7IXgEMAhJ+vGuIXX6H8g68hJvpNaCa0HBZRZZ6iwfiyAKaf
+ olpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=fe0GYzmRD8PfrD3V//nnvca5ULVgNGmjTaoUcBDPjV8=;
+ b=O6P+Ewur0OYEGjBED2gRjPrCU4vyYR7OGCUGNmw8tG+YDXu0on8Aika6o3SZZ44VR8
+ w33TOUhRrRxpPg12SuK4xp+ECQVPRPrGK0fkgCAnDrttQ43cYLUG2da0t/ehp8zfdxlO
+ Exka44cCAxrqW73eLq8Op2aqEQmwq+HbIkw1sMqY4m8zAeR34hjHRs9zLJ85sJH4JYbL
+ oftD8dFRDSRsA1nNfzhjA5wHZ97AyRlmUz6CZ/ce4ebPW9Wy0GzoTT7ydBQKMszIdXMG
+ QAJPmCMcW1pjO4jcElk+3OSVAK4nIqsjd4iqrWLrdD4aeRrXTWIYgQgHpXbgWsNZFIGI
+ XXRA==
+X-Gm-Message-State: AOAM531mvQF4xKhHbU/0t/vNDfARaDJDvl383hBV/dilPceoIezFa1dM
+ R+ZdnbSXmVuGFtpeveg5OtA=
+X-Google-Smtp-Source: ABdhPJzS7ydTnIjlR4inzDAp/PB437ZMKezcifConOgZ2NskEP4neLXMEN297DDCkkmKjdAEC8ivoA==
+X-Received: by 2002:a17:90a:77c8:: with SMTP id
+ e8mr3816034pjs.69.1620117354391; 
+ Tue, 04 May 2021 01:35:54 -0700 (PDT)
+Received: from localhost ([61.68.127.20])
+ by smtp.gmail.com with ESMTPSA id f201sm11579402pfa.133.2021.05.04.01.35.53
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 04 May 2021 01:35:54 -0700 (PDT)
+Date: Tue, 04 May 2021 18:35:49 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 1/2] KVM: PPC: Book3S HV: Sanitise vcpu registers in
+ nested path
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20210415230948.3563415-1-farosas@linux.ibm.com>
+ <20210415230948.3563415-2-farosas@linux.ibm.com>
+ <1619833560.k4eybr40bg.astroid@bobo.none>
+ <YJDNbFQlB9DHnI6Z@thinks.paulus.ozlabs.org>
+ <1620105163.ok9nw6k5yz.astroid@bobo.none>
+ <YJD5lwY4JXyS1VgH@thinks.paulus.ozlabs.org>
+In-Reply-To: <YJD5lwY4JXyS1VgH@thinks.paulus.ozlabs.org>
 MIME-Version: 1.0
-In-Reply-To: <1b0307be-05cd-ab62-8b22-75ffb59ff76b@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Message-Id: <1620115928.pogd4nj1qc.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,99 +98,193 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Christian Zigotzky <info@xenosoft.de>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Fabiano Rosas <farosas@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04 May 2021 at 09:47am, Christophe Leroy wrote:
-> Hi
->
-> Le 04/05/2021 à 09:21, Christian Zigotzky a écrit :
->> Hi Christophe,
->>
->> Thanks for your answer but I think I don't know how it works with the 
->> cherry-pick.
->>
->> $ git bisect start
->
-> As you suspect the problem to be specific to powerpc, I can do
->
-> git bisect start -- arch/powerpc
->
->
->> $ git bisect good 68a32ba14177d4a21c4a9a941cf1d7aea86d436f
->> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
->
-> You said that powerpc-5.13-1 is bad so you can narrow the search I think:
->
-> git bisect bad powerpc-5.13-1
-> git bisect good 887f3ceb51cd3~
-I tried it but without any success.
+Excerpts from Paul Mackerras's message of May 4, 2021 5:36 pm:
+> On Tue, May 04, 2021 at 03:26:24PM +1000, Nicholas Piggin wrote:
+>> Excerpts from Paul Mackerras's message of May 4, 2021 2:28 pm:
+>> > On Sat, May 01, 2021 at 11:58:36AM +1000, Nicholas Piggin wrote:
+>> >> Excerpts from Fabiano Rosas's message of April 16, 2021 9:09 am:
+>> >> > As one of the arguments of the H_ENTER_NESTED hypercall, the nested
+>> >> > hypervisor (L1) prepares a structure containing the values of vario=
+us
+>> >> > hypervisor-privileged registers with which it wants the nested gues=
+t
+>> >> > (L2) to run. Since the nested HV runs in supervisor mode it needs t=
+he
+>> >> > host to write to these registers.
+>> >> >=20
+>> >> > To stop a nested HV manipulating this mechanism and using a nested
+>> >> > guest as a proxy to access a facility that has been made unavailabl=
+e
+>> >> > to it, we have a routine that sanitises the values of the HV regist=
+ers
+>> >> > before copying them into the nested guest's vcpu struct.
+>> >> >=20
+>> >> > However, when coming out of the guest the values are copied as they
+>> >> > were back into L1 memory, which means that any sanitisation we did
+>> >> > during guest entry will be exposed to L1 after H_ENTER_NESTED retur=
+ns.
+>> >> >=20
+>> >> > This patch alters this sanitisation to have effect on the vcpu->arc=
+h
+>> >> > registers directly before entering and after exiting the guest,
+>> >> > leaving the structure that is copied back into L1 unchanged (except
+>> >> > when we really want L1 to access the value, e.g the Cause bits of
+>> >> > HFSCR).
+>> >> >=20
+>> >> > Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+>> >> > ---
+>> >> >  arch/powerpc/kvm/book3s_hv_nested.c | 55 ++++++++++++++++++-------=
+----
+>> >> >  1 file changed, 34 insertions(+), 21 deletions(-)
+>> >> >=20
+>> >> > diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm=
+/book3s_hv_nested.c
+>> >> > index 0cd0e7aad588..270552dd42c5 100644
+>> >> > --- a/arch/powerpc/kvm/book3s_hv_nested.c
+>> >> > +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+>> >> > @@ -102,8 +102,17 @@ static void save_hv_return_state(struct kvm_vc=
+pu *vcpu, int trap,
+>> >> >  {
+>> >> >  	struct kvmppc_vcore *vc =3D vcpu->arch.vcore;
+>> >> > =20
+>> >> > +	/*
+>> >> > +	 * When loading the hypervisor-privileged registers to run L2,
+>> >> > +	 * we might have used bits from L1 state to restrict what the
+>> >> > +	 * L2 state is allowed to be. Since L1 is not allowed to read
+>> >> > +	 * the HV registers, do not include these modifications in the
+>> >> > +	 * return state.
+>> >> > +	 */
+>> >> > +	hr->hfscr =3D ((~HFSCR_INTR_CAUSE & hr->hfscr) |
+>> >> > +		     (HFSCR_INTR_CAUSE & vcpu->arch.hfscr));
+>> >> > +
+>> >> >  	hr->dpdes =3D vc->dpdes;
+>> >> > -	hr->hfscr =3D vcpu->arch.hfscr;
+>> >> >  	hr->purr =3D vcpu->arch.purr;
+>> >> >  	hr->spurr =3D vcpu->arch.spurr;
+>> >> >  	hr->ic =3D vcpu->arch.ic;
+>> >>=20
+>> >> Do we still have the problem here that hfac interrupts due to bits cl=
+eared
+>> >> by the hfscr sanitisation would have the cause bits returned to the L=
+1,
+>> >> so in theory it could probe hfscr directly that way? I don't see a go=
+od
+>> >> solution to this except either have the L0 intercept these faults and=
+ do
+>> >> "something" transparent, or return error from H_ENTER_NESTED (which w=
+ould
+>> >> also allow trivial probing of the facilities).
+>> >=20
+>> > It seems to me that there are various specific reasons why L0 would
+>> > clear HFSCR bits, and if we think about the specific reasons, what we
+>> > should do becomes clear.  (I say "L0" but in fact the same reasoning
+>> > applies to any hypervisor that lets its guest do hypervisor-ish
+>> > things.)
+>> >=20
+>> > 1. Emulating a version of the architecture which doesn't have the
+>> > feature in question - in that case the bit should appear to L1 as a
+>> > reserved bit in HFSCR (i.e. always read 0), the associated facility
+>> > code should never appear in the top 8 bits of any HFSCR value that L1
+>> > sees, and any HFU interrupt received by L0 for the facility should be
+>> > changed into an illegal instruction interrupt (or HEAI) forwarded to
+>> > L1.  In this case the real HFSCR should always have the enable bit for
+>> > the facility set to 0.
+>> >=20
+>> > 2. Lazy save/restore of the state associated with a facility - in this
+>> > case, while the system is in the "lazy" state (i.e. the state is not
+>> > that of the currently running guest), the real HFSCR bit for the
+>> > facility should be 0.  On an HFU interrupt for the facility, L0 looks
+>> > at L1's HFSCR value: if it's 0, forward the HFU interrupt to L1; if
+>> > it's 1, load up the facility state, set the facility's bit in HFSCR,
+>> > and resume the guest.
+>> >=20
+>> > 3. Emulating a facility in software - in this case, the real HFSCR
+>> > bit for the facility would always be 0.  On an HFU interrupt, L0 reads
+>> > the instruction and emulates it, then resumes the guest.
+>> >=20
+>> > One thing this all makes clear is that the IC field of the "virtual"
+>> > HFSCR value seen by L1 should only ever be changed when L0 forwards a
+>> > HFU interrupt to L1.
+>> >=20
+>> > In fact we currently never do (1) or (2), and we only do (3) for
+>> > msgsndp etc., so this discussion is mostly theoretical.
+>>=20
+>> Yeah it's somewhat theoretical, and I guess I mostly agree with you.
+>>=20
+>> Missing is the case where the L0 does not implement a feature at all.
+>> Let's say TM is broken so it disables it, or nobody uses TAR so it=20
+>> doesn't bother to switch it.
+>=20
+> I think that's the same as my case (1), where L0 is presenting an
+> architecture to L1 that doesn't implement the feature.  (Unless you
+> mean that L0 is running on a machine that has features that didn't
+> exist at the time that L0's code was written; to handle that, L0
+> should clear all HFSCR bits that it doesn't know about, and map any
+> unknown HFSCR[IC] code into illegal interrupt/HEAI.)
 
-git bisect bad powerpc-5.13-1
+I don't think it's quite either of those. There is no ISA v3.0 where the
+target address register facility does not exist, and the L0 is not going
+to emulate it, for argument's sake.
 
-Output:
-fatal: Needed a single revision
-Bad rev input: powerpc-5.13-1
+>> In those cases what do you tell the L1 if it enables a bit that you
+>> don't support at all, and it takes a fault?
+>=20
+> Illegal instruction interrupt, or HEAI.
 
-Maybe we should look in the PowerPC updates directly. The CPUs of the 
-AmigaOne X5000 and virtual e5500 QEMU machine belong to BookE cpu 
-family. The AmigaOne X1000 isn't affected by this issue because the PA6T 
-belongs to the Book3S cpu family. [1]
+Okay, so that's just a roundabout way to tell the nested HV "this=20
+feature doesn't exist", asynchronously at some point when its guest
+tries to use the facility. It's contrary to the architecture it
+expected (maybe wrongly because it didn't query the right capability)
+but it set HFSCR for the facility so it thought it should work.
 
-I found this in the PowerPC updates 5.13-1:  - Convert 64-bit BookE to 
-do interrupt entry/exit in C.
+>> I guess the right thing to do is advertise that to the guest by some
+>> other means, and expect it does the right thing. And you could have
+>> the proviso in the nested HV specification that the returned IC field
+>> might trip for a feature you enabled in the L1 HFSCR.
+>=20
+> I think that is confusing; better to return illegal instruction/HEAI.
 
-Maybe we should look more in the modified BookE files:
+I think both are more confusing than returning error from the hcall.
 
-arch/powerpc/kernel/head_booke.h [2]
-arch/powerpc/kernel/head_fsl_booke.S [3]
+>=20
+>> >=20
+>> >> Returning an hfac interrupt to a hypervisor that thought it enabled t=
+he=20
+>> >> bit would be strange. But so does appearing to modify the register=20
+>> >> underneath it and then returning a fault.
+>> >=20
+>> > I don't think we should ever do either of those things.  The closest
+>> > would be (1) above, but in that case the fault has to be either an
+>> > illegal instruction type program interrupt, or a HEAI.
+>> >=20
+>> >> I think the sanest thing would actually be to return failure from the=
+=20
+>> >> hcall.
+>> >=20
+>> > I don't think we should do that either.
+>>=20
+>> I still think it's preferable for case 4. No point waiting for the
+>> guest to boot and some user program eventually hits a bad instruction,
+>> even if it was due to some host vs guest configuration problem.
+>=20
+> If you let it boot to userspace, the administrator has a better chance
+> of recovering the situation.
 
-Please check the BookE commits in the PowerPC updates 5.13-1. You don't 
-need an AmigaOne X5000 for testing because the virtual e5500 QEMU 
-machine is also affected.
+Maybe. What about if it runs userspace until something executes
+pthread_mutex_lock
+
+An error message when you try to start the nested guest telling you
+pass -machine cap-htm=3Doff would be better... I guess that should
+really all work with caps etc today though so TM's a bad example.
+But assume we don't have a cap for the bit we disable? Maybe we
+should have caps for all HFSCR bits, or I'm just worried about
+something not very important.
 
 Thanks,
-Christian
-
-[1] https://www.kernel.org/doc/Documentation/powerpc/cpu_families.txt
-[2] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/diff/arch/powerpc/kernel/head_booke.h?id=c70a4be130de333ea079c59da41cc959712bb01c
-[3] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/diff/arch/powerpc/kernel/head_fsl_booke.S?id=c70a4be130de333ea079c59da41cc959712bb01c
-
-
->
->
->>
->> Bisecting: 2462 revisions left to test after this (roughly 11 steps)
->> [47a6959fa331fe892a4fc3b48ca08e92045c6bda] netfilter: allow to turn 
->> off xtables compat layer
->>
->> $ git cherry-pick 525642624783
->> error: could not apply 525642624783... powerpc/signal32: Fix 
->> erroneous SIGSEGV on RT signal return
->> hint: after resolving the conflicts, mark the corrected paths
->> hint: with 'git add <paths>' or 'git rm <paths>'
->> hint: and commit the result with 'git commit'
->>
->> How can I fix this error?
->
-> This problably means that the step is at a commit which is prior to 
-> the first bad commit you identified at previous step. If you narrow 
-> the bisect as explained above, it shouldn't happen unless git decides 
-> it needs to descend a branch to a merge point. In that case just do 
-> 'git cherry-pick --abort" and go without the fix.
->
-> Note that once you have cherry picked the fix and tested the result, 
-> you have to apply the result to HEAD~ (the commit before the 
-> cherry-pick).
-> - git bisect good HEAD~
-> - git bisect bad HEAD~
->
-> Christophe
-
+Nick
