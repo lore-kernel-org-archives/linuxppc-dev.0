@@ -2,64 +2,62 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54CC5C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DF81C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:45:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93E8F610FC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:31:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93E8F610FC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id B8D3B613BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:45:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D3B613BE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZLMc3jp1z3bp8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:31:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZLhh5h2kz2yjS
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:45:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m8TG5dvT;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.33.254.192; helo=3.mo52.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-Received: from 3.mo52.mail-out.ovh.net (3.mo52.mail-out.ovh.net
- [178.33.254.192])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=m8TG5dvT; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZLM54LLnz302W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:30:40 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.44])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id D5D53271E7E;
- Tue,  4 May 2021 15:20:36 +0200 (CEST)
-Received: from kaod.org (37.59.142.95) by DAG8EX1.mxp5.local (172.16.2.71)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Tue, 4 May 2021
- 15:20:35 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-95G001561d069d-41f7-46fe-a360-76441386f8a7,
- 233BADB9E061AA125F593C9F78707CF28220F307) smtp.auth=groug@kaod.org
-X-OVh-ClientIp: 78.197.208.248
-Date: Tue, 4 May 2021 15:20:34 +0200
-From: Greg Kurz <groug@kaod.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: remove the nvlink2 pci_vfio subdriver v2
-Message-ID: <20210504152034.18e41ec3@bahia.lan>
-In-Reply-To: <YJFFG1tSP0dUCxcX@kroah.com>
-References: <20210326061311.1497642-1-hch@lst.de>
- <20210504142236.76994047@bahia.lan> <YJFFG1tSP0dUCxcX@kroah.com>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZLhC1gFwz2yYm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:45:30 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4FZLh947fKz9sRf; Tue,  4 May 2021 23:45:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1620135929;
+ bh=TiZIibgBklOGr0ceOIIAZrCutatbELwfRsHZKoe/Fl4=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=m8TG5dvTLpHBrb0EalolYC1wBauuyj4sjItISTOgNlTPs3ts91SEDewn6h5Bnufzk
+ TJEXcJuLacDJAOcB/4MyEUVVP+o71VR8yrRLnBDwfvVGv+7WPKon3SD3R1FH8K1xJO
+ WrRJEvuWOM8wfvYEobv/tbzW2sP92Y/gE+ZqCqNbm8ia34GXVqihVqARVFmWoArHJG
+ IluiSi1+K76kJ1oxyn744lshiENn8i4QRYL/O9jtsOcz47HsYZefny6RuKZS0vF6M/
+ ZWoCqb3q+3ayBHIXBaQqd/vxhQCfgEEJ9gsusnM44eD9r4MVIPVTOiJCz+gstSwyeM
+ wV6tPlniPgsvA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/64s: Fix crashes when toggling entry flush barrier
+Date: Tue,  4 May 2021 23:42:50 +1000
+Message-Id: <20210504134250.890401-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210504134250.890401-1-mpe@ellerman.id.au>
+References: <20210504134250.890401-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [37.59.142.95]
-X-ClientProxiedBy: DAG7EX1.mxp5.local (172.16.2.61) To DAG8EX1.mxp5.local
- (172.16.2.71)
-X-Ovh-Tracer-GUID: 5cc3bb94-3971-431f-b7fb-ec3b378d2bfe
-X-Ovh-Tracer-Id: 5342395058935667073
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdefiedgieehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvffukfgjfhfogggtgfhisehtjeertdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefuddtieejjeevheekieeltefgleetkeetheettdeifeffvefhffelffdtfeeljeenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehqvghmuhdqphhptgesnhhonhhgnhhurdhorhhg
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,83 +69,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Vetter <daniel@ffwll.ch>, kvm@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, qemu-devel@nongnu.org,
- Alex Williamson <alex.williamson@redhat.com>, Paul
- Mackerras <paulus@samba.org>, Jason Gunthorpe <jgg@nvidia.com>,
- linux-api@vger.kernel.org, qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>
+Cc: nathanl@linux.ibm.com, anton@samba.org, npiggin@gmail.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 4 May 2021 14:59:07 +0200
-Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+The entry flush mitigation can be enabled/disabled at runtime via a
+debugfs file (entry_flush), which causes the kernel to patch itself to
+enable/disable the relevant mitigations.
 
-> On Tue, May 04, 2021 at 02:22:36PM +0200, Greg Kurz wrote:
-> > On Fri, 26 Mar 2021 07:13:09 +0100
-> > Christoph Hellwig <hch@lst.de> wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > the nvlink2 vfio subdriver is a weird beast.  It supports a hardware
-> > > feature without any open source component - what would normally be
-> > > the normal open source userspace that we require for kernel drivers,
-> > > although in this particular case user space could of course be a
-> > > kernel driver in a VM.  It also happens to be a complete mess that
-> > > does not properly bind to PCI IDs, is hacked into the vfio_pci driver
-> > > and also pulles in over 1000 lines of code always build into powerpc
-> > > kernels that have Power NV support enabled.  Because of all these
-> > > issues and the lack of breaking userspace when it is removed I think
-> > > the best idea is to simply kill.
-> > > 
-> > > Changes since v1:
-> > >  - document the removed subtypes as reserved
-> > >  - add the ACK from Greg
-> > > 
-> > > Diffstat:
-> > >  arch/powerpc/platforms/powernv/npu-dma.c     |  705 ---------------------------
-> > >  b/arch/powerpc/include/asm/opal.h            |    3 
-> > >  b/arch/powerpc/include/asm/pci-bridge.h      |    1 
-> > >  b/arch/powerpc/include/asm/pci.h             |    7 
-> > >  b/arch/powerpc/platforms/powernv/Makefile    |    2 
-> > >  b/arch/powerpc/platforms/powernv/opal-call.c |    2 
-> > >  b/arch/powerpc/platforms/powernv/pci-ioda.c  |  185 -------
-> > >  b/arch/powerpc/platforms/powernv/pci.c       |   11 
-> > >  b/arch/powerpc/platforms/powernv/pci.h       |   17 
-> > >  b/arch/powerpc/platforms/pseries/pci.c       |   23 
-> > >  b/drivers/vfio/pci/Kconfig                   |    6 
-> > >  b/drivers/vfio/pci/Makefile                  |    1 
-> > >  b/drivers/vfio/pci/vfio_pci.c                |   18 
-> > >  b/drivers/vfio/pci/vfio_pci_private.h        |   14 
-> > >  b/include/uapi/linux/vfio.h                  |   38 -
-> > 
-> > 
-> > Hi Christoph,
-> > 
-> > FYI, these uapi changes break build of QEMU.
-> 
-> What uapi changes?
-> 
+However depending on which mitigation we're using, it may not be safe to
+do that patching while other CPUs are active. For example the following
+crash:
 
-All macros and structure definitions that are being removed
-from include/uapi/linux/vfio.h by patch 1.
+  sleeper[15639]: segfault (11) at c000000000004c20 nip c000000000004c20 lr c000000000004c20
 
-> What exactly breaks?
-> 
+Shows that we returned to userspace with a corrupted LR that points into
+the kernel, due to executing the partially patched call to the fallback
+entry flush (ie. we missed the LR restore).
 
-These macros and types are used by the current QEMU code base.
-Next time the QEMU source tree updates its copy of the kernel
-headers, the compilation of affected code will fail.
+Fix it by doing the patching under stop machine. The CPUs that aren't
+doing the patching will be spinning in the core of the stop machine
+logic. That is currently sufficient for our purposes, because none of
+the patching we do is to that code or anywhere in the vicinity.
 
-> Why does QEMU require kernel driver stuff?
-> 
+Fixes: f79643787e0a ("powerpc/64s: flush L1D on kernel entry")
+Cc: stable@vger.kernel.org # v5.10+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/lib/feature-fixups.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-Not sure to understand the question... is there a problem
-with QEMU using an already published uapi ?
-
-> thanks,
-> 
-> greg k-h
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 8f8c8c98a6ac..679833564e19 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -299,8 +299,9 @@ void do_uaccess_flush_fixups(enum l1d_flush_type types)
+ 						: "unknown");
+ }
+ 
+-void do_entry_flush_fixups(enum l1d_flush_type types)
++static int __do_entry_flush_fixups(void *data)
+ {
++	enum l1d_flush_type types = (enum l1d_flush_type)data;
+ 	unsigned int instrs[3], *dest;
+ 	long *start, *end;
+ 	int i;
+@@ -369,6 +370,19 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
+ 							: "ori type" :
+ 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
+ 						: "unknown");
++
++	return 0;
++}
++
++void do_entry_flush_fixups(enum l1d_flush_type types)
++{
++	/*
++	 * The call to the fallback flush can not be safely patched in/out while
++	 * other CPUs are executing it. So call __do_entry_flush_fixups() on one
++	 * CPU while all other CPUs spin in the stop machine core with interrupts
++	 * hard disabled.
++	 */
++	stop_machine_cpuslocked(__do_entry_flush_fixups, (void *)types, NULL);
+ }
+ 
+ void do_rfi_flush_fixups(enum l1d_flush_type types)
+-- 
+2.25.1
 
