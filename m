@@ -2,59 +2,46 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C14DFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 12:59:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CF4DC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:01:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 668B8613B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 12:59:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 668B8613B4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id A4C8E613B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:01:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4C8E613B4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZKgL35fRz30DT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 22:59:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZKj33944z30Gc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:01:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1RVOhA+x;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=1RVOhA+x; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZKfp6Phcz2yRK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 22:59:13 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 9E030613B4;
- Tue,  4 May 2021 12:59:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1620133150;
- bh=VKrAeZZpludZjTm6WuzJcgg7371nyGiXlt3bsLCkX3c=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=1RVOhA+xUnttg6X+/OXWdWei9lFiPRvoAUP4JZ66jwCl3Fwz8Y9JcIZ2dWfl4AXDh
- Mg7CS6WUOwTfkw4umLIPAtPqY5sJ9P6hfLWa3HEE2n4liAZAnteKFXFxaUW5xREyNd
- jljZ143srAqD73QuO6fQW2meQYvxR3Y6pcFbbX8Q=
-Date: Tue, 4 May 2021 14:59:07 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Greg Kurz <groug@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZKhd4bYqz2xy4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:00:49 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id CA8C368AFE; Tue,  4 May 2021 15:00:39 +0200 (CEST)
+Date: Tue, 4 May 2021 15:00:39 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: remove the nvlink2 pci_vfio subdriver v2
-Message-ID: <YJFFG1tSP0dUCxcX@kroah.com>
+Message-ID: <20210504130039.GA7711@lst.de>
 References: <20210326061311.1497642-1-hch@lst.de>
- <20210504142236.76994047@bahia.lan>
+ <20210504142236.76994047@bahia.lan> <YJFFG1tSP0dUCxcX@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210504142236.76994047@bahia.lan>
+In-Reply-To: <YJFFG1tSP0dUCxcX@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,9 +53,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Vetter <daniel@ffwll.ch>, kvm@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, qemu-devel@nongnu.org,
+Cc: qemu-devel@nongnu.org, Daniel Vetter <daniel@ffwll.ch>, kvm@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Greg Kurz <groug@kaod.org>,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, Jason Gunthorpe <jgg@nvidia.com>,
  linux-api@vger.kernel.org, qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org,
@@ -77,55 +64,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 04, 2021 at 02:22:36PM +0200, Greg Kurz wrote:
-> On Fri, 26 Mar 2021 07:13:09 +0100
-> Christoph Hellwig <hch@lst.de> wrote:
-> 
-> > Hi all,
+On Tue, May 04, 2021 at 02:59:07PM +0200, Greg Kroah-Hartman wrote:
+> > Hi Christoph,
 > > 
-> > the nvlink2 vfio subdriver is a weird beast.  It supports a hardware
-> > feature without any open source component - what would normally be
-> > the normal open source userspace that we require for kernel drivers,
-> > although in this particular case user space could of course be a
-> > kernel driver in a VM.  It also happens to be a complete mess that
-> > does not properly bind to PCI IDs, is hacked into the vfio_pci driver
-> > and also pulles in over 1000 lines of code always build into powerpc
-> > kernels that have Power NV support enabled.  Because of all these
-> > issues and the lack of breaking userspace when it is removed I think
-> > the best idea is to simply kill.
-> > 
-> > Changes since v1:
-> >  - document the removed subtypes as reserved
-> >  - add the ACK from Greg
-> > 
-> > Diffstat:
-> >  arch/powerpc/platforms/powernv/npu-dma.c     |  705 ---------------------------
-> >  b/arch/powerpc/include/asm/opal.h            |    3 
-> >  b/arch/powerpc/include/asm/pci-bridge.h      |    1 
-> >  b/arch/powerpc/include/asm/pci.h             |    7 
-> >  b/arch/powerpc/platforms/powernv/Makefile    |    2 
-> >  b/arch/powerpc/platforms/powernv/opal-call.c |    2 
-> >  b/arch/powerpc/platforms/powernv/pci-ioda.c  |  185 -------
-> >  b/arch/powerpc/platforms/powernv/pci.c       |   11 
-> >  b/arch/powerpc/platforms/powernv/pci.h       |   17 
-> >  b/arch/powerpc/platforms/pseries/pci.c       |   23 
-> >  b/drivers/vfio/pci/Kconfig                   |    6 
-> >  b/drivers/vfio/pci/Makefile                  |    1 
-> >  b/drivers/vfio/pci/vfio_pci.c                |   18 
-> >  b/drivers/vfio/pci/vfio_pci_private.h        |   14 
-> >  b/include/uapi/linux/vfio.h                  |   38 -
+> > FYI, these uapi changes break build of QEMU.
 > 
+> What uapi changes?
 > 
-> Hi Christoph,
+> What exactly breaks?
 > 
-> FYI, these uapi changes break build of QEMU.
+> Why does QEMU require kernel driver stuff?
 
-What uapi changes?
-
-What exactly breaks?
-
-Why does QEMU require kernel driver stuff?
-
-thanks,
-
-greg k-h
+Looks like it pull in the uapi struct definitions unconditionally
+instead of having a local copy.  We could fix that by just putting
+them back, but to me this seems like a rather broken configuration
+in qemu when it pulls in headers from the running/installed kernel
+without any feature checks before using them.
