@@ -2,90 +2,63 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AF4EC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 16:07:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A15EC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 16:12:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DF36611AD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 16:07:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DF36611AD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id EEF7C610A7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 16:12:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEF7C610A7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZPqy2HxFz30Dk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 02:07:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BxnBGHu9;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BxnBGHu9;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZPxd0vYPz3019
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 02:12:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=cohuck@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=BxnBGHu9; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=BxnBGHu9; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ smtp.mailfrom=kaod.org (client-ip=46.105.77.235; helo=10.mo51.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+Received: from 10.mo51.mail-out.ovh.net (10.mo51.mail-out.ovh.net
+ [46.105.77.235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZPqK74wvz2xMw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 02:06:53 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1620144410;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=GVIxTT9uSFfUO3j3YO7sGQ1PTKDOjdIH+lYA0YgyIyA=;
- b=BxnBGHu9OwRFEI4sp+1zLHZfWkNG3kMjJY4DdkCrDEl5RCpxFBdZsVWXrQwY2MWlad1JFo
- B8m+yawYeniPPCK0A2rz3cIK4rq1luPQKR09vsUshr7gdgxJck+aBcNqSqf0yWxxLkDrn6
- aUNcahRDmwxPFoK7UXkAm/1xx869NL0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1620144410;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=GVIxTT9uSFfUO3j3YO7sGQ1PTKDOjdIH+lYA0YgyIyA=;
- b=BxnBGHu9OwRFEI4sp+1zLHZfWkNG3kMjJY4DdkCrDEl5RCpxFBdZsVWXrQwY2MWlad1JFo
- B8m+yawYeniPPCK0A2rz3cIK4rq1luPQKR09vsUshr7gdgxJck+aBcNqSqf0yWxxLkDrn6
- aUNcahRDmwxPFoK7UXkAm/1xx869NL0=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-78-I7M62cUEMh-U8VfpQ2FvKw-1; Tue, 04 May 2021 12:06:46 -0400
-X-MC-Unique: I7M62cUEMh-U8VfpQ2FvKw-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id BF23E107ACCA;
- Tue,  4 May 2021 16:06:44 +0000 (UTC)
-Received: from gondolin.fritz.box (ovpn-113-126.ams2.redhat.com
- [10.36.113.126])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 5C81219C71;
- Tue,  4 May 2021 16:06:39 +0000 (UTC)
-Date: Tue, 4 May 2021 18:06:36 +0200
-From: Cornelia Huck <cohuck@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZPxB17b3z2xYk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 02:11:56 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.146.107])
+ by mo51.mail-out.ovh.net (Postfix) with ESMTPS id 087F3298BF2;
+ Tue,  4 May 2021 18:11:52 +0200 (CEST)
+Received: from kaod.org (37.59.142.106) by DAG8EX1.mxp5.local (172.16.2.71)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Tue, 4 May 2021
+ 18:11:52 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-106R006dd1c6483-bda8-448c-a210-1caf189ab7ac,
+ 233BADB9E061AA125F593C9F78707CF28220F307) smtp.auth=groug@kaod.org
+X-OVh-ClientIp: 78.197.208.248
+Date: Tue, 4 May 2021 18:11:51 +0200
+From: Greg Kurz <groug@kaod.org>
 To: Alex Williamson <alex.williamson@redhat.com>
 Subject: Re: [PATCH] vfio/pci: Revert nvlink removal uAPI breakage
-Message-ID: <20210504180636.6251eaf1.cohuck@redhat.com>
+Message-ID: <20210504181151.62b14551@bahia.lan>
 In-Reply-To: <162014341432.3807030.11054087109120670135.stgit@omen>
 References: <162014341432.3807030.11054087109120670135.stgit@omen>
-Organization: Red Hat GmbH
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Originating-IP: [37.59.142.106]
+X-ClientProxiedBy: DAG4EX1.mxp5.local (172.16.2.31) To DAG8EX1.mxp5.local
+ (172.16.2.71)
+X-Ovh-Tracer-GUID: 3e61a315-22a8-4afd-86cb-fce400e0fcce
+X-Ovh-Tracer-Id: 8234831918973819314
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdefiedguddttdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgihesthejredtredtvdenucfhrhhomhepifhrvghgucfmuhhriicuoehgrhhouhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepfedutdeijeejveehkeeileetgfelteekteehtedtieefffevhffflefftdefleejnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdeinecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehqvghmuhdqphhptgesnhhonhhgnhhurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,8 +70,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, qemu-devel@nongnu.org, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, groug@kaod.org, qemu-ppc@nongnu.org,
+Cc: kvm@vger.kernel.org, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, qemu-devel@nongnu.org, qemu-ppc@nongnu.org,
  daniel@ffwll.ch, linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
@@ -118,12 +91,92 @@ Alex Williamson <alex.williamson@redhat.com> wrote:
 > 
 > Greg (Kurz), please double check this resolves the issue.  Thanks!
 > 
+
+It does. Feel free to add:
+
+Reviewed-by: Greg Kurz <groug@kaod.org>
+
+and
+
+Tested-by: Greg Kurz <groug@kaod.org>
+
+Thanks for the quick fix.
+
+Cheers,
+
+--
+Greg
+
 >  include/uapi/linux/vfio.h |   46 +++++++++++++++++++++++++++++++++++++++++----
 >  1 file changed, 42 insertions(+), 4 deletions(-)
-
-I had already hacked up a QEMU patch that moved the definitions into
-local headers, but this one is less of a hassle. (Code compiles fine
-after doing a headers update.)
-
-Reviewed-by: Cornelia Huck <cohuck@redhat.com>
+> 
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index 34b1f53a3901..ef33ea002b0b 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -333,10 +333,21 @@ struct vfio_region_info_cap_type {
+>  #define VFIO_REGION_SUBTYPE_INTEL_IGD_LPC_CFG	(3)
+>  
+>  /* 10de vendor PCI sub-types */
+> -/* subtype 1 was VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM, don't use */
+> +/*
+> + * NVIDIA GPU NVlink2 RAM is coherent RAM mapped onto the host address space.
+> + *
+> + * Deprecated, region no longer provided
+> + */
+> +#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM	(1)
+>  
+>  /* 1014 vendor PCI sub-types */
+> -/* subtype 1 was VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD, don't use */
+> +/*
+> + * IBM NPU NVlink2 ATSD (Address Translation Shootdown) register of NPU
+> + * to do TLB invalidation on a GPU.
+> + *
+> + * Deprecated, region no longer provided
+> + */
+> +#define VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD	(1)
+>  
+>  /* sub-types for VFIO_REGION_TYPE_GFX */
+>  #define VFIO_REGION_SUBTYPE_GFX_EDID            (1)
+> @@ -630,9 +641,36 @@ struct vfio_device_migration_info {
+>   */
+>  #define VFIO_REGION_INFO_CAP_MSIX_MAPPABLE	3
+>  
+> -/* subtype 4 was VFIO_REGION_INFO_CAP_NVLINK2_SSATGT, don't use */
+> +/*
+> + * Capability with compressed real address (aka SSA - small system address)
+> + * where GPU RAM is mapped on a system bus. Used by a GPU for DMA routing
+> + * and by the userspace to associate a NVLink bridge with a GPU.
+> + *
+> + * Deprecated, capability no longer provided
+> + */
+> +#define VFIO_REGION_INFO_CAP_NVLINK2_SSATGT	4
+> +
+> +struct vfio_region_info_cap_nvlink2_ssatgt {
+> +	struct vfio_info_cap_header header;
+> +	__u64 tgt;
+> +};
+>  
+> -/* subtype 5 was VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD, don't use */
+> +/*
+> + * Capability with an NVLink link speed. The value is read by
+> + * the NVlink2 bridge driver from the bridge's "ibm,nvlink-speed"
+> + * property in the device tree. The value is fixed in the hardware
+> + * and failing to provide the correct value results in the link
+> + * not working with no indication from the driver why.
+> + *
+> + * Deprecated, capability no longer provided
+> + */
+> +#define VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD	5
+> +
+> +struct vfio_region_info_cap_nvlink2_lnkspd {
+> +	struct vfio_info_cap_header header;
+> +	__u32 link_speed;
+> +	__u32 __pad;
+> +};
+>  
+>  /**
+>   * VFIO_DEVICE_GET_IRQ_INFO - _IOWR(VFIO_TYPE, VFIO_BASE + 9,
+> 
+> 
 
