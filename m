@@ -2,60 +2,110 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6037AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F90C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:49:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26248613C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:46:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26248613C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3C75961183
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:49:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C75961183
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZLj73ptFz3bmw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:46:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZLn85tBfz30Ds
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:49:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fpFybIt/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=UBZRAVm5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.219;
+ helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=fpFybIt/; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=UBZRAVm5; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.219])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZLhG2JPmz2yjc
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:45:34 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FZLh820RJz9sRR; Tue,  4 May 2021 23:45:28 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620135928;
- bh=VdP4NZy0Ndy017D9KLQZzMqWq8C4q4bKR7op3ZOM8ms=;
- h=From:To:Cc:Subject:Date:From;
- b=fpFybIt/BPjlcIVIshJzSgOxRpjNWYcuUxMg5YNcg7HZAhUI/gtHKf8qqf4/KnLgi
- ypGhMswv0DB2US9uCYHzHZ6SHFZ8oEnK+BOYHlEXqjndEJce6YQPBdvrFyUNFKrEeu
- WrzdomhqQZZJfvtbDvWEV1ne4Yp4aGYYTf5TYwnKMm2VN9kvXMN0i5Zd5qeQPbqJHQ
- WIVz7fL5zEZHN0rr0Zi7DRcN1QPIbRfGnteOPbsNsYv4kdEvVPS74/j+nEQWqu0Sxo
- LOd9h187Q4IRRXd6V6BLlNUhRLsb6MeA1S2EDQpXmuW+djTtmI4iV1UREchw/hrF+t
- tkL0ok9b4y2aA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/64s: Fix crashes when toggling stf barrier
-Date: Tue,  4 May 2021 23:42:49 +1000
-Message-Id: <20210504134250.890401-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZLmZ6J02z2yYm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:49:17 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1620136115; cv=none;
+ d=strato.com; s=strato-dkim-0002;
+ b=bJmR/qJC6EAS2IMg2Z8tpPdRby5qjWWPJI06cbu3xhxTuO2uAEIxtkYAZP5Tp5733u
+ bIOXH1vwOyDaNH13yypD0Ho23nh+Eg6R6sW6/8IG9vlD/HVBJE1F0cQdHI5bUKUbCYNx
+ 1tz1/afJQ1lGFqWSHJtKhmwFGDmTR5yaVf53DDhPw7K+o3MRqZTi3eve/8B/JUlycACn
+ ePrGUDCyOgmllFumjOHWQEYoG8Z2n+LegEZbNExxTF6ATMblYBxgCOqLRFxp/Vp6C8Ty
+ bJ8w492Tl2Z7cZwxbmDCOfsNd2a+N0O7DBuxHYmqA8Oq68BXRBrTCGuw45acoNw8HB/+
+ wafw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1620136115;
+ s=strato-dkim-0002; d=strato.com;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
+ From:Subject:Sender;
+ bh=odTIoKCC8513wiCnzu1BtBgTLb8HkDNsWkM0IPDCGTE=;
+ b=QvtqCkqCd92efhDqqida6QrWaumLw257H78Rnvz0er1KQvSHs6EIQWrAFY7p6nBhY9
+ 1vbV6/ogP0y/uU533AX6Ycypx91k0b+IhR+rsR8GQXWS8ZPs69HGcAua6NtloAo9IYBi
+ 1s8L2UCXeX0rzlSA5lsPzgNVL/wrlziaYzz/rHK9uy7lxpbpRYMpVNaspg6QrK1UmI//
+ HFoflcgS9Ci1ZBV1+sJ5aRga0MG70cJ5Ri7r2Vpyo3ZehABrbsFU8Vb+J1Ykg5dTWXa9
+ H5tPlMnPdDSG4Wdcpxzos2Dyp2fdgN8WYYMuWrXdO2V/N/tumY7jx5bFQ8NKGtCdP/+y
+ OZaA==
+ARC-Authentication-Results: i=1; strato.com;
+    dkim=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1620136115;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
+ From:Subject:Sender;
+ bh=odTIoKCC8513wiCnzu1BtBgTLb8HkDNsWkM0IPDCGTE=;
+ b=UBZRAVm5aJXJsrMXfoTxetvBYvO+PrBJpNdXE2jFvOUGI8HDAFVidRtRxpx6RUflUz
+ UW/qskjYTKjzfsxta5zHNdxAka149DT8F6JKXuRQcjL0JV+NheeUBSZRgdGbm8hJ/vW9
+ ISnwamoKTJTYIrHxyPK0pvHsidGZwtMJSlVsVesOwnkNTPhZQdEaO6+63iMHtuJR6aO9
+ cBYxCj7AmA/+arvksgPRln8kLjiCXZQKtbuUsL3NvJtoHurac69fT3xc4sq44okwnEwc
+ wt4D/A85yCH25YhgGrLePLQjYDe8iZR07IdKJBWqCTNdGs4e5rl1XDkJZ0BQ2qNF4UGn
+ 6H3Q==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSIwJp9hde4IG39Acg/ZIdVUvyTg=="
+X-RZG-CLASS-ID: mo00
+Received: from Christians-iMac.fritz.box by smtp.strato.de (RZmta 47.25.6 AUTH)
+ with ESMTPSA id D075c0x44DmZ2TA
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Tue, 4 May 2021 15:48:35 +0200 (CEST)
+Subject: Re: [FSL P50x0] Xorg always restarts again and again after the the
+ PowerPC updates 5.13-1
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
+ <c5b0ac7c-525f-0208-7587-c90427eae137@xenosoft.de>
+ <0886c1dc-e946-69cb-a0a9-57247acfd080@csgroup.eu>
+ <9864cd72-f1aa-4cf5-1cda-b3a10233b24d@xenosoft.de>
+ <1b0307be-05cd-ab62-8b22-75ffb59ff76b@csgroup.eu>
+ <daace050-6233-77ea-4517-0fd3c4b21057@xenosoft.de>
+ <30f559f4-b50a-de63-94e1-761022468684@csgroup.eu>
+ <c9a692b4-0ac0-d595-10fa-c3213b1518fc@xenosoft.de>
+ <3b7daea5-7b2b-a089-0427-3becb986b6f5@csgroup.eu>
+ <1502fb22-680c-7393-238c-f82570806717@xenosoft.de>
+ <6a322f04-a81e-ae31-1425-19fda9307b23@csgroup.eu>
+ <f253fc33-daa1-e668-31b3-593991531ffb@xenosoft.de>
+ <6d3ae417-48de-3b61-f6fe-da951d74fef3@xenosoft.de>
+Message-ID: <070042db-0ac6-f4f6-1232-2f37c5e63d14@xenosoft.de>
+Date: Tue, 4 May 2021 15:48:34 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.10.0
 MIME-Version: 1.0
+In-Reply-To: <6d3ae417-48de-3b61-f6fe-da951d74fef3@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,80 +117,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, anton@samba.org, npiggin@gmail.com, dja@axtens.net
+Cc: Darren Stevens <darren@stevens-zone.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The STF (store-to-load forwarding) barrier mitigation can be
-enabled/disabled at runtime via a debugfs file (stf_barrier), which
-causes the kernel to patch itself to enable/disable the relevant
-mitigations.
+Am 04.05.21 um 13:02 schrieb Christian Zigotzky:
+> Am 04.05.21 um 12:07 schrieb Christian Zigotzky:
+>> Am 04.05.21 um 11:49 schrieb Christophe Leroy:
+>>>
+>>>
+>>> Le 04/05/2021 à 11:46, Christian Zigotzky a écrit :
+>>>> Am 04.05.21 um 11:11 schrieb Christophe Leroy:
+>>>>>
+>>>>>
+>>>>> Le 04/05/2021 à 11:09, Christian Zigotzky a écrit :
+>>>>>> Am 04.05.21 um 10:58 schrieb Christophe Leroy:
+>>>>>>>
+>>>>>>>
+>>>>>>> Le 04/05/2021 à 10:29, Christian Zigotzky a écrit :
+>>>>>>>> On 04 May 2021 at 09:47am, Christophe Leroy wrote:
+>>>>>>>>> Hi
+>>>>>>>>>
+>>>>>>>>> Le 04/05/2021 à 09:21, Christian Zigotzky a écrit :
+>>>>>>>>>> Hi Christophe,
+>>>>>>>>>>
+>>>>>>>>>> Thanks for your answer but I think I don't know how it works 
+>>>>>>>>>> with the cherry-pick.
+>>>>>>>>>>
+>>>>>>>>>> $ git bisect start
+>>>>>>>>>
+>>>>>>>>> As you suspect the problem to be specific to powerpc, I can do
+>>>>>>>>>
+>>>>>>>>> git bisect start -- arch/powerpc
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>> $ git bisect good 68a32ba14177d4a21c4a9a941cf1d7aea86d436f
+>>>>>>>>>> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
+>>>>>>>>>
+>>>>>>>>> You said that powerpc-5.13-1 is bad so you can narrow the 
+>>>>>>>>> search I think:
+>>>>>>>>>
+>>>>>>>>> git bisect bad powerpc-5.13-1
+>>>>>>>>> git bisect good 887f3ceb51cd3~
+>>>>>>>> I tried it but without any success.
+>>>>>>>>
+>>>>>>>> git bisect bad powerpc-5.13-1
+>>>>>>>>
+>>>>>>>> Output:
+>>>>>>>> fatal: Needed a single revision
+>>>>>>>> Bad rev input: powerpc-5.13-1
+>>>>>>>
+>>>>>>> I don't understand, on my side it works. Maybe a difference 
+>>>>>>> between your version of git and mine.
+>>>>>>>
+>>>>>>> In that case, just use the SHA corresponding to the merge:
+>>>>>>>
+>>>>>>> git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
+>>>>>>>
+>>>>>>> Christophe
+>>>>>> Do you use a BookE machine?
+>>>>>
+>>>>> No I don't unfortunately, and I have tried booting in QEMU a 
+>>>>> kernel built with your config, but it freezes before any output.
+>>>> You can use my kernels and distributions.
+>>>>
+>>>
+>>> Ok, I'll see if I can do something with them.
+>>>
+>>> In the meantime, have you been able to bisect ?
+>>>
+>>> Thanks
+>>> Christophe
+>> I am bisecting currently.
+>>
+>> $ git bisect start -- arch/powerpc
+>> $ git bisect good 887f3ceb51cd3~
+>> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
+> OK, there is another issue after the second bisecting step. The boot 
+> stops after loading the dtb and uImage file. I can't solve 2 issues 
+> with bisecting at the same time.
+Xorg restarts again and again.
 
-However depending on which mitigation we're using, it may not be safe to
-do that patching while other CPUs are active. For example the following
-crash:
+Here are some interesting error messages:
 
-  User access of kernel address (c00000003fff5af0) - exploit attempt? (uid: 0)
-  segfault (11) at c00000003fff5af0 nip 7fff8ad12198 lr 7fff8ad121f8 code 1
-  code: 40820128 e93c00d0 e9290058 7c292840 40810058 38600000 4bfd9a81 e8410018
-  code: 2c030006 41810154 3860ffb6 e9210098 <e94d8ff0> 7d295279 39400000 40820a3c
+May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: segfault (11) at 
+800000 nip ff6a770 lr ff6a760 code 1 in 
+libglib-2.0.so.0.4800.2[feaf000+11f000]
+May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: code: 4bfc9401 
+3920ffff 91210054 8061005c 2f830000 419c0014 38800000 4bfc93e5
+May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: code: 3920ffff 
+9121005c 2f8f0000 419e0008 <93ef0000> 418e000c 81210040 913b0000
 
-Shows that we returned to userspace without restoring the user r13
-value, due to executing the partially patched STF exit code.
-
-Fix it by doing the patching under stop machine. The CPUs that aren't
-doing the patching will be spinning in the core of the stop machine
-logic. That is currently sufficient for our purposes, because none of
-the patching we do is to that code or anywhere in the vicinity.
-
-Fixes: a048a07d7f45 ("powerpc/64s: Add support for a store forwarding barrier at kernel entry/exit")
-Cc: stable@vger.kernel.org # v4.17+
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/lib/feature-fixups.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 1fd31b4b0e13..8f8c8c98a6ac 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -14,6 +14,7 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/sched/mm.h>
-+#include <linux/stop_machine.h>
- #include <asm/cputable.h>
- #include <asm/code-patching.h>
- #include <asm/page.h>
-@@ -227,11 +228,25 @@ static void do_stf_exit_barrier_fixups(enum stf_barrier_type types)
- 		                                           : "unknown");
- }
- 
--
--void do_stf_barrier_fixups(enum stf_barrier_type types)
-+static int __do_stf_barrier_fixups(void *data)
- {
-+	enum stf_barrier_type types = (enum stf_barrier_type)data;
-+
- 	do_stf_entry_barrier_fixups(types);
- 	do_stf_exit_barrier_fixups(types);
-+
-+	return 0;
-+}
-+
-+void do_stf_barrier_fixups(enum stf_barrier_type types)
-+{
-+	/*
-+	 * The call to the fallback entry flush, and the fallback/sync-ori exit
-+	 * flush can not be safely patched in/out while other CPUs are executing
-+	 * them. So call __do_stf_barrier_fixups() on one CPU while all other CPUs
-+	 * spin in the stop machine core with interrupts hard disabled.
-+	 */
-+	stop_machine_cpuslocked(__do_stf_barrier_fixups, (void *)types, NULL);
- }
- 
- void do_uaccess_flush_fixups(enum l1d_flush_type types)
--- 
-2.25.1
-
+May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: segfault 
+(11) at 8 nip 92dbc8 lr 92dae8 code 1 in packagekitd[920000+51000]
+May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: code: 
+38800080 3be001f4 4cc63182 4802c8ad 4bffff64 60000000 81210018 80be8048
+May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: code: 
+7fa6eb78 38800010 807e801c 3be0ffff <80e90008> 4cc63182 4802c881 4bffff38
