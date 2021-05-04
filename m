@@ -2,110 +2,94 @@ Return-Path: <SRS0=2Civ=J7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F90C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:49:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDD52C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 14:24:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C75961183
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 13:49:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C75961183
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 95F2961183
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 14:24:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95F2961183
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FZLn85tBfz30Ds
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 May 2021 23:49:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FZMY21bLmz30FJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 00:24:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=UBZRAVm5;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256 header.s=google header.b=A/agEr85;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.219;
- helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=UBZRAVm5; 
- dkim-atps=neutral
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
- [81.169.146.219])
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=ffwll.ch
+ (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com;
+ envelope-from=daniel@ffwll.ch; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256
+ header.s=google header.b=A/agEr85; dkim-atps=neutral
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com
+ [IPv6:2a00:1450:4864:20::630])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FZLmZ6J02z2yYm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 May 2021 23:49:17 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1620136115; cv=none;
- d=strato.com; s=strato-dkim-0002;
- b=bJmR/qJC6EAS2IMg2Z8tpPdRby5qjWWPJI06cbu3xhxTuO2uAEIxtkYAZP5Tp5733u
- bIOXH1vwOyDaNH13yypD0Ho23nh+Eg6R6sW6/8IG9vlD/HVBJE1F0cQdHI5bUKUbCYNx
- 1tz1/afJQ1lGFqWSHJtKhmwFGDmTR5yaVf53DDhPw7K+o3MRqZTi3eve/8B/JUlycACn
- ePrGUDCyOgmllFumjOHWQEYoG8Z2n+LegEZbNExxTF6ATMblYBxgCOqLRFxp/Vp6C8Ty
- bJ8w492Tl2Z7cZwxbmDCOfsNd2a+N0O7DBuxHYmqA8Oq68BXRBrTCGuw45acoNw8HB/+
- wafw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1620136115;
- s=strato-dkim-0002; d=strato.com;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
- From:Subject:Sender;
- bh=odTIoKCC8513wiCnzu1BtBgTLb8HkDNsWkM0IPDCGTE=;
- b=QvtqCkqCd92efhDqqida6QrWaumLw257H78Rnvz0er1KQvSHs6EIQWrAFY7p6nBhY9
- 1vbV6/ogP0y/uU533AX6Ycypx91k0b+IhR+rsR8GQXWS8ZPs69HGcAua6NtloAo9IYBi
- 1s8L2UCXeX0rzlSA5lsPzgNVL/wrlziaYzz/rHK9uy7lxpbpRYMpVNaspg6QrK1UmI//
- HFoflcgS9Ci1ZBV1+sJ5aRga0MG70cJ5Ri7r2Vpyo3ZehABrbsFU8Vb+J1Ykg5dTWXa9
- H5tPlMnPdDSG4Wdcpxzos2Dyp2fdgN8WYYMuWrXdO2V/N/tumY7jx5bFQ8NKGtCdP/+y
- OZaA==
-ARC-Authentication-Results: i=1; strato.com;
-    dkim=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1620136115;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
- From:Subject:Sender;
- bh=odTIoKCC8513wiCnzu1BtBgTLb8HkDNsWkM0IPDCGTE=;
- b=UBZRAVm5aJXJsrMXfoTxetvBYvO+PrBJpNdXE2jFvOUGI8HDAFVidRtRxpx6RUflUz
- UW/qskjYTKjzfsxta5zHNdxAka149DT8F6JKXuRQcjL0JV+NheeUBSZRgdGbm8hJ/vW9
- ISnwamoKTJTYIrHxyPK0pvHsidGZwtMJSlVsVesOwnkNTPhZQdEaO6+63iMHtuJR6aO9
- cBYxCj7AmA/+arvksgPRln8kLjiCXZQKtbuUsL3NvJtoHurac69fT3xc4sq44okwnEwc
- wt4D/A85yCH25YhgGrLePLQjYDe8iZR07IdKJBWqCTNdGs4e5rl1XDkJZ0BQ2qNF4UGn
- 6H3Q==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSIwJp9hde4IG39Acg/ZIdVUvyTg=="
-X-RZG-CLASS-ID: mo00
-Received: from Christians-iMac.fritz.box by smtp.strato.de (RZmta 47.25.6 AUTH)
- with ESMTPSA id D075c0x44DmZ2TA
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Tue, 4 May 2021 15:48:35 +0200 (CEST)
-Subject: Re: [FSL P50x0] Xorg always restarts again and again after the the
- PowerPC updates 5.13-1
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
- <c5b0ac7c-525f-0208-7587-c90427eae137@xenosoft.de>
- <0886c1dc-e946-69cb-a0a9-57247acfd080@csgroup.eu>
- <9864cd72-f1aa-4cf5-1cda-b3a10233b24d@xenosoft.de>
- <1b0307be-05cd-ab62-8b22-75ffb59ff76b@csgroup.eu>
- <daace050-6233-77ea-4517-0fd3c4b21057@xenosoft.de>
- <30f559f4-b50a-de63-94e1-761022468684@csgroup.eu>
- <c9a692b4-0ac0-d595-10fa-c3213b1518fc@xenosoft.de>
- <3b7daea5-7b2b-a089-0427-3becb986b6f5@csgroup.eu>
- <1502fb22-680c-7393-238c-f82570806717@xenosoft.de>
- <6a322f04-a81e-ae31-1425-19fda9307b23@csgroup.eu>
- <f253fc33-daa1-e668-31b3-593991531ffb@xenosoft.de>
- <6d3ae417-48de-3b61-f6fe-da951d74fef3@xenosoft.de>
-Message-ID: <070042db-0ac6-f4f6-1232-2f37c5e63d14@xenosoft.de>
-Date: Tue, 4 May 2021 15:48:34 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FZMXR1plMz2xYk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 May 2021 00:23:50 +1000 (AEST)
+Received: by mail-ej1-x630.google.com with SMTP id n2so13455510ejy.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 May 2021 07:23:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ffwll.ch; s=google;
+ h=date:from:to:cc:subject:message-id:mail-followup-to:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=ensQSDTh3BO9iGPVrV6EYBnSBYEfz7lspMmgWRr6tEM=;
+ b=A/agEr85m2gTABKwkX7MweJdDLUWMMy/uuv8cOATtF0IOSbqQGQWqB7WVO/2i6CTej
+ A/xEN0wabqwjnysRyxUsM6987Nm7ZjOXb3ElY7BOmpcbi2Nz6d878YWmh7i2EiFYeKva
+ NM7Q/fRoU0PTIKl2uxcCG8z+XO6JfxPjFQ6us=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id
+ :mail-followup-to:references:mime-version:content-disposition
+ :in-reply-to;
+ bh=ensQSDTh3BO9iGPVrV6EYBnSBYEfz7lspMmgWRr6tEM=;
+ b=CnCwhH+7L43cQHl20s+7PXWvafLxP1a0/eRlZ684oITLGqgtO+OGJjKhcF/PP0f09X
+ uAJ058k1cLegI4kig64Wa+dNJuSbLgj+yY+ACdJns2St+h5wCzTjcav54hGomX7BXOmD
+ taErU50n+Aq3R6MbuEfvFIa0TsCmL/HOlf67KdYpjg+yByGSfA0+LFVQLJAE27EafUtS
+ SNyWAUyDlvW921qMayrwNOHijuAMNRG4wN3o9iItuH71yg70QQ6qD+5e7Mw4ixoxV2Fk
+ D3Eag6Np8CvlAMubOZKE0RSFmsNHH9XarxXMcSUHr6Km57zVBH6xHOW6rbtpzKTcg6DY
+ xd0w==
+X-Gm-Message-State: AOAM532we27W2V8e3nsSIK8aROH8fV2scBLkpwPPicbXHsUtSGEnq5pZ
+ PWYV7T5ox5eB/D6Txrtt7jyDFQ==
+X-Google-Smtp-Source: ABdhPJzaM96uclt2Tpt863I3ZtqPW7KYS209iLyt378polAbgvCVI1aPL30//Pa3FZcXPaOgGHkVGA==
+X-Received: by 2002:a17:906:194d:: with SMTP id
+ b13mr22253337eje.83.1620138223252; 
+ Tue, 04 May 2021 07:23:43 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+ by smtp.gmail.com with ESMTPSA id t14sm1462204ejc.121.2021.05.04.07.23.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 04 May 2021 07:23:42 -0700 (PDT)
+Date: Tue, 4 May 2021 16:23:40 +0200
+From: Daniel Vetter <daniel@ffwll.ch>
+To: Greg Kurz <groug@kaod.org>
+Subject: Re: remove the nvlink2 pci_vfio subdriver v2
+Message-ID: <YJFY7NjEBtCSlJHw@phenom.ffwll.local>
+Mail-Followup-To: Greg Kurz <groug@kaod.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christoph Hellwig <hch@lst.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Jason Gunthorpe <jgg@nvidia.com>, kvm@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>,
+ linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ qemu-devel@nongnu.org, qemu-ppc@nongnu.org
+References: <20210326061311.1497642-1-hch@lst.de>
+ <20210504142236.76994047@bahia.lan> <YJFFG1tSP0dUCxcX@kroah.com>
+ <20210504152034.18e41ec3@bahia.lan>
 MIME-Version: 1.0
-In-Reply-To: <6d3ae417-48de-3b61-f6fe-da951d74fef3@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210504152034.18e41ec3@bahia.lan>
+X-Operating-System: Linux phenom 5.10.32scarlett+ 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,104 +101,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Christian Zigotzky <info@xenosoft.de>
+Cc: Daniel Vetter <daniel@ffwll.ch>, kvm@vger.kernel.org,
+ David Airlie <airlied@linux.ie>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, qemu-devel@nongnu.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Jason Gunthorpe <jgg@nvidia.com>,
+ qemu-ppc@nongnu.org, linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am 04.05.21 um 13:02 schrieb Christian Zigotzky:
-> Am 04.05.21 um 12:07 schrieb Christian Zigotzky:
->> Am 04.05.21 um 11:49 schrieb Christophe Leroy:
->>>
->>>
->>> Le 04/05/2021 à 11:46, Christian Zigotzky a écrit :
->>>> Am 04.05.21 um 11:11 schrieb Christophe Leroy:
->>>>>
->>>>>
->>>>> Le 04/05/2021 à 11:09, Christian Zigotzky a écrit :
->>>>>> Am 04.05.21 um 10:58 schrieb Christophe Leroy:
->>>>>>>
->>>>>>>
->>>>>>> Le 04/05/2021 à 10:29, Christian Zigotzky a écrit :
->>>>>>>> On 04 May 2021 at 09:47am, Christophe Leroy wrote:
->>>>>>>>> Hi
->>>>>>>>>
->>>>>>>>> Le 04/05/2021 à 09:21, Christian Zigotzky a écrit :
->>>>>>>>>> Hi Christophe,
->>>>>>>>>>
->>>>>>>>>> Thanks for your answer but I think I don't know how it works 
->>>>>>>>>> with the cherry-pick.
->>>>>>>>>>
->>>>>>>>>> $ git bisect start
->>>>>>>>>
->>>>>>>>> As you suspect the problem to be specific to powerpc, I can do
->>>>>>>>>
->>>>>>>>> git bisect start -- arch/powerpc
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>> $ git bisect good 68a32ba14177d4a21c4a9a941cf1d7aea86d436f
->>>>>>>>>> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
->>>>>>>>>
->>>>>>>>> You said that powerpc-5.13-1 is bad so you can narrow the 
->>>>>>>>> search I think:
->>>>>>>>>
->>>>>>>>> git bisect bad powerpc-5.13-1
->>>>>>>>> git bisect good 887f3ceb51cd3~
->>>>>>>> I tried it but without any success.
->>>>>>>>
->>>>>>>> git bisect bad powerpc-5.13-1
->>>>>>>>
->>>>>>>> Output:
->>>>>>>> fatal: Needed a single revision
->>>>>>>> Bad rev input: powerpc-5.13-1
->>>>>>>
->>>>>>> I don't understand, on my side it works. Maybe a difference 
->>>>>>> between your version of git and mine.
->>>>>>>
->>>>>>> In that case, just use the SHA corresponding to the merge:
->>>>>>>
->>>>>>> git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
->>>>>>>
->>>>>>> Christophe
->>>>>> Do you use a BookE machine?
->>>>>
->>>>> No I don't unfortunately, and I have tried booting in QEMU a 
->>>>> kernel built with your config, but it freezes before any output.
->>>> You can use my kernels and distributions.
->>>>
->>>
->>> Ok, I'll see if I can do something with them.
->>>
->>> In the meantime, have you been able to bisect ?
->>>
->>> Thanks
->>> Christophe
->> I am bisecting currently.
->>
->> $ git bisect start -- arch/powerpc
->> $ git bisect good 887f3ceb51cd3~
->> $ git bisect bad c70a4be130de333ea079c59da41cc959712bb01c
-> OK, there is another issue after the second bisecting step. The boot 
-> stops after loading the dtb and uImage file. I can't solve 2 issues 
-> with bisecting at the same time.
-Xorg restarts again and again.
+On Tue, May 04, 2021 at 03:20:34PM +0200, Greg Kurz wrote:
+> On Tue, 4 May 2021 14:59:07 +0200
+> Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+> 
+> > On Tue, May 04, 2021 at 02:22:36PM +0200, Greg Kurz wrote:
+> > > On Fri, 26 Mar 2021 07:13:09 +0100
+> > > Christoph Hellwig <hch@lst.de> wrote:
+> > > 
+> > > > Hi all,
+> > > > 
+> > > > the nvlink2 vfio subdriver is a weird beast.  It supports a hardware
+> > > > feature without any open source component - what would normally be
+> > > > the normal open source userspace that we require for kernel drivers,
+> > > > although in this particular case user space could of course be a
+> > > > kernel driver in a VM.  It also happens to be a complete mess that
+> > > > does not properly bind to PCI IDs, is hacked into the vfio_pci driver
+> > > > and also pulles in over 1000 lines of code always build into powerpc
+> > > > kernels that have Power NV support enabled.  Because of all these
+> > > > issues and the lack of breaking userspace when it is removed I think
+> > > > the best idea is to simply kill.
+> > > > 
+> > > > Changes since v1:
+> > > >  - document the removed subtypes as reserved
+> > > >  - add the ACK from Greg
+> > > > 
+> > > > Diffstat:
+> > > >  arch/powerpc/platforms/powernv/npu-dma.c     |  705 ---------------------------
+> > > >  b/arch/powerpc/include/asm/opal.h            |    3 
+> > > >  b/arch/powerpc/include/asm/pci-bridge.h      |    1 
+> > > >  b/arch/powerpc/include/asm/pci.h             |    7 
+> > > >  b/arch/powerpc/platforms/powernv/Makefile    |    2 
+> > > >  b/arch/powerpc/platforms/powernv/opal-call.c |    2 
+> > > >  b/arch/powerpc/platforms/powernv/pci-ioda.c  |  185 -------
+> > > >  b/arch/powerpc/platforms/powernv/pci.c       |   11 
+> > > >  b/arch/powerpc/platforms/powernv/pci.h       |   17 
+> > > >  b/arch/powerpc/platforms/pseries/pci.c       |   23 
+> > > >  b/drivers/vfio/pci/Kconfig                   |    6 
+> > > >  b/drivers/vfio/pci/Makefile                  |    1 
+> > > >  b/drivers/vfio/pci/vfio_pci.c                |   18 
+> > > >  b/drivers/vfio/pci/vfio_pci_private.h        |   14 
+> > > >  b/include/uapi/linux/vfio.h                  |   38 -
+> > > 
+> > > 
+> > > Hi Christoph,
+> > > 
+> > > FYI, these uapi changes break build of QEMU.
+> > 
+> > What uapi changes?
+> > 
+> 
+> All macros and structure definitions that are being removed
+> from include/uapi/linux/vfio.h by patch 1.
 
-Here are some interesting error messages:
+Just my 2cents from drm (where we deprecate old gunk uapi quite often):
+Imo it's best to keep the uapi headers as-is, but exchange the
+documentation with a big "this is removed, never use again" warning:
 
-May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: segfault (11) at 
-800000 nip ff6a770 lr ff6a760 code 1 in 
-libglib-2.0.so.0.4800.2[feaf000+11f000]
-May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: code: 4bfc9401 
-3920ffff 91210054 8061005c 2f830000 419c0014 38800000 4bfc93e5
-May 04 15:24:53 dc1.a-eon.tld kernel: lxsession[7255]: code: 3920ffff 
-9121005c 2f8f0000 419e0008 <93ef0000> 418e000c 81210040 913b0000
+- it occasionally serves as a good lesson for how to not do uapi (whatever
+  the reasons really are in the specific case)
 
-May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: segfault 
-(11) at 8 nip 92dbc8 lr 92dae8 code 1 in packagekitd[920000+51000]
-May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: code: 
-38800080 3be001f4 4cc63182 4802c8ad 4bffff64 60000000 81210018 80be8048
-May 04 15:37:40 mintppc.a-eon.tld kernel: packagekitd[4290]: code: 
-7fa6eb78 38800010 807e801c 3be0ffff <80e90008> 4cc63182 4802c881 4bffff38
+- it's good to know which uapi numbers (like parameter extensions or
+  whatever they are in this case) are defacto reserved, because there are
+  binaries (qemu in this) that have code acting on them out there.
+
+The only exception where we completely nuke the structs and #defines is
+when uapi has been only used by testcases. Which we know, since we defacto
+limit our stable uapi guarantee to the canonical open&upstream userspace
+drivers only (for at least the driver-specific stuff, the cross-driver
+interfaces are hopeless).
+
+Anyway feel free to ignore since this might be different than drivers/gpu.
+
+Cheers, Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
