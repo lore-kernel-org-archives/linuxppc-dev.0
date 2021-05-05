@@ -2,26 +2,26 @@ Return-Path: <SRS0=ixLW=KA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9F9C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4C8AC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CED7E610FC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CED7E610FC
+	by mail.kernel.org (Postfix) with ESMTPS id 33CCF610FC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33CCF610FC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb1LW2r72z30Qk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:47:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb1Lz53X9z2yyC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:47:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PaKNEdAu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ncbaJFVZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -29,83 +29,81 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=PaKNEdAu; dkim-atps=neutral
+ header.s=pp1 header.b=ncbaJFVZ; dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb1Ky0jTcz2yxj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb1Ky1Tr6z2yxk
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 01:47:01 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 145FY2kh037672; Wed, 5 May 2021 11:46:56 -0400
+ 145Fan3h035719; Wed, 5 May 2021 11:46:54 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=joxChxNlw+5/0b+xEPI3Quj2Ds3vAM58vkmFghLJ1D8=;
- b=PaKNEdAujmkd6EAQ4Yvmois0pflJeSvj/SOGxPulMpP9gAN7HlhVzn51IlYFTqQXy9lV
- wrc9qNv83KCjRmJ8HtDeiPDXM/IvS1H3iNEaffqQv9//E0HF75qYjJBneRSGaASs6VLz
- Ca6Na2n+m3V5lmMYzTOYidNqrM1pcomga5e+fdInkVAdHMYGgC1CZMBVjGYUzWnGD/9I
- E84d7zqU0eAlbdWoaiUOCMczAmEthdB6/OttT/Yv/XOTWPfP2UsUpgP/42u5yG9AD5SC
- 89remkRIDiI+BeUfGRx3KUXHlswnRT/kCLZvr+4CZ96SBJP61zkW8RbyjK/55mbclB/1 eA== 
+ : date : message-id : content-type : content-transfer-encoding :
+ mime-version; s=pp1; bh=bjz0D+dyoNUijWoLP3EIMpTRfNvW0o6rDQrR5crAExc=;
+ b=ncbaJFVZPAc+B3SmVRqwEKC/NKYCGSKztaHHNP+/p+VRl5LaHfjHfI0BsNBRx5gnehNM
+ 9GDloemceANIFJSA8KbExPzo7K+WWe7HaSSNlIKflGcNaaAwtCBq+ugSs+r8jVNCdm/m
+ zJ5Izyq8JKvVKi/9UDMyrma8rTZ3pz39YiQsnRxMB6088kuHeD9+ChGp4pwsAXmKVyWh
+ zm4W7ZNu4g0FE9/UL2sa6aR4RPnaihGxZlqkVZwCoVVYeHdCwmlEXzlhh9zBCtLX99mV
+ Od2HUM6UgmkDIr7Y20R2cVXI0zV+S2tgV6m2TCuvb5KyibEuq6zteR1oak4eJwcTEQ43 /Q== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38bum4wn78-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38bwnm17tk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 05 May 2021 11:46:56 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 145FYGWk040013;
- Wed, 5 May 2021 11:46:55 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38bum4wn6j-1
+ Wed, 05 May 2021 11:46:54 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 145Fb4Ii039973;
+ Wed, 5 May 2021 11:46:53 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38bwnm17sr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 05 May 2021 11:46:55 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 145FdZN4008362;
- Wed, 5 May 2021 15:46:54 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma04ams.nl.ibm.com with ESMTP id 38beeegd2p-1
+ Wed, 05 May 2021 11:46:53 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 145Fc18C005701;
+ Wed, 5 May 2021 15:46:52 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma03ams.nl.ibm.com with ESMTP id 38bedxrd0j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 05 May 2021 15:46:53 +0000
+ Wed, 05 May 2021 15:46:51 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 145FkoYB27460062
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 145FkNvq22413730
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 5 May 2021 15:46:50 GMT
+ Wed, 5 May 2021 15:46:23 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C506BAE055;
- Wed,  5 May 2021 15:46:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B9020AE045;
+ Wed,  5 May 2021 15:46:48 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0DE80AE04D;
- Wed,  5 May 2021 15:46:49 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 10962AE04D;
+ Wed,  5 May 2021 15:46:47 +0000 (GMT)
 Received: from bharata.ibmuc.com (unknown [9.85.85.70])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  5 May 2021 15:46:48 +0000 (GMT)
+ Wed,  5 May 2021 15:46:46 +0000 (GMT)
 From: Bharata B Rao <bharata@linux.ibm.com>
 To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 1/6] KVM: PPC: Book3S HV: Fix comments of H_RPT_INVALIDATE
- arguments
-Date: Wed,  5 May 2021 21:16:37 +0530
-Message-Id: <20210505154642.178702-2-bharata@linux.ibm.com>
+Subject: [PATCH v7 0/6] Support for H_RPT_INVALIDATE in PowerPC KVM
+Date: Wed,  5 May 2021 21:16:36 +0530
+Message-Id: <20210505154642.178702-1-bharata@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210505154642.178702-1-bharata@linux.ibm.com>
-References: <20210505154642.178702-1-bharata@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: h3mXXrOkuPQ46z8zBBw1nOkDh3V6LhZU
-X-Proofpoint-GUID: EHWfJzrr17BjJqlvEShiTi_5dlwH4v5x
+X-Proofpoint-GUID: emvM_ZSY_xJaC1ezJTn3bqKA0J6OD7YQ
+X-Proofpoint-ORIG-GUID: DfLJh-1De-GEUROqED1vpo08e4peA5__
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-05_09:2021-05-05,
  2021-05-05 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- bulkscore=0 spamscore=0 adultscore=0 malwarescore=0 mlxlogscore=999
- phishscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxscore=0 clxscore=1011
+ lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0 phishscore=0
+ mlxlogscore=790 suspectscore=0 impostorscore=0 priorityscore=1501
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104060000 definitions=main-2105050112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -124,35 +122,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+This patchset adds support for the new hcall H_RPT_INVALIDATE
+and replaces the nested tlb flush calls with this new hcall
+if support for the same exists.
 
-The type values H_RPTI_TYPE_PRT and H_RPTI_TYPE_PAT indicate
-invalidating the caching of process and partition scoped entries
-respectively.
+Changes in v7:
+-------------
+- Fixed a bug where LPID of nested guest was being fetched
+  wrongly in the process scoped invalidation part of nested
+  guest exit handler.
+  (In kvmppc_nested_h_rpt_invalidate() of patch 4/6)
+- Moved the movement of RIC_FLUSH_ definitions to appropriate
+  patch.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/include/asm/hvcall.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+v6: https://lore.kernel.org/linuxppc-dev/20210311083939.595568-1-bharata@linux.ibm.com/
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 443050906018..f9927a1545ea 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -413,9 +413,9 @@
- #define H_RPTI_TYPE_NESTED	0x0001	/* Invalidate nested guest partition-scope */
- #define H_RPTI_TYPE_TLB		0x0002	/* Invalidate TLB */
- #define H_RPTI_TYPE_PWC		0x0004	/* Invalidate Page Walk Cache */
--/* Invalidate Process Table Entries if H_RPTI_TYPE_NESTED is clear */
-+/* Invalidate caching of Process Table Entries if H_RPTI_TYPE_NESTED is clear */
- #define H_RPTI_TYPE_PRT		0x0008
--/* Invalidate Partition Table Entries if H_RPTI_TYPE_NESTED is set */
-+/* Invalidate caching of Partition Table Entries if H_RPTI_TYPE_NESTED is set */
- #define H_RPTI_TYPE_PAT		0x0008
- #define H_RPTI_TYPE_ALL		(H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC | \
- 				 H_RPTI_TYPE_PRT)
+Aneesh Kumar K.V (1):
+  KVM: PPC: Book3S HV: Fix comments of H_RPT_INVALIDATE arguments
+
+Bharata B Rao (5):
+  powerpc/book3s64/radix: Add H_RPT_INVALIDATE pgsize encodings to
+    mmu_psize_def
+  KVM: PPC: Book3S HV: Add support for H_RPT_INVALIDATE
+  KVM: PPC: Book3S HV: Nested support in H_RPT_INVALIDATE
+  KVM: PPC: Book3S HV: Add KVM_CAP_PPC_RPT_INVALIDATE capability
+  KVM: PPC: Book3S HV: Use H_RPT_INVALIDATE in nested KVM
+
+ Documentation/virt/kvm/api.rst                |  18 +++
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   1 +
+ .../include/asm/book3s/64/tlbflush-radix.h    |   4 +
+ arch/powerpc/include/asm/hvcall.h             |   4 +-
+ arch/powerpc/include/asm/kvm_book3s.h         |   3 +
+ arch/powerpc/include/asm/mmu_context.h        |  11 ++
+ arch/powerpc/kvm/book3s_64_mmu_radix.c        |  27 +++-
+ arch/powerpc/kvm/book3s_hv.c                  | 106 ++++++++++++
+ arch/powerpc/kvm/book3s_hv_nested.c           | 116 ++++++++++++-
+ arch/powerpc/kvm/powerpc.c                    |   3 +
+ arch/powerpc/mm/book3s64/radix_pgtable.c      |   5 +
+ arch/powerpc/mm/book3s64/radix_tlb.c          | 152 +++++++++++++++++-
+ include/uapi/linux/kvm.h                      |   1 +
+ 13 files changed, 438 insertions(+), 13 deletions(-)
+
 -- 
 2.26.2
 
