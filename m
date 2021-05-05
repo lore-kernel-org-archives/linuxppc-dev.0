@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A364C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 16:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EB1FC43470
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 16:46:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B2EA613F1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 16:45:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B2EA613F1
+	by mail.kernel.org (Postfix) with ESMTPS id 2A1E4613C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 16:46:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A1E4613C3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb2dX5D5vz3g5C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:45:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb2f02VhBz3dJy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:46:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cun3ucXu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FhNpGDTE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=cun3ucXu; 
+ header.s=k20201202 header.b=FhNpGDTE; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb2YQ2gPhz3cZT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 02:42:02 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id D6BAA61443;
- Wed,  5 May 2021 16:41:59 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb2Yz3Yh7z3fYj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 02:42:31 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 74B4161C3C;
+ Wed,  5 May 2021 16:42:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1620232920;
- bh=+poiMp1CCkudZcpCIYkL5qXhzCYiNn29AWYI8h13T+8=;
+ s=k20201202; t=1620232949;
+ bh=xjvGfYWMOWJ3i3GSrinS+hz0zbRt1YtHImF2AmIsz9o=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=cun3ucXux19BQOuHJLgMXdfRA0fBM3axCootVJQdlT+D8D1J1D1Hqj+vWK9DyeuAk
- h7IhkXjlTARzyr1wAn/cltw9uY2F9GxH5eKJn2J7Bx5jYWm3nIjz3M2EA1yqDl1i3T
- oYOt4al/abHJAoTSBZXx9ccxEqWrBlFORJoruAGyM9WbYReYRbGO6jBKwJ1LaTspVd
- SzIomoQVVJM0VVhSCR/GkuIJjFnYfiKkiDYL+4fB7PonfIliXWUB5bJb0WWlS436Pp
- byvaDUE5bdlWije/ktU1gFo5tnR0ggCdB1G22hQubOOFQrfgtMY5pAGNeEai+sVwG2
- k0Wr5BvylXAVg==
+ b=FhNpGDTE85yCFvKIswLq3Qm7esN8aCUI0Kswm+3qb2FLRbJnURab5HBRAARUKFTVP
+ w0Rmz1JlnwhHVTO2XNUJKTNUI4Z4DAf9d6XIVpL8EyrB8Ws9ToRTwHI1zDsBlalaf2
+ mtONTXM15QgUEU5QPXZ6Tvx7GJANy/Tmz7zMtxq8kMIkwPoCJ1yZWFOQsOOfxlP0PI
+ kSxvZOwSVU7IczTlqsosU90t1gRYMdZb0S4J8nYwHsVSmKPAWtEF/FC5CUHtv4ipiE
+ PlMBSlH9y4YL4vm62KqPGKgPmZV7aqW1wkGX9S61zEMNhXI1Bl/cZFxI9bh38F+RQ7
+ pbBd/lYSvJjcw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 21/22] powerpc/iommu: Annotate nested lock for
+Subject: [PATCH AUTOSEL 4.4 19/19] powerpc/iommu: Annotate nested lock for
  lockdep
-Date: Wed,  5 May 2021 12:41:28 -0400
-Message-Id: <20210505164129.3464277-21-sashal@kernel.org>
+Date: Wed,  5 May 2021 12:42:02 -0400
+Message-Id: <20210505164203.3464510-19-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210505164129.3464277-1-sashal@kernel.org>
-References: <20210505164129.3464277-1-sashal@kernel.org>
+In-Reply-To: <20210505164203.3464510-1-sashal@kernel.org>
+References: <20210505164203.3464510-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -119,10 +119,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 9bfdd2510fd5..2cf900d16527 100644
+index 4c9b5970af37..282ad1930593 100644
 --- a/arch/powerpc/kernel/iommu.c
 +++ b/arch/powerpc/kernel/iommu.c
-@@ -1021,7 +1021,7 @@ int iommu_take_ownership(struct iommu_table *tbl)
+@@ -1019,7 +1019,7 @@ int iommu_take_ownership(struct iommu_table *tbl)
  
  	spin_lock_irqsave(&tbl->large_pool.lock, flags);
  	for (i = 0; i < tbl->nr_pools; i++)
@@ -131,7 +131,7 @@ index 9bfdd2510fd5..2cf900d16527 100644
  
  	if (tbl->it_offset == 0)
  		clear_bit(0, tbl->it_map);
-@@ -1050,7 +1050,7 @@ void iommu_release_ownership(struct iommu_table *tbl)
+@@ -1048,7 +1048,7 @@ void iommu_release_ownership(struct iommu_table *tbl)
  
  	spin_lock_irqsave(&tbl->large_pool.lock, flags);
  	for (i = 0; i < tbl->nr_pools; i++)
