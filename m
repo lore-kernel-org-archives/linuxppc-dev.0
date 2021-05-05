@@ -2,50 +2,111 @@ Return-Path: <SRS0=ixLW=KA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9801C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9F9C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D874610D2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:24:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D874610D2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id CED7E610FC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 May 2021 15:47:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CED7E610FC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb0qS1qkMz30C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:24:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fb1LW2r72z30Qk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:47:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PaKNEdAu;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=PaKNEdAu; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb0q259b4z2yxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 01:23:42 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 46CE5AF2F;
- Wed,  5 May 2021 15:23:39 +0000 (UTC)
-Date: Wed, 5 May 2021 17:23:37 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3] powerpc/64: Option to use ELFv2 ABI for big-endian
- kernels
-Message-ID: <20210505152337.GA6564@kitsune.suse.cz>
-References: <20210503110713.751840-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fb1Ky0jTcz2yxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 01:47:01 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 145FY2kh037672; Wed, 5 May 2021 11:46:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=joxChxNlw+5/0b+xEPI3Quj2Ds3vAM58vkmFghLJ1D8=;
+ b=PaKNEdAujmkd6EAQ4Yvmois0pflJeSvj/SOGxPulMpP9gAN7HlhVzn51IlYFTqQXy9lV
+ wrc9qNv83KCjRmJ8HtDeiPDXM/IvS1H3iNEaffqQv9//E0HF75qYjJBneRSGaASs6VLz
+ Ca6Na2n+m3V5lmMYzTOYidNqrM1pcomga5e+fdInkVAdHMYGgC1CZMBVjGYUzWnGD/9I
+ E84d7zqU0eAlbdWoaiUOCMczAmEthdB6/OttT/Yv/XOTWPfP2UsUpgP/42u5yG9AD5SC
+ 89remkRIDiI+BeUfGRx3KUXHlswnRT/kCLZvr+4CZ96SBJP61zkW8RbyjK/55mbclB/1 eA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38bum4wn78-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 May 2021 11:46:56 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 145FYGWk040013;
+ Wed, 5 May 2021 11:46:55 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38bum4wn6j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 May 2021 11:46:55 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 145FdZN4008362;
+ Wed, 5 May 2021 15:46:54 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 38beeegd2p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 May 2021 15:46:53 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 145FkoYB27460062
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 5 May 2021 15:46:50 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C506BAE055;
+ Wed,  5 May 2021 15:46:50 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0DE80AE04D;
+ Wed,  5 May 2021 15:46:49 +0000 (GMT)
+Received: from bharata.ibmuc.com (unknown [9.85.85.70])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  5 May 2021 15:46:48 +0000 (GMT)
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v7 1/6] KVM: PPC: Book3S HV: Fix comments of H_RPT_INVALIDATE
+ arguments
+Date: Wed,  5 May 2021 21:16:37 +0530
+Message-Id: <20210505154642.178702-2-bharata@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210505154642.178702-1-bharata@linux.ibm.com>
+References: <20210505154642.178702-1-bharata@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210503110713.751840-1-npiggin@gmail.com>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: h3mXXrOkuPQ46z8zBBw1nOkDh3V6LhZU
+X-Proofpoint-GUID: EHWfJzrr17BjJqlvEShiTi_5dlwH4v5x
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-05_09:2021-05-05,
+ 2021-05-05 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 mlxscore=0
+ bulkscore=0 spamscore=0 adultscore=0 malwarescore=0 mlxlogscore=999
+ phishscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104060000 definitions=main-2105050112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,263 +118,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+ Bharata B Rao <bharata@linux.ibm.com>, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 
-looks like the ABI flags are not correctly applied when cross-compiling.
+The type values H_RPTI_TYPE_PRT and H_RPTI_TYPE_PAT indicate
+invalidating the caching of process and partition scoped entries
+respectively.
 
-While building natively success of BTFIDS depends on the kernel ABI but
-when cross-compiling success of BTFIDS depends on the default toolchain
-ABI.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/hvcall.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-It's problem independent of this patch - the problem exists both before
-and after.
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 443050906018..f9927a1545ea 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -413,9 +413,9 @@
+ #define H_RPTI_TYPE_NESTED	0x0001	/* Invalidate nested guest partition-scope */
+ #define H_RPTI_TYPE_TLB		0x0002	/* Invalidate TLB */
+ #define H_RPTI_TYPE_PWC		0x0004	/* Invalidate Page Walk Cache */
+-/* Invalidate Process Table Entries if H_RPTI_TYPE_NESTED is clear */
++/* Invalidate caching of Process Table Entries if H_RPTI_TYPE_NESTED is clear */
+ #define H_RPTI_TYPE_PRT		0x0008
+-/* Invalidate Partition Table Entries if H_RPTI_TYPE_NESTED is set */
++/* Invalidate caching of Partition Table Entries if H_RPTI_TYPE_NESTED is set */
+ #define H_RPTI_TYPE_PAT		0x0008
+ #define H_RPTI_TYPE_ALL		(H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC | \
+ 				 H_RPTI_TYPE_PRT)
+-- 
+2.26.2
 
-Thanks
-
-Michal
-
-On Mon, May 03, 2021 at 09:07:13PM +1000, Nicholas Piggin wrote:
-> Provide an option to build big-endian kernels using the ELFv2 ABI. This
-> works on GCC only so far, although it is rumored to work with clang
-> that's not been tested yet.
-> 
-> This can give big-endian kernels some useful advantages of the ELFv2 ABI
-> (e.g., less stack usage, -mprofile-kernel, better compatibility with bpf
-> tools).
-> 
-> BE+ELFv2 is not officially supported by the GNU toolchain, but it works
-> fine in testing and has been used by some userspace for some time (e.g.,
-> Void Linux).
-> 
-> Tested-by: Michal Suchánek <msuchanek@suse.de>
-> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> 
-> I didn't add the -mprofile-kernel change but I think it would be a good
-> one that can be merged independently if it works.
-> 
-> Since v2:
-> - Rebased, tweaked changelog.
-> - Changed ELF_V2 to ELF_V2_ABI in config options, to be clearer.
-> 
-> Since v1:
-> - Improved the override flavour name suggested by Segher.
-> - Improved changelog wording.
-> 
->  arch/powerpc/Kconfig                | 22 ++++++++++++++++++++++
->  arch/powerpc/Makefile               | 18 ++++++++++++------
->  arch/powerpc/boot/Makefile          |  4 +++-
->  arch/powerpc/kernel/vdso64/Makefile | 13 +++++++++++++
->  drivers/crypto/vmx/Makefile         |  8 ++++++--
->  drivers/crypto/vmx/ppc-xlate.pl     | 10 ++++++----
->  6 files changed, 62 insertions(+), 13 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 1e6230bea09d..d3f78d3d574d 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -160,6 +160,7 @@ config PPC
->  	select ARCH_WEAK_RELEASE_ACQUIRE
->  	select BINFMT_ELF
->  	select BUILDTIME_TABLE_SORT
-> +	select PPC64_BUILD_ELF_V2_ABI		if PPC64 && CPU_LITTLE_ENDIAN
->  	select CLONE_BACKWARDS
->  	select DCACHE_WORD_ACCESS		if PPC64 && CPU_LITTLE_ENDIAN
->  	select DMA_OPS				if PPC64
-> @@ -568,6 +569,27 @@ config KEXEC_FILE
->  config ARCH_HAS_KEXEC_PURGATORY
->  	def_bool KEXEC_FILE
->  
-> +config PPC64_BUILD_ELF_V2_ABI
-> +	bool
-> +
-> +config PPC64_BUILD_BIG_ENDIAN_ELF_V2_ABI
-> +	bool "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)"
-> +	depends on PPC64 && CPU_BIG_ENDIAN && EXPERT
-> +	depends on CC_IS_GCC && LD_VERSION >= 22400
-> +	default n
-> +	select PPC64_BUILD_ELF_V2_ABI
-> +	help
-> +	  This builds the kernel image using the "Power Architecture 64-Bit ELF
-> +	  V2 ABI Specification", which has a reduced stack overhead and faster
-> +	  function calls. This internal kernel ABI option does not affect
-> +          userspace compatibility.
-> +
-> +	  The V2 ABI is standard for 64-bit little-endian, but for big-endian
-> +	  it is less well tested by kernel and toolchain. However some distros
-> +	  build userspace this way, and it can produce a functioning kernel.
-> +
-> +	  This requires GCC and binutils 2.24 or newer.
-> +
->  config RELOCATABLE
->  	bool "Build a relocatable kernel"
->  	depends on PPC64 || (FLATMEM && (44x || FSL_BOOKE))
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 3212d076ac6a..b90b5cb799aa 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -91,10 +91,14 @@ endif
->  
->  ifdef CONFIG_PPC64
->  ifndef CONFIG_CC_IS_CLANG
-> -cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
-> -cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
-> -aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
-> -aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
-> +ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-> +cflags-y				+= $(call cc-option,-mabi=elfv2)
-> +aflags-y				+= $(call cc-option,-mabi=elfv2)
-> +else
-> +cflags-y				+= $(call cc-option,-mabi=elfv1)
-> +cflags-y				+= $(call cc-option,-mcall-aixdesc)
-> +aflags-y				+= $(call cc-option,-mabi=elfv1)
-> +endif
->  endif
->  endif
->  
-> @@ -142,15 +146,17 @@ endif
->  
->  CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
->  ifndef CONFIG_CC_IS_CLANG
-> -ifdef CONFIG_CPU_LITTLE_ENDIAN
-> -CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
-> +ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-> +CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
->  AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
->  else
-> +# Keep these in synch with arch/powerpc/kernel/vdso64/Makefile
->  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
->  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
->  AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
->  endif
->  endif
-> +
->  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
->  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
->  
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 2b8da923ceca..be84a72f8258 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -40,6 +40,9 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
->  
->  ifdef CONFIG_PPC64_BOOT_WRAPPER
->  BOOTCFLAGS	+= -m64
-> +ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-> +BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
-> +endif
->  else
->  BOOTCFLAGS	+= -m32
->  endif
-> @@ -50,7 +53,6 @@ ifdef CONFIG_CPU_BIG_ENDIAN
->  BOOTCFLAGS	+= -mbig-endian
->  else
->  BOOTCFLAGS	+= -mlittle-endian
-> -BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
->  endif
->  
->  BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -nostdinc
-> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-> index 2813e3f98db6..d783c07e558f 100644
-> --- a/arch/powerpc/kernel/vdso64/Makefile
-> +++ b/arch/powerpc/kernel/vdso64/Makefile
-> @@ -25,6 +25,19 @@ KCOV_INSTRUMENT := n
->  UBSAN_SANITIZE := n
->  KASAN_SANITIZE := n
->  
-> +# Always build vdso64 with ELFv1 ABI for BE kernels
-> +ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-> +ifdef CONFIG_CPU_BIG_ENDIAN
-> +KBUILD_CFLAGS := $(filter-out -mabi=elfv2,$(KBUILD_CFLAGS))
-> +KBUILD_AFLAGS := $(filter-out -mabi=elfv2,$(KBUILD_AFLAGS))
-> +
-> +# These are derived from arch/powerpc/Makefile
-> +KBUILD_CFLAGS += $(call cc-option,-mabi=elfv1)
-> +KBUILD_CFLAGS += $(call cc-option,-mcall-aixdesc)
-> +KBUILD_AFLAGS += $(call cc-option,-mabi=elfv1)
-> +endif
-> +endif
-> +
->  ccflags-y := -shared -fno-common -fno-builtin -nostdlib \
->  	-Wl,-soname=linux-vdso64.so.1 -Wl,--hash-style=both
->  asflags-y := -D__VDSO64__ -s
-> diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
-> index 709670d2b553..d9ccf9fc3483 100644
-> --- a/drivers/crypto/vmx/Makefile
-> +++ b/drivers/crypto/vmx/Makefile
-> @@ -5,18 +5,22 @@ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes
->  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
->  override flavour := linux-ppc64le
->  else
-> +ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-> +override flavour := linux-ppc64-elfv2
-> +else
->  override flavour := linux-ppc64
->  endif
-> +endif
->  
->  quiet_cmd_perl = PERL $@
->        cmd_perl = $(PERL) $(<) $(flavour) > $(@)
->  
->  targets += aesp8-ppc.S ghashp8-ppc.S
->  
-> -$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl FORCE
-> +$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl $(src)/ppc-xlate.pl FORCE
->  	$(call if_changed,perl)
->    
-> -$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl FORCE
-> +$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl $(src)/ppc-xlate.pl FORCE
->  	$(call if_changed,perl)
->  
->  clean-files := aesp8-ppc.S ghashp8-ppc.S
-> diff --git a/drivers/crypto/vmx/ppc-xlate.pl b/drivers/crypto/vmx/ppc-xlate.pl
-> index 36db2ef09e5b..b583898c11ae 100644
-> --- a/drivers/crypto/vmx/ppc-xlate.pl
-> +++ b/drivers/crypto/vmx/ppc-xlate.pl
-> @@ -9,6 +9,8 @@ open STDOUT,">$output" || die "can't open $output: $!";
->  
->  my %GLOBALS;
->  my $dotinlocallabels=($flavour=~/linux/)?1:0;
-> +my $elfv2abi=(($flavour =~ /linux-ppc64le/) or ($flavour =~ /linux-ppc64-elfv2/))?1:0;
-> +my $dotfunctions=($elfv2abi=~1)?0:1;
->  
->  ################################################################
->  # directives which need special treatment on different platforms
-> @@ -40,7 +42,7 @@ my $globl = sub {
->  };
->  my $text = sub {
->      my $ret = ($flavour =~ /aix/) ? ".csect\t.text[PR],7" : ".text";
-> -    $ret = ".abiversion	2\n".$ret	if ($flavour =~ /linux.*64le/);
-> +    $ret = ".abiversion	2\n".$ret	if ($elfv2abi);
->      $ret;
->  };
->  my $machine = sub {
-> @@ -56,8 +58,8 @@ my $size = sub {
->      if ($flavour =~ /linux/)
->      {	shift;
->  	my $name = shift; $name =~ s|^[\.\_]||;
-> -	my $ret  = ".size	$name,.-".($flavour=~/64$/?".":"").$name;
-> -	$ret .= "\n.size	.$name,.-.$name" if ($flavour=~/64$/);
-> +	my $ret  = ".size	$name,.-".($dotfunctions?".":"").$name;
-> +	$ret .= "\n.size	.$name,.-.$name" if ($dotfunctions);
->  	$ret;
->      }
->      else
-> @@ -142,7 +144,7 @@ my $vmr = sub {
->  
->  # Some ABIs specify vrsave, special-purpose register #256, as reserved
->  # for system use.
-> -my $no_vrsave = ($flavour =~ /linux-ppc64le/);
-> +my $no_vrsave = ($elfv2abi);
->  my $mtspr = sub {
->      my ($f,$idx,$ra) = @_;
->      if ($idx == 256 && $no_vrsave) {
-> -- 
-> 2.23.0
-> 
