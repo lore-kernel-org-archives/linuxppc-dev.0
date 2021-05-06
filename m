@@ -2,68 +2,61 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E74C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 13:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E36DCC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:50:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40A69610FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 13:43:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40A69610FA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3A901613B5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:50:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A901613B5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbZYM6Npxz3bT3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 23:43:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XFMVVAI3;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbc241phSz3bTx
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 00:50:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=XFMVVAI3; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbZXq5Cx8z2yxY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 23:43:22 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FbZXf5l85z9sW4;
- Thu,  6 May 2021 23:43:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620308595;
- bh=Lw/D96fhOtgNxgz0JM0qlpti1j2019x8fmayev0jvJk=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=XFMVVAI31LtODRi2pRyNyxlQEViG8JGbJt4DnYi5zSBNmg/LbRw4d7ebS42h3FaXm
- 86h27rf2o2ARQl+2j89Ac3EXzZ6/Lc92PIDSSqtCqF/my0RDFW5KzQhk/laUJ0RB3x
- fFeD827idy7WTW3AnQoauclxhb1r4rCzyxEABmGSn5wQwGjd7J9K5EArOo/ibwKqK+
- fuJYR9YX6hX8i0k+ng6vLrR/PaegSUykaXpMg+slm7IBSoTNpaTYz7T0dSmBK987/c
- XOeTa1je9q7CMDny79hz98g4PETEynYBismkRdM4yoFqsx2+ycO+JHZGnBg+wk+rcY
- pbB/qwmePEULA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin
- <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix conversion to gfn-based MMU
- notifier callbacks
-In-Reply-To: <9e0a256b-fb5a-4468-ed21-68d524d6ea56@redhat.com>
-References: <20210505121509.1470207-1-npiggin@gmail.com>
- <9e0a256b-fb5a-4468-ed21-68d524d6ea56@redhat.com>
-Date: Thu, 06 May 2021 23:43:10 +1000
-Message-ID: <87pmy47zbl.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbc1b6L7vz2yxY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 00:49:51 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4Fbc1Q1M4Hz9sYh;
+ Thu,  6 May 2021 16:49:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L2QXxuYoNt71; Thu,  6 May 2021 16:49:46 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Fbc1Q0Qq6z9sYZ;
+ Thu,  6 May 2021 16:49:46 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DEB468B802;
+ Thu,  6 May 2021 16:49:45 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id rIf4-rmnMFKT; Thu,  6 May 2021 16:49:45 +0200 (CEST)
+Received: from po15610vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A4F328B800;
+ Thu,  6 May 2021 16:49:45 +0200 (CEST)
+Received: by po15610vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 7B1D8648FD; Thu,  6 May 2021 14:49:45 +0000 (UTC)
+Message-Id: <b831e54a2579db24fbef836ed415588ce2b3e825.1620312573.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/interrupts: Fix kuep_unlock() call
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu,  6 May 2021 14:49:45 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,33 +68,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sean Christopherson <seanjc@google.com>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, kvm@vger.kernel.org,
- Bharata B Rao <bharata@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Paolo Bonzini <pbonzini@redhat.com> writes:
-> On 05/05/21 14:15, Nicholas Piggin wrote:
->> Commit b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU notifier
->> callbacks") causes unmap_gfn_range and age_gfn callbacks to only work
->> on the first gfn in the range. It also makes the aging callbacks call
->> into both radix and hash aging functions for radix guests. Fix this.
->> 
->> Add warnings for the single-gfn calls that have been converted to range
->> callbacks, in case they ever receieve ranges greater than 1.
->> 
->> Fixes: b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU notifier callbacks")
->> Reported-by: Bharata B Rao <bharata@linux.ibm.com>
->> Tested-by: Bharata B Rao <bharata@linux.ibm.com>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->
-> Sorry for the breakage.  I queued this patch.
+Same as kuap_user_restore(), kuep_unlock() has to be called when
+really returning to user, that is in interrupt_exit_user_prepare(),
+not in interrupt_exit_prepare().
 
-Thanks. Are you planning to send it to Linus before rc1?
+Fixes: b5efec00b671 ("powerpc/32s: Move KUEP locking/unlocking in C")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/interrupt.h | 2 --
+ arch/powerpc/kernel/interrupt.c      | 1 +
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-If not I can pick it up as I already have some things in my next and am
-intending to send a pull request anyway.
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index 44cde2e129b8..c77e8f57ff06 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -153,8 +153,6 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+  */
+ static inline void interrupt_exit_prepare(struct pt_regs *regs, struct interrupt_state *state)
+ {
+-	if (user_mode(regs))
+-		kuep_unlock();
+ }
+ 
+ static inline void interrupt_async_enter_prepare(struct pt_regs *regs, struct interrupt_state *state)
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 30a596182baa..e0938ba298f2 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -424,6 +424,7 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned
+ 
+ 	/* Restore user access locks last */
+ 	kuap_user_restore(regs);
++	kuep_unlock();
+ 
+ 	return ret;
+ }
+-- 
+2.25.0
 
-cheers
