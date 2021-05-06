@@ -2,28 +2,28 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 860DCC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8937AC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6BA1610A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:36:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6BA1610A1
+	by mail.kernel.org (Postfix) with ESMTPS id DBB16610A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBB16610A1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd3t1Yprz3bsb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:36:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd4M1NcCz3byT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:37:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=hdYJWH8e;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=qf4gh/Oo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=ERr+ibPO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Gy0HBk0D;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=sent.com (client-ip=66.111.4.230;
@@ -31,69 +31,72 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm3 header.b=hdYJWH8e; 
+ header.s=fm3 header.b=ERr+ibPO; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=qf4gh/Oo; 
+ header.a=rsa-sha256 header.s=fm2 header.b=Gy0HBk0D; 
  dkim-atps=neutral
 Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
  [66.111.4.230])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2q1s2mz301N
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2q1g3gz3018
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:02 +1000 (AEST)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
- by mailnew.nyi.internal (Postfix) with ESMTP id 42165580B72;
- Thu,  6 May 2021 11:26:50 -0400 (EDT)
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 46CE9580B98;
+ Thu,  6 May 2021 11:27:16 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute5.internal (MEProxy); Thu, 06 May 2021 11:26:50 -0400
+ by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:16 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:reply-to:mime-version
- :content-transfer-encoding; s=fm3; bh=idfxFi2niIlXphs1rSRpisMaNe
- RwPzwfRsm8hAUYBvQ=; b=hdYJWH8eNG6Nd+MRc3r283kN9IufmtoATaqfCU96YH
- ZKyLzDOs9mGhZSlD83jeL7H3DOqnFDCXn/VXD229UiHg68Vz+1cHYe64OVsP7fXV
- 7i456IoTE2D8mIiUzaHreIvLE4WMfptERGMoBchm/EYEioelxClLvi0cEjk2Z8se
- Arvfi8vRUcvLA33pxjnXxQmlCVsyXNryd5LfhOBp+3pZvqI36t6IK+pdROusiIec
- gXu5SgWTBHSw0qxydioj5F1Ec3AtLzDDc5vIue2gJTGi+JN2UwBs88PaeFZ6CQwn
- 7QhhXtghvdNckXVzjjQVUrQkB4SzeptEzI7DHQV/sbdw==
+ :to:cc:subject:date:message-id:in-reply-to:references:reply-to
+ :mime-version:content-transfer-encoding; s=fm3; bh=CNhCM5piZYB3R
+ G0DYNDKizi7nXlnPEa9s7srXlj6PXg=; b=ERr+ibPOf0zVPcQflUsZusng7IDBt
+ Ly+me/4A5/4jPSYelctQuWumPKZHomt2odPjYpof3hzY459tKjcCPONvUILkhh/t
+ 6OC9a5HPpB2Yyq0o5us8PKWmCvW0mQg0f8aYcFxatzcRQYA+Eo0sWo/ZiTzuKXmI
+ Hd01N3Fw2jIv2f2YFBMQkjq8B1pc4vuSxr0UIiQSeIIs85G/OdYyaHjWXBC+xCAX
+ K6LBqXwl30RHi/8Vt2uTdqBmdlqpltiukvdWtro7EpYqNBN3iugBknXl6MwpGfFA
+ mQRSO5ILaqStJXxGzBc3QKabgCtMhBgDXKM1Wk3hGtyex3njKiN0j6RfQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:reply-to:subject:to:x-me-proxy
- :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=idfxFi
- 2niIlXphs1rSRpisMaNeRwPzwfRsm8hAUYBvQ=; b=qf4gh/OodsbTyJHDo4/xMy
- XWnV10CwU190E3R4EbQH9v7/GANI/SHKBnKoNo+YtkMbM4Vnc0BA5STeVvOx5JAk
- QbOEJpYSN6+uvVxGfYHFJ7L3SvqPtmevmMEDxN1/w8HICPWdYg8gr/6WF1OWeC4H
- x2aX6/hzkjEnSGvUlD4WKg8F33YuV3SGpHhpJSiE/1iJqiNVsfPZAdb84Jetu6qY
- XNunEtvZhRhT1qIed+Qn+KrN2qp8++eFknjSTrCea322qDnqF8r0r698iXZ52kMQ
- De9S9QiodAWedpRqKM1DYX+rI3FeGwLbUo0bV5DgW4WFjPJIr4TakXPY/JZ5BjHg
- ==
-X-ME-Sender: <xms:uAqUYGrwd9gPeAKsoo4Q35DN0k21ih8YX-F7vzB6dcZOwBTsluMPHA>
- <xme:uAqUYEq1vsKttdYmZns8vQbuUYqZk39i0XwlelX-r-VtyfJ3I2ACSUXUGpHbFA3EP
- wWe297Cea3xOilLwg>
+ :in-reply-to:message-id:mime-version:references:reply-to:subject
+ :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm2; bh=CNhCM5piZYB3RG0DYNDKizi7nXlnPEa9s7srXlj6PXg=; b=Gy0HBk0D
+ anbxcrn2TuZswDhEOR9nzUkL2OpRqP+G0E19ruuqkPdfG2QaMkjbgAmYgQDs2PYh
+ X+u9gTjbgqnObnMCUoj+FaA95NZ9nq3dqUJghdetX+vfhI75COOAIVu45MvktsRp
+ uN67O1drDk5ZvdUy0NP/n2xtAuMwihR7u7jxaIwFEFvS+Lf0X7Bu8G20EewqgnkQ
+ wNmhoLBgWiIJ2Q+gcJfXE7xX9ZnkMm45EiNdfx6VxiK0pMrKHq//PZK0Gj78wkXb
+ vHLLIqaG6XGkdvhTQPQ92lb9hweVk9danextwxInKDS/il/3M6ZqnGhSpbXu1q+P
+ JNOnDyTiAoP7aA==
+X-ME-Sender: <xms:1AqUYCulhFTFCq1TuIitxSwjbJhsysFyDWUIdrqlrydF-otZD2kHpA>
+ <xme:1AqUYHcRef67m2nBpQTonTKTcKYIJ7CXSm2um39PI8T4RYV45KzrCen5CiNaIHCew
+ pmrlofvEXwhQdEu2Q>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkfforhgggfestdhqredtredttdenucfhrhhomhepkghiucgjrghn
- uceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepleetvddtvd
- dttdetffdvkeehffdtjefhkedtheffjeehvdejueektedukedufeffnecukfhppeefhedr
- udeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrg
- hilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
-X-ME-Proxy: <xmx:uAqUYLMErIUfUFgMn1Vg0Q8SCoKDDurhsnrKYRq-xtYdzqauGYzLgw>
- <xmx:uAqUYF4-Xkq7P3NYOoeHTxUKG1hdAQ7AhkWafRv4kOcorhVsc6ei9w>
- <xmx:uAqUYF7GFJU0sPIbPhr2222mLMhPSovf0-OhxdVibP6BnVZGPfaFkg>
- <xmx:ugqUYJrOGyYPTPEPpXL4CcsRluA-FRybwYHrtZtKjxQVPTg6ZHctJQ>
+ cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
+ rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
+ dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
+ hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepgeenucfrrghrrghmpe
+ hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
+X-ME-Proxy: <xmx:1AqUYNyxUWL3vkssN2aKr6C1w4NWi4ijMS6vzUobtCsaH6Se0wUjcg>
+ <xmx:1AqUYNPOR0aPhbs12_rW4UBrnh8mhESTe0nMFBQzvCJJkG8ka3lF1w>
+ <xmx:1AqUYC9mLFHQjMskumASj7jqaORsqmWfp5qx_O7C4l9zV6VhU2vw6Q>
+ <xmx:1AqUYCN8ya_kW4otEza_yHf29kFghE0pN4XXQgR62DB2F1X4flPr8w>
 Received: from Threadripper.local
  (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
  by mail.messagingengine.com (Postfix) with ESMTPA;
- Thu,  6 May 2021 11:26:44 -0400 (EDT)
+ Thu,  6 May 2021 11:27:12 -0400 (EDT)
 From: Zi Yan <zi.yan@sent.com>
 To: David Hildenbrand <david@redhat.com>,
 	Oscar Salvador <osalvador@suse.de>
-Subject: [RFC PATCH 0/7] Memory hotplug/hotremove at subsection size
-Date: Thu,  6 May 2021 11:26:16 -0400
-Message-Id: <20210506152623.178731-1-zi.yan@sent.com>
+Subject: [RFC PATCH 6/7] arch: x86: no MAX_ORDER exceeds SECTION_SIZE check
+ for 32bit vdso.
+Date: Thu,  6 May 2021 11:26:22 -0400
+Message-Id: <20210506152623.178731-7-zi.yan@sent.com>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
+References: <20210506152623.178731-1-zi.yan@sent.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -123,69 +126,48 @@ Sender: "Linuxppc-dev"
 
 From: Zi Yan <ziy@nvidia.com>
 
-Hi all,
+For x86_64, 32bit vdso is compiled for compatibility reason and 32bit
+SECTION_SIZE_BITS value is used during compilation. It causes
+compilation time error when MAX_ORDER is increased in the 64bit
+environment even if it is OK for 64bit SECTION_SIZE_BITS. Remove the
+check during 32bit vdso compilation. It will be checked when other
+kernel components are compiled.
 
-This patchset tries to remove the restriction on memory hotplug/hotremove
-granularity, which is always greater or equal to memory section size[1].
-With the patchset, kernel is able to online/offline memory at a size indepe=
-ndent
-of memory section size, as small as 2MB (the subsection size).
+Signed-off-by: Zi Yan <ziy@nvidia.com>
+---
+ arch/x86/entry/vdso/Makefile | 1 +
+ include/linux/mmzone.h       | 2 ++
+ 2 files changed, 3 insertions(+)
 
-The motivation is to increase MAX_ORDER of the buddy allocator and pageblock
-size without increasing memory hotplug/hotremove granularity at the same ti=
-me,
-so that the kernel can allocator 1GB pages using buddy allocator and utiliz=
-es
-existing pageblock based anti-fragmentation, paving the road for 1GB THP
-support[2].
-
-The patchset utilizes the existing subsection support[3] and changes the
-section size alignment checks to subsection size alignment checks. There are
-also changes to pageblock code to support partial pageblocks, when pageblock
-size is increased along with MAX_ORDER. Increasing pageblock size can enable
-kernel to utilize existing anti-fragmentation mechanism for gigantic page
-allocations.
-
-The last patch increases SECTION_SIZE_BITS to demonstrate the use of memory
-hotplug/hotremove subsection, but is not intended to be merged as is. It is
-there in case one wants to try this out and will be removed during the final
-submission.
-
-Feel free to give suggestions and comments. I am looking forward to your
-feedback.
-
-Thanks.
-
-Zi Yan (7):
-  mm: sparse: set/clear subsection bitmap when pages are
-    onlined/offlined.
-  mm: set pageblock_order to the max of HUGETLB_PAGE_ORDER and
-    MAX_ORDER-1
-  mm: memory_hotplug: decouple memory_block size with section size.
-  mm: pageblock: allow set/unset migratetype for partial pageblock
-  mm: memory_hotplug, sparse: enable memory hotplug/hotremove
-    subsections
-  arch: x86: no MAX_ORDER exceeds SECTION_SIZE check for 32bit vdso.
-  [not for merge] mm: increase SECTION_SIZE_BITS to 31
-
- arch/ia64/Kconfig                |   1 -
- arch/powerpc/Kconfig             |   1 -
- arch/x86/Kconfig                 |  15 +++
- arch/x86/entry/vdso/Makefile     |   1 +
- arch/x86/include/asm/sparsemem.h |   2 +-
- drivers/base/memory.c            | 176 +++++++++++++++----------------
- drivers/base/node.c              |   2 +-
- include/linux/memory.h           |   8 +-
- include/linux/mmzone.h           |   2 +
- include/linux/page-isolation.h   |   8 +-
- include/linux/pageblock-flags.h  |   9 --
- mm/Kconfig                       |   7 --
- mm/memory_hotplug.c              |  22 ++--
- mm/page_alloc.c                  |  40 ++++---
- mm/page_isolation.c              |  30 +++---
- mm/sparse.c                      |  55 ++++++++--
- 16 files changed, 219 insertions(+), 160 deletions(-)
-
+diff --git a/arch/x86/entry/vdso/Makefile b/arch/x86/entry/vdso/Makefile
+index 05c4abc2fdfd..cad339136ed1 100644
+--- a/arch/x86/entry/vdso/Makefile
++++ b/arch/x86/entry/vdso/Makefile
+@@ -156,6 +156,7 @@ KBUILD_CFLAGS_32 +=3D -fno-stack-protector
+ KBUILD_CFLAGS_32 +=3D $(call cc-option, -foptimize-sibling-calls)
+ KBUILD_CFLAGS_32 +=3D -fno-omit-frame-pointer
+ KBUILD_CFLAGS_32 +=3D -DDISABLE_BRANCH_PROFILING
++KBUILD_CFLAGS_32 +=3D -DNO_MAX_ORDER_CHECK
+=20
+ ifdef CONFIG_RETPOLINE
+ ifneq ($(RETPOLINE_VDSO_CFLAGS),)
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 965a0cd5eac1..fb5a0c2ab528 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1211,9 +1211,11 @@ static inline struct zoneref *first_zones_zonelist(s=
+truct zonelist *zonelist,
+ #define SECTION_BLOCKFLAGS_BITS \
+ 	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
+=20
++#ifndef NO_MAX_ORDER_CHECK
+ #if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
+ #error Allocator MAX_ORDER exceeds SECTION_SIZE
+ #endif
++#endif
+=20
+ static inline unsigned long pfn_to_section_nr(unsigned long pfn)
+ {
 --=20
 2.30.2
 
