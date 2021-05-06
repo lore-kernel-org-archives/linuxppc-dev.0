@@ -2,55 +2,70 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19D2DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7650C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:35:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55ACD6105A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:32:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55ACD6105A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+	by mail.kernel.org (Postfix) with ESMTPS id 53B906103E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:35:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53B906103E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbkHs0r9Hz30Ds
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 05:32:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx1.molgen.mpg.de;
- envelope-from=pmenzel@molgen.mpg.de; receiver=<UNKNOWN>)
-Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbkMc72m9z3bVS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 05:35:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=crQvOxVh;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=crQvOxVh; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbkHT1tP5z2yxY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 05:32:20 +1000 (AEST)
-Received: from [192.168.0.3] (ip5f5aef15.dynamic.kabel-deutschland.de
- [95.90.239.21])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 52FE961E5FE02;
- Thu,  6 May 2021 21:32:18 +0200 (CEST)
-Subject: UBSAN: array-index-out-of-bounds in
- arch/powerpc/kernel/legacy_serial.c:359:56
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <9f1e8f9a-9ccd-fc96-04cc-30137dbe9011@molgen.mpg.de>
-Message-ID: <a7467e08-1e53-e974-d14b-13e6ff558dae@molgen.mpg.de>
-Date: Thu, 6 May 2021 21:32:18 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbkM55LzCz2xYZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 05:35:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=+Gmd9WE9Bu2QYLvWpqKR/yYem0cFXFiMf/zwpkj95U8=; b=crQvOxVhfA0rYm1ruAKJBNw0xC
+ xsM1t+SsJ5U1dOvsLom1VliGQksmvwhkFYj4n7ocfHyofPKeGYBDJFe7TYnq2YqoCPZFOp9Hi5yST
+ 4FH25flkLwf/Lwe/+RCpeR/nmAkbyaM0SvaT/6ZA3du1X0I7kf4FyjORRo8wpB+6q2guCZ8DJU5gv
+ abGYH78vgb/2DeTmQHYosKU2fazelARvJeX7jelqa1FilgXL4Ovy+pzWnv0m0qQ94W3S3HRu/HDqu
+ DvLeYnQ9jgK+5VudN9eKZp/TM9hNoGEyJpw9FhDDQ01zRQCnF9I0oCHm83eSPFGW7r3nw8/YpGdhl
+ 9IBGKFNQ==;
+Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat
+ Linux)) id 1lejha-0028sz-5z; Thu, 06 May 2021 19:30:34 +0000
+Date: Thu, 6 May 2021 20:30:26 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [RFC PATCH 0/7] Memory hotplug/hotremove at subsection size
+Message-ID: <20210506193026.GE388843@casper.infradead.org>
+References: <20210506152623.178731-1-zi.yan@sent.com>
+ <fb60eabd-f8ef-2cb1-7338-7725efe3c286@redhat.com>
+ <9D7FD316-988E-4B11-AC1C-64FF790BA79E@nvidia.com>
+ <3a51f564-f3d1-c21f-93b5-1b91639523ec@redhat.com>
+ <16962E62-7D1E-4E06-B832-EC91F54CC359@nvidia.com>
+ <f3a2152c-685b-2141-3e33-b2bcab8b6010@redhat.com>
+ <3A6D54CF-76F4-4401-A434-84BEB813A65A@nvidia.com>
+ <0e850dcb-c69a-188b-7ab9-09e6644af3ab@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <9f1e8f9a-9ccd-fc96-04cc-30137dbe9011@molgen.mpg.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0e850dcb-c69a-188b-7ab9-09e6644af3ab@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,59 +77,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>,
+ Wei Yang <richard.weiyang@linux.alibaba.com>,
+ Andy Lutomirski <luto@kernel.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, x86@kernel.org,
+ Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Zi Yan <ziy@nvidia.com>, linux-ia64@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[corrected subject]
+On Thu, May 06, 2021 at 09:10:52PM +0200, David Hildenbrand wrote:
+> I have to admit that I am not really a friend of that. I still think our
+> target goal should be to have gigantic THP *in addition to* ordinary THP.
+> Use gigantic THP where enabled and possible, and just use ordinary THP
+> everywhere else. Having one pageblock granularity is a real limitation IMHO
+> and requires us to hack the system to support it to some degree.
 
-Am 06.05.21 um 21:31 schrieb Paul Menzel:
-> Dear Linux folks,
-> 
-> 
-> On the POWER8 system IBM S822LC, Linux 5.13+, built with USSAN, logs the 
-> warning below.
-> 
-> ```
-> [    0.030091] 
-> ================================================================================ 
-> 
-> [    0.030295] UBSAN: array-index-out-of-bounds in arch/powerpc/kernel/legacy_serial.c:359:56
-> [    0.030325] index -1 is out of range for type 'legacy_serial_info [8]'
-> [    0.030350] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.12.0+ #2
-> [    0.030360] Call Trace:
-> [    0.030363] [c000000024f1bad0] [c0000000009f4330] dump_stack+0xc4/0x114 (unreliable)
-> [    0.030386] [c000000024f1bb20] [c0000000009efed0] ubsan_epilogue+0x18/0x78
-> [    0.030400] [c000000024f1bb80] [c0000000009efafc] __ubsan_handle_out_of_bounds+0xac/0xd0
-> [    0.030414] [c000000024f1bc20] [c000000001711588] ioremap_legacy_serial_console+0x54/0x144
-> [    0.030430] [c000000024f1bc70] [c0000000000123c0] do_one_initcall+0x60/0x2c0
-> [    0.030444] [c000000024f1bd40] [c000000001704bc4] kernel_init_freeable+0x19c/0x25c
-> [    0.030458] [c000000024f1bda0] [c000000000012a2c] kernel_init+0x2c/0x180
-> [    0.030471] [c000000024f1be10] [c00000000000d6ec] ret_from_kernel_thread+0x5c/0x70
-> [    0.030484] 
-> ================================================================================ 
-> 
-> [    0.030641] 
-> ================================================================================ 
-> 
-> [    0.030668] UBSAN: array-index-out-of-bounds in arch/powerpc/kernel/legacy_serial.c:360:58
-> [    0.030697] index -1 is out of range for type 'plat_serial8250_port [9]'
-> [    0.030721] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.12.0+ #2
-> [    0.030730] Call Trace:
-> [    0.030733] [c000000024f1bad0] [c0000000009f4330] dump_stack+0xc4/0x114 (unreliable)
-> [    0.030749] [c000000024f1bb20] [c0000000009efed0] ubsan_epilogue+0x18/0x78
-> [    0.030762] [c000000024f1bb80] [c0000000009efafc] __ubsan_handle_out_of_bounds+0xac/0xd0
-> [    0.030775] [c000000024f1bc20] [c0000000017115a0] ioremap_legacy_serial_console+0x6c/0x144
-> [    0.030790] [c000000024f1bc70] [c0000000000123c0] do_one_initcall+0x60/0x2c0
-> [    0.030802] [c000000024f1bd40] [c000000001704bc4] kernel_init_freeable+0x19c/0x25c
-> [    0.030816] [c000000024f1bda0] [c000000000012a2c] kernel_init+0x2c/0x180
-> [    0.030829] [c000000024f1be10] [c00000000000d6ec] ret_from_kernel_thread+0x5c/0x70
-> [    0.030842] 
-> ================================================================================ 
-> ```
-> 
-> 
-> Kind regards,
-> 
-> Paul
+You're thinking too small with only two THP sizes ;-)  I'm aiming to
+support arbitrary power-of-two memory allocations.  I think there's a
+fruitful discussion to be had about how that works for anonymous memory --
+with page cache, we have readahead to tell us when our predictions of use
+are actually fulfilled.  It doesn't tell us what percentage of the pages
+allocated were actually used, but it's a hint.  It's a big lift to go from
+2MB all the way to 1GB ... if you can look back to see that the previous
+1GB was basically fully populated, then maybe jump up from allocating
+2MB folios to allocating a 1GB folio, but wow, that's a big step.
+
+This goal really does mean that we want to allocate from the page
+allocator, and so we do want to grow MAX_ORDER.  I suppose we could
+do somethig ugly like
+
+	if (order <= MAX_ORDER)
+		alloc_page()
+	else
+		alloc_really_big_page()
+
+but that feels like unnecessary hardship to place on the user.
+
+I know that for the initial implementation, we're going to rely on hints
+from the user to use 1GB pages, but it'd be nice to not do that.
