@@ -3,25 +3,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C81F4C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:40:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1753C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:41:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 075A4613B5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:40:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 075A4613B5
+	by mail.kernel.org (Postfix) with ESMTPS id A0802610FA
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:41:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0802610FA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLVh5KH3z3c10
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:40:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLWc2MpYz3dDK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:41:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=V2mar2OU;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ae/U2dyG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -29,79 +29,76 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=V2mar2OU; dkim-atps=neutral
+ header.s=pp1 header.b=Ae/U2dyG; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLNQ6NDdz2yxT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 14:35:18 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLTy54Vbz3cbG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 14:40:06 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1464YcZ6143938; Thu, 6 May 2021 00:35:06 -0400
+ 1464XWt2080391; Thu, 6 May 2021 00:40:01 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=/xuNTIbov9Ffm0oQ2GraQ1nPQ+d3yhjs9T30ZtZjFHs=;
- b=V2mar2OUzL/Ad3CBBOMBwSJTLv1dmlEArDPM92pDvBm+h1khNwBBV0qmHwu2eTi7T+cz
- 00c6XG3mxHBxKkfi2klz1m+emuE/TLrmsPgaslXrUANzIImY+hTg7YMZw05D0Q2tKmLe
- hEtEWZK0IPYyTjKzzE+0qBEm0g6XA0+iWkZqjvoSCqz4UaVVwP+HNM458iRPqVrvkRv2
- 0DEPxYQ1X8lJCbaE4dqne+DqgrfIJsnhsC8pCB/9K5PwcaCwaeXKDngxL3UZNN72BZHw
- dzF1Ymptvb2hdGojIzy3RSV0Y7MEcpXyFnGtivqMnR+ngFQWURADx0cLw9+XAnY8mVYO FQ== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38c9dpg528-1
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=cmRt8SjQt3QiWz4AHEfctbcrW7tJKjSSMea/ZF9W3NM=;
+ b=Ae/U2dyGrAIyzzo8xFOful/Pu8pcmI9FEi7wMqIoq+focyrLp4y0XsQsIem104vIFrtl
+ EkqIMHDYMxOS/FgNQP53YkxndszLuAX8X7XmRIJ5xPAmzZVbtV0VvzWmnZDI8QKH7DVp
+ jiijbMn4xM4AKU5mZRp6tGKRM/hZ8n09yoCNJaFl800c90qkHm0TnplhGJNNF9vU/6ib
+ /ndy6EyaoK8isXGsQar3IzSF5Hsz4eV2+3LtiTOLDTjZdeLoQSh5GmQDFHVah70d2tpD
+ QjdfAIL39UgYVtXKY/bs7ZcYcpqeoasZxGKULzZ6fwNPd8J1pM0xmsMM5jrCyEbMPdoE qg== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38c9f2r5uy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 May 2021 00:35:05 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1464XS8X027181;
- Thu, 6 May 2021 04:35:05 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01wdc.us.ibm.com with ESMTP id 38beha15p4-1
+ Thu, 06 May 2021 00:40:00 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1464W3Ye006541;
+ Thu, 6 May 2021 04:35:00 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma02dal.us.ibm.com with ESMTP id 38c1mxu822-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 May 2021 04:35:04 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1464Z3tg50332262
+ Thu, 06 May 2021 04:35:00 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1464Yw6932899336
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 6 May 2021 04:35:03 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 94EEEBE04F;
- Thu,  6 May 2021 04:35:03 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9D80BBE053;
- Thu,  6 May 2021 04:35:02 +0000 (GMT)
+ Thu, 6 May 2021 04:34:58 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B51766A04D;
+ Thu,  6 May 2021 04:34:58 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 935886A047;
+ Thu,  6 May 2021 04:34:57 +0000 (GMT)
 Received: from oc8246131445.ibm.com (unknown [9.160.168.222])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with SMTP;
- Thu,  6 May 2021 04:35:02 +0000 (GMT)
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with SMTP;
+ Thu,  6 May 2021 04:34:57 +0000 (GMT)
 Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
- by oc8246131445.ibm.com (Postfix) with ESMTP id F25BABC1EF4;
+ by oc8246131445.ibm.com (Postfix) with ESMTP id 60E6CBC0A1D;
  Wed,  5 May 2021 23:34:53 -0500 (CDT)
 From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RESEND PATCH v4 11/11] powerpc: Use patch_instruction_unlocked() in
- loops
-Date: Wed,  5 May 2021 23:34:52 -0500
-Message-Id: <20210506043452.9674-12-cmr@linux.ibm.com>
+Subject: [RESEND PATCH v4 00/11] Use per-CPU temporary mappings for patching
+Date: Wed,  5 May 2021 23:34:41 -0500
+Message-Id: <20210506043452.9674-1-cmr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20210506043452.9674-1-cmr@linux.ibm.com>
-References: <20210506043452.9674-1-cmr@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: GDjFHpZA9hINx9STeAmEkqmIByPAF51R
-X-Proofpoint-ORIG-GUID: GDjFHpZA9hINx9STeAmEkqmIByPAF51R
+X-Proofpoint-GUID: 8vouhhUlhpGnbPtJrpwOYUG8c-hGufEK
+X-Proofpoint-ORIG-GUID: 8vouhhUlhpGnbPtJrpwOYUG8c-hGufEK
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-06_03:2021-05-05,
  2021-05-06 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- priorityscore=1501 mlxscore=0 mlxlogscore=999 phishscore=0 adultscore=0
- suspectscore=0 impostorscore=0 malwarescore=0 bulkscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxscore=0 phishscore=0
+ bulkscore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ mlxlogscore=999 adultscore=0 impostorscore=0 suspectscore=0 spamscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104060000 definitions=main-2105060029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -120,542 +117,147 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that patching requires a lock to prevent concurrent access to
-patching_mm, every call to patch_instruction() acquires and releases a
-spinlock. There are several places where patch_instruction() is called
-in a loop. Convert these to acquire the lock once before the loop, call
-patch_instruction_unlocked() in the loop body, and then release the lock
-again after the loop terminates - as in:
+When compiled with CONFIG_STRICT_KERNEL_RWX, the kernel must create
+temporary mappings when patching itself. These mappings temporarily
+override the strict RWX text protections to permit a write. Currently,
+powerpc allocates a per-CPU VM area for patching. Patching occurs as
+follows:
 
-	for (i =3D 0; i < n; ++i)
-		patch_instruction(...); <-- lock/unlock every iteration
+	1. Map page in per-CPU VM area w/ PAGE_KERNEL protection
+	2. Patch text
+	3. Remove the temporary mapping
 
-changes to:
+While the VM area is per-CPU, the mapping is actually inserted into the
+kernel page tables. Presumably, this could allow another CPU to access
+the normally write-protected text - either malicously or accidentally -
+via this same mapping if the address of the VM area is known. Ideally,
+the mapping should be kept local to the CPU doing the patching [0].
 
-	flags =3D lock_patching(); <-- lock once
+x86 introduced "temporary mm" structs which allow the creation of
+mappings local to a particular CPU [1]. This series intends to bring the
+notion of a temporary mm to powerpc and harden powerpc by using such a
+mapping for patching a kernel with strict RWX permissions.
 
-	for (i =3D 0; i < n; ++i)
-		patch_instruction_unlocked(...);
+The first four patches implement an LKDTM test "proof-of-concept" which
+exploits the potential vulnerability (ie. the temporary mapping during
+patching is exposed in the kernel page tables and accessible by other
+CPUs) using a simple brute-force approach. This test is implemented for
+both powerpc and x86_64. The test passes on powerpc with this new
+series, fails on upstream powerpc, passes on upstream x86_64, and fails
+on an older (ancient) x86_64 tree without the x86_64 temporary mm
+patches. The remaining patches add support for and use a temporary mm
+for code patching on powerpc.
 
-	unlock_patching(flags); <-- unlock once
+Tested boot, ftrace, and repeated LKDTM "hijack":
+	- QEMU+KVM (host: POWER9 Blackbird): Radix MMU w/ KUAP
+	- QEMU+KVM (host: POWER9 Blackbird): Hash MMU w/o KUAP
+	- QEMU+KVM (host: POWER9 Blackbird): Hash MMU w/ KUAP
 
-Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
+Tested repeated LKDTM "hijack":
+	- QEMU+KVM (host: AMD desktop): x86_64 upstream
+	- QEMU+KVM (host: AMD desktop): x86_64 w/o percpu temp mm to
+	  verify the LKDTM "hijack" fails
 
----
+Tested boot and ftrace:
+	- QEMU+TCG: ppc44x (bamboo)
+	- QEMU+TCG: g5 (mac99)
 
-v4:  * New to series.
----
- arch/powerpc/kernel/epapr_paravirt.c |   9 ++-
- arch/powerpc/kernel/optprobes.c      |  22 ++++--
- arch/powerpc/lib/feature-fixups.c    | 114 +++++++++++++++++++--------
- arch/powerpc/xmon/xmon.c             |  22 ++++--
- 4 files changed, 120 insertions(+), 47 deletions(-)
+I also tested with various extra config options enabled as suggested in
+section 12) in Documentation/process/submit-checklist.rst.
 
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/e=
-papr_paravirt.c
-index 2ed14d4a47f59..b639e71cf9dec 100644
---- a/arch/powerpc/kernel/epapr_paravirt.c
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -28,6 +28,7 @@ static int __init early_init_dt_scan_epapr(unsigned lon=
-g node,
- 	const u32 *insts;
- 	int len;
- 	int i;
-+	unsigned long flags;
-=20
- 	insts =3D of_get_flat_dt_prop(node, "hcall-instructions", &len);
- 	if (!insts)
-@@ -36,14 +37,18 @@ static int __init early_init_dt_scan_epapr(unsigned l=
-ong node,
- 	if (len % 4 || len > (4 * 4))
- 		return -1;
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; i < (len / 4); i++) {
- 		struct ppc_inst inst =3D ppc_inst(be32_to_cpu(insts[i]));
--		patch_instruction((struct ppc_inst *)(epapr_hypercall_start + i), inst=
-);
-+		patch_instruction_unlocked((struct ppc_inst *)(epapr_hypercall_start +=
- i), inst);
- #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
--		patch_instruction((struct ppc_inst *)(epapr_ev_idle_start + i), inst);
-+		patch_instruction_unlocked((struct ppc_inst *)(epapr_ev_idle_start + i=
-), inst);
- #endif
- 	}
-=20
-+	unlock_patching(flags);
-+
- #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
- 	if (of_get_flat_dt_prop(node, "has-idle", NULL))
- 		epapr_has_idle =3D true;
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optpro=
-bes.c
-index cdf87086fa33a..deaeb6e8d1a00 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -200,7 +200,7 @@ int arch_prepare_optimized_kprobe(struct optimized_kp=
-robe *op, struct kprobe *p)
- 	struct ppc_inst branch_op_callback, branch_emulate_step, temp;
- 	kprobe_opcode_t *op_callback_addr, *emulate_step_addr, *buff;
- 	long b_offset;
--	unsigned long nip, size;
-+	unsigned long nip, size, flags;
- 	int rc, i;
-=20
- 	kprobe_ppc_optinsn_slots.insn_size =3D MAX_OPTINSN_SIZE;
-@@ -237,13 +237,20 @@ int arch_prepare_optimized_kprobe(struct optimized_=
-kprobe *op, struct kprobe *p)
- 	/* We can optimize this via patch_instruction_window later */
- 	size =3D (TMPL_END_IDX * sizeof(kprobe_opcode_t)) / sizeof(int);
- 	pr_devel("Copying template to %p, size %lu\n", buff, size);
-+
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; i < size; i++) {
--		rc =3D patch_instruction((struct ppc_inst *)(buff + i),
--				       ppc_inst(*(optprobe_template_entry + i)));
--		if (rc < 0)
-+		rc =3D patch_instruction_unlocked((struct ppc_inst *)(buff + i),
-+						ppc_inst(*(optprobe_template_entry + i)));
-+		if (rc < 0) {
-+			unlock_patching(flags);
- 			goto error;
-+		}
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	/*
- 	 * Fixup the template with instructions to:
- 	 * 1. load the address of the actual probepoint
-@@ -322,6 +329,9 @@ void arch_optimize_kprobes(struct list_head *oplist)
- 	struct ppc_inst instr;
- 	struct optimized_kprobe *op;
- 	struct optimized_kprobe *tmp;
-+	unsigned long flags;
-+
-+	flags =3D lock_patching();
-=20
- 	list_for_each_entry_safe(op, tmp, oplist, list) {
- 		/*
-@@ -333,9 +343,11 @@ void arch_optimize_kprobes(struct list_head *oplist)
- 		create_branch(&instr,
- 			      (struct ppc_inst *)op->kp.addr,
- 			      (unsigned long)op->optinsn.insn, 0);
--		patch_instruction((struct ppc_inst *)op->kp.addr, instr);
-+		patch_instruction_unlocked((struct ppc_inst *)op->kp.addr, instr);
- 		list_del_init(&op->list);
- 	}
-+
-+	unlock_patching(flags);
- }
-=20
- void arch_unoptimize_kprobe(struct optimized_kprobe *op)
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
--fixups.c
-index 1fd31b4b0e139..2c3d413c9d9b3 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -123,6 +123,7 @@ static void do_stf_entry_barrier_fixups(enum stf_barr=
-ier_type types)
- 	unsigned int instrs[3], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D PTRRELOC(&__start___stf_entry_barrier_fixup);
- 	end =3D PTRRELOC(&__stop___stf_entry_barrier_fixup);
-@@ -144,24 +145,29 @@ static void do_stf_entry_barrier_fixups(enum stf_ba=
-rrier_type types)
- 		instrs[i++] =3D 0x63ff0000; /* ori 31,31,0 speculation barrier */
- 	}
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-=20
- 		if (types & STF_BARRIER_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1),
--				     (unsigned long)&stf_barrier_fallback,
--				     BRANCH_SET_LINK);
-+			patch_branch_unlocked((struct ppc_inst *)(dest + 1),
-+					      (unsigned long)&stf_barrier_fallback,
-+					      BRANCH_SET_LINK);
- 		else
--			patch_instruction((struct ppc_inst *)(dest + 1),
--					  ppc_inst(instrs[1]));
-+			patch_instruction_unlocked((struct ppc_inst *)(dest + 1),
-+						   ppc_inst(instrs[1]));
-=20
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2),
-+					   ppc_inst(instrs[2]));
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "stf-barrier: patched %d entry locations (%s barrier)=
-\n", i,
- 		(types =3D=3D STF_BARRIER_NONE)                  ? "no" :
- 		(types =3D=3D STF_BARRIER_FALLBACK)              ? "fallback" :
-@@ -175,6 +181,7 @@ static void do_stf_exit_barrier_fixups(enum stf_barri=
-er_type types)
- 	unsigned int instrs[6], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D PTRRELOC(&__start___stf_exit_barrier_fixup);
- 	end =3D PTRRELOC(&__stop___stf_exit_barrier_fixup);
-@@ -207,18 +214,23 @@ static void do_stf_exit_barrier_fixups(enum stf_bar=
-rier_type types)
- 		instrs[i++] =3D 0x7e0006ac; /* eieio + bit 6 hint */
- 	}
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
--		patch_instruction((struct ppc_inst *)(dest + 3), ppc_inst(instrs[3]));
--		patch_instruction((struct ppc_inst *)(dest + 4), ppc_inst(instrs[4]));
--		patch_instruction((struct ppc_inst *)(dest + 5), ppc_inst(instrs[5]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 1), ppc_inst(ins=
-trs[1]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2), ppc_inst(ins=
-trs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 3), ppc_inst(ins=
-trs[3]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 4), ppc_inst(ins=
-trs[4]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 5), ppc_inst(ins=
-trs[5]));
- 	}
-+
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "stf-barrier: patched %d exit locations (%s barrier)\=
-n", i,
- 		(types =3D=3D STF_BARRIER_NONE)                  ? "no" :
- 		(types =3D=3D STF_BARRIER_FALLBACK)              ? "fallback" :
-@@ -239,6 +251,7 @@ void do_uaccess_flush_fixups(enum l1d_flush_type type=
-s)
- 	unsigned int instrs[4], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D PTRRELOC(&__start___uaccess_flush_fixup);
- 	end =3D PTRRELOC(&__stop___uaccess_flush_fixup);
-@@ -262,18 +275,22 @@ void do_uaccess_flush_fixups(enum l1d_flush_type ty=
-pes)
- 	if (types & L1D_FLUSH_MTTRIG)
- 		instrs[i++] =3D 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-=20
--		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
--		patch_instruction((struct ppc_inst *)(dest + 3), ppc_inst(instrs[3]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 1), ppc_inst(ins=
-trs[1]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2), ppc_inst(ins=
-trs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 3), ppc_inst(ins=
-trs[3]));
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "uaccess-flush: patched %d locations (%s flush)\n", i=
-,
- 		(types =3D=3D L1D_FLUSH_NONE)       ? "no" :
- 		(types =3D=3D L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
-@@ -289,6 +306,7 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
- 	unsigned int instrs[3], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	instrs[0] =3D 0x60000000; /* nop */
- 	instrs[1] =3D 0x60000000; /* nop */
-@@ -309,6 +327,8 @@ void do_entry_flush_fixups(enum l1d_flush_type types)
- 	if (types & L1D_FLUSH_MTTRIG)
- 		instrs[i++] =3D 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
-=20
-+	flags =3D lock_patching();
-+
- 	start =3D PTRRELOC(&__start___entry_flush_fixup);
- 	end =3D PTRRELOC(&__stop___entry_flush_fixup);
- 	for (i =3D 0; start < end; start++, i++) {
-@@ -316,15 +336,17 @@ void do_entry_flush_fixups(enum l1d_flush_type type=
-s)
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-=20
- 		if (types =3D=3D L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&entry_flu=
-sh_fallback,
--				     BRANCH_SET_LINK);
-+			patch_branch_unlocked((struct ppc_inst *)(dest + 1),
-+					      (unsigned long)&entry_flush_fallback,
-+					      BRANCH_SET_LINK);
- 		else
--			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]))=
-;
-+			patch_instruction_unlocked((struct ppc_inst *)(dest + 1),
-+						   ppc_inst(instrs[1]));
-=20
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2), ppc_inst(ins=
-trs[2]));
- 	}
-=20
- 	start =3D PTRRELOC(&__start___scv_entry_flush_fixup);
-@@ -334,17 +356,20 @@ void do_entry_flush_fixups(enum l1d_flush_type type=
-s)
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-=20
- 		if (types =3D=3D L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&scv_entry=
-_flush_fallback,
--				     BRANCH_SET_LINK);
-+			patch_branch_unlocked((struct ppc_inst *)(dest + 1),
-+					      (unsigned long)&scv_entry_flush_fallback,
-+					      BRANCH_SET_LINK);
- 		else
--			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]))=
-;
-+			patch_instruction_unlocked((struct ppc_inst *)(dest + 1),
-+						   ppc_inst(instrs[1]));
-=20
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2), ppc_inst(ins=
-trs[2]));
- 	}
-=20
-+	unlock_patching(flags);
-=20
- 	printk(KERN_DEBUG "entry-flush: patched %d locations (%s flush)\n", i,
- 		(types =3D=3D L1D_FLUSH_NONE)       ? "no" :
-@@ -361,6 +386,7 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 	unsigned int instrs[3], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D PTRRELOC(&__start___rfi_flush_fixup);
- 	end =3D PTRRELOC(&__stop___rfi_flush_fixup);
-@@ -382,16 +408,20 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 	if (types & L1D_FLUSH_MTTRIG)
- 		instrs[i++] =3D 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
-=20
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instrs[0]=
-));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 1), ppc_inst(ins=
-trs[1]));
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 2), ppc_inst(ins=
-trs[2]));
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
- 		(types =3D=3D L1D_FLUSH_NONE)       ? "no" :
- 		(types =3D=3D L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
-@@ -407,6 +437,7 @@ void do_barrier_nospec_fixups_range(bool enable, void=
- *fixup_start, void *fixup_
- 	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D fixup_start;
- 	end =3D fixup_end;
-@@ -418,13 +449,17 @@ void do_barrier_nospec_fixups_range(bool enable, vo=
-id *fixup_start, void *fixup_
- 		instr =3D 0x63ff0000; /* ori 31,31,0 speculation barrier */
- 	}
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instr));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instr));
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
-=20
-@@ -448,6 +483,7 @@ void do_barrier_nospec_fixups_range(bool enable, void=
- *fixup_start, void *fixup_
- 	unsigned int instr[2], *dest;
- 	long *start, *end;
- 	int i;
-+	unsigned long flags;
-=20
- 	start =3D fixup_start;
- 	end =3D fixup_end;
-@@ -461,27 +497,37 @@ void do_barrier_nospec_fixups_range(bool enable, vo=
-id *fixup_start, void *fixup_
- 		instr[1] =3D PPC_INST_SYNC;
- 	}
-=20
-+	flags =3D lock_patching();
-+
- 	for (i =3D 0; start < end; start++, i++) {
- 		dest =3D (void *)start + *start;
-=20
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instr[0]));
--		patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instr[1]));
-+		patch_instruction_unlocked((struct ppc_inst *)dest, ppc_inst(instr[0])=
-);
-+		patch_instruction_unlocked((struct ppc_inst *)(dest + 1), ppc_inst(ins=
-tr[1]));
- 	}
-=20
-+	unlock_patching(flags);
-+
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
-=20
- static void patch_btb_flush_section(long *curr)
- {
- 	unsigned int *start, *end;
-+	unsigned long flags;
-=20
- 	start =3D (void *)curr + *curr;
- 	end =3D (void *)curr + *(curr + 1);
-+
-+	flags =3D lock_patching();
-+
- 	for (; start < end; start++) {
- 		pr_devel("patching dest %lx\n", (unsigned long)start);
--		patch_instruction((struct ppc_inst *)start, ppc_inst(PPC_INST_NOP));
-+		patch_instruction_unlocked((struct ppc_inst *)start, ppc_inst(PPC_INST=
-_NOP));
- 	}
-+
-+	unlock_patching(flags);
- }
-=20
- void do_btb_flush_fixups(void)
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index ff2b92bfeedcc..e8a00041c04bf 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -905,6 +905,9 @@ static void insert_bpts(void)
- 	int i;
- 	struct ppc_inst instr, instr2;
- 	struct bpt *bp, *bp2;
-+	unsigned long flags;
-+
-+	flags =3D lock_patching();
-=20
- 	bp =3D bpts;
- 	for (i =3D 0; i < NBPTS; ++i, ++bp) {
-@@ -945,19 +948,21 @@ static void insert_bpts(void)
- 			continue;
- 		}
-=20
--		patch_instruction(bp->instr, instr);
--		patch_instruction(ppc_inst_next(bp->instr, &instr),
--				  ppc_inst(bpinstr));
-+		patch_instruction_unlocked(bp->instr, instr);
-+		patch_instruction_unlocked(ppc_inst_next(bp->instr, &instr),
-+					   ppc_inst(bpinstr));
- 		if (bp->enabled & BP_CIABR)
- 			continue;
--		if (patch_instruction((struct ppc_inst *)bp->address,
--				      ppc_inst(bpinstr)) !=3D 0) {
-+		if (patch_instruction_unlocked((struct ppc_inst *)bp->address,
-+						ppc_inst(bpinstr)) !=3D 0) {
- 			printf("Couldn't write instruction at %lx, "
- 			       "disabling breakpoint there\n", bp->address);
- 			bp->enabled &=3D ~BP_TRAP;
- 			continue;
- 		}
- 	}
-+
-+	unlock_patching(flags);
- }
-=20
- static void insert_cpu_bpts(void)
-@@ -984,6 +989,9 @@ static void remove_bpts(void)
- 	int i;
- 	struct bpt *bp;
- 	struct ppc_inst instr;
-+	unsigned long flags;
-+
-+	flags =3D lock_patching();
-=20
- 	bp =3D bpts;
- 	for (i =3D 0; i < NBPTS; ++i, ++bp) {
-@@ -991,11 +999,13 @@ static void remove_bpts(void)
- 			continue;
- 		if (mread_instr(bp->address, &instr)
- 		    && ppc_inst_equal(instr, ppc_inst(bpinstr))
--		    && patch_instruction(
-+		    && patch_instruction_unlocked(
- 			(struct ppc_inst *)bp->address, ppc_inst_read(bp->instr)) !=3D 0)
- 			printf("Couldn't remove breakpoint at %lx\n",
- 			       bp->address);
- 	}
-+
-+	unlock_patching(flags);
- }
-=20
- static void remove_cpu_bpts(void)
+	[ Apologies about the resend - some of the patches were dropped by
+          the CC'd linux-hardening list due to tls problems between mailbox=
+.org
+          and vger.kernel.org. I re-signed my patches w/ my IBM email; no o=
+ther
+          changes. ]
+
+v4:	* It's time to revisit this series again since @jpn and @mpe fixed
+	  our known STRICT_*_RWX bugs on powerpc/64s.
+	* Rebase on linuxppc/next:
+          commit ee1bc694fbaec ("powerpc/kvm: Fix build error when PPC_MEM_=
+KEYS/PPC_PSERIES=3Dn")
+	* Completely rework how map_patch() works on book3s64 Hash MMU
+	* Split the LKDTM x86_64 and powerpc bits into separate patches
+	* Annotate commit messages with changes from v3 instead of
+	  listing them here completely out-of context...
+
+v3:	* Rebase on linuxppc/next: commit 9123e3a74ec7 ("Linux 5.9-rc1")
+	* Move temporary mm implementation into code-patching.c where it
+	  belongs
+	* Implement LKDTM hijacker test on x86_64 (on IBM time oof) Do
+	* not use address zero for the patching address in the
+	  temporary mm (thanks @dja for pointing this out!)
+	* Wrap the LKDTM test w/ CONFIG_SMP as suggested by Christophe
+	  Leroy
+	* Comments to clarify PTE pre-allocation and patching addr
+	  selection
+
+v2:	* Rebase on linuxppc/next:
+	  commit 105fb38124a4 ("powerpc/8xx: Modify ptep_get()")
+	* Always dirty pte when mapping patch
+	* Use `ppc_inst_len` instead of `sizeof` on instructions
+	* Declare LKDTM patching addr accessor in header where it belongs=09
+
+v1:	* Rebase on linuxppc/next (4336b9337824)
+	* Save and restore second hw watchpoint
+	* Use new ppc_inst_* functions for patching check and in LKDTM test
+
+rfc-v2:	* Many fixes and improvements mostly based on extensive feedback
+          and testing by Christophe Leroy (thanks!).
+	* Make patching_mm and patching_addr static and move
+	  '__ro_after_init' to after the variable name (more common in
+	  other parts of the kernel)
+	* Use 'asm/debug.h' header instead of 'asm/hw_breakpoint.h' to
+	  fix PPC64e compile
+	* Add comment explaining why we use BUG_ON() during the init
+	  call to setup for patching later
+	* Move ptep into patch_mapping to avoid walking page tables a
+	  second time when unmapping the temporary mapping
+	* Use KUAP under non-radix, also manually dirty the PTE for patch
+	  mapping on non-BOOK3S_64 platforms
+	* Properly return any error from __patch_instruction
+        * Do not use 'memcmp' where a simple comparison is appropriate
+	* Simplify expression for patch address by removing pointer maths
+	* Add LKDTM test
+
+[0]: https://github.com/linuxppc/issues/issues/224
+[1]: https://lore.kernel.org/kernel-hardening/20190426232303.28381-1-nadav.=
+amit@gmail.com/
+
+Christopher M. Riedl (11):
+  powerpc: Add LKDTM accessor for patching addr
+  lkdtm/powerpc: Add test to hijack a patch mapping
+  x86_64: Add LKDTM accessor for patching addr
+  lkdtm/x86_64: Add test to hijack a patch mapping
+  powerpc/64s: Add ability to skip SLB preload
+  powerpc: Introduce temporary mm
+  powerpc/64s: Make slb_allocate_user() non-static
+  powerpc: Initialize and use a temporary mm for patching
+  lkdtm/powerpc: Fix code patching hijack test
+  powerpc: Protect patching_mm with a lock
+  powerpc: Use patch_instruction_unlocked() in loops
+
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   3 +
+ arch/powerpc/include/asm/code-patching.h      |   8 +
+ arch/powerpc/include/asm/debug.h              |   1 +
+ arch/powerpc/include/asm/mmu_context.h        |  13 +
+ arch/powerpc/kernel/epapr_paravirt.c          |   9 +-
+ arch/powerpc/kernel/optprobes.c               |  22 +-
+ arch/powerpc/kernel/process.c                 |   5 +
+ arch/powerpc/lib/code-patching.c              | 348 +++++++++++++-----
+ arch/powerpc/lib/feature-fixups.c             | 114 ++++--
+ arch/powerpc/mm/book3s64/mmu_context.c        |   2 +
+ arch/powerpc/mm/book3s64/slb.c                |  60 +--
+ arch/powerpc/xmon/xmon.c                      |  22 +-
+ arch/x86/include/asm/text-patching.h          |   4 +
+ arch/x86/kernel/alternative.c                 |   7 +
+ drivers/misc/lkdtm/core.c                     |   1 +
+ drivers/misc/lkdtm/lkdtm.h                    |   1 +
+ drivers/misc/lkdtm/perms.c                    | 149 ++++++++
+ 18 files changed, 608 insertions(+), 162 deletions(-)
+
 --=20
 2.26.1
 
