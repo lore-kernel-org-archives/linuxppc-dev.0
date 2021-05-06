@@ -2,117 +2,84 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2615C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8CF3C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:39:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE715613B5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:30:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE715613B5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 11EBD61164
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:39:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11EBD61164
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbHct35Vvz30Qb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 12:30:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbHpK3mGLz30Q9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 12:39:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j6pI8n7z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=PudPog41;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f;
+ helo=mail-pj1-x102f.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=j6pI8n7z; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=PudPog41; dkim-atps=neutral
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
+ [IPv6:2607:f8b0:4864:20::102f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbHcK5J6Fz2yYl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 12:30:25 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14623PuL099470; Wed, 5 May 2021 22:30:14 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=zVJIP4Vr3vYoks5fNrjKys6fTQaLjWRrc40xCBL/L1A=;
- b=j6pI8n7zzIhv2A9GYDh49psG9zlPAmU/bIfUFv0NcJr+okNT0qumI43NLX41VjDVse3D
- MWsgYsWyQu7ONrCvmuhb5Pvia/1rsGFyCJlYb829SYPkMStDabuu/UjJF7UpfqftBhJZ
- htSZxK4oXpyuj/SJlnGgkjlaq7+p8xl+W+xx9JHhptpWUo85FpsjNs3Ms/p+djNj0YI6
- PsQLbEQyXzcOlfrkG48rNAktXa3r/apwvN+Z5PDWk0oAA2EGt9tZG7nhZpC84GIpUm5f
- oDnRLsm1IfvPANXcVC9R8iYVhjPt4pus9hSfuWV8lyLoZJBrx9b4t1mkbuHUteI5jiqz Jw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38c69asqvq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 05 May 2021 22:30:14 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14623NMj099371;
- Wed, 5 May 2021 22:30:14 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38c69asqv2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 05 May 2021 22:30:14 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1462Qr2F020795;
- Thu, 6 May 2021 02:30:12 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma01fra.de.ibm.com with ESMTP id 38bee88axx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 May 2021 02:30:12 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1462U9Av57410018
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 6 May 2021 02:30:09 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 498D05205F;
- Thu,  6 May 2021 02:30:09 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id E93C752059;
- Thu,  6 May 2021 02:30:08 +0000 (GMT)
-Received: from [9.102.44.218] (unknown [9.102.44.218])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 10924605DB;
- Thu,  6 May 2021 12:30:03 +1000 (AEST)
-Subject: Re: [PATCH] cxl: Fix an error message
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, fbarrat@linux.ibm.com, 
- arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
- imunsie@au1.ibm.com, mikey@neuling.org
-References: <fa2b2c9c72335ab4c3d5e6a33415e7f020b1d51b.1620243401.git.christophe.jaillet@wanadoo.fr>
-From: Andrew Donnellan <ajd@linux.ibm.com>
-Message-ID: <2d898a2a-fc3c-a804-ce13-cbfc58565cfb@linux.ibm.com>
-Date: Thu, 6 May 2021 12:29:57 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbHnn1m0Nz2xZS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 12:38:36 +1000 (AEST)
+Received: by mail-pj1-x102f.google.com with SMTP id
+ lj11-20020a17090b344bb029015bc3073608so2646989pjb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 May 2021 19:38:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=k14A5dJp7LmvxWpL0/pPY1kz3qsJYR/zE6Xn1HLI82M=;
+ b=PudPog41vI5VKHYHXMWKbZ43VNLHAbM9Xcczj6GlpoqyDGvNA3Rvcfgc0nUbgMRtJU
+ ofkom0tsD0QN5GJGMv55069ph1v/CuEUhyH+T1rMm2t3yCBBIemv4PS4s7YCQUxpKfrF
+ 4QYHdOvZlclDkCkdHfjbXHRyCKRuxoX2s1wWEo6n7RG5rysEn1UVMRLg+mZjtJzvNXco
+ 2VQyK3hAYNBqPJO3ZkTZYS7fArGuV1C5Qx8+XcJzs6EbavBc/SdekCfiMzKqnIqd16zt
+ YHgWrWq6iPCm1HiLuxrlM4Dvy/B607Y3fgEddy5LpZMAdMZ2moepHIjykcL31YJenhuQ
+ aPdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=k14A5dJp7LmvxWpL0/pPY1kz3qsJYR/zE6Xn1HLI82M=;
+ b=hMLWe2MJPvK5F+dBJoATnWUc+Kld/D2FCgTO0USnNCl4kXGJ2F19LRVzpxBVJYOcl3
+ mstQmiGjmOyljsOXpFzEdDa0SeNwq7EWIpZ19dQ2fsj3HqFBk991psonYFtl1z5U+IMP
+ oZY8kwT+/IaL4ZEfCYHo0X591pG7BcruxAi+DGvY8lC16zp3uCZ04AAHYUQEvUvz7XE5
+ pUrVCgse9NmqfmvTT+qIhXOdiswIiEWjdXlYZHUYF+PM6/gy0QGyJVlfHcZl2Qtpl0HC
+ K81QQ634L+2iYDDfyQEOnMqFzSVPnvUxstCOAaqMSMKnvr+BJNX7Zdqd7VXz7P/LiOc8
+ ijzw==
+X-Gm-Message-State: AOAM530mwEPVZAurrZPgPrDJ2Bh1xbQ8G92RpykBJsr6lrUPDnFcJE/n
+ FpY94/5AEPIaqRT1UPAEG5JkJN0QgFI=
+X-Google-Smtp-Source: ABdhPJyPUHCUEnbKOft4GfsHOPdHz06DMglLS/+zJ+bu2FSpRso0QUNZVFSGq7SnZpcqgS5UtU34Qg==
+X-Received: by 2002:a17:90a:e64e:: with SMTP id
+ ep14mr1880106pjb.103.1620268712943; 
+ Wed, 05 May 2021 19:38:32 -0700 (PDT)
+Received: from tee480.ozlabs.ibm.com
+ (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
+ by smtp.gmail.com with ESMTPSA id k12sm454490pgh.16.2021.05.05.19.38.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 05 May 2021 19:38:32 -0700 (PDT)
+From: Jordan Niethe <jniethe5@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v12 0/8] powerpc: Further Strict RWX support
+Date: Thu,  6 May 2021 12:34:41 +1000
+Message-Id: <20210506023449.3568630-1-jniethe5@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <fa2b2c9c72335ab4c3d5e6a33415e7f020b1d51b.1620243401.git.christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: VSghf0rnEQ14vYNIMtTSdUOwaviH6ala
-X-Proofpoint-GUID: E86YZwJNrf2pBY55GnvTwxdXP9pAeMwV
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-05_11:2021-05-05,
- 2021-05-05 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1011
- phishscore=0 impostorscore=0 adultscore=0 lowpriorityscore=0 spamscore=0
- suspectscore=0 priorityscore=1501 mlxlogscore=999 bulkscore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
- definitions=main-2105060012
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,39 +91,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: ajd@linux.ibm.com, cmr@codefail.de, npiggin@gmail.com,
+ aneesh.kumar@linux.ibm.com, naveen.n.rao@linux.ibm.com,
+ Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/5/21 5:38 am, Christophe JAILLET wrote:
-> 'rc' is known to be 0 here.
-> Initialize 'rc' with the expected error code before using it.
+Adding more Strict RWX support on powerpc, in particular Strict Module RWX.
+Thanks for all of the feedback everyone.
+It is now rebased on linux-next + powerpc/64s/radix: Enable huge vmalloc mappings
+(https://lore.kernel.org/linuxppc-dev/20210503091755.613393-1-npiggin@gmail.com/)
 
-I would prefer:
+For reference the previous revision is available here: 
+https://lore.kernel.org/linuxppc-dev/20210429031602.2606654-1-jniethe5@gmail.com/
 
-"In cxl_add_chardev(), if the call to device_create() fails, we print 
-the error message before 'rc' is set correctly, and therefore always 
-print 0. Move the error message after setting 'rc'."
+The changes in v12 for each patch:
+Christophe Leroy (2):
+  powerpc/mm: implement set_memory_attr()
+  powerpc/32: use set_memory_attr()
 
-> 
-> While at it, avoid the affectation of 'rc' in a 'if' to make things more
-> obvious and linux style.
+Jordan Niethe (3):
+  powerpc/lib/code-patching: Set up Strict RWX patching earlier
+  powerpc/bpf: Remove bpf_jit_free()
+  powerpc/bpf: Write protect JIT code
 
-I strongly agree with this, some of the other cxl developers don't but 
-they are wrong :)
+Russell Currey (3):
+  powerpc/mm: Implement set_memory() routines
+    v12: - change_page_attr() back to taking an action value
+         - disallow operating on huge pages
+  powerpc/kprobes: Mark newly allocated probes as ROX
+    v12: - Switch from __vmalloc_node_range() to module_alloc()
+  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
 
-> 
-> Fixes: f204e0b8ce ("cxl: Driver code for powernv PCIe based cards for userspace access")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Some patches were dropped from this revision:
+  powerpc: Always define MODULES_{VADDR,END}
+    - Can use what Nick did with "Enable huge vmalloc mappings" 
 
-Apart from my comment above:
-
-Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
-
-Thanks for catching this!
+ arch/powerpc/Kconfig                  |   2 +
+ arch/powerpc/include/asm/set_memory.h |  34 +++++++
+ arch/powerpc/kernel/kprobes.c         |  17 ++++
+ arch/powerpc/kernel/module.c          |   4 +-
+ arch/powerpc/lib/code-patching.c      |  12 +--
+ arch/powerpc/mm/Makefile              |   2 +-
+ arch/powerpc/mm/pageattr.c            | 133 ++++++++++++++++++++++++++
+ arch/powerpc/mm/pgtable_32.c          |  60 ++----------
+ arch/powerpc/net/bpf_jit_comp.c       |  13 +--
+ 9 files changed, 205 insertions(+), 72 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+ create mode 100644 arch/powerpc/mm/pageattr.c
 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
+2.25.1
+
