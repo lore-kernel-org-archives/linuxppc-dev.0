@@ -2,103 +2,142 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B937C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:39:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7F70C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:40:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDC4B61040
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:39:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDC4B61040
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
+	by mail.kernel.org (Postfix) with ESMTPS id E6DA261040
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:40:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6DA261040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd6t3cJZz3cYQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:39:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd7k4mSzz3ckb
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:40:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=Zg+hQIwW;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=BMvmeNAr;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=O/pSaiWa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sent.com (client-ip=66.111.4.230;
- helo=new4-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=40.107.92.62;
+ helo=nam10-bn7-obe.outbound.protection.outlook.com;
+ envelope-from=ziy@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm3 header.b=Zg+hQIwW; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=BMvmeNAr; 
+ unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
+ header.s=selector2 header.b=O/pSaiWa; 
  dkim-atps=neutral
-Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
- [66.111.4.230])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com
+ (mail-bn7nam10on2062.outbound.protection.outlook.com [40.107.92.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2t49xRz3019
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:06 +1000 (AEST)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id C1697580B92;
- Thu,  6 May 2021 11:27:04 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:04 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm3; bh=WM/6yw4DbUOeZ
- Qua2xBOphgta4VgYuLUaDHBkJrEgcU=; b=Zg+hQIwW1OH4i+LZYZkg6EMPR2e/z
- mwHnFDj5A3p1witMQW6QJ5AKdqQ2x5hE6ru7DK5DhvlmRC4ohNCZUwnZ7mbMVWJ/
- vedp69BcjkrriRFJJ0EYUXOLcgjjb7by74IbDooOPu7WRP2pfwsfOz9aFv5xzohi
- DAK4M4MMBTBJg909uvnOyQQwFnVGvJTwZ78Sqy+r00ReBx2AdYlD3HC1Xn+nejpm
- aVAPnFyjG/F6HQTL+11bsp4f4EuYJeORcAKkjyl1vM46kzqpURLPIRuDrWxSgInG
- Lktr4oXw+03sv39JRvm/NC1A4nCjNJAJvX9eKSBJehplGZtKvIR4smHgg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:reply-to:subject
- :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm2; bh=WM/6yw4DbUOeZQua2xBOphgta4VgYuLUaDHBkJrEgcU=; b=BMvmeNAr
- Ze+uMLX0HnQ+fxidLY20Gi/maR2IIbkK7Ip1rXT2+OVXEBl8fgmuQKiIVqkxrAp3
- UKcjtwhNXJWDVbPhL+cnj0KUe/QighhpeZnOL7iLe9m1cx3yDv6OgLXqt7NHChCt
- b7YBnTNUss1+2Zz8cXpgZAEWvb76k2DIJ31Oo3IVKBpdGMh3neMIXK0pa3BNmm7e
- efWgEKQTSmJXiY6pH+hTu6r52iPcRXqzNzrMbWRr1NAr5tgfMZtUBBWuDJ4dIKE8
- C61XlFdIqvkXCKNND2nQElVlEKRe0lL51usBbG6TwoMSIuBRo2gzFT0MULRz/oL4
- PsE/Em6unM3rBA==
-X-ME-Sender: <xms:yAqUYOhX6llbT-5X17OxGs-xYUWrKL2LazPZXnDcGZx2GFPwa2LlOw>
- <xme:yAqUYPD5l1X-qxymzuOaLkO4uekCksfc3j92KshqhmSprvhXUS017K1qSl5DYw9M-
- LMSsT2IGWNe_UnDGw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
- rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
- dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
- hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpe
- hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
-X-ME-Proxy: <xmx:yAqUYGFj43yl8inbsEruX7yRgQnIrN6DM0k525AmMeuyReQs0qDm_Q>
- <xmx:yAqUYHTiaXgKff6E8wDNHLqnxoeXWJFrrridMDPobjfy0wWC3PDDgA>
- <xmx:yAqUYLxnvf3-5n7DjdyAmR49vh_yj994LkFtBAt3pXvakn0InUTPEQ>
- <xmx:yAqUYIiMaUdpa5Pjw8ZETBk5x_8Yx2ZoP2Gd9E0ZBWcCMqgYJLeZfQ>
-Received: from Threadripper.local
- (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
- by mail.messagingengine.com (Postfix) with ESMTPA;
- Thu,  6 May 2021 11:27:00 -0400 (EDT)
-From: Zi Yan <zi.yan@sent.com>
-To: David Hildenbrand <david@redhat.com>,
-	Oscar Salvador <osalvador@suse.de>
-Subject: [RFC PATCH 3/7] mm: memory_hotplug: decouple memory_block size with
- section size.
-Date: Thu,  6 May 2021 11:26:19 -0400
-Message-Id: <20210506152623.178731-4-zi.yan@sent.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd4V4DC0z3brs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:37:28 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=FPN3Vtq71/AIplxqLw1M7kkASYtj2ER1h6bC3BecQ3Y6UP+G0/OVaXIRMQcb/a1mE9+oACP/azbSOyLHi851hO9IE/qLVLgMcgf4YXY0zviwV6Tf86R2leYG8GqevEWmyW0hknv1S+SyadubAgp5BduywgNVF1PbfTsy1fwHUb+e+FSx5imuSzBqxagTEfHOc/OAWYEIHJh2n24c4OJPNDGzR0E3NCEuxTomOhpGjHNUdPamSiQHSpQcuh8I+UgqtFgy3E58DmGMpQn4xSse+cTV/+3GTerlofaXcb2cXLFKOYkvOqGJ76kIncCld81VPrp+8Wj78WAEQqaP69llxw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CgtgXQrH0EO88ortFz8WULLNVVyBTVnkFegymJEXa3Q=;
+ b=NqYCZAmNBr46NxV9zqePvCFwW2657BbqsAC0EZP5ohvrzUWwqwSCYA2czz6G/P4r9yzU8XIVurdq3/PxXLakucrTo0dRgw9uE76sj4QokAwJ9ykZCEKtI/ud5QA2jObbil+svlKLGc1KuPPIQVg9CwpPKps6JYbz9lqAnYqkxmQuDsIu3HKZ4ikuSxMPzERVNyX7tpgpOY4yxGhZDArDYs9qXY1iVVvRizqBFA1uE2mqbnVWFyZv/Dmlh+cfnoMi4ATpTFZvl/7R0pTCFDsUeE9bJDsg5y+TXUX/n/r3ZicPQkaBusxV4ouvoKPTNehVMP6JOZBxaWa8c3JfUncODg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CgtgXQrH0EO88ortFz8WULLNVVyBTVnkFegymJEXa3Q=;
+ b=O/pSaiWa+POdtJGLv6NwkRVJdEbjuZ1cYIgqsjaKgGCvCGneSb+HlYLSly87+06ZTCoPn/RXw8wrv8bKqhELSmQsFUc+djtMv+4JEns9grGwvD6wOCIei54kAlGhOzs1/JyOZmn2L+tcxwyh+p7cZ5rtNt4XbOH29F8lsCyZkuOM2CYoHi4hwIIiuoWXwxzQaZmm3RSf+0Jj3a5zcS63byDRb7ulHKoLBzAlQtgEy4g+W3ofePiNLx8dk1eOcNh93pWaGq5Lj8wah4oMnH8/lCJ2ODnvOQUmTFnTQvutU95h8YrNBVdB7Y41vRYKzrCIPn9DzflgEjVJuugIPcZtmQ==
+Authentication-Results: redhat.com; dkim=none (message not signed)
+ header.d=none;redhat.com; dmarc=none action=none header.from=nvidia.com;
+Received: from MN2PR12MB3823.namprd12.prod.outlook.com (2603:10b6:208:168::26)
+ by BL0PR12MB4994.namprd12.prod.outlook.com (2603:10b6:208:1ca::13)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4108.26; Thu, 6 May
+ 2021 15:37:23 +0000
+Received: from MN2PR12MB3823.namprd12.prod.outlook.com
+ ([fe80::ccd7:fb49:6f2d:acf2]) by MN2PR12MB3823.namprd12.prod.outlook.com
+ ([fe80::ccd7:fb49:6f2d:acf2%7]) with mapi id 15.20.4108.026; Thu, 6 May 2021
+ 15:37:23 +0000
+From: "Zi Yan" <ziy@nvidia.com>
+To: "David Hildenbrand" <david@redhat.com>
+Subject: Re: [RFC PATCH 0/7] Memory hotplug/hotremove at subsection size
+Date: Thu, 06 May 2021 11:37:15 -0400
+X-Mailer: MailMate (1.14r5757)
+Message-ID: <9D7FD316-988E-4B11-AC1C-64FF790BA79E@nvidia.com>
+In-Reply-To: <fb60eabd-f8ef-2cb1-7338-7725efe3c286@redhat.com>
 References: <20210506152623.178731-1-zi.yan@sent.com>
+ <fb60eabd-f8ef-2cb1-7338-7725efe3c286@redhat.com>
+Content-Type: multipart/signed;
+ boundary="=_MailMate_20560B3D-9CB2-4483-BBC2-6D4DFD4AF167_=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+X-Originating-IP: [216.228.112.22]
+X-ClientProxiedBy: BL0PR02CA0023.namprd02.prod.outlook.com
+ (2603:10b6:207:3c::36) To MN2PR12MB3823.namprd12.prod.outlook.com
+ (2603:10b6:208:168::26)
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from [10.2.63.7] (216.228.112.22) by
+ BL0PR02CA0023.namprd02.prod.outlook.com (2603:10b6:207:3c::36) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4108.24 via Frontend Transport; Thu, 6 May 2021 15:37:19 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: d7fd83b3-25bd-4039-0d7e-08d910a4d798
+X-MS-TrafficTypeDiagnostic: BL0PR12MB4994:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <BL0PR12MB4994BB42D1312F0B96A1C969C2589@BL0PR12MB4994.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:10000;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: XdMIeQjcux8kuF2n7FdEPxCPIW0Ahg7w+nU92aITKeHR2XvjgXFz0KWxosMltpW7A3opBQMhi2SbX6I+QYYmTRcRNANV1XA2GkmfjGFk7pcBu2nmRHe7WjyKC2+5y09bF9oeezPhWdTQOhwrifK9uZvZ7NTe+jF1VjJvzyfScVk3N3v1XRbrANr26Txx1L/YIHjsrphWyUWHyhDdPkQ1o7yEamSetbnRCrp4tE5IpevNkZnxO6WsI11zstA7I0uvggPFXgDyp6hr+oK4VVZ8Skndco1UEBnhdkOyMF3AZGx8sjaQp5I0JXaBpc58Ka2FrtPPUv9Fb3vYRf94OFa0+jPushGtULOuCbxTFPBbBQyQAhWbHPcjjaueEaK5w0m+sr1lR0eYmZGHvrwvZ8TWPiKXyPPjxwQzFcfmAk+5so8rL5wPmX6Edn+/UP8o9tocjpJBvmkUMeqRgWl7hVwDGmVODbxhIzv5H284zhReWQvmkCXkqV8wfkbh0vmY4dHoOBCclVrcUSqCaQU0jDdicCLeooBYDqeszo37zs2RWGEtZZv3yJ2KVXBUa8guuFkl+ZHo5lwY6NLkGKZBneRL/tv1jMS46SeV9KPZJcLOexYFQdkUBQFIdPJjgRFpYkxMx6djulYkligPHGFc/2X3N+buqBTBXhoULgIZcxoN/Kg=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN2PR12MB3823.namprd12.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(136003)(366004)(396003)(39860400002)(376002)(346002)(4326008)(6486002)(5660300002)(8676002)(16576012)(86362001)(66476007)(54906003)(33656002)(8936002)(316002)(6666004)(33964004)(2906002)(235185007)(66946007)(66556008)(186003)(956004)(36756003)(6916009)(83380400001)(7416002)(2616005)(16526019)(26005)(478600001)(38100700002)(53546011)(45980500001)(72826003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?dGRRTE52d2RoNEIxRGphaFZBWUJkVnBPRmxTcVhtKzhkQlJqOXdmSUFSSURk?=
+ =?utf-8?B?N1gyL1lUYnpIaHVySjBXTkg5amJBaU80ZmVwbHl1bFdUaitIV0YvMnRXeUFy?=
+ =?utf-8?B?Vm5YVGJnSDM0QUpMeFRJdC9lQ0JWdVg5alBuYVkyNkdQREU3ZzVtTVE5MHdi?=
+ =?utf-8?B?M0VZWGRtNXlFeVBQVlZ1VmxRUVA5SnJoOXFNbnkrVk1GV0tLakNIZkVnYllF?=
+ =?utf-8?B?ZU5RKzQrWjJZNVdSQTJoZG0rRVUvQlEwWG5jWWRick1xRzlsZWpSdndkK2lx?=
+ =?utf-8?B?WFhmNjd4RGV6R01zeUw4TVZEb2s4YmZTMzRTbTBNc0VkKzhXOHZGa01iQ0ox?=
+ =?utf-8?B?S2dzZTY0Qnl4bkZLcjA3aEJRcVNnYWZ2aHZ0WExKWEhaL2Y0dmdrcFlVcklw?=
+ =?utf-8?B?T2duNUwwOWhEbm5icDI3dUZhVXpuQU5LNllyc2w0c3VnS01UYzYzaDk2NVhE?=
+ =?utf-8?B?OTZ0TkV5MXBYYkI5YitsVHBVcDBnRkZQMmdJeDl4a2tnQ01DWExydzBzOFk1?=
+ =?utf-8?B?V29iVHA1TU1sTEw5a0xGOVdySndTNHMySUc0ZXRsSU44aFVyM1J6UTFCbUVR?=
+ =?utf-8?B?UzVBbXM5Szk5dFFMMjBZa3hyZlZlQmo5ZFp4YUxmVVlrdmdldkF3anRoSGVq?=
+ =?utf-8?B?L2pZbVRXMzJ5R3ZvRWpQWkR4dEJJMURVaVNlUHJZVlFPdmxFT3p4bUxDcW9y?=
+ =?utf-8?B?WUUyeVlGY3VSaCt4R1Q5NGVRRHBzYnFKSkVKN2VwZXd2SHVkbDBJQ0lPSnlG?=
+ =?utf-8?B?YjlLUm5XS1l5eUEvYlRrM2VMVXA2MG1GSFJaazNRSWttWi9sWGdnWFdOK1Uw?=
+ =?utf-8?B?dTB0dzlsQktBSkVHZ1hDZzJiTVF4VFFoNk01bk5GeGo4MGNWTDk4dmRSUTJJ?=
+ =?utf-8?B?b2VHMXR1QTNhQWhQNFRHYmU1YzFDM0tzaExaemZiVEJzcmdibzVoWjNDSnVE?=
+ =?utf-8?B?M05qSCtBSUlkclUyd0xkQzU5MTBhOGo3eTFTa3Vud3E3VmxVQUJ0MWF3d0tk?=
+ =?utf-8?B?NzdBRitHanpaR3hUK1drKzBZYlVuQWtyeXlnQWpmVllnTnFWYnVEUExOVFVa?=
+ =?utf-8?B?WFM5cis3OVdtQzVyWVJUenBlY2FLdUlzcmlIaEZUQTVBdXJlM0EyMGhkRU42?=
+ =?utf-8?B?a014K21tcXB0N3EwNVZDM3J0dGdLcnE2RWVEamxtSTRIb21BYlIvQUl2M2dk?=
+ =?utf-8?B?NmN0TW1yQmlVNEhueWdGU3lMOGVMTEQ5ZEZyYlArRU96QVdQc2lMb2dQNmRQ?=
+ =?utf-8?B?dkUvL0JzaVp3bTgzdXFmeUJIelJYTUM3cTJIakR4MlgzRTJJZml2MWVUT1ZH?=
+ =?utf-8?B?N0pqWVZhakFka2lsQURwdXhRT0JKVHhkdzFSWWVHUUpIZnJJR0JtWE9MTkI5?=
+ =?utf-8?B?Tzd5ZkdnZXh3TVNBYWJ5bkpyS1Q0RHZGYllLcDBzYms5eWhZb2VUaDBMTmFN?=
+ =?utf-8?B?eTgrOVRkaUNxRHg3MHdDaXhFODYyaUdhRWVMYjhoOEw4Vkh1d0pIbytrdE92?=
+ =?utf-8?B?ZGJDcmU3c2tieFphY0RMMzU4TUsyL1l4WS9lL2lnYmx5K2pMT2l3QkpuQzBr?=
+ =?utf-8?B?SDYvUm91VnZvSUozMklUWEZ4OFphK05XSnhXeGVSRWJxUGcxMDlOUllnclAv?=
+ =?utf-8?B?bDZmSm51RmJYUThPUm1DYmpMV09rYVpqVW9Gb3NTdnNVcGdZUWh5dEZmSCtm?=
+ =?utf-8?B?K01hTEkxU2pVUWV6eG44Ry9SeGxCUUM0ZEo5WGdPR2tzU2ZabW1KL3h5NVRE?=
+ =?utf-8?Q?Nm65QYelq9kdq8rTbEyKO8MFTGkTf9ZkcWEbCL6?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d7fd83b3-25bd-4039-0d7e-08d910a4d798
+X-MS-Exchange-CrossTenant-AuthSource: MN2PR12MB3823.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 May 2021 15:37:23.0191 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: nNB+l+qCGPOQn+A24ccGxUE74zg+DrPhKUQ76HxLzLDutu2gyCP8Y4Tv/cdSjPc+
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL0PR12MB4994
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,409 +149,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Zi Yan <ziy@nvidia.com>
 Cc: Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
  Wei Yang <richard.weiyang@linux.alibaba.com>,
  Anshuman Khandual <anshuman.khandual@arm.com>,
  "Rafael J . Wysocki" <rafael@kernel.org>, x86@kernel.org,
  Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Zi Yan <ziy@nvidia.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Mike Rapoport <rppt@kernel.org>
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Zi Yan <ziy@nvidia.com>
+--=_MailMate_20560B3D-9CB2-4483-BBC2-6D4DFD4AF167_=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-To enable subsection memory online/offline, we need to remove the
-assumption of memory_block size being greater or equal to section size.
+On 6 May 2021, at 11:31, David Hildenbrand wrote:
 
-The following changes are made:
-1. use (start_pfn, nr_pages) pair to specify memory_block size instead of
-   start_section_nr.
-2. calculate memory_block id using phys / memory_block_size_bytes()
-   instead of section number.
+> On 06.05.21 17:26, Zi Yan wrote:
+>> From: Zi Yan <ziy@nvidia.com>
+>>
+>> Hi all,
+>>
+>> This patchset tries to remove the restriction on memory hotplug/hotrem=
+ove
+>> granularity, which is always greater or equal to memory section size[1=
+].
+>> With the patchset, kernel is able to online/offline memory at a size i=
+ndependent
+>> of memory section size, as small as 2MB (the subsection size).
+>
+> ... which doesn't make any sense as we can only online/offline whole me=
+mory block devices.
 
-The memory_block minimum size is set to the smaller of 128MB (the old
-x86_64 section size) and section size instead.
+Why limit the memory block size to section size? Patch 3 removes the rest=
+riction
+by using (start_pfn, nr_pages) to allow memory block size goes below sect=
+ion size.
+Also we have subsection bitmap available to tell us which subsection is o=
+nline,
+there is no reason to force memory block size to match section size.
 
-Signed-off-by: Zi Yan <ziy@nvidia.com>
----
- drivers/base/memory.c  | 176 ++++++++++++++++++++---------------------
- drivers/base/node.c    |   2 +-
- include/linux/memory.h |   8 +-
- mm/memory_hotplug.c    |   6 +-
- 4 files changed, 98 insertions(+), 94 deletions(-)
+>
+>>
+>> The motivation is to increase MAX_ORDER of the buddy allocator and pag=
+eblock
+>> size without increasing memory hotplug/hotremove granularity at the sa=
+me time,
+>
+> Gah, no. Please no. No.
+>
+>> so that the kernel can allocator 1GB pages using buddy allocator and u=
+tilizes
+>> existing pageblock based anti-fragmentation, paving the road for 1GB T=
+HP
+>> support[2].
+>
+> Not like this, please no.
+>
+>>
+>> The patchset utilizes the existing subsection support[3] and changes t=
+he
+>> section size alignment checks to subsection size alignment checks. The=
+re are
+>> also changes to pageblock code to support partial pageblocks, when pag=
+eblock
+>> size is increased along with MAX_ORDER. Increasing pageblock size can =
+enable
+>> kernel to utilize existing anti-fragmentation mechanism for gigantic p=
+age
+>> allocations.
+>
+> Please not like this.
+>
+>>
+>> The last patch increases SECTION_SIZE_BITS to demonstrate the use of m=
+emory
+>> hotplug/hotremove subsection, but is not intended to be merged as is. =
+It is
+>> there in case one wants to try this out and will be removed during the=
+ final
+>> submission.
+>>
+>> Feel free to give suggestions and comments. I am looking forward to yo=
+ur
+>> feedback.
+>
+> Please not like this.
 
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index b31b3af5c490..141431eb64a4 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -50,19 +50,15 @@ int mhp_online_type_from_str(const char *str)
-=20
- static int sections_per_block;
-=20
--static inline unsigned long memory_block_id(unsigned long section_nr)
-+static inline unsigned long phys_to_block_id(unsigned long phys)
- {
--	return section_nr / sections_per_block;
-+	return phys / memory_block_size_bytes();
- }
-=20
- static inline unsigned long pfn_to_block_id(unsigned long pfn)
- {
--	return memory_block_id(pfn_to_section_nr(pfn));
--}
--
--static inline unsigned long phys_to_block_id(unsigned long phys)
--{
--	return pfn_to_block_id(PFN_DOWN(phys));
-+	/* calculate using memory_block_size_bytes() */
-+	return phys_to_block_id(PFN_PHYS(pfn));
- }
-=20
- static int memory_subsys_online(struct device *dev);
-@@ -118,7 +114,7 @@ static ssize_t phys_index_show(struct device *dev,
- 	struct memory_block *mem =3D to_memory_block(dev);
- 	unsigned long phys_index;
-=20
--	phys_index =3D mem->start_section_nr / sections_per_block;
-+	phys_index =3D pfn_to_section_nr(mem->start_pfn);
-=20
- 	return sysfs_emit(buf, "%08lx\n", phys_index);
- }
-@@ -171,8 +167,8 @@ int memory_notify(unsigned long val, void *v)
-=20
- static int memory_block_online(struct memory_block *mem)
- {
--	unsigned long start_pfn =3D section_nr_to_pfn(mem->start_section_nr);
--	unsigned long nr_pages =3D PAGES_PER_SECTION * sections_per_block;
-+	unsigned long start_pfn =3D mem->start_pfn;
-+	unsigned long nr_pages =3D mem->nr_pages;
- 	unsigned long nr_vmemmap_pages =3D mem->nr_vmemmap_pages;
- 	struct zone *zone;
- 	int ret;
-@@ -212,8 +208,8 @@ static int memory_block_online(struct memory_block *mem)
-=20
- static int memory_block_offline(struct memory_block *mem)
- {
--	unsigned long start_pfn =3D section_nr_to_pfn(mem->start_section_nr);
--	unsigned long nr_pages =3D PAGES_PER_SECTION * sections_per_block;
-+	unsigned long start_pfn =3D mem->start_pfn;
-+	unsigned long nr_pages =3D mem->nr_pages;
- 	unsigned long nr_vmemmap_pages =3D mem->nr_vmemmap_pages;
- 	struct zone *zone;
- 	int ret;
-@@ -260,7 +256,7 @@ memory_block_action(struct memory_block *mem, unsigned =
-long action)
- 		break;
- 	default:
- 		WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
--		     "%ld\n", __func__, mem->start_section_nr, action, action);
-+		     "%ld\n", __func__, mem->start_pfn, mem->nr_pages, action);
- 		ret =3D -EINVAL;
- 	}
-=20
-@@ -366,7 +362,7 @@ static ssize_t phys_device_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =3D to_memory_block(dev);
--	unsigned long start_pfn =3D section_nr_to_pfn(mem->start_section_nr);
-+	unsigned long start_pfn =3D mem->start_pfn;
-=20
- 	return sysfs_emit(buf, "%d\n",
- 			  arch_get_memory_phys_device(start_pfn));
-@@ -390,8 +386,8 @@ static ssize_t valid_zones_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =3D to_memory_block(dev);
--	unsigned long start_pfn =3D section_nr_to_pfn(mem->start_section_nr);
--	unsigned long nr_pages =3D PAGES_PER_SECTION * sections_per_block;
-+	unsigned long start_pfn =3D mem->start_pfn;
-+	unsigned long nr_pages =3D mem->nr_pages;
- 	struct zone *default_zone;
- 	int len =3D 0;
- 	int nid;
-@@ -575,16 +571,6 @@ static struct memory_block *find_memory_block_by_id(un=
-signed long block_id)
- 	return mem;
- }
-=20
--/*
-- * Called under device_hotplug_lock.
-- */
--struct memory_block *find_memory_block(struct mem_section *section)
--{
--	unsigned long block_id =3D memory_block_id(__section_nr(section));
--
--	return find_memory_block_by_id(block_id);
--}
--
- static struct attribute *memory_memblk_attrs[] =3D {
- 	&dev_attr_phys_index.attr,
- 	&dev_attr_state.attr,
-@@ -614,7 +600,7 @@ int register_memory(struct memory_block *memory)
- 	int ret;
-=20
- 	memory->dev.bus =3D &memory_subsys;
--	memory->dev.id =3D memory->start_section_nr / sections_per_block;
-+	memory->dev.id =3D memory->start_pfn / (memory_block_size_bytes() >> PAGE=
-_SHIFT);
- 	memory->dev.release =3D memory_block_release;
- 	memory->dev.groups =3D memory_memblk_attr_groups;
- 	memory->dev.offline =3D memory->state =3D=3D MEM_OFFLINE;
-@@ -633,57 +619,89 @@ int register_memory(struct memory_block *memory)
- 	return ret;
- }
-=20
--static int init_memory_block(unsigned long block_id, unsigned long state,
-+static void unregister_memory(struct memory_block *memory)
-+{
-+	if (WARN_ON_ONCE(memory->dev.bus !=3D &memory_subsys))
-+		return;
-+
-+	WARN_ON(xa_erase(&memory_blocks, memory->dev.id) =3D=3D NULL);
-+
-+	/* drop the ref. we got via find_memory_block() */
-+	put_device(&memory->dev);
-+	device_unregister(&memory->dev);
-+}
-+
-+static int init_memory_blocks(unsigned long start_pfn, unsigned long num_p=
-ages, unsigned long state,
- 			     unsigned long nr_vmemmap_pages)
- {
- 	struct memory_block *mem;
- 	int ret =3D 0;
-+	unsigned long block_nr_pages =3D memory_block_size_bytes() / PAGE_SIZE;
-+	unsigned long block_start_pfn;
-=20
--	mem =3D find_memory_block_by_id(block_id);
--	if (mem) {
--		put_device(&mem->dev);
--		return -EEXIST;
--	}
--	mem =3D kzalloc(sizeof(*mem), GFP_KERNEL);
--	if (!mem)
--		return -ENOMEM;
--
--	mem->start_section_nr =3D block_id * sections_per_block;
--	mem->state =3D state;
--	mem->nid =3D NUMA_NO_NODE;
--	mem->nr_vmemmap_pages =3D nr_vmemmap_pages;
-+	for (block_start_pfn =3D start_pfn; num_pages !=3D 0; block_start_pfn +=
-=3D block_nr_pages) {
-+		unsigned long block_id =3D pfn_to_block_id(block_start_pfn);
-=20
--	ret =3D register_memory(mem);
--
--	return ret;
-+		mem =3D find_memory_block_by_id(block_id);
-+		if (mem) {
-+			put_device(&mem->dev);
-+			return -EEXIST;
-+		}
-+		mem =3D kzalloc(sizeof(*mem), GFP_KERNEL);
-+		if (!mem)
-+			return -ENOMEM;
-+
-+		mem->start_pfn =3D block_start_pfn;
-+		mem->nr_pages =3D min(num_pages, block_nr_pages);
-+		mem->state =3D state;
-+		mem->nid =3D NUMA_NO_NODE;
-+		mem->nr_vmemmap_pages =3D nr_vmemmap_pages;
-+
-+		ret =3D register_memory(mem);
-+
-+		if (ret) {
-+			unsigned long unregister_block_pfn;
-+
-+			for (unregister_block_pfn =3D start_pfn;
-+			     unregister_block_pfn < block_start_pfn;
-+			     unregister_block_pfn -=3D block_nr_pages) {
-+				block_id =3D pfn_to_block_id(unregister_block_pfn);
-+				mem =3D find_memory_block_by_id(block_id);
-+				if (WARN_ON_ONCE(!mem))
-+					continue;
-+				unregister_memory(mem);
-+			}
-+			return -EINVAL;
-+		}
-+		if (num_pages > block_nr_pages)
-+			num_pages -=3D block_nr_pages;
-+		else
-+			num_pages =3D 0;
-+	}
-+	return 0;
- }
-=20
--static int add_memory_block(unsigned long base_section_nr)
-+static void add_whole_section_memory_block(unsigned long base_section_nr)
- {
--	int section_count =3D 0;
--	unsigned long nr;
-+	int ret;
-+	unsigned long start_pfn =3D section_nr_to_pfn(base_section_nr);
-+	unsigned long nr_pages =3D 0;
-+	struct mem_section *ms =3D __nr_to_section(base_section_nr);
-=20
--	for (nr =3D base_section_nr; nr < base_section_nr + sections_per_block;
--	     nr++)
--		if (present_section_nr(nr))
--			section_count++;
-+	if (bitmap_full(ms->usage->subsection_map, SUBSECTIONS_PER_SECTION))
-+		nr_pages =3D PAGES_PER_SECTION;
-+	else
-+		nr_pages =3D PAGES_PER_SUBSECTION *
-+			bitmap_weight(ms->usage->subsection_map, SUBSECTIONS_PER_SECTION);
-=20
--	if (section_count =3D=3D 0)
--		return 0;
--	return init_memory_block(memory_block_id(base_section_nr),
--				 MEM_ONLINE, 0);
--}
-=20
--static void unregister_memory(struct memory_block *memory)
--{
--	if (WARN_ON_ONCE(memory->dev.bus !=3D &memory_subsys))
-+	if (!nr_pages)
- 		return;
-=20
--	WARN_ON(xa_erase(&memory_blocks, memory->dev.id) =3D=3D NULL);
--
--	/* drop the ref. we got via find_memory_block() */
--	put_device(&memory->dev);
--	device_unregister(&memory->dev);
-+	ret =3D init_memory_blocks(start_pfn, nr_pages, MEM_ONLINE, 0);
-+	if (ret)
-+		panic("%s() failed to add memory block: %d\n", __func__,
-+		      ret);
- }
-=20
- /*
-@@ -696,31 +714,16 @@ static void unregister_memory(struct memory_block *me=
-mory)
- int create_memory_block_devices(unsigned long start, unsigned long size,
- 				unsigned long vmemmap_pages)
- {
--	const unsigned long start_block_id =3D pfn_to_block_id(PFN_DOWN(start));
--	unsigned long end_block_id =3D pfn_to_block_id(PFN_DOWN(start + size));
--	struct memory_block *mem;
--	unsigned long block_id;
-+	unsigned long start_pfn =3D PFN_DOWN(start);
-+	unsigned long end_pfn =3D PFN_DOWN(start + size);
- 	int ret =3D 0;
-=20
- 	if (WARN_ON_ONCE(!IS_ALIGNED(start, memory_block_size_bytes()) ||
- 			 !IS_ALIGNED(size, memory_block_size_bytes())))
- 		return -EINVAL;
-=20
--	for (block_id =3D start_block_id; block_id !=3D end_block_id; block_id++)=
- {
--		ret =3D init_memory_block(block_id, MEM_OFFLINE, vmemmap_pages);
--		if (ret)
--			break;
--	}
--	if (ret) {
--		end_block_id =3D block_id;
--		for (block_id =3D start_block_id; block_id !=3D end_block_id;
--		     block_id++) {
--			mem =3D find_memory_block_by_id(block_id);
--			if (WARN_ON_ONCE(!mem))
--				continue;
--			unregister_memory(mem);
--		}
--	}
-+	ret =3D init_memory_blocks(start_pfn, end_pfn - start_pfn, MEM_OFFLINE, v=
-memmap_pages);
-+
- 	return ret;
- }
-=20
-@@ -807,10 +810,7 @@ void __init memory_dev_init(void)
- 	 */
- 	for (nr =3D 0; nr <=3D __highest_present_section_nr;
- 	     nr +=3D sections_per_block) {
--		ret =3D add_memory_block(nr);
--		if (ret)
--			panic("%s() failed to add memory block: %d\n", __func__,
--			      ret);
-+		add_whole_section_memory_block(nr);
- 	}
- }
-=20
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index 2c36f61d30bc..76d67b8ddf1b 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -809,7 +809,7 @@ static int register_mem_block_under_node_early(struct m=
-emory_block *mem_blk,
- 					       void *arg)
- {
- 	unsigned long memory_block_pfns =3D memory_block_size_bytes() / PAGE_SIZE;
--	unsigned long start_pfn =3D section_nr_to_pfn(mem_blk->start_section_nr);
-+	unsigned long start_pfn =3D mem_blk->start_pfn;
- 	unsigned long end_pfn =3D start_pfn + memory_block_pfns - 1;
- 	int nid =3D *(int *)arg;
- 	unsigned long pfn;
-diff --git a/include/linux/memory.h b/include/linux/memory.h
-index 97e92e8b556a..e9590c7c6a9e 100644
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -21,10 +21,15 @@
- #include <linux/mutex.h>
- #include <linux/notifier.h>
-=20
-+#if SECTION_SIZE_BITS > 27  /* 128MB */
-+#define MIN_MEMORY_BLOCK_SIZE     (1UL << 27)
-+#else
- #define MIN_MEMORY_BLOCK_SIZE     (1UL << SECTION_SIZE_BITS)
-+#endif
-=20
- struct memory_block {
--	unsigned long start_section_nr;
-+	unsigned long start_pfn;
-+	unsigned long nr_pages;
- 	unsigned long state;		/* serialized by the dev->lock */
- 	int online_type;		/* for passing data to online routine */
- 	int nid;			/* NID for this memory block */
-@@ -90,7 +95,6 @@ int create_memory_block_devices(unsigned long start, unsi=
-gned long size,
- void remove_memory_block_devices(unsigned long start, unsigned long size);
- extern void memory_dev_init(void);
- extern int memory_notify(unsigned long val, void *v);
--extern struct memory_block *find_memory_block(struct mem_section *);
- typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
- extern int walk_memory_blocks(unsigned long start, unsigned long size,
- 			      void *arg, walk_memory_blocks_func_t func);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 70620d0dd923..6e93b0ecc5cb 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1872,8 +1872,8 @@ static int check_memblock_offlined_cb(struct memory_b=
-lock *mem, void *arg)
- 	if (unlikely(ret)) {
- 		phys_addr_t beginpa, endpa;
-=20
--		beginpa =3D PFN_PHYS(section_nr_to_pfn(mem->start_section_nr));
--		endpa =3D beginpa + memory_block_size_bytes() - 1;
-+		beginpa =3D PFN_PHYS(mem->start_pfn);
-+		endpa =3D beginpa + mem->nr_pages * PAGE_SIZE - 1;
- 		pr_warn("removing memory fails, because memory [%pa-%pa] is onlined\n",
- 			&beginpa, &endpa);
-=20
-@@ -2079,7 +2079,7 @@ static int try_offline_memory_block(struct memory_blo=
-ck *mem, void *arg)
- 	 * with multiple zones within one memory block will be rejected
- 	 * by offlining code ... so we don't care about that.
- 	 */
--	page =3D pfn_to_online_page(section_nr_to_pfn(mem->start_section_nr));
-+	page =3D pfn_to_online_page(mem->start_pfn);
- 	if (page && zone_idx(page_zone(page)) =3D=3D ZONE_MOVABLE)
- 		online_type =3D MMOP_ONLINE_MOVABLE;
-=20
---=20
-2.30.2
+Do you mind sharing more useful feedback instead of just saying a lot of =
+No?
 
+Thanks.
+
+
+=E2=80=94
+Best Regards,
+Yan Zi
+
+--=_MailMate_20560B3D-9CB2-4483-BBC2-6D4DFD4AF167_=
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename=signature.asc
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJDBAEBCgAtFiEEh7yFAW3gwjwQ4C9anbJR82th+ooFAmCUDSsPHHppeUBudmlk
+aWEuY29tAAoJEJ2yUfNrYfqKuzEP/jmIOHHfzAPAXeBAyTyp5XWNQJbjDR7uTubU
+wbuJC5jOofGdiSKypbdGSB5ta/srQPxD8wEeXFfBDKgTeL438WTPlchWYTQE0rst
+hzSVWGQYddrh5V3BGXqRTRoUIIJicIVo053gqojjoDhxNWnCA+xThcoIpFoIADe3
+PlG5o4CQjzfE+vjawuuiCRhSW8vlFg0Sxyg2TV1T47IMdvogvazYSJVuhuUp/5l2
+iOfaartwDXifmb+88qMGXuulvThLlD5I7eXCqrs/Y1AtkW3O++cwmCOSwKrT/9r9
+6vs3fRel0PSM66B2lLpWynmv0EjtQbSW2yq7RMBswI62WhjwSNaieTtLX+1VG+tT
+19MlmlrAdg97LIkWRh97si6z1xTsh7C712gPLXfijBPebruYtVts3XDSDwTS982+
+1HIEYnnM7BUDxvoZ8F1zRTHIauSioFyV1IhJnYxhfamYBtZzAfbbT/hOsi28nVZ7
+6PXf4oyJeLLcjlbQ+9MROFbbwZNhDoABW3iIfwalNL0IdErLP8Uh34AF2YOLdKOy
+Xv2hWs+1SNnhqZH1XfHRvFFxdte2P/rpXVh7qR48MfPw/58bWGgnLJvwNecighkm
+vLE6VBMxUjtTI9N5gu+KqCJwNIvhGGfUCffA+e9UQ5xPrB7NgkH4W2kDMpocCiUE
+hODKA/KB
+=h9b6
+-----END PGP SIGNATURE-----
+
+--=_MailMate_20560B3D-9CB2-4483-BBC2-6D4DFD4AF167_=--
