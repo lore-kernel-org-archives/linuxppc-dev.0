@@ -2,115 +2,103 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9927C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:31:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EADF8C43460
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:36:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14EFD6101A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:31:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14EFD6101A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 34CA861040
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:36:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34CA861040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbcxy3zLtz3bTn
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:31:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd3P2zDYz3bV2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:36:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IVJI2s+q;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IVJI2s+q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=o2YReWlD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=gQxWE4lU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+ smtp.mailfrom=sent.com (client-ip=66.111.4.230;
+ helo=new4-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=IVJI2s+q; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=IVJI2s+q; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
+ header.s=fm3 header.b=o2YReWlD; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm2 header.b=gQxWE4lU; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
+ [66.111.4.230])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbcxP3Ld4z2yxY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:31:19 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1620315074;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=M3gJNK8hV6eVduRJTKvIL/+ipOjUBkl33BLAv9gMTmY=;
- b=IVJI2s+qLaAz7Pzrf5kpxP1eRPPFshhadXtUzMbDBBoChfHayXql3pvmXhndiQVediDjfl
- T+sZMcQY73YdJiM6Ayn6uvsyWWZPsaBCmZIuymCFFiA16pS3kkVW7zkr8+FGGc11PweYcI
- qc+30Z+yvrzLXZWu/cVJw2u5wUrKGoc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1620315074;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=M3gJNK8hV6eVduRJTKvIL/+ipOjUBkl33BLAv9gMTmY=;
- b=IVJI2s+qLaAz7Pzrf5kpxP1eRPPFshhadXtUzMbDBBoChfHayXql3pvmXhndiQVediDjfl
- T+sZMcQY73YdJiM6Ayn6uvsyWWZPsaBCmZIuymCFFiA16pS3kkVW7zkr8+FGGc11PweYcI
- qc+30Z+yvrzLXZWu/cVJw2u5wUrKGoc=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-120-0bodT-5XMbK6ZDoeqsJ8TQ-1; Thu, 06 May 2021 11:31:12 -0400
-X-MC-Unique: 0bodT-5XMbK6ZDoeqsJ8TQ-1
-Received: by mail-wm1-f70.google.com with SMTP id
- s66-20020a1ca9450000b0290149fce15f03so2790965wme.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 May 2021 08:31:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:organization
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=M3gJNK8hV6eVduRJTKvIL/+ipOjUBkl33BLAv9gMTmY=;
- b=DC0vcu6aTx99y4cnJuVg0Nb2/tV6YVfmIlyZBSEZMdr1Q+Py3Qn3YiuId6SO65udew
- DYd2kweMLrhso3ahrfqSG+r0KbNMoo58CIiqbEmTD0oMIvbzUPbefFXZgn8wPjhdTyh/
- /7x6K0Te2mM4+w1CxM+aUQbESE2tYCiuEnXuUh3NMNsN6dPzos8q2BPSsx5+NK3Y3S8u
- 1/v7J/uWiXKdI1ogYKA7xIcV/WoXX9pDAkziJ3wPdwIMl+Cn2EL7Kejcz72oigWMtUZ7
- m4Ta4jsT4gCj9mAQ6QzhrJdtDng/ltOSPEpM1YiA4b1D/rPVRhz63i8Os8uUVLX24sh8
- AkoQ==
-X-Gm-Message-State: AOAM5326MLtdOBPfEjJn6OU6hL8th6vb82e8a2BqmJ3As2g3dMDidLTS
- aXqKjgrfcjLK+JbkF+tAtkxnVdGeD8tAi+y8F2bqDNmz/KEtYFq0anvDb4AWBerEux44gUE+g+v
- b0sbQxLHjso21ronR9UbNB5SfZw==
-X-Received: by 2002:a05:600c:4982:: with SMTP id
- h2mr4597255wmp.108.1620315071330; 
- Thu, 06 May 2021 08:31:11 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw3M0/nH4wBS9mN36/5FP5OpLaVlIbwQucgba+bN4wivCLyv9VNcf9OZFL+ORcvt4/JggAUXw==
-X-Received: by 2002:a05:600c:4982:: with SMTP id
- h2mr4597190wmp.108.1620315070857; 
- Thu, 06 May 2021 08:31:10 -0700 (PDT)
-Received: from [192.168.3.132] (p5b0c64ae.dip0.t-ipconnect.de. [91.12.100.174])
- by smtp.gmail.com with ESMTPSA id q12sm9157467wmj.7.2021.05.06.08.31.10
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 06 May 2021 08:31:10 -0700 (PDT)
-Subject: Re: [RFC PATCH 0/7] Memory hotplug/hotremove at subsection size
-To: Zi Yan <ziy@nvidia.com>, Oscar Salvador <osalvador@suse.de>
-References: <20210506152623.178731-1-zi.yan@sent.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-Message-ID: <fb60eabd-f8ef-2cb1-7338-7725efe3c286@redhat.com>
-Date: Thu, 6 May 2021 17:31:09 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2p6vjMz2yxy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:02 +1000 (AEST)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailnew.nyi.internal (Postfix) with ESMTP id C9638580B88;
+ Thu,  6 May 2021 11:26:55 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 06 May 2021 11:26:55 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
+ :to:cc:subject:date:message-id:in-reply-to:references:reply-to
+ :mime-version:content-transfer-encoding; s=fm3; bh=w/fhaxzE6d3YP
+ b1A8ivd0FpL8urp0tMSoQqWGTkdTJo=; b=o2YReWlDTlx7hyCpQBDboch01MrBw
+ 7XjJMkWcuWMdUU1UCbOJp6jbpppf/8T43xKOvA3KqIUNAcD7v47a11NT+xE3hVeB
+ 5b9FUBMWLt8yl8x2GL7hpBmyu0//rDLHhFvGadX7Xjxee5PW3R+2Ci1JHCC2zryY
+ 85K32UJuosb15JwG8Xyx7FDxRVfU6Z5I54Gt62vGPLz1HjySj/2AMI38Hm3OloNu
+ JKqxAV3dK2QbmCg4fI1l2AnmsyZtBAWWhs2IQA9FQaemR+Sx5JbXM1ZZR9dwYFlU
+ C7Eose+28so1eMCpyft0SwgW6vAUbncK/pFMt373bKzzosve58IgxM5/Q==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:reply-to:subject
+ :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm2; bh=w/fhaxzE6d3YPb1A8ivd0FpL8urp0tMSoQqWGTkdTJo=; b=gQxWE4lU
+ bK4F3yUwJzuKmVDo6qBZZlUL1+ZhYW79mLrY/NP7hMvxe4QA/VdzOH5NgZtGzztt
+ nLlUbawg/piw67Kt61d9nCOR/eIxuJzlMPCqG3htIOfA5weA9IxRRKcVdDX5rvpR
+ uZb8ucV3epyency4S+Gbfytw4h2mQlN//neD+N/IjPEVtx8/hmw3ZP/EfT3NMsmr
+ ZiDQPAV5uDotoT6oGL9dqWiWFlo1hURybsVJtWEzrPXPoRWeObyIZ2xPjV44153I
+ /lNHUHmErSufySKQUGqMZFLDCcr/12lBtKF/ULXTHLphvcuy7YO1OAy75/Ft0kWk
+ GJbcGmY9CSUidg==
+X-ME-Sender: <xms:vgqUYKtguAlWuka4gWLZw84z_ujxbRPFMqPbciJ9GOWMwUV8z2QchQ>
+ <xme:vgqUYPfm9HlOK0FlFisEIXiaJT_GVanMrV1F8JEIxuidlnG5P_cNqRyv0mDXFwYZI
+ R_DuuoQmYWXUxyuHw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
+ rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
+ dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
+ hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
+ hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
+X-ME-Proxy: <xmx:vgqUYFyZ3An8CimP3Ts5FZ6xV-GUeXfPtaJWT7iezRv0YQfUex8oPg>
+ <xmx:vgqUYFNgadI6JoQRcbAzaG32G832LfedKLZQDeGUey8kpPyb_x7ExQ>
+ <xmx:vgqUYK9ZMEaZrhJhoov6k_u0HFkzs5Lf8SFaNAKBLmqXJ5EnlkOH_w>
+ <xmx:vwqUYKOzvpZkOoU09kumRbPht-E6ctzOooX4bSIT5XAYWCG2ScSt5Q>
+Received: from Threadripper.local
+ (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
+ by mail.messagingengine.com (Postfix) with ESMTPA;
+ Thu,  6 May 2021 11:26:50 -0400 (EDT)
+From: Zi Yan <zi.yan@sent.com>
+To: David Hildenbrand <david@redhat.com>,
+	Oscar Salvador <osalvador@suse.de>
+Subject: [RFC PATCH 1/7] mm: sparse: set/clear subsection bitmap when pages
+ are onlined/offlined.
+Date: Thu,  6 May 2021 11:26:17 -0400
+Message-Id: <20210506152623.178731-2-zi.yan@sent.com>
+X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=david@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20210506152623.178731-1-zi.yan@sent.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,66 +110,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: Zi Yan <ziy@nvidia.com>
 Cc: Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
  Wei Yang <richard.weiyang@linux.alibaba.com>,
  Anshuman Khandual <anshuman.khandual@arm.com>,
  "Rafael J . Wysocki" <rafael@kernel.org>, x86@kernel.org,
  Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>
+ Thomas Gleixner <tglx@linutronix.de>, Zi Yan <ziy@nvidia.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06.05.21 17:26, Zi Yan wrote:
-> From: Zi Yan <ziy@nvidia.com>
-> 
-> Hi all,
-> 
-> This patchset tries to remove the restriction on memory hotplug/hotremove
-> granularity, which is always greater or equal to memory section size[1].
-> With the patchset, kernel is able to online/offline memory at a size independent
-> of memory section size, as small as 2MB (the subsection size).
+From: Zi Yan <ziy@nvidia.com>
 
-... which doesn't make any sense as we can only online/offline whole 
-memory block devices.
+subsection bitmap was set/cleared when a section is added/removed, but
+pfn_to_online_page() uses subsection bitmap to check if the page is
+online, which is not accurate. It was working when a whole section is
+added/removed during memory hotplug and hotremove. When the following
+patches enable memory hotplug and hotremove for subsections,
+subsection bitmap needs to be changed during page online/offline time,
+otherwise, pfn_to_online_page() will not give right answers. Move the
+subsection bitmap manipulation code from section_activate() to
+online_mem_sections() and section_deactivate() to
+offline_mem_sections(), respectively.
 
-> 
-> The motivation is to increase MAX_ORDER of the buddy allocator and pageblock
-> size without increasing memory hotplug/hotremove granularity at the same time,
+Signed-off-by: Zi Yan <ziy@nvidia.com>
+---
+ mm/sparse.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-Gah, no. Please no. No.
-
-> so that the kernel can allocator 1GB pages using buddy allocator and utilizes
-> existing pageblock based anti-fragmentation, paving the road for 1GB THP
-> support[2].
-
-Not like this, please no.
-
-> 
-> The patchset utilizes the existing subsection support[3] and changes the
-> section size alignment checks to subsection size alignment checks. There are
-> also changes to pageblock code to support partial pageblocks, when pageblock
-> size is increased along with MAX_ORDER. Increasing pageblock size can enable
-> kernel to utilize existing anti-fragmentation mechanism for gigantic page
-> allocations.
-
-Please not like this.
-
-> 
-> The last patch increases SECTION_SIZE_BITS to demonstrate the use of memory
-> hotplug/hotremove subsection, but is not intended to be merged as is. It is
-> there in case one wants to try this out and will be removed during the final
-> submission.
-> 
-> Feel free to give suggestions and comments. I am looking forward to your
-> feedback.
-
-Please not like this.
-
--- 
-Thanks,
-
-David / dhildenb
+diff --git a/mm/sparse.c b/mm/sparse.c
+index b2ada9dc00cb..7637208b8874 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -606,6 +606,7 @@ void __init sparse_init(void)
+=20
+ #ifdef CONFIG_MEMORY_HOTPLUG
+=20
++static int fill_subsection_map(unsigned long pfn, unsigned long nr_pages);
+ /* Mark all memory sections within the pfn range as online */
+ void online_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
+ {
+@@ -621,9 +622,12 @@ void online_mem_sections(unsigned long start_pfn, unsi=
+gned long end_pfn)
+=20
+ 		ms =3D __nr_to_section(section_nr);
+ 		ms->section_mem_map |=3D SECTION_IS_ONLINE;
++		fill_subsection_map(pfn, min(end_pfn, pfn + PAGES_PER_SECTION) - pfn);
+ 	}
+ }
+=20
++static int clear_subsection_map(unsigned long pfn, unsigned long nr_pages);
++static bool is_subsection_map_empty(struct mem_section *ms);
+ /* Mark all memory sections within the pfn range as offline */
+ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
+ {
+@@ -641,7 +645,13 @@ void offline_mem_sections(unsigned long start_pfn, uns=
+igned long end_pfn)
+ 			continue;
+=20
+ 		ms =3D __nr_to_section(section_nr);
+-		ms->section_mem_map &=3D ~SECTION_IS_ONLINE;
++
++		if (end_pfn < pfn + PAGES_PER_SECTION) {
++			clear_subsection_map(pfn, end_pfn - pfn);
++			if (is_subsection_map_empty(ms))
++				ms->section_mem_map &=3D ~SECTION_IS_ONLINE;
++		} else
++			ms->section_mem_map &=3D ~SECTION_IS_ONLINE;
+ 	}
+ }
+=20
+@@ -668,6 +678,17 @@ static void free_map_bootmem(struct page *memmap)
+ 	vmemmap_free(start, end, NULL);
+ }
+=20
++static int subsection_map_intersects(struct mem_section *ms, unsigned long=
+ pfn,
++				     unsigned long nr_pages)
++{
++	DECLARE_BITMAP(map, SUBSECTIONS_PER_SECTION) =3D { 0 };
++	unsigned long *subsection_map =3D &ms->usage->subsection_map[0];
++
++	subsection_mask_set(map, pfn, nr_pages);
++
++	return bitmap_intersects(map, subsection_map, SUBSECTIONS_PER_SECTION);
++}
++
+ static int clear_subsection_map(unsigned long pfn, unsigned long nr_pages)
+ {
+ 	DECLARE_BITMAP(map, SUBSECTIONS_PER_SECTION) =3D { 0 };
+@@ -760,6 +781,12 @@ static void free_map_bootmem(struct page *memmap)
+ 	}
+ }
+=20
++static int subsection_map_intersects(struct mem_section *ms, unsigned long=
+ pfn,
++				     unsigned long nr_pages)
++{
++	return 0;
++}
++
+ static int clear_subsection_map(unsigned long pfn, unsigned long nr_pages)
+ {
+ 	return 0;
+@@ -800,7 +827,10 @@ static void section_deactivate(unsigned long pfn, unsi=
+gned long nr_pages,
+ 	struct page *memmap =3D NULL;
+ 	bool empty;
+=20
+-	if (clear_subsection_map(pfn, nr_pages))
++	if (WARN((IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP) && !ms->usage) ||
++		 subsection_map_intersects(ms, pfn, nr_pages),
++				"section already deactivated (%#lx + %ld)\n",
++				pfn, nr_pages))
+ 		return;
+=20
+ 	empty =3D is_subsection_map_empty(ms);
+@@ -855,7 +885,7 @@ static struct page * __meminit section_activate(int nid=
+, unsigned long pfn,
+ 		ms->usage =3D usage;
+ 	}
+=20
+-	rc =3D fill_subsection_map(pfn, nr_pages);
++	rc =3D !nr_pages || subsection_map_intersects(ms, pfn, nr_pages);
+ 	if (rc) {
+ 		if (usage)
+ 			ms->usage =3D NULL;
+--=20
+2.30.2
 
