@@ -5,25 +5,25 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8937AC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64F32C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBB16610A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBB16610A1
+	by mail.kernel.org (Postfix) with ESMTPS id 94A5C610A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94A5C610A7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd4M1NcCz3byT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:37:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd4r6N9Yz30Qk
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:37:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=ERr+ibPO;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Gy0HBk0D;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=g19R6QCB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=FjUx3ehA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=sent.com (client-ip=66.111.4.230;
@@ -31,69 +31,71 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm3 header.b=ERr+ibPO; 
+ header.s=fm3 header.b=g19R6QCB; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=Gy0HBk0D; 
+ header.a=rsa-sha256 header.s=fm2 header.b=FjUx3ehA; 
  dkim-atps=neutral
+X-Greylist: delayed 549 seconds by postgrey-1.36 at boromir;
+ Fri, 07 May 2021 01:36:02 AEST
 Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
  [66.111.4.230])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2q1g3gz3018
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2p6DCVz2yxj
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:02 +1000 (AEST)
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id 46CE9580B98;
- Thu,  6 May 2021 11:27:16 -0400 (EDT)
+ by mailnew.nyi.internal (Postfix) with ESMTP id 98937580B93;
+ Thu,  6 May 2021 11:27:08 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:16 -0400
+ by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:08 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
  :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm3; bh=CNhCM5piZYB3R
- G0DYNDKizi7nXlnPEa9s7srXlj6PXg=; b=ERr+ibPOf0zVPcQflUsZusng7IDBt
- Ly+me/4A5/4jPSYelctQuWumPKZHomt2odPjYpof3hzY459tKjcCPONvUILkhh/t
- 6OC9a5HPpB2Yyq0o5us8PKWmCvW0mQg0f8aYcFxatzcRQYA+Eo0sWo/ZiTzuKXmI
- Hd01N3Fw2jIv2f2YFBMQkjq8B1pc4vuSxr0UIiQSeIIs85G/OdYyaHjWXBC+xCAX
- K6LBqXwl30RHi/8Vt2uTdqBmdlqpltiukvdWtro7EpYqNBN3iugBknXl6MwpGfFA
- mQRSO5ILaqStJXxGzBc3QKabgCtMhBgDXKM1Wk3hGtyex3njKiN0j6RfQ==
+ :mime-version:content-transfer-encoding; s=fm3; bh=FbRZXE7bST17Y
+ nSdlcP8bsWaivyCC5qvTsiLA/pmPMU=; b=g19R6QCBByhaWnAudNOcOPg0FC8GF
+ BYLgrbe2GpFbn8aiFMbJfkjfAP7I+idIgloc1puvSRm5QXSPjXc1FVYCRsWuxy3N
+ 4+RdTjNwWmB4CDQ9BruYX948D0TJQ7ABUpYoUhhNDJmpRabw6UHFIoR/yztt4C1x
+ jpAA2fru8FeUtiUKkrUzkALe/+j95KJ8I5jQTIkECmLIobzung+2zJOXPFXI4iBG
+ 2gwK0c3pZYRSF4+H5QqwYqBPWxNVngm+qGjsDU7emPnuw3TXZCFsu2JQDIJN3tAa
+ sUqKNHPtEjsUl+OLVjPjY46yYWmnCFI6q0K3OHn4Xh3LcGb3ffvyvUOSA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:reply-to:subject
  :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm2; bh=CNhCM5piZYB3RG0DYNDKizi7nXlnPEa9s7srXlj6PXg=; b=Gy0HBk0D
- anbxcrn2TuZswDhEOR9nzUkL2OpRqP+G0E19ruuqkPdfG2QaMkjbgAmYgQDs2PYh
- X+u9gTjbgqnObnMCUoj+FaA95NZ9nq3dqUJghdetX+vfhI75COOAIVu45MvktsRp
- uN67O1drDk5ZvdUy0NP/n2xtAuMwihR7u7jxaIwFEFvS+Lf0X7Bu8G20EewqgnkQ
- wNmhoLBgWiIJ2Q+gcJfXE7xX9ZnkMm45EiNdfx6VxiK0pMrKHq//PZK0Gj78wkXb
- vHLLIqaG6XGkdvhTQPQ92lb9hweVk9danextwxInKDS/il/3M6ZqnGhSpbXu1q+P
- JNOnDyTiAoP7aA==
-X-ME-Sender: <xms:1AqUYCulhFTFCq1TuIitxSwjbJhsysFyDWUIdrqlrydF-otZD2kHpA>
- <xme:1AqUYHcRef67m2nBpQTonTKTcKYIJ7CXSm2um39PI8T4RYV45KzrCen5CiNaIHCew
- pmrlofvEXwhQdEu2Q>
+ fm2; bh=FbRZXE7bST17YnSdlcP8bsWaivyCC5qvTsiLA/pmPMU=; b=FjUx3ehA
+ KBXkLVqnp+CZgmPRqcpQ+a4y2H1eLHkJBnxQMiHDRcENbL7f27xoAS6B5espCQYU
+ NF2xKMFW65O1OIeUY877OfVjH8emx+SzWdRNe1gDdnYe/C8nSvrjkfvw29kGE8/o
+ DY/Zm2uJyCRGCzGWOrC0W26OtOhpNOA4Kw30vahuL77+MWAKa9v9Cfr2QWt1rsoJ
+ 0ieOXX+7dnt17NcaXTVN0OqsKkVng1XtD/8uGsOpgbsIwKxus4ibj5pUEgOuZh+K
+ 2/5Yh68QoW2EWy933c+61oDgf4cgy5Zf9oXSEeXzueyp65r7quse/nt1Rm+wU1yT
+ /S++4wnJppjsRg==
+X-ME-Sender: <xms:zAqUYOOnOiRbBSl5OB9YcO0Y4aovjh6tGC8iL5ukxXeRCrA76fyiTg>
+ <xme:zAqUYM-JCQcq2ZjpnpVsZydUZKshm49oClbOBd8HWBaD3HkOEQD9OinFPj0QciK1B
+ 2MR6aM2F2jlIaeR7A>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
  cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
  rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
  dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
- hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepgeenucfrrghrrghmpe
+ hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpe
  hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
-X-ME-Proxy: <xmx:1AqUYNyxUWL3vkssN2aKr6C1w4NWi4ijMS6vzUobtCsaH6Se0wUjcg>
- <xmx:1AqUYNPOR0aPhbs12_rW4UBrnh8mhESTe0nMFBQzvCJJkG8ka3lF1w>
- <xmx:1AqUYC9mLFHQjMskumASj7jqaORsqmWfp5qx_O7C4l9zV6VhU2vw6Q>
- <xmx:1AqUYCN8ya_kW4otEza_yHf29kFghE0pN4XXQgR62DB2F1X4flPr8w>
+X-ME-Proxy: <xmx:zAqUYFT_ExVQa2U_3lG95ThdKyH5vQK1qbyb7faVKHhn4K5UYJJb2g>
+ <xmx:zAqUYOuaPG9Z859Ro4ezAJtkZmoMwnYw3vgYxGvzh0vOc1IfjRVZtg>
+ <xmx:zAqUYGfc5Ka1GtmZM3FvWqm9oXRydfPeXErhg7kjo2yGzuGzVU0q0Q>
+ <xmx:zAqUYJsOFQ0-JbHaq7kNFbpgJr7Pe7UmIX9DMhZnWL78WxJN7iRX0Q>
 Received: from Threadripper.local
  (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
  by mail.messagingengine.com (Postfix) with ESMTPA;
- Thu,  6 May 2021 11:27:12 -0400 (EDT)
+ Thu,  6 May 2021 11:27:04 -0400 (EDT)
 From: Zi Yan <zi.yan@sent.com>
 To: David Hildenbrand <david@redhat.com>,
 	Oscar Salvador <osalvador@suse.de>
-Subject: [RFC PATCH 6/7] arch: x86: no MAX_ORDER exceeds SECTION_SIZE check
- for 32bit vdso.
-Date: Thu,  6 May 2021 11:26:22 -0400
-Message-Id: <20210506152623.178731-7-zi.yan@sent.com>
+Subject: [RFC PATCH 4/7] mm: pageblock: allow set/unset migratetype for
+ partial pageblock
+Date: Thu,  6 May 2021 11:26:20 -0400
+Message-Id: <20210506152623.178731-5-zi.yan@sent.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
 References: <20210506152623.178731-1-zi.yan@sent.com>
@@ -126,48 +128,242 @@ Sender: "Linuxppc-dev"
 
 From: Zi Yan <ziy@nvidia.com>
 
-For x86_64, 32bit vdso is compiled for compatibility reason and 32bit
-SECTION_SIZE_BITS value is used during compilation. It causes
-compilation time error when MAX_ORDER is increased in the 64bit
-environment even if it is OK for 64bit SECTION_SIZE_BITS. Remove the
-check during 32bit vdso compilation. It will be checked when other
-kernel components are compiled.
+When we online subsections and pageblock size is larger than
+a subsection, we should be able to change migratetype for partial
+pageblocks. We also change the assumption that all pageblocks are in
+a whole.
 
 Signed-off-by: Zi Yan <ziy@nvidia.com>
 ---
- arch/x86/entry/vdso/Makefile | 1 +
- include/linux/mmzone.h       | 2 ++
- 2 files changed, 3 insertions(+)
+ include/linux/page-isolation.h |  8 ++++++--
+ mm/page_alloc.c                | 27 ++++++++++++++++++---------
+ mm/page_isolation.c            | 26 ++++++++++++++------------
+ 3 files changed, 38 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/entry/vdso/Makefile b/arch/x86/entry/vdso/Makefile
-index 05c4abc2fdfd..cad339136ed1 100644
---- a/arch/x86/entry/vdso/Makefile
-+++ b/arch/x86/entry/vdso/Makefile
-@@ -156,6 +156,7 @@ KBUILD_CFLAGS_32 +=3D -fno-stack-protector
- KBUILD_CFLAGS_32 +=3D $(call cc-option, -foptimize-sibling-calls)
- KBUILD_CFLAGS_32 +=3D -fno-omit-frame-pointer
- KBUILD_CFLAGS_32 +=3D -DDISABLE_BRANCH_PROFILING
-+KBUILD_CFLAGS_32 +=3D -DNO_MAX_ORDER_CHECK
+diff --git a/include/linux/page-isolation.h b/include/linux/page-isolation.h
+index 572458016331..308b540865b7 100644
+--- a/include/linux/page-isolation.h
++++ b/include/linux/page-isolation.h
+@@ -33,11 +33,15 @@ static inline bool is_migrate_isolate(int migratetype)
+ #define MEMORY_OFFLINE	0x1
+ #define REPORT_FAILURE	0x2
 =20
- ifdef CONFIG_RETPOLINE
- ifneq ($(RETPOLINE_VDSO_CFLAGS),)
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 965a0cd5eac1..fb5a0c2ab528 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1211,9 +1211,11 @@ static inline struct zoneref *first_zones_zonelist(s=
-truct zonelist *zonelist,
- #define SECTION_BLOCKFLAGS_BITS \
- 	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
+-struct page *has_unmovable_pages(struct zone *zone, struct page *page,
+-				 int migratetype, int flags);
++struct page *has_unmovable_pages(struct zone *zone, unsigned long start_pf=
+n,
++				 unsigned long end_pfn, int migratetype,
++				 int flags);
+ void set_pageblock_migratetype(struct page *page, int migratetype);
+ int move_freepages_block(struct zone *zone, struct page *page,
+ 				int migratetype, int *num_movable);
++int move_freepages(struct zone *zone,
++			  unsigned long start_pfn, unsigned long end_pfn,
++			  int migratetype, int *num_movable);
 =20
-+#ifndef NO_MAX_ORDER_CHECK
- #if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
- #error Allocator MAX_ORDER exceeds SECTION_SIZE
- #endif
-+#endif
-=20
- static inline unsigned long pfn_to_section_nr(unsigned long pfn)
+ /*
+  * Changes migrate type in [start_pfn, end_pfn) to be MIGRATE_ISOLATE.
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 72bb4a300e03..bc410f45c355 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2433,7 +2433,7 @@ static inline struct page *__rmqueue_cma_fallback(str=
+uct zone *zone,
+  * Note that start_page and end_pages are not aligned on a pageblock
+  * boundary. If alignment is required, use move_freepages_block()
+  */
+-static int move_freepages(struct zone *zone,
++int move_freepages(struct zone *zone,
+ 			  unsigned long start_pfn, unsigned long end_pfn,
+ 			  int migratetype, int *num_movable)
  {
+@@ -6328,6 +6328,7 @@ void __meminit memmap_init_range(unsigned long size, =
+int nid, unsigned long zone
+ {
+ 	unsigned long pfn, end_pfn =3D start_pfn + size;
+ 	struct page *page;
++	bool set_migratetype =3D false;
+=20
+ 	if (highest_memmap_pfn < end_pfn - 1)
+ 		highest_memmap_pfn =3D end_pfn - 1;
+@@ -6374,10 +6375,16 @@ void __meminit memmap_init_range(unsigned long size=
+, int nid, unsigned long zone
+ 		 */
+ 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
+ 			set_pageblock_migratetype(page, migratetype);
++			set_migratetype =3D true;
+ 			cond_resched();
+ 		}
+ 		pfn++;
+ 	}
++	/* in case the range is smaller than a pageblock */
++	if (!set_migratetype && context =3D=3D MEMINIT_HOTPLUG) {
++		page =3D pfn_to_page(start_pfn);
++		set_pageblock_migratetype(page, migratetype);
++	}
+ }
+=20
+ #ifdef CONFIG_ZONE_DEVICE
+@@ -8524,12 +8531,14 @@ void *__init alloc_large_system_hash(const char *ta=
+blename,
+  * cannot get removed (e.g., via memory unplug) concurrently.
+  *
+  */
+-struct page *has_unmovable_pages(struct zone *zone, struct page *page,
+-				 int migratetype, int flags)
++struct page *has_unmovable_pages(struct zone *zone, unsigned long start_pf=
+n,
++				 unsigned long end_pfn, int migratetype,
++				 int flags)
+ {
+ 	unsigned long iter =3D 0;
+-	unsigned long pfn =3D page_to_pfn(page);
+-	unsigned long offset =3D pfn % pageblock_nr_pages;
++	unsigned long pfn =3D start_pfn;
++	struct page *page =3D pfn_to_page(pfn);
++
+=20
+ 	if (is_migrate_cma_page(page)) {
+ 		/*
+@@ -8543,11 +8552,11 @@ struct page *has_unmovable_pages(struct zone *zone,=
+ struct page *page,
+ 		return page;
+ 	}
+=20
+-	for (; iter < pageblock_nr_pages - offset; iter++) {
+-		if (!pfn_valid_within(pfn + iter))
++	for (pfn =3D start_pfn; pfn < end_pfn; pfn++) {
++		if (!pfn_valid_within(pfn))
+ 			continue;
+=20
+-		page =3D pfn_to_page(pfn + iter);
++		page =3D pfn_to_page(pfn);
+=20
+ 		/*
+ 		 * Both, bootmem allocations and memory holes are marked
+@@ -8596,7 +8605,7 @@ struct page *has_unmovable_pages(struct zone *zone, s=
+truct page *page,
+ 		 */
+ 		if (!page_ref_count(page)) {
+ 			if (PageBuddy(page))
+-				iter +=3D (1 << buddy_order(page)) - 1;
++				pfn +=3D (1 << buddy_order(page)) - 1;
+ 			continue;
+ 		}
+=20
+diff --git a/mm/page_isolation.c b/mm/page_isolation.c
+index bddf788f45bf..c1b9b8848382 100644
+--- a/mm/page_isolation.c
++++ b/mm/page_isolation.c
+@@ -15,8 +15,10 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/page_isolation.h>
+=20
+-static int set_migratetype_isolate(struct page *page, int migratetype, int=
+ isol_flags)
++static int set_migratetype_isolate(unsigned long start_pfn, unsigned long =
+end_pfn,
++				   int migratetype, int isol_flags)
+ {
++	struct page *page =3D pfn_to_page(start_pfn);
+ 	struct zone *zone =3D page_zone(page);
+ 	struct page *unmovable;
+ 	unsigned long flags;
+@@ -37,15 +39,14 @@ static int set_migratetype_isolate(struct page *page, i=
+nt migratetype, int isol_
+ 	 * FIXME: Now, memory hotplug doesn't call shrink_slab() by itself.
+ 	 * We just check MOVABLE pages.
+ 	 */
+-	unmovable =3D has_unmovable_pages(zone, page, migratetype, isol_flags);
++	unmovable =3D has_unmovable_pages(zone, start_pfn, end_pfn, migratetype, =
+isol_flags);
+ 	if (!unmovable) {
+ 		unsigned long nr_pages;
+ 		int mt =3D get_pageblock_migratetype(page);
+=20
+ 		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+ 		zone->nr_isolate_pageblock++;
+-		nr_pages =3D move_freepages_block(zone, page, MIGRATE_ISOLATE,
+-									NULL);
++		nr_pages =3D move_freepages(zone, start_pfn, end_pfn, MIGRATE_ISOLATE, N=
+ULL);
+=20
+ 		__mod_zone_freepage_state(zone, -nr_pages, mt);
+ 		spin_unlock_irqrestore(&zone->lock, flags);
+@@ -64,7 +65,8 @@ static int set_migratetype_isolate(struct page *page, int=
+ migratetype, int isol_
+ 	return -EBUSY;
+ }
+=20
+-static void unset_migratetype_isolate(struct page *page, unsigned migratet=
+ype)
++static void unset_migratetype_isolate(unsigned long start_pfn, unsigned lo=
+ng end_pfn,
++				unsigned migratetype)
+ {
+ 	struct zone *zone;
+ 	unsigned long flags, nr_pages;
+@@ -72,6 +74,7 @@ static void unset_migratetype_isolate(struct page *page, =
+unsigned migratetype)
+ 	unsigned int order;
+ 	unsigned long pfn, buddy_pfn;
+ 	struct page *buddy;
++	struct page *page =3D pfn_to_page(start_pfn);
+=20
+ 	zone =3D page_zone(page);
+ 	spin_lock_irqsave(&zone->lock, flags);
+@@ -112,7 +115,7 @@ static void unset_migratetype_isolate(struct page *page=
+, unsigned migratetype)
+ 	 * allocation.
+ 	 */
+ 	if (!isolated_page) {
+-		nr_pages =3D move_freepages_block(zone, page, migratetype, NULL);
++		nr_pages =3D move_freepages(zone, start_pfn, end_pfn, migratetype, NULL);
+ 		__mod_zone_freepage_state(zone, nr_pages, migratetype);
+ 	}
+ 	set_pageblock_migratetype(page, migratetype);
+@@ -195,7 +198,8 @@ int start_isolate_page_range(unsigned long start_pfn, u=
+nsigned long end_pfn,
+ 	     pfn +=3D pageblock_nr_pages) {
+ 		page =3D __first_valid_page(pfn, pageblock_nr_pages);
+ 		if (page) {
+-			if (set_migratetype_isolate(page, migratetype, flags)) {
++			if (set_migratetype_isolate(pfn, min(end_pfn, pfn + pageblock_nr_pages),
++				migratetype, flags)) {
+ 				undo_pfn =3D pfn;
+ 				goto undo;
+ 			}
+@@ -209,7 +213,8 @@ int start_isolate_page_range(unsigned long start_pfn, u=
+nsigned long end_pfn,
+ 		struct page *page =3D pfn_to_online_page(pfn);
+ 		if (!page)
+ 			continue;
+-		unset_migratetype_isolate(page, migratetype);
++		unset_migratetype_isolate(pfn, min(pfn + pageblock_nr_pages, undo_pfn),
++					migratetype);
+ 	}
+=20
+ 	return -EBUSY;
+@@ -224,16 +229,13 @@ void undo_isolate_page_range(unsigned long start_pfn,=
+ unsigned long end_pfn,
+ 	unsigned long pfn;
+ 	struct page *page;
+=20
+-	BUG_ON(!IS_ALIGNED(start_pfn, pageblock_nr_pages));
+-	BUG_ON(!IS_ALIGNED(end_pfn, pageblock_nr_pages));
+-
+ 	for (pfn =3D start_pfn;
+ 	     pfn < end_pfn;
+ 	     pfn +=3D pageblock_nr_pages) {
+ 		page =3D __first_valid_page(pfn, pageblock_nr_pages);
+ 		if (!page || !is_migrate_isolate_page(page))
+ 			continue;
+-		unset_migratetype_isolate(page, migratetype);
++		unset_migratetype_isolate(pfn, min(pfn + pageblock_nr_pages, end_pfn), m=
+igratetype);
+ 	}
+ }
+ /*
 --=20
 2.30.2
 
