@@ -5,25 +5,25 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64F32C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79971C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94A5C610A7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:37:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94A5C610A7
+	by mail.kernel.org (Postfix) with ESMTPS id 0FD79610A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FD79610A1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd4r6N9Yz30Qk
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:37:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd5M55pCz3bp4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:38:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=g19R6QCB;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=FjUx3ehA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=T0KbRP5g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=aOU5zsie;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=sent.com (client-ip=66.111.4.230;
@@ -31,71 +31,69 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm3 header.b=g19R6QCB; 
+ header.s=fm3 header.b=T0KbRP5g; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=FjUx3ehA; 
+ header.a=rsa-sha256 header.s=fm2 header.b=aOU5zsie; 
  dkim-atps=neutral
-X-Greylist: delayed 549 seconds by postgrey-1.36 at boromir;
- Fri, 07 May 2021 01:36:02 AEST
 Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
  [66.111.4.230])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2p6DCVz2yxj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2q1llhz3019
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:02 +1000 (AEST)
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id 98937580B93;
- Thu,  6 May 2021 11:27:08 -0400 (EDT)
+ by mailnew.nyi.internal (Postfix) with ESMTP id B4CB4580B8E;
+ Thu,  6 May 2021 11:27:00 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:08 -0400
+ by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:00 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
  :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm3; bh=FbRZXE7bST17Y
- nSdlcP8bsWaivyCC5qvTsiLA/pmPMU=; b=g19R6QCBByhaWnAudNOcOPg0FC8GF
- BYLgrbe2GpFbn8aiFMbJfkjfAP7I+idIgloc1puvSRm5QXSPjXc1FVYCRsWuxy3N
- 4+RdTjNwWmB4CDQ9BruYX948D0TJQ7ABUpYoUhhNDJmpRabw6UHFIoR/yztt4C1x
- jpAA2fru8FeUtiUKkrUzkALe/+j95KJ8I5jQTIkECmLIobzung+2zJOXPFXI4iBG
- 2gwK0c3pZYRSF4+H5QqwYqBPWxNVngm+qGjsDU7emPnuw3TXZCFsu2JQDIJN3tAa
- sUqKNHPtEjsUl+OLVjPjY46yYWmnCFI6q0K3OHn4Xh3LcGb3ffvyvUOSA==
+ :mime-version:content-transfer-encoding; s=fm3; bh=TGHkkHAkwQqHn
+ j9aDAhKOv79HjuXprQdprcBuBsFFK4=; b=T0KbRP5gtBWXhF4Ux0hC9vhmeJP1e
+ ZNWCzZqupMvaDrWGOdg+tlueoRDckCMoXMNx00tZgMUseaOgRupoRp6jCCURDsZ1
+ 8RAbp0LIk5/tEFVPEsZK1OpJJafux2NtpFDToBd6y73sFIHzsEpQpSmF8AQsqCes
+ SsC88QcjZoDWgREOtGXR8jCsNjh1KoJXzlIwZUzz9WOyyB5RaLDoz+XvHRKDRKru
+ 93xeSbjgnddbBgjvL/VYaqNZgIzT0Bfv2D600iHuRzZOpjaRuolNhCCf0QAT5u8u
+ ZA+bykD6f34SYjZRDx//O13q/cA2bLufKiIfVirsQwzs4EjFMYEToo2RQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:reply-to:subject
  :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm2; bh=FbRZXE7bST17YnSdlcP8bsWaivyCC5qvTsiLA/pmPMU=; b=FjUx3ehA
- KBXkLVqnp+CZgmPRqcpQ+a4y2H1eLHkJBnxQMiHDRcENbL7f27xoAS6B5espCQYU
- NF2xKMFW65O1OIeUY877OfVjH8emx+SzWdRNe1gDdnYe/C8nSvrjkfvw29kGE8/o
- DY/Zm2uJyCRGCzGWOrC0W26OtOhpNOA4Kw30vahuL77+MWAKa9v9Cfr2QWt1rsoJ
- 0ieOXX+7dnt17NcaXTVN0OqsKkVng1XtD/8uGsOpgbsIwKxus4ibj5pUEgOuZh+K
- 2/5Yh68QoW2EWy933c+61oDgf4cgy5Zf9oXSEeXzueyp65r7quse/nt1Rm+wU1yT
- /S++4wnJppjsRg==
-X-ME-Sender: <xms:zAqUYOOnOiRbBSl5OB9YcO0Y4aovjh6tGC8iL5ukxXeRCrA76fyiTg>
- <xme:zAqUYM-JCQcq2ZjpnpVsZydUZKshm49oClbOBd8HWBaD3HkOEQD9OinFPj0QciK1B
- 2MR6aM2F2jlIaeR7A>
+ fm2; bh=TGHkkHAkwQqHnj9aDAhKOv79HjuXprQdprcBuBsFFK4=; b=aOU5zsie
+ cl45ifwgQiRR5SSiU9wh+TWqPXXbjb9eiFmGBWLV5uAIkPUU4g0J7xPlnSAI8vvs
+ kEvhe1a7jDKAKFTehB3Sbid1SlU2LoB5HqrD302qB1fBAOAChgyew+qtHe4Vsv90
+ 6wQmMWaiweG7GTk5j9iysl84arGN/KEIHzh1ZgsmSoRBMJeZph5BtASGSkNwAeUx
+ vG5OeL3mzoyqZNQC/Xzv0AIRf/fcR/BFbHtanVij8kJz79UbRviRfKyiRbVjuAny
+ 55/axCWTO20DECgY/Lk5mijbhPBoPaTzm76gToJFvIxhqpYGCX44YCN8diMjERbQ
+ h/Ia8R0YlucCGg==
+X-ME-Sender: <xms:wwqUYILwzLjO0Z50acpaSmz55Gw1KJVA6wQSfVFeSg3nHoM0WMQrMw>
+ <xme:wwqUYIJPJYtSbjSrSo7KbWUZumvsBgDwRQfJa5-bwQITMAfvVHKTaULL9z1nowXc7
+ FZeJuLSKp5DblwbTQ>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
- rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
- dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
- hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpe
- hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
-X-ME-Proxy: <xmx:zAqUYFT_ExVQa2U_3lG95ThdKyH5vQK1qbyb7faVKHhn4K5UYJJb2g>
- <xmx:zAqUYOuaPG9Z859Ro4ezAJtkZmoMwnYw3vgYxGvzh0vOc1IfjRVZtg>
- <xmx:zAqUYGfc5Ka1GtmZM3FvWqm9oXRydfPeXErhg7kjo2yGzuGzVU0q0Q>
- <xmx:zAqUYJsOFQ0-JbHaq7kNFbpgJr7Pe7UmIX9DMhZnWL78WxJN7iRX0Q>
+ uceurghilhhouhhtmecufedttdenucdnrfhurhgthhgrshgvucdluddtmdenucfjughrpe
+ fhvffufffkofgjfhhrggfgsedtqhertdertddtnecuhfhrohhmpegkihcujggrnhcuoeii
+ ihdrhigrnhesshgvnhhtrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeeuvdeuudeuhf
+ eghfehieeuvdetvdeugfeigeevteeuieeuhedtgeduheefleenucfkphepfeehrdduieeg
+ rddvgeeirdefgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfh
+ hrohhmpeiiihdrhigrnhesshgvnhhtrdgtohhm
+X-ME-Proxy: <xmx:wwqUYIv-icO55lxLnHGJO9o5gLNKuFAugKvR8m-FwQSe1LyeoycsPg>
+ <xmx:wwqUYFavebNJhfuADveQFkv-_ZdRCSa52IYFGwEn6jyT1XSR8MAnCg>
+ <xmx:wwqUYPav4jERyhGkAtI4TOQInCbNV60-wlab09C6u1BaDPMHhCKJQKEqa6fAm1Q>
+ <xmx:xAqUYHIRT1kid10Xzw4VnbTwy49abExqucu0-mv-w_AGki1w4D0eyA>
 Received: from Threadripper.local
  (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
  by mail.messagingengine.com (Postfix) with ESMTPA;
- Thu,  6 May 2021 11:27:04 -0400 (EDT)
+ Thu,  6 May 2021 11:26:55 -0400 (EDT)
 From: Zi Yan <zi.yan@sent.com>
 To: David Hildenbrand <david@redhat.com>,
 	Oscar Salvador <osalvador@suse.de>
-Subject: [RFC PATCH 4/7] mm: pageblock: allow set/unset migratetype for
- partial pageblock
-Date: Thu,  6 May 2021 11:26:20 -0400
-Message-Id: <20210506152623.178731-5-zi.yan@sent.com>
+Subject: [RFC PATCH 2/7] mm: set pageblock_order to the max of
+ HUGETLB_PAGE_ORDER and MAX_ORDER-1
+Date: Thu,  6 May 2021 11:26:18 -0400
+Message-Id: <20210506152623.178731-3-zi.yan@sent.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
 References: <20210506152623.178731-1-zi.yan@sent.com>
@@ -128,242 +126,163 @@ Sender: "Linuxppc-dev"
 
 From: Zi Yan <ziy@nvidia.com>
 
-When we online subsections and pageblock size is larger than
-a subsection, we should be able to change migratetype for partial
-pageblocks. We also change the assumption that all pageblocks are in
-a whole.
+As MAX_ORDER can be increased to larger than hugetlb page orders,
+pageblock_order will be limited at HUGETLB_PAGE_ORDER. It is not
+ideal for anti-fragmentation for allocating pages from buddy allocator
+with MAX_ORDER > HUGETLB_PAGE_ORDER. Make pageblock_order a variable and
+set it to the max of HUGETLB_PAGE_ORDER, MAX_ORDER - 1.
+
+Remove HUGETLB_PAGE_SIZE_VARIABLE as HUGETLB_PAGE does the same thing
+now.
+
+Export pageblock_order since virtio-mem module needs it.
 
 Signed-off-by: Zi Yan <ziy@nvidia.com>
 ---
- include/linux/page-isolation.h |  8 ++++++--
- mm/page_alloc.c                | 27 ++++++++++++++++++---------
- mm/page_isolation.c            | 26 ++++++++++++++------------
- 3 files changed, 38 insertions(+), 23 deletions(-)
+ arch/ia64/Kconfig               |  1 -
+ arch/powerpc/Kconfig            |  1 -
+ include/linux/pageblock-flags.h |  9 ---------
+ mm/Kconfig                      |  7 -------
+ mm/page_alloc.c                 | 13 +++++++------
+ mm/sparse.c                     |  2 +-
+ 6 files changed, 8 insertions(+), 25 deletions(-)
 
-diff --git a/include/linux/page-isolation.h b/include/linux/page-isolation.h
-index 572458016331..308b540865b7 100644
---- a/include/linux/page-isolation.h
-+++ b/include/linux/page-isolation.h
-@@ -33,11 +33,15 @@ static inline bool is_migrate_isolate(int migratetype)
- #define MEMORY_OFFLINE	0x1
- #define REPORT_FAILURE	0x2
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 279252e3e0f7..c6a150cde668 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -34,7 +34,6 @@ config IA64
+ 	select TTY
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+-	select HUGETLB_PAGE_SIZE_VARIABLE if HUGETLB_PAGE
+ 	select VIRT_TO_BUS
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PENDING_IRQ if SMP
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8926461d25b2..9f27c131ed45 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -238,7 +238,6 @@ config PPC
+ 	select HAVE_HARDLOCKUP_DETECTOR_PERF	if PERF_EVENTS && HAVE_PERF_EVENTS_N=
+MI && !HAVE_HARDLOCKUP_DETECTOR_ARCH
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
+-	select HUGETLB_PAGE_SIZE_VARIABLE	if PPC_BOOK3S_64 && HUGETLB_PAGE
+ 	select MMU_GATHER_RCU_TABLE_FREE
+ 	select MMU_GATHER_PAGE_SIZE
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flag=
+s.h
+index fff52ad370c1..efab85e2ae1c 100644
+--- a/include/linux/pageblock-flags.h
++++ b/include/linux/pageblock-flags.h
+@@ -30,18 +30,9 @@ enum pageblock_bits {
 =20
--struct page *has_unmovable_pages(struct zone *zone, struct page *page,
--				 int migratetype, int flags);
-+struct page *has_unmovable_pages(struct zone *zone, unsigned long start_pf=
-n,
-+				 unsigned long end_pfn, int migratetype,
-+				 int flags);
- void set_pageblock_migratetype(struct page *page, int migratetype);
- int move_freepages_block(struct zone *zone, struct page *page,
- 				int migratetype, int *num_movable);
-+int move_freepages(struct zone *zone,
-+			  unsigned long start_pfn, unsigned long end_pfn,
-+			  int migratetype, int *num_movable);
+ #ifdef CONFIG_HUGETLB_PAGE
 =20
- /*
-  * Changes migrate type in [start_pfn, end_pfn) to be MIGRATE_ISOLATE.
+-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+-
+ /* Huge page sizes are variable */
+ extern unsigned int pageblock_order;
+=20
+-#else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+-
+-/* Huge pages are a constant size */
+-#define pageblock_order		HUGETLB_PAGE_ORDER
+-
+-#endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+-
+ #else /* CONFIG_HUGETLB_PAGE */
+=20
+ /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
+diff --git a/mm/Kconfig b/mm/Kconfig
+index a8a367c30053..3466c3d09295 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -284,13 +284,6 @@ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+ config ARCH_ENABLE_THP_MIGRATION
+ 	bool
+=20
+-config HUGETLB_PAGE_SIZE_VARIABLE
+-	def_bool n
+-	help
+-	  Allows the pageblock_order value to be dynamic instead of just standard
+-	  HUGETLB_PAGE_ORDER when there are multiple HugeTLB page sizes available
+-	  on a platform.
+-
+ config CONTIG_ALLOC
+ 	def_bool (MEMORY_ISOLATION && COMPACTION) || CMA
+=20
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 72bb4a300e03..bc410f45c355 100644
+index a2fe714aed93..72bb4a300e03 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -2433,7 +2433,7 @@ static inline struct page *__rmqueue_cma_fallback(str=
-uct zone *zone,
-  * Note that start_page and end_pages are not aligned on a pageblock
-  * boundary. If alignment is required, use move_freepages_block()
-  */
--static int move_freepages(struct zone *zone,
-+int move_freepages(struct zone *zone,
- 			  unsigned long start_pfn, unsigned long end_pfn,
- 			  int migratetype, int *num_movable)
- {
-@@ -6328,6 +6328,7 @@ void __meminit memmap_init_range(unsigned long size, =
-int nid, unsigned long zone
- {
- 	unsigned long pfn, end_pfn =3D start_pfn + size;
- 	struct page *page;
-+	bool set_migratetype =3D false;
-=20
- 	if (highest_memmap_pfn < end_pfn - 1)
- 		highest_memmap_pfn =3D end_pfn - 1;
-@@ -6374,10 +6375,16 @@ void __meminit memmap_init_range(unsigned long size=
-, int nid, unsigned long zone
- 		 */
- 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
- 			set_pageblock_migratetype(page, migratetype);
-+			set_migratetype =3D true;
- 			cond_resched();
- 		}
- 		pfn++;
- 	}
-+	/* in case the range is smaller than a pageblock */
-+	if (!set_migratetype && context =3D=3D MEMINIT_HOTPLUG) {
-+		page =3D pfn_to_page(start_pfn);
-+		set_pageblock_migratetype(page, migratetype);
-+	}
+@@ -256,8 +256,9 @@ bool pm_suspended_storage(void)
  }
+ #endif /* CONFIG_PM_SLEEP */
 =20
- #ifdef CONFIG_ZONE_DEVICE
-@@ -8524,12 +8531,14 @@ void *__init alloc_large_system_hash(const char *ta=
-blename,
-  * cannot get removed (e.g., via memory unplug) concurrently.
-  *
-  */
--struct page *has_unmovable_pages(struct zone *zone, struct page *page,
--				 int migratetype, int flags)
-+struct page *has_unmovable_pages(struct zone *zone, unsigned long start_pf=
-n,
-+				 unsigned long end_pfn, int migratetype,
-+				 int flags)
- {
- 	unsigned long iter =3D 0;
--	unsigned long pfn =3D page_to_pfn(page);
--	unsigned long offset =3D pfn % pageblock_nr_pages;
-+	unsigned long pfn =3D start_pfn;
-+	struct page *page =3D pfn_to_page(pfn);
-+
+-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
++#ifdef CONFIG_HUGETLB_PAGE
+ unsigned int pageblock_order __read_mostly;
++EXPORT_SYMBOL_GPL(pageblock_order);
+ #endif
 =20
- 	if (is_migrate_cma_page(page)) {
- 		/*
-@@ -8543,11 +8552,11 @@ struct page *has_unmovable_pages(struct zone *zone,=
- struct page *page,
- 		return page;
- 	}
+ static void __free_pages_ok(struct page *page, unsigned int order,
+@@ -7057,7 +7058,7 @@ static void __ref setup_usemap(struct zone *zone)
+ static inline void setup_usemap(struct zone *zone) {}
+ #endif /* CONFIG_SPARSEMEM */
 =20
--	for (; iter < pageblock_nr_pages - offset; iter++) {
--		if (!pfn_valid_within(pfn + iter))
-+	for (pfn =3D start_pfn; pfn < end_pfn; pfn++) {
-+		if (!pfn_valid_within(pfn))
- 			continue;
+-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
++#ifdef CONFIG_HUGETLB_PAGE
 =20
--		page =3D pfn_to_page(pfn + iter);
-+		page =3D pfn_to_page(pfn);
+ /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
+ void __init set_pageblock_order(void)
+@@ -7068,7 +7069,7 @@ void __init set_pageblock_order(void)
+ 	if (pageblock_order)
+ 		return;
 =20
- 		/*
- 		 * Both, bootmem allocations and memory holes are marked
-@@ -8596,7 +8605,7 @@ struct page *has_unmovable_pages(struct zone *zone, s=
-truct page *page,
- 		 */
- 		if (!page_ref_count(page)) {
- 			if (PageBuddy(page))
--				iter +=3D (1 << buddy_order(page)) - 1;
-+				pfn +=3D (1 << buddy_order(page)) - 1;
- 			continue;
- 		}
-=20
-diff --git a/mm/page_isolation.c b/mm/page_isolation.c
-index bddf788f45bf..c1b9b8848382 100644
---- a/mm/page_isolation.c
-+++ b/mm/page_isolation.c
-@@ -15,8 +15,10 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/page_isolation.h>
-=20
--static int set_migratetype_isolate(struct page *page, int migratetype, int=
- isol_flags)
-+static int set_migratetype_isolate(unsigned long start_pfn, unsigned long =
-end_pfn,
-+				   int migratetype, int isol_flags)
- {
-+	struct page *page =3D pfn_to_page(start_pfn);
- 	struct zone *zone =3D page_zone(page);
- 	struct page *unmovable;
- 	unsigned long flags;
-@@ -37,15 +39,14 @@ static int set_migratetype_isolate(struct page *page, i=
-nt migratetype, int isol_
- 	 * FIXME: Now, memory hotplug doesn't call shrink_slab() by itself.
- 	 * We just check MOVABLE pages.
+-	if (HPAGE_SHIFT > PAGE_SHIFT)
++	if ((HPAGE_SHIFT > PAGE_SHIFT) && (HUGETLB_PAGE_ORDER > (MAX_ORDER - 1)))
+ 		order =3D HUGETLB_PAGE_ORDER;
+ 	else
+ 		order =3D MAX_ORDER - 1;
+@@ -7080,10 +7081,10 @@ void __init set_pageblock_order(void)
  	 */
--	unmovable =3D has_unmovable_pages(zone, page, migratetype, isol_flags);
-+	unmovable =3D has_unmovable_pages(zone, start_pfn, end_pfn, migratetype, =
-isol_flags);
- 	if (!unmovable) {
- 		unsigned long nr_pages;
- 		int mt =3D get_pageblock_migratetype(page);
-=20
- 		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
- 		zone->nr_isolate_pageblock++;
--		nr_pages =3D move_freepages_block(zone, page, MIGRATE_ISOLATE,
--									NULL);
-+		nr_pages =3D move_freepages(zone, start_pfn, end_pfn, MIGRATE_ISOLATE, N=
-ULL);
-=20
- 		__mod_zone_freepage_state(zone, -nr_pages, mt);
- 		spin_unlock_irqrestore(&zone->lock, flags);
-@@ -64,7 +65,8 @@ static int set_migratetype_isolate(struct page *page, int=
- migratetype, int isol_
- 	return -EBUSY;
+ 	pageblock_order =3D order;
  }
+-#else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
++#else /* CONFIG_HUGETLB_PAGE */
 =20
--static void unset_migratetype_isolate(struct page *page, unsigned migratet=
-ype)
-+static void unset_migratetype_isolate(unsigned long start_pfn, unsigned lo=
-ng end_pfn,
-+				unsigned migratetype)
- {
- 	struct zone *zone;
- 	unsigned long flags, nr_pages;
-@@ -72,6 +74,7 @@ static void unset_migratetype_isolate(struct page *page, =
-unsigned migratetype)
- 	unsigned int order;
- 	unsigned long pfn, buddy_pfn;
- 	struct page *buddy;
-+	struct page *page =3D pfn_to_page(start_pfn);
-=20
- 	zone =3D page_zone(page);
- 	spin_lock_irqsave(&zone->lock, flags);
-@@ -112,7 +115,7 @@ static void unset_migratetype_isolate(struct page *page=
-, unsigned migratetype)
- 	 * allocation.
- 	 */
- 	if (!isolated_page) {
--		nr_pages =3D move_freepages_block(zone, page, migratetype, NULL);
-+		nr_pages =3D move_freepages(zone, start_pfn, end_pfn, migratetype, NULL);
- 		__mod_zone_freepage_state(zone, nr_pages, migratetype);
- 	}
- 	set_pageblock_migratetype(page, migratetype);
-@@ -195,7 +198,8 @@ int start_isolate_page_range(unsigned long start_pfn, u=
-nsigned long end_pfn,
- 	     pfn +=3D pageblock_nr_pages) {
- 		page =3D __first_valid_page(pfn, pageblock_nr_pages);
- 		if (page) {
--			if (set_migratetype_isolate(page, migratetype, flags)) {
-+			if (set_migratetype_isolate(pfn, min(end_pfn, pfn + pageblock_nr_pages),
-+				migratetype, flags)) {
- 				undo_pfn =3D pfn;
- 				goto undo;
- 			}
-@@ -209,7 +213,8 @@ int start_isolate_page_range(unsigned long start_pfn, u=
-nsigned long end_pfn,
- 		struct page *page =3D pfn_to_online_page(pfn);
- 		if (!page)
- 			continue;
--		unset_migratetype_isolate(page, migratetype);
-+		unset_migratetype_isolate(pfn, min(pfn + pageblock_nr_pages, undo_pfn),
-+					migratetype);
- 	}
-=20
- 	return -EBUSY;
-@@ -224,16 +229,13 @@ void undo_isolate_page_range(unsigned long start_pfn,=
- unsigned long end_pfn,
- 	unsigned long pfn;
- 	struct page *page;
-=20
--	BUG_ON(!IS_ALIGNED(start_pfn, pageblock_nr_pages));
--	BUG_ON(!IS_ALIGNED(end_pfn, pageblock_nr_pages));
--
- 	for (pfn =3D start_pfn;
- 	     pfn < end_pfn;
- 	     pfn +=3D pageblock_nr_pages) {
- 		page =3D __first_valid_page(pfn, pageblock_nr_pages);
- 		if (!page || !is_migrate_isolate_page(page))
- 			continue;
--		unset_migratetype_isolate(page, migratetype);
-+		unset_migratetype_isolate(pfn, min(pfn + pageblock_nr_pages, end_pfn), m=
-igratetype);
- 	}
- }
  /*
+- * When CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is not set, set_pageblock_order()
++ * When CONFIG_HUGETLB_PAGE is not set, set_pageblock_order()
+  * is unused as pageblock_order is set at compile-time. See
+  * include/linux/pageblock-flags.h for the values of pageblock_order based=
+ on
+  * the kernel config
+@@ -7092,7 +7093,7 @@ void __init set_pageblock_order(void)
+ {
+ }
+=20
+-#endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
++#endif /* CONFIG_HUGETLB_PAGE */
+=20
+ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
+ 						unsigned long present_pages)
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 7637208b8874..1c2957807882 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -583,7 +583,7 @@ void __init sparse_init(void)
+ 	pnum_begin =3D first_present_section_nr();
+ 	nid_begin =3D sparse_early_nid(__nr_to_section(pnum_begin));
+=20
+-	/* Setup pageblock_order for HUGETLB_PAGE_SIZE_VARIABLE */
++	/* Setup pageblock_order for HUGETLB_PAGE */
+ 	set_pageblock_order();
+=20
+ 	for_each_present_section_nr(pnum_begin + 1, pnum_end) {
 --=20
 2.30.2
 
