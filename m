@@ -5,25 +5,25 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79971C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 628E7C43460
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FD79610A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FD79610A1
+	by mail.kernel.org (Postfix) with ESMTPS id C9617610C8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 15:38:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9617610C8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd5M55pCz3bp4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:38:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fbd5s3Kj1z30KL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 01:38:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=T0KbRP5g;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=aOU5zsie;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm3 header.b=vtLuAgKH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=A/fF9xZE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=sent.com (client-ip=66.111.4.230;
@@ -31,69 +31,69 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm3 header.b=T0KbRP5g; 
+ header.s=fm3 header.b=vtLuAgKH; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=aOU5zsie; 
+ header.a=rsa-sha256 header.s=fm2 header.b=A/fF9xZE; 
  dkim-atps=neutral
 Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
  [66.111.4.230])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2q1llhz3019
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fbd2t4KZSz3021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 01:36:06 +1000 (AEST)
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id B4CB4580B8E;
- Thu,  6 May 2021 11:27:00 -0400 (EDT)
+ by mailnew.nyi.internal (Postfix) with ESMTP id 71F10580B96;
+ Thu,  6 May 2021 11:27:12 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:00 -0400
+ by compute4.internal (MEProxy); Thu, 06 May 2021 11:27:12 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
  :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm3; bh=TGHkkHAkwQqHn
- j9aDAhKOv79HjuXprQdprcBuBsFFK4=; b=T0KbRP5gtBWXhF4Ux0hC9vhmeJP1e
- ZNWCzZqupMvaDrWGOdg+tlueoRDckCMoXMNx00tZgMUseaOgRupoRp6jCCURDsZ1
- 8RAbp0LIk5/tEFVPEsZK1OpJJafux2NtpFDToBd6y73sFIHzsEpQpSmF8AQsqCes
- SsC88QcjZoDWgREOtGXR8jCsNjh1KoJXzlIwZUzz9WOyyB5RaLDoz+XvHRKDRKru
- 93xeSbjgnddbBgjvL/VYaqNZgIzT0Bfv2D600iHuRzZOpjaRuolNhCCf0QAT5u8u
- ZA+bykD6f34SYjZRDx//O13q/cA2bLufKiIfVirsQwzs4EjFMYEToo2RQ==
+ :mime-version:content-transfer-encoding; s=fm3; bh=qMAcSPfa3+cns
+ kyYYIug3mYJD6YPqlrp2UQ4EuPYWbE=; b=vtLuAgKHZkDwSV7IEZxfPQeS0i3od
+ uHpKdWO1xcEauvSAdrI0PKRkEwsYOnT4bXXbgcJ7k+PfuFslrZeyYZS735rskONI
+ iamYJyO1wXcaPT7TJQ03m0Uc3uGQ7qFAOQHQKoT42rWc1TzStBMxZEqD2gnhAm7i
+ 7z6qcArs4OOnyZCf4w+Eq7DZtkzw/BjhgNu2sLVFuYHp0PcxhOre0uFmxb6zTUoi
+ E8FBovJ39w2c32lrc7+rIROM1vd2Rvzl5CLItfaWfphh145TnW9ZyGxcQhhLvGVG
+ TGgIHJwei7XBBlErWT+PQ59ZJV1I468hx8tF2+reH07GsMVBX6l1mju3A==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:reply-to:subject
  :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm2; bh=TGHkkHAkwQqHnj9aDAhKOv79HjuXprQdprcBuBsFFK4=; b=aOU5zsie
- cl45ifwgQiRR5SSiU9wh+TWqPXXbjb9eiFmGBWLV5uAIkPUU4g0J7xPlnSAI8vvs
- kEvhe1a7jDKAKFTehB3Sbid1SlU2LoB5HqrD302qB1fBAOAChgyew+qtHe4Vsv90
- 6wQmMWaiweG7GTk5j9iysl84arGN/KEIHzh1ZgsmSoRBMJeZph5BtASGSkNwAeUx
- vG5OeL3mzoyqZNQC/Xzv0AIRf/fcR/BFbHtanVij8kJz79UbRviRfKyiRbVjuAny
- 55/axCWTO20DECgY/Lk5mijbhPBoPaTzm76gToJFvIxhqpYGCX44YCN8diMjERbQ
- h/Ia8R0YlucCGg==
-X-ME-Sender: <xms:wwqUYILwzLjO0Z50acpaSmz55Gw1KJVA6wQSfVFeSg3nHoM0WMQrMw>
- <xme:wwqUYIJPJYtSbjSrSo7KbWUZumvsBgDwRQfJa5-bwQITMAfvVHKTaULL9z1nowXc7
- FZeJuLSKp5DblwbTQ>
+ fm2; bh=qMAcSPfa3+cnskyYYIug3mYJD6YPqlrp2UQ4EuPYWbE=; b=A/fF9xZE
+ aVi6cOoeWYwnn/g0KjDniMYoWv/W0ohiBN2QsYTn6BHlLnDf2TDA8t7uH5T7/N7p
+ f1T4CifW3tWAl0rxH0XcTRRLmYVK31P/vzemd6wPDJW0wMnCkdEntCf33G3781H1
+ D96lT9GosU4olO9VFDPbOgt2Yg0w4OgmJc72YlvF8E7+e/8jJgMJ7sp8pqsnYs6n
+ w+INleKbjrPR9bGljr/C0b53Q2bs4MxAVIPEqstzpY4SwNOzZuDloMcGEDcs6XNr
+ CKImonVyY0GNaPlhwbeNoZSn1RT2cayY8mVAYcMGqjcGZGLfUiGHcHE3H6LYCmnG
+ k0FIJQRqYNwB4Q==
+X-ME-Sender: <xms:0AqUYN4LVz0rqTnTZKlVfdieypH_vVbMKVcUqB014qb712HwxY8tIA>
+ <xme:0AqUYK6dVw-M6RW3COGAknrn55C8tZF6W1qJcLB4EySho-uQAlOmDBm5oFD-4BDnu
+ myJMPY1708iWvCkgw>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdegtddgkeelucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucdnrfhurhgthhgrshgvucdluddtmdenucfjughrpe
- fhvffufffkofgjfhhrggfgsedtqhertdertddtnecuhfhrohhmpegkihcujggrnhcuoeii
- ihdrhigrnhesshgvnhhtrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeeuvdeuudeuhf
- eghfehieeuvdetvdeugfeigeevteeuieeuhedtgeduheefleenucfkphepfeehrdduieeg
- rddvgeeirdefgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfh
- hrohhmpeiiihdrhigrnhesshgvnhhtrdgtohhm
-X-ME-Proxy: <xmx:wwqUYIv-icO55lxLnHGJO9o5gLNKuFAugKvR8m-FwQSe1LyeoycsPg>
- <xmx:wwqUYFavebNJhfuADveQFkv-_ZdRCSa52IYFGwEn6jyT1XSR8MAnCg>
- <xmx:wwqUYPav4jERyhGkAtI4TOQInCbNV60-wlab09C6u1BaDPMHhCKJQKEqa6fAm1Q>
- <xmx:xAqUYHIRT1kid10Xzw4VnbTwy49abExqucu0-mv-w_AGki1w4D0eyA>
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
+ rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
+ dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecukfhppeef
+ hedrudeigedrvdegiedrfeegnecuvehluhhsthgvrhfuihiivgepfeenucfrrghrrghmpe
+ hmrghilhhfrhhomhepiihirdihrghnsehsvghnthdrtghomh
+X-ME-Proxy: <xmx:0AqUYEfPwHcyBp3dweyqOsoINPhZ2PziO_0IGA8SsuckhEa-u3fgrg>
+ <xmx:0AqUYGJ3qSP2fAyg6y5A4oOGSFMGtnL3ygHtsYpRjvKJ9hrU2aX2gQ>
+ <xmx:0AqUYBKlBbfBEsgDk3s-PyOLIw_3qgVSaLTEU5ynU8CrG78psQ1Tmw>
+ <xmx:0AqUYK5EJFa6lfrJhm18kbdzw_ur-QEIu6zM3s5-5hlbws6nsEbAuA>
 Received: from Threadripper.local
  (ec2-35-164-246-34.us-west-2.compute.amazonaws.com [35.164.246.34])
  by mail.messagingengine.com (Postfix) with ESMTPA;
- Thu,  6 May 2021 11:26:55 -0400 (EDT)
+ Thu,  6 May 2021 11:27:08 -0400 (EDT)
 From: Zi Yan <zi.yan@sent.com>
 To: David Hildenbrand <david@redhat.com>,
 	Oscar Salvador <osalvador@suse.de>
-Subject: [RFC PATCH 2/7] mm: set pageblock_order to the max of
- HUGETLB_PAGE_ORDER and MAX_ORDER-1
-Date: Thu,  6 May 2021 11:26:18 -0400
-Message-Id: <20210506152623.178731-3-zi.yan@sent.com>
+Subject: [RFC PATCH 5/7] mm: memory_hotplug,
+ sparse: enable memory hotplug/hotremove subsections
+Date: Thu,  6 May 2021 11:26:21 -0400
+Message-Id: <20210506152623.178731-6-zi.yan@sent.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210506152623.178731-1-zi.yan@sent.com>
 References: <20210506152623.178731-1-zi.yan@sent.com>
@@ -126,163 +126,149 @@ Sender: "Linuxppc-dev"
 
 From: Zi Yan <ziy@nvidia.com>
 
-As MAX_ORDER can be increased to larger than hugetlb page orders,
-pageblock_order will be limited at HUGETLB_PAGE_ORDER. It is not
-ideal for anti-fragmentation for allocating pages from buddy allocator
-with MAX_ORDER > HUGETLB_PAGE_ORDER. Make pageblock_order a variable and
-set it to the max of HUGETLB_PAGE_ORDER, MAX_ORDER - 1.
-
-Remove HUGETLB_PAGE_SIZE_VARIABLE as HUGETLB_PAGE does the same thing
-now.
-
-Export pageblock_order since virtio-mem module needs it.
+Remove the section size alignment checks for memory hotplug/hotremove,
+so that we can online/offline subsection memory.
 
 Signed-off-by: Zi Yan <ziy@nvidia.com>
 ---
- arch/ia64/Kconfig               |  1 -
- arch/powerpc/Kconfig            |  1 -
- include/linux/pageblock-flags.h |  9 ---------
- mm/Kconfig                      |  7 -------
- mm/page_alloc.c                 | 13 +++++++------
- mm/sparse.c                     |  2 +-
- 6 files changed, 8 insertions(+), 25 deletions(-)
+ mm/memory_hotplug.c | 16 +++++++++-------
+ mm/page_isolation.c |  4 ----
+ mm/sparse.c         | 17 ++++++++++++++---
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 279252e3e0f7..c6a150cde668 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -34,7 +34,6 @@ config IA64
- 	select TTY
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_VIRT_CPU_ACCOUNTING
--	select HUGETLB_PAGE_SIZE_VARIABLE if HUGETLB_PAGE
- 	select VIRT_TO_BUS
- 	select GENERIC_IRQ_PROBE
- 	select GENERIC_PENDING_IRQ if SMP
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8926461d25b2..9f27c131ed45 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -238,7 +238,6 @@ config PPC
- 	select HAVE_HARDLOCKUP_DETECTOR_PERF	if PERF_EVENTS && HAVE_PERF_EVENTS_N=
-MI && !HAVE_HARDLOCKUP_DETECTOR_ARCH
- 	select HAVE_PERF_REGS
- 	select HAVE_PERF_USER_STACK_DUMP
--	select HUGETLB_PAGE_SIZE_VARIABLE	if PPC_BOOK3S_64 && HUGETLB_PAGE
- 	select MMU_GATHER_RCU_TABLE_FREE
- 	select MMU_GATHER_PAGE_SIZE
- 	select HAVE_REGS_AND_STACK_ACCESS_API
-diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flag=
-s.h
-index fff52ad370c1..efab85e2ae1c 100644
---- a/include/linux/pageblock-flags.h
-+++ b/include/linux/pageblock-flags.h
-@@ -30,18 +30,9 @@ enum pageblock_bits {
-=20
- #ifdef CONFIG_HUGETLB_PAGE
-=20
--#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
--
- /* Huge page sizes are variable */
- extern unsigned int pageblock_order;
-=20
--#else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
--
--/* Huge pages are a constant size */
--#define pageblock_order		HUGETLB_PAGE_ORDER
--
--#endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
--
- #else /* CONFIG_HUGETLB_PAGE */
-=20
- /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
-diff --git a/mm/Kconfig b/mm/Kconfig
-index a8a367c30053..3466c3d09295 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -284,13 +284,6 @@ config ARCH_ENABLE_HUGEPAGE_MIGRATION
- config ARCH_ENABLE_THP_MIGRATION
- 	bool
-=20
--config HUGETLB_PAGE_SIZE_VARIABLE
--	def_bool n
--	help
--	  Allows the pageblock_order value to be dynamic instead of just standard
--	  HUGETLB_PAGE_ORDER when there are multiple HugeTLB page sizes available
--	  on a platform.
--
- config CONTIG_ALLOC
- 	def_bool (MEMORY_ISOLATION && COMPACTION) || CMA
-=20
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a2fe714aed93..72bb4a300e03 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -256,8 +256,9 @@ bool pm_suspended_storage(void)
- }
- #endif /* CONFIG_PM_SLEEP */
-=20
--#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-+#ifdef CONFIG_HUGETLB_PAGE
- unsigned int pageblock_order __read_mostly;
-+EXPORT_SYMBOL_GPL(pageblock_order);
- #endif
-=20
- static void __free_pages_ok(struct page *page, unsigned int order,
-@@ -7057,7 +7058,7 @@ static void __ref setup_usemap(struct zone *zone)
- static inline void setup_usemap(struct zone *zone) {}
- #endif /* CONFIG_SPARSEMEM */
-=20
--#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-+#ifdef CONFIG_HUGETLB_PAGE
-=20
- /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
- void __init set_pageblock_order(void)
-@@ -7068,7 +7069,7 @@ void __init set_pageblock_order(void)
- 	if (pageblock_order)
- 		return;
-=20
--	if (HPAGE_SHIFT > PAGE_SHIFT)
-+	if ((HPAGE_SHIFT > PAGE_SHIFT) && (HUGETLB_PAGE_ORDER > (MAX_ORDER - 1)))
- 		order =3D HUGETLB_PAGE_ORDER;
- 	else
- 		order =3D MAX_ORDER - 1;
-@@ -7080,10 +7081,10 @@ void __init set_pageblock_order(void)
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 6e93b0ecc5cb..5384bb62ac10 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -661,12 +661,15 @@ static void online_pages_range(unsigned long start_pf=
+n, unsigned long nr_pages)
+ 	 * When using memmap_on_memory, the range might not be aligned to
+ 	 * MAX_ORDER_NR_PAGES - 1, but pageblock aligned. __ffs() will detect
+ 	 * this and the first chunk to online will be pageblock_nr_pages.
++	 * When onlining subsections, the range might be smaller than MAX_ORDER
++	 * - 1, use __ffs(nr_pages) to get the right size.
  	 */
- 	pageblock_order =3D order;
- }
--#else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-+#else /* CONFIG_HUGETLB_PAGE */
+ 	for (pfn =3D start_pfn; pfn < end_pfn;) {
+-		int order =3D min(MAX_ORDER - 1UL, __ffs(pfn));
++		int order =3D min3(MAX_ORDER - 1UL, __ffs(pfn), __ffs(nr_pages));
 =20
- /*
-- * When CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is not set, set_pageblock_order()
-+ * When CONFIG_HUGETLB_PAGE is not set, set_pageblock_order()
-  * is unused as pageblock_order is set at compile-time. See
-  * include/linux/pageblock-flags.h for the values of pageblock_order based=
- on
-  * the kernel config
-@@ -7092,7 +7093,7 @@ void __init set_pageblock_order(void)
- {
- }
+ 		(*online_page_callback)(pfn_to_page(pfn), order);
+ 		pfn +=3D (1UL << order);
++		nr_pages -=3D (1UL << order);
+ 	}
 =20
--#endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-+#endif /* CONFIG_HUGETLB_PAGE */
+ 	/* mark all involved sections as online */
+@@ -912,16 +915,16 @@ int __ref online_pages(unsigned long pfn, unsigned lo=
+ng nr_pages, struct zone *z
+ 	struct memory_notify arg;
 =20
- static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
- 						unsigned long present_pages)
+ 	/*
+-	 * {on,off}lining is constrained to full memory sections (or more
++	 * {on,off}lining is constrained to memory subsections (or more
+ 	 * precisly to memory blocks from the user space POV).
+ 	 * memmap_on_memory is an exception because it reserves initial part
+ 	 * of the physical memory space for vmemmaps. That space is pageblock
+ 	 * aligned.
+ 	 */
+ 	if (WARN_ON_ONCE(!nr_pages ||
+-			 !IS_ALIGNED(pfn, pageblock_nr_pages) ||
+-			 !IS_ALIGNED(pfn + nr_pages, PAGES_PER_SECTION)))
++			 !IS_ALIGNED(pfn + nr_pages, PAGES_PER_SUBSECTION))) {
+ 		return -EINVAL;
++	}
+=20
+ 	mem_hotplug_begin();
+=20
+@@ -1702,15 +1705,14 @@ int __ref offline_pages(unsigned long start_pfn, un=
+signed long nr_pages)
+ 	char *reason;
+=20
+ 	/*
+-	 * {on,off}lining is constrained to full memory sections (or more
++	 * {on,off}lining is constrained to memory subsections (or more
+ 	 * precisly to memory blocks from the user space POV).
+ 	 * memmap_on_memory is an exception because it reserves initial part
+ 	 * of the physical memory space for vmemmaps. That space is pageblock
+ 	 * aligned.
+ 	 */
+ 	if (WARN_ON_ONCE(!nr_pages ||
+-			 !IS_ALIGNED(start_pfn, pageblock_nr_pages) ||
+-			 !IS_ALIGNED(start_pfn + nr_pages, PAGES_PER_SECTION)))
++			 !IS_ALIGNED(start_pfn + nr_pages, PAGES_PER_SUBSECTION)))
+ 		return -EINVAL;
+=20
+ 	mem_hotplug_begin();
+diff --git a/mm/page_isolation.c b/mm/page_isolation.c
+index c1b9b8848382..7f1791faf03f 100644
+--- a/mm/page_isolation.c
++++ b/mm/page_isolation.c
+@@ -147,7 +147,6 @@ __first_valid_page(unsigned long pfn, unsigned long nr_=
+pages)
+  * be MIGRATE_ISOLATE.
+  * @start_pfn:		The lower PFN of the range to be isolated.
+  * @end_pfn:		The upper PFN of the range to be isolated.
+- *			start_pfn/end_pfn must be aligned to pageblock_order.
+  * @migratetype:	Migrate type to set in error recovery.
+  * @flags:		The following flags are allowed (they can be combined in
+  *			a bit mask)
+@@ -190,9 +189,6 @@ int start_isolate_page_range(unsigned long start_pfn, u=
+nsigned long end_pfn,
+ 	unsigned long undo_pfn;
+ 	struct page *page;
+=20
+-	BUG_ON(!IS_ALIGNED(start_pfn, pageblock_nr_pages));
+-	BUG_ON(!IS_ALIGNED(end_pfn, pageblock_nr_pages));
+-
+ 	for (pfn =3D start_pfn;
+ 	     pfn < end_pfn;
+ 	     pfn +=3D pageblock_nr_pages) {
 diff --git a/mm/sparse.c b/mm/sparse.c
-index 7637208b8874..1c2957807882 100644
+index 1c2957807882..09b5e6978ab0 100644
 --- a/mm/sparse.c
 +++ b/mm/sparse.c
-@@ -583,7 +583,7 @@ void __init sparse_init(void)
- 	pnum_begin =3D first_present_section_nr();
- 	nid_begin =3D sparse_early_nid(__nr_to_section(pnum_begin));
+@@ -251,7 +251,8 @@ void __init subsection_map_init(unsigned long pfn, unsi=
+gned long nr_pages)
+ /* Record a memory area against a node. */
+ static void __init memory_present(int nid, unsigned long start, unsigned l=
+ong end)
+ {
+-	unsigned long pfn;
++	unsigned long pfn, nr_pages;
++	unsigned long section, end_sec, start_sec;
 =20
--	/* Setup pageblock_order for HUGETLB_PAGE_SIZE_VARIABLE */
-+	/* Setup pageblock_order for HUGETLB_PAGE */
- 	set_pageblock_order();
+ #ifdef CONFIG_SPARSEMEM_EXTREME
+ 	if (unlikely(!mem_section)) {
+@@ -268,9 +269,17 @@ static void __init memory_present(int nid, unsigned lo=
+ng start, unsigned long en
 =20
- 	for_each_present_section_nr(pnum_begin + 1, pnum_end) {
+ 	start &=3D PAGE_SECTION_MASK;
+ 	mminit_validate_memmodel_limits(&start, &end);
+-	for (pfn =3D start; pfn < end; pfn +=3D PAGES_PER_SECTION) {
+-		unsigned long section =3D pfn_to_section_nr(pfn);
++	start_sec =3D pfn_to_section_nr(start);
++	end_sec =3D pfn_to_section_nr(end - 1);
++	pfn =3D start;
++	nr_pages =3D end - start;
++
++	for (section =3D start_sec; section <=3D end_sec; section++) {
+ 		struct mem_section *ms;
++		unsigned long pfns;
++
++		pfns =3D min(nr_pages, PAGES_PER_SECTION
++				- (pfn & ~PAGE_SECTION_MASK));
+=20
+ 		sparse_index_init(section, nid);
+ 		set_section_nid(section, nid);
+@@ -281,6 +290,8 @@ static void __init memory_present(int nid, unsigned lon=
+g start, unsigned long en
+ 							SECTION_IS_ONLINE;
+ 			section_mark_present(ms);
+ 		}
++		pfn +=3D pfns;
++		nr_pages -=3D pfns;
+ 	}
+ }
+=20
 --=20
 2.30.2
 
