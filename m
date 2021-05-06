@@ -2,58 +2,97 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7650C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:35:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61D7EC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:39:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53B906103E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:35:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53B906103E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id AA68B6121F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 19:39:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA68B6121F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbkMc72m9z3bVS
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 05:35:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbkRQ6TkLz30Hp
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 05:39:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=crQvOxVh;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XImLsgWo;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BPAD6O3l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=crQvOxVh; 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=XImLsgWo; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=BPAD6O3l; 
  dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbkM55LzCz2xYZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 05:35:29 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=+Gmd9WE9Bu2QYLvWpqKR/yYem0cFXFiMf/zwpkj95U8=; b=crQvOxVhfA0rYm1ruAKJBNw0xC
- xsM1t+SsJ5U1dOvsLom1VliGQksmvwhkFYj4n7ocfHyofPKeGYBDJFe7TYnq2YqoCPZFOp9Hi5yST
- 4FH25flkLwf/Lwe/+RCpeR/nmAkbyaM0SvaT/6ZA3du1X0I7kf4FyjORRo8wpB+6q2guCZ8DJU5gv
- abGYH78vgb/2DeTmQHYosKU2fazelARvJeX7jelqa1FilgXL4Ovy+pzWnv0m0qQ94W3S3HRu/HDqu
- DvLeYnQ9jgK+5VudN9eKZp/TM9hNoGEyJpw9FhDDQ01zRQCnF9I0oCHm83eSPFGW7r3nw8/YpGdhl
- 9IBGKFNQ==;
-Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat
- Linux)) id 1lejha-0028sz-5z; Thu, 06 May 2021 19:30:34 +0000
-Date: Thu, 6 May 2021 20:30:26 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: David Hildenbrand <david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbkQt6g0Fz2yjK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 05:38:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1620329922;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=mD9rk0OEj0XYhxeQH5IDJPNbrX+PSqo6PoFdlh4Fuj4=;
+ b=XImLsgWo+QKlmyFO/XlEDIt+Ur0g+yEHU0vNvIGZicLxOMFTDhm1SMaHO6kHyvo+R96HLJ
+ n8OuKEvm76zWoLN1ebZLdUs0FWjwaxGFUmckZConLy9xqNBdCPnXixRPsDjCcUVmbTzaR/
+ j4eieEbJSRhovwhXNb5AA0XnCwnN1kY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1620329923;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=mD9rk0OEj0XYhxeQH5IDJPNbrX+PSqo6PoFdlh4Fuj4=;
+ b=BPAD6O3l9g7o2RiF0PCpsQx/VHW8+cqU8AnJeERpuOobj02DP6YcC9bkyj/aXj/t2k6d3w
+ mV69N6Ft6xP/K8IDRA2lTHYc/UQImxgWK7bpKtJIHLSg355cIEdtKNJKP9bH3mnlJ39k6w
+ UfLHeUZX62Xp99+6yTRn+MPcQXJDSAU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-487-_fg3IvWFP3eVciKxHVgPyw-1; Thu, 06 May 2021 15:38:40 -0400
+X-MC-Unique: _fg3IvWFP3eVciKxHVgPyw-1
+Received: by mail-wm1-f72.google.com with SMTP id
+ y184-20020a1ce1c10000b0290143299f39d7so3027834wmg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 May 2021 12:38:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:organization
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=mD9rk0OEj0XYhxeQH5IDJPNbrX+PSqo6PoFdlh4Fuj4=;
+ b=I9kdMf1+UoMjNThTEfQKC2A+XGUr+N/Qnql0Ze17CYdaQ+k0K1g4V/oXPWhvz/E3K+
+ nFTQeO9I6X53ZXXNnGKOczVIGFm42JLYyvfJP1QCpNDEI5egiklLDqG2lmF7FQd+TOzh
+ cyQlY1LpklfQHbH/QEhJBEVUKy4CS2VK92ifUo7ouue6CsfGPeALlYJEnLxHu8f8skfw
+ 4HdEnz0JysSo/lOe+HWZIh2R3skR9BjQRrKZ9f6eFewETyM9RmxQggTWom+LFvZqThp/
+ RbQTBfGgpEtftO7dNhJIuHeeTCkRSMYnScVsdzDAP0+24mGPtmKesP2Bvlz2wCkwr+Mn
+ tfOg==
+X-Gm-Message-State: AOAM533gc+i13YoEMQOfMuGWbm7579jNOp3Kb9BtC40wnZQ2NCFnTU35
+ H9h9oWaMVrCWwrB4YBlt7aKqthjl5UDEHQ9xdXxgQrplSLcLWd2A8VE2zUIz3vxJaZadI7D4r6J
+ zyeRlDYS+erxLJzBQhc7319wnAg==
+X-Received: by 2002:a5d:51d2:: with SMTP id n18mr7392203wrv.69.1620329919135; 
+ Thu, 06 May 2021 12:38:39 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxOC06i3MicUKjMNEqxEnGDL/rTRmiJEviad77ONpxe7ogE7ETHVYywYhvhoyD41LPb0MdTmQ==
+X-Received: by 2002:a5d:51d2:: with SMTP id n18mr7392182wrv.69.1620329918917; 
+ Thu, 06 May 2021 12:38:38 -0700 (PDT)
+Received: from [192.168.3.132] (p5b0c64ae.dip0.t-ipconnect.de. [91.12.100.174])
+ by smtp.gmail.com with ESMTPSA id q10sm4494733wmc.31.2021.05.06.12.38.38
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 06 May 2021 12:38:38 -0700 (PDT)
 Subject: Re: [RFC PATCH 0/7] Memory hotplug/hotremove at subsection size
-Message-ID: <20210506193026.GE388843@casper.infradead.org>
+To: Matthew Wilcox <willy@infradead.org>
 References: <20210506152623.178731-1-zi.yan@sent.com>
  <fb60eabd-f8ef-2cb1-7338-7725efe3c286@redhat.com>
  <9D7FD316-988E-4B11-AC1C-64FF790BA79E@nvidia.com>
@@ -62,10 +101,22 @@ References: <20210506152623.178731-1-zi.yan@sent.com>
  <f3a2152c-685b-2141-3e33-b2bcab8b6010@redhat.com>
  <3A6D54CF-76F4-4401-A434-84BEB813A65A@nvidia.com>
  <0e850dcb-c69a-188b-7ab9-09e6644af3ab@redhat.com>
+ <20210506193026.GE388843@casper.infradead.org>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+Message-ID: <d2e3c89d-a1fe-e7bc-c2ec-586df2073951@redhat.com>
+Date: Thu, 6 May 2021 21:38:37 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0e850dcb-c69a-188b-7ab9-09e6644af3ab@redhat.com>
+In-Reply-To: <20210506193026.GE388843@casper.infradead.org>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=david@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,33 +142,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 06, 2021 at 09:10:52PM +0200, David Hildenbrand wrote:
-> I have to admit that I am not really a friend of that. I still think our
-> target goal should be to have gigantic THP *in addition to* ordinary THP.
-> Use gigantic THP where enabled and possible, and just use ordinary THP
-> everywhere else. Having one pageblock granularity is a real limitation IMHO
-> and requires us to hack the system to support it to some degree.
+On 06.05.21 21:30, Matthew Wilcox wrote:
+> On Thu, May 06, 2021 at 09:10:52PM +0200, David Hildenbrand wrote:
+>> I have to admit that I am not really a friend of that. I still think our
+>> target goal should be to have gigantic THP *in addition to* ordinary THP.
+>> Use gigantic THP where enabled and possible, and just use ordinary THP
+>> everywhere else. Having one pageblock granularity is a real limitation IMHO
+>> and requires us to hack the system to support it to some degree.
+> 
+> You're thinking too small with only two THP sizes ;-)  I'm aiming to
 
-You're thinking too small with only two THP sizes ;-)  I'm aiming to
-support arbitrary power-of-two memory allocations.  I think there's a
-fruitful discussion to be had about how that works for anonymous memory --
-with page cache, we have readahead to tell us when our predictions of use
-are actually fulfilled.  It doesn't tell us what percentage of the pages
-allocated were actually used, but it's a hint.  It's a big lift to go from
-2MB all the way to 1GB ... if you can look back to see that the previous
-1GB was basically fully populated, then maybe jump up from allocating
-2MB folios to allocating a 1GB folio, but wow, that's a big step.
+Well, I raised in my other mail that we will have multiple different use 
+cases, including multiple different THP e.g., on aarch64 ;)
 
-This goal really does mean that we want to allocate from the page
-allocator, and so we do want to grow MAX_ORDER.  I suppose we could
-do somethig ugly like
+> support arbitrary power-of-two memory allocations.  I think there's a
+> fruitful discussion to be had about how that works for anonymous memory --
+> with page cache, we have readahead to tell us when our predictions of use
+> are actually fulfilled.  It doesn't tell us what percentage of the pages
 
-	if (order <= MAX_ORDER)
-		alloc_page()
-	else
-		alloc_really_big_page()
+Right, and I think we have to think about a better approach than just 
+increasing the pageblock_order.
 
-but that feels like unnecessary hardship to place on the user.
+> allocated were actually used, but it's a hint.  It's a big lift to go from
+> 2MB all the way to 1GB ... if you can look back to see that the previous
+> 1GB was basically fully populated, then maybe jump up from allocating
+> 2MB folios to allocating a 1GB folio, but wow, that's a big step.
+> 
+> This goal really does mean that we want to allocate from the page
+> allocator, and so we do want to grow MAX_ORDER.  I suppose we could
+> do somethig ugly like
+> 
+> 	if (order <= MAX_ORDER)
+> 		alloc_page()
+> 	else
+> 		alloc_really_big_page()
+> 
+> but that feels like unnecessary hardship to place on the user.
 
-I know that for the initial implementation, we're going to rely on hints
-from the user to use 1GB pages, but it'd be nice to not do that.
+I had something similar for the sort term in mind, relying on 
+alloc_contig_pages() (and maybe ZONE_MOVABLE to make allocations more 
+likely to succeed). Devil's in the details (page migration, ...).
+
+
+-- 
+Thanks,
+
+David / dhildenb
+
