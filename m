@@ -2,79 +2,58 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A5E7C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:22:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0078CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:25:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4DF56101D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 01:22:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4DF56101D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alliedtelesis.co.nz
+	by mail.kernel.org (Postfix) with ESMTPS id 1C08E613B5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 02:25:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C08E613B5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbG5N3qXSz3c1b
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 11:22:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.a=rsa-sha256 header.s=mail181024 header.b=whRv0wiU;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbHVz4cpyz30hV
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 12:25:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alliedtelesis.co.nz (client-ip=202.36.163.20;
- helo=gate2.alliedtelesis.co.nz; envelope-from=chrisp@alliedtelesis.co.nz;
+ smtp.mailfrom=vivo.com (client-ip=59.111.176.218;
+ helo=mail-m176218.qiye.163.com; envelope-from=wanjiabing@vivo.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
- header.a=rsa-sha256 header.s=mail181024 header.b=whRv0wiU; 
- dkim-atps=neutral
-Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
- [202.36.163.20])
+Received: from mail-m176218.qiye.163.com (mail-m176218.qiye.163.com
+ [59.111.176.218])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbG3K25hfz2yxm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 11:20:12 +1000 (AEST)
-Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 0DADF891AE;
- Thu,  6 May 2021 13:10:21 +1200 (NZST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
- s=mail181024; t=1620263421;
- bh=NuxtmiB9vBtPJ7+lr2Jkbk+llLCBqpimoEWh66Aw+ZA=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=whRv0wiUHaMRinca7fFR9t77uCW8Dg5H+5BdgZl+KnW9bHBWMMDmepeWC8gVUHcDC
- 5Ei55KmsbVUt14vH26XDJ9vyuK+quP0+R+EAD9NpgRlz/YodS/lNfPiJ9uZgJmmTXd
- FubXuq6jRBb7FrRRNHGR4KvAuI+HbIOffAho/eK+V1Vof0COYLDNlYlRc1N8qK8UkC
- CDHVwD5nGuv09dqtVLxleAordNSyAMydto0zV3PmqFSOWIZsuLlsP/S1Azb43Qm5D1
- iAIiXvGtTvh1o+8AUVddGxjTz6V0i1wQQls/Ck6XHov49DKR5wepZylT+6Zn6wKnDq
- qjuA4QC8Lb0PQ==
-Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by
- svr-chch-seg1.atlnz.lc with Trustwave SEG (v8, 2, 6, 11305)
- id <B609341fc0002>; Thu, 06 May 2021 13:10:20 +1200
-Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.20])
- by pat.atlnz.lc (Postfix) with ESMTP id D624B13ECA6;
- Thu,  6 May 2021 13:10:20 +1200 (NZST)
-Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
- id D320D283A60; Thu,  6 May 2021 13:10:20 +1200 (NZST)
-From: Chris Packham <chris.packham@alliedtelesis.co.nz>
-To: wsa@kernel.org, andriy.shevchenko@linux.intel.com,
- andy.shevchenko@gmail.com, robh+dt@kernel.org, mpe@ellerman.id.au
-Subject: [PATCH 2/3] powerpc/fsl: set fsl,
- i2c-erratum-a004447 flag for P2041 i2c controllers
-Date: Thu,  6 May 2021 13:10:13 +1200
-Message-Id: <20210506011015.17347-3-chris.packham@alliedtelesis.co.nz>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210506011015.17347-1-chris.packham@alliedtelesis.co.nz>
-References: <20210506011015.17347-1-chris.packham@alliedtelesis.co.nz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbHVW6rvyz2yRG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 12:25:13 +1000 (AEST)
+Received: from wanjb-virtual-machine.localdomain (unknown [36.152.145.182])
+ by mail-m176218.qiye.163.com (Hmail) with ESMTPA id D027D3200AF;
+ Thu,  6 May 2021 10:25:01 +0800 (CST)
+From: Wan Jiabing <wanjiabing@vivo.com>
+To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl_xcvr: Remove unneeded semicolon
+Date: Thu,  6 May 2021 10:24:52 +0800
+Message-Id: <20210506022452.5762-1-wanjiabing@vivo.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-SEG-SpamProfiler-Analysis: v=2.3 cv=B+jHL9lM c=1 sm=1 tr=0
- a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=5FLXtPjwQuUA:10 a=CCyhWkR5sz16QRgSDIcA:9
-X-SEG-SpamProfiler-Score: 0
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZS1VLWVdZKFlBSE83V1ktWUFJV1kPCR
+ oVCBIfWUFZQ0hDGVYYQk1MTkkYH0tLTx9VEwETFhoSFyQUDg9ZV1kWGg8SFR0UWUFZT0tIVUpKS0
+ hKQ1VLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MzI6Pjo4GD8RDkMiFTITEDEj
+ MC8aCgpVSlVKTUlLSU1MQktJQ0JOVTMWGhIXVQwaFRESGhkSFRw7DRINFFUYFBZFWVdZEgtZQVlI
+ TVVKTklVSk9OVUpDSVlXWQgBWUFJS01ONwY+
+X-HM-Tid: 0a793f7e25a9d978kuwsd027d3200af
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,53 +65,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: kael_w@yeah.net, Wan Jiabing <wanjiabing@vivo.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The i2c controllers on the P2040/P2041 have an erratum where the
-documented scheme for i2c bus recovery will not work (A-004447). A
-different mechanism is needed which is documented in the P2040 Chip
-Errata Rev Q (latest available at the time of writing).
+Fix the following coccicheck warning:
 
-Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+./sound/soc/fsl/fsl_xcvr.c:739:2-3: Unneeded semicolon
+
+Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
 ---
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ sound/soc/fsl/fsl_xcvr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/b=
-oot/dts/fsl/p2041si-post.dtsi
-index 872e4485dc3f..ddc018d42252 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -371,7 +371,23 @@ sdhc@114000 {
- 	};
-=20
- /include/ "qoriq-i2c-0.dtsi"
-+	i2c@118000 {
-+		fsl,i2c-erratum-a004447;
-+	};
-+
-+	i2c@118100 {
-+		fsl,i2c-erratum-a004447;
-+	};
-+
- /include/ "qoriq-i2c-1.dtsi"
-+	i2c@119000 {
-+		fsl,i2c-erratum-a004447;
-+	};
-+
-+	i2c@119100 {
-+		fsl,i2c-erratum-a004447;
-+	};
-+
- /include/ "qoriq-duart-0.dtsi"
- /include/ "qoriq-duart-1.dtsi"
- /include/ "qoriq-gpio-0.dtsi"
---=20
-2.31.1
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+index 6cb558165848..df7c189d97dd 100644
+--- a/sound/soc/fsl/fsl_xcvr.c
++++ b/sound/soc/fsl/fsl_xcvr.c
+@@ -736,7 +736,7 @@ static int fsl_xcvr_load_firmware(struct fsl_xcvr *xcvr)
+ 			/* clean current page, including data memory */
+ 			memset_io(xcvr->ram_addr, 0, size);
+ 		}
+-	};
++	}
+ 
+ err_firmware:
+ 	release_firmware(fw);
+-- 
+2.25.1
 
