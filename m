@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EF38C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B6F9C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:38:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 184CB613B5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:37:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 184CB613B5
+	by mail.kernel.org (Postfix) with ESMTPS id A8482613B5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:38:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8482613B5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLR55sWKz3byM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:37:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLRb2wxmz3c2v
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:38:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FiWovcWH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VuuDuCL0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -29,78 +29,78 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=FiWovcWH; dkim-atps=neutral
+ header.s=pp1 header.b=VuuDuCL0; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLNM61LNz2yxT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLNN0LwZz2yxj
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 14:35:14 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1464Ydpd082964; Thu, 6 May 2021 00:35:00 -0400
+ 1464Wpp6129887; Thu, 6 May 2021 00:35:09 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ABNn40ygnGwQ5GIm+pfG3KPmd2lvMmkBhy0jJfSgRTM=;
- b=FiWovcWHjmfJdryHYOLr8f34IXiXh3WHU8iHaOVJTSnIlSKQW0SnFhkGueb+FVgVu+/K
- +XuI8vnZlXfbXjxkQDZsmAQHamhXWtGFLmnO8XcxWcw3m5IihRULGJtc/5gtJMJv6YqX
- PQmVga4LsID6wFqOOCNfpFPF91cWrGMk4INT+Lq94RapbArDbi/80AEuxt/cm12ZES3M
- E8Ra6NP74TEIQFy2DznVBpTnm7EBbYqau8C42It6oW3zeXGqmPfpgf9qT2A5H9FV1eUR
- hVpNuACMY2l84btWxCaTZoByLicVJf24mRnj+PflVPaH38F2RVRBACcK6i9MMLqmDI+1 /g== 
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38c6kpbgfj-1
+ bh=U+x/MLhpAUbzGNlu93fxez6e4QHQiTyfUqkcQIdSBzA=;
+ b=VuuDuCL0+0c3WsoldbhbULjGBoHlXzsAeOVCWxiaAxsL4J0duXf+/B/qrJB7eSZYCexU
+ bUcAuFQTcCYGcZIFydsp2t2jS7Ay67WbNMcAMh7oIQELgh6qJs6yOFtatFYFLhMxX6rZ
+ 87MKxbPfYGs9MjBkNDo4RjFQmgEd4pwymyftSgiz5GhsLdZaC3uxoJAjFCToSRNJ4QP+
+ BBYwGR6Kc234TDwG0xbCl9jjDCwNmvISW9eEvqYTzjCT27R4wpGBvYvQTRi7D4XcEDGv
+ wKkxh6CpV+m+f2pfRkpwpe4Vfvg9NGC1MibaAFQjWk3Ukr+7NGpCdJP2MNUKJRuTFA5g lQ== 
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38c9b1g77y-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 May 2021 00:34:59 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1464Xin8027882;
- Thu, 6 May 2021 04:34:58 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma04wdc.us.ibm.com with ESMTP id 38bedu15mn-1
+ Thu, 06 May 2021 00:35:09 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 1464Y9F6023806;
+ Thu, 6 May 2021 04:35:08 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma05wdc.us.ibm.com with ESMTP id 38bedwh653-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 May 2021 04:34:58 +0000
+ Thu, 06 May 2021 04:35:07 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1464YwVd33882380
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1464Z7fp32309672
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 6 May 2021 04:34:58 GMT
+ Thu, 6 May 2021 04:35:07 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 183D4B2066;
- Thu,  6 May 2021 04:34:58 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 68F20B206A;
+ Thu,  6 May 2021 04:35:07 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6AD29B205F;
- Thu,  6 May 2021 04:34:57 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id ABD45B206B;
+ Thu,  6 May 2021 04:35:06 +0000 (GMT)
 Received: from oc8246131445.ibm.com (unknown [9.160.168.222])
  by b01ledav003.gho.pok.ibm.com (Postfix) with SMTP;
- Thu,  6 May 2021 04:34:57 +0000 (GMT)
+ Thu,  6 May 2021 04:35:06 +0000 (GMT)
 Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
- by oc8246131445.ibm.com (Postfix) with ESMTP id 6EDCDBC0F4E;
+ by oc8246131445.ibm.com (Postfix) with ESMTP id A2907BC1160;
  Wed,  5 May 2021 23:34:53 -0500 (CDT)
 From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RESEND PATCH v4 01/11] powerpc: Add LKDTM accessor for patching addr
-Date: Wed,  5 May 2021 23:34:42 -0500
-Message-Id: <20210506043452.9674-2-cmr@linux.ibm.com>
+Subject: [RESEND PATCH v4 05/11] powerpc/64s: Add ability to skip SLB preload
+Date: Wed,  5 May 2021 23:34:46 -0500
+Message-Id: <20210506043452.9674-6-cmr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210506043452.9674-1-cmr@linux.ibm.com>
 References: <20210506043452.9674-1-cmr@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: PCeJgLiG2OdQYvoq-mUyN5daR0O7JS2k
-X-Proofpoint-GUID: PCeJgLiG2OdQYvoq-mUyN5daR0O7JS2k
+X-Proofpoint-GUID: hBmmjDjvHBsl-M7jNJR4tZJRLvSqZEvN
+X-Proofpoint-ORIG-GUID: hBmmjDjvHBsl-M7jNJR4tZJRLvSqZEvN
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-06_03:2021-05-05,
  2021-05-06 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- priorityscore=1501 mlxscore=0 adultscore=0 phishscore=0 mlxlogscore=999
- lowpriorityscore=0 spamscore=0 suspectscore=0 malwarescore=0
- impostorscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104060000 definitions=main-2105060029
+ mlxlogscore=999 spamscore=0
+ mlxscore=0 priorityscore=1501 suspectscore=0 adultscore=0 impostorscore=0
+ clxscore=1015 bulkscore=0 phishscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104060000
+ definitions=main-2105060029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,53 +118,168 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When live patching with STRICT_KERNEL_RWX a mapping is installed at a
-"patching address" with temporary write permissions. Provide a
-LKDTM-only accessor function for this address in preparation for a LKDTM
-test which attempts to "hijack" this mapping by writing to it from
-another CPU.
+Switching to a different mm with Hash translation causes SLB entries to
+be preloaded from the current thread_info. This reduces SLB faults, for
+example when threads share a common mm but operate on different address
+ranges.
+
+Preloading entries from the thread_info struct may not always be
+appropriate - such as when switching to a temporary mm. Introduce a new
+boolean in mm_context_t to skip the SLB preload entirely. Also move the
+SLB preload code into a separate function since switch_slb() is already
+quite long. The default behavior (preloading SLB entries from the
+current thread_info struct) remains unchanged.
 
 Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
----
- arch/powerpc/include/asm/code-patching.h | 4 ++++
- arch/powerpc/lib/code-patching.c         | 7 +++++++
- 2 files changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/incl=
-ude/asm/code-patching.h
-index f1d029bf906e5..e51c81e4a9bda 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -188,4 +188,8 @@ static inline unsigned long ppc_kallsyms_lookup_name(=
-const char *name)
- 				 ___PPC_RA(__REG_R1) | PPC_LR_STKOFF)
- #endif /* CONFIG_PPC64 */
-=20
-+#if IS_BUILTIN(CONFIG_LKDTM) && IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)
-+unsigned long read_cpu_patching_addr(unsigned int cpu);
-+#endif
+---
+
+v4:  * New to series.
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h |  3 ++
+ arch/powerpc/include/asm/mmu_context.h   | 13 ++++++
+ arch/powerpc/mm/book3s64/mmu_context.c   |  2 +
+ arch/powerpc/mm/book3s64/slb.c           | 56 ++++++++++++++----------
+ 4 files changed, 50 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/incl=
+ude/asm/book3s/64/mmu.h
+index eace8c3f7b0a1..b23a9dcdee5af 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -130,6 +130,9 @@ typedef struct {
+ 	u32 pkey_allocation_map;
+ 	s16 execute_only_pkey; /* key holding execute-only protection */
+ #endif
 +
- #endif /* _ASM_POWERPC_CODE_PATCHING_H */
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pat=
-ching.c
-index 870b30d9be2f8..2b1b3e9043ade 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -48,6 +48,13 @@ int raw_patch_instruction(struct ppc_inst *addr, struc=
-t ppc_inst instr)
- #ifdef CONFIG_STRICT_KERNEL_RWX
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
++	/* Do not preload SLB entries from thread_info during switch_slb() */
++	bool skip_slb_preload;
+ } mm_context_t;
 =20
-+#if IS_BUILTIN(CONFIG_LKDTM)
-+unsigned long read_cpu_patching_addr(unsigned int cpu)
+ static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/includ=
+e/asm/mmu_context.h
+index 4bc45d3ed8b0e..264787e90b1a1 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -298,6 +298,19 @@ static inline int arch_dup_mmap(struct mm_struct *ol=
+dmm,
+ 	return 0;
+ }
+=20
++#ifdef CONFIG_PPC_BOOK3S_64
++
++static inline void skip_slb_preload_mm(struct mm_struct *mm)
 +{
-+	return (unsigned long)(per_cpu(text_poke_area, cpu))->addr;
++	mm->context.skip_slb_preload =3D true;
 +}
-+#endif
 +
- static int text_area_cpu_up(unsigned int cpu)
++#else
++
++static inline void skip_slb_preload_mm(struct mm_struct *mm) {}
++
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
+ #include <asm-generic/mmu_context.h>
+=20
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/mm/book3s64/mmu_context.c b/arch/powerpc/mm/boo=
+k3s64/mmu_context.c
+index c10fc8a72fb37..3479910264c59 100644
+--- a/arch/powerpc/mm/book3s64/mmu_context.c
++++ b/arch/powerpc/mm/book3s64/mmu_context.c
+@@ -202,6 +202,8 @@ int init_new_context(struct task_struct *tsk, struct =
+mm_struct *mm)
+ 	atomic_set(&mm->context.active_cpus, 0);
+ 	atomic_set(&mm->context.copros, 0);
+=20
++	mm->context.skip_slb_preload =3D false;
++
+ 	return 0;
+ }
+=20
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/sl=
+b.c
+index c91bd85eb90e3..da0836cb855af 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -441,10 +441,39 @@ static void slb_cache_slbie_user(unsigned int index=
+)
+ 	asm volatile("slbie %0" : : "r" (slbie_data));
+ }
+=20
++static void preload_slb_entries(struct task_struct *tsk, struct mm_struc=
+t *mm)
++{
++	struct thread_info *ti =3D task_thread_info(tsk);
++	unsigned char i;
++
++	/*
++	 * We gradually age out SLBs after a number of context switches to
++	 * reduce reload overhead of unused entries (like we do with FP/VEC
++	 * reload). Each time we wrap 256 switches, take an entry out of the
++	 * SLB preload cache.
++	 */
++	tsk->thread.load_slb++;
++	if (!tsk->thread.load_slb) {
++		unsigned long pc =3D KSTK_EIP(tsk);
++
++		preload_age(ti);
++		preload_add(ti, pc);
++	}
++
++	for (i =3D 0; i < ti->slb_preload_nr; i++) {
++		unsigned char idx;
++		unsigned long ea;
++
++		idx =3D (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
++		ea =3D (unsigned long)ti->slb_preload_esid[idx] << SID_SHIFT;
++
++		slb_allocate_user(mm, ea);
++	}
++}
++
+ /* Flush all user entries from the segment table of the current processo=
+r. */
+ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
  {
- 	struct vm_struct *area;
+-	struct thread_info *ti =3D task_thread_info(tsk);
+ 	unsigned char i;
+=20
+ 	/*
+@@ -502,29 +531,8 @@ void switch_slb(struct task_struct *tsk, struct mm_s=
+truct *mm)
+=20
+ 	copy_mm_to_paca(mm);
+=20
+-	/*
+-	 * We gradually age out SLBs after a number of context switches to
+-	 * reduce reload overhead of unused entries (like we do with FP/VEC
+-	 * reload). Each time we wrap 256 switches, take an entry out of the
+-	 * SLB preload cache.
+-	 */
+-	tsk->thread.load_slb++;
+-	if (!tsk->thread.load_slb) {
+-		unsigned long pc =3D KSTK_EIP(tsk);
+-
+-		preload_age(ti);
+-		preload_add(ti, pc);
+-	}
+-
+-	for (i =3D 0; i < ti->slb_preload_nr; i++) {
+-		unsigned char idx;
+-		unsigned long ea;
+-
+-		idx =3D (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
+-		ea =3D (unsigned long)ti->slb_preload_esid[idx] << SID_SHIFT;
+-
+-		slb_allocate_user(mm, ea);
+-	}
++	if (!mm->context.skip_slb_preload)
++		preload_slb_entries(tsk, mm);
+=20
+ 	/*
+ 	 * Synchronize slbmte preloads with possible subsequent user memory
 --=20
 2.26.1
 
