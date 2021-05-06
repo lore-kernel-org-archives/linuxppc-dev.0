@@ -2,60 +2,85 @@ Return-Path: <SRS0=DmFP=KB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B796C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D87C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:58:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 020D6610EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:51:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 020D6610EA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id ACB8461185
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 04:58:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACB8461185
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLkc4Zm1z3bvh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:51:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FbLtt2tlXz30G7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 May 2021 14:58:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m3DdyG4/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=JA3h4nik;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d;
+ helo=mail-pf1-x42d.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=m3DdyG4/; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=JA3h4nik; dkim-atps=neutral
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
+ [IPv6:2607:f8b0:4864:20::42d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLjX48yqz2xfn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 14:50:08 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FbLjR191Dz9sTD; Thu,  6 May 2021 14:50:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620276603;
- bh=qhpY2BY+QX9A1410ys11Iwo7/8DobTa8WjgBucSxkvI=;
- h=From:To:Cc:Subject:Date:From;
- b=m3DdyG4/bhPNzIC+ab8iuMbuEZM5B3ea4DQA4ac5cto9EpMKDOYC3hSHWqk8Li09x
- AUsCyYdz9Rwojx9fVryLYrYKqkfsn3Pr99hkhcrIgYs78ZuwU05HJSTZC3diVCCBlX
- ZRRp43/rgtMlEztWrub4jiuD2qUzCWFvoUoQi1fjs07Hk6nQSgGI1yEwEO0Mw75TIr
- w9gn/Wo0FOuxGd9f6ZNCLvSmR9pK25N7MP6wfvuI5Jrr6SGfY5TIkRAvds9IW4fzef
- euNDiCT0NTyzeG2h9namjxAITZsAiLD8vvm1Qi/0oUNHmS7DLjQLoJg3PyRyFoUv4N
- fehcQJIQ+sGnA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/2] powerpc/64s: Fix crashes when toggling stf barrier
-Date: Thu,  6 May 2021 14:49:58 +1000
-Message-Id: <20210506044959.1298123-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FbLtJ58Qfz2yRS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 May 2021 14:57:43 +1000 (AEST)
+Received: by mail-pf1-x42d.google.com with SMTP id v191so4217068pfc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 May 2021 21:57:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=NEErII2JPNmwZ0HM+qC85+Da9iM7biQE5PAgq2GlWcs=;
+ b=JA3h4nikL5S3GcOofHtGGkkumWS55GMNpSLX3kR/+V2hQ7Csxx9yLw/NMFXfBtt4mr
+ J0KNe/BmiTuEuULmIEOIQFGojW+xFqdzxUohljV8OFMJWlPFlEuJlYhjliaEk898Y55q
+ IYxBu10dhE3V8WS+zVimLsQ4jOHGHqFVAnw/tRRNJUnWyM6jIv53sDqdppXRNg6h5C83
+ yaHSOolDi/4VnsgfV7oZvt/03j/U5xsQoKq8nIbCzmygSaL5/dotB/iK7nyFp8xU+OJK
+ ykkLCL2e1XJwio+4lwhLkgsdaKRvQMtIT/rTPmi+f80KBnnCNPAf570+xz/W8dzjUMoB
+ VMOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=NEErII2JPNmwZ0HM+qC85+Da9iM7biQE5PAgq2GlWcs=;
+ b=VMVs/PxoB52z/CDtsHDQds2qRiW4K98+uExiOay10hejWlarBhjJc4IjJYLW+SLmgP
+ rAUOzRq9RsgpIa36fHAlhTb3HGtAm2TJmOBfQc/aHdN8wneeS9N7yamRJlgGuLTO/TXN
+ PiTpkjESjiYNJlHwibZ25NlD30AdYp1b5r8OPkWI8GyrzHFcOs1SkVYJp7R0EvB5yXlI
+ i02uKYBFPe52c+ffVYUxhh839h2q9zQ1PKXrE544ejmaUK6hPdZZ+CNDsrqJVfWFnZpQ
+ K7P3lkR4sVBdP8lTIONHVHjv6RDBqHm6ekf8q3Yt/wGdoyNAuUta7SDHe37jGDZ8U2SO
+ 11kA==
+X-Gm-Message-State: AOAM530zM+6blzXDPC4r2HlwNosrangvmosaALzoUXvmHsxZk7dBxv53
+ p1k7TxEqUczyL3ZUwxSMDXU=
+X-Google-Smtp-Source: ABdhPJz9NL4N4fHdHeuCc9+RFXATcTPpEI3bqGMMAw7XOGgVt24XScWDkVdRIznhxdvFnlT25I9+/g==
+X-Received: by 2002:a65:4185:: with SMTP id a5mr2355473pgq.388.1620277060476; 
+ Wed, 05 May 2021 21:57:40 -0700 (PDT)
+Received: from localhost ([61.68.127.20])
+ by smtp.gmail.com with ESMTPSA id c6sm8565221pjs.11.2021.05.05.21.57.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 05 May 2021 21:57:40 -0700 (PDT)
+Date: Thu, 06 May 2021 14:57:34 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix conversion to gfn-based MMU
+ notifier callbacks
+To: Sean Christopherson <seanjc@google.com>
+References: <20210505121509.1470207-1-npiggin@gmail.com>
+ <YJK/KDCV5CvTNhoo@google.com>
+In-Reply-To: <YJK/KDCV5CvTNhoo@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Message-Id: <1620276952.ug51qrzrc1.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,84 +92,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, anton@samba.org, npiggin@gmail.com, dja@axtens.net
+Cc: kvm@vger.kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The STF (store-to-load forwarding) barrier mitigation can be
-enabled/disabled at runtime via a debugfs file (stf_barrier), which
-causes the kernel to patch itself to enable/disable the relevant
-mitigations.
+Excerpts from Sean Christopherson's message of May 6, 2021 1:52 am:
+> On Wed, May 05, 2021, Nicholas Piggin wrote:
+>> Commit b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU notifier
+>> callbacks") causes unmap_gfn_range and age_gfn callbacks to only work
+>> on the first gfn in the range. It also makes the aging callbacks call
+>> into both radix and hash aging functions for radix guests. Fix this.
+>=20
+> Ugh, the rest of kvm_handle_hva_range() was so similar to the x86 code th=
+at I
+> glossed right over the for-loop.  My apologies :-/
 
-However depending on which mitigation we're using, it may not be safe to
-do that patching while other CPUs are active. For example the following
-crash:
+No problem, we should have noticed it here in testing earlier too.
 
-  User access of kernel address (c00000003fff5af0) - exploit attempt? (uid: 0)
-  segfault (11) at c00000003fff5af0 nip 7fff8ad12198 lr 7fff8ad121f8 code 1
-  code: 40820128 e93c00d0 e9290058 7c292840 40810058 38600000 4bfd9a81 e8410018
-  code: 2c030006 41810154 3860ffb6 e9210098 <e94d8ff0> 7d295279 39400000 40820a3c
+>=20
+>> Add warnings for the single-gfn calls that have been converted to range
+>> callbacks, in case they ever receieve ranges greater than 1.
+>>=20
+>> Fixes: b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU notifier ca=
+llbacks")
+>> Reported-by: Bharata B Rao <bharata@linux.ibm.com>
+>> Tested-by: Bharata B Rao <bharata@linux.ibm.com>
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>> The e500 change in that commit also looks suspicious, why is it okay
+>> to remove kvm_flush_remote_tlbs() there? Also is the the change from
+>> returning false to true intended?
+>=20
+> The common code interprets a return of "true" as "do kvm_flush_remote_tlb=
+s()".
+> There is technically a functional change, as the deferring the flush to c=
+ommon
+> code will batch flushes if the invalidation spans multiple memslots.  But=
+ the
+> mmu_lock is held the entire time, so batching is a good thing unless e500=
+ has
+> wildly different MMU semantics.
 
-Shows that we returned to userspace without restoring the user r13
-value, due to executing the partially patched STF exit code.
+Ah okay that explains it. That sounds good, but I don't know the e500=20
+KVM code or have a way to test it myself.
 
-Fix it by doing the patching under stop machine. The CPUs that aren't
-doing the patching will be spinning in the core of the stop machine
-logic. That is currently sufficient for our purposes, because none of
-the patching we do is to that code or anywhere in the vicinity.
-
-Fixes: a048a07d7f45 ("powerpc/64s: Add support for a store forwarding barrier at kernel entry/exit")
-Cc: stable@vger.kernel.org # v4.17+
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/lib/feature-fixups.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
-
-v2: Fix the bugs.
-    Pass a pointer to types, rather than wedging into the void *.
-    Use stop_machine().
-
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 1fd31b4b0e13..10083add8b33 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -14,6 +14,7 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/sched/mm.h>
-+#include <linux/stop_machine.h>
- #include <asm/cputable.h>
- #include <asm/code-patching.h>
- #include <asm/page.h>
-@@ -227,11 +228,25 @@ static void do_stf_exit_barrier_fixups(enum stf_barrier_type types)
- 		                                           : "unknown");
- }
- 
-+static int __do_stf_barrier_fixups(void *data)
-+{
-+	enum stf_barrier_type *types = data;
-+
-+	do_stf_entry_barrier_fixups(*types);
-+	do_stf_exit_barrier_fixups(*types);
-+
-+	return 0;
-+}
- 
- void do_stf_barrier_fixups(enum stf_barrier_type types)
- {
--	do_stf_entry_barrier_fixups(types);
--	do_stf_exit_barrier_fixups(types);
-+	/*
-+	 * The call to the fallback entry flush, and the fallback/sync-ori exit
-+	 * flush can not be safely patched in/out while other CPUs are executing
-+	 * them. So call __do_stf_barrier_fixups() on one CPU while all other CPUs
-+	 * spin in the stop machine core with interrupts hard disabled.
-+	 */
-+	stop_machine(__do_stf_barrier_fixups, &types, NULL);
- }
- 
- void do_uaccess_flush_fixups(enum l1d_flush_type types)
--- 
-2.25.1
-
+Thanks,
+Nick
