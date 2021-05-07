@@ -2,60 +2,96 @@ Return-Path: <SRS0=iVLG=KC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB7BDC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 06:43:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3884C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 06:44:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8984B613C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 06:43:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8984B613C2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 14FB4613C2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 06:44:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14FB4613C2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fc19G5F6Fz2yZM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 16:42:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fc1BW4Ffcz2yjP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 May 2021 16:44:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JJsFu92l;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=O1D/Yj31;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.52;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=JJsFu92l; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=O1D/Yj31; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [85.215.255.52])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fc18p6Jk4z2yR7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 16:42:34 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Fc18h0M8Zz9sxS; Fri,  7 May 2021 16:42:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620369748;
- bh=o0ryrURf9gQo7UBFJN9lVLEVAi82dROiQK+svY877wg=;
- h=From:To:Subject:Date:From;
- b=JJsFu92lJ8K/Kg4DUaNFkTx38jRoV1gj/C0qAojKOJsV5Wzcq33dZMXTg/uNV08vY
- N2Tzt1/tVhcOnnjETTHMVNpHNkqJZ4LDt72ENt3M87+Hg94ZINN28KHaOd3MMHfmm1
- LumVfDxAzfHofJBhJQ1oxomSJZ0Gm+jY9riaZDVMcZhMNANHPD+79mCXBhg1TPXX9m
- hSGtRt3olLy6eKh/JHGWcUSx5ZwZYi1WXEmAmRAkyWwP8/eUr5xgFzfbVG4UFMKCWo
- M6wuiCIk0o5tQrighjAx/xz+pv4Ii8Tq8/eeQrXhRa2amyDPPFum2n9kwsBHDeKL0O
- YLPPcjTZIy4+Q==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: Add test of mitigation patching
-Date: Fri,  7 May 2021 16:42:25 +1000
-Message-Id: <20210507064225.1556312-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fc19x5lBCz2yXH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 May 2021 16:43:32 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1620369801; cv=none;
+ d=strato.com; s=strato-dkim-0002;
+ b=IFw8N0rUAKzI1j7TsJw4X0OlxX9wCflppoc1GTFA/+oxUviaalvVUZFYceQli0SnyQ
+ s4mHYnGpEXZlIG0dg2QRmCpv2bVWeXjprgHovImO4oMZ7Lmt+jc2VzkeF8P5EDAq4O39
+ VQIX8MTT1bNwdvnHGitM7CfQNfmwetLcX+JEHP71d2H7kRMM7R6HW5iUJ7vMKFKMH5Zq
+ jHeKiJuRqWiwITI+BKmha0w93Krdg5xALFNkbPb2JhfU7QhOWjEuxnpFWXFfz0/8JDsT
+ FDYYs3oNTUcF2tbO43RGm0sZuYy1exQ41buBQRO6wfW+ThI+zhAREoZ+1IkDoKGHjDkX
+ UIUQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1620369801;
+ s=strato-dkim-0002; d=strato.com;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+ From:Subject:Sender;
+ bh=Z4g5xLdo2AUU3hfIJq+UpEKrJf3kQecUTcH9Yk9QqjI=;
+ b=EkCaa4BRhDZhnU4cws3cDWBpBh128k6sTRUqNEQUb4XZGIXb36LtGx5seJWvbXRPqW
+ FBEP5SZmz3dnoA+pXwmFwYpt1o8aEGtMdRW0HBNHXL29Ys7AiKkChcWCuPWMMEvuj/LN
+ igcquwNC6JtqWGVNtHBMRy3qDQSCqmtwIvN0OuIH8O/snIKApcgxtHUuO3rcPLuK5BLt
+ shByIGTw1NOHLSJTv2m8rz7/E0c30O0Mbi+/G/GO/xTckC7uH5O50JgGzfJzIfSJY2aE
+ KUj7yUjn6GmkpIMloFXsLKKZ6iuEbQcYnTnXssxe8R+zL0AJK01tiCPXaNet8u3+UwLO
+ oReQ==
+ARC-Authentication-Results: i=1; strato.com;
+    dkim=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1620369801;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+ From:Subject:Sender;
+ bh=Z4g5xLdo2AUU3hfIJq+UpEKrJf3kQecUTcH9Yk9QqjI=;
+ b=O1D/Yj31aez6HE2xk7xPdYWN4nto1gTebNz/vbqA0us4uc0myqp4pSD+MKyMWATeY3
+ DyYqxPz2m9OqeJQAtUPfrlpxlYL7mVIZsHZAjP59oU3eJ89yoDcUup7DOJfYPjkHkjNe
+ DQnah17k7CWDA2gam2AE+LVDZ2JADOk/NapdYutCZLsH6+ze1ZJbgQegP11QuFccZAKY
+ mR4A0jYFOljMM0U3/4qvgm+l57Y8CxIeY1caYc0ionnuFZ9yqybQ5y7XqOcyBRoC6xnG
+ Hv34BY+QEF3km+LD7HLc3pFNm14lbYBYE5r5CRG+hxvnqMGmC9ry0bGo8s0LJY5Q9eYZ
+ 5DgQ==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7aWdx2ro2lX6VRVv1hIt0Bw6yRXRdf973HsSmXlXo"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:d00a:ca80:8591:65ad:8e80:a8a0]
+ by smtp.strato.de (RZmta 47.25.6 AUTH)
+ with ESMTPSA id L0ba16x476hK15A
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Fri, 7 May 2021 08:43:20 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Mime-Version: 1.0 (1.0)
+Subject: Re: Radeon NI: GIT kernel with the nislands_smc commit doesn't boot
+ on a Freescale P5040 board and P.A.Semi Nemo board
+Date: Fri, 7 May 2021 08:43:19 +0200
+Message-Id: <10D1983F-33EF-46C3-976E-463D1CB5A6E9@xenosoft.de>
+References: <a1d9e09b-f533-5e2c-7a13-af96647e1a71@embeddedor.com>
+In-Reply-To: <a1d9e09b-f533-5e2c-7a13-af96647e1a71@embeddedor.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+X-Mailer: iPhone Mail (18D70)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,119 +103,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ =?utf-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>, gustavoars@kernel.org,
+ Maling list - DRI developers <dri-devel@lists.freedesktop.org>,
+ Olof Johansson <olof@lixom.net>, mad skateman <madskateman@gmail.com>,
+ alexander.deucher@amd.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We recently discovered some of our mitigation patching was not safe
-against other CPUs running concurrently.
+Hi Gustavo,
 
-Add a test which enable/disables all mitigations in a tight loop while
-also running some stress load. On an unpatched system this almost always
-leads to an oops and panic/reboot, but we also check if the kernel
-becomes tainted in case we have a non-fatal oops.
+Great! I will test it. Many thanks for your help.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- .../selftests/powerpc/security/Makefile       |  2 +
- .../powerpc/security/mitigation-patching.sh   | 75 +++++++++++++++++++
- 2 files changed, 77 insertions(+)
- create mode 100755 tools/testing/selftests/powerpc/security/mitigation-patching.sh
+Cheers,
+Christian
 
-diff --git a/tools/testing/selftests/powerpc/security/Makefile b/tools/testing/selftests/powerpc/security/Makefile
-index 844d18cd5f93..7488315fd847 100644
---- a/tools/testing/selftests/powerpc/security/Makefile
-+++ b/tools/testing/selftests/powerpc/security/Makefile
-@@ -1,6 +1,8 @@
- # SPDX-License-Identifier: GPL-2.0+
- 
- TEST_GEN_PROGS := rfi_flush entry_flush uaccess_flush spectre_v2
-+TEST_PROGS := mitigation-patching.sh
-+
- top_srcdir = ../../../../..
- 
- CFLAGS += -I../../../../../usr/include
-diff --git a/tools/testing/selftests/powerpc/security/mitigation-patching.sh b/tools/testing/selftests/powerpc/security/mitigation-patching.sh
-new file mode 100755
-index 000000000000..00197acb7ff1
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/security/mitigation-patching.sh
-@@ -0,0 +1,75 @@
-+#!/usr/bin/env bash
-+
-+set -euo pipefail
-+
-+TIMEOUT=10
-+
-+function do_one
-+{
-+    local mitigation="$1"
-+    local orig
-+    local start
-+    local now
-+
-+    orig=$(cat "$mitigation")
-+
-+    start=$EPOCHSECONDS
-+    now=$start
-+
-+    while [[ $((now-start)) -lt "$TIMEOUT" ]]
-+    do
-+        echo 0 > "$mitigation"
-+        echo 1 > "$mitigation"
-+
-+        now=$EPOCHSECONDS
-+    done
-+
-+    echo "$orig" > "$mitigation"
-+}
-+
-+rc=0
-+cd /sys/kernel/debug/powerpc || rc=1
-+if [[ "$rc" -ne 0 ]]; then
-+    echo "Error: couldn't cd to /sys/kernel/debug/powerpc" >&2
-+    exit 1
-+fi
-+
-+tainted=$(cat /proc/sys/kernel/tainted)
-+if [[ "$tainted" -ne 0 ]]; then
-+    echo "Error: kernel already tainted!" >&2
-+    exit 1
-+fi
-+
-+mitigations="barrier_nospec stf_barrier count_cache_flush rfi_flush entry_flush uaccess_flush"
-+
-+for m in $mitigations
-+do
-+    do_one "$m" &
-+done
-+
-+echo "Spawned threads enabling/disabling mitigations ..."
-+
-+if stress-ng > /dev/null 2>&1; then
-+    stress="stress-ng"
-+elif stress > /dev/null 2>&1; then
-+    stress="stress"
-+else
-+    stress=""
-+fi
-+
-+if [[ -n "$stress" ]]; then
-+    "$stress" -m "$(nproc)" -t "$TIMEOUT" &
-+    echo "Spawned VM stressors ..."
-+fi
-+
-+echo "Waiting for timeout ..."
-+wait
-+
-+tainted=$(cat /proc/sys/kernel/tainted)
-+if [[ "$tainted" -ne 0 ]]; then
-+    echo "Error: kernel became tainted!" >&2
-+    exit 1
-+fi
-+
-+echo "OK"
-+exit 0
--- 
-2.25.1
+
+> On 7. May 2021, at 01:55, Gustavo A. R. Silva <gustavo@embeddedor.com> wro=
+te:
+>=20
+> =EF=BB=BFHi Christian,
+>=20
+>> On 4/30/21 06:59, Christian Zigotzky wrote:
+>> Hello,
+>>=20
+>> The Nemo board (A-EON AmigaOne X1000) [1] and the FSL P5040 Cyrus+ board (=
+A-EON AmigaOne X5000) [2] with installed AMD Radeon HD6970 NI graphics cards=
+ (Cayman
+>> XT) [3] don't boot with the latest git kernel anymore after the commit "d=
+rm/radeon/nislands_smc.h: Replace one-element array with flexible-array memb=
+er in
+>> struct NISLANDS_SMC_SWSTATE branch" [4].  This git kernel boots in a virt=
+ual e5500 QEMU machine with a VirtIO-GPU [5].
+>>=20
+>> I bisected today [6].
+>>=20
+>> Result: drm/radeon/nislands_smc.h: Replace one-element array with flexibl=
+e-array member in struct NISLANDS_SMC_SWSTATE branch
+>> (434fb1e7444a2efc3a4ebd950c7f771ebfcffa31) [4] is the first bad commit.
+>=20
+> I have a fix ready for this bug:
+> https://git.kernel.org/pub/scm/linux/kernel/git/gustavoars/linux.git/commi=
+t/?h=3Dtesting/drm-nislands
+>=20
+> I wonder if you could help me to test it with your environment, please.
+> It should be applied on top of mainline.
+>=20
+> Thank you!
+> --
+> Gustavo
+>=20
+>>=20
+>> I was able to revert this commit [7] and after a new compiling, the kerne=
+l boots without any problems on my AmigaOnes.
+>>=20
+>> After that I created a patch for reverting this commit for new git test k=
+ernels. [3]
+>>=20
+>> The kernel compiles and boots with this patch on my AmigaOnes. Please fin=
+d attached the kernel config files.
+>>=20
+>> Please check the first bad commit.
+>>=20
+>> Thanks,
+>> Christian
+>>=20
+>> [1] https://en.wikipedia.org/wiki/AmigaOne_X1000
+>> [2] http://wiki.amiga.org/index.php?title=3DX5000
+>> [3] https://forum.hyperion-entertainment.com/viewtopic.php?f=3D35&t=3D437=
+7
+>> [4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/co=
+mmit/?id=3D434fb1e7444a2efc3a4ebd950c7f771ebfcffa31
+>> [5] qemu-system-ppc64 -M ppce500 -cpu e5500 -m 1024 -kernel uImage -drive=
+ format=3Draw,file=3DMintPPC32-X5000.img,index=3D0,if=3Dvirtio -netdev user,=
+id=3Dmynet0 -device
+>> virtio-net-pci,netdev=3Dmynet0 -append "rw root=3D/dev/vda" -device virti=
+o-vga -usb -device usb-ehci,id=3Dehci -device usb-tablet -device virtio-keyb=
+oard-pci -smp 4
+>> -vnc :1
+>> [6] https://forum.hyperion-entertainment.com/viewtopic.php?p=3D53074#p530=
+74
+>> [7] git revert 434fb1e7444a2efc3a4ebd950c7f771ebfcffa3
 
