@@ -2,84 +2,78 @@ Return-Path: <SRS0=PWqZ=KD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA0BCC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:17:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71DEAC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 11:11:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDAA6611ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:17:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDAA6611ED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8031D6105A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 11:11:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8031D6105A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FcjtW4Qtpz3cP8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 20:17:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fcl4z3tSyz2ymJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 21:11:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Ni+FkHxQ;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=srs0=qqpx=kd=csgroup.eu=christophe.leroy@ozlabs.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::835;
+ helo=mail-qt1-x835.google.com; envelope-from=shengjiu.wang@gmail.com;
  receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Ni+FkHxQ; dkim-atps=neutral
+Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com
+ [IPv6:2607:f8b0:4864:20::835])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FcjrX5Wcpz305y
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 May 2021 20:15:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by ozlabs.org (Postfix) with ESMTP id 4FcjrQ4w5Bz9sX1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 May 2021 20:15:50 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4FcjrQ4Wk4z9sX2; Sat,  8 May 2021 20:15:50 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4FcjrQ1wQvz9sX1
- for <linuxppc-dev@ozlabs.org>; Sat,  8 May 2021 20:15:48 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4FcjrK11TFz9sbl;
- Sat,  8 May 2021 12:15:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vTPLGFDN1VI3; Sat,  8 May 2021 12:15:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4FcjrJ70pMz9sbk;
- Sat,  8 May 2021 12:15:44 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CAFA88B774;
- Sat,  8 May 2021 12:15:44 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vhUBODFnxePy; Sat,  8 May 2021 12:15:44 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7E13A8B76B;
- Sat,  8 May 2021 12:15:44 +0200 (CEST)
-Subject: Re: Kernel crosscompilers
-To: Arnd Bergmann <arnd@arndb.de>
-References: <be7c92b2-43c2-0d8a-6e8c-ac92e7e07bfc@csgroup.eu>
- <CAK8P3a3OdcSQQGKxRob3A6qfh8tVD1JtLdcTp9i25SizqWpiXA@mail.gmail.com>
- <19e791d9-3226-4c13-b6e8-cdabdaaa0268@csgroup.eu>
- <CAK8P3a3V=y8tHkN6JSpA54bKAOZv9RK04WcVE9LPL0r-WE0Nmw@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <b6fad6f3-6390-54a3-f0c8-30b7476c686a@csgroup.eu>
-Date: Sat, 8 May 2021 12:15:32 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fcl4R46qHz2yXN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 May 2021 21:11:18 +1000 (AEST)
+Received: by mail-qt1-x835.google.com with SMTP id y12so8519051qtx.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 May 2021 04:11:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=yfDuILVJ/qrRaqU8xHoH2Xwtecz2dupT4Jbb53C42Yk=;
+ b=Ni+FkHxQ5UDdVFDKXHv70m55YzCQW5Wexb2/Mt8KAgEzMEg81c/6zElDN0EHYdFNc7
+ GTj3fwc2wpxevfQNbFUym2Ac+Hy+JnDvYMWjKV6jNjo8+vhod+bP+V6q7ZnGiJKidlOg
+ psAH9gYK/UzDdRy/5j/blUNcU7DRpA2nhzofTJxZKMH4s6NLI8Etr0weALwYJX2ryVyC
+ 2Lmu7ebHjumSK7e3I2/aJfc7O+yFVc1HpUJaFK6ZbQy8IjSfJKgHALIbA7KugiLMxTFT
+ nxe0yA7tnGbrkY4bYtcnaK5YEcG2MNjmUdq0n6Cup85+o+B3pPmzUGTGEv6oRabZec8z
+ rZmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=yfDuILVJ/qrRaqU8xHoH2Xwtecz2dupT4Jbb53C42Yk=;
+ b=oWrTI80MORW7586bSruPlRKDdStI82i0NoTeohwjaDr2gaAqVeHE02qYpZMzE82N5K
+ wSQi/fZbFP7Mw1acA6mvNZlRTgLYehpSCiUGzigpbee8ON6K6fAfNCOWHT6a9npVFSPS
+ vV6zpXSbEBdrTN3EWZRbN+zpmkVIPdnGb8Xw/dQEp5kkXPQIrPFdXHr86BjzoalJi0fP
+ n1b6QLFAn0voJ7kCWPOJs+aUk4UhRewIdie6kRaYbCME0+2f3f95ZTRG9zvypboHRJNM
+ PLufl5CAKYg1DiLy5tmo7kUuDYeagoVrNWQi4T3K0YxQL6CFulLZzilqY70B2GhY3Bj/
+ QkGw==
+X-Gm-Message-State: AOAM5322Gvsoal69Md1QpULEbji3GZgVeNuLjj3WnNwPsYxUVlA2nsiU
+ N55xYaXF2uNIJINX09BOXR6z4PSGo/9IGheFHHU=
+X-Google-Smtp-Source: ABdhPJxoEslillAXm4KdMahYQZppkAGITUmkSjIpfL9o/fSNmiaqygZFF7zP3VcYAKQyGtzP0pX6x86BuieDRgbJ2x4=
+X-Received: by 2002:ac8:47da:: with SMTP id d26mr13176229qtr.292.1620472275009; 
+ Sat, 08 May 2021 04:11:15 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a3V=y8tHkN6JSpA54bKAOZv9RK04WcVE9LPL0r-WE0Nmw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <1619157107-3734-1-git-send-email-shengjiu.wang@nxp.com>
+ <20210504065736.bcnatgmy2gczynsr@pengutronix.de>
+In-Reply-To: <20210504065736.bcnatgmy2gczynsr@pengutronix.de>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Sat, 8 May 2021 19:11:04 +0800
+Message-ID: <CAA+D8AMzfj1QY-uXd6Ew7wCXomyDSdokHa-ReP6ucZjVnvYHGA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] ASoC: imx-akcodec: Add imx-akcodec machine driver
+To: Marco Felsch <m.felsch@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,43 +85,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, alsa-devel@alsa-project.org,
+ Fabio Estevam <festevam@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, NXP Linux Team <linux-imx@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi
 
+On Tue, May 4, 2021 at 2:59 PM Marco Felsch <m.felsch@pengutronix.de> wrote:
+>
+> On 21-04-23 13:51, Shengjiu Wang wrote:
+> > Add machine driver for i.MX boards that have
+> > AK4458/AK5558/AK4497/AK5552 DAC/ADC attached to
+> > SAI interface.
+>
+> Why? Does simple-audio-card don't fit?
 
-Le 08/05/2021 à 11:43, Arnd Bergmann a écrit :
-> On Sat, May 8, 2021 at 8:46 AM Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
->>
->> Something is going wrong with asm goto output. I implemented get_user() helpers with asm goto this
->> cycle (commit 5cd29b1fd3e8). I tested it with CLANG before submitting, it was working.
-> 
-> BTW, can you point me to those patches? I think it would be nice if we
-> could eventually
-> converge parts of get_user()/put_user() implementation on something
-> that works for all
-> architectures, we do seem to rewrite these way too often. Ideally we'd
-> have something
-> in asm-generic that provides all the wrappers, and just requires an
-> architecture to
-> implement the inline asm helpers for each of the sizes.
-> 
+No.  We need to support asrc->sai->codec case,
+but simple-audio-card don't support it. simple-audio-card
+needs the cpu dai is dummy on BE. And we need to
+support the DSD format, this driver help to switch
+the dai fmt from pdm to i2s according to the DSD or non-DSD.
 
-The series that is merged for 5.13 is here: 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=233250&state=*
-
-And of course the result is just 
-https://github.com/linuxppc/linux/blob/master/arch/powerpc/include/asm/uaccess.h
-and all its history at 
-https://github.com/linuxppc/linux/commits/master/arch/powerpc/include/asm/uaccess.h
-
-The fix from today here: 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/cf0a050d124d4f426cdc7a74009d17b01d8d8969.1620465917.git.christophe.leroy@csgroup.eu/
-
-I made a try to use asm-generic/uaccess.h a few weeks ago, but it was not conclusive. I can't 
-remember the details, but I can have a new look at it next week if you are interested with the details.
-
-Christophe
+best regards
+wang shengjiu
