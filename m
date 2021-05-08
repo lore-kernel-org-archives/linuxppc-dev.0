@@ -2,90 +2,86 @@ Return-Path: <SRS0=PWqZ=KD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18EE7C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76E3FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:15:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 403AF6143C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:01:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 403AF6143C
+	by mail.kernel.org (Postfix) with ESMTPS id B4B6B6112F
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 10:15:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4B6B6112F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FcjWm4npSz2yxX
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 20:01:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FcjrC27Stz30CX
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 May 2021 20:15:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=D3tpCyYj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=dqbW/gOL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d;
+ helo=mail-pg1-x52d.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=D3tpCyYj; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
+ header.s=20161025 header.b=dqbW/gOL; dkim-atps=neutral
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com
+ [IPv6:2607:f8b0:4864:20::52d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FcjW90ZHDz2yYB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 May 2021 20:00:52 +1000 (AEST)
-Received: by mail-pf1-x429.google.com with SMTP id v191so9624309pfc.8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 May 2021 03:00:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fcjqf68qBz2yYP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 May 2021 20:15:10 +1000 (AEST)
+Received: by mail-pg1-x52d.google.com with SMTP id i5so4425702pgm.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 May 2021 03:15:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=LbmHI8d9Qh61VL9ZD+Y+aznmH4Mcskn3PwaJHBCWPwo=;
- b=D3tpCyYjuaqK5RXdWpGozaL0uz+ivGKDdPviZhA93KxKwBMuVkaxHgpns/FlPZX9fO
- XRou6KYree5HekIU8/KP/A9LIybVAKTBIdTCEx4WSdY6PMG0NyvJPyCZoDBRRODdD0XG
- RxhdbSEiPVDfikOk5VaxY6wyp12V2aUGgKKzd6Ahht2AROE9a2UwUnP7a88u4O9I7mDD
- cfC5xySislisLlpT6aE4UAgAeSd0lM5HPoNZi9ct2jjPusxq+xvWuo0ZB9CW5NkJ7Qwq
- w3Fhnd038GepQ8c5aA/+W8YZMAtd1XGw8AWS3FeuAhoro/zqYRE93cqICkMiiVlNAfw6
- 6K6A==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=hucPwe2s/1AvqXvalzOuuUvYSLJDf/hU9ZAYxXDnt88=;
+ b=dqbW/gOLlsbm3Ef1ZTGFZ+1K001McMCBCHbvE26TTj1ptPVunxT77SQHbsSmXjnZTj
+ fTBusAzZM2vDzHDkJI1RZhtGt9ZCQpo8W+iGb/0hKdzRFS94/b86H0SuFbBTW44slsZR
+ RK2so+RBF+VWDEfVYWxMAH7mzkrl4+DJwtDygtq4szwJuUDvZ2aOsPuhLh1mRD7QJxf0
+ dE7aUuQ9tB9wMfBR73VyV/fGthLH9rTH3oEWYQVXGFgzqYyBX7bpGbr3Kg0mtysD3Z8q
+ yihEAns7P3AKkzbd9opAATS/lfmZhuQ7mfq5gIR6AAgJ2JZo/kcTkBuL0PlDF1+oUpyT
+ KlUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=LbmHI8d9Qh61VL9ZD+Y+aznmH4Mcskn3PwaJHBCWPwo=;
- b=WZRZ2pPAMEtJcdsk8L3XWH38snbpg/41NJ7pFVQYmWp2kfsyufa/xVywCus/NbLZw+
- +E6H/6hh/gayU0DbbGBI9hCA8DMmJlsKM5e0cdDu/sUApd6lKHODQ3v14Gpkjg0fpyQ6
- 75oLmY/xj/gPRfElXh/JV9/Xt3dcytXgLYTTuKeSVYTn0n5c7cbtQi7lpMM31CwszJ4T
- Cq+fSMdMcGwli3VKBRmytwl1UFvpqxT8bbgWpmKzy/fGjrC3TE2caPyX9qdIAK1laBFt
- Xor6NllkB9ElSYjWC8mdT/a4Jay5s8s3HhsTreZWSfitLFVi7gfDXrkEuzAQr8GW4hl7
- HQww==
-X-Gm-Message-State: AOAM531ydsW4Z01T4oC47//qv0VqYts2wH455g+Kp2Jnth/mnmFO2Er9
- 6kpRzDFBo5UBikotIeCdp6c=
-X-Google-Smtp-Source: ABdhPJycwX/eO6pjoOGS7cMPO3oKQlVAWpVF5+DoHW1fUHM2wnsRf6MwzkPuWXPMLgR0ADgcapE9JA==
-X-Received: by 2002:a62:8fd2:0:b029:28e:8c64:52a4 with SMTP id
- n201-20020a628fd20000b029028e8c6452a4mr15074099pfd.3.1620468048522; 
- Sat, 08 May 2021 03:00:48 -0700 (PDT)
-Received: from localhost (60-241-47-46.tpgi.com.au. [60.241.47.46])
- by smtp.gmail.com with ESMTPSA id x22sm6628622pfa.24.2021.05.08.03.00.47
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=hucPwe2s/1AvqXvalzOuuUvYSLJDf/hU9ZAYxXDnt88=;
+ b=szR1cLKZMYU8/9RSoE4MsW9uLzqqCS7b3+AKsf8iQEJNgHYgi+QcTeWfs8pAuRZ6db
+ 3y635hwzP5asnjTxZxBcmgyImsyFaHHeA/52CaA9w9wu9d9NKuMInI8wXkY96v0ToZ1L
+ wVhJq8EYx3tTfkhaJ2ksAxI5LVBeCYD2YMjTgNirDhEPi+V8HsDGlfuMe81X6MXAZd6u
+ yXqxM9Y652vU2j2wbPPXg/PoUluVeBK4PqzLXvjmLIxhNaa79eBBtCeYTMzX2E9MULzj
+ iyMjjMiNP/T8CLPUDc6ztBmvyo2agjCxCUIp2Qjw0NE0TDrdK+xI6tSA4FO2X4AyNqPF
+ pGFg==
+X-Gm-Message-State: AOAM5313x4jXTIs9LVTOfDYasDvAyN4w9Kwtizlkoix4AX21dfYOQH8h
+ /2zj8p/mz1XpQ1G8cFjK/D93MS06qz8kAQ==
+X-Google-Smtp-Source: ABdhPJyrHBJUW4352DTR6cvpdNLY4TBZk1W6ZnTo0wSHmVu9/ISwu3ANDhpYKg51WSHpdJVHPHecOw==
+X-Received: by 2002:a65:4cc5:: with SMTP id n5mr14681632pgt.80.1620468908026; 
+ Sat, 08 May 2021 03:15:08 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (60-241-47-46.tpgi.com.au. [60.241.47.46])
+ by smtp.gmail.com with ESMTPSA id
+ c13sm6608465pfl.212.2021.05.08.03.15.06
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 08 May 2021 03:00:48 -0700 (PDT)
-Date: Sat, 08 May 2021 20:00:42 +1000
+ Sat, 08 May 2021 03:15:07 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 4/4] powerpc/powernv: Remove POWER9 PVR version check for
- entry and uaccess flushes
-To: Joel Stanley <joel@jms.id.au>
-References: <20210503130243.891868-1-npiggin@gmail.com>
- <20210503130243.891868-5-npiggin@gmail.com>
- <CACPK8XekEXgqA1bML6A+NbsshzsLe+pLTzGJzRLdC+QKrV5T9Q@mail.gmail.com>
- <1620119643.r94ggot8r7.astroid@bobo.none>
- <CACPK8XeyEaj-0LUa=YMT1WXn=_cQkDXH9xLiVARGCwZANsRk=A@mail.gmail.com>
-In-Reply-To: <CACPK8XeyEaj-0LUa=YMT1WXn=_cQkDXH9xLiVARGCwZANsRk=A@mail.gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/4] powerpc/pseries: Fix hcall tracing recursion in pv
+ queued spinlocks
+Date: Sat,  8 May 2021 20:14:52 +1000
+Message-Id: <20210508101455.1578318-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210508101455.1578318-1-npiggin@gmail.com>
+References: <20210508101455.1578318-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Message-Id: <1620467748.tqdm5pvv7k.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,92 +93,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Joel Stanley's message of May 5, 2021 11:43 am:
-> On Tue, 4 May 2021 at 09:16, Nicholas Piggin <npiggin@gmail.com> wrote:
->>
->> Excerpts from Joel Stanley's message of May 4, 2021 10:51 am:
->> > On Mon, 3 May 2021 at 13:04, Nicholas Piggin <npiggin@gmail.com> wrote=
-:
->> >>
->> >> These aren't necessarily POWER9 only, and it's not to say some new
->> >> vulnerability may not get discovered on other processors for which
->> >> we would like the flexibility of having the workaround enabled by
->> >> firmware.
->> >>
->> >> Remove the restriction that they only apply to POWER9.
->> >
->> > I was wondering how these worked which led me to reviewing your patch.
->> > From what I could see, these are enabled by default (SEC_FTR_DEFAULT
->> > in arch/powerpc/include/asm/security_features.h), so unless all
->> > non-POWER9 machines have set the "please don't" bit in their firmware
->> > this patch will enable the feature for those machines. Is that what
->> > you wanted?
->>
->> Yes. POWER7/8 should be affected (it's similar mechanism that requires
->> the meltdown RFI flush, which those processors need).
->>
->> POWER10 we haven't released a bare metal firmware with the right bits
->> yet. Not urgent at the moment but wouldn't hurt to specify them and
->> add the Linux code for them.
->=20
-> Thanks for the explanation. This could go in the commit message if you re=
--spin.
->=20
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
->=20
+The paravit queued spinlock slow path adds itself to the queue then
+calls pv_wait to wait for the lock to become free. This is implemented
+by calling H_CONFER to donate cycles.
 
-I was talking about the same thing with Michael and he dug up an old
-email chain that proves me wrong. P7/8 are actually slightly different.
-I'm not sure what I can explain of it in public unfortunately.
+When hcall tracing is enabled, this H_CONFER call can lead to a spin
+lock being taken in the tracing code, which will result in the lock to
+be taken again, which will also go to the slow path because it queues
+behind itself and so won't ever make progress.
 
-How about this?
+An example trace of a deadlock:
 
----
+  __pv_queued_spin_lock_slowpath
+  trace_clock_global
+  ring_buffer_lock_reserve
+  trace_event_buffer_lock_reserve
+  trace_event_buffer_reserve
+  trace_event_raw_event_hcall_exit
+  __trace_hcall_exit
+  plpar_hcall_norets_trace
+  __pv_queued_spin_lock_slowpath
+  trace_clock_global
+  ring_buffer_lock_reserve
+  trace_event_buffer_lock_reserve
+  trace_event_buffer_reserve
+  trace_event_raw_event_rcu_dyntick
+  rcu_irq_exit
+  irq_exit
+  __do_irq
+  call_do_irq
+  do_IRQ
+  hardware_interrupt_common_virt
 
-These aren't necessarily POWER9 only, and it's not to say some new
-vulnerability may not get discovered on other processors for which
-we would like the flexibility of having the workaround enabled by
-firmware.
+Fix this by introducing plpar_hcall_norets_notrace(), and using that to
+make SPLPAR virtual processor dispatching hcalls by the paravirt
+spinlock code.
 
-Remove the restriction that the workarounds only apply to POWER9.
-
-However POWER7 and POWER8 are not affected, and they may not have
-older firmware that does not advertise this, so clear these workarounds
-manually.
-
+Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/powernv/setup.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/hvcall.h       |  3 +++
+ arch/powerpc/include/asm/paravirt.h     | 22 +++++++++++++++++++---
+ arch/powerpc/platforms/pseries/hvCall.S | 10 ++++++++++
+ arch/powerpc/platforms/pseries/lpar.c   |  3 +--
+ 4 files changed, 33 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platform=
-s/powernv/setup.c
-index a8db3f153063..874fb016384a 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -123,10 +123,14 @@ static void pnv_setup_security_mitigations(void)
- 	}
-=20
- 	/*
--	 * If we are non-Power9 bare metal, we don't need to flush on kernel
--	 * entry or after user access: they fix a P9 specific vulnerability.
-+	 * The issues addressed by the entry and uaccess flush don't affect P7
-+	 * or P8, so on bare metal disable them explicitly in case firmware
-+	 * does not include these bits. POWER9 and newer processors should
-+	 * have the right firmware bits.
- 	 */
--	if (!pvr_version_is(PVR_POWER9)) {
-+	if (pvr_version_is(PVR_POWER7) || pvr_version_is(PVR_POWER7p) ||
-+	    pvr_version_is(PVR_POWER8E) || pvr_version_is(PVR_POWER8NVL) ||
-+	    pvr_version_is(PVR_POWER8)) {
- 		security_ftr_clear(SEC_FTR_L1D_FLUSH_ENTRY);
- 		security_ftr_clear(SEC_FTR_L1D_FLUSH_UACCESS);
- 	}
---=20
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 443050906018..e3b29eda8074 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -448,6 +448,9 @@
+  */
+ long plpar_hcall_norets(unsigned long opcode, ...);
+ 
++/* Variant which does not do hcall tracing */
++long plpar_hcall_norets_notrace(unsigned long opcode, ...);
++
+ /**
+  * plpar_hcall: - Make a pseries hypervisor call
+  * @opcode: The hypervisor call to make.
+diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
+index 5d1726bb28e7..bcb7b5f917be 100644
+--- a/arch/powerpc/include/asm/paravirt.h
++++ b/arch/powerpc/include/asm/paravirt.h
+@@ -28,19 +28,35 @@ static inline u32 yield_count_of(int cpu)
+ 	return be32_to_cpu(yield_count);
+ }
+ 
++/*
++ * Spinlock code confers and prods, so don't trace the hcalls because the
++ * tracing code takes spinlocks which can cause recursion deadlocks.
++ *
++ * These calls are made while the lock is not held: the lock slowpath yields if
++ * it can not acquire the lock, and unlock slow path might prod if a waiter has
++ * yielded). So this may not be a problem for simple spin locks because the
++ * tracing does not technically recurse on the lock, but we avoid it anyway.
++ *
++ * However the queued spin lock contended path is more strictly ordered: the
++ * H_CONFER hcall is made after the task has queued itself on the lock, so then
++ * recursing on that lock will cause the task to then queue up again behind the
++ * first instance (or worse: queued spinlocks use tricks that assume a context
++ * never waits on more than one spinlock, so such recursion may cause random
++ * corruption in the lock code).
++ */
+ static inline void yield_to_preempted(int cpu, u32 yield_count)
+ {
+-	plpar_hcall_norets(H_CONFER, get_hard_smp_processor_id(cpu), yield_count);
++	plpar_hcall_norets_notrace(H_CONFER, get_hard_smp_processor_id(cpu), yield_count);
+ }
+ 
+ static inline void prod_cpu(int cpu)
+ {
+-	plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
++	plpar_hcall_norets_notrace(H_PROD, get_hard_smp_processor_id(cpu));
+ }
+ 
+ static inline void yield_to_any(void)
+ {
+-	plpar_hcall_norets(H_CONFER, -1, 0);
++	plpar_hcall_norets_notrace(H_CONFER, -1, 0);
+ }
+ #else
+ static inline bool is_shared_processor(void)
+diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+index 2136e42833af..8a2b8d64265b 100644
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -102,6 +102,16 @@ END_FTR_SECTION(0, 1);						\
+ #define HCALL_BRANCH(LABEL)
+ #endif
+ 
++_GLOBAL_TOC(plpar_hcall_norets_notrace)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++	HVSC				/* invoke the hypervisor */
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++	blr				/* return r3 = status */
++
+ _GLOBAL_TOC(plpar_hcall_norets)
+ 	HMT_MEDIUM
+ 
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 1f3152ad7213..b619568a4d04 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -1830,8 +1830,7 @@ void hcall_tracepoint_unregfunc(void)
+ 
+ /*
+  * Since the tracing code might execute hcalls we need to guard against
+- * recursion. One example of this are spinlocks calling H_YIELD on
+- * shared processor partitions.
++ * recursion.
+  */
+ static DEFINE_PER_CPU(unsigned int, hcall_trace_depth);
+ 
+-- 
 2.23.0
 
