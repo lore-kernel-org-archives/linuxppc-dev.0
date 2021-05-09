@@ -2,56 +2,64 @@ Return-Path: <SRS0=6s84=KE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48A93C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 01:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6EA8C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 08:44:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DAC361106
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 01:40:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DAC361106
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8A1816128E
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 08:44:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A1816128E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fd6Ln10w3z3byH
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 11:40:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FdHn25nCqz2ykQ
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 May 2021 18:44:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=LB8np1RD;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=LB8np1RD; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fd6L14tbcz2yYV
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 May 2021 11:39:19 +1000 (AEST)
-IronPort-SDR: M2SNmRWENkj0SX07y+uxq/7Oh65xLWlIPXOIAWxz1sSM9WlKK/jm+m03jjOFgPeENcYOnu5LXQ
- 2vwHNaeags2w==
-X-IronPort-AV: E=McAfee;i="6200,9189,9978"; a="260241208"
-X-IronPort-AV: E=Sophos;i="5.82,284,1613462400"; d="scan'208";a="260241208"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 May 2021 18:39:12 -0700
-IronPort-SDR: 1PmRjFas/zXJnrNQtpIDm8cSRQfJuZrxiTpVOWtonN8LDCK7k/MgU4PnOtiinCLufqPwyJVUs/
- 7HKYtRPj3SVA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,284,1613462400"; d="scan'208";a="470341822"
-Received: from lkp-server01.sh.intel.com (HELO a48ff7ddd223) ([10.239.97.150])
- by orsmga001.jf.intel.com with ESMTP; 08 May 2021 18:39:11 -0700
-Received: from kbuild by a48ff7ddd223 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lfYPW-000BsL-Pn; Sun, 09 May 2021 01:39:10 +0000
-Date: Sun, 09 May 2021 09:38:33 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS fcc98c6d0289241dded10b74f8198fc4ecb22bd1
-Message-ID: <60973d19.9tiV//dJZRuSW+sX%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FdHmW2040z2yXp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 May 2021 18:44:26 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 4FdHmN0NmQz9tlT; Sun,  9 May 2021 18:44:19 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1620549860;
+ bh=mrCCxrPLXd2u1Yu8mIR3FTFSkj8bqt1tbpyVIVUlIN4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=LB8np1RDK6sXz+8RQpVqLvfednJu/3YOG/Ts82h1EDnmRujtY9CW19Z7Si+X0WKVh
+ aEdPe7nrwwr8neXr5PdX4Z2KdnQMVmie8RKzhu6+ueEbzHQ28ZZVe24LHrR6ln3ryi
+ AWfx25jF/Wezr7msPMRzShVH5UfReex07uilHX6Q=
+Date: Sun, 9 May 2021 18:43:50 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Daniel Henrique Barboza <danielhb413@gmail.com>
+Subject: Re: [PATCH 2/3] hotplug-memory.c: enhance dlpar_memory_remove* LMB
+ checks
+Message-ID: <YJegxrNqFd6fVsGO@yekko>
+References: <20210430120917.217951-1-danielhb413@gmail.com>
+ <20210430120917.217951-3-danielhb413@gmail.com>
+ <YJCdNJRSLCOV59dE@yekko>
+ <1491f5c1-593b-4a87-2645-6da76bb7e47a@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="2wBBJs86Fo+2xVwd"
+Content-Disposition: inline
+In-Reply-To: <1491f5c1-593b-4a87-2645-6da76bb7e47a@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,117 +76,159 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: fcc98c6d0289241dded10b74f8198fc4ecb22bd1  Automatic merge of 'next' into merge (2021-05-08 21:19)
 
-elapsed time: 721m
+--2wBBJs86Fo+2xVwd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-configs tested: 96
-configs skipped: 2
+On Fri, May 07, 2021 at 01:36:06PM -0300, Daniel Henrique Barboza wrote:
+>=20
+>=20
+> On 5/3/21 10:02 PM, David Gibson wrote:
+> > On Fri, Apr 30, 2021 at 09:09:16AM -0300, Daniel Henrique Barboza wrote:
+> > > dlpar_memory_remove_by_ic() validates the amount of LMBs to be removed
+> > > by checking !DRCONF_MEM_RESERVED, and in the following loop before
+> > > dlpar_remove_lmb() a check for DRCONF_MEM_ASSIGNED is made before
+> > > removing it. This means that a LMB that is both !DRCONF_MEM_RESERVED =
+and
+> > > !DRCONF_MEM_ASSIGNED will be counted as valid, but then not being
+> > > removed.  The function will end up not removing all 'lmbs_to_remove'
+> > > LMBs while also not reporting any errors.
+> > >=20
+> > > Comparing it to dlpar_memory_remove_by_count(), the validation is done
+> > > via lmb_is_removable(), which checks for DRCONF_MEM_ASSIGNED and fadu=
+mp
+> > > constraints. No additional check is made afterwards, and
+> > > DRCONF_MEM_RESERVED is never checked before dlpar_remove_lmb(). The
+> > > function doesn't have the same 'check A for validation, then B for
+> > > removal' issue as remove_by_ic(), but it's not checking if the LMB is
+> > > reserved.
+> > >=20
+> > > There is no reason for these functions to validate the same operation=
+ in
+> > > two different manners.
+> >=20
+> > Actually, I think there is: remove_by_ic() is handling a request to
+> > remove a specific range of LMBs.  If any are reserved, they can't be
+> > removed and so this needs to fail.  But if they are !ASSIGNED, that
+> > essentially means they're *already* removed (or never added), so
+> > "removing" them is, correctly, a no-op.
+>=20
+> I guess that makes sense. Although I am not aware of any situation, at le=
+ast
+> thinking about how QEMU adds/removes LMBs, where some LMBs would be remov=
+ed
+> 'ad-hoc' in the middle of a LMB range that maps to a QEMU DIMM, I can't s=
+ay
+> that this wouldn't never happen either.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Right.  I believe a user could explicitly offline LMBs in the middle
+of a DIMM. There's not much reason to do so, but it's possible.  There
+might also be situations involving memory errors where individual LMBs
+could get offlined.
 
-gcc tested configs:
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-powerpc                     tqm8540_defconfig
-arm                          simpad_defconfig
-sh                        edosk7705_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                     tqm5200_defconfig
-mips                        maltaup_defconfig
-sh                            migor_defconfig
-sh                         ecovec24_defconfig
-arm                         socfpga_defconfig
-m68k                        mvme16x_defconfig
-powerpc                      ppc6xx_defconfig
-arm                      jornada720_defconfig
-arc                            hsdk_defconfig
-um                               allyesconfig
-arc                           tb10x_defconfig
-arm                        magician_defconfig
-arm                            dove_defconfig
-arc                          axs103_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20210508
-i386                 randconfig-a006-20210508
-i386                 randconfig-a001-20210508
-i386                 randconfig-a005-20210508
-i386                 randconfig-a004-20210508
-i386                 randconfig-a002-20210508
-x86_64               randconfig-a014-20210508
-x86_64               randconfig-a015-20210508
-x86_64               randconfig-a011-20210508
-x86_64               randconfig-a013-20210508
-x86_64               randconfig-a012-20210508
-x86_64               randconfig-a016-20210508
-i386                 randconfig-a013-20210508
-i386                 randconfig-a015-20210508
-i386                 randconfig-a014-20210508
-i386                 randconfig-a016-20210508
-i386                 randconfig-a011-20210508
-i386                 randconfig-a012-20210508
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+> It is sensible to make remove_by_ic()
+> resilient to this situation.
+>=20
+> I'll re-send this patch just with the remove_by_count() change.
+>=20
+>=20
+> Thanks,
+>=20
+>=20
+> Daniel
+>=20
+> >=20
+> > remove_by_count(), in contrast, is being asked to remove a fixed
+> > number of LMBs from wherever they can be found, and for that it needs
+> > to find LMBs that haven't already been removed.
+> >=20
+> > Basically remove_by_ic() is an absolute request: "make this set of
+> > LMBs be not-plugged", whereas remove_by_count() is a relative request
+> > "make N less LMBs be plugged".
+> >=20
+> >=20
+> > So I think remove_by_ic()s existing handling is correct.  I'm less
+> > sure if remove_by_count() ignoring RESERVED is correct - I couldn't
+> > quickly find under what circumstances RESERVED gets set.
+> >=20
+> >=20
+> > > This patch addresses that by changing
+> > > lmb_is_removable() to also check for DRCONF_MEM_RESERVED to tell if a
+> > > lmb is removable, making dlpar_memory_remove_by_count() take the
+> > > reservation state into account when counting the LMBs.
+> > > lmb_is_removable() is then used in the validation step of
+> > > dlpar_memory_remove_by_ic(), which is already checking for both states
+> > > but in different stages, to avoid counting a LMB that is not assigned=
+ as
+> > > eligible for removal. We can then skip the check before
+> > > dlpar_remove_lmb() since we're validating all LMBs beforehand.
+> > >=20
+> > > Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+> > > ---
+> > >   arch/powerpc/platforms/pseries/hotplug-memory.c | 8 +++-----
+> > >   1 file changed, 3 insertions(+), 5 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/p=
+owerpc/platforms/pseries/hotplug-memory.c
+> > > index bb98574a84a2..4e6d162c3f1a 100644
+> > > --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> > > +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> > > @@ -348,7 +348,8 @@ static int pseries_remove_mem_node(struct device_=
+node *np)
+> > >   static bool lmb_is_removable(struct drmem_lmb *lmb)
+> > >   {
+> > > -	if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
+> > > +	if ((lmb->flags & DRCONF_MEM_RESERVED) ||
+> > > +		!(lmb->flags & DRCONF_MEM_ASSIGNED))
+> > >   		return false;
+> > >   #ifdef CONFIG_FA_DUMP
+> > > @@ -523,7 +524,7 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_=
+remove, u32 drc_index)
+> > >   	/* Validate that there are enough LMBs to satisfy the request */
+> > >   	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+> > > -		if (lmb->flags & DRCONF_MEM_RESERVED)
+> > > +		if (!lmb_is_removable(lmb))
+> > >   			break;
+> > >   		lmbs_available++;
+> > > @@ -533,9 +534,6 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_=
+remove, u32 drc_index)
+> > >   		return -EINVAL;
+> > >   	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+> > > -		if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
+> > > -			continue;
+> > > -
+> > >   		rc =3D dlpar_remove_lmb(lmb);
+> > >   		if (rc)
+> > >   			break;
+> >=20
+>=20
 
-clang tested configs:
-x86_64               randconfig-a005-20210508
-x86_64               randconfig-a003-20210508
-x86_64               randconfig-a001-20210508
-x86_64               randconfig-a002-20210508
-x86_64               randconfig-a006-20210508
-x86_64               randconfig-a004-20210508
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+--2wBBJs86Fo+2xVwd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmCXoMQACgkQbDjKyiDZ
+s5Ku5BAA4UhaK1jhLdWOgp5Y65JmJ2UOz0Q8QuUEYPJqDe0zHWPkRR9OQNKHohXq
+vMw+OtmzVghC422SWhBOyRs2tUtiZ8JU43DXyATXvO8t8eN7i2FCRIG0J2ktjQ26
+Qo/sYM213GBTspxtVsMBV8hZ3SyEnHqP4ty51MzK/+rr/ZAAmXgZ8CPsFhzmT+z1
+GRGpc8cwGpbFmCKGOKiu/SRdYGn13+Qh/NPkrdf/dRU97a+g2yhhD+v5RwVB3eFD
+UIPkY3UNmY9v79d3AVEK+t6MXdCyqY9d5fo9VHJhSNF00IyGKP94KTpCXvqUUOrG
+HUwEdggkt6J7qkC9UtGWE6KnoIfXAh8G3gau0NzFk3/Cx1tVzE+eUQXFlFt8YMUV
+6qz30Oa5i5seEqITl3x7lqFa8Lm58/8svBt3GYud7eNkuIQRp56DCTi/yqbJgF7t
+/WmuDnKd4EjNnQSjvHS1vpU9rFJ38EehTRC+nshpaNWyUkpmpqMmRnULqwHhA3OG
+pm+Twr+eMYFISBiRB+z7ZVZxd1r1iyO+R6+p7cxvCHuOncgH7n12Rq1iXI/fjgPT
+OiVywW+BBPvs8O4WLK4fvZD5CgUNEY18SKkpZUpz4zM8dr4k5kbCKjw2HZxddpxa
+V/+euH1s40khpIqN8xOhdIy65G/6qhMyhClA0IOZjgnpJue+yLQ=
+=3zys
+-----END PGP SIGNATURE-----
+
+--2wBBJs86Fo+2xVwd--
