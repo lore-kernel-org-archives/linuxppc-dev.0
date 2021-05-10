@@ -2,124 +2,57 @@ Return-Path: <SRS0=31b2=KF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B09AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 07:14:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EE59C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 07:24:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D706661432
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 07:13:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D706661432
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D6F7F613DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 07:24:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6F7F613DC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fdsjf3sfqz308D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 17:13:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fdsxf3VLyz3bsK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 17:24:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MV1P68rf;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=srs0=9mjr=kf=linux.ibm.com=maddy@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MV1P68rf; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fdsj14M1jz2yYV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2021 17:13:24 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by ozlabs.org (Postfix) with ESMTP id 4Fdsht3pfxz9sV5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2021 17:13:18 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4Fdsht3QZcz9sTD; Mon, 10 May 2021 17:13:18 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MV1P68rf; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4Fdshs37wmz9s1l;
- Mon, 10 May 2021 17:13:17 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14A79r1D027218; Mon, 10 May 2021 03:13:14 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=nh+SMmrKKBoZZ78tk5s1cjLYLDFMjI+CaCxiqiD3UPc=;
- b=MV1P68rfwKD+ywhswWCwFw5WAStG6JBgLandpI6tOe0GCTsu2fHMewjgOLKXXhDvxU6O
- pWfWyIB8efgIgELqTKzw2YpIXbqI1NfCkCPjhdBY7UVjkN1alu/9xEJh/SinhzeZufyL
- x+vtzOBUCPdKMzwXKlvQkrp08UJphc5y0aIc8UmfFMntpaNbVNakYL7Jart7eLp8L21V
- GjdP+hfu2BIqeDxGxW4nOl2ClHU7Q0FNBFR2otfpVQgYo8aAihQfUtWNkTShXsspNTtN
- zLb0i5nI7mYEzhapc3ZYUD6rSB/bVmm0BdQGx2SaYA9RQ/+Z23P6nog24QzXaZcm3C7M lQ== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38exs325pf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 May 2021 03:13:13 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14A71YN1029426;
- Mon, 10 May 2021 07:13:11 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma05fra.de.ibm.com with ESMTP id 38dj98gcdd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 May 2021 07:13:11 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14A7D9LX24903944
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 10 May 2021 07:13:09 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E011AA405C;
- Mon, 10 May 2021 07:13:08 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 927B8A405F;
- Mon, 10 May 2021 07:13:06 +0000 (GMT)
-Received: from Madhavan.PrimaryTP (unknown [9.80.229.203])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 10 May 2021 07:13:06 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/pmu: Make the generic compat PMU use the
- architected events
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-References: <YJD7L9yeoxvxqeYi@thinks.paulus.ozlabs.org>
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-Message-ID: <9bad51b6-f410-34dc-cd1a-533c6ac83187@linux.ibm.com>
-Date: Mon, 10 May 2021 12:43:04 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.11.0
-MIME-Version: 1.0
-In-Reply-To: <YJD7L9yeoxvxqeYi@thinks.paulus.ozlabs.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: uy40EEvtQnu9ruNmkKZn5awznfWYZefo
-X-Proofpoint-ORIG-GUID: uy40EEvtQnu9ruNmkKZn5awznfWYZefo
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-10_02:2021-05-10,
- 2021-05-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxscore=0
- adultscore=0 clxscore=1011 lowpriorityscore=0 impostorscore=0
- malwarescore=0 mlxlogscore=999 phishscore=0 suspectscore=0 spamscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105100050
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FdsxB0S9xz2yXk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2021 17:23:56 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 42D0D203C30;
+ Mon, 10 May 2021 09:23:52 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 311EA203C21;
+ Mon, 10 May 2021 09:23:45 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C149B402F7;
+ Mon, 10 May 2021 15:23:36 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
+ kernel@pengutronix.de, linux-imx@nxp.com, linux-kernel@vger.kernel.org,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, robh+dt@kernel.org,
+ devicetree@vger.kernel.org
+Subject: [PATCH v2 1/2] ASoC: imx-akcodec: Add imx-akcodec machine driver
+Date: Mon, 10 May 2021 15:07:20 +0800
+Message-Id: <1620630441-14358-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -131,329 +64,875 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Add machine driver for i.MX boards that have
+AK4458/AK5558/AK4497/AK5552 DAC/ADC attached to
+SAI interface.
 
-On 5/4/21 1:13 PM, Paul Mackerras wrote:
-> This changes generic-compat-pmu.c so that it only uses architected
-> events defined in Power ISA v3.0B, rather than event encodings which,
-> while common to all the IBM Power Systems implementations, are
-> nevertheless implementation-specific rather than architected.  The
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Signed-off-by: Mihai Serban <mihai.serban@nxp.com>
+Signed-off-by: Cosmin-Gabriel Samoila <cosmin.samoila@nxp.com>
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+Signed-off-by: Adrian Alonso <adrian.alonso@nxp.com>
+---
+changes in v2:
+- update the code according to the change of binding doc
 
+ sound/soc/fsl/Kconfig       |  12 +
+ sound/soc/fsl/Makefile      |   2 +
+ sound/soc/fsl/imx-akcodec.c | 799 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 813 insertions(+)
+ create mode 100644 sound/soc/fsl/imx-akcodec.c
 
-Yeah as you pointed, this was aimed at IBM system implementations.
-Thanks for the patch and patch looks fine to me.
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 0917d65d6921..5720ad36494f 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -350,6 +350,18 @@ config SND_SOC_IMX_RPMSG
+ 	  Say Y if you want to add support for SoC audio on an i.MX board with
+ 	  a rpmsg devices.
+ 
++config SND_SOC_IMX_AKCODEC
++	tristate "SoC Audio support for i.MX boards with AKCODEC"
++	depends on OF && I2C
++	select SND_SOC_AK4458
++	select SND_SOC_AK5558
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_SAI
++	help
++	  SoC Audio support for i.MX boards with AK4458/AK4497/AK5558/AK5552
++	  Say Y if you want to add support for SoC audio on an i.MX board with
++	  an AK4458/AK4497/AK5558/AK5552 DAC/ADC.
++
+ endif # SND_IMX_SOC
+ 
+ endmenu
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index f146ce464acd..ee7caed0c758 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -71,6 +71,7 @@ snd-soc-imx-spdif-objs := imx-spdif.o
+ snd-soc-imx-audmix-objs := imx-audmix.o
+ snd-soc-imx-hdmi-objs := imx-hdmi.o
+ snd-soc-imx-rpmsg-objs := imx-rpmsg.o
++snd-soc-imx-akcodec-objs := imx-akcodec.o
+ 
+ obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
+ obj-$(CONFIG_SND_SOC_IMX_ES8328) += snd-soc-imx-es8328.o
+@@ -79,3 +80,4 @@ obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_AUDMIX) += snd-soc-imx-audmix.o
+ obj-$(CONFIG_SND_SOC_IMX_HDMI) += snd-soc-imx-hdmi.o
+ obj-$(CONFIG_SND_SOC_IMX_RPMSG) += snd-soc-imx-rpmsg.o
++obj-$(CONFIG_SND_SOC_IMX_AKCODEC) += snd-soc-imx-akcodec.o
+diff --git a/sound/soc/fsl/imx-akcodec.c b/sound/soc/fsl/imx-akcodec.c
+new file mode 100644
+index 000000000000..586ecac8c0bf
+--- /dev/null
++++ b/sound/soc/fsl/imx-akcodec.c
+@@ -0,0 +1,799 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright 2017-2021 NXP
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/gpio/consumer.h>
++#include <linux/of_device.h>
++#include <linux/i2c.h>
++#include <linux/of_gpio.h>
++#include <linux/clk.h>
++#include <sound/soc.h>
++#include <sound/pcm_params.h>
++#include <sound/pcm.h>
++#include <sound/soc-dapm.h>
++#include <sound/simple_card_utils.h>
++
++#include "fsl_sai.h"
++
++enum codec_type {
++	CODEC_AK5558 = 1,
++	CODEC_AK4458,
++	CODEC_AK4497,
++	CODEC_AK5552,
++};
++
++/*
++ * Mapping LRCK fs and frame width, table 3 & 4 in datasheet
++ * @rmin: min rate
++ * @rmax: max rate
++ * @wmin: min frame ratio
++ * @wmax: max frame ratio
++ */
++struct imx_akcodec_fs_mul {
++	unsigned int rmin;
++	unsigned int rmax;
++	unsigned int wmin;
++	unsigned int wmax;
++};
++
++/*
++ * Mapping TDM mode and frame width
++ */
++struct imx_akcodec_tdm_fs_mul {
++	unsigned int min;
++	unsigned int max;
++	unsigned int mul;
++};
++
++/*
++ * struct imx_akcodec_plat_data - specific info for codecs
++ *
++ * @fs_mul: ratio of mclk/fs for normal mode
++ * @tdm_fs_mul: ratio of mclk/fs for tdm mode
++ * @support_rates: supported sample rate
++ * @support_tdm_rates: supported sample rate for tdm mode
++ * @support_channels: supported channels
++ * @support_tdm_channels: supported channels for tdm mode
++ * @num_fs_mul: ARRAY_SIZE of fs_mul
++ * @num_tdm_fs_mul: ARRAY_SIZE of tdm_fs_mul
++ * @num_rates: ARRAY_SIZE of support_rates
++ * @num_tdm_rates: ARRAY_SIZE of support_tdm_rates
++ * @num_channels: ARRAY_SIZE of support_channels
++ * @num_tdm_channels: ARRAY_SIZE of support_tdm_channels
++ * @one2one_ratio: if mclk/bclk = 1 or not
++ * @type: codec type
++ */
++struct imx_akcodec_plat_data {
++	struct imx_akcodec_fs_mul  *fs_mul;
++	struct imx_akcodec_tdm_fs_mul  *tdm_fs_mul;
++	const u32 *support_rates;
++	const u32 *support_tdm_rates;
++	const u32 *support_channels;
++	const u32 *support_tdm_channels;
++	unsigned int num_fs_mul;
++	unsigned int num_tdm_fs_mul;
++	unsigned int num_rates;
++	unsigned int num_tdm_rates;
++	unsigned int num_channels;
++	unsigned int num_tdm_channels;
++	unsigned int num_codecs;
++	bool one2one_ratio;
++	enum codec_type type;
++};
++
++/*
++ * struct imx_akcodec_data - platform device data
++ *
++ * @card: card instance
++ * @plat_data: pointer of imx_akcodec_plat_data
++ * @dapm_routes: pointer of dapm_routes
++ * @num_dapm_routes: number of dapm_routes
++ * @slots: slots value
++ * @slot_width: slot width value
++ * @tdm_mode: tdm mode enabled or not
++ * @asrc_rate: asrc rates
++ * @asrc_format: asrc format
++ */
++struct imx_akcodec_data {
++	struct snd_soc_card card;
++	const struct imx_akcodec_plat_data *plat_data;
++	struct snd_soc_dapm_route *dapm_routes;
++	int num_dapm_routes;
++	unsigned int slots;
++	unsigned int slot_width;
++	bool tdm_mode;
++	u32 asrc_rate;
++	u32 asrc_format;
++};
++
++struct imx_akcodec_fs_mul ak4458_fs_mul[] = {
++	/* Normal, < 32kHz */
++	{ .rmin = 8000,   .rmax = 24000,  .wmin = 1024, .wmax = 1024, },
++	/* Normal, 32kHz */
++	{ .rmin = 32000,  .rmax = 32000,  .wmin = 256,  .wmax = 1024, },
++	/* Normal */
++	{ .rmin = 44100,  .rmax = 48000,  .wmin = 256,  .wmax = 768,  },
++	/* Double */
++	{ .rmin = 88200,  .rmax = 96000,  .wmin = 256,  .wmax = 512,  },
++	/* Quad */
++	{ .rmin = 176400, .rmax = 192000, .wmin = 128,  .wmax = 256,  },
++	/* Oct */
++	{ .rmin = 352800, .rmax = 384000, .wmin = 32,   .wmax = 128,  },
++	/* Hex */
++	{ .rmin = 705600, .rmax = 768000, .wmin = 16,   .wmax = 64,   },
++};
++
++struct imx_akcodec_tdm_fs_mul ak4458_tdm_fs_mul[] = {
++	/*
++	 * Table 13	- Audio Interface Format
++	 * For TDM mode, MCLK should is set to
++	 * obtained from 2 * slots * slot_width
++	 */
++	{ .min = 128,	.max = 128,	.mul = 256  }, /* TDM128 */
++	{ .min = 256,	.max = 256,	.mul = 512  }, /* TDM256 */
++	{ .min = 512,	.max = 512,	.mul = 1024  }, /* TDM512 */
++};
++
++struct imx_akcodec_fs_mul ak4497_fs_mul[] = {
++	/**
++	 * Table 7      - mapping multiplier and speed mode
++	 * Tables 8 & 9 - mapping speed mode and LRCK fs
++	 */
++	{ .rmin = 8000,   .rmax = 32000,  .wmin = 1024, .wmax = 1024, }, /* Normal, <= 32kHz */
++	{ .rmin = 44100,  .rmax = 48000,  .wmin = 512,  .wmax = 512, }, /* Normal */
++	{ .rmin = 88200,  .rmax = 96000,  .wmin = 256,  .wmax = 256, }, /* Double */
++	{ .rmin = 176400, .rmax = 192000, .wmin = 128,  .wmax = 128, }, /* Quad */
++	{ .rmin = 352800, .rmax = 384000, .wmin = 128,  .wmax = 128, }, /* Oct */
++	{ .rmin = 705600, .rmax = 768000, .wmin = 64,   .wmax = 64, }, /* Hex */
++};
++
++/*
++ * Auto MCLK selection based on LRCK for Normal Mode
++ * (Table 4 from datasheet)
++ */
++struct imx_akcodec_fs_mul ak5558_fs_mul[] = {
++	{ .rmin = 8000,   .rmax = 32000,  .wmin = 1024, .wmax = 1024, },
++	{ .rmin = 44100,  .rmax = 48000,  .wmin = 512,  .wmax = 512, },
++	{ .rmin = 88200,  .rmax = 96000,  .wmin = 256,  .wmax = 256, },
++	{ .rmin = 176400, .rmax = 192000, .wmin = 128,  .wmax = 128, },
++	{ .rmin = 352800, .rmax = 384000, .wmin = 64,   .wmax = 64, },
++	{ .rmin = 705600, .rmax = 768000, .wmin = 32,   .wmax = 32, },
++};
++
++/*
++ * MCLK and BCLK selection based on TDM mode
++ * because of SAI we also add the restriction: MCLK >= 2 * BCLK
++ * (Table 9 from datasheet)
++ */
++struct imx_akcodec_tdm_fs_mul ak5558_tdm_fs_mul[] = {
++	{ .min = 128,	.max = 128,	.mul = 256 },
++	{ .min = 256,	.max = 256,	.mul = 512 },
++	{ .min = 512,	.max = 512,	.mul = 1024 },
++};
++
++static const u32 akcodec_rates[] = {
++	8000, 11025, 16000, 22050, 32000, 44100, 48000, 88200,
++	96000, 176400, 192000, 352800, 384000, 705600, 768000,
++};
++
++static const u32 akcodec_tdm_rates[] = {
++	8000, 16000, 32000, 48000, 96000,
++};
++
++static const u32 ak4458_channels[] = {
++	1, 2, 4, 6, 8, 10, 12, 14, 16,
++};
++
++static const u32 ak4458_tdm_channels[] = {
++	1, 2, 3, 4, 5, 6, 7, 8, 16,
++};
++
++static const u32 ak5558_channels[] = {
++	1, 2, 4, 6, 8,
++};
++
++static const u32 ak5558_tdm_channels[] = {
++	1, 2, 3, 4, 5, 6, 7, 8,
++};
++
++static const struct imx_akcodec_plat_data imx8mq_akcodec = {
++	.support_rates = akcodec_rates,
++	.num_rates = ARRAY_SIZE(akcodec_rates),
++	.support_tdm_rates = akcodec_tdm_rates,
++	.num_tdm_rates = ARRAY_SIZE(akcodec_tdm_rates),
++	.one2one_ratio = false,
++};
++
++static const struct imx_akcodec_plat_data imx_akcodec = {
++	.support_rates = akcodec_rates,
++	.num_rates = ARRAY_SIZE(akcodec_rates),
++	.support_tdm_rates = akcodec_tdm_rates,
++	.num_tdm_rates = ARRAY_SIZE(akcodec_tdm_rates),
++	.one2one_ratio = true,
++};
++
++static bool format_is_dsd(struct snd_pcm_hw_params *params)
++{
++	snd_pcm_format_t format = params_format(params);
++
++	switch (format) {
++	case SNDRV_PCM_FORMAT_DSD_U8:
++	case SNDRV_PCM_FORMAT_DSD_U16_LE:
++	case SNDRV_PCM_FORMAT_DSD_U16_BE:
++	case SNDRV_PCM_FORMAT_DSD_U32_LE:
++	case SNDRV_PCM_FORMAT_DSD_U32_BE:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static bool format_is_tdm(unsigned int dai_fmt)
++{
++	if ((dai_fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_DSP_B)
++		return true;
++	else
++		return false;
++}
++
++static unsigned long akcodec_get_mclk_rate(struct snd_pcm_substream *substream,
++					   struct snd_pcm_hw_params *params,
++					   bool tdm_mode)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct imx_akcodec_data *data = snd_soc_card_get_drvdata(rtd->card);
++	const struct imx_akcodec_plat_data *plat_data = data->plat_data;
++	unsigned int width = data->slots * data->slot_width;
++	unsigned int rate = params_rate(params);
++	int i;
++
++	if (data->tdm_mode) {
++		for (i = 0; i < plat_data->num_tdm_fs_mul; i++) {
++			/* min = max = slots * slots_width */
++			if (width != plat_data->tdm_fs_mul[i].min)
++				continue;
++			return rate * plat_data->tdm_fs_mul[i].mul;
++		}
++	} else {
++		for (i = 0; i < plat_data->num_fs_mul; i++) {
++			if (rate >= plat_data->fs_mul[i].rmin &&
++			    rate <= plat_data->fs_mul[i].rmax) {
++				width = max(width, plat_data->fs_mul[i].wmin);
++				width = min(width, plat_data->fs_mul[i].wmax);
++
++				/* Adjust SAI bclk:mclk ratio */
++				width *= plat_data->one2one_ratio ? 1 : 2;
++
++				return rate * width;
++			}
++		}
++	}
++
++	/* Let DAI manage clk frequency by default */
++	return 0;
++}
++
++static int imx_aif_hw_params(struct snd_pcm_substream *substream,
++			     struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
++	struct snd_soc_card *card = rtd->card;
++	struct imx_akcodec_data *data = snd_soc_card_get_drvdata(card);
++	bool is_dsd = format_is_dsd(params);
++	struct device *dev = card->dev;
++	struct snd_soc_dai *codec_dai;
++	unsigned long mclk_freq;
++	unsigned int fmt;
++	bool tdm_mode;
++	int ret, i;
++
++	tdm_mode = format_is_tdm(rtd->dai_link->dai_fmt);
++
++	if (tdm_mode) {
++		data->slots = 8;
++		data->slot_width = 32;
++		fmt = rtd->dai_link->dai_fmt;
++	} else {
++		if (is_dsd) {
++			data->slots = 1;
++			data->slot_width = params_width(params);
++			fmt = (rtd->dai_link->dai_fmt & ~SND_SOC_DAIFMT_FORMAT_MASK) |
++			      SND_SOC_DAIFMT_PDM;
++		} else {
++			data->slots = 2;
++			data->slot_width = params_physical_width(params);
++			fmt = (rtd->dai_link->dai_fmt & ~SND_SOC_DAIFMT_FORMAT_MASK) |
++			      SND_SOC_DAIFMT_I2S;
++		}
++	}
++
++	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
++	if (ret && ret != -ENOTSUPP) {
++		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
++		return ret;
++	}
++	ret = snd_soc_dai_set_tdm_slot(cpu_dai,
++				       BIT(data->slots) - 1,
++				       BIT(data->slots) - 1,
++				       data->slots, data->slot_width);
++	if (ret && ret != -ENOTSUPP) {
++		dev_err(dev, "failed to set cpu dai tdm slot: %d\n", ret);
++		return ret;
++	}
++
++	for_each_rtd_codec_dais(rtd, i, codec_dai) {
++		ret = snd_soc_dai_set_fmt(codec_dai, fmt);
++		if (ret && ret != -ENOTSUPP) {
++			dev_err(dev, "failed to set codec dai[%d] fmt: %d\n", i, ret);
++			return ret;
++		}
++
++		ret = snd_soc_dai_set_tdm_slot(codec_dai,
++					       BIT(data->slots) - 1,
++					       BIT(data->slots) - 1,
++					       data->slots, data->slot_width);
++		if (ret && ret != -ENOTSUPP) {
++			dev_err(dev, "failed to set codec dai[%d] tdm slot: %d\n", i, ret);
++			return ret;
++		}
++	}
++
++	/* Set MCLK freq */
++	mclk_freq = akcodec_get_mclk_rate(substream, params, tdm_mode);
++	/* Use the maximum freq from DSD512 (512*44100 = 22579200) */
++	if (is_dsd)
++		mclk_freq = 22579200;
++
++	ret = snd_soc_dai_set_sysclk(cpu_dai, FSL_SAI_CLK_MAST1, mclk_freq,
++				     SND_SOC_CLOCK_OUT);
++	if (ret && ret != -ENOTSUPP)
++		dev_err(dev, "failed to set cpui dai mclk1 rate (%lu): %d\n",
++			mclk_freq, ret);
++	return ret;
++}
++
++static int ak5558_hw_rule_rate(struct snd_pcm_hw_params *p, struct snd_pcm_hw_rule *r)
++{
++	struct imx_akcodec_data *data = r->private;
++	struct snd_interval t = { .min = 8000, .max = 8000, };
++	unsigned long mclk_freq;
++	unsigned int fs;
++	int i;
++
++	fs = hw_param_interval(p, SNDRV_PCM_HW_PARAM_SAMPLE_BITS)->min;
++	fs *= data->tdm_mode ? 8 : 2;
++
++	/* Identify maximum supported rate */
++	for (i = 0; i < ARRAY_SIZE(akcodec_rates); i++) {
++		mclk_freq = fs * akcodec_rates[i];
++		/* Adjust SAI bclk:mclk ratio */
++		mclk_freq *= data->plat_data->one2one_ratio ? 1 : 2;
++
++		/* Skip rates for which MCLK is beyond supported value */
++		if (mclk_freq > 36864000)
++			continue;
++
++		if (t.max < akcodec_rates[i])
++			t.max = akcodec_rates[i];
++	}
++
++	return snd_interval_refine(hw_param_interval(p, r->var), &t);
++}
++
++static int imx_aif_startup(struct snd_pcm_substream *substream)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_card *card = rtd->card;
++	struct imx_akcodec_data *data = snd_soc_card_get_drvdata(card);
++	static struct snd_pcm_hw_constraint_list constraint_rates;
++	static struct snd_pcm_hw_constraint_list constraint_channels;
++	int ret = 0;
++
++	data->tdm_mode = format_is_tdm(rtd->dai_link->dai_fmt);
++	if (data->tdm_mode) {
++		constraint_channels.list = data->plat_data->support_tdm_channels;
++		constraint_channels.count = data->plat_data->num_tdm_channels;
++		constraint_rates.list = data->plat_data->support_tdm_rates;
++		constraint_rates.count = data->plat_data->num_tdm_rates;
++	} else {
++		constraint_channels.list = data->plat_data->support_channels;
++		constraint_channels.count = data->plat_data->num_channels;
++		constraint_rates.list = data->plat_data->support_rates;
++		constraint_rates.count = data->plat_data->num_rates;
++	}
++
++	ret = snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_CHANNELS,
++					 &constraint_channels);
++	if (ret)
++		return ret;
++
++	ret = snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
++					 &constraint_rates);
++	if (ret)
++		return ret;
++
++	if (data->plat_data->type == CODEC_AK5558)
++		ret = snd_pcm_hw_rule_add(substream->runtime, 0,
++					  SNDRV_PCM_HW_PARAM_RATE,
++					  ak5558_hw_rule_rate, data,
++					  SNDRV_PCM_HW_PARAM_SAMPLE_BITS, -1);
++
++	return ret;
++}
++
++static struct snd_soc_ops imx_aif_ops = {
++	.hw_params = imx_aif_hw_params,
++	.startup = imx_aif_startup,
++};
++
++static struct snd_soc_ops imx_aif_ops_be = {
++	.hw_params = imx_aif_hw_params,
++};
++
++static int be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
++			      struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_card *card = rtd->card;
++	struct imx_akcodec_data *data = snd_soc_card_get_drvdata(card);
++	struct snd_interval *rate;
++	struct snd_mask *mask;
++
++	rate = hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE);
++	rate->max = data->asrc_rate;
++	rate->min = data->asrc_rate;
++
++	mask = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
++	snd_mask_none(mask);
++	snd_mask_set(mask, data->asrc_format);
++
++	return 0;
++}
++
++static int imx_akcodec_parse_of(struct snd_soc_card *card,
++				u32 *asrc_format,
++				u32 *asrc_rate,
++				enum codec_type *codec_type,
++				unsigned int *num_codecs)
++{
++	struct device_node *np;
++	struct device_node *codec = NULL;
++	struct device_node *platform = NULL;
++	struct device_node *cpu = NULL;
++	struct device *dev = card->dev;
++	struct snd_soc_dai_link *link;
++	struct of_phandle_args args;
++	struct snd_soc_dai_link_component *dlc;
++	int ret, num_links;
++	u32 width;
++
++	ret = snd_soc_of_parse_card_name(card, "model");
++	if (ret) {
++		dev_err(dev, "Error parsing card name: %d\n", ret);
++		return ret;
++	}
++
++	/* DAPM routes */
++	if (of_property_read_bool(dev->of_node, "audio-routing")) {
++		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
++		if (ret)
++			return ret;
++	}
++
++	/* Populate links */
++	num_links = of_get_child_count(dev->of_node);
++
++	/* Allocate the DAI link array */
++	card->dai_link = devm_kcalloc(dev, num_links, sizeof(*link), GFP_KERNEL);
++	if (!card->dai_link)
++		return -ENOMEM;
++
++	card->num_links = num_links;
++	link = card->dai_link;
++
++	for_each_child_of_node(dev->of_node, np) {
++		dlc = devm_kzalloc(dev, 2 * sizeof(*dlc), GFP_KERNEL);
++		if (!dlc) {
++			ret = -ENOMEM;
++			goto err_put_np;
++		}
++
++		link->cpus	= &dlc[0];
++		link->platforms	= &dlc[1];
++
++		link->num_cpus		= 1;
++		link->num_platforms	= 1;
++
++		ret = of_property_read_string(np, "link-name", &link->name);
++		if (ret) {
++			dev_err(card->dev, "error getting codec dai_link name\n");
++			goto err_put_np;
++		}
++
++		cpu = of_get_child_by_name(np, "cpu");
++		if (!cpu) {
++			dev_err(dev, "%s: Can't find cpu DT node\n", link->name);
++			ret = -EINVAL;
++			goto err;
++		}
++
++		ret = of_parse_phandle_with_args(cpu, "sound-dai",
++						 "#sound-dai-cells", 0, &args);
++		if (ret) {
++			dev_err(card->dev, "%s: error getting cpu phandle\n", link->name);
++			goto err;
++		}
++		link->cpus->of_node = args.np;
++		link->platforms->of_node = link->cpus->of_node;
++		link->id = args.args[0];
++
++		ret = snd_soc_of_get_dai_name(cpu, &link->cpus->dai_name);
++		if (ret) {
++			if (ret != -EPROBE_DEFER)
++				dev_err(card->dev, "%s: error getting cpu dai name: %d\n",
++					link->name, ret);
++			goto err;
++		}
++
++		codec = of_get_child_by_name(np, "codec");
++		if (codec) {
++			ret = snd_soc_of_get_dai_link_codecs(dev, codec, link);
++			if (ret < 0) {
++				if (ret != -EPROBE_DEFER)
++					dev_err(dev, "%s: codec dai not found: %d\n",
++						link->name, ret);
++				goto err;
++			}
++
++			*num_codecs = link->num_codecs;
++
++			if (!strcmp(link->codecs->dai_name, "ak4458-aif"))
++				*codec_type = CODEC_AK4458;
++			else if (!strcmp(link->codecs->dai_name, "ak4497-aif"))
++				*codec_type = CODEC_AK4497;
++			else if (!strcmp(link->codecs->dai_name, "ak5558-aif"))
++				*codec_type = CODEC_AK5558;
++			else if (!strcmp(link->codecs->dai_name, "ak5552-aif"))
++				*codec_type = CODEC_AK5552;
++
++		} else {
++			dlc = devm_kzalloc(dev, sizeof(*dlc), GFP_KERNEL);
++			if (!dlc) {
++				ret = -ENOMEM;
++				goto err;
++			}
++
++			link->codecs	 = dlc;
++			link->num_codecs = 1;
++
++			link->codecs->dai_name = "snd-soc-dummy-dai";
++			link->codecs->name = "snd-soc-dummy";
++		}
++
++		if (!strncmp(link->name, "HiFi-ASRC-FE", 12)) {
++			/* DPCM frontend */
++			link->dynamic = 1;
++			link->dpcm_merged_chan = 1;
++
++			ret = of_property_read_u32(args.np, "fsl,asrc-rate", asrc_rate);
++			if (ret) {
++				dev_err(dev, "failed to get output rate\n");
++				ret = -EINVAL;
++				goto err;
++			}
++
++			ret = of_property_read_u32(args.np, "fsl,asrc-format", asrc_format);
++			if (ret) {
++				/* Fallback to old binding; translate to asrc_format */
++				ret = of_property_read_u32(args.np, "fsl,asrc-width", &width);
++				if (ret) {
++					dev_err(dev,
++						"failed to decide output format\n");
++					goto err;
++				}
++
++				if (width == 24)
++					*asrc_format = SNDRV_PCM_FORMAT_S24_LE;
++				else
++					*asrc_format = SNDRV_PCM_FORMAT_S16_LE;
++			}
++		} else if (!strncmp(link->name, "HiFi-ASRC-BE", 12)) {
++			/* DPCM backend */
++			link->no_pcm = 1;
++			link->platforms->of_node = NULL;
++			link->platforms->name = "snd-soc-dummy";
++
++			link->be_hw_params_fixup = be_hw_params_fixup;
++			link->ops = &imx_aif_ops_be;
++		} else {
++			link->ops = &imx_aif_ops;
++		}
++
++		if (link->no_pcm || link->dynamic)
++			snd_soc_dai_link_set_capabilities(link);
++
++		ret = asoc_simple_parse_daifmt(dev, np, codec,
++					       NULL, &link->dai_fmt);
++		if (ret)
++			link->dai_fmt = SND_SOC_DAIFMT_NB_NF |
++					SND_SOC_DAIFMT_CBS_CFS |
++					SND_SOC_DAIFMT_I2S;
++
++		link->ignore_pmdown_time = 1;
++		link->stream_name = link->name;
++		link++;
++
++		of_node_put(cpu);
++		of_node_put(codec);
++		of_node_put(platform);
++	}
++
++	return 0;
++err:
++	of_node_put(cpu);
++	of_node_put(codec);
++	of_node_put(platform);
++err_put_np:
++	of_node_put(np);
++	return ret;
++}
++
++static int imx_akcodec_probe(struct platform_device *pdev)
++{
++	struct snd_soc_dai_link *link_be = NULL, *link;
++	struct imx_akcodec_plat_data *plat_data;
++	struct imx_akcodec_data *data;
++	int ret, i;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	plat_data = devm_kzalloc(&pdev->dev, sizeof(*plat_data), GFP_KERNEL);
++	if (!plat_data)
++		return -ENOMEM;
++
++	data->plat_data = plat_data;
++	data->card.dev = &pdev->dev;
++
++	memcpy(plat_data, of_device_get_match_data(&pdev->dev),
++	       sizeof(struct imx_akcodec_plat_data));
++
++	dev_set_drvdata(&pdev->dev, &data->card);
++	snd_soc_card_set_drvdata(&data->card, data);
++	ret = imx_akcodec_parse_of(&data->card,
++				   &data->asrc_format,
++				   &data->asrc_rate,
++				   &plat_data->type,
++				   &plat_data->num_codecs);
++	if (ret)
++		return ret;
++
++	data->num_dapm_routes = plat_data->num_codecs + 1;
++	data->dapm_routes = devm_kcalloc(&pdev->dev, data->num_dapm_routes,
++					 sizeof(struct snd_soc_dapm_route),
++					 GFP_KERNEL);
++	if (!data->dapm_routes)
++		return -ENOMEM;
++
++	/* configure the dapm routes */
++	switch (plat_data->type) {
++	case CODEC_AK4458:
++	case CODEC_AK4497:
++		if (plat_data->num_codecs == 1) {
++			data->dapm_routes[0].sink = "Playback";
++			data->dapm_routes[0].source = "CPU-Playback";
++			i = 1;
++		} else {
++			for (i = 0; i < plat_data->num_codecs; i++) {
++				data->dapm_routes[i].sink =
++					devm_kasprintf(&pdev->dev, GFP_KERNEL, "%d %s",
++						       i + 1, "Playback");
++				data->dapm_routes[i].source = "CPU-Playback";
++			}
++		}
++		data->dapm_routes[i].sink = "CPU-Playback";
++		data->dapm_routes[i].source = "ASRC-Playback";
++		break;
++	case CODEC_AK5558:
++	case CODEC_AK5552:
++		if (plat_data->num_codecs == 1) {
++			data->dapm_routes[0].sink = "CPU-Capture";
++			data->dapm_routes[0].source = "Capture";
++			i = 1;
++		} else {
++			for (i = 0; i < plat_data->num_codecs; i++) {
++				data->dapm_routes[i].source =
++					devm_kasprintf(&pdev->dev, GFP_KERNEL, "%d %s",
++						       i + 1, "Capture");
++				data->dapm_routes[i].sink = "CPU-Capture";
++			}
++		}
++		data->dapm_routes[i].sink = "ASRC-Capture";
++		data->dapm_routes[i].source = "CPU-Capture";
++		break;
++	default:
++		break;
++	}
++
++	switch (plat_data->type) {
++	case CODEC_AK4458:
++		plat_data->fs_mul = ak4458_fs_mul;
++		plat_data->num_fs_mul = ARRAY_SIZE(ak4458_fs_mul);
++		plat_data->tdm_fs_mul = ak4458_tdm_fs_mul;
++		plat_data->num_tdm_fs_mul = ARRAY_SIZE(ak4458_tdm_fs_mul);
++		plat_data->support_channels = ak4458_channels;
++		plat_data->num_channels = ARRAY_SIZE(ak4458_channels);
++		plat_data->support_tdm_channels = ak4458_tdm_channels;
++		plat_data->num_tdm_channels = ARRAY_SIZE(ak4458_tdm_channels);
++		break;
++	case CODEC_AK4497:
++		plat_data->fs_mul = ak4497_fs_mul;
++		plat_data->num_fs_mul = ARRAY_SIZE(ak4497_fs_mul);
++		plat_data->support_channels = ak4458_channels;
++		plat_data->num_channels = ARRAY_SIZE(ak4458_channels);
++		break;
++	case CODEC_AK5558:
++	case CODEC_AK5552:
++		plat_data->fs_mul = ak5558_fs_mul;
++		plat_data->num_fs_mul = ARRAY_SIZE(ak5558_fs_mul);
++		plat_data->tdm_fs_mul = ak5558_tdm_fs_mul;
++		plat_data->num_tdm_fs_mul = ARRAY_SIZE(ak5558_tdm_fs_mul);
++		plat_data->support_channels = ak5558_channels;
++		plat_data->num_channels = ARRAY_SIZE(ak5558_channels);
++		plat_data->support_tdm_channels = ak5558_tdm_channels;
++		plat_data->num_tdm_channels = ARRAY_SIZE(ak5558_tdm_channels);
++		break;
++	default:
++		break;
++	}
++
++	/* with asrc as front end */
++	if (data->card.num_links == 3) {
++		data->card.dapm_routes = data->dapm_routes;
++		data->card.num_dapm_routes = data->num_dapm_routes;
++		for_each_card_prelinks(&data->card, i, link) {
++			if (link->no_pcm == 1)
++				link_be = link;
++		}
++		for_each_card_prelinks(&data->card, i, link) {
++			if (link->dynamic == 1 && link_be) {
++				link->dpcm_playback = link_be->dpcm_playback;
++				link->dpcm_capture = link_be->dpcm_capture;
++			}
++		}
++	}
++
++	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
++	if (ret) {
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static const struct of_device_id imx_akcodec_dt_ids[] = {
++	{ .compatible = "fsl,imx8mq-audio-akcodec", .data = &imx8mq_akcodec, },
++	{ .compatible = "fsl,imx-audio-akcodec", .data = &imx_akcodec, },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, imx_akcodec_dt_ids);
++
++static struct platform_driver imx_akcodec_driver = {
++	.driver = {
++		.name = "imx-akcodec",
++		.pm = &snd_soc_pm_ops,
++		.of_match_table = imx_akcodec_dt_ids,
++	},
++	.probe = imx_akcodec_probe,
++};
++module_platform_driver(imx_akcodec_driver);
++
++MODULE_DESCRIPTION("Freescale i.MX AK CODEC ASoC machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-akcodec");
+-- 
+2.27.0
 
-Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-
-I can send a follow up patch to return EINVAL for a non-zero value
-other than pmc and pmcsel filed via check_attr_config.
-
-> intention is that any CPU implementation designed to conform to Power
-> ISA v3.0B or later can use generic-compat-pmu.c.
->
-> In addition to the existing events for cycles and instructions, this
-> adds several other architected events, including alternative encodings
-> for some events.  In order to make it possible to measure cycles and
-> instructions at the same time as each other, we set the CC5-6RUN bit
-> in MMCR0, which makes PMC5 and PMC6 count instructions and cycles
-> regardless of the run bit, so their events are now PM_CYC and
-> PM_INST_CMPL rather than PM_RUN_CYC and PM_RUN_INST_CMPL (the latter
-> are still available via other event codes).
->
-> Note that POWER9 has an erratum where one architected event
-> (PM_FLOP_CMPL, floating-point operations completed, code 0x100f4) does
-> not work correctly.  Given that there is a specific PMU driver for P9
-> which will be used in preference to generic-compat-pmu.c, that is not
-> a real problem.
->
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> ---
->   arch/powerpc/perf/generic-compat-pmu.c | 170 +++++++++++++++++++------
->   1 file changed, 134 insertions(+), 36 deletions(-)
->
-> diff --git a/arch/powerpc/perf/generic-compat-pmu.c b/arch/powerpc/perf/generic-compat-pmu.c
-> index eb8a6aaf4cc1..695975227e60 100644
-> --- a/arch/powerpc/perf/generic-compat-pmu.c
-> +++ b/arch/powerpc/perf/generic-compat-pmu.c
-> @@ -14,45 +14,119 @@
->    *
->    *        28        24        20        16        12         8         4         0
->    * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-> - *                                 [ pmc ]   [unit ]   [ ]   m   [    pmcxsel    ]
-> - *                                                     |     |
-> - *                                                     |     *- mark
-> - *                                                     |
-> - *                                                     |
-> - *                                                     *- combine
-> - *
-> - * Below uses IBM bit numbering.
-> - *
-> - * MMCR1[x:y] = unit    (PMCxUNIT)
-> - * MMCR1[24]   = pmc1combine[0]
-> - * MMCR1[25]   = pmc1combine[1]
-> - * MMCR1[26]   = pmc2combine[0]
-> - * MMCR1[27]   = pmc2combine[1]
-> - * MMCR1[28]   = pmc3combine[0]
-> - * MMCR1[29]   = pmc3combine[1]
-> - * MMCR1[30]   = pmc4combine[0]
-> - * MMCR1[31]   = pmc4combine[1]
-> - *
-> + *                                 [ pmc ]                       [    pmcxsel    ]
->    */
->   
->   /*
-> - * Some power9 event codes.
-> + * Event codes defined in ISA v3.0B
->    */
->   #define EVENT(_name, _code)	_name = _code,
->   
->   enum {
-> -EVENT(PM_CYC,					0x0001e)
-> -EVENT(PM_INST_CMPL,				0x00002)
-> +	/* Cycles, alternate code */
-> +	EVENT(PM_CYC_ALT,			0x100f0)
-> +	/* One or more instructions completed in a cycle */
-> +	EVENT(PM_CYC_INST_CMPL,			0x100f2)
-> +	/* Floating-point instruction completed */
-> +	EVENT(PM_FLOP_CMPL,			0x100f4)
-> +	/* Instruction ERAT/L1-TLB miss */
-> +	EVENT(PM_L1_ITLB_MISS,			0x100f6)
-> +	/* All instructions completed and none available */
-> +	EVENT(PM_NO_INST_AVAIL,			0x100f8)
-> +	/* A load-type instruction completed (ISA v3.0+) */
-> +	EVENT(PM_LD_CMPL,			0x100fc)
-> +	/* Instruction completed, alternate code (ISA v3.0+) */
-> +	EVENT(PM_INST_CMPL_ALT,			0x100fe)
-> +	/* A store-type instruction completed */
-> +	EVENT(PM_ST_CMPL,			0x200f0)
-> +	/* Instruction Dispatched */
-> +	EVENT(PM_INST_DISP,			0x200f2)
-> +	/* Run_cycles */
-> +	EVENT(PM_RUN_CYC,			0x200f4)
-> +	/* Data ERAT/L1-TLB miss/reload */
-> +	EVENT(PM_L1_DTLB_RELOAD,		0x200f6)
-> +	/* Taken branch completed */
-> +	EVENT(PM_BR_TAKEN_CMPL,			0x200fa)
-> +	/* Demand iCache Miss */
-> +	EVENT(PM_L1_ICACHE_MISS,		0x200fc)
-> +	/* L1 Dcache reload from memory */
-> +	EVENT(PM_L1_RELOAD_FROM_MEM,		0x200fe)
-> +	/* L1 Dcache store miss */
-> +	EVENT(PM_ST_MISS_L1,			0x300f0)
-> +	/* Alternate code for PM_INST_DISP */
-> +	EVENT(PM_INST_DISP_ALT,			0x300f2)
-> +	/* Branch direction or target mispredicted */
-> +	EVENT(PM_BR_MISPREDICT,			0x300f6)
-> +	/* Data TLB miss/reload */
-> +	EVENT(PM_DTLB_MISS,			0x300fc)
-> +	/* Demand LD - L3 Miss (not L2 hit and not L3 hit) */
-> +	EVENT(PM_DATA_FROM_L3MISS,		0x300fe)
-> +	/* L1 Dcache load miss */
-> +	EVENT(PM_LD_MISS_L1,			0x400f0)
-> +	/* Cycle when instruction(s) dispatched */
-> +	EVENT(PM_CYC_INST_DISP,			0x400f2)
-> +	/* Branch or branch target mispredicted */
-> +	EVENT(PM_BR_MPRED_CMPL,			0x400f6)
-> +	/* Instructions completed with run latch set */
-> +	EVENT(PM_RUN_INST_CMPL,			0x400fa)
-> +	/* Instruction TLB miss/reload */
-> +	EVENT(PM_ITLB_MISS,			0x400fc)
-> +	/* Load data not cached */
-> +	EVENT(PM_LD_NOT_CACHED,			0x400fe)
-> +	/* Instructions */
-> +	EVENT(PM_INST_CMPL,			0x500fa)
-> +	/* Cycles */
-> +	EVENT(PM_CYC,				0x600f4)
->   };
->   
->   #undef EVENT
->   
-> +/* Table of alternatives, sorted in increasing order of column 0 */
-> +/* Note that in each row, column 0 must be the smallest */
-> +static const unsigned int generic_event_alternatives[][MAX_ALT] = {
-> +	{ PM_CYC_ALT,			PM_CYC },
-> +	{ PM_INST_CMPL_ALT,		PM_INST_CMPL },
-> +	{ PM_INST_DISP,			PM_INST_DISP_ALT },
-> +};
-> +
-> +static int generic_get_alternatives(u64 event, unsigned int flags, u64 alt[])
-> +{
-> +	int num_alt = 0;
-> +
-> +	num_alt = isa207_get_alternatives(event, alt,
-> +					  ARRAY_SIZE(generic_event_alternatives), flags,
-> +					  generic_event_alternatives);
-> +
-> +	return num_alt;
-> +}
-> +
->   GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
->   GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
-> +GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_NO_INST_AVAIL);
-> +GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
-> +GENERIC_EVENT_ATTR(cache-misses,		PM_LD_MISS_L1);
-> +
-> +CACHE_EVENT_ATTR(L1-dcache-load-misses,		PM_LD_MISS_L1);
-> +CACHE_EVENT_ATTR(L1-dcache-store-misses,	PM_ST_MISS_L1);
-> +CACHE_EVENT_ATTR(L1-icache-load-misses,		PM_L1_ICACHE_MISS);
-> +CACHE_EVENT_ATTR(LLC-load-misses,		PM_DATA_FROM_L3MISS);
-> +CACHE_EVENT_ATTR(branch-load-misses,		PM_BR_MPRED_CMPL);
-> +CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
-> +CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
->   
->   static struct attribute *generic_compat_events_attr[] = {
->   	GENERIC_EVENT_PTR(PM_CYC),
->   	GENERIC_EVENT_PTR(PM_INST_CMPL),
-> +	GENERIC_EVENT_PTR(PM_NO_INST_AVAIL),
-> +	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
-> +	GENERIC_EVENT_PTR(PM_LD_MISS_L1),
-> +	CACHE_EVENT_PTR(PM_LD_MISS_L1),
-> +	CACHE_EVENT_PTR(PM_ST_MISS_L1),
-> +	CACHE_EVENT_PTR(PM_L1_ICACHE_MISS),
-> +	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
-> +	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
-> +	CACHE_EVENT_PTR(PM_DTLB_MISS),
-> +	CACHE_EVENT_PTR(PM_ITLB_MISS),
->   	NULL
->   };
->   
-> @@ -63,17 +137,11 @@ static struct attribute_group generic_compat_pmu_events_group = {
->   
->   PMU_FORMAT_ATTR(event,		"config:0-19");
->   PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
-> -PMU_FORMAT_ATTR(mark,		"config:8");
-> -PMU_FORMAT_ATTR(combine,	"config:10-11");
-> -PMU_FORMAT_ATTR(unit,		"config:12-15");
->   PMU_FORMAT_ATTR(pmc,		"config:16-19");
->   
->   static struct attribute *generic_compat_pmu_format_attr[] = {
->   	&format_attr_event.attr,
->   	&format_attr_pmcxsel.attr,
-> -	&format_attr_mark.attr,
-> -	&format_attr_combine.attr,
-> -	&format_attr_unit.attr,
->   	&format_attr_pmc.attr,
->   	NULL,
->   };
-> @@ -92,6 +160,9 @@ static const struct attribute_group *generic_compat_pmu_attr_groups[] = {
->   static int compat_generic_events[] = {
->   	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
->   	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
-> +	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_NO_INST_AVAIL,
-> +	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
-> +	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
->   };
->   
->   #define C(x)	PERF_COUNT_HW_CACHE_##x
-> @@ -105,11 +176,11 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(L1D) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_LD_MISS_L1,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_ST_MISS_L1,
->   		},
->   		[ C(OP_PREFETCH) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> @@ -119,7 +190,7 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(L1I) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_L1_ICACHE_MISS,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> @@ -133,7 +204,7 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(LL) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_DATA_FROM_L3MISS,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> @@ -147,7 +218,7 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(DTLB) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_DTLB_MISS,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = -1,
-> @@ -161,7 +232,7 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(ITLB) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_ITLB_MISS,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = -1,
-> @@ -175,7 +246,7 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[ C(BPU) ] = {
->   		[ C(OP_READ) ] = {
->   			[ C(RESULT_ACCESS) ] = 0,
-> -			[ C(RESULT_MISS)   ] = 0,
-> +			[ C(RESULT_MISS)   ] = PM_BR_MPRED_CMPL,
->   		},
->   		[ C(OP_WRITE) ] = {
->   			[ C(RESULT_ACCESS) ] = -1,
-> @@ -204,13 +275,30 @@ static u64 generic_compat_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   
->   #undef C
->   
-> +/*
-> + * We set MMCR0[CC5-6RUN] so we can use counters 5 and 6 for
-> + * PM_INST_CMPL and PM_CYC.
-> + */
-> +static int generic_compute_mmcr(u64 event[], int n_ev,
-> +				unsigned int hwc[], struct mmcr_regs *mmcr,
-> +				struct perf_event *pevents[], u32 flags)
-> +{
-> +	int ret;
-> +
-> +	ret = isa207_compute_mmcr(event, n_ev, hwc, mmcr, pevents, flags);
-> +	if (!ret)
-> +		mmcr->mmcr0 |= MMCR0_C56RUN;
-> +	return ret;
-> +}
-> +
->   static struct power_pmu generic_compat_pmu = {
->   	.name			= "GENERIC_COMPAT",
->   	.n_counter		= MAX_PMU_COUNTERS,
->   	.add_fields		= ISA207_ADD_FIELDS,
->   	.test_adder		= ISA207_TEST_ADDER,
-> -	.compute_mmcr		= isa207_compute_mmcr,
-> +	.compute_mmcr		= generic_compute_mmcr,
->   	.get_constraint		= isa207_get_constraint,
-> +	.get_alternatives	= generic_get_alternatives,
->   	.disable_pmc		= isa207_disable_pmc,
->   	.flags			= PPMU_HAS_SIER | PPMU_ARCH_207S,
->   	.n_generic		= ARRAY_SIZE(compat_generic_events),
-> @@ -223,6 +311,16 @@ int init_generic_compat_pmu(void)
->   {
->   	int rc = 0;
->   
-> +	/*
-> +	 * From ISA v2.07 on, PMU features are architected;
-> +	 * we require >= v3.0 because (a) that has PM_LD_CMPL and
-> +	 * PM_INST_CMPL_ALT, which v2.07 doesn't have, and
-> +	 * (b) we don't expect any non-IBM Power ISA
-> +	 * implementations that conform to v2.07 but not v3.0.
-> +	 */
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return -ENODEV;
-> +
->   	rc = register_power_pmu(&generic_compat_pmu);
->   	if (rc)
->   		return rc;
