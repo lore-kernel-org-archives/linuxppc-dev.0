@@ -2,60 +2,47 @@ Return-Path: <SRS0=31b2=KF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5732FC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31974C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:58:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6A9A6145F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:50:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6A9A6145F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 76079610A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:58:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76079610A0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ff3rk1TjQz3bs5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 00:50:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ff4270SL3z3bnq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 00:58:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 64 seconds by postgrey-1.36 at boromir;
- Tue, 11 May 2021 00:50:22 AEST
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ff3rG3mDJz2xtm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 00:50:22 +1000 (AEST)
-IronPort-SDR: /Zm/cppsYsb0BcM9GmvPgJseKtJktrmpXPimwsNMRw4U8dAETiC5b/QpnTvJ9xBIOB1wBZfj4B
- knErkTG3habQ==
-X-IronPort-AV: E=McAfee;i="6200,9189,9980"; a="198888160"
-X-IronPort-AV: E=Sophos;i="5.82,287,1613462400"; d="scan'208";a="198888160"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 May 2021 07:49:15 -0700
-IronPort-SDR: g12/KNiR7GT/d2fjM18wH18qp3EhNi/k6SN/QLNplQgIsiZWolAIHWTY1kWIMBU0T7c+zjBJko
- iJacHGqmMiKQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,287,1613462400"; d="scan'208";a="398902358"
-Received: from black.fi.intel.com ([10.237.72.28])
- by fmsmga007.fm.intel.com with ESMTP; 10 May 2021 07:49:13 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1003)
- id B1F4C12A; Mon, 10 May 2021 17:49:33 +0300 (EEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v1 1/1] powerpc/prom_init: Move custom isspace() to its own
- namespace
-Date: Mon, 10 May 2021 17:49:25 +0300
-Message-Id: <20210510144925.58195-1-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.30.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ff41g3CTQz2xvW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 00:58:30 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 7F6AC67373; Mon, 10 May 2021 16:58:23 +0200 (CEST)
+Date: Mon, 10 May 2021 16:58:23 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Claire Chang <tientzu@chromium.org>
+Subject: Re: [PATCH v6 01/15] swiotlb: Refactor swiotlb init functions
+Message-ID: <20210510145823.GA28066@lst.de>
+References: <20210510095026.3477496-1-tientzu@chromium.org>
+ <20210510095026.3477496-2-tientzu@chromium.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210510095026.3477496-2-tientzu@chromium.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,67 +54,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Paul Mackerras <paulus@samba.org>, kernel test robot <lkp@intel.com>
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
+ mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ jxgao@google.com, daniel@ffwll.ch, Will Deacon <will@kernel.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, bhelgaas@google.com, boris.ostrovsky@oracle.com,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
+ Nicolas Boichat <drinkcat@chromium.org>, nouveau@lists.freedesktop.org,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If by some reason any of the headers will include ctype.h
-we will have a name collision. Avoid this by moving isspace()
-to the dedicate namespace.
+Looks good,
 
-First appearance of the code is in the commit cf68787b68a2
-("powerpc/prom_init: Evaluate mem kernel parameter for early allocation").
-
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/powerpc/kernel/prom_init.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 41ed7e33d897..6845cbbc0cd4 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -701,13 +701,13 @@ static int __init prom_setprop(phandle node, const char *nodename,
- }
- 
- /* We can't use the standard versions because of relocation headaches. */
--#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
--			 || ('a' <= (c) && (c) <= 'f') \
--			 || ('A' <= (c) && (c) <= 'F'))
-+#define prom_isxdigit(c)	(('0' <= (c) && (c) <= '9') \
-+				 || ('a' <= (c) && (c) <= 'f') \
-+				 || ('A' <= (c) && (c) <= 'F'))
- 
--#define isdigit(c)	('0' <= (c) && (c) <= '9')
--#define islower(c)	('a' <= (c) && (c) <= 'z')
--#define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
-+#define prom_isdigit(c)		('0' <= (c) && (c) <= '9')
-+#define prom_islower(c)		('a' <= (c) && (c) <= 'z')
-+#define prom_toupper(c)		(prom_islower(c) ? ((c) - 'a' + 'A') : (c))
- 
- static unsigned long prom_strtoul(const char *cp, const char **endp)
- {
-@@ -716,14 +716,14 @@ static unsigned long prom_strtoul(const char *cp, const char **endp)
- 	if (*cp == '0') {
- 		base = 8;
- 		cp++;
--		if (toupper(*cp) == 'X') {
-+		if (prom_toupper(*cp) == 'X') {
- 			cp++;
- 			base = 16;
- 		}
- 	}
- 
--	while (isxdigit(*cp) &&
--	       (value = isdigit(*cp) ? *cp - '0' : toupper(*cp) - 'A' + 10) < base) {
-+	while (prom_isxdigit(*cp) &&
-+	       (value = prom_isdigit(*cp) ? *cp - '0' : prom_toupper(*cp) - 'A' + 10) < base) {
- 		result = result * base + value;
- 		cp++;
- 	}
--- 
-2.30.2
-
+Reviewed-by: Christoph Hellwig <hch@lst.de>
