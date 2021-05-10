@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31974C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA13C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:59:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76079610A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:58:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76079610A0
+	by mail.kernel.org (Postfix) with ESMTPS id 0920261421
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:59:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0920261421
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ff4270SL3z3bnq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 00:58:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ff42g3H0nz306G
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 00:59:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,21 +27,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ff41g3CTQz2xvW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 00:58:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ff42J0HhPz2xvZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 00:59:04 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 7F6AC67373; Mon, 10 May 2021 16:58:23 +0200 (CEST)
-Date: Mon, 10 May 2021 16:58:23 +0200
+ id 621D667373; Mon, 10 May 2021 16:59:00 +0200 (CEST)
+Date: Mon, 10 May 2021 16:59:00 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v6 01/15] swiotlb: Refactor swiotlb init functions
-Message-ID: <20210510145823.GA28066@lst.de>
+Subject: Re: [PATCH v6 02/15] swiotlb: Refactor swiotlb_create_debugfs
+Message-ID: <20210510145900.GB28066@lst.de>
 References: <20210510095026.3477496-1-tientzu@chromium.org>
- <20210510095026.3477496-2-tientzu@chromium.org>
+ <20210510095026.3477496-3-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210510095026.3477496-2-tientzu@chromium.org>
+In-Reply-To: <20210510095026.3477496-3-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
