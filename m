@@ -7,61 +7,59 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEC4FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 04:14:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16287C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 04:15:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD40F613AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 04:14:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD40F613AB
+	by mail.kernel.org (Postfix) with ESMTPS id 45F3A613DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 04:15:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45F3A613DE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fdnl40T6pz308T
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:14:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FdnlV0FQhz3bxd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 May 2021 14:15:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.218.43; helo=mail-ej1-f43.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.218.44; helo=mail-ej1-f44.google.com;
  envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com
- [209.85.218.43])
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com
+ [209.85.218.44])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fdnkc0nfSz2yRG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fdnkc0wJfz2yRX
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2021 14:14:31 +1000 (AEST)
-Received: by mail-ej1-f43.google.com with SMTP id n2so22403367ejy.7
+Received: by mail-ej1-f44.google.com with SMTP id a4so22441859ejk.1
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 May 2021 21:14:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=VehsfxGHIqUkGXhHVF4getgAan5RIFGHUznH7GSNZdM=;
- b=Jk9OHmufkcf3n8sEuDNymmbUySrXFKD5+jmiLKk5/YkiIH1p60MPrSgynd1lSgiFFn
- 4slojqeGA0WWuanR9R+ongZ/95lzRo+Iz1wFRna0cfqpapG9XaynCpQpQNOxhdUg6OCp
- yOrfv3u6YfE8JlC2xVxDchsLbsSbgMK8zzJUGB65za7fjZUAh45GKSLvDVNpYHUGonW6
- 0BkOMllh0yo//+QK6tm86g+jZYt/5P7IrH5R7GBAX/IJrYS1QShk2grVQpVac1Lyas2q
- IHdpM7fME67xjixa6/7cWCAN0Oyle6JuJNKENlSJV7PjMdc2ivGufNPP7Mr6EtYBNpV5
- mdyg==
-X-Gm-Message-State: AOAM530GD7w887nDWiZ0yBqG6auHsdDwvZSsAwxyz0GCtsgmCBF0merm
- Bxi2UPMjz/dx4rqAtRdpsbc=
-X-Google-Smtp-Source: ABdhPJxleSdspNVQ8y2ENdrbrJ5cWXhTiVe1flX9dSGCtK92jx+fQZEfoQ4TV35uolx4Y171lHT6yg==
-X-Received: by 2002:a17:906:5acd:: with SMTP id
- x13mr22871865ejs.243.1620620067931; 
- Sun, 09 May 2021 21:14:27 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=yG00XpORYp9fWIwYNYumtIx0DbQmOEgAaM8O8RiTCBg=;
+ b=HQHTCpaAHNG1ClsXLFgrNnjBpOFqhJvCj/LynSkzd977ffZq4V34UWLpXlwxIrdebs
+ I90kBPPtg0N4gxgItBHVWk+fdaxn0Dr03w7GNzmddbXy2IBNGWpVVxFLX0ahk2pBtSta
+ g/LMS/N4YkkNziCMmJYC5cG/ZTIxN8QqiCW1mYv/L512PK7zOgta2O6oCPnRpgZ6UMey
+ XhX/yp5g94fyvfKKtF5sYMHlVhwP06/eo5jMfE5lvFv/E2wBjfHiiTe3gibkS7z5M1+7
+ 4tfbr0Ma81gUhDE/AjGJgcIMSLfxUFBYu+YruNwHcGiANPTC1qNBqZfG5YWtovn7u5jx
+ nsgA==
+X-Gm-Message-State: AOAM531VbzBdVu0UgitAepcbSnW0TkM0lnLWLTtkACjUjj3GkurMil+h
+ u5mJxUsvbt0/YXOHOapmynA=
+X-Google-Smtp-Source: ABdhPJyJeQPSRJV9jJWYAjEQGkNIBh1uh1Jil7dgPsc1o2RkXPUJpNn61pvdKGmYpGTBlGGSR+C90w==
+X-Received: by 2002:a17:907:7216:: with SMTP id
+ dr22mr23759582ejc.185.1620620065913; 
+ Sun, 09 May 2021 21:14:25 -0700 (PDT)
 Received: from workstation.lan ([95.155.85.46])
- by smtp.gmail.com with ESMTPSA id e4sm8165006ejh.98.2021.05.09.21.14.26
+ by smtp.gmail.com with ESMTPSA id e4sm8165006ejh.98.2021.05.09.21.14.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 09 May 2021 21:14:27 -0700 (PDT)
+ Sun, 09 May 2021 21:14:25 -0700 (PDT)
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 03/11] PCI: Use sysfs_emit() and sysfs_emit_at() in "show"
+Subject: [PATCH 01/11] PCI: Use sysfs_emit() and sysfs_emit_at() in "show"
  functions
-Date: Mon, 10 May 2021 04:14:16 +0000
-Message-Id: <20210510041424.233565-3-kw@linux.com>
+Date: Mon, 10 May 2021 04:14:14 +0000
+Message-Id: <20210510041424.233565-1-kw@linux.com>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210510041424.233565-1-kw@linux.com>
-References: <20210510041424.233565-1-kw@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -94,11 +92,6 @@ and scnprintf() to sysfs_emit() and sysfs_emit_at() accordingly, as the
 latter is aware of the PAGE_SIZE buffer and correctly returns the number
 of bytes written into the buffer.
 
-Modify the function dsm_label_utf16s_to_utf8s() to directly return the
-number of bytes written into the buffer so that the strlen() used later
-to calculate the length of the buffer can be removed as it would no
-longer be needed.
-
 No functional change intended.
 
 [1] Documentation/filesystems/sysfs.rst
@@ -108,100 +101,22 @@ Related to:
 
 Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
 ---
- drivers/pci/pci-label.c | 18 ++++++++++--------
- drivers/pci/slot.c      | 16 ++++++++--------
- 2 files changed, 18 insertions(+), 16 deletions(-)
+ drivers/pci/pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci-label.c b/drivers/pci/pci-label.c
-index c32f3b7540e8..000e169c7197 100644
---- a/drivers/pci/pci-label.c
-+++ b/drivers/pci/pci-label.c
-@@ -139,14 +139,17 @@ enum acpi_attr_enum {
- 	ACPI_ATTR_INDEX_SHOW,
- };
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index b717680377a9..5ed316ea5831 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -6439,7 +6439,7 @@ static ssize_t resource_alignment_show(struct bus_type *bus, char *buf)
  
--static void dsm_label_utf16s_to_utf8s(union acpi_object *obj, char *buf)
-+static int dsm_label_utf16s_to_utf8s(union acpi_object *obj, char *buf)
- {
- 	int len;
-+
- 	len = utf16s_to_utf8s((const wchar_t *)obj->buffer.pointer,
- 			      obj->buffer.length,
- 			      UTF16_LITTLE_ENDIAN,
- 			      buf, PAGE_SIZE);
- 	buf[len] = '\n';
-+
-+	return len;
- }
+ 	spin_lock(&resource_alignment_lock);
+ 	if (resource_alignment_param)
+-		count = scnprintf(buf, PAGE_SIZE, "%s", resource_alignment_param);
++		count = sysfs_emit(buf, "%s", resource_alignment_param);
+ 	spin_unlock(&resource_alignment_lock);
  
- static int dsm_get_label(struct device *dev, char *buf,
-@@ -154,7 +157,7 @@ static int dsm_get_label(struct device *dev, char *buf,
- {
- 	acpi_handle handle = ACPI_HANDLE(dev);
- 	union acpi_object *obj, *tmp;
--	int len = -1;
-+	int len = 0;
- 
- 	if (!handle)
- 		return -1;
-@@ -175,20 +178,19 @@ static int dsm_get_label(struct device *dev, char *buf,
- 		 * this entry must return a null string.
- 		 */
- 		if (attr == ACPI_ATTR_INDEX_SHOW) {
--			scnprintf(buf, PAGE_SIZE, "%llu\n", tmp->integer.value);
-+			len = sysfs_emit(buf, "%llu\n", tmp->integer.value);
- 		} else if (attr == ACPI_ATTR_LABEL_SHOW) {
- 			if (tmp[1].type == ACPI_TYPE_STRING)
--				scnprintf(buf, PAGE_SIZE, "%s\n",
--					  tmp[1].string.pointer);
-+				len = sysfs_emit(buf, "%s\n",
-+						 tmp[1].string.pointer);
- 			else if (tmp[1].type == ACPI_TYPE_BUFFER)
--				dsm_label_utf16s_to_utf8s(tmp + 1, buf);
-+				len = dsm_label_utf16s_to_utf8s(tmp + 1, buf);
- 		}
--		len = strlen(buf) > 0 ? strlen(buf) : -1;
- 	}
- 
- 	ACPI_FREE(obj);
- 
--	return len;
-+	return len > 0 ? len : -1;
- }
- 
- static ssize_t label_show(struct device *dev, struct device_attribute *attr,
-diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index d627dd9179b4..7487e8f8f13f 100644
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -39,19 +39,19 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
- static ssize_t address_read_file(struct pci_slot *slot, char *buf)
- {
- 	if (slot->number == 0xff)
--		return sprintf(buf, "%04x:%02x\n",
--				pci_domain_nr(slot->bus),
--				slot->bus->number);
-+		return sysfs_emit(buf, "%04x:%02x\n",
-+				  pci_domain_nr(slot->bus),
-+				  slot->bus->number);
- 	else
--		return sprintf(buf, "%04x:%02x:%02x\n",
--				pci_domain_nr(slot->bus),
--				slot->bus->number,
--				slot->number);
-+		return sysfs_emit(buf, "%04x:%02x:%02x\n",
-+				  pci_domain_nr(slot->bus),
-+				  slot->bus->number,
-+				  slot->number);
- }
- 
- static ssize_t bus_speed_read(enum pci_bus_speed speed, char *buf)
- {
--	return sprintf(buf, "%s\n", pci_speed_string(speed));
-+	return sysfs_emit(buf, "%s\n", pci_speed_string(speed));
- }
- 
- static ssize_t max_speed_read_file(struct pci_slot *slot, char *buf)
+ 	/*
 -- 
 2.31.1
 
