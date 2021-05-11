@@ -2,60 +2,51 @@ Return-Path: <SRS0=9biP=KG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5A5DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 10:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4EAC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 11:25:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E189A61132
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 10:55:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E189A61132
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 5F512616E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 11:25:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F512616E9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FfZb13dNKz3bsL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 20:55:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FfbF06NyJz308v
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 21:25:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IzYRfA1r;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=IzYRfA1r; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FfZZV3C7xz2xMw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 20:55:14 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FfZZN4p2zz9t14; Tue, 11 May 2021 20:55:08 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620730508;
- bh=B4zCMGOZBSo431ZwaVwZwLRLvWTkJgniLzw1qREC68g=;
- h=From:To:Cc:Subject:Date:From;
- b=IzYRfA1rL29TjC83Jdh94WPZjuw8ebS11J/kDt3f/CIMk1LS+yB8JZ9QnHBFHNh43
- rwaoq6Cbd369Cm4dxelycd/+AtWDp+v5P5UT4kOsLQ6bfYaf35mjB1IA+ki3+HxpVB
- hZN2/+aKdz/iN8zaRvoIopxRRplqJ9VISAYn0oqlD5mSSWmVvZyh12aAeWFXS4eT49
- F70lzjLVdvsLe7vBjpUC1YCus4FSkoi0P42bAEFN59KxQjtHqjhEcUFxdJpTnJSQz0
- F5skh3PDiZQhQ74ETQpOpsdN98Dk54EgL9MQAUL0Y95YXaW4cBFrCxBUMiOO3eVxUK
- pL3MD/9f4VA+A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Fix kvm_unmap_gfn_range_hv() for Hash MMU
-Date: Tue, 11 May 2021 20:54:59 +1000
-Message-Id: <20210511105459.800788-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FfbDY1scRz2xtp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 21:24:44 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 14BBKWcY002034;
+ Tue, 11 May 2021 06:20:32 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 14BBKKjC002001;
+ Tue, 11 May 2021 06:20:20 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Tue, 11 May 2021 06:20:19 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v2] powerpc/makefile: Do not redefine $(CPP) for
+ preprocessor
+Message-ID: <20210511112019.GK10366@gate.crashing.org>
+References: <20210511044812.267965-1-aik@ozlabs.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210511044812.267965-1-aik@ozlabs.ru>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,45 +58,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, seanjc@google.com, kvm@vger.kernel.org,
- npiggin@gmail.com, pbonzini@redhat.com
+Cc: Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <masahiroy@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>,
+ clang-built-linux@googlegroups.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 32b48bf8514c ("KVM: PPC: Book3S HV: Fix conversion to gfn-based
-MMU notifier callbacks") fixed kvm_unmap_gfn_range_hv() by adding a for
-loop over each gfn in the range.
+Hi!
 
-But for the Hash MMU it repeatedly calls kvm_unmap_rmapp() with the
-first gfn of the range, rather than iterating through the range.
+On Tue, May 11, 2021 at 02:48:12PM +1000, Alexey Kardashevskiy wrote:
+> --- a/arch/powerpc/kernel/vdso32/Makefile
+> +++ b/arch/powerpc/kernel/vdso32/Makefile
+> @@ -44,7 +44,7 @@ asflags-y := -D__VDSO32__ -s
+>  
+>  obj-y += vdso32_wrapper.o
+>  targets += vdso32.lds
+> -CPPFLAGS_vdso32.lds += -P -C -Upowerpc
+> +CPPFLAGS_vdso32.lds += -C
+>  
+>  # link rule for the .so file, .lds has to be first
+>  $(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday.o FORCE
 
-This exhibits as strange guest behaviour, sometimes crashing in firmare,
-or booting and then guest userspace crashing unexpectedly.
+> --- a/arch/powerpc/kernel/vdso64/Makefile
+> +++ b/arch/powerpc/kernel/vdso64/Makefile
+> @@ -30,7 +30,7 @@ ccflags-y := -shared -fno-common -fno-builtin -nostdlib \
+>  asflags-y := -D__VDSO64__ -s
+>  
+>  targets += vdso64.lds
+> -CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
+> +CPPFLAGS_vdso64.lds += -C
+>  
+>  # link rule for the .so file, .lds has to be first
+>  $(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday.o FORCE
 
-Fix it by passing the iterator, gfn, to kvm_unmap_rmapp().
+Why are you removing -P and -Upowerpc here?  "powerpc" is a predefined
+macro on powerpc-linux (no underscores or anything, just the bareword).
+This is historical, like "unix" and "linux".  If you use the C
+preprocessor for things that are not C code (like the kernel does here)
+you need to undefine these macros, if anything in the files you run
+through the preprocessor contains those words, or funny / strange / bad
+things will happen.  Presumably at some time in the past it did contain
+"powerpc" somewhere.
 
-Fixes: 32b48bf8514c ("KVM: PPC: Book3S HV: Fix conversion to gfn-based MMU notifier callbacks")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+-P is to inhibit line number output.  Whatever consumes the
+preprocessor output will have to handle line directives if you remove
+this flag.  Did you check if this will work for everything that uses
+$(CPP)?
 
-I plan to take this via the powerpc fixes branch.
+In any case, please mention the reasoning (and the fact that you are
+removing these flags!) in the commit message.  Thanks!
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 2d9193cd73be..c63e263312a4 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -840,7 +840,7 @@ bool kvm_unmap_gfn_range_hv(struct kvm *kvm, struct kvm_gfn_range *range)
- 			kvm_unmap_radix(kvm, range->slot, gfn);
- 	} else {
- 		for (gfn = range->start; gfn < range->end; gfn++)
--			kvm_unmap_rmapp(kvm, range->slot, range->start);
-+			kvm_unmap_rmapp(kvm, range->slot, gfn);
- 	}
- 
- 	return false;
--- 
-2.25.1
 
+Segher
