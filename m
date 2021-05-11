@@ -6,58 +6,59 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5176C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 08:28:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDDEEC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 08:29:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26203613CF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 08:28:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26203613CF
+	by mail.kernel.org (Postfix) with ESMTPS id EC7C061184
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 08:29:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC7C061184
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FfWKL3w7sz3bwZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 18:28:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FfWKn2rJgz3c20
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 18:29:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZMLazoSV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jx9WYSj+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=ZMLazoSV; 
+ header.s=k20201202 header.b=Jx9WYSj+; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FfWJp6919z3091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 18:28:10 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id CD14061944;
- Tue, 11 May 2021 08:28:07 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FfWK52DWcz3073
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 18:28:25 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 44C106147E;
+ Tue, 11 May 2021 08:28:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1620721688;
- bh=7C4N6xhr3iLJ06IpEWXsW6Mhbp8fwEkNVFfMBYJL4Hc=;
+ s=k20201202; t=1620721702;
+ bh=eEtBAlCzd+59ejK63RAyKXFMKRoDf6dGtGXy/1g8kRM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZMLazoSVLczu9/tZp9358cwQQx7is/gIgfqItfeNED0/l9vyz3WWiixEcRLyRyGF+
- T4dJGl3TC6MYR0nu5j4D/brT9QowFo6as1cswCpldxk3DsNAWPR2VmE05OgVwTKB9p
- X9CZmjiEEJF2GTSwGj5M+oGbi4ZTNc0O3Cri0SKGObbNPelFgH8ed6etG1vDHArN5u
- 6OIwtvBnQl2zTW9b9vUDnRjiD98mTgG7mf/QuDFCqMUhApoRJgY9t5UPL4KCZWQX+V
- KnnIFZuSpqdjLZa0gnX6EVlDWrkE1yUoo+DQ3C2Y0cz7lgwLy2frgqj23OuDiuC8Af
- ozX8P82HpQMJg==
+ b=Jx9WYSj+aqHv7LtdfiOExF0K/TdQ/I+e5BrrKTQbtJZeYpncvauQDkrsf6YfoMxks
+ gNin9AYrwHcDgOXkq4q6BcwVF7W4xrlhP6xAVXt2lAab1hru8I70I1bW1LYNo+1nBe
+ ZoV7XzgWdKR4Vi+ciafH+07YkcO4muwwqkoAd2k+Z8+NWyIiDLYCSF5qd41t42ubmK
+ XInSi8hlyAwIztw14M6E9wdJT7HWww/4tKcYdefTv488eKAgjORdvMhRsyMtw8KADH
+ 5pLq93pOn+WiAZggdo3dKl1J/dSSxjpTawK4mebWQSZVUhl0RrGU3BRRJh7zaYLrU2
+ M9CnEg48YiISA==
 From: Mark Brown <broonie@kernel.org>
-To: festevam@gmail.com, alsa-devel@alsa-project.org,
- Shengjiu Wang <shengjiu.wang@nxp.com>, perex@perex.cz,
- nicoleotsuka@gmail.com, timur@kernel.org, Xiubo.Lee@gmail.com,
- tiwai@suse.com
-Subject: Re: [PATCH] ASoC: imx-pcm-rpmsg: Fix warning of incorrect type in
- assignment
-Date: Tue, 11 May 2021 09:25:58 +0100
-Message-Id: <162072058169.33157.6496454869060714703.b4-ty@kernel.org>
+To: linux-kernel@vger.kernel.org, Fabio Estevam <festevam@gmail.com>,
+ alsa-devel@alsa-project.org, Shengjiu Wang <shengjiu.wang@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Timur Tabi <timur@kernel.org>, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>, Wan Jiabing <wanjiabing@vivo.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: Remove unneeded semicolon
+Date: Tue, 11 May 2021 09:26:03 +0100
+Message-Id: <162072058169.33157.16301306834523283874.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <1620268240-1005-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1620268240-1005-1-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <20210506022452.5762-1-wanjiabing@vivo.com>
+References: <20210506022452.5762-1-wanjiabing@vivo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -72,24 +73,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: kael_w@yeah.net, Mark Brown <broonie@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 May 2021 10:30:40 +0800, Shengjiu Wang wrote:
-> The format in rpmsg is defained as unsigned char, there is warning
-> when convert snd_pcm_format_t to it.
+On Thu, 6 May 2021 10:24:52 +0800, Wan Jiabing wrote:
+> Fix the following coccicheck warning:
 > 
-> sound/soc/fsl/imx-pcm-rpmsg.c:164:43: sparse: warning: incorrect type in assignment (different base types)
-> sound/soc/fsl/imx-pcm-rpmsg.c:164:43: sparse:    expected unsigned char format
-> sound/soc/fsl/imx-pcm-rpmsg.c:164:43: sparse:    got restricted snd_pcm_format_t [usertype]
-> sound/soc/fsl/imx-pcm-rpmsg.c:167:43: sparse: warning: incorrect type in assignment (different base types)
-> sound/soc/fsl/imx-pcm-rpmsg.c:167:43: sparse:    expected unsigned char format
-> sound/soc/fsl/imx-pcm-rpmsg.c:167:43: sparse:    got restricted snd_pcm_format_t [usertype]
-> 
-> [...]
+> ./sound/soc/fsl/fsl_xcvr.c:739:2-3: Unneeded semicolon
 
 Applied to
 
@@ -97,8 +89,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: imx-pcm-rpmsg: Fix warning of incorrect type in assignment
-      commit: a387040ab401cc114d0b1a7a86431c5ae34b163b
+[1/1] ASoC: fsl_xcvr: Remove unneeded semicolon
+      commit: 223875a6fb8e26bbde3de675552d27b62e3ed0de
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
