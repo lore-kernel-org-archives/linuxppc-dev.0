@@ -2,103 +2,72 @@ Return-Path: <SRS0=9biP=KG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1E52C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 12:04:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF150C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 15:34:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23E4D61879
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 12:04:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23E4D61879
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D5F496147F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 15:34:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5F496147F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ffc6Q4rvrz301K
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 May 2021 22:04:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FfhmY2Kj3z3bsw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 May 2021 01:34:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d6PvgoxC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZjsrZAwb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sathvika@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=d6PvgoxC; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ZjsrZAwb; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ffc4v2v7sz2yRQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 22:03:11 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14BBZMP1097647; Tue, 11 May 2021 08:02:55 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-type :
- content-transfer-encoding; s=pp1;
- bh=jSFKx2Mhsp5r1XEKH30hvQfgi/hXB7j8hwadNd6Wwic=;
- b=d6PvgoxCT2jwVMn1S846URGbjMH8XmLTn6VF/orCnydP9Zvu+t4jmXx2o6Npe/XMB3Ju
- lfaIgBtjNsiEJvJFKKFA0obbutxjVp1ay6SjqOgE6hoHufRY2GfLMYKMersOAseCne2a
- 3rL+FMJZ2UHSJ2VFTyFFSHxT+fZI7Qdh054Fb2nUq05f2TiQxvcOsDwBliH/GAmUCzC+
- wIoJ5+Jykpjb1rTBlxHNw+ITu2eNNFbLc6uOpOXKG7EHHm8jz3ytjjlK7TnMaxyBv+fT
- 04U7N2nBngJW8zSpWhHtRi8MBbz95dOz3RjSXweK5PBnNYTuwArilSrjCAQg76jNPbVs Ow== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38frea21pr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 11 May 2021 08:02:54 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14BC2nIO018641;
- Tue, 11 May 2021 12:02:52 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 38dj989n6j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 11 May 2021 12:02:52 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14BC2ogx24183174
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 11 May 2021 12:02:50 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2504C4C044;
- Tue, 11 May 2021 12:02:50 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EAAA14C04E;
- Tue, 11 May 2021 12:02:48 +0000 (GMT)
-Received: from ltc-zz14-lp7.aus.stglabs.ibm.com (unknown [9.40.195.16])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 11 May 2021 12:02:48 +0000 (GMT)
-From: Sathvika Vasireddy <sathvika@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/2] powerpc/sstep: Add emulation support and tests for
- 'setb' instruction
-Date: Tue, 11 May 2021 07:18:31 -0500
-Message-Id: <cover.1620727160.git.sathvika@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.16.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ffhm34MVWz2yXV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 May 2021 01:33:55 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4305C6188B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 15:33:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1620747232;
+ bh=0ycZJyo5rPknGQbcP1uAKYtdIN0dctFP9qaEHA1Lmtk=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=ZjsrZAwbc/lBKJzT5Qnk9hhA7hlNe9/+wsYAaQ2hCTHDuuS714UHT6/PWDkPLtFVN
+ PGNsYrLkQZQ1njQMFNmrF+rY39q/TgojalbAiTiTFUb8PZp5nbjHm2FQrAyGecNVnb
+ EFjtdDxosV0WEHHZtJzjScukgd4H65tzu8ct8/DgkOWVpEXiQRX93jUgit8bPoBFw8
+ 4UaZJ8n36ZGgLFTGYdVNhCLgSUAdMe+PK32kf2pkJ+5uBrTdO+Lm2MfL5TkWLGYyuF
+ UzXOSq495Yh6kMMp2pjKebGAlUkklNesbZGSBbHQ6dUDDZshlwFG4FA61TEF9kzj8H
+ s2J+Xs12uTA1Q==
+Received: by mail-qk1-f179.google.com with SMTP id a2so19098897qkh.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2021 08:33:52 -0700 (PDT)
+X-Gm-Message-State: AOAM530Mq7amM3T9/Ehb3m3zHTLRp/NjOKccEaa+qssEwQDso8dnzWQ9
+ Xqcev1YwJYK9HnDU/2KivW1nD/dUV18UJ5woIw==
+X-Google-Smtp-Source: ABdhPJzgBwoKu9MHPdLj91APOY8pzFmxS2DLOE3Q2ktzZ0fUiNWOhbcxKfUo1JHMW7OvuM894BUmNNo5VnEbhOJ8/vY=
+X-Received: by 2002:a37:6116:: with SMTP id v22mr14616810qkb.464.1620747229748; 
+ Tue, 11 May 2021 08:33:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: QM4EyWELlrcGQ5N2FpN776LNDvHfxlrJ
-X-Proofpoint-GUID: QM4EyWELlrcGQ5N2FpN776LNDvHfxlrJ
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-11_02:2021-05-11,
- 2021-05-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- priorityscore=1501 mlxlogscore=652 adultscore=0 clxscore=1011 spamscore=0
- mlxscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
- impostorscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104190000 definitions=main-2105110090
+References: <20210507004047.4454-1-chris.packham@alliedtelesis.co.nz>
+ <20210507004047.4454-2-chris.packham@alliedtelesis.co.nz>
+ <20210507214936.GA2944698@robh.at.kernel.org>
+ <c5d6f8d0-9b8a-b3bf-b7c3-884f03f7ecee@alliedtelesis.co.nz>
+In-Reply-To: <c5d6f8d0-9b8a-b3bf-b7c3-884f03f7ecee@alliedtelesis.co.nz>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 11 May 2021 10:33:37 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKaeubNxYwGNOJYv=VcwR_6NzwkXnQ4DjOwXDudEmZ2Rg@mail.gmail.com>
+Message-ID: <CAL_JsqKaeubNxYwGNOJYv=VcwR_6NzwkXnQ4DjOwXDudEmZ2Rg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] dt-bindings: i2c: mpc: Add fsl,
+ i2c-erratum-a004447 flag
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,30 +79,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sathvika@linux.vnet.ibm.com, naveen.n.rao@linux.ibm.com, dja@axtens.net
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "wsa@kernel.org" <wsa@kernel.org>,
+ "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset adds emulation support and tests for setb instruction.
-Test cases are written to test different CR fields with different
-bits set in each field.
+On Sun, May 9, 2021 at 4:08 PM Chris Packham
+<Chris.Packham@alliedtelesis.co.nz> wrote:
+>
+>
+> On 8/05/21 9:49 am, Rob Herring wrote:
+> > On Fri, May 07, 2021 at 12:40:45PM +1200, Chris Packham wrote:
+> >> Document the fsl,i2c-erratum-a004447 flag which indicates the presence
+> >> of an i2c erratum on some QorIQ SoCs.
+> >>
+> >> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+> >> ---
+> >>   Documentation/devicetree/bindings/i2c/i2c-mpc.yaml | 7 +++++++
+> >>   1 file changed, 7 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/i2c/i2c-mpc.yaml b/Documentation/devicetree/bindings/i2c/i2c-mpc.yaml
+> >> index 7b553d559c83..98c6fcf7bf26 100644
+> >> --- a/Documentation/devicetree/bindings/i2c/i2c-mpc.yaml
+> >> +++ b/Documentation/devicetree/bindings/i2c/i2c-mpc.yaml
+> >> @@ -46,6 +46,13 @@ properties:
+> >>       description: |
+> >>         I2C bus timeout in microseconds
+> >>
+> >> +  fsl,i2c-erratum-a004447:
+> >> +    $ref: /schemas/types.yaml#/definitions/flag
+> >> +    description: |
+> >> +      Indicates the presence of QorIQ erratum A-004447, which
+> >> +      says that the standard i2c recovery scheme mechanism does
+> >> +      not work and an alternate implementation is needed.
+> > The problem with adding a property for an errata is you have to update
+> > the dtb. If you use the compatible string, then only an OS update is
+> > needed. That assumes you have specific enough compatible strings.
+>
+> I was following the style of the existing fsl,usb-erratum-a007792 or
+> fsl,erratum-a008585 properties. But that's not really a compelling reason.
+>
+> The existing compatible string is "fsl-i2c" and it's used by pretty much
+> every powerpc QorIQ SoC. There are some specific compatible strings in
+> the driver for some of the older mpc SoCs. A more specific compatible
+> string will work although determining which ones are affected might be a
+> bit troublesome. That we know of the P2041 and P1010 are affected but I
+> suspect there may be more. One disadvantage of using the compatible
+> string is that as affected SoCs are identified we'll have to update the
+> driver to know that SoC is affected and update the dtb to use it. With
+> the property we'd just have to update the dtb.
 
-v1->v2:
-  - Extract all the bits of the CR field (bfa) and check if the
-    LT, GT bits of that CR field (bfa) are set.
-  - Place 'setb' emulation code after 'mfcr' instruction emulation.
-  - Add 'cpu_feature' in the selftests patch to restrict them to ISA v3.0
+If you don't have specific compatibles in the dtb already, then it's
+mute as the point was to avoid the dtb update.
 
-Sathvika Vasireddy (2):
-  powerpc/sstep: Add emulation support for ‘setb’ instruction
-  powerpc/sstep: Add tests for setb instruction
+> I'm not too fussed either way so if that's a hard NACK on the property I
+> can send a version that uses compatible strings instead.
 
- arch/powerpc/include/asm/ppc-opcode.h |  1 +
- arch/powerpc/lib/sstep.c              | 22 ++++++++++++++++++++++
- arch/powerpc/lib/test_emulate_step.c  | 29 +++++++++++++++++++++++++++++
- 3 files changed, 52 insertions(+)
+Acked-by: Rob Herring <robh@kernel.org>
 
--- 
-2.16.4
-
+You could still add compatibles for the next time...
