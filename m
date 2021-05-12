@@ -2,105 +2,106 @@ Return-Path: <SRS0=OS5J=KH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A8CC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 May 2021 16:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE6B8C43140
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 May 2021 16:45:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01C0C61106
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 May 2021 16:41:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01C0C61106
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 35CD961183
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 May 2021 16:45:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35CD961183
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FgLCb4DXHz3cBK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 02:41:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FgLHn5SF7z3btM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 02:45:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YU8TiAQP;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XzcW+h7F;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XzcW+h7F;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=omosnace@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=YU8TiAQP; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=XzcW+h7F; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=XzcW+h7F; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FgL9429hfz2yYD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 02:39:19 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14CGXHKN092403; Wed, 12 May 2021 12:39:01 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=G9fX4hzemMFK9kH9HmurL7t+CJeNcO8y9P4AYM54mP0=;
- b=YU8TiAQP+TJOS+4Ce2UyU5j5K1Mi/rsnx3pEgHQ39VMXOHe6LiSumMvT4qtFTlO+dfJB
- IYsk3wiHZZC5qgIqMxozTlj8u1CT5OTtXbZfmPevEqT2bIT8pYVU3s7daqft2jYufwLe
- DwohnMmWuaeL8esif3z0yg4pVBNRUC6YKEGZfxB16aCKzVE7kRaOWfWw0hj+I0pTHrGN
- qhdCe/EcT7pc+tb4aLNNzeFVZj16VBcL7GlbJNiES1mXf2FLuq2rfwCopS8+1jTw2nAm
- YiPr67raZPHT7TbG4S+q9a5ikXw/7fKp4IstogahQn2N4B2o0BAKUNx/zNAiDRd1u18u Iw== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38ghs4ht3q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 May 2021 12:39:01 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14CGY4Oq005974;
- Wed, 12 May 2021 16:38:59 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma04ams.nl.ibm.com with ESMTP id 38dj98aafb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 May 2021 16:38:59 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 14CGcTCY36962700
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 12 May 2021 16:38:29 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7504BAE0FA;
- Wed, 12 May 2021 16:38:56 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3AAD2AE0F6;
- Wed, 12 May 2021 16:38:53 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.199.40.5])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 12 May 2021 16:38:52 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org, linux-kernel@vger.kernel.org
-Subject: [RFC 3/4] powerpc/papr_scm: Document papr_scm sysfs event format
- entries
-Date: Wed, 12 May 2021 22:08:23 +0530
-Message-Id: <20210512163824.255370-4-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20210512163824.255370-1-kjain@linux.ibm.com>
-References: <20210512163824.255370-1-kjain@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FgLHD3MhBz2yQy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 02:44:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1620837876;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=1wT9y/+CUxpw2t+GrCY0Qp+nfyUTGHKVjJx14ixlaYw=;
+ b=XzcW+h7FZZt+OkHxpxIsfqmMxRzF+v/BpzsKYx5mnjzowbigVKijhTMLzdcr1fEP9FU8Px
+ AfRmRoLR2+KEF6BHuo3a/8J4sWuxECABjpy3Xlo9+dvNEPb34OSITSeOe+4RBm2/eGf0/k
+ jRIOuT5OLNvi9Zp+Twx9X9fwotrBtOU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1620837876;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=1wT9y/+CUxpw2t+GrCY0Qp+nfyUTGHKVjJx14ixlaYw=;
+ b=XzcW+h7FZZt+OkHxpxIsfqmMxRzF+v/BpzsKYx5mnjzowbigVKijhTMLzdcr1fEP9FU8Px
+ AfRmRoLR2+KEF6BHuo3a/8J4sWuxECABjpy3Xlo9+dvNEPb34OSITSeOe+4RBm2/eGf0/k
+ jRIOuT5OLNvi9Zp+Twx9X9fwotrBtOU=
+Received: from mail-yb1-f198.google.com (mail-yb1-f198.google.com
+ [209.85.219.198]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-1-WI42J8qOMkiFqoqxZWwucw-1; Wed, 12 May 2021 12:44:33 -0400
+X-MC-Unique: WI42J8qOMkiFqoqxZWwucw-1
+Received: by mail-yb1-f198.google.com with SMTP id
+ r2-20020a25ac420000b02904f5a9b7d37fso28644595ybd.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 May 2021 09:44:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=1wT9y/+CUxpw2t+GrCY0Qp+nfyUTGHKVjJx14ixlaYw=;
+ b=S7/om+R+qTiQC0X8hGdnL/WIer3etEwDANIbEgkeORcyVY6LgW1h86+i3cgWQEWv+B
+ ImFO+9H2Gj9ruXuMjA5bmP4wLAXy03CrTvbXRgqsVkiNSkQTu+9HPoQBXHh5EWdV9oZl
+ sglbf3QVQgqAf/FoXwkLaTPI/sOCEZAqtuI4tkPFU7WFazdaqbzwRaSuQZ7CpvW+XclN
+ Ss4zvZ37W7qgYoHax3enJpKnsoOS57fg3k5Su1sugkKsH+wYeYq7VKrvXGR4Qc5q5N+k
+ LvBVibIQ7L9gMCwM95eEy0Axj+XPYwGdsbnSSfi6vGhxb67VdjkqLyV3M8ziGl5eGaP7
+ CL8w==
+X-Gm-Message-State: AOAM531ZHzZjjQ8QP/NReo++GzRyxUO+u/IJIBe1qxiaMzKzdzWzZLEP
+ UguB3qC2IFliusLmNHuaDb1KiSpV3s+LCZMzVUln8+73p+7a5Ei9OeHfBoh2mmrJ4X4yOdyyJrQ
+ QXnoO2MvHM7cKdmw5QQPJwLHUu9eHp+XcGz1YBDFV5w==
+X-Received: by 2002:a25:6886:: with SMTP id
+ d128mr49884182ybc.227.1620837872713; 
+ Wed, 12 May 2021 09:44:32 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJziai7GI5a1DWeJt0YlXK6570k2N9+Sy1G9tLOxLGUvPGU+rPfrJ8aFA1k+I7x/KZgli19pSgP+PzUsymRQT9M=
+X-Received: by 2002:a25:6886:: with SMTP id
+ d128mr49884143ybc.227.1620837872433; 
+ Wed, 12 May 2021 09:44:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Qwij-1sFGRYJgFt0Ha3C3g-URAAZvtoy
-X-Proofpoint-GUID: Qwij-1sFGRYJgFt0Ha3C3g-URAAZvtoy
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-12_09:2021-05-12,
- 2021-05-12 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- clxscore=1015 adultscore=0 impostorscore=0 mlxscore=0 bulkscore=0
- phishscore=0 mlxlogscore=999 priorityscore=1501 malwarescore=0 spamscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105120105
+References: <20210507114048.138933-1-omosnace@redhat.com>
+ <a8d138a6-1d34-1457-9266-4abeddb6fdba@schaufler-ca.com>
+ <CAFqZXNtr1YjzRg7fTm+j=0oZF+7C5xEu5J0mCZynP-dgEzvyUg@mail.gmail.com>
+ <24a61ff1-e415-adf8-17e8-d212364d4b97@schaufler-ca.com>
+In-Reply-To: <24a61ff1-e415-adf8-17e8-d212364d4b97@schaufler-ca.com>
+From: Ondrej Mosnacek <omosnace@redhat.com>
+Date: Wed, 12 May 2021 18:44:21 +0200
+Message-ID: <CAFqZXNvB-EyPz1Qz3cCRTr1u1+D+xT-dp7cUxFocYM1AOYSuxw@mail.gmail.com>
+Subject: Re: [PATCH] lockdown,
+ selinux: fix bogus SELinux lockdown permission checks
+To: Casey Schaufler <casey@schaufler-ca.com>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=omosnace@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,55 +113,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: santosh@fossix.org, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- aneesh.kumar@linux.ibm.com, atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com,
- vaibhav@linux.ibm.com, dan.j.williams@intel.com, ira.weiny@intel.com,
- tglx@linutronix.de
+Cc: SElinux list <selinux@vger.kernel.org>,
+ network dev <netdev@vger.kernel.org>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ James Morris <jmorris@namei.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+ Linux Security Module list <linux-security-module@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+ bpf <bpf@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch add event format and events details in ABI
-documentation
+On Wed, May 12, 2021 at 6:18 PM Casey Schaufler <casey@schaufler-ca.com> wrote:
+> On 5/12/2021 6:21 AM, Ondrej Mosnacek wrote:
+> > On Sat, May 8, 2021 at 12:17 AM Casey Schaufler <casey@schaufler-ca.com> wrote:
+> >> On 5/7/2021 4:40 AM, Ondrej Mosnacek wrote:
+> >>> Commit 59438b46471a ("security,lockdown,selinux: implement SELinux
+> >>> lockdown") added an implementation of the locked_down LSM hook to
+> >>> SELinux, with the aim to restrict which domains are allowed to perform
+> >>> operations that would breach lockdown.
+> >>>
+> >>> However, in several places the security_locked_down() hook is called in
+> >>> situations where the current task isn't doing any action that would
+> >>> directly breach lockdown, leading to SELinux checks that are basically
+> >>> bogus.
+> >>>
+> >>> Since in most of these situations converting the callers such that
+> >>> security_locked_down() is called in a context where the current task
+> >>> would be meaningful for SELinux is impossible or very non-trivial (and
+> >>> could lead to TOCTOU issues for the classic Lockdown LSM
+> >>> implementation), fix this by adding a separate hook
+> >>> security_locked_down_globally()
+> >> This is a poor solution to the stated problem. Rather than adding
+> >> a new hook you should add the task as a parameter to the existing hook
+> >> and let the security modules do as they will based on its value.
+> >> If the caller does not have an appropriate task it should pass NULL.
+> >> The lockdown LSM can ignore the task value and SELinux can make its
+> >> own decision based on the task value passed.
+> > The problem with that approach is that all callers would then need to
+> > be updated and I intended to keep the patch small as I'd like it to go
+> > to stable kernels as well.
+> >
+> > But it does seem to be a better long-term solution - would it work for
+> > you (and whichever maintainer would be taking the patch(es)) if I just
+> > added another patch that refactors it to use the task parameter?
+>
+> I can't figure out what you're suggesting. Are you saying that you
+> want to add a new hook *and* add the task parameter?
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
----
- Documentation/ABI/testing/sysfs-bus-papr-pmem | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
+No, just to keep this patch as-is (and let it go to stable in this
+form) and post another (non-stable) patch on top of it that undoes the
+new hook and re-implements the fix using your suggestion. (Yeah, it'll
+look weird, but I'm not sure how better to handle such situation - I'm
+open to doing it whatever different way the maintainers prefer.)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-papr-pmem b/Documentation/ABI/testing/sysfs-bus-papr-pmem
-index 8316c33862a0..216f70deca7e 100644
---- a/Documentation/ABI/testing/sysfs-bus-papr-pmem
-+++ b/Documentation/ABI/testing/sysfs-bus-papr-pmem
-@@ -59,3 +59,28 @@ Description:
- 		* "CchRHCnt" : Cache Read Hit Count
- 		* "CchWHCnt" : Cache Write Hit Count
- 		* "FastWCnt" : Fast Write Count
-+
-+What:		/sys/devices/nmemX/format
-+Date:		May 2021
-+Contact:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-nvdimm@lists.01.org,
-+Description:	(RO) Attribute group to describe the magic bits
-+                that go into perf_event_attr.config for a particular pmu.
-+                (See ABI/testing/sysfs-bus-event_source-devices-format).
-+
-+                Each attribute under this group defines a bit range of the
-+                perf_event_attr.config. Supported attributes is listed
-+                below::
-+
-+		    event  = "config:0-37"  - event ID
-+
-+		For example::
-+		    noopstat = "event=0x1"
-+
-+What:		/sys/devices/nmemX/events
-+Date:		May 2021
-+Contact:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-nvdimm@lists.01.org,
-+Description:    (RO) Attribute group to describe performance monitoring
-+                events specific to papr_pmem. Each attribute in this group describes
-+                a single performance monitoring event supported by this nvdimm pmu.
-+                The name of the file is the name of the event.
-+                (See ABI/testing/sysfs-bus-event_source-devices-events).
 -- 
-2.27.0
+Ondrej Mosnacek
+Software Engineer, Linux Security - SELinux kernel
+Red Hat, Inc.
 
