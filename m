@@ -2,68 +2,63 @@ Return-Path: <SRS0=7n8X=KI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9FFAC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 12:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43988C43460
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 14:08:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D4E561154
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 12:50:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D4E561154
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	by mail.kernel.org (Postfix) with ESMTPS id 14543611AC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 14:08:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14543611AC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fgs2M6YV8z2ym5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 22:50:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fgtmf5Q3Bz3bTN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 00:08:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MXzdgqO2;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.45; helo=mail-wr1-f45.google.com;
- envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com
- [209.85.221.45])
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=MXzdgqO2; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fgs1s3KYjz2xZm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 22:49:52 +1000 (AEST)
-Received: by mail-wr1-f45.google.com with SMTP id q5so7322453wrs.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 05:49:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=kD6/mEPYNtoCsTFnZMkPkwGqL4Xhd2RhCwfu9Wi6A4Y=;
- b=a6cBQvAlLLB2F30VL76H1eH+tu7Rf8IfeW+T3Nmq6Ktf9FXrOrAnEv/i76Sy6CxTDt
- NFr0tjWA6HEHspj9T6iCkjD7/ZTrtKMK6kC8NwIg4v2kACCeyBUPe22aTtUF3XtAyn4r
- v+tQmIW+FVsHKlf680ENK7vrxLO1S9TkrC7VX1TfjZ+ZKXoyc2WsNen0VfKN9pSJU88T
- qdO4xLQsr9v5GZGXK9O+GRmH/1ovXNMVADKQuLrQVow4+jp+VeLE+rq8AFfd5Kvt2INh
- e3CaxtsuaMDkcoBEyuzEMpfOzLvZm7prZWFBCOCtrJDeXnDgIdNlZVh+yW0IrK4WdXhu
- jOew==
-X-Gm-Message-State: AOAM532YmjBfl38wuNBdQjkMoMHiqv/23A666TxHSO8z0TZUFhlX4bzL
- +wzVxZWtYPigcv4eWfLtUco=
-X-Google-Smtp-Source: ABdhPJztl07s7eoyRKlbHMNz4jt/365a5BLrJy6PIq1msAS7SC421+08CLZJr9QQMtzm68syg5Hc9A==
-X-Received: by 2002:a5d:53c3:: with SMTP id a3mr48566689wrw.376.1620910188812; 
- Thu, 13 May 2021 05:49:48 -0700 (PDT)
-Received: from rocinante.localdomain ([95.155.85.46])
- by smtp.gmail.com with ESMTPSA id d9sm959742wrx.11.2021.05.13.05.49.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 13 May 2021 05:49:48 -0700 (PDT)
-Date: Thu, 13 May 2021 14:49:46 +0200
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Logan Gunthorpe <logang@deltatee.com>
-Subject: Re: [PATCH 01/11] PCI: Use sysfs_emit() and sysfs_emit_at() in
- "show" functions
-Message-ID: <20210513124946.GB202784@rocinante.localdomain>
-References: <20210510041424.233565-1-kw@linux.com>
- <4557364b-76ce-3555-e97d-14f39eda27b8@deltatee.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fgtm82cVXz2yYS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 00:08:07 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4Fgtm62S4hz9sWH; Fri, 14 May 2021 00:08:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1620914886;
+ bh=HxqVSVD+ewH8hKD9t/Jc5Niq1K9LzMMVvOJz/ZBEr2A=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=MXzdgqO2xXVgG5pbYsNH1Yn1r+qUWP7Eb1nrHhDYZP3e+mGETHGyYWFswiQ0tw7kl
+ YzcmrTivoe7Gtb9EVewbYpskUQ8yxtNjKsPCkw60X0HpCF6BGfOyYG50vrDeUW7ShP
+ aD7gK6CcMe4mqe8dXB/BsUUDtCZUh+e7gOnKmVg5J99NggKPdgKI2pdSRtXeYwLdvR
+ zmgC0vwbrE8irTnPn8KG9tB1zlLsUY2J5b0RdMjlI66W1oGuRTiBjZ2dSO+SAi/K7X
+ T1XuQLN9/vT50jjTHNwhBQ2+tR52efa02A1mdHESQYEB2fNRQCc5OGZ0FbjcPJX3zA
+ tLxXORIO7jFcQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/64s: Fix stf mitigation patching w/strict RWX &
+ hash
+Date: Fri, 14 May 2021 00:08:00 +1000
+Message-Id: <20210513140800.1391706-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210513140800.1391706-1-mpe@ellerman.id.au>
+References: <20210513140800.1391706-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4557364b-76ce-3555-e97d-14f39eda27b8@deltatee.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,49 +70,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Paul Mackerras <paulus@samba.org>,
- Kurt Schwemmer <kurt.schwemmer@microsemi.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Logan,
+The stf entry barrier fallback is unsafe to execute in a semi-patched
+state, which can happen when enabling/disabling the mitigation with
+strict kernel RWX enabled and using the hash MMU.
 
-[...]
-> Thanks, this is a great cleanup. I've reviewed the entire series.
-> 
-> Reviewed-by: Logan Gunthorpe <logang@deltatee.com>
+See the previous commit for more details.
 
-Thank you!  Appreciate it!
+Fix it by changing the order in which we patch the instructions.
 
-> I agree that the new lines that are missing should be added.
+Note the stf barrier fallback is only used on Power6 or earlier.
 
-While working on the simple change to add the missing new lines, I've
-found that we have slight inconsistency with handling these in one of
-the attributes, as per:
+Fixes: bd573a81312f ("powerpc/mm/64s: Allow STRICT_KERNEL_RWX again")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/lib/feature-fixups.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-  # uname -r
-  5.13.0-rc1-00092-gc06a2ba62fc4
-  
-  # grep -oE 'pci=resource_alignment.+' /proc/cmdline 
-  pci=resource_alignment=20@00:1f.2
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index b49bb41e3ec5..71032475aa40 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -150,17 +150,17 @@ static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
+ 
+ 		pr_devel("patching dest %lx\n", (unsigned long)dest);
+ 
+-		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
+-
+-		if (types & STF_BARRIER_FALLBACK)
++		// See comment in do_entry_flush_fixups() RE order of patching
++		if (types & STF_BARRIER_FALLBACK) {
++			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
++			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
+ 			patch_branch((struct ppc_inst *)(dest + 1),
+-				     (unsigned long)&stf_barrier_fallback,
+-				     BRANCH_SET_LINK);
+-		else
+-			patch_instruction((struct ppc_inst *)(dest + 1),
+-					  ppc_inst(instrs[1]));
+-
+-		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
++				     (unsigned long)&stf_barrier_fallback, BRANCH_SET_LINK);
++		} else {
++			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
++			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
++			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
++		}
+ 	}
+ 
+ 	printk(KERN_DEBUG "stf-barrier: patched %d entry locations (%s barrier)\n", i,
+-- 
+2.25.1
 
-  # cat /sys/bus/pci/resource_alignment
-  20@00:1f.
-  
-  # echo 20@00:1f.2 > /sys/bus/pci/resource_alignment
-  # cat /sys/bus/pci/resource_alignment
-  20@00:1f.2
-
-  # echo -n 20@00:1f.2 > /sys/bus/pci/resource_alignment
-  # cat /sys/bus/pci/resource_alignment
-  20@00:1f.
-
-I adjusted the code so that we handle the input better in the upcoming
-v2 - the change is simple, but since it adds more code, I'll drop your
-"Reviewed-by", so that we can make sure that subsequent review will
-cover this new change.  Sorry for troubles in advance!
-
-Krzysztof
