@@ -2,60 +2,100 @@ Return-Path: <SRS0=7n8X=KI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0154FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 14:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33251C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 15:20:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA7C2611AC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 14:08:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA7C2611AC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 258E061166
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 15:20:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 258E061166
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fgtn33Wnfz3bwT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 00:08:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FgwMh37mFz3brw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 01:20:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=GOMNRQP4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=pjnimt6O;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.221;
+ helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=GOMNRQP4; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=pjnimt6O; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.221])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fgtm82sg6z2yZ2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 00:08:07 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Fgtm532bxz9sWC; Fri, 14 May 2021 00:08:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1620914885;
- bh=5VzLkyf3gtPo2l/sVZ4e1rFU3fq+Kx6VwTTXij1wrjo=;
- h=From:To:Subject:Date:From;
- b=GOMNRQP4SQl1rjfcj2RZHXB/3e50waErPL6RprzHJYHwhBMMsEPelSa/eb4KltNT7
- Xe0jhag04DEd/dM8N2gLmGnjhwspQetacmy/dBWxxu1ZdaPivQZEhSIfI5GlOSt25+
- eMUPElB9HBJXWJDGTbLilh+LXEvwBEFTdopm+1TIOEwc9rTz4Gab8sKadyUQtpDggN
- a5c09Di9uC100z+IQQxL4xZrsChPskvuSBBI1+FvITPrJTYv8oel/yozp7yGA5g6Cp
- S9nrDmdrRIDgJjLJvgsu0JMp8E0FRnOt0bBjE6dzxafPXaFcUKLp9gYufM/v81TfXI
- EXAlkec/ycvOg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/64s: Fix entry flush patching w/strict RWX & hash
-Date: Fri, 14 May 2021 00:07:59 +1000
-Message-Id: <20210513140800.1391706-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FgwM64T1Zz2yXh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 01:20:00 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1620919165; cv=none;
+ d=strato.com; s=strato-dkim-0002;
+ b=Bs2AbNOL5fi9umJ2ujwKx73R79g/JMQN+OlZdUhS3vH3efOeujfTuQe+1G2k3dcN9s
+ VDMinZtd0X1ZrAQiPdsP713PzeFtmvQH8yXmP4VuIv+i3DlCkBJFUhrx9hFSia7Vl6Ci
+ AAcZ2R1gABC1WW1JyUFMPMxkiM0rR5flGPOM23ExpWRXKCRN65qL+vJeEGT/u03/17uQ
+ k61F2mVZ5JGTngBOlQINs7fghudUBsUNjbkviYlCBUYT42/mqZAFrub9FkUcPtojcRMa
+ /3A6CAp63WhqGefyG9POfmbz8DZZ8ApxmhTMtxF3jy0JxO1KLPPW2PurWgAQKyBP2sGB
+ RVgQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1620919165;
+ s=strato-dkim-0002; d=strato.com;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+ From:Subject:Sender;
+ bh=BjMjHXwIWY+C8NfiMf8I73subyUiuAoslL5i08tD/sg=;
+ b=QjtKrtlzSryV21dF9sTQL6xP+cJpaF43KyOCq1R2ruyFnhkADD/hzf98DYr2RMjhQd
+ XpWm8BQd5a3FBz6yjLwNQDHV7ZKJ3JX65Wjib1vDEpJQW80+ZNFzyzDWdQHNV41HeRuC
+ C6saKGLYY4AfptfYp8Ymjcm9tf5NshO9d40tVgOcqfJ80fEiIthhepJNiB28azYOKgsg
+ Q0gJq8amWNkbiAoT8XPk3H30Ri7h4mlw3vfuTiZ6EF3TUPnWys0jwSD6GXzcjoQf2Xk2
+ NbfuT/5tif9yr81IDQZVGLl2Y0z6S5edTStvVZLgj4TcSHul6P0U3lPK4DblMiblp1Uk
+ h6Jg==
+ARC-Authentication-Results: i=1; strato.com;
+    dkim=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1620919165;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+ From:Subject:Sender;
+ bh=BjMjHXwIWY+C8NfiMf8I73subyUiuAoslL5i08tD/sg=;
+ b=pjnimt6OT4xLQg+i0JnCOiMo9z8WUPFATK6PY39UvLWldUFOapz42bqnKRpGs3TeQz
+ UMbsRmE0aW7mcSpyOxEmQ1wzJjMHuzOYEALoijZ4Fz9k9UG/X5gXBzhT/tdICa6FWsPr
+ oNi0q2UwBz94jwmsmUr5/q+0Xx+48jvP2igA74swPuVD/ebfjyL0PCi1m59xTYJeZFs6
+ X6RDxQhVES4MYxfkzTsp3a+EHUjKIpSjdA1W8fWCSI8GZZJDuGhsCzIFg3LpMrQRUrHm
+ TTxDkAEWH+qf6cgTWfO70ODmtiTS0+4z160dgxcSPyp3WOpzlKFCr/MYZxpb6PGBuGXn
+ XpmQ==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgCLz5q92XDIy4M1mOr4LR4+7m+VA=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:89c0:ebfc:a903:7809:7981:9863]
+ by smtp.strato.de (RZmta 47.25.7 AUTH)
+ with ESMTPSA id j00466x4DFJN7Mv
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Thu, 13 May 2021 17:19:23 +0200 (CEST)
+Subject: Re: [FSL P50x0] Xorg always restarts again and again after the the
+ PowerPC updates 5.13-1
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <72e138cd-5201-a059-e8aa-cebc3db4029c@csgroup.eu>
+ <65116250-6EEB-4419-8A7D-B0882379A68B@xenosoft.de>
+ <c90ba856-1ef2-c010-17ac-a091c5252a5c@csgroup.eu>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <781a426e-8561-108f-0e5c-9393bc653e86@xenosoft.de>
+Date: Thu, 13 May 2021 17:19:23 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <c90ba856-1ef2-c010-17ac-a091c5252a5c@csgroup.eu>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,149 +107,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ mad skateman <madskateman@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The entry flush mitigation can be enabled/disabled at runtime. When this
-happens it results in the kernel patching its own instructions to
-enable/disable the mitigation sequence.
+On 13 May 2021 at 12:01 pm, Christophe Leroy wrote:
+>
+>
+> Le 13/05/2021 à 08:47, Christian Zigotzky a écrit :
+>> Hi Christophe,
+>>
+>>> On 9. May 2021, at 19:37, Christophe Leroy 
+>>> <christophe.leroy@csgroup.eu> wrote:
+>>>
+>>> Did I do an error in my analysis ?
+>>
+>> No, you didn’t. On the contrary you have found the issue. ;-) The 
+>> issue is somewhere in the new interrupt code.
+>
+> I'm not convinced, but let's give it a try.
+>
+>>
+>>> ZZ | * | ceff77efa4f8 powerpc/64e/interrupt: Use new interrupt 
+>>> context tracking scheme
+>>
+>> Could you please create a patch for reverting the new interrupt code? 
+>> I would like to confirm your result.
+>
+> Please fetch https://github.com/chleroy/linux.git and try the branch 
+> for_christian.
+>
+> This is a revert of approx a dozen of commits around the changes to 
+> 64e on top of v5.13-rc1.
+>
+> If the top of the branch works for you, it would be great if you can 
+> find out which one of the reverts fixes the problem for real.
+>
+> Thanks
+> Christophe
+It's working! Great! I can use the RC1 on my FSL P5040. Thank you! The 
+issue is definitely somewhere in the interrupt code. Please tell me the 
+next steps.
 
-With strict kernel RWX enabled instruction patching happens via a
-secondary mapping of the kernel text, so that we don't have to make the
-primary mapping writable. With the hash MMU this leads to a hash fault,
-which causes us to execute the exception entry which contains the entry
-flush mitigation.
-
-This means we end up executing the entry flush in a semi-patched state,
-ie. after we have patched the first instruction but before we patch the
-second or third instruction of the sequence.
-
-On machines with updated firmware the entry flush is a series of special
-nops, and it's safe to to execute in a semi-patched state.
-
-However when using the fallback flush the sequence is mflr/branch/mtlr,
-and so it's not safe to execute if we have patched out the mflr but not
-the other two instructions. Doing so leads to us corrputing LR, leading
-to an oops, for example:
-
-  # echo 0 > /sys/kernel/debug/powerpc/entry_flush
-  kernel tried to execute exec-protected page (c000000002971000) - exploit attempt? (uid: 0)
-  BUG: Unable to handle kernel instruction fetch
-  Faulting instruction address: 0xc000000002971000
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-  CPU: 0 PID: 2215 Comm: bash Not tainted 5.13.0-rc1-00010-gda3bb206c9ce #1
-  NIP:  c000000002971000 LR: c000000002971000 CTR: c000000000120c40
-  REGS: c000000013243840 TRAP: 0400   Not tainted  (5.13.0-rc1-00010-gda3bb206c9ce)
-  MSR:  8000000010009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48428482  XER: 00000000
-  ...
-  NIP  0xc000000002971000
-  LR   0xc000000002971000
-  Call Trace:
-    do_patch_instruction+0xc4/0x340 (unreliable)
-    do_entry_flush_fixups+0x100/0x3b0
-    entry_flush_set+0x50/0xe0
-    simple_attr_write+0x160/0x1a0
-    full_proxy_write+0x8c/0x110
-    vfs_write+0xf0/0x340
-    ksys_write+0x84/0x140
-    system_call_exception+0x164/0x2d0
-    system_call_common+0xec/0x278
-
-The simplest fix is to change the order in which we patch the
-instructions, so that the sequence is always safe to execute. For the
-non-fallback flushes it doesn't matter what order we patch in.
-
-Fixes: bd573a81312f ("powerpc/mm/64s: Allow STRICT_KERNEL_RWX again")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/lib/feature-fixups.c | 56 ++++++++++++++++++++++---------
- 1 file changed, 40 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 0aefa6a4a259..b49bb41e3ec5 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -325,6 +325,28 @@ static int __do_entry_flush_fixups(void *data)
- 	if (types & L1D_FLUSH_MTTRIG)
- 		instrs[i++] = 0x7c12dba6; /* mtspr TRIG2,r0 (SPR #882) */
- 
-+	/*
-+	 * If we're patching in or out the fallback flush we need to be careful about the
-+	 * order in which we patch instructions. That's because it's possible we could
-+	 * take a page fault after patching one instruction, so the sequence of
-+	 * instructions must be safe even in a half patched state.
-+	 *
-+	 * To make that work, when patching in the fallback flush we patch in this order:
-+	 *  - the mflr		(dest)
-+	 *  - the mtlr		(dest + 2)
-+	 *  - the branch	(dest + 1)
-+	 *
-+	 * That ensures the sequence is safe to execute at any point. In contrast if we
-+	 * patch the mtlr last, it's possible we could return from the branch and not
-+	 * restore LR, leading to a crash later.
-+	 *
-+	 * When patching out the fallback flush (either with nops or another flush type),
-+	 * we patch in this order:
-+	 *  - the branch	(dest + 1)
-+	 *  - the mtlr		(dest + 2)
-+	 *  - the mflr		(dest)
-+	 */
-+
- 	start = PTRRELOC(&__start___entry_flush_fixup);
- 	end = PTRRELOC(&__stop___entry_flush_fixup);
- 	for (i = 0; start < end; start++, i++) {
-@@ -332,15 +354,16 @@ static int __do_entry_flush_fixups(void *data)
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--
--		if (types == L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&entry_flush_fallback,
--				     BRANCH_SET_LINK);
--		else
-+		if (types == L1D_FLUSH_FALLBACK) {
-+			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_branch((struct ppc_inst *)(dest + 1),
-+				     (unsigned long)&entry_flush_fallback, BRANCH_SET_LINK);
-+		} else {
- 			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		}
- 	}
- 
- 	start = PTRRELOC(&__start___scv_entry_flush_fixup);
-@@ -350,15 +373,16 @@ static int __do_entry_flush_fixups(void *data)
- 
- 		pr_devel("patching dest %lx\n", (unsigned long)dest);
- 
--		patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
--
--		if (types == L1D_FLUSH_FALLBACK)
--			patch_branch((struct ppc_inst *)(dest + 1), (unsigned long)&scv_entry_flush_fallback,
--				     BRANCH_SET_LINK);
--		else
-+		if (types == L1D_FLUSH_FALLBACK) {
-+			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_branch((struct ppc_inst *)(dest + 1),
-+				     (unsigned long)&scv_entry_flush_fallback, BRANCH_SET_LINK);
-+		} else {
- 			patch_instruction((struct ppc_inst *)(dest + 1), ppc_inst(instrs[1]));
--
--		patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_instruction((struct ppc_inst *)(dest + 2), ppc_inst(instrs[2]));
-+			patch_instruction((struct ppc_inst *)dest, ppc_inst(instrs[0]));
-+		}
- 	}
- 
- 
--- 
-2.25.1
-
+- Christian
