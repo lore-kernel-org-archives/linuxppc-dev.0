@@ -2,63 +2,70 @@ Return-Path: <SRS0=7n8X=KI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2870C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 18:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE18EC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 19:57:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 343E961264
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 18:59:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 343E961264
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 325A660FE8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 19:57:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 325A660FE8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fh1Dg2Fmjz3bs1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 04:59:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fh2WX4dS7z3bs1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 05:57:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jbm4kRsm;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ZRIwz8Js;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jbm4kRsm; 
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=ZRIwz8Js; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fh1D83mknz2yZD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 04:59:20 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 9ED4061264;
- Thu, 13 May 2021 18:59:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1620932356;
- bh=CNlWPuDlH4KO4XDrkInCB6C/vySWY4yRCKjQVEyQquI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=jbm4kRsmye3VePuEY0uiOXpxuAR45Yth9vGMIuLZA/281w7viNipT9Pkj3hSuhNTn
- MROnDhqdIMGP1KxFI7cRE15VJR7+3Eyn9jV6EythV+BQZDuC8abju9f7vBEEmCxQOe
- e2ZWWrYSP7vodJweDjUZtwu5NYx0o6skn/u4qy1SdvhyIJzjMNdEVcybKv6cQ/Ckyo
- QkZXXiGDcBrmK9nDJ1i3SFQdmBOgaWtfMzZUWJU0NTL2e3QSfuGTucKEPA1bhpNx+7
- eyWaWJq8HO+8+iHN3d1RoVR66e8oTcxfKqlB3E94hEyffhJ89wsxwaj61l4MIQFXu+
- mjBK0ZitZL/SA==
-Subject: Re: [PATCH kernel v3] powerpc/makefile: Do not redefine $(CPP) for
- preprocessor
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-References: <20210513115904.519912-1-aik@ozlabs.ru>
-From: Nathan Chancellor <nathan@kernel.org>
-Message-ID: <dedc7262-2956-37b2-ebfd-ae8eb9b56716@kernel.org>
-Date: Thu, 13 May 2021 11:59:14 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fh2Vx4NDrz2yZ2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 05:57:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+ Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+ Subject:Sender:Reply-To:Content-ID:Content-Description;
+ bh=9ZAZ+z881JDgTJzeQAm+Bs/QG0gxkchxMNdqqahoJwQ=; b=ZRIwz8JsMo8S7kk7JJ2nYXyVn8
+ i2CmwCoP+e+egCGimcWStyryMxR1DwYJifPYyMcUlVx721k9SSkIDIMItviFvzwcVkkthACsC1QtG
+ maatHXBOERsuuLf62eHRpCIhDw9XI3fXHpqJOCWVbbQWqC1jR74Nnm+LP4sMnhl+4M395djjm2Xj1
+ 2NtwFYxdxD8zBcHtxyRn5U2iU6pgmZG2zsyQdlVRfFEaRxkp6InoHMMXAtCR1rKqkBZMl2I4WF2uM
+ KJH1oX6/hZ2l9jWAl8BXd7ahfQcZ8hSlmNLwMpCTupGwj8ZbBi2vUg6EVYomPDOFMVgl6+BhGGLZ2
+ GEqAIkXQ==;
+Received: from c-73-157-219-8.hsd1.or.comcast.net ([73.157.219.8]
+ helo=[10.0.0.253])
+ by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1lhHS9-00BUYB-13; Thu, 13 May 2021 19:57:01 +0000
+Subject: Re: [PATCH] x86: Define only {pud/pmd}_{set/clear}_huge when usefull
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Kravetz <mike.kravetz@oracle.com>,
+ Mike Rapoport <rppt@kernel.org>
+References: <7fbf1b6bc3e15c07c24fa45278d57064f14c896b.1620930415.git.christophe.leroy@csgroup.eu>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <d18bec2b-8a6e-b218-f92b-87016db8a3a7@infradead.org>
+Date: Thu, 13 May 2021 12:56:59 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210513115904.519912-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <7fbf1b6bc3e15c07c24fa45278d57064f14c896b.1620930415.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,102 +79,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org,
- Masahiro Yamada <masahiroy@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- clang-built-linux@googlegroups.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/13/2021 4:59 AM, Alexey Kardashevskiy wrote:
-> The $(CPP) (do only preprocessing) macro is already defined in Makefile.
-> However POWERPC redefines it and adds $(KBUILD_CFLAGS) which results
-> in flags duplication. Which is not a big deal by itself except for
-> the flags which depend on other flags and the compiler checks them
-> as it parses the command line.
+On 5/13/21 11:27 AM, Christophe Leroy wrote:
+> When PUD and/or PMD are folded, those functions are useless
+> and we have a stub in linux/pgtable.h
 > 
-> Specifically, scripts/Makefile.build:304 generates ksyms for .S files.
-> If clang+llvm+sanitizer are enabled, this results in
-> 
-> -emit-llvm-bc -fno-lto -flto -fvisibility=hidden \
->   -fsanitize=cfi-mfcall -fno-lto  ...
-> 
-> in the clang command line and triggers error:
-> 
-> clang-13: error: invalid argument '-fsanitize=cfi-mfcall' only allowed with '-flto'
-> 
-> This removes unnecessary CPP redefinition. Which works fine as in most
-> place KBUILD_CFLAGS is passed to $CPP except
-> arch/powerpc/kernel/vdso64/vdso(32|64).lds. To fix vdso, this does:
-> 1. add -m(big|little)-endian to $CPP
-> 2. add target to $KBUILD_CPPFLAGS as otherwise clang ignores -m(big|little)-endian if
-> the building platform does not support big endian (such as x86).
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 > ---
-> Changes:
-> v3:
-> * moved vdso cleanup in a separate patch
-> * only add target to KBUILD_CPPFLAGS for CLANG
-> 
-> v2:
-> * fix KBUILD_CPPFLAGS
-> * add CLANG_FLAGS to CPPFLAGS
-> ---
->   Makefile              | 1 +
->   arch/powerpc/Makefile | 3 ++-
->   2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index 15b6476d0f89..5b545bef7653 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -576,6 +576,7 @@ CC_VERSION_TEXT = $(subst $(pound),,$(shell $(CC) --version 2>/dev/null | head -
->   ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
->   ifneq ($(CROSS_COMPILE),)
->   CLANG_FLAGS	+= --target=$(notdir $(CROSS_COMPILE:%-=%))
-> +KBUILD_CPPFLAGS	+= --target=$(notdir $(CROSS_COMPILE:%-=%))
+>  arch/x86/mm/pgtable.c | 34 +++++++++++++++++++---------------
+>  1 file changed, 19 insertions(+), 15 deletions(-)
 
-You can avoid the duplication here by just doing:
+WorksForMe. Thanks.
 
-KBUILD_CPPFLAGS	+= $(CLANG_FLAGS)
+Acked-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
 
-I am still not super happy about the flag duplication but I am not sure 
-I can think of a better solution. If KBUILD_CPPFLAGS are always included 
-when building .o files, maybe we should just add $(CLANG_FLAGS) to 
-KBUILD_CPPFLAGS instead of KBUILD_CFLAGS?
-
->   endif
->   ifeq ($(LLVM_IAS),1)
->   CLANG_FLAGS	+= -integrated-as
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 3212d076ac6a..306bfd2797ad 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -76,6 +76,7 @@ endif
->   
->   ifdef CONFIG_CPU_LITTLE_ENDIAN
->   KBUILD_CFLAGS	+= -mlittle-endian
-> +KBUILD_CPPFLAGS	+= -mlittle-endian
->   KBUILD_LDFLAGS	+= -EL
->   LDEMULATION	:= lppc
->   GNUTARGET	:= powerpcle
-> @@ -83,6 +84,7 @@ MULTIPLEWORD	:= -mno-multiple
->   KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
->   else
->   KBUILD_CFLAGS += $(call cc-option,-mbig-endian)
-> +KBUILD_CPPFLAGS += $(call cc-option,-mbig-endian)
->   KBUILD_LDFLAGS	+= -EB
->   LDEMULATION	:= ppc
->   GNUTARGET	:= powerpc
-> @@ -208,7 +210,6 @@ KBUILD_CPPFLAGS	+= -I $(srctree)/arch/$(ARCH) $(asinstr)
->   KBUILD_AFLAGS	+= $(AFLAGS-y)
->   KBUILD_CFLAGS	+= $(call cc-option,-msoft-float)
->   KBUILD_CFLAGS	+= -pipe $(CFLAGS-y)
-> -CPP		= $(CC) -E $(KBUILD_CFLAGS)
->   
->   CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
->   ifdef CONFIG_CPU_BIG_ENDIAN
-> 
+-- 
+~Randy
 
