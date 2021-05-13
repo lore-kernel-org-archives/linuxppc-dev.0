@@ -4,47 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19AA9C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 11:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62CACC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 12:00:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E853601FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 11:04:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E853601FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id 33490613BC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 12:00:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33490613BC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fgph56GbSz3bsk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 21:04:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fgqwv4Rvbz308R
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 May 2021 22:00:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.44;
- helo=out30-44.freemail.mail.aliyun.com;
- envelope-from=jiapeng.chong@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-44.freemail.mail.aliyun.com
- (out30-44.freemail.mail.aliyun.com [115.124.30.44])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fgpgf2tNjz2xxp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 21:03:54 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R181e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04420;
- MF=jiapeng.chong@linux.alibaba.com; NM=1; PH=DS; RN=8; SR=0;
- TI=SMTPD_---0UYkPCOJ_1620903821; 
-Received: from
- j63c13417.sqa.eu95.tbsite.net(mailfrom:jiapeng.chong@linux.alibaba.com
- fp:SMTPD_---0UYkPCOJ_1620903821) by smtp.aliyun-inc.com(127.0.0.1);
- Thu, 13 May 2021 19:03:47 +0800
-From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] selftests/powerpc: Fix duplicate included pthread.h
-Date: Thu, 13 May 2021 19:03:40 +0800
-Message-Id: <1620903820-68213-1-git-send-email-jiapeng.chong@linux.alibaba.com>
-X-Mailer: git-send-email 1.8.3.1
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FgqwB4CZ2z2yYN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2021 21:59:52 +1000 (AEST)
+Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 66058AE80046;
+ Thu, 13 May 2021 07:59:12 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel v3] powerpc/makefile: Do not redefine $(CPP) for
+ preprocessor
+Date: Thu, 13 May 2021 21:59:04 +1000
+Message-Id: <20210513115904.519912-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.30.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,38 +49,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, paulus@samba.org,
- linux-kselftest@vger.kernel.org, shuah@kernel.org
+Cc: Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Masahiro Yamada <masahiroy@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ Nathan Chancellor <nathan@kernel.org>, clang-built-linux@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Clean up the following includecheck warning:
+The $(CPP) (do only preprocessing) macro is already defined in Makefile.
+However POWERPC redefines it and adds $(KBUILD_CFLAGS) which results
+in flags duplication. Which is not a big deal by itself except for
+the flags which depend on other flags and the compiler checks them
+as it parses the command line.
 
-./tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c: pthread.h is
-included more than once.
+Specifically, scripts/Makefile.build:304 generates ksyms for .S files.
+If clang+llvm+sanitizer are enabled, this results in
 
-No functional change.
+-emit-llvm-bc -fno-lto -flto -fvisibility=hidden \
+ -fsanitize=cfi-mfcall -fno-lto  ...
 
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+in the clang command line and triggers error:
+
+clang-13: error: invalid argument '-fsanitize=cfi-mfcall' only allowed with '-flto'
+
+This removes unnecessary CPP redefinition. Which works fine as in most
+place KBUILD_CFLAGS is passed to $CPP except
+arch/powerpc/kernel/vdso64/vdso(32|64).lds. To fix vdso, this does:
+1. add -m(big|little)-endian to $CPP
+2. add target to $KBUILD_CPPFLAGS as otherwise clang ignores -m(big|little)-endian if
+the building platform does not support big endian (such as x86).
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c | 1 -
- 1 file changed, 1 deletion(-)
+Changes:
+v3:
+* moved vdso cleanup in a separate patch
+* only add target to KBUILD_CPPFLAGS for CLANG
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c b/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
-index e2a0c07..9ef37a9 100644
---- a/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
-@@ -17,7 +17,6 @@
- #include <pthread.h>
- #include <sys/mman.h>
- #include <unistd.h>
--#include <pthread.h>
+v2:
+* fix KBUILD_CPPFLAGS
+* add CLANG_FLAGS to CPPFLAGS
+---
+ Makefile              | 1 +
+ arch/powerpc/Makefile | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 15b6476d0f89..5b545bef7653 100644
+--- a/Makefile
++++ b/Makefile
+@@ -576,6 +576,7 @@ CC_VERSION_TEXT = $(subst $(pound),,$(shell $(CC) --version 2>/dev/null | head -
+ ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
+ ifneq ($(CROSS_COMPILE),)
+ CLANG_FLAGS	+= --target=$(notdir $(CROSS_COMPILE:%-=%))
++KBUILD_CPPFLAGS	+= --target=$(notdir $(CROSS_COMPILE:%-=%))
+ endif
+ ifeq ($(LLVM_IAS),1)
+ CLANG_FLAGS	+= -integrated-as
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 3212d076ac6a..306bfd2797ad 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -76,6 +76,7 @@ endif
  
- #include "tm.h"
- #include "utils.h"
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ KBUILD_CFLAGS	+= -mlittle-endian
++KBUILD_CPPFLAGS	+= -mlittle-endian
+ KBUILD_LDFLAGS	+= -EL
+ LDEMULATION	:= lppc
+ GNUTARGET	:= powerpcle
+@@ -83,6 +84,7 @@ MULTIPLEWORD	:= -mno-multiple
+ KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
+ else
+ KBUILD_CFLAGS += $(call cc-option,-mbig-endian)
++KBUILD_CPPFLAGS += $(call cc-option,-mbig-endian)
+ KBUILD_LDFLAGS	+= -EB
+ LDEMULATION	:= ppc
+ GNUTARGET	:= powerpc
+@@ -208,7 +210,6 @@ KBUILD_CPPFLAGS	+= -I $(srctree)/arch/$(ARCH) $(asinstr)
+ KBUILD_AFLAGS	+= $(AFLAGS-y)
+ KBUILD_CFLAGS	+= $(call cc-option,-msoft-float)
+ KBUILD_CFLAGS	+= -pipe $(CFLAGS-y)
+-CPP		= $(CC) -E $(KBUILD_CFLAGS)
+ 
+ CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
+ ifdef CONFIG_CPU_BIG_ENDIAN
 -- 
-1.8.3.1
+2.30.2
 
