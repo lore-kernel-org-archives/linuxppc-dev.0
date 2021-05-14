@@ -2,59 +2,99 @@ Return-Path: <SRS0=oOud=KJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D26ECC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 21:42:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07ACBC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 21:45:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24691613BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 21:42:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24691613BE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6FD11613C1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 May 2021 21:45:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD11613C1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fhhny4K4wz3bt7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 07:42:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fhhrt68f5z3001
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 07:45:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=jOQtYFhv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aJ6K8YKT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=korg header.b=jOQtYFhv; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=aJ6K8YKT; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FhhnV04DRz2xxn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 07:42:04 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 65D7B613BE;
- Fri, 14 May 2021 21:42:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
- s=korg; t=1621028521;
- bh=XNFnNyGz6oUK6QJyJFeGVcriHVVQmYNR7kf6dc3QbV4=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=jOQtYFhvMMhMCLAqpSoLHUosNvCeTNGx8SsJo7Wij8CrKzQsK+R7EucispteADeFq
- /iRzUHeknwXZEXYV2g/hZ6OW9cPG73D5mIDTdO4aq2WmaOAZjGJuAgjN3MUXzH2gIE
- kgT4+Z0Irv3DFzZaosEJDhP37DaK1uhXbYlior+4=
-Date: Fri, 14 May 2021 14:42:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] arm64: Define only {pud/pmd}_{set/clear}_huge when usefull
-Message-Id: <20210514144200.b49ee77c9b2a7f9998ffbf22@linux-foundation.org>
-In-Reply-To: <73ec95f40cafbbb69bdfb43a7f53876fd845b0ce.1620990479.git.christophe.leroy@csgroup.eu>
-References: <73ec95f40cafbbb69bdfb43a7f53876fd845b0ce.1620990479.git.christophe.leroy@csgroup.eu>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FhhrL05kCz2xxn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 07:44:33 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14ELXvO3030567; Fri, 14 May 2021 17:44:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=2TjVzacE10ZLv/wIdwoaT8zoV5nLGXPmwgF92Z7UQ4E=;
+ b=aJ6K8YKTiYz5JENG65tU5OYxN+EB8WlSII9k2pPSJG7lSQR1rpAWCu6Pd6uGT8zQMVF9
+ Ptu0zC0SnVzAfbbivV6iGbXmFC9DaOi4UukjncpDoDn+Z/9/Pz763NwHKgQySadpSy11
+ Lx5DJ/MoBBOJfDiRsBwYY0lFn6U2zOFRRRjyqmewnqK0YmSkMFkIy6dF9aOaFVxllxVa
+ hlAveH9qfWR96UFl3mmGI4F6IjW5irE6FnRjMmynfd5dXpFd6KthjAgkLq8DdPhdlPDx
+ OwnY2n7VS8316hO5f4HS//TTz//EjgfMzxpG/MjKCC338CzIzljg+C7255I0ak4Uar+f kw== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38hxynb8a4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 14 May 2021 17:44:24 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14ELiNaP001405;
+ Fri, 14 May 2021 21:44:23 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma03wdc.us.ibm.com with ESMTP id 38hc75y0mm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 14 May 2021 21:44:23 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14ELiNma26607876
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 14 May 2021 21:44:23 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 34A87AE05F;
+ Fri, 14 May 2021 21:44:23 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 00C42AE05C;
+ Fri, 14 May 2021 21:44:22 +0000 (GMT)
+Received: from localhost (unknown [9.211.51.49])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 14 May 2021 21:44:22 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/udbg_hvc: retry putc on -EAGAIN
+Date: Fri, 14 May 2021 16:44:22 -0500
+Message-Id: <20210514214422.3019105-1-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.30.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 4hEbkGUgVweJqzQJp6yWv37D0NrPnima
+X-Proofpoint-ORIG-GUID: 4hEbkGUgVweJqzQJp6yWv37D0NrPnima
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-14_10:2021-05-12,
+ 2021-05-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999
+ lowpriorityscore=0 clxscore=1011 suspectscore=0 bulkscore=0 spamscore=0
+ priorityscore=1501 mlxscore=0 phishscore=0 malwarescore=0 impostorscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2105140169
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,18 +106,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, naresh.kamboju@linaro.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: jirislaby@kernel.org, linux-kernel@vger.kernel.org,
+ gregkh@linuxfoundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 14 May 2021 11:08:53 +0000 (UTC) Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+hvterm_raw_put_chars() calls hvc_put_chars(), which may return -EAGAIN
+when the underlying hcall returns a "busy" status, but udbg_hvc_putc()
+doesn't handle this. When using xmon on a PowerVM guest, this can
+result in incomplete or garbled output when printing relatively large
+amounts of data quickly, such as when dumping the kernel log buffer.
 
-> When PUD and/or PMD are folded, those functions are useless
-> and we now have a stub in linux/pgtable.h
+Call again on -EAGAIN.
 
-OK, help me out here please.  What patch does this fix?
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ drivers/tty/hvc/hvc_vio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/tty/hvc/hvc_vio.c b/drivers/tty/hvc/hvc_vio.c
+index 798f27f40cc2..76d2a7038095 100644
+--- a/drivers/tty/hvc/hvc_vio.c
++++ b/drivers/tty/hvc/hvc_vio.c
+@@ -249,7 +249,7 @@ static void udbg_hvc_putc(char c)
+ 			count = hvterm_hvsi_put_chars(0, &c, 1);
+ 			break;
+ 		}
+-	} while(count == 0);
++	} while(count == 0 || count == -EAGAIN);
+ }
+ 
+ static int udbg_hvc_getc_poll(void)
+-- 
+2.30.2
+
