@@ -2,67 +2,50 @@ Return-Path: <SRS0=MZVM=KK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 879D2C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 06:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DA54C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 07:20:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8316561402
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 06:29:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8316561402
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id C38C0613E5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 07:20:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C38C0613E5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ucw.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FhwTR5Xz2z305x
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 16:28:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fhxd62Dq2z3bnn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 17:20:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=ucw.cz
+ (client-ip=46.255.230.98; helo=jabberwock.ucw.cz; envelope-from=pavel@ucw.cz;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 354 seconds by postgrey-1.36 at boromir;
+ Sat, 15 May 2021 17:20:13 AEST
+Received: from jabberwock.ucw.cz (jabberwock.ucw.cz [46.255.230.98])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FhwT03yCWz2xvH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 16:28:32 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4FhwSs2YMvz9sbb;
- Sat, 15 May 2021 08:28:29 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zEapEaUkxjZf; Sat, 15 May 2021 08:28:29 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4FhwSs1YWcz9sbT;
- Sat, 15 May 2021 08:28:29 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A8538B76E;
- Sat, 15 May 2021 08:28:29 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id TQ3BUIWyNMAO; Sat, 15 May 2021 08:28:29 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5554B8B765;
- Sat, 15 May 2021 08:28:28 +0200 (CEST)
-Subject: Re: [PATCH] arm64: Define only {pud/pmd}_{set/clear}_huge when usefull
-To: Andrew Morton <akpm@linux-foundation.org>
-References: <73ec95f40cafbbb69bdfb43a7f53876fd845b0ce.1620990479.git.christophe.leroy@csgroup.eu>
- <20210514144200.b49ee77c9b2a7f9998ffbf22@linux-foundation.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <ae1be8a1-8412-1288-31d4-23dc2cf4e5e7@csgroup.eu>
-Date: Sat, 15 May 2021 08:28:25 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FhxcY51fKz2yYY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 17:20:13 +1000 (AEST)
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+ id 6324B1C0B80; Sat, 15 May 2021 09:14:11 +0200 (CEST)
+Date: Sat, 15 May 2021 09:14:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Masahiro Yamada <masahiroy@kernel.org>
+Subject: Re: [PATCH] Raise the minimum GCC version to 5.2
+Message-ID: <20210515071410.GA27201@amd>
+References: <20210501151538.145449-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20210514144200.b49ee77c9b2a7f9998ffbf22@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+Content-Disposition: inline
+In-Reply-To: <20210501151538.145449-1-masahiroy@kernel.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,34 +57,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, naresh.kamboju@linaro.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kbuild@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Miguel Ojeda <ojeda@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Will Deacon <will@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--2fHTh5uZTiUOsy+g
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Le 14/05/2021 à 23:42, Andrew Morton a écrit :
-> On Fri, 14 May 2021 11:08:53 +0000 (UTC) Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
-> 
->> When PUD and/or PMD are folded, those functions are useless
->> and we now have a stub in linux/pgtable.h
-> 
-> OK, help me out here please.  What patch does this fix?
-> 
+On Sun 2021-05-02 00:15:38, Masahiro Yamada wrote:
+> The current minimum GCC version is 4.9 except ARCH=3Darm64 requiring
+> GCC 5.1.
 
-Both this one and the x86 one from the day before fix 1cff41494b15cd82c1ec418bb5c ("mm/pgtable: add 
-stubs for {pmd/pub}_{set/clear}_huge")
+Please don't. I'm still on 4.9 on machine I can't easily update,
 
-I think both the x86 fix and the arm64 fix should be squashed into that patch at the end.
+>  Documentation/process/changes.rst | 2 +-
+>  arch/arm64/Kconfig                | 2 +-
+>  arch/powerpc/Kconfig              | 2 +-
+>  arch/riscv/Kconfig                | 2 +-
+>  include/linux/compiler-gcc.h      | 6 +-----
+>  lib/Kconfig.debug                 | 2 +-
+>  scripts/min-tool-version.sh       | 8 +-------
+>  7 files changed, 7 insertions(+), 17 deletions(-)
 
-I checked, the only other architecture involving pud_set_huge() and friends is powerpc, and powerpc 
-doesn't have this problem as it only defined those for book3s/64 platforms which have 4 level page 
-tables by definition.
+and 10 lines of cleanups is really not worth that.
 
-Thanks
-Christophe
+Best regards,
+								Pavel
+
+--=20
+http://www.livejournal.com/~pavelmachek
+
+--2fHTh5uZTiUOsy+g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAmCfdMIACgkQMOfwapXb+vJRuQCgkvFNWySx/cRHndnAzB2BNEcE
+fUgAoLeFGahKOr8VmTLEps0tT667xra4
+=bRN/
+-----END PGP SIGNATURE-----
+
+--2fHTh5uZTiUOsy+g--
