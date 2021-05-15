@@ -4,43 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8BF4C43461
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 22:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B31C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 22:47:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C2F66113E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 22:47:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C2F66113E
+	by mail.kernel.org (Postfix) with ESMTPS id 68F8F6113E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 22:47:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68F8F6113E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FjLBC0fRpz3cFb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 08:47:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FjLBX1RFZz3bw7
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 08:47:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FjL8V130kz2xg1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FjL8V6DRkz2y0C
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 May 2021 08:45:46 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FjL8T0XPtz9sfG; Sun, 16 May 2021 08:45:44 +1000 (AEST)
+ id 4FjL8T5db1z9sj1; Sun, 16 May 2021 08:45:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <cf0a050d124d4f426cdc7a74009d17b01d8d8969.1620465917.git.christophe.leroy@csgroup.eu>
-References: <cf0a050d124d4f426cdc7a74009d17b01d8d8969.1620465917.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/uaccess: Fix __get_user() with
- CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-Message-Id: <162111863389.1890426.7179342188504537886.b4-ty@ellerman.id.au>
-Date: Sun, 16 May 2021 08:43:53 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210513140800.1391706-1-mpe@ellerman.id.au>
+References: <20210513140800.1391706-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/64s: Fix entry flush patching w/strict RWX &
+ hash
+Message-Id: <162111863528.1890426.10537690113813040837.b4-ty@ellerman.id.au>
+Date: Sun, 16 May 2021 08:43:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,27 +52,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 8 May 2021 09:25:32 +0000 (UTC), Christophe Leroy wrote:
-> Building kernel mainline with GCC 11 leads to following failure
-> when starting 'init':
+On Fri, 14 May 2021 00:07:59 +1000, Michael Ellerman wrote:
+> The entry flush mitigation can be enabled/disabled at runtime. When this
+> happens it results in the kernel patching its own instructions to
+> enable/disable the mitigation sequence.
 > 
->   init[1]: bad frame in sys_sigreturn: 7ff5a900 nip 001083cc lr 001083c4
->   Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-> 
-> This is an issue due to a segfault happening in
-> __unsafe_restore_general_regs() in a loop copying registers from user
-> to kernel:
+> With strict kernel RWX enabled instruction patching happens via a
+> secondary mapping of the kernel text, so that we don't have to make the
+> primary mapping writable. With the hash MMU this leads to a hash fault,
+> which causes us to execute the exception entry which contains the entry
+> flush mitigation.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/uaccess: Fix __get_user() with CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-      https://git.kernel.org/powerpc/c/7315e457d6bc342d06ba0b7ee498221c5237a547
+[1/2] powerpc/64s: Fix entry flush patching w/strict RWX & hash
+      https://git.kernel.org/powerpc/c/49b39ec248af863781a13aa6d81c5f69a2928094
+[2/2] powerpc/64s: Fix stf mitigation patching w/strict RWX & hash
+      https://git.kernel.org/powerpc/c/5b48ba2fbd77bc68feebd336ffad5ff166782bde
 
 cheers
