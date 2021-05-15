@@ -2,60 +2,68 @@ Return-Path: <SRS0=MZVM=KK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B34AFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 05:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20208C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 05:59:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 071FF61260
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 05:47:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 071FF61260
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7AE9C613D1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 05:59:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AE9C613D1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FhvYH4GSQz3bt4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 15:47:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.103; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Received: from smtprelay.hostedemail.com (smtprelay0103.hostedemail.com
- [216.40.44.103])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fhvqt0r0wz3bsL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 May 2021 15:59:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.218.43; helo=mail-ej1-f43.google.com;
+ envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com
+ [209.85.218.43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FhvXv4Cdxz2xvN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 15:46:54 +1000 (AEST)
-Received: from omf05.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
- by smtprelay03.hostedemail.com (Postfix) with ESMTP id C506C837F24C;
- Sat, 15 May 2021 05:46:51 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by
- omf05.hostedemail.com (Postfix) with ESMTPA id 2F27CB2793; 
- Sat, 15 May 2021 05:46:49 +0000 (UTC)
-Message-ID: <d156a893bae41967e9fadddb3397cf47bcdde239.camel@perches.com>
-Subject: Re: [PATCH v2 04/14] PCI/MSI: Use sysfs_emit() and sysfs_emit_at()
- in "show" functions
-From: Joe Perches <joe@perches.com>
-To: Krzysztof =?UTF-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Bjorn Helgaas
- <bhelgaas@google.com>
-Date: Fri, 14 May 2021 22:46:47 -0700
-In-Reply-To: <20210515052434.1413236-4-kw@linux.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FhvqV1JSGz2xxq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2021 15:59:32 +1000 (AEST)
+Received: by mail-ej1-f43.google.com with SMTP id s22so1436935ejv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2021 22:59:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=CxU+SMLsQzcRdf8JW3f+lBwp7dAmZ2RclEuJzkIt4jg=;
+ b=gFE9C7xAn9yuGhIsRVotO4IVQW9FWY9KLkT8HXY/n55fr+FmtSBUMJ+Phn+TJPYCZ1
+ Qk/AwYzrozhHWL7D6vNWBWJ4gSLzFP22BZl3URKzErU/Z+YOgL8gI66oNAnm9zOslRCq
+ 1F3turbzNDW32vYCrbN1Oc+Ax3OHSlGEt9a6IJLKz8iVVpVqxzEAwHrGzDrEEigs9Zv5
+ I5DuLxgNUkmJNsZMxzj3v4OLCt74gloWiXqUFH00GfEsw86aVhkUXwVcoyyoBYZIYZYj
+ idHXyFkLKZrL7mwZjyp0yhwp0Vb12tvjICLuW1HTc8ZxFNlo6yF3bZqe8NzSgSjt4pxb
+ bQuA==
+X-Gm-Message-State: AOAM533dpZRUZVAx13n7KnhrVlkNGoRlbDBFZrlAHiSIgyLcFfn8kekl
+ E/2E7VIO7zGHqshbYjtXlZ8=
+X-Google-Smtp-Source: ABdhPJyqXWDNaPpiTdS/BVFGCZr4ufv48fdcgnBwFabbOiHJAvq8/l70JH1/M9vbwnAfYahZo6lewQ==
+X-Received: by 2002:a17:906:e08c:: with SMTP id
+ gh12mr53261236ejb.115.1621058369429; 
+ Fri, 14 May 2021 22:59:29 -0700 (PDT)
+Received: from rocinante.localdomain ([95.155.85.46])
+ by smtp.gmail.com with ESMTPSA id n11sm4926927ejg.43.2021.05.14.22.59.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 14 May 2021 22:59:29 -0700 (PDT)
+Date: Sat, 15 May 2021 07:59:28 +0200
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v2 01/14] PCI: Use sysfs_emit() and sysfs_emit_at() in
+ "show" functions
+Message-ID: <20210515055928.GA73551@rocinante.localdomain>
 References: <20210515052434.1413236-1-kw@linux.com>
- <20210515052434.1413236-4-kw@linux.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.1-1 
+ <985813cafbbe58cd899737ee49b44798210a69f6.camel@perches.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Server: rspamout05
-X-Rspamd-Queue-Id: 2F27CB2793
-X-Stat-Signature: rp3kod31ksbmrnhcfid5w6j7hpeaacru
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX1+UWlX7UgFeALlHHRIUps2+bN3E38NkPWQ=
-X-HE-Tag: 1621057609-59859
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <985813cafbbe58cd899737ee49b44798210a69f6.camel@perches.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,7 +77,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Vidya Sagar <vidyas@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Paul Mackerras <paulus@samba.org>,
  Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
  Logan Gunthorpe <logang@deltatee.com>,
  Xiongfeng Wang <wangxiongfeng2@huawei.com>
@@ -77,39 +86,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2021-05-15 at 05:24 +0000, Krzysztof Wilczyński wrote:
-> The sysfs_emit() and sysfs_emit_at() functions were introduced to make
-> it less ambiguous which function is preferred when writing to the output
-> buffer in a device attribute's "show" callback [1].
+Hi Joe,
+
+[...]
+> Ideally, the additional newline check below this would use sysfs_emit_at
 > 
-> Convert the PCI sysfs object "show" functions from sprintf(), snprintf()
-> and scnprintf() to sysfs_emit() and sysfs_emit_at() accordingly, as the
-> latter is aware of the PAGE_SIZE buffer and correctly returns the number
-> of bytes written into the buffer.
-> 
-> No functional change intended.
-[]
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-[]
-> @@ -465,8 +465,8 @@ static ssize_t msi_mode_show(struct device *dev, struct device_attribute *attr,
->  
->  	entry = irq_get_msi_desc(irq);
->  	if (entry)
-> -		return sprintf(buf, "%s\n",
-> -				entry->msi_attrib.is_msix ? "msix" : "msi");
-> +		return sysfs_emit(buf, "%s\n",
-> +				  entry->msi_attrib.is_msix ? "msix" : "msi");
->  
-> 
->  	return -ENODEV;
->  }
+> drivers/pci/pci.c-      /*
+> drivers/pci/pci.c:       * When set by the command line, resource_alignment_param will not
+> drivers/pci/pci.c-       * have a trailing line feed, which is ugly. So conditionally add
+> drivers/pci/pci.c-       * it here.
+> drivers/pci/pci.c-       */
+> drivers/pci/pci.c-      if (count >= 2 && buf[count - 2] != '\n' && count < PAGE_SIZE - 1) {
+> drivers/pci/pci.c-              buf[count - 1] = '\n';
+> drivers/pci/pci.c-              buf[count++] = 0;
+> drivers/pci/pci.c-      }
+> drivers/pci/pci.c-
+> drivers/pci/pci.c-      return count;
 
-trivia: reversing the test would be more common style
+I found some inconsistencies with adding newline this way, and decided
+to change the code slightly, see:
 
-	if (!entry)
-		return -ENODEV;
+  https://lore.kernel.org/linux-pci/20210515052434.1413236-12-kw@linux.com/
 
-	return sysfs_emit(...);
-}
-
-
+Krzysztof
