@@ -6,49 +6,48 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C330FC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 11:59:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A858CC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 12:00:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF98161076
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 11:59:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF98161076
+	by mail.kernel.org (Postfix) with ESMTPS id E670161185
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 12:00:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E670161185
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fjgmb3TjYz3btZ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 21:59:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fjgmz6cwPz2y6C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 May 2021 22:00:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fjgm91yvVz2y6C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fjgm91wyKz2xvc
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 May 2021 21:59:16 +1000 (AEST)
-IronPort-SDR: r1KOs2bLhP1j2D01sOfnZwGmYtrTefqz7QnQOE0r6gMGWt1MN37M5eLMpW1TV/ULbCitn2outt
- f9gofXqTb8TA==
-X-IronPort-AV: E=McAfee;i="6200,9189,9985"; a="200384345"
-X-IronPort-AV: E=Sophos;i="5.82,304,1613462400"; d="scan'208";a="200384345"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 May 2021 04:59:11 -0700
-IronPort-SDR: 3P7s4MInD17Hh89Vam2+VVhvkRaw35lxYohhwpBRe2BJQcgVr/P7zEjcA7f71nnfyJI+tquGjP
- yMy1Gvtk3nqQ==
+IronPort-SDR: o2uEY2wyOoCl1+mFSgE4H8aLN/uEYgB39jnArpef9OMmvhI/oaHtd9jS3xh95xUiD7zvQWCUDr
+ e95xaxHqyIgw==
+X-IronPort-AV: E=McAfee;i="6200,9189,9985"; a="264254558"
+X-IronPort-AV: E=Sophos;i="5.82,304,1613462400"; d="scan'208";a="264254558"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 May 2021 04:59:12 -0700
+IronPort-SDR: 2O5MZbOs2GwJ0U35gfC+226p2nUOYefOplfl3ZDqfiTB6t0/d4VIbXbK6IIyj4eIf26fV4chn+
+ gBv7t0gDPeqw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,304,1613462400"; d="scan'208";a="539580527"
+X-IronPort-AV: E=Sophos;i="5.82,304,1613462400"; d="scan'208";a="437262931"
 Received: from lkp-server01.sh.intel.com (HELO ddd90b05c979) ([10.239.97.150])
- by fmsmga001.fm.intel.com with ESMTP; 16 May 2021 04:59:10 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 16 May 2021 04:59:10 -0700
 Received: from kbuild by ddd90b05c979 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1liFQL-0001QY-Tu; Sun, 16 May 2021 11:59:09 +0000
-Date: Sun, 16 May 2021 19:58:36 +0800
+ id 1liFQL-0001QW-TF; Sun, 16 May 2021 11:59:09 +0000
+Date: Sun, 16 May 2021 19:58:35 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- 4938c440ff7f2c27641f6639d1202f52759ea3ff
-Message-ID: <60a108ec.gAM/q4nhYJiQTOkP%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS 3a81c0495fdb91fd9a9b4f617098c283131eeae1
+Message-ID: <60a108eb.ACVKq4qy5H/jRG/U%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -69,12 +68,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 4938c440ff7f2c27641f6639d1202f52759ea3ff  powerpc/pseries/ras: Delete a redundant condition branch
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 3a81c0495fdb91fd9a9b4f617098c283131eeae1  Automatic merge of 'fixes' into merge (2021-05-16 08:46)
 
 elapsed time: 723m
 
-configs tested: 118
+configs tested: 119
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -97,12 +96,11 @@ arm                        keystone_defconfig
 openrisc                 simple_smp_defconfig
 mips                      maltasmvp_defconfig
 powerpc                     ppa8548_defconfig
-powerpc                     tqm8541_defconfig
-arm                        shmobile_defconfig
-arm                           stm32_defconfig
-arm                       versatile_defconfig
-mips                        nlm_xlr_defconfig
-sh                        dreamcast_defconfig
+sh                         apsh4a3a_defconfig
+arc                    vdk_hs38_smp_defconfig
+powerpc                      ppc64e_defconfig
+sh                   sh7770_generic_defconfig
+mips                        nlm_xlp_defconfig
 um                           x86_64_defconfig
 powerpc                      acadia_defconfig
 powerpc64                        alldefconfig
@@ -113,18 +111,20 @@ m68k                          amiga_defconfig
 arm                          pcm027_defconfig
 mips                        jmr3927_defconfig
 arc                     nsimosci_hs_defconfig
-mips                         db1xxx_defconfig
-mips                    maltaup_xpa_defconfig
-powerpc                     ksi8560_defconfig
-mips                       lemote2f_defconfig
 powerpc                 mpc8560_ads_defconfig
 arm                            xcep_defconfig
 m68k                       m5275evb_defconfig
 h8300                            alldefconfig
 sh                   rts7751r2dplus_defconfig
-arm                            qcom_defconfig
-powerpc                     powernv_defconfig
-mips                     loongson1c_defconfig
+powerpc                    adder875_defconfig
+arm                           omap1_defconfig
+arm                          pxa910_defconfig
+sh                             sh03_defconfig
+arm                       aspeed_g5_defconfig
+sh                          r7785rp_defconfig
+powerpc                       holly_defconfig
+sparc                       sparc64_defconfig
+mips                      pistachio_defconfig
 x86_64                            allnoconfig
 ia64                             allmodconfig
 ia64                                defconfig
