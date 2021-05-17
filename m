@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87FEFC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:18:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 227E3C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:18:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE44A6108D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:18:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE44A6108D
+	by mail.kernel.org (Postfix) with ESMTPS id 5D25C6108D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:18:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D25C6108D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBpR4Yk5z3cbY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:18:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBpp1KQ1z3d7G
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:18:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
  envelope-from=tanxiaofei@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dz5QXpz2xtv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dz5SS0z2ymD
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 16:40:38 +1000 (AEST)
-Received: from dggems705-chm.china.huawei.com (unknown [172.30.72.60])
- by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Zf3GRJzmWHK;
- Mon, 17 May 2021 14:37:46 +0800 (CST)
+Received: from dggems703-chm.china.huawei.com (unknown [172.30.72.58])
+ by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Yq3YH2zQp98;
+ Mon, 17 May 2021 14:37:03 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggems705-chm.china.huawei.com (10.3.19.182) with Microsoft SMTP Server
+ dggems703-chm.china.huawei.com (10.3.19.180) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
+ 15.1.2176.2; Mon, 17 May 2021 14:40:31 +0800
 Received: from localhost.localdomain (10.67.165.24) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
+ 15.1.2176.2; Mon, 17 May 2021 14:40:31 +0800
 From: Xiaofei Tan <tanxiaofei@huawei.com>
 To: <gregkh@linuxfoundation.org>, <jirislaby@kernel.org>
-Subject: [PATCH 2/9] tty: hvc_console: Fix "foo * bar" should be "foo *bar"
-Date: Mon, 17 May 2021 14:37:06 +0800
-Message-ID: <1621233433-27094-3-git-send-email-tanxiaofei@huawei.com>
+Subject: [PATCH 7/9] tty: hvc_console: Add a blank line after declarations
+Date: Mon, 17 May 2021 14:37:11 +0800
+Message-ID: <1621233433-27094-8-git-send-email-tanxiaofei@huawei.com>
 X-Mailer: git-send-email 2.8.1
 In-Reply-To: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
 References: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
@@ -71,35 +71,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix "foo * bar" should be "foo *bar", reported by checkpatch.pl.
+Add a blank line after declarations, reported by checkpatch.pl.
 
 Signed-off-by: Xiaofei Tan <tanxiaofei@huawei.com>
 ---
- drivers/tty/hvc/hvc_console.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/tty/hvc/hvc_console.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index a1eca9d..ddf07ff 100644
+index a61cdf0..f31efeb 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -344,7 +344,7 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
-  * The TTY interface won't be used until after the vio layer has exposed the vty
-  * adapter to the kernel.
-  */
--static int hvc_open(struct tty_struct *tty, struct file * filp)
-+static int hvc_open(struct tty_struct *tty, struct file *filp)
- {
- 	struct hvc_struct *hp = tty->driver_data;
- 	unsigned long flags;
-@@ -386,7 +386,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	return rc;
- }
- 
--static void hvc_close(struct tty_struct *tty, struct file * filp)
-+static void hvc_close(struct tty_struct *tty, struct file *filp)
- {
- 	struct hvc_struct *hp = tty->driver_data;
- 	unsigned long flags;
+@@ -922,6 +922,7 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	/* We wait until a driver actually comes along */
+ 	if (atomic_inc_not_zero(&hvc_needs_init)) {
+ 		int err = hvc_init();
++
+ 		if (err)
+ 			return ERR_PTR(err);
+ 	}
 -- 
 2.8.1
 
