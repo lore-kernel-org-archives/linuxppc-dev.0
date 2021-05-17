@@ -7,44 +7,43 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0364C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAC2FC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39F8E61260
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39F8E61260
+	by mail.kernel.org (Postfix) with ESMTPS id 5EB3D60C3D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EB3D60C3D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBnM6yGtz3088
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:17:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBnk1MD8z3cGj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:17:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
  envelope-from=tanxiaofei@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dy0jNsz2yhm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dy6SVVz2xtv
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 16:40:37 +1000 (AEST)
-Received: from dggems702-chm.china.huawei.com (unknown [172.30.72.59])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Zf758Yz16R37;
- Mon, 17 May 2021 14:37:46 +0800 (CST)
+Received: from dggems706-chm.china.huawei.com (unknown [172.30.72.59])
+ by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Yp6CQ7zQp9R;
+ Mon, 17 May 2021 14:37:02 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggems702-chm.china.huawei.com (10.3.19.179) with Microsoft SMTP Server
+ dggems706-chm.china.huawei.com (10.3.19.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 17 May 2021 14:40:31 +0800
+ 15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
 Received: from localhost.localdomain (10.67.165.24) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
  15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
 From: Xiaofei Tan <tanxiaofei@huawei.com>
 To: <gregkh@linuxfoundation.org>, <jirislaby@kernel.org>
-Subject: [PATCH 6/9] tty: hvc_console: Fix coding style issues of block
- comments
-Date: Mon, 17 May 2021 14:37:10 +0800
-Message-ID: <1621233433-27094-7-git-send-email-tanxiaofei@huawei.com>
+Subject: [PATCH 3/9] tty: hvc_console: Remove trailing whitespace
+Date: Mon, 17 May 2021 14:37:07 +0800
+Message-ID: <1621233433-27094-4-git-send-email-tanxiaofei@huawei.com>
 X-Mailer: git-send-email 2.8.1
 In-Reply-To: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
 References: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
@@ -72,68 +71,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix coding style issues of block comments, reported by checkpatch.pl.
-Besides, add a period at the end of the sentenses.
+Remove trailing whitespace, reported by checkpatch.pl.
 
 Signed-off-by: Xiaofei Tan <tanxiaofei@huawei.com>
 ---
- drivers/tty/hvc/hvc_console.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/tty/hvc/hvc_console.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 39018e5..a61cdf0 100644
+index ddf07ff..13f63d5 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -177,7 +177,8 @@ static void hvc_console_print(struct console *co, const char *b,
- 			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
- 			if (r <= 0) {
- 				/* throw away characters on error
--				 * but spin in case of -EAGAIN */
-+				 * but spin in case of -EAGAIN.
-+				 */
- 				if (r != -EAGAIN) {
- 					i = 0;
- 				} else {
-@@ -484,7 +485,8 @@ static int hvc_push(struct hvc_struct *hp)
- 			return 0;
- 		}
- 		/* throw away output on error; this happens when
--		   there is no session connected to the vterm. */
-+		 *  there is no session connected to the vterm.
-+		 */
- 		hp->n_outbuf = 0;
- 	} else
- 		hp->n_outbuf -= n;
-@@ -707,7 +709,8 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
- 			/* XXX should support a sequence */
- 			if (buf[i] == '\x0f') {	/* ^O */
- 				/* if ^O is pressed again, reset
--				 * sysrq_pressed and flip ^O char */
-+				 * sysrq_pressed and flip ^O char.
-+				 */
- 				sysrq_pressed = !sysrq_pressed;
- 				if (sysrq_pressed)
- 					continue;
-@@ -749,7 +752,8 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
+@@ -204,7 +204,7 @@ static struct tty_driver *hvc_console_device(struct console *c, int *index)
+ }
  
- 	if (read_total) {
- 		/* Activity is occurring, so reset the polling backoff value to
--		   a minimum for performance. */
-+		 * a minimum for performance.
-+		 */
- 		timeout = MIN_TIMEOUT;
+ static int hvc_console_setup(struct console *co, char *options)
+-{	
++{
+ 	if (co->index < 0 || co->index >= MAX_NR_HVC_CONSOLES)
+ 		return -ENODEV;
  
- 		tty_flip_buffer_push(&hp->port);
-@@ -1037,7 +1041,8 @@ static int hvc_init(void)
- 	tty_set_operations(drv, &hvc_ops);
- 
- 	/* Always start the kthread because there can be hotplug vty adapters
--	 * added later. */
-+	 * added later.
-+	 */
- 	hvc_task = kthread_run(khvcd, NULL, "khvcd");
- 	if (IS_ERR(hvc_task)) {
- 		printk(KERN_ERR "Couldn't create kthread for console.\n");
 -- 
 2.8.1
 
