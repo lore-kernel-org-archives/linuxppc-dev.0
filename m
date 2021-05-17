@@ -2,111 +2,83 @@ Return-Path: <SRS0=r+Zg=KM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA7FFC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 06:44:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C152CC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 06:49:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EEC261209
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 06:44:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EEC261209
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 41EF161241
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 06:49:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41EF161241
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fk8k005F0z306c
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 16:44:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fk8rK6LNqz306s
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 16:49:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tXLjkVFa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=HOgvh0BA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b31;
+ helo=mail-yb1-xb31.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=tXLjkVFa; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=HOgvh0BA; dkim-atps=neutral
+Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com
+ [IPv6:2607:f8b0:4864:20::b31])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8jP4sFhz2xts
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 16:43:37 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14H6XvD2122432; Mon, 17 May 2021 02:43:10 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=xdx0NJHTH3TXuVcwAPTBaPY/tyOPa2y5gp9KZo5KBSk=;
- b=tXLjkVFaDsm8q/W9O2/Z2JLJgJfh0YA23k5Xh1QX9Sps+b5hOIfj5cPT3WxocUwQrmKJ
- 8RCSVAIAjhV+WV82gyNFvZHM+hLxR45mQ5a6piiFeJs6V569a1rU9/UPoq4iqIb2xcNM
- JizJWqVkzqzt5wYW6v4pk7aVt9bh2d09WOdU/h8ymXVq9Q0VMtnlEuVz3Doa5E7kNbeB
- i/vp+o1wXst81rkJaKN121Qf2kb/iJM4GA7Ia12KvAtqX/PUpO1Srp4prfqykgz7tEE5
- uEWDRIP0HORfOlv+NefNKaKY7Xs5giRiXWJIxGMSQyfB4AcJHq6BCtZ+9YxcHKVfe7bf Gw== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38kjmss77y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 May 2021 02:43:10 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14H6RFIi027591;
- Mon, 17 May 2021 06:43:09 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma01dal.us.ibm.com with ESMTP id 38j5x90ced-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 May 2021 06:43:09 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14H6h7n627853142
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 May 2021 06:43:07 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80BC9BE051;
- Mon, 17 May 2021 06:43:07 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AC879BE054;
- Mon, 17 May 2021 06:43:02 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.47.29])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 17 May 2021 06:43:02 +0000 (GMT)
-Subject: Re: [RFC 1/4] drivers/nvdimm: Add perf interface to expose nvdimm
- performance stats
-To: Peter Zijlstra <peterz@infradead.org>
-References: <20210512163824.255370-1-kjain@linux.ibm.com>
- <20210512163824.255370-2-kjain@linux.ibm.com>
- <YJwP9ByvAcDPixVN@hirez.programming.kicks-ass.net>
- <37015d53-050a-acef-2958-b1ff5d02800b@linux.ibm.com>
- <YJ5jQ1ixz7D0Ij2R@hirez.programming.kicks-ass.net>
-From: kajoljain <kjain@linux.ibm.com>
-Message-ID: <f15d6de4-8152-4960-8716-16bd9a12357b@linux.ibm.com>
-Date: Mon, 17 May 2021 12:13:00 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8ql598Kz2xv0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 16:49:06 +1000 (AEST)
+Received: by mail-yb1-xb31.google.com with SMTP id l7so7096341ybf.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 May 2021 23:49:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=7ogQ8WjRN51W9F7PuMScLroVo7O4X1QWJYlJVrAAeOc=;
+ b=HOgvh0BAjre9OobXeXr6GCiRJDAnguUTOB2qQs8ITamZcsMRGhsnS7AtM2QYOZlgra
+ lu/d0bk1y2HaTdXh2epcjxxNG9byQp320D2GUiTn9b+yaCyXghnpo+4U1bZU9sFN14N2
+ ffuxCBr+lBEDBK4X3iN7c+xoj4mSTEMw6rKiE2oh2Iijx4RQeAdWh4LFgsh6qlQBdDcn
+ kUQwVNXJJjKcFdziJJTRd9d13DcBD49e+oSRzrVT1ZdBN8kjH8Xds8Wl90SjwRfvG5zI
+ Rd2ER3ValJ56VCyQ/MxHrqRUo9S4jsxZ0OVPD0IZt5Mr65F+B0MQG0lMNGSNFoSJEkDc
+ pQuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=7ogQ8WjRN51W9F7PuMScLroVo7O4X1QWJYlJVrAAeOc=;
+ b=MxPG5WMGnFq1FZzCkmNOe49N3qFuqoVC3tx1yrD0ueHrdgmfeT4rAhXYJAPVnEpIdb
+ +F8PId16Aw/rxUKHyg0cFyK5EIVIyT4Z8H2h9/TZJ9ko+wQzPSAhFePAxy+o1dzHvbuf
+ pLbTcYP5PmayF7WT0bHWodMLguS+mM3dV/OX2cL++SvnAYqfGUDdWoCB7r6RaslcGSBD
+ F1O30rQD1giyjenDDZD3OtQ3ZeIinUKYMLzkj5Pn9cgpgjp0gTR+Qyt2RfPvnXQNyQyh
+ 4DdzxKkQp4+ne2a7c0Eoy2/Vmm7XnMjhIeizR+9TNX1eljHVnmkV/wevF1jJOUqp5XQv
+ 07gw==
+X-Gm-Message-State: AOAM531cKcB1e/UI33MWz6F5sr3YCeNwaVGYPFemhqOoIfsN8epPjh/X
+ SK8cNaPJmByXEF4ydO0CoBgLVgINTwpYwfk+eTU=
+X-Google-Smtp-Source: ABdhPJx75UdGKLd7FvOeW+XWunqJxGnnh15skllansu0JhIm5XAQvsi7PzQ6aVMA7x4yIjHoowhJmvReYFFH/3rtkyo=
+X-Received: by 2002:a25:aad4:: with SMTP id t78mr64976233ybi.343.1621234141921; 
+ Sun, 16 May 2021 23:49:01 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <YJ5jQ1ixz7D0Ij2R@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: xDZBL9g-YAuBZJRqZNYjG2Yjrq2uXwea
-X-Proofpoint-GUID: xDZBL9g-YAuBZJRqZNYjG2Yjrq2uXwea
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-17_01:2021-05-12,
- 2021-05-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 mlxscore=0
- impostorscore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=794
- priorityscore=1501 phishscore=0 suspectscore=0 adultscore=0 bulkscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105170046
+References: <20210517032810.129949-1-jniethe5@gmail.com>
+ <20210517032810.129949-4-jniethe5@gmail.com>
+ <04311ba7-8b91-6837-2bc5-1f55f49da253@csgroup.eu>
+In-Reply-To: <04311ba7-8b91-6837-2bc5-1f55f49da253@csgroup.eu>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Mon, 17 May 2021 16:48:50 +1000
+Message-ID: <CACzsE9rk7D_ocSsf74C1vX=oXgLa_pQTSusncXRPeGBVe+48Nw@mail.gmail.com>
+Subject: Re: [PATCH v14 3/9] powerpc/modules: Make module_alloc() Strict
+ Module RWX aware
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,32 +90,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: santosh@fossix.org, maddy@linux.vnet.ibm.com, ira.weiny@intel.com,
- linux-nvdimm@lists.01.org, linux-kernel@vger.kernel.org,
- atrajeev@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com, vaibhav@linux.ibm.com,
- dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de
+Cc: ajd@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, cmr@codefail.de,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, naveen.n.rao@linux.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 5/14/21 5:17 PM, Peter Zijlstra wrote:
-> On Thu, May 13, 2021 at 05:56:14PM +0530, kajoljain wrote:
-> 
->> But yes the current read/add/del functions are not adding value. We
->> could  add an arch/platform specific function which could handle the
->> capturing of the counter data and do the rest of the operation here,
->> is this approach better?
-> 
-> Right; have your register_nvdimm_pmu() set pmu->{add,del,read} to
-> nd_pmu->{add,del,read} directly, don't bother with these intermediates.
-> Also you can WARN_ON_ONCE() if any of them are NULL and fail
-> registration at that point.
-> 
-
-Hi Peter,
-    I will make all required changes and send next version of this patchset soon.
-
-Thanks,
-Kajol Jain
+On Mon, May 17, 2021 at 4:37 PM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+>
+> Le 17/05/2021 =C3=A0 05:28, Jordan Niethe a =C3=A9crit :
+> > Make module_alloc() use PAGE_KERNEL protections instead of
+> > PAGE_KERNEL_EXEX if Strict Module RWX is enabled.
+> >
+> > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> > ---
+> > v14: - Split out from powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
+> >       - Add and use strict_module_rwx_enabled() helper
+> > ---
+> >   arch/powerpc/include/asm/mmu.h | 5 +++++
+> >   arch/powerpc/kernel/module.c   | 4 +++-
+> >   2 files changed, 8 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/=
+mmu.h
+> > index 607168b1aef4..7710bf0cbf8a 100644
+> > --- a/arch/powerpc/include/asm/mmu.h
+> > +++ b/arch/powerpc/include/asm/mmu.h
+> > @@ -357,6 +357,11 @@ static inline bool strict_kernel_rwx_enabled(void)
+> >       return false;
+> >   }
+> >   #endif
+> > +
+> > +static inline bool strict_module_rwx_enabled(void)
+> > +{
+> > +     return IS_ENABLED(CONFIG_STRICT_MODULE_RWX) && strict_kernel_rwx_=
+enabled();
+> > +}
+>
+> Looking at arch/Kconfig, I have the feeling that it is possible to select=
+ CONFIG_STRICT_MODULE_RWX
+> without selecting CONFIG_STRICT_KERNEL_RWX.
+>
+> In that case, strict_kernel_rwx_enabled() will return false.
+Ok, if someone did that currently it would break things, e.g. code
+patching. I think it should it be made impossible to
+CONFIG_STRICT_MODULE_RWX without CONFIG_STRICT_KERNEL_RWX?
+>
+> >   #endif /* !__ASSEMBLY__ */
+> >
+> >   /* The kernel use the constants below to index in the page sizes arra=
+y.
+> > diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.=
+c
+> > index 3f35c8d20be7..ed04a3ba66fe 100644
+> > --- a/arch/powerpc/kernel/module.c
+> > +++ b/arch/powerpc/kernel/module.c
+> > @@ -92,12 +92,14 @@ int module_finalize(const Elf_Ehdr *hdr,
+> >   static __always_inline void *
+> >   __module_alloc(unsigned long size, unsigned long start, unsigned long=
+ end)
+> >   {
+> > +     pgprot_t prot =3D strict_module_rwx_enabled() ? PAGE_KERNEL : PAG=
+E_KERNEL_EXEC;
+> > +
+> >       /*
+> >        * Don't do huge page allocations for modules yet until more test=
+ing
+> >        * is done. STRICT_MODULE_RWX may require extra work to support t=
+his
+> >        * too.
+> >        */
+> > -     return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL, PAGE=
+_KERNEL_EXEC,
+> > +     return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL, prot=
+,
+> >                                   VM_FLUSH_RESET_PERMS | VM_NO_HUGE_VMA=
+P,
+> >                                   NUMA_NO_NODE, __builtin_return_addres=
+s(0));
+> >   }
+> >
