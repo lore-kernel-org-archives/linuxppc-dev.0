@@ -7,43 +7,44 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAC2FC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EA16C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EB3D60C3D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EB3D60C3D
+	by mail.kernel.org (Postfix) with ESMTPS id 9E739610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 08:17:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E739610A1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBnk1MD8z3cGj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:17:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FkBp42xgFz3cSM
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 18:17:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
  envelope-from=tanxiaofei@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dy6SVVz2xtv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fk8dy1WZVz2ymD
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 16:40:37 +1000 (AEST)
-Received: from dggems706-chm.china.huawei.com (unknown [172.30.72.59])
- by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Yp6CQ7zQp9R;
- Mon, 17 May 2021 14:37:02 +0800 (CST)
+Received: from dggems705-chm.china.huawei.com (unknown [172.30.72.58])
+ by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Fk8Zg3CyKzmWHb;
+ Mon, 17 May 2021 14:37:47 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggems706-chm.china.huawei.com (10.3.19.183) with Microsoft SMTP Server
+ dggems705-chm.china.huawei.com (10.3.19.182) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
+ 15.1.2176.2; Mon, 17 May 2021 14:40:31 +0800
 Received: from localhost.localdomain (10.67.165.24) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 17 May 2021 14:40:30 +0800
+ 15.1.2176.2; Mon, 17 May 2021 14:40:31 +0800
 From: Xiaofei Tan <tanxiaofei@huawei.com>
 To: <gregkh@linuxfoundation.org>, <jirislaby@kernel.org>
-Subject: [PATCH 3/9] tty: hvc_console: Remove trailing whitespace
-Date: Mon, 17 May 2021 14:37:07 +0800
-Message-ID: <1621233433-27094-4-git-send-email-tanxiaofei@huawei.com>
+Subject: [PATCH 8/9] tty: hvc_console: Remove the repeated words 'no' and
+ 'from'
+Date: Mon, 17 May 2021 14:37:12 +0800
+Message-ID: <1621233433-27094-9-git-send-email-tanxiaofei@huawei.com>
 X-Mailer: git-send-email 2.8.1
 In-Reply-To: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
 References: <1621233433-27094-1-git-send-email-tanxiaofei@huawei.com>
@@ -71,26 +72,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove trailing whitespace, reported by checkpatch.pl.
+Remove the repeated words 'no' and 'from', reported by checkpatch.pl.
 
 Signed-off-by: Xiaofei Tan <tanxiaofei@huawei.com>
 ---
- drivers/tty/hvc/hvc_console.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/tty/hvc/hvc_console.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index ddf07ff..13f63d5 100644
+index f31efeb..b6720b0 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -204,7 +204,7 @@ static struct tty_driver *hvc_console_device(struct console *c, int *index)
- }
+@@ -293,7 +293,7 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
+ 	if (vtermnos[index] != -1)
+ 		return -1;
  
- static int hvc_console_setup(struct console *co, char *options)
--{	
-+{
- 	if (co->index < 0 || co->index >= MAX_NR_HVC_CONSOLES)
- 		return -ENODEV;
- 
+-	/* make sure no no tty has been registered in this index */
++	/* make sure no tty has been registered in this index */
+ 	hp = hvc_get_by_index(index);
+ 	if (hp) {
+ 		tty_port_put(&hp->port);
+@@ -622,7 +622,7 @@ static u32 timeout = MIN_TIMEOUT;
+ /*
+  * Maximum number of bytes to get from the console driver if hvc_poll is
+  * called from driver (and can't sleep). Any more than this and we break
+- * and start polling with khvcd. This value was derived from from an OpenBMC
++ * and start polling with khvcd. This value was derived from an OpenBMC
+  * console with the OPAL driver that results in about 0.25ms interrupts off
+  * latency.
+  */
 -- 
 2.8.1
 
