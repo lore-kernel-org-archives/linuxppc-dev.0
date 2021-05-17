@@ -2,77 +2,59 @@ Return-Path: <SRS0=r+Zg=KM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A531CC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 10:49:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7721C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 10:53:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E74B8611C2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 10:49:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E74B8611C2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 537C061074
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 10:53:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 537C061074
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FkG8w4BxXz3bx3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 20:49:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FkGFK0Fgfz2yxj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 May 2021 20:53:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=nselector3 header.b=ZSgOk8cr;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=nselector3 header.b=ZSgOk8cr; 
- dkim-atps=neutral
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FkG7q3Q5jz2yX2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 20:48:22 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 15EBC1A0A12;
- Mon, 17 May 2021 12:48:19 +0200 (CEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 inva020.eu-rdc02.nxp.com 15EBC1A0A12
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com;
- s=nselector3; t=1621248499;
- bh=Im5JodYbpOO68PyPNbm9SHNQGqEZEAD/9V5qHFtCRc0=;
- h=From:To:Subject:Date:From;
- b=ZSgOk8crfOlyKbfm1KA1QIohQUU4aafWPnznyk4kNOIcaIgYGI6pCpKAMuOLJbqWP
- t9g9xcaVba2Ld7dvYP8zR0lwfbD2u9LNJytQZ7KLGgcMRQGiiz7BitBf3s3MvhlcyJ
- 6vkZWaW+6Uhsg3lGloKlKH3Q5KXfv+wiiLfd18C4bKDRo1y9UgS2EWM0zqGx/X4DN+
- d6sUP33JhHSWYrPRD2ayD8ZdX7ULBLTK2qCoCMEldY+hyYG9xMRFduyeEtHq+kw/gO
- rLVQROZPdWpEQbPYFo8gsddCqyDBaDA58KdaCeVKYlUJQcfOi1egXFE77QU8estoug
- PN0L7oecv/nHg==
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0C2E21A0A01;
- Mon, 17 May 2021 12:48:12 +0200 (CEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 inva020.eu-rdc02.nxp.com 0C2E21A0A01
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id A1987402D9;
- Mon, 17 May 2021 18:48:02 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
- kernel@pengutronix.de, linux-imx@nxp.com, linux-kernel@vger.kernel.org,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, robh+dt@kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v3 1/2] ASoC: dt-bindings: imx-card: Add binding doc for imx
- sound card
-Date: Mon, 17 May 2021 18:31:27 +0800
-Message-Id: <1621247488-21412-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FkGDr1Gltz2xv6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 20:52:42 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 508461042;
+ Mon, 17 May 2021 03:52:39 -0700 (PDT)
+Received: from [192.168.0.130] (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1ABA73F719;
+ Mon, 17 May 2021 03:52:37 -0700 (PDT)
+Subject: Re: Fwd: [Bug 213069] New: kernel BUG at
+ arch/powerpc/include/asm/book3s/64/hash-4k.h:147! Oops: Exception in kernel
+ mode, sig: 5 [#1]
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <bug-213069-206035@https.bugzilla.kernel.org/>
+ <4deb5cd5-c713-b020-9143-c74a031e3fd5@csgroup.eu>
+ <a8841b4e-3bff-f600-eac7-501f78ced54b@arm.com>
+ <7ebc28ad-61e3-ef43-d670-9b80a61268c4@csgroup.eu>
+ <e9558e0a-314e-ddfd-6776-84c1bfe6f01f@linux.ibm.com>
+ <c6372bac-c8c4-6f67-45e9-4deb062d303e@arm.com>
+ <e0d2093d-56ec-5c7a-6887-22eecc5142b7@linux.ibm.com>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <18508d23-3884-af84-ce8f-65b31ac83192@arm.com>
+Date: Mon, 17 May 2021 16:23:18 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <e0d2093d-56ec-5c7a-6887-22eecc5142b7@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,153 +70,82 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Imx-card is a new added machine driver for supporting
-ak4458/ak5558/ak5552/ak4497 codec on i.MX platforms. But these
-DAC/ADCs are not only supported codecs. This machine driver is
-designed to be a more common machine driver for i.MX platform,
-it can support widely cpu dai interface and codec dai interface.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
-changes in v3:
-- use a generic compatible string as Rob's comments.
-- change the file name
 
-changes in v2:
-- update doc accoring to Rob's comment, use the common porperties.
+On 5/17/21 1:14 PM, Aneesh Kumar K.V wrote:
+> On 5/17/21 12:55 PM, Anshuman Khandual wrote:
+>>
+>>
+>> On 5/17/21 11:25 AM, Aneesh Kumar K.V wrote:
+>>> On 5/17/21 11:17 AM, Christophe Leroy wrote:
+>>>> +aneesh
+>>>> +linuxppc-dev list
+>>>>
+>>>> Le 17/05/2021 à 07:44, Anshuman Khandual a écrit :
+>>>>> Hello Christophe,
+>>>>>
+>>>>> DEBUG_VM_PGTABLE has now been re-enabled on powerpc recently ? was not
+>>>>> aware about this. From the error log, it failed explicitly on 4K page
+>>>>> size hash config.
+>>>>>
+>>>>> static inline pmd_t hash__pmd_mkhuge(pmd_t pmd)
+>>>>> {
+>>>>>           BUG();        ------> Failed
+>>>>>           return pmd;
+>>>>> }
+>>>>>
+>>>>> static inline pmd_t __pmd_mkhuge(pmd_t pmd)
+>>>>> {
+>>>>>           if (radix_enabled())
+>>>>>                   return radix__pmd_mkhuge(pmd);
+>>>>>           return hash__pmd_mkhuge(pmd);
+>>>>> }
+>>>>>
+>>>>> pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
+>>>>> {
+>>>>>           unsigned long pmdv;
+>>>>>
+>>>>>           pmdv = (pfn << PAGE_SHIFT) & PTE_RPN_MASK;
+>>>>>
+>>>>>           return __pmd_mkhuge(pmd_set_protbits(__pmd(pmdv), pgprot));
+>>>>> }
+>>>>>
+>>>>> It seems like on powerpc, where pfn_pmd() makes a huge page but which
+>>>>> is not supported on 4K hash config thus triggering the BUG(). But all
+>>>>> pfn_pmd() call sites inside the debug_vm_pgtable() test are protected
+>>>>> with CONFIG_TRANSPARENT_HUGEPAGE. IIUC unlike powerpc, pfn_pmd() does
+>>>>> not directly make a huge page on other platforms.
+>>>>>
+>>>>> Looking at arch/powerpc/include/asm/book3s/64/hash-4k.h, all relevant
+>>>>> THP helpers has BUG() or 0 which indicates THP might not be supported
+>>>>> on 4K page size hash config ?
+>>>>>
+>>>>> But looking at arch/powerpc/platforms/Kconfig.cputype, it seems like
+>>>>> HAVE_ARCH_TRANSPARENT_HUGEPAGE is invariably selected on PPC_BOOK3S_64
+>>>>> platforms which I assume includes 4K page size hash config as well.
+>>>>>
+>>>>> Is THP some how getting enabled on this 4K page size hash config where
+>>>>> it should not be (thus triggering the BUG) ? OR am I missing something
+>>>>> here.
+>>>>>
+>>>>
+>>>
+>>> We should put those  pfn_pmd()  and pfn_pud() after
+>>>
+>>>      if (!has_transparent_hugepage())
+>>>          return;
+>>>
+>>>
+>>> On hash with 4K page size, we can't support leaf page table entry and PMD and PUD level. Hence we don't support THP for them.
+>>
+>> But could CONFIG_TRANSPARENT_HUGEPAGE be enabled on such configs ?
+>> Otherwise, wondering how the BUG() just got triggered there.
+>>
+> 
+> yes. We do support THP with radix translation and 4K page size.
 
- .../bindings/sound/imx-audio-card.yaml        | 122 ++++++++++++++++++
- 1 file changed, 122 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-card.yaml
-
-diff --git a/Documentation/devicetree/bindings/sound/imx-audio-card.yaml b/Documentation/devicetree/bindings/sound/imx-audio-card.yaml
-new file mode 100644
-index 000000000000..d1816dd061cf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/imx-audio-card.yaml
-@@ -0,0 +1,122 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/sound/imx-audio-card.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NXP i.MX audio sound card.
-+
-+maintainers:
-+  - Shengjiu Wang <shengjiu.wang@nxp.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - fsl,imx-audio-card
-+
-+  model:
-+    $ref: /schemas/types.yaml#/definitions/string
-+    description: User specified audio sound card name
-+
-+  audio-routing:
-+    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
-+    description:
-+      A list of the connections between audio components. Each entry is a
-+      pair of strings, the first being the connection's sink, the second
-+      being the connection's source. Valid names could be power supplies,
-+      MicBias of codec and the jacks on the board.
-+
-+patternProperties:
-+  ".*-dai-link$":
-+    description:
-+      Each subnode represents a dai link. Subnodes of each dai links would be
-+      cpu/codec dais.
-+
-+    type: object
-+
-+    properties:
-+      link-name:
-+        description: Indicates dai-link name and PCM stream name.
-+        $ref: /schemas/types.yaml#/definitions/string
-+        maxItems: 1
-+
-+      format:
-+        description: audio format.
-+        items:
-+          enum:
-+            - i2s
-+            - dsp_b
-+
-+      dai-tdm-slot-num:
-+        description: see tdm-slot.txt.
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+
-+      dai-tdm-slot-width:
-+        description: see tdm-slot.txt.
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+
-+      cpu:
-+        description: Holds subnode which indicates cpu dai.
-+        type: object
-+        properties:
-+          sound-dai: true
-+
-+      codec:
-+        description: Holds subnode which indicates codec dai.
-+        type: object
-+        properties:
-+          sound-dai: true
-+
-+      fsl,mclk-equal-bclk:
-+        description: Indicates mclk can be equal to bclk, especially for sai interface
-+        $ref: /schemas/types.yaml#/definitions/flag
-+
-+    required:
-+      - link-name
-+      - cpu
-+
-+    additionalProperties: false
-+
-+required:
-+  - compatible
-+  - model
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    sound-ak4458 {
-+        compatible = "fsl,imx-audio-card";
-+        model = "ak4458-audio";
-+        pri-dai-link {
-+            link-name = "akcodec";
-+            format = "i2s";
-+            fsl,mclk-equal-bclk;
-+            cpu {
-+                 sound-dai = <&sai1>;
-+            };
-+            codec {
-+                 sound-dai = <&ak4458_1>, <&ak4458_2>;
-+            };
-+        };
-+        fe-dai-link {
-+            link-name = "HiFi-ASRC-FE";
-+            format = "i2s";
-+            cpu {
-+                sound-dai = <&easrc>;
-+            };
-+        };
-+        be-dai-link {
-+            link-name = "HiFi-ASRC-BE";
-+            format = "dsp_b";
-+            dai-tdm-slot-num = <8>;
-+            dai-tdm-slot-width = <32>;
-+            fsl,mclk-equal-bclk;
-+            cpu {
-+                sound-dai = <&sai1>;
-+            };
-+            codec {
-+                sound-dai = <&ak4458_1>, <&ak4458_2>;
-+            };
-+        };
-+    };
--- 
-2.27.0
-
+I was actually wondering about whether 4K page size in hash config
+supports THP and could enable CONFIG_TRANSPARENT_HUGEPAGE ? But as
+there is a BUG() trigger on hash__pmd_mkhuge(), it seems like THP
+config should not have been enabled for such platforms but it does
+for some reason. Could not we disable it ?
