@@ -4,55 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2121EC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0514BC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:53:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 982DB60BD3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:20:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 982DB60BD3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 05B4761209
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:53:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05B4761209
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mediatek.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FksSj2cWwz3bxm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:20:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FksSD6pp3z309M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 20:19:40 +1000 (AEST)
-Received: from relay10.mail.gandi.net (unknown [217.70.178.230])
- by mslow1.mail.gandi.net (Postfix) with ESMTP id ABBD7E00B8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 10:15:40 +0000 (UTC)
-Received: (Authenticated sender: alex@ghiti.fr)
- by relay10.mail.gandi.net (Postfix) with ESMTPSA id 2B23C24000D;
- Tue, 18 May 2021 10:15:09 +0000 (UTC)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org
-Subject: [PATCH v6 2/3] powerpc: Move script to check relocations at compile
- time in scripts/
-Date: Tue, 18 May 2021 12:12:51 +0200
-Message-Id: <20210518101252.1484465-3-alex@ghiti.fr>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210518101252.1484465-1-alex@ghiti.fr>
-References: <20210518101252.1484465-1-alex@ghiti.fr>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FktCD2djtz2yyv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:53:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=mediatek.com (client-ip=210.61.82.184;
+ helo=mailgw02.mediatek.com; envelope-from=miles.chen@mediatek.com;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 304 seconds by postgrey-1.36 at boromir;
+ Tue, 18 May 2021 19:45:21 AEST
+Received: from mailgw02.mediatek.com (mailgw02.mediatek.com [210.61.82.184])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Fkrhd4NNjz2xZg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 19:45:20 +1000 (AEST)
+X-UUID: 30e0b3933f134d05825acd877fbc2e0e-20210518
+X-UUID: 30e0b3933f134d05825acd877fbc2e0e-20210518
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+ (envelope-from <miles.chen@mediatek.com>)
+ (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+ with ESMTP id 995296549; Tue, 18 May 2021 17:40:10 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs08n2.mediatek.inc (172.21.101.56) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 18 May 2021 17:40:09 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via
+ Frontend Transport; Tue, 18 May 2021 17:40:09 +0800
+From: Miles Chen <miles.chen@mediatek.com>
+To: Dave Young <dyoung@redhat.com>, Baoquan He <bhe@redhat.com>, Vivek Goyal
+ <vgoyal@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
+ Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>, Mike
+ Rapoport <rppt@kernel.org>
+Subject: [PATCH v2 2/2] mm: replace contig_page_data with node_data
+Date: Tue, 18 May 2021 17:24:46 +0800
+Message-ID: <20210518092446.16382-3-miles.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210518092446.16382-1-miles.chen@mediatek.com>
+References: <20210518092446.16382-1-miles.chen@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-MTK: N
+X-Mailman-Approved-At: Tue, 18 May 2021 20:53:09 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,90 +68,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <anup@brainfault.org>, Alexandre Ghiti <alex@ghiti.fr>
+Cc: linux-doc@vger.kernel.org, kexec@lists.infradead.org,
+ Kazu <k-hagio-ab@nec.com>, linux-mm@kvack.org,
+ Miles Chen <miles.chen@mediatek.com>, linux-mediatek@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Relocating kernel at runtime is done very early in the boot process, so
-it is not convenient to check for relocations there and react in case a
-relocation was not expected.
+Replace contig_page_data with node_data. Change the definition
+of NODE_DATA(nid) from (&contig_page_data) to (node_data[0]).
 
-Powerpc architecture has a script that allows to check at compile time
-for such unexpected relocations: extract the common logic to scripts/
-so that other architectures can take advantage of it.
+Remove contig_page_data from the tree.
 
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Reviewed-by: Anup Patel <anup@brainfault.org>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Kazu <k-hagio-ab@nec.com>
+Signed-off-by: Miles Chen <miles.chen@mediatek.com>
 ---
- arch/powerpc/tools/relocs_check.sh | 18 ++----------------
- scripts/relocs_check.sh            | 20 ++++++++++++++++++++
- 2 files changed, 22 insertions(+), 16 deletions(-)
- create mode 100755 scripts/relocs_check.sh
+ Documentation/admin-guide/kdump/vmcoreinfo.rst | 13 -------------
+ arch/powerpc/kexec/core.c                      |  5 -----
+ include/linux/gfp.h                            |  3 ---
+ include/linux/mmzone.h                         |  3 +--
+ kernel/crash_core.c                            |  1 -
+ mm/memblock.c                                  |  2 --
+ 6 files changed, 1 insertion(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/tools/relocs_check.sh b/arch/powerpc/tools/relocs_check.sh
-index 014e00e74d2b..e367895941ae 100755
---- a/arch/powerpc/tools/relocs_check.sh
-+++ b/arch/powerpc/tools/relocs_check.sh
-@@ -15,21 +15,8 @@ if [ $# -lt 3 ]; then
- 	exit 1
- fi
+diff --git a/Documentation/admin-guide/kdump/vmcoreinfo.rst b/Documentation/admin-guide/kdump/vmcoreinfo.rst
+index 3861a25faae1..74185245c580 100644
+--- a/Documentation/admin-guide/kdump/vmcoreinfo.rst
++++ b/Documentation/admin-guide/kdump/vmcoreinfo.rst
+@@ -81,14 +81,6 @@ into that mem_map array.
  
--# Have Kbuild supply the path to objdump and nm so we handle cross compilation.
--objdump="$1"
--nm="$2"
--vmlinux="$3"
--
--# Remove from the bad relocations those that match an undefined weak symbol
--# which will result in an absolute relocation to 0.
--# Weak unresolved symbols are of that form in nm output:
--# "                  w _binary__btf_vmlinux_bin_end"
--undef_weak_symbols=$($nm "$vmlinux" | awk '$1 ~ /w/ { print $2 }')
--
- bad_relocs=$(
--$objdump -R "$vmlinux" |
--	# Only look at relocation lines.
--	grep -E '\<R_' |
-+${srctree}/scripts/relocs_check.sh "$@" |
- 	# These relocations are okay
- 	# On PPC64:
- 	#	R_PPC64_RELATIVE, R_PPC64_NONE
-@@ -43,8 +30,7 @@ R_PPC_ADDR16_LO
- R_PPC_ADDR16_HI
- R_PPC_ADDR16_HA
- R_PPC_RELATIVE
--R_PPC_NONE' |
--	([ "$undef_weak_symbols" ] && grep -F -w -v "$undef_weak_symbols" || cat)
-+R_PPC_NONE'
- )
+ Used to map an address to the corresponding struct page.
  
- if [ -z "$bad_relocs" ]; then
-diff --git a/scripts/relocs_check.sh b/scripts/relocs_check.sh
-new file mode 100755
-index 000000000000..137c660499f3
---- /dev/null
-+++ b/scripts/relocs_check.sh
-@@ -0,0 +1,20 @@
-+#!/bin/sh
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+
-+# Get a list of all the relocations, remove from it the relocations
-+# that are known to be legitimate and return this list to arch specific
-+# script that will look for suspicious relocations.
-+
-+objdump="$1"
-+nm="$2"
-+vmlinux="$3"
-+
-+# Remove from the possible bad relocations those that match an undefined
-+# weak symbol which will result in an absolute relocation to 0.
-+# Weak unresolved symbols are of that form in nm output:
-+# "                  w _binary__btf_vmlinux_bin_end"
-+undef_weak_symbols=$($nm "$vmlinux" | awk '$1 ~ /w/ { print $2 }')
-+
-+$objdump -R "$vmlinux" |
-+	grep -E '\<R_' |
-+	([ "$undef_weak_symbols" ] && grep -F -w -v "$undef_weak_symbols" || cat)
+-contig_page_data
+-----------------
+-
+-Makedumpfile gets the pglist_data structure from this symbol, which is
+-used to describe the memory layout.
+-
+-User-space tools use this to exclude free pages when dumping memory.
+-
+ mem_section|(mem_section, NR_SECTION_ROOTS)|(mem_section, section_mem_map)
+ --------------------------------------------------------------------------
+ 
+@@ -531,11 +523,6 @@ node_data|(node_data, MAX_NUMNODES)
+ 
+ See above.
+ 
+-contig_page_data
+-----------------
+-
+-See above.
+-
+ vmemmap_list
+ ------------
+ 
+diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
+index 56da5eb2b923..41f31dfb540c 100644
+--- a/arch/powerpc/kexec/core.c
++++ b/arch/powerpc/kexec/core.c
+@@ -68,13 +68,8 @@ void machine_kexec_cleanup(struct kimage *image)
+ void arch_crash_save_vmcoreinfo(void)
+ {
+ 
+-#ifdef CONFIG_NEED_MULTIPLE_NODES
+ 	VMCOREINFO_SYMBOL(node_data);
+ 	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+-#endif
+-#ifndef CONFIG_NEED_MULTIPLE_NODES
+-	VMCOREINFO_SYMBOL(contig_page_data);
+-#endif
+ #if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
+ 	VMCOREINFO_SYMBOL(vmemmap_list);
+ 	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 11da8af06704..ba8c511c402f 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -493,9 +493,6 @@ static inline int gfp_zonelist(gfp_t flags)
+  * This zone list contains a maximum of MAX_NUMNODES*MAX_NR_ZONES zones.
+  * There are two zonelists per node, one for all zones with memory and
+  * one containing just zones from the node the zonelist belongs to.
+- *
+- * For the normal case of non-DISCONTIGMEM systems the NODE_DATA() gets
+- * optimized to &contig_page_data at compile-time.
+  */
+ static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
+ {
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 557918dcc755..c0769292187c 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1043,9 +1043,8 @@ extern char numa_zonelist_order[];
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ 
+-extern struct pglist_data contig_page_data;
+-#define NODE_DATA(nid)		(&contig_page_data)
+ extern struct pglist_data *node_data[];
++#define NODE_DATA(nid)		(node_data[0])
+ #define NODE_MEM_MAP(nid)	mem_map
+ 
+ #else /* CONFIG_NEED_MULTIPLE_NODES */
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index 825284baaf46..d1e324be67f9 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -457,7 +457,6 @@ static int __init crash_save_vmcoreinfo_init(void)
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ 	VMCOREINFO_SYMBOL(mem_map);
+-	VMCOREINFO_SYMBOL(contig_page_data);
+ #endif
+ #ifdef CONFIG_SPARSEMEM
+ 	VMCOREINFO_SYMBOL_ARRAY(mem_section);
+diff --git a/mm/memblock.c b/mm/memblock.c
+index ebddb57ea62d..7cfc9a9d6243 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -93,8 +93,6 @@
+  */
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-struct pglist_data __refdata contig_page_data;
+-EXPORT_SYMBOL(contig_page_data);
+ struct pglist_data *node_data[MAX_NUMNODES];
+ #endif
+ 
 -- 
-2.30.2
+2.18.0
 
