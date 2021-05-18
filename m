@@ -2,83 +2,66 @@ Return-Path: <SRS0=RWfA=KN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.6 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4574C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E018C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:42:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62878606A5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:41:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62878606A5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id D1CBD6112F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:42:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1CBD6112F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fl7Fn4rlvz30GR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 06:41:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fl7Gd3DKWz3096
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 06:42:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=H1+CLq87;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aG21jQtY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--ndesaulniers.bounces.google.com
- (client-ip=2607:f8b0:4864:20::f4a; helo=mail-qv1-xf4a.google.com;
- envelope-from=3wcakyawkdeeqghvdxoqlhuvjrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--ndesaulniers.bounces.google.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=H1+CLq87; dkim-atps=neutral
-Received: from mail-qv1-xf4a.google.com (mail-qv1-xf4a.google.com
- [IPv6:2607:f8b0:4864:20::f4a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=aG21jQtY; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fl7FD5S6Fz2xZ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 06:41:02 +1000 (AEST)
-Received: by mail-qv1-xf4a.google.com with SMTP id
- w14-20020a056214012eb02901f3a4388530so55673qvs.17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 13:41:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:in-reply-to:message-id:mime-version:references:subject:from:to
- :cc; bh=IfF2H1j3I1t32Qp6CZlQegbMzyiGyECr+WNser52IpQ=;
- b=H1+CLq87C5xK1VRznrjO+ht+yPAucXYxPJ5BM6bLjABg5c2lojiuq31aQ/OaYSx+Vf
- N4UxQ+D0dy8jCjOcy7LIDJbrk3Zln4nuigGUAVN3FcENOwcThk+afw1WTjRJL7hJ+3A8
- gcSirCtASOf8fIdxlSpjbop5rXxXYKH11QM3yUBu9B5Gt/2pmkkYFsUjOep6X89iubnU
- AcjqcYMa5GjIWoTdkUdNc5LLSQyy48gLemx2efyuRboWtFv4txbBIcnccFr+VjBbEPAX
- 9XxOyWfTabF8/mXSc8sNRUxf55+e7LaoHC04RksFtW5n2TkuyxWyJ3dUlibMfyMRbAeh
- 2QTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:in-reply-to:message-id:mime-version
- :references:subject:from:to:cc;
- bh=IfF2H1j3I1t32Qp6CZlQegbMzyiGyECr+WNser52IpQ=;
- b=R2FI1LvTXyMdArs7rqA/qQr5NTWbl8Gnd4r4WnEOWQs8OZKmvpriV5yG1HzAm3s4y+
- O/9wGE09wsngrKyxNqFBgUe4UiRUqccxvjZaV0uffAHgunKpd8i+7CkFV8LcDZappp+v
- BBcsPZKV/UOn0y3i1GWFda0tvPRhuM84cgm8FIhupQYMwncZKBCYKVT1uqJpLTnKhrfe
- 8jBOCTdHjdc6Hhgx2SCgPVxCpxlYQ6cqZKMkOJvYaIGdvovgU7tGYSft0zXS+z351Qni
- pCOslvhiI+6u6u4jJ6yrP6Ei2BJOim1rbUsE/89SZyFQZLbZhAbhudoYR9Jkek0yhVUu
- LlQg==
-X-Gm-Message-State: AOAM5318IAXtPLl4+Z8KanYgyIeB88f0RBj/XXdyd0PSeM0mXPsgCgBW
- YmzpEA/9mLMvBb//CFRxI8fRnLgAY+7bwvBOpis=
-X-Google-Smtp-Source: ABdhPJwL37MmHN+duACl9QYa5rSGSQ/1t1hbZdxtQ5vtPTJbJh7hWSFoOj8MSc1j7MlvRsj+NdUiwGaleaJgrPPWceg=
-X-Received: from ndesaulniers1.mtv.corp.google.com
- ([2620:15c:211:202:c3e7:2f43:8f78:4b8f])
- (user=ndesaulniers job=sendgmr) by 2002:ad4:446c:: with SMTP id
- s12mr2008135qvt.34.1621370456656; Tue, 18 May 2021 13:40:56 -0700 (PDT)
-Date: Tue, 18 May 2021 13:40:41 -0700
-In-Reply-To: <87cztok1r5.fsf@mpe.ellerman.id.au>
-Message-Id: <20210518204044.2390064-1-ndesaulniers@google.com>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fl7G93cW2z2xZD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 06:41:53 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 567CB61059;
+ Tue, 18 May 2021 20:41:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1621370511;
+ bh=aIgBwh8ikO9n9G42hk2Its108dIO1H+qNOHk38ZgjLk=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=aG21jQtYqlcxI5n380BGG/YRCkivqS3rHteMFSS5ekJWaMUDcF5IAbMKzDeehytga
+ FwB7699dQbeuqRYyfqFyvb00y2VuuyGg6NCuFfZEi/aFCEKeCgab7Ybpgoxxh2cbZf
+ n8stjw/J5+1K9Az7aNdYzi+BboXCFaWT/HzxQohchVrsnIoWGmmSmEjfZD+OaSjrlA
+ clV9mNMOQ2IO6Le8Qc5SnzUE2Vr9keWifP6e4jwwiVqyeZnKRqMvpWm4MP0/GqXBTo
+ J1YRHO4JvKuvoFaZfvIhFk8xnKT1W4Xw3LDAXYEyRALoVH1S1tpKrHt4UWFtUc1w4M
+ 888BhJMp9LqHA==
+Subject: Re: [PATCH v2] powerpc/powernv/pci: fix header guard
+To: Nick Desaulniers <ndesaulniers@google.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
 References: <87cztok1r5.fsf@mpe.ellerman.id.au>
-X-Mailer: git-send-email 2.31.1.751.gd2f1c929bd-goog
-Subject: [PATCH v2] powerpc/powernv/pci: fix header guard
-From: Nick Desaulniers <ndesaulniers@google.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+ <20210518204044.2390064-1-ndesaulniers@google.com>
+From: Nathan Chancellor <nathan@kernel.org>
+Message-ID: <4aa06438-7bea-a5a6-ff64-0cf8c28e2511@kernel.org>
+Date: Tue, 18 May 2021 13:41:49 -0700
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
+MIME-Version: 1.0
+In-Reply-To: <20210518204044.2390064-1-ndesaulniers@google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,47 +73,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Nathan Chancellor <nathan@kernel.org>, Paul Mackerras <paulus@samba.org>,
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ Oliver O'Halloran <oohall@gmail.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While looking at -Wundef warnings, the #if CONFIG_EEH stood out as a
-possible candidate to convert to #ifdef CONFIG_EEH.
+On 5/18/2021 1:40 PM, Nick Desaulniers wrote:
+> While looking at -Wundef warnings, the #if CONFIG_EEH stood out as a
+> possible candidate to convert to #ifdef CONFIG_EEH.
+> 
+> It seems that based on Kconfig dependencies it's not possible to build
+> this file without CONFIG_EEH enabled, but based on upstream discussion,
+> it's not clear yet that CONFIG_EEH should be enabled by default.
+> 
+> For now, simply fix the -Wundef warning.
+> 
+> Suggested-by: Nathan Chancellor <nathan@kernel.org>
+> Suggested-by: Joe Perches <joe@perches.com>
+> Link: https://github.com/ClangBuiltLinux/linux/issues/570
+> Link: https://lore.kernel.org/lkml/67f6cd269684c9aa8463ff4812c3b4605e6739c3.camel@perches.com/
+> Link: https://lore.kernel.org/lkml/CAOSf1CGoN5R0LUrU=Y=UWho1Z_9SLgCX8s3SbFJXwJXc5BYz4A@mail.gmail.com/
+> Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
 
-It seems that based on Kconfig dependencies it's not possible to build
-this file without CONFIG_EEH enabled, but based on upstream discussion,
-it's not clear yet that CONFIG_EEH should be enabled by default.
+Makes sense, thanks for the patch!
 
-For now, simply fix the -Wundef warning.
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 
-Suggested-by: Nathan Chancellor <nathan@kernel.org>
-Suggested-by: Joe Perches <joe@perches.com>
-Link: https://github.com/ClangBuiltLinux/linux/issues/570
-Link: https://lore.kernel.org/lkml/67f6cd269684c9aa8463ff4812c3b4605e6739c3.camel@perches.com/
-Link: https://lore.kernel.org/lkml/CAOSf1CGoN5R0LUrU=Y=UWho1Z_9SLgCX8s3SbFJXwJXc5BYz4A@mail.gmail.com/
-Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
----
- arch/powerpc/platforms/powernv/pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index b18468dc31ff..6bb3c52633fb 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -711,7 +711,7 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--#if CONFIG_EEH
-+#ifdef CONFIG_EEH
- static bool pnv_pci_cfg_check(struct pci_dn *pdn)
- {
- 	struct eeh_dev *edev = NULL;
--- 
-2.31.1.751.gd2f1c929bd-goog
+> ---
+>   arch/powerpc/platforms/powernv/pci.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+> index b18468dc31ff..6bb3c52633fb 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -711,7 +711,7 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
+>   	return PCIBIOS_SUCCESSFUL;
+>   }
+>   
+> -#if CONFIG_EEH
+> +#ifdef CONFIG_EEH
+>   static bool pnv_pci_cfg_check(struct pci_dn *pdn)
+>   {
+>   	struct eeh_dev *edev = NULL;
+> 
 
