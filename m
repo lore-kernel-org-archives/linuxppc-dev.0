@@ -2,65 +2,47 @@ Return-Path: <SRS0=RWfA=KN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A799AC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 21:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0238EC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 23:20:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC4B8611BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 21:13:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC4B8611BF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 339326124C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 23:20:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 339326124C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fl7yb2gJ5z304j
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 07:13:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jW7Z5QSA;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlBnD3P9qz3bnY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 09:20:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jW7Z5QSA; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fl7y51VHzz2yWs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 07:13:01 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id BDE79611BF;
- Tue, 18 May 2021 21:12:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1621372378;
- bh=+XwfrEanFh4KN53uNfFPtVzdxotlHS4G0gMOF3X0WWU=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=jW7Z5QSAQBCRP3CKw+PHGutOzM5iOK9y1tHxZ6wz9E3G9YwJphlNGn4YXcrY5VVvU
- /8G7pnwdxTS8Be9nMmIT4mMf34ma2lXxCrYCifz10pMNCgGPrbq1D3MafdTe0cD180
- thyhN50YhNCqhYek5zhBP7w5KqK9BRQO1b6/QgZFq14s/+WJxLlz1TEmrOYMw25STx
- lwQEf8oR297grjB9ipFruYyE0UgGB830qqXQR6kDeYYSpe/fXNMfZWPiSHYeeOqdeo
- AjjIYQxIbigYb/4UmQ1iZ1QJrJDC6hULdYEy7tg9dN72d4Km1cerHjsoJHVYejXtSB
- pFCddv1n/5rnw==
-Subject: Re: [PATCH] powerpc: Kconfig: disable CONFIG_COMPAT for clang < 12
-To: Nick Desaulniers <ndesaulniers@google.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <20210518205858.2440344-1-ndesaulniers@google.com>
-From: Nathan Chancellor <nathan@kernel.org>
-Message-ID: <fe638f4e-4dea-2f5e-2193-2f8b63aaf7a8@kernel.org>
-Date: Tue, 18 May 2021 14:12:56 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ smtp.mailfrom=altlinux.org (client-ip=194.107.17.57;
+ helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 392 seconds by postgrey-1.36 at boromir;
+ Wed, 19 May 2021 09:20:09 AEST
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FlBmn2hZlz2xvT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 09:20:09 +1000 (AEST)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 1223A72C8BA;
+ Wed, 19 May 2021 02:13:32 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+ id E4BDE7CC8A6; Wed, 19 May 2021 02:13:31 +0300 (MSK)
+Date: Wed, 19 May 2021 02:13:31 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Linux powerpc new system call instruction and ABI
+Message-ID: <20210518231331.GA8464@altlinux.org>
+References: <20200611081203.995112-1-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20210518205858.2440344-1-ndesaulniers@google.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200611081203.995112-1-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,43 +54,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Fangrui Song <maskray@google.com>, linux-kernel@vger.kernel.org,
- clang-built-linux@googlegroups.com, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: musl@lists.openwall.com, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, libc-dev@lists.llvm.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/18/2021 1:58 PM, Nick Desaulniers wrote:
-> Until clang-12, clang would attempt to assemble 32b powerpc assembler in
-> 64b emulation mode when using a 64b target triple with -m32, leading to
-> errors during the build of the compat VDSO. Simply disable all of
-> CONFIG_COMPAT; users should upgrade to the latest release of clang for
-> proper support.
-> 
-> Link: https://github.com/ClangBuiltLinux/linux/issues/1160
-> Link: https://github.com/llvm/llvm-project/commits/2288319733cd5f525bf7e24dece08bfcf9d0ff9e
-> Link: https://groups.google.com/g/clang-built-linux/c/ayNmi3HoNdY/m/XJAGj_G2AgAJ
-> Suggested-by: Nathan Chancellor <nathan@kernel.org>
-> Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
+Hi,
 
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+On Thu, Jun 11, 2020 at 06:12:01PM +1000, Nicholas Piggin wrote:
+[...]
+> - Error handling: The consensus among kernel, glibc, and musl is to move to
+>   using negative return values in r3 rather than CR0[SO]=1 to indicate error,
+>   which matches most other architectures, and is closer to a function call.
 
-> ---
->   arch/powerpc/Kconfig | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index ce3f59531b51..2a02784b7ef0 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -289,6 +289,7 @@ config PANIC_TIMEOUT
->   config COMPAT
->   	bool "Enable support for 32bit binaries"
->   	depends on PPC64
-> +	depends on !CC_IS_CLANG || CLANG_VERSION >= 120000
->   	default y if !CPU_LITTLE_ENDIAN
->   	select ARCH_WANT_OLD_COMPAT_IPC
->   	select COMPAT_OLD_SIGACTION
-> 
+Apparently, the patchset merged by commit v5.9-rc1~100^2~164 was
+incomplete: all functions defined in arch/powerpc/include/asm/ptrace.h and
+arch/powerpc/include/asm/syscall.h that use ccr are broken when scv is used.
+This includes syscall_get_error() and all its users including
+PTRACE_GET_SYSCALL_INFO API, which in turn makes strace unusable
+when scv is used.
 
+See also https://bugzilla.redhat.com/1929836
+
+
+-- 
+ldv
