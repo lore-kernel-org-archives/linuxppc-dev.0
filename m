@@ -2,53 +2,55 @@ Return-Path: <SRS0=RWfA=KN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FBEC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EFBAC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:54:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B84A86124C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:53:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B84A86124C
+	by mail.kernel.org (Postfix) with ESMTPS id 794ED61261
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 10:54:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 794ED61261
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mediatek.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FktCZ2NXgz3c06
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:53:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FktCx24zrz2yxL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 20:54:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=mediatek.com (client-ip=210.61.82.184;
  helo=mailgw02.mediatek.com; envelope-from=miles.chen@mediatek.com;
  receiver=<UNKNOWN>)
 Received: from mailgw02.mediatek.com (mailgw02.mediatek.com [210.61.82.184])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Fkrhf2L1Gz2xZg
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Fkrhf5tLHz2xZg
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 19:45:22 +1000 (AEST)
-X-UUID: c8d085b27e6f43a3b8daca99f7e1c1a8-20210518
-X-UUID: c8d085b27e6f43a3b8daca99f7e1c1a8-20210518
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
- (envelope-from <miles.chen@mediatek.com>)
- (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
- with ESMTP id 1650008695; Tue, 18 May 2021 17:40:10 +0800
+X-UUID: da7467a847004e538062abc99583bfc3-20210518
+X-UUID: da7467a847004e538062abc99583bfc3-20210518
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by
+ mailgw02.mediatek.com (envelope-from <miles.chen@mediatek.com>)
+ (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+ with ESMTP id 880833508; Tue, 18 May 2021 17:40:10 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs08n2.mediatek.inc (172.21.101.56) with Microsoft SMTP Server (TLS) id
+ mtkmbs08n1.mediatek.inc (172.21.101.55) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Tue, 18 May 2021 17:40:08 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via
- Frontend Transport; Tue, 18 May 2021 17:40:08 +0800
+ Frontend Transport; Tue, 18 May 2021 17:40:09 +0800
 From: Miles Chen <miles.chen@mediatek.com>
 To: Dave Young <dyoung@redhat.com>, Baoquan He <bhe@redhat.com>, Vivek Goyal
  <vgoyal@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Michael Ellerman
  <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
  Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>, Mike
  Rapoport <rppt@kernel.org>
-Subject: [PATCH v2 0/2] mm: unify the allocation of pglist_data instances
-Date: Tue, 18 May 2021 17:24:44 +0800
-Message-ID: <20210518092446.16382-1-miles.chen@mediatek.com>
+Subject: [PATCH v2 1/2] mm: introduce prepare_node_data
+Date: Tue, 18 May 2021 17:24:45 +0800
+Message-ID: <20210518092446.16382-2-miles.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210518092446.16382-1-miles.chen@mediatek.com>
+References: <20210518092446.16382-1-miles.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK: N
@@ -64,82 +66,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, kexec@lists.infradead.org, linux-mm@kvack.org,
+Cc: linux-doc@vger.kernel.org, kexec@lists.infradead.org,
+ Kazu <k-hagio-ab@nec.com>, linux-mm@kvack.org,
  Miles Chen <miles.chen@mediatek.com>, linux-mediatek@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patches is created to fix the __pa() warning messages when
-CONFIG_DEBUG_VIRTUAL=y by unifying the allocation of pglist_data
-instances.
+When CONFIG_NEED_MULTIPLE_NODES=y (CONFIG_NUMA=y),
+the pglist_data is allocated by a memblock API and stored in an array
+named node_data[].
+When CONFIG_NEED_MULTIPLE_NODES=n (CONFIG_NUMA=n), the pglist_data
+is defined as global variable contig_page_data. The difference
+causes problems when we enable CONFIG_DEBUG_VIRTUAL and use __pa()
+to get the physical address of NODE_DATA.
 
-In current implementation of node_data, if CONFIG_NEED_MULTIPLE_NODES=y,
-pglist_data is allocated by a memblock API. If CONFIG_NEED_MULTIPLE_NODES=n,
-we use a global variable named "contig_page_data".
+To solve the issue, introduce prepare_node_data() to allocate
+pglist_data when CONFIG_NUMA=n and stored it to node_data.
+i.e., Use the same way to allocate node_data[] when CONFIG_NUMA=y
+or CONFIG_NUMA=n.
+prepare_node_data() is called in sparer_init() and
+free_area_init().
 
-If CONFIG_DEBUG_VIRTUAL is not enabled. __pa() can handle both
-allocation and symbol cases. But if CONFIG_DEBUG_VIRTUAL is set,
-we will have the "virt_to_phys used for non-linear address" warning
-when booting.
+This is the first step to replace contig_page_data with allocated
+pglist_data.
 
-To fix the warning, always allocate pglist_data by memblock APIs and
-remove the usage of contig_page_data.
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Kazu <k-hagio-ab@nec.com>
+Signed-off-by: Miles Chen <miles.chen@mediatek.com>
+---
+ include/linux/mm.h     |  2 ++
+ include/linux/mmzone.h |  1 +
+ mm/memblock.c          |  1 +
+ mm/page_alloc.c        | 16 ++++++++++++++++
+ mm/sparse.c            |  2 ++
+ 5 files changed, 22 insertions(+)
 
-Warning message:
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] virt_to_phys used for non-linear address: (____ptrval____) (contig_page_data+0x0/0x1c00)
-[    0.000000] WARNING: CPU: 0 PID: 0 at arch/arm64/mm/physaddr.c:15 __virt_to_phys+0x58/0x68
-[    0.000000] Modules linked in:
-[    0.000000] CPU: 0 PID: 0 Comm: swapper Tainted: G        W         5.13.0-rc1-00074-g1140ab592e2e #3
-[    0.000000] Hardware name: linux,dummy-virt (DT)
-[    0.000000] pstate: 600000c5 (nZCv daIF -PAN -UAO -TCO BTYPE=--)
-[    0.000000] pc : __virt_to_phys+0x58/0x68
-[    0.000000] lr : __virt_to_phys+0x54/0x68
-[    0.000000] sp : ffff800011833e70
-[    0.000000] x29: ffff800011833e70 x28: 00000000418a0018 x27: 0000000000000000
-[    0.000000] x26: 000000000000000a x25: ffff800011b70000 x24: ffff800011b70000
-[    0.000000] x23: fffffc0001c00000 x22: ffff800011b70000 x21: 0000000047ffffb0
-[    0.000000] x20: 0000000000000008 x19: ffff800011b082c0 x18: ffffffffffffffff
-[    0.000000] x17: 0000000000000000 x16: ffff800011833bf9 x15: 0000000000000004
-[    0.000000] x14: 0000000000000fff x13: ffff80001186a548 x12: 0000000000000000
-[    0.000000] x11: 0000000000000000 x10: 00000000ffffffff x9 : 0000000000000000
-[    0.000000] x8 : ffff8000115c9000 x7 : 737520737968705f x6 : ffff800011b62ef8
-[    0.000000] x5 : 0000000000000000 x4 : 0000000000000001 x3 : 0000000000000000
-[    0.000000] x2 : 0000000000000000 x1 : ffff80001159585e x0 : 0000000000000058
-[    0.000000] Call trace:
-[    0.000000]  __virt_to_phys+0x58/0x68
-[    0.000000]  check_usemap_section_nr+0x50/0xfc
-[    0.000000]  sparse_init_nid+0x1ac/0x28c
-[    0.000000]  sparse_init+0x1c4/0x1e0
-[    0.000000]  bootmem_init+0x60/0x90
-[    0.000000]  setup_arch+0x184/0x1f0
-[    0.000000]  start_kernel+0x78/0x488
-[    0.000000] ---[ end trace f68728a0d3053b60 ]---
-
-[1] https://lore.kernel.org/patchwork/patch/1425110/
-
-Change since v1:
-- use memblock_alloc() to create pglist_data when CONFIG_NUMA=n
-
-Miles Chen (2):
-  mm: introduce prepare_node_data
-  mm: replace contig_page_data with node_data
-
- Documentation/admin-guide/kdump/vmcoreinfo.rst | 13 -------------
- arch/powerpc/kexec/core.c                      |  5 -----
- include/linux/gfp.h                            |  3 ---
- include/linux/mm.h                             |  2 ++
- include/linux/mmzone.h                         |  4 ++--
- kernel/crash_core.c                            |  1 -
- mm/memblock.c                                  |  3 +--
- mm/page_alloc.c                                | 16 ++++++++++++++++
- mm/sparse.c                                    |  2 ++
- 9 files changed, 23 insertions(+), 26 deletions(-)
-
-
-base-commit: 8ac91e6c6033ebc12c5c1e4aa171b81a662bd70f
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index c274f75efcf9..3052eeb87455 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2462,9 +2462,11 @@ static inline int early_pfn_to_nid(unsigned long pfn)
+ {
+ 	return 0;
+ }
++extern void prepare_node_data(void);
+ #else
+ /* please see mm/page_alloc.c */
+ extern int __meminit early_pfn_to_nid(unsigned long pfn);
++static inline void prepare_node_data(void) {};
+ #endif
+ 
+ extern void set_dma_reserve(unsigned long new_dma_reserve);
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 0d53eba1c383..557918dcc755 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1045,6 +1045,7 @@ extern char numa_zonelist_order[];
+ 
+ extern struct pglist_data contig_page_data;
+ #define NODE_DATA(nid)		(&contig_page_data)
++extern struct pglist_data *node_data[];
+ #define NODE_MEM_MAP(nid)	mem_map
+ 
+ #else /* CONFIG_NEED_MULTIPLE_NODES */
+diff --git a/mm/memblock.c b/mm/memblock.c
+index afaefa8fc6ab..ebddb57ea62d 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -95,6 +95,7 @@
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ struct pglist_data __refdata contig_page_data;
+ EXPORT_SYMBOL(contig_page_data);
++struct pglist_data *node_data[MAX_NUMNODES];
+ #endif
+ 
+ unsigned long max_low_pfn;
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index aaa1655cf682..0c6d421f4cfb 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1659,6 +1659,20 @@ int __meminit early_pfn_to_nid(unsigned long pfn)
+ 
+ 	return nid;
+ }
++#else
++void __init prepare_node_data(void)
++{
++	if (node_data[0])
++		return;
++
++	node_data[0] = memblock_alloc(sizeof(struct pglist_data),
++			SMP_CACHE_BYTES);
++
++	if (!node_data[0])
++		panic("Cannot allocate node_data\n");
++
++	memset(node_data[0], 0, sizeof(struct pglist_data));
++}
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
+ 
+ void __init memblock_free_pages(struct page *page, unsigned long pfn,
+@@ -7697,6 +7711,8 @@ void __init free_area_init(unsigned long *max_zone_pfn)
+ 	int i, nid, zone;
+ 	bool descending;
+ 
++	prepare_node_data();
++
+ 	/* Record where the zone boundaries are */
+ 	memset(arch_zone_lowest_possible_pfn, 0,
+ 				sizeof(arch_zone_lowest_possible_pfn));
+diff --git a/mm/sparse.c b/mm/sparse.c
+index b2ada9dc00cb..afcfe7463b4a 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -580,6 +580,8 @@ void __init sparse_init(void)
+ 
+ 	memblocks_present();
+ 
++	prepare_node_data();
++
+ 	pnum_begin = first_present_section_nr();
+ 	nid_begin = sparse_early_nid(__nr_to_section(pnum_begin));
+ 
 -- 
 2.18.0
 
