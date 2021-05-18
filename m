@@ -2,91 +2,59 @@ Return-Path: <SRS0=RWfA=KN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A76AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:57:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13398C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:59:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A3A561007
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:57:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A3A561007
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3E1D961007
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:59:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E1D961007
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FkmzP413Wz3byv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 16:57:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=KvboTWH6;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fkn1J51WXz3c6N
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 16:59:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=tientzu@chromium.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=KvboTWH6; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fkmyv50Vbz2xZH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 16:57:24 +1000 (AEST)
-Received: by mail-pf1-x429.google.com with SMTP id q2so6681478pfh.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 23:57:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=okFGSzwxy3Xl1EDwrbsZ6bJWGdPaUEKxSezi4/SE71A=;
- b=KvboTWH6SCfdQ7LLxm6vH9xhTNNbPkylAhr3iqPQWH1QNODKOLIbMt/OYjboWMwVvr
- +KD/UQeQoUETk6OK7TCWS0Utmt5EvBfWbA4IzzRRuwJkDy5Qi3ICeWOTChp1Py6zaNQt
- fa1WHS9ymuIo1ivMcIga1N5vVpkmfX46UnGI0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=okFGSzwxy3Xl1EDwrbsZ6bJWGdPaUEKxSezi4/SE71A=;
- b=t6Bn5yb+JdfSDI+Km5gCnRqBSNYX6erbYomBHMdwgIefloPVEhNMUOBHYey3yLpiat
- 3ZDg9yyVHQWCC9Xvg9h4aq8aN2VVa0ar4Ifvk3+ZV8K6I6hZk+kdDL0ZU2u/0EgMDC/V
- L5WlBhpRlUrLOBzBPEGZCFlIY8mfhTFEHw77nuexU8/R9QNz/XgBBmxdIVYt2MrFbh6a
- tTN4I3mzYtQFjAOcZNZi73GOz1srSGj1+zuA3zBq1HyUPCOUJdoBgamsC3BWltnA4HIM
- 8dJe+ZXLZ14C6KUmK2a6DO3pB/BMhjV4J/14vzqXPyDRLe1syY3Dy/8FoyYzQn08cGYJ
- eJzQ==
-X-Gm-Message-State: AOAM530Zk0eJWAkyBCPSmrVVu5zNZbCVYgT0xXJMCxj88nJDq0nNg5sC
- 4tCvTyqHXMangs0rdRpdl2IADDEWjbyKIg==
-X-Google-Smtp-Source: ABdhPJyuizGjJYJEy7sUo1pROBeUfCefWidQMLix1IxO9obpBlMJW68ZgIdcUPG1q20NSvRAvSDVLQ==
-X-Received: by 2002:a63:b206:: with SMTP id x6mr3574967pge.341.1621321040826; 
- Mon, 17 May 2021 23:57:20 -0700 (PDT)
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com.
- [209.85.215.174])
- by smtp.gmail.com with ESMTPSA id u6sm10988928pfi.44.2021.05.17.23.57.20
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 17 May 2021 23:57:20 -0700 (PDT)
-Received: by mail-pg1-f174.google.com with SMTP id k15so6321068pgb.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2021 23:57:20 -0700 (PDT)
-X-Received: by 2002:a05:6e02:1a4d:: with SMTP id
- u13mr3011800ilv.64.1621320723564; 
- Mon, 17 May 2021 23:52:03 -0700 (PDT)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
+ envelope-from=thunder.leizhen@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fkn0x0F3Gz2xZn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 16:59:12 +1000 (AEST)
+Received: from dggems703-chm.china.huawei.com (unknown [172.30.72.58])
+ by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4Fkmwm6N7Vzmj8Z;
+ Tue, 18 May 2021 14:55:36 +0800 (CST)
+Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
+ dggems703-chm.china.huawei.com (10.3.19.180) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Tue, 18 May 2021 14:59:05 +0800
+Received: from thunder-town.china.huawei.com (10.174.177.72) by
+ dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Tue, 18 May 2021 14:59:04 +0800
+From: Zhen Lei <thunder.leizhen@huawei.com>
+To: Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/1] powerpc/ps3: Fix error return code in
+ ps3_register_devices()
+Date: Tue, 18 May 2021 14:58:53 +0800
+Message-ID: <20210518065853.7590-1-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.26.0.windows.1
 MIME-Version: 1.0
-References: <20210518064215.2856977-1-tientzu@chromium.org>
- <20210518064215.2856977-6-tientzu@chromium.org>
-In-Reply-To: <20210518064215.2856977-6-tientzu@chromium.org>
-From: Claire Chang <tientzu@chromium.org>
-Date: Tue, 18 May 2021 14:51:52 +0800
-X-Gmail-Original-Message-ID: <CALiNf28ke3c91Y7xaHUgvJePKXqYA7UmsYJV9yaeZc3-4Lzs8Q@mail.gmail.com>
-Message-ID: <CALiNf28ke3c91Y7xaHUgvJePKXqYA7UmsYJV9yaeZc3-4Lzs8Q@mail.gmail.com>
-Subject: Re: [PATCH v7 05/15] swiotlb: Add a new get_io_tlb_mem getter
-To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
- Joerg Roedel <joro@8bytes.org>, 
- Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>, 
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
- jgross@suse.com, 
- Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.174.177.72]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpemm500006.china.huawei.com (7.185.36.236)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,33 +66,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, mingo@kernel.org,
- Jianxiong Gao <jxgao@google.com>, sstabellini@kernel.org,
- Saravana Kannan <saravanak@google.com>, xypron.glpk@gmx.de,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- Daniel Vetter <daniel@ffwll.ch>, airlied@linux.ie,
- maarten.lankhorst@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- jani.nikula@linux.intel.com, Nicolas Boichat <drinkcat@chromium.org>,
- rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, Tomasz Figa <tfiga@chromium.org>,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: Zhen Lei <thunder.leizhen@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Still keep this function because directly using dev->dma_io_tlb_mem
-will cause issues for memory allocation for existing devices. The pool
-can't support atomic coherent allocation so we need to distinguish the
-per device pool and the default pool in swiotlb_alloc.
+When call ps3_start_probe_thread() failed, further initialization should
+be stopped and the returned error code should be propagated.
+
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ arch/powerpc/platforms/ps3/device-init.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+index e87360a0fb40..9b6d8ca8fc01 100644
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -955,6 +955,8 @@ static int __init ps3_register_devices(void)
+ 	/* ps3_repository_dump_bus_info(); */
+ 
+ 	result = ps3_start_probe_thread(PS3_BUS_TYPE_STORAGE);
++	if (result < 0)
++		return result;
+ 
+ 	ps3_register_vuart_devices();
+ 
+-- 
+2.25.1
+
+
