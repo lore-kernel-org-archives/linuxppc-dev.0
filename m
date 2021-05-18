@@ -2,68 +2,97 @@ Return-Path: <SRS0=RWfA=KN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77039C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:14:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFAFFC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:34:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AD72611AD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:14:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AD72611AD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EAD75611BD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 06:34:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAD75611BD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fkm1F5tCyz309H
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 16:14:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FkmRx3Mqpz3097
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 May 2021 16:34:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pNt1eTIi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=fyCdx9xT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.164;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=pNt1eTIi; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=fyCdx9xT; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [81.169.146.164])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fkm0m118Pz2yXf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 16:13:59 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Fkm0c37mNz9sW1;
- Tue, 18 May 2021 16:13:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1621318434;
- bh=IV7+QbI4uh3lLtagt784pHwtdDzEOKkcFGpA1YF+BnY=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=pNt1eTIi54r2BF6idmSaqa/SVJwyaW7MWUkYiczrrtrYa/pzo0YwDLue+ox+Wu8ar
- hMwQL2oW2PQr0nTvd0aq0Aii/hA8Snaq89FwtqQfbfI6tMw38q2fU957w5DG5mkc19
- TobmiRLm9ADLRSt+t9ZI1stEezRzfmr/2IaILzAhZT3mn9Gx/jme6PjKxGh5f/hXz2
- V0QwGeA9cHXd5lAPL7M+Jc1hnz5qo7ELbARY9Iz1AwHu8oz3mMUv06O1IsIE5lxf26
- 23av0QMe703eZ/UGUz5MD+KJpPfel73/THzo3BNQGSqQhDul2f/kAMm/p2Q9s40L9L
- aXJ8Siv0f1Jzw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nick Desaulniers <ndesaulniers@google.com>, Oliver O'Halloran
- <oohall@gmail.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH] powerpc/powernv/pci: remove dead code from !CONFIG_EEH
-In-Reply-To: <CAKwvOdmMugQkTRwC3HOEt2-em2zSfAoi7gpvJRkqfdzSDRMeEg@mail.gmail.com>
-References: <20210422195405.4053917-1-ndesaulniers@google.com>
- <87lf99zzl3.fsf@dja-thinkpad.axtens.net>
- <CAOSf1CGoN5R0LUrU=Y=UWho1Z_9SLgCX8s3SbFJXwJXc5BYz4A@mail.gmail.com>
- <CAKwvOdmMugQkTRwC3HOEt2-em2zSfAoi7gpvJRkqfdzSDRMeEg@mail.gmail.com>
-Date: Tue, 18 May 2021 16:13:50 +1000
-Message-ID: <87cztok1r5.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FkmRQ24Jzz2xvH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2021 16:33:36 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1621319607; cv=none;
+ d=strato.com; s=strato-dkim-0002;
+ b=PBUelKX9f52bDZRaB2BR+uZaZFU9h/R6aVZw6YK+2osCe1jHpRS3iLoGhWJCPOwdXI
+ bqlDv9cVLcX5Z9RmH6CLW8xem89Gs+e47JLrcWLkt4FwnqqX8T/gpjzCl1z64ngsZbMy
+ 0wnBTuwCI6e+rfxviTvW1O2Hjhrj/J19HUSPfAp5TlOP3PXno6aaWaLKQz9ZQ2sVjfPD
+ Hf1Qo9HzNz+dmiC+07x9eb5SMRuV+5Hkislmc+uqcdxieKEk76teuCh7iIASFeWdKfbb
+ w3qYO61y/4MuucLg4zVx2ViNv0lbGaC1ORKP3Hz01u4mUp6KalrOjMCiTP3yo5cB50Wo
+ eXvQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1621319607;
+ s=strato-dkim-0002; d=strato.com;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+ From:Subject:Sender;
+ bh=/jlMH/n0JB9K6U94RowhlQ5JqXu9HQE9ziGYRVgBXLY=;
+ b=LhvBvXLBcwg20SVbjFOOvgpxEd43RYtzZL2tUpVFlqNJWGw4i1AG1LlDNw9cC6Sixb
+ cSbaZyA+2w4hRPxgl93KGdUtvWf4L6j8OhOVJRlAS0UvTC0nZfft/nG+/9wc+6/GchV2
+ z8OTkWc4HbFgLaB79HMBXa7L2noDzuOWzp0cwsQzj9J8H2/yCHWgeWS38lW5Qpixt+Jn
+ 0P7ZEBAfqVDTeQRx1O5h+1ByKJg6d1X2sfoGPfGKBLjmndecYSrQGgR4oXLoWyTsYpQp
+ Ai1a9WsBgILYaoH9Gad46C28o5Kirx9e46sC54hQrlaVTR7OGAWs227Ec4RwjmqHQ0Yn
+ yBtg==
+ARC-Authentication-Results: i=1; strato.com;
+    dkim=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1621319607;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+ From:Subject:Sender;
+ bh=/jlMH/n0JB9K6U94RowhlQ5JqXu9HQE9ziGYRVgBXLY=;
+ b=fyCdx9xTBxmI0jmMPuT2PKn3YJx7Sy97fNrg8NkaOIStqewzi2tithC1pguNzXIVua
+ 0KC+gSsJNCqTzNdKwHS0m7G0iBoZqHsBCttjaY+yYLRj5T2sLZqgZipDOGph+CcIy769
+ QXaLwA3hvpMp9k+ssSJAVr8Sq9JMdE9i9ipgt+dsAMc6OEWZukIgMOuxz2c52/cQIuTw
+ 7IfDDQrjs4RiE3MDmeX+CuM3y5YHQay0V+sRFoSCtEQ63Qgs5dbxftfkWcempwxEc3Ms
+ Mv5yNYqC6PWhh8FGuK2R0e1BQ693ghHIFOiivJA/2rs4HOTDXMvyIRs7MGL7ZYNOUbZU
+ h1vg==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7bGdwirpmzSCRZBtmg048aXyW7fONJ6crnoXUaLVc"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:a011:39f7:79a7:a762:c241:3bc0]
+ by smtp.strato.de (RZmta 47.26.1 AUTH)
+ with ESMTPSA id K01586x4I6XR1Ue
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Tue, 18 May 2021 08:33:27 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Mime-Version: 1.0 (1.0)
+Subject: Re: [FSL P50x0] KVM HV doesn't work anymore
+Date: Tue, 18 May 2021 08:33:26 +0200
+Message-Id: <F193DA31-4C74-4239-8F9B-E318F49BA3F0@xenosoft.de>
+References: <e6ed7674-3df9-ec3e-8bcf-dcd8ff0fecf8@xenosoft.de>
+In-Reply-To: <e6ed7674-3df9-ec3e-8bcf-dcd8ff0fecf8@xenosoft.de>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+X-Mailer: iPhone Mail (18D70)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,62 +104,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nathan Chancellor <nathan@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Joe Perches <joe@perches.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nick Desaulniers <ndesaulniers@google.com> writes:
-> On Thu, Apr 22, 2021 at 6:13 PM Oliver O'Halloran <oohall@gmail.com> wrote:
->>
->> On Fri, Apr 23, 2021 at 9:09 AM Daniel Axtens <dja@axtens.net> wrote:
->> >
->> > Hi Nick,
->> >
->> > > While looking at -Wundef warnings, the #if CONFIG_EEH stood out as a
->> > > possible candidate to convert to #ifdef CONFIG_EEH, but it seems that
->> > > based on Kconfig dependencies it's not possible to build this file
->> > > without CONFIG_EEH enabled.
->> >
->> > This seemed odd to me, but I think you're right:
->> >
->> > arch/powerpc/platforms/Kconfig contains:
->> >
->> > config EEH
->> >         bool
->> >         depends on (PPC_POWERNV || PPC_PSERIES) && PCI
->> >         default y
->> >
->> > It's not configurable from e.g. make menuconfig because there's no prompt.
->> > You can attempt to explicitly disable it with e.g. `scripts/config -d EEH`
->> > but then something like `make oldconfig` will silently re-enable it for
->> > you.
->> >
->> > It's been forced on since commit e49f7a9997c6 ("powerpc/pseries: Rivet
->> > CONFIG_EEH for pSeries platform") in 2012 which fixed it for
->> > pseries. That moved out from pseries to pseries + powernv later on.
->> >
->> > There are other cleanups in the same vein that could be made, from the
->> > Makefile (which has files only built with CONFIG_EEH) through to other
->> > source files. It looks like there's one `#ifdef CONFIG_EEH` in
->> > arch/powerpc/platforms/powernv/pci-ioda.c that could be pulled out, for
->> > example.
->> >
->> > I think it's probably worth trying to rip out all of those in one patch?
->>
->> The change in commit e49f7a9997c6 ("powerpc/pseries: Rivet CONFIG_EEH
->> for pSeries platform") never should have been made.
->
-> I'll change my patch to keep the conditionals, but use #ifdef instead
-> of #if then?
 
-Yeah, please.
 
-I'm not sure I agree with oohal that untangling pseries/powernv from
-EEH is something we should do, but let's kick that can down the road by
-just fixing up the ifdef.
+> On 17. May 2021, at 11:43, Christian Zigotzky <chzigotzky@xenosoft.de> wro=
+te:
+>=20
+> =EF=BB=BFOn 17 May 2021 at 09:42am, Nicholas Piggin wrote:
+>> Excerpts from Christian Zigotzky's message of May 15, 2021 11:46 pm:
+>>> On 15 May 2021 at 12:08pm Christophe Leroy wrote:
+>>>>=20
+>>>>> Le 15/05/2021 =C3=A0 11:48, Christian Zigotzky a =C3=A9crit :
+>>>>>> Hi All,
+>>>>>>=20
+>>>>>> I bisected today [1] and the bisecting itself was OK but the
+>>>>>> reverting of the bad commit doesn't solve the issue. Do you have an
+>>>>>> idea which commit could be resposible for this issue? Maybe the
+>>>>>> bisecting wasn't successful. I will look in the kernel git log. Maybe=
 
-cheers
+>>>>>> there is a commit that affected KVM HV on FSL P50x0 machines.
+>>>>> If the uImage doesn't load, it may be because of the size of uImage.
+>>>>>=20
+>>>>> See https://github.com/linuxppc/issues/issues/208
+>>>>>=20
+>>>>> Is there a significant size difference with and without KVM HV ?
+>>>>>=20
+>>>>> Maybe you can try to remove another option to reduce the size of the
+>>>>> uImage.
+>>> I tried it but it doesn't solve the issue. The uImage works without KVM
+>>> HV in a virtual e5500 QEMU machine.
+>> Any more progress with this? I would say that bisect might have just
+>> been a bit unstable and maybe by chance some things did not crash so
+>> it's pointing to the wrong patch.
+>>=20
+>> Upstream merge of powerpc-5.13-1 was good and powerpc-5.13-2 was bad?
+>>=20
+>> Between that looks like some KVM MMU rework. You could try the patch
+>> before this one b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU
+>> notifier callbacks"). That won't revert cleanly so just try run the
+>> tree at that point. If it works, test the patch and see if it fails.
+>>=20
+>> Thanks,
+>> Nick
+> Hi Nick,
+>=20
+> Thanks a lot for your answer. Yes, there is a little bit of progress. The R=
+C2 of kernel 5.13 successfully boots with -smp 3 in a virtual e5500 QEMU mac=
+hine.
+> -smp 4 doesn't work anymore since the PowerPC updates 5.13-2. I used -smp 4=
+ before 5.13 because my FSL P5040 machine has 4 cores.
+>=20
+> Could you please post a patch for reverting the commit before b1c5356e873c=
+ ("KVM: PPC: Convert to the gfn-based MMU notifier callbacks")?
+>=20
+> Thanks in advance,
+>=20
+> Christian
+>=20
+>=20
+For me it is ok to work with -smp 1, 2, and 3 but I am curious why -smp 4 do=
+esn=E2=80=99t work.
+
+-Christian=
+
