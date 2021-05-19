@@ -2,95 +2,89 @@ Return-Path: <SRS0=tyeE=KO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A28C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73C8FC433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 20:02:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5AB296108D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:24:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AB296108D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C014F61355
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 20:02:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C014F61355
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FljVn6f8pz30FJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 05:24:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlkLG2LJ0z3byl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 06:02:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=CToMN5sV;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=INv+8h72;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=INv+8h72;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c;
- helo=mail-pf1-x42c.google.com; envelope-from=f.fainelli@gmail.com;
+ smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=rgb@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=CToMN5sV; dkim-atps=neutral
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
- [IPv6:2607:f8b0:4864:20::42c])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=INv+8h72; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=INv+8h72; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FljVJ2gmGz2xtl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:24:21 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id 10so10615341pfl.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 12:24:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=47JQ73C0NJdLVL+El8Yu9LZib8r+sSTJ+nf9zBKe9o0=;
- b=CToMN5sVOeaSvxsFwh30mnX1cEfbujdvLOsJoVGXyNK5xIClhHeY9+5gjOfAEdXX3G
- eU6qVJByg68kQ/w6JlnavFgIe+nfjuKKhbAsZxJHLIoUmLJC+FNQXwfuXltAASilweQx
- t+08hp5u1PLu1TqToQLVPh129PwSHFiJcf7M+I2aRakLaRJ2reqCHrxjRIjxuLTiBnzU
- obYFCXVysXAW0hEOj/ZFRzKi1W/0ELgGhGTgBKGpo2iX5m/PP/BptzsrBt+DoXhRmi5/
- WDDfuoHSDbRwV59E2nqJbeAwXtBih5h7WjHhxwWGM7Qsk3IgYQx+mCus3GhZ5jZ2T7eK
- 2tug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=47JQ73C0NJdLVL+El8Yu9LZib8r+sSTJ+nf9zBKe9o0=;
- b=pK4NiFtKoYmSCpNGTk3nMAXp8ukys8a/4XagJIVGe4LNdY5otp4zxQ0KWH0YL5rGw5
- Lml7Iia2ZmvLQwGu3JOoRQhlmA3RrHm6tfNRbhG/yC3rAOdRCxxLGv9cwjIWefQUNLUD
- s38/VawB61aRFXfnew2HTIBJ2a6n86IYvTcAtn4Wpwpl5HWO1hCL0o4yZPhZt/dP+h5h
- Dvm/eKNIqK9ypar08pldpRe96C4flxZAnnn/qXRxWstsITe0ektOoG3O6JWLq25/JvfZ
- ZsmGay3ZUqMkf/rBZdsN5M8VVANw8rV/U+QwZlrGkqQdC4jPYeL4TiIyxzO9nclEjznH
- j2tA==
-X-Gm-Message-State: AOAM530PaZDs6lu+GFVP+Vj4DaCMcEE7s259Pu2SEuasa4N8gaDZMP3f
- K3nZI6+GhK+DwuAJQz07WXo=
-X-Google-Smtp-Source: ABdhPJzJyhu29XiaIUqubYuVceyIJwVsMCRuIXu8+2duk9EuCth6A3fkL6TVyZT/YsIkYQB5Otc01Q==
-X-Received: by 2002:a62:1d52:0:b029:2dd:ee:1439 with SMTP id
- d79-20020a621d520000b02902dd00ee1439mr573310pfd.57.1621452258195; 
- Wed, 19 May 2021 12:24:18 -0700 (PDT)
-Received: from [10.230.29.202] ([192.19.223.252])
- by smtp.gmail.com with ESMTPSA id gj21sm4690007pjb.49.2021.05.19.12.24.13
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 19 May 2021 12:24:17 -0700 (PDT)
-Subject: Re: [PATCH v7 02/15] swiotlb: Refactor swiotlb_create_debugfs
-To: Claire Chang <tientzu@chromium.org>, Rob Herring <robh+dt@kernel.org>,
- mpe@ellerman.id.au, Joerg Roedel <joro@8bytes.org>,
- Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
- jgross@suse.com, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20210518064215.2856977-1-tientzu@chromium.org>
- <20210518064215.2856977-3-tientzu@chromium.org>
-From: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <d4a3ee6d-55be-1a60-9092-66b444dc9dda@gmail.com>
-Date: Wed, 19 May 2021 12:24:11 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Firefox/78.0 Thunderbird/78.10.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlkKj72Tmz3035
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 06:02:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621454517;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Sikk+MokxpIByIOpcdKDiqljcUG3+PPH94iB44Ixc6U=;
+ b=INv+8h72qdPLqaMxRsQ1mz/UTTTpmgLudncoukeRppkuweNTcGLYYFrzCp7joApdpGEQuy
+ rcZKnzAiPUmK1Frhy2jywPCZb6WnvZ5qAOmFklOoZyQaV0rBW7BwDYq5mX1gnTmnjIma+N
+ fXtMD3aQt4eZ1FjrEH7NpFxIfApZx70=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621454517;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Sikk+MokxpIByIOpcdKDiqljcUG3+PPH94iB44Ixc6U=;
+ b=INv+8h72qdPLqaMxRsQ1mz/UTTTpmgLudncoukeRppkuweNTcGLYYFrzCp7joApdpGEQuy
+ rcZKnzAiPUmK1Frhy2jywPCZb6WnvZ5qAOmFklOoZyQaV0rBW7BwDYq5mX1gnTmnjIma+N
+ fXtMD3aQt4eZ1FjrEH7NpFxIfApZx70=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-340--ouSNdyCMJi-F2EB9le41Q-1; Wed, 19 May 2021 16:01:54 -0400
+X-MC-Unique: -ouSNdyCMJi-F2EB9le41Q-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B204F802690;
+ Wed, 19 May 2021 20:01:52 +0000 (UTC)
+Received: from madcap2.tricolour.ca (unknown [10.3.128.45])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id BAFFE60BF1;
+ Wed, 19 May 2021 20:01:48 +0000 (UTC)
+From: Richard Guy Briggs <rgb@redhat.com>
+To: Linux-Audit Mailing List <linux-audit@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Subject: [PATCH v4 1/3] audit: replace magic audit syscall class numbers with
+ macros
+Date: Wed, 19 May 2021 16:00:20 -0400
+Message-Id: <2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com>
+In-Reply-To: <cover.1621363275.git.rgb@redhat.com>
+References: <cover.1621363275.git.rgb@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20210518064215.2856977-3-tientzu@chromium.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,38 +96,527 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
- sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
- xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
- bhelgaas@google.com, Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Paul Moore <paul@paul-moore.com>, linux-parisc@vger.kernel.org,
+ Arnd Bergmann <arnd@kernel.org>, Richard Guy Briggs <rgb@redhat.com>,
+ x86@kernel.org, Eric Paris <eparis@redhat.com>,
+ Aleksa Sarai <cyphar@cyphar.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Eric Paris <eparis@parisplace.org>, Steve Grubb <sgrubb@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Replace audit syscall class magic numbers with macros.
 
+This required putting the macros into new header file
+include/linux/auditsc_classmacros.h since the syscall macros were
+included for both 64 bit and 32 bit in any compat code, causing
+redefinition warnings.
 
-On 5/17/2021 11:42 PM, Claire Chang wrote:
-> Split the debugfs creation to make the code reusable for supporting
-> different bounce buffer pools, e.g. restricted DMA pool.
-> 
-> Signed-off-by: Claire Chang <tientzu@chromium.org>
+Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+Link: https://lore.kernel.org/r/2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com
+---
+ MAINTAINERS                         |  1 +
+ arch/alpha/kernel/audit.c           |  8 ++++----
+ arch/ia64/kernel/audit.c            |  8 ++++----
+ arch/parisc/kernel/audit.c          |  8 ++++----
+ arch/parisc/kernel/compat_audit.c   |  9 +++++----
+ arch/powerpc/kernel/audit.c         | 10 +++++-----
+ arch/powerpc/kernel/compat_audit.c  | 11 ++++++-----
+ arch/s390/kernel/audit.c            | 10 +++++-----
+ arch/s390/kernel/compat_audit.c     | 11 ++++++-----
+ arch/sparc/kernel/audit.c           | 10 +++++-----
+ arch/sparc/kernel/compat_audit.c    | 11 ++++++-----
+ arch/x86/ia32/audit.c               | 11 ++++++-----
+ arch/x86/kernel/audit_64.c          |  8 ++++----
+ include/linux/audit.h               |  1 +
+ include/linux/auditsc_classmacros.h | 23 +++++++++++++++++++++++
+ kernel/auditsc.c                    | 12 ++++++------
+ lib/audit.c                         | 10 +++++-----
+ lib/compat_audit.c                  | 11 ++++++-----
+ 18 files changed, 102 insertions(+), 71 deletions(-)
+ create mode 100644 include/linux/auditsc_classmacros.h
 
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index bd7aff0c120f..3348d12019f9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3036,6 +3036,7 @@ W:	https://github.com/linux-audit
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/pcmoore/audit.git
+ F:	include/asm-generic/audit_*.h
+ F:	include/linux/audit.h
++F:	include/linux/auditsc_classmacros.h
+ F:	include/uapi/linux/audit.h
+ F:	kernel/audit*
+ F:	lib/*audit.c
+diff --git a/arch/alpha/kernel/audit.c b/arch/alpha/kernel/audit.c
+index 96a9d18ff4c4..81cbd804e375 100644
+--- a/arch/alpha/kernel/audit.c
++++ b/arch/alpha/kernel/audit.c
+@@ -37,13 +37,13 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ {
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/ia64/kernel/audit.c b/arch/ia64/kernel/audit.c
+index 5192ca899fe6..dba6a74c9ab3 100644
+--- a/arch/ia64/kernel/audit.c
++++ b/arch/ia64/kernel/audit.c
+@@ -38,13 +38,13 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ {
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/parisc/kernel/audit.c b/arch/parisc/kernel/audit.c
+index 9eb47b2225d2..14244e83db75 100644
+--- a/arch/parisc/kernel/audit.c
++++ b/arch/parisc/kernel/audit.c
+@@ -47,13 +47,13 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ #endif
+ 	switch (syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/parisc/kernel/compat_audit.c b/arch/parisc/kernel/compat_audit.c
+index 20c39c9d86a9..1d6347d37d92 100644
+--- a/arch/parisc/kernel/compat_audit.c
++++ b/arch/parisc/kernel/compat_audit.c
+@@ -1,4 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd.h>
+ 
+ unsigned int parisc32_dir_class[] = {
+@@ -30,12 +31,12 @@ int parisc32_classify_syscall(unsigned syscall)
+ {
+ 	switch (syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
+diff --git a/arch/powerpc/kernel/audit.c b/arch/powerpc/kernel/audit.c
+index a2dddd7f3d09..6eb18ef77dff 100644
+--- a/arch/powerpc/kernel/audit.c
++++ b/arch/powerpc/kernel/audit.c
+@@ -47,15 +47,15 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ #endif
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kernel/compat_audit.c b/arch/powerpc/kernel/compat_audit.c
+index 55c6ccda0a85..b1dc2d1c4bad 100644
+--- a/arch/powerpc/kernel/compat_audit.c
++++ b/arch/powerpc/kernel/compat_audit.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #undef __powerpc64__
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd.h>
+ 
+ unsigned ppc32_dir_class[] = {
+@@ -31,14 +32,14 @@ int ppc32_classify_syscall(unsigned syscall)
+ {
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
+diff --git a/arch/s390/kernel/audit.c b/arch/s390/kernel/audit.c
+index d395c6c9944c..7e331e1831d4 100644
+--- a/arch/s390/kernel/audit.c
++++ b/arch/s390/kernel/audit.c
+@@ -47,15 +47,15 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ #endif
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/s390/kernel/compat_audit.c b/arch/s390/kernel/compat_audit.c
+index 444fb1f66944..fc3d1c7ad21c 100644
+--- a/arch/s390/kernel/compat_audit.c
++++ b/arch/s390/kernel/compat_audit.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #undef __s390x__
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd.h>
+ #include "audit.h"
+ 
+@@ -32,14 +33,14 @@ int s390_classify_syscall(unsigned syscall)
+ {
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
+diff --git a/arch/sparc/kernel/audit.c b/arch/sparc/kernel/audit.c
+index a6e91bf34d48..50fab35bdaba 100644
+--- a/arch/sparc/kernel/audit.c
++++ b/arch/sparc/kernel/audit.c
+@@ -48,15 +48,15 @@ int audit_classify_syscall(int abi, unsigned int syscall)
+ #endif
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/arch/sparc/kernel/compat_audit.c b/arch/sparc/kernel/compat_audit.c
+index 10eeb4f15b20..1c1b6d075421 100644
+--- a/arch/sparc/kernel/compat_audit.c
++++ b/arch/sparc/kernel/compat_audit.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #define __32bit_syscall_numbers__
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd.h>
+ #include "kernel.h"
+ 
+@@ -32,14 +33,14 @@ int sparc32_classify_syscall(unsigned int syscall)
+ {
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
+diff --git a/arch/x86/ia32/audit.c b/arch/x86/ia32/audit.c
+index 6efe6cb3768a..eedc37a1ee13 100644
+--- a/arch/x86/ia32/audit.c
++++ b/arch/x86/ia32/audit.c
+@@ -1,4 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd_32.h>
+ #include <asm/audit.h>
+ 
+@@ -31,15 +32,15 @@ int ia32_classify_syscall(unsigned syscall)
+ {
+ 	switch (syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ 	case __NR_execve:
+ 	case __NR_execveat:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
+diff --git a/arch/x86/kernel/audit_64.c b/arch/x86/kernel/audit_64.c
+index 83d9cad4e68b..2a6cc9c9c881 100644
+--- a/arch/x86/kernel/audit_64.c
++++ b/arch/x86/kernel/audit_64.c
+@@ -47,14 +47,14 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ #endif
+ 	switch(syscall) {
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ 	case __NR_execve:
+ 	case __NR_execveat:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/include/linux/audit.h b/include/linux/audit.h
+index 82b7c1116a85..283bc91a6932 100644
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/sched.h>
+ #include <linux/ptrace.h>
++#include <linux/auditsc_classmacros.h> /* syscall class macros */
+ #include <uapi/linux/audit.h>
+ #include <uapi/linux/netfilter/nf_tables.h>
+ 
+diff --git a/include/linux/auditsc_classmacros.h b/include/linux/auditsc_classmacros.h
+new file mode 100644
+index 000000000000..18757d270961
+--- /dev/null
++++ b/include/linux/auditsc_classmacros.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* auditsc_classmacros.h -- Auditing support syscall macros
++ *
++ * Copyright 2021 Red Hat Inc., Durham, North Carolina.
++ * All Rights Reserved.
++ *
++ * Author: Richard Guy Briggs <rgb@redhat.com>
++ */
++#ifndef _LINUX_AUDITSCM_H_
++#define _LINUX_AUDITSCM_H_
++
++enum auditsc_class_t {
++	AUDITSC_NATIVE = 0,
++	AUDITSC_COMPAT,
++	AUDITSC_OPEN,
++	AUDITSC_OPENAT,
++	AUDITSC_SOCKETCALL,
++	AUDITSC_EXECVE,
++
++	AUDITSC_NVALS /* count */
++};
++
++#endif
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 0a9a1569f1ea..d775ea16505b 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -166,7 +166,7 @@ static int audit_match_perm(struct audit_context *ctx, int mask)
+ 	n = ctx->major;
+ 
+ 	switch (audit_classify_syscall(ctx->arch, n)) {
+-	case 0:	/* native */
++	case AUDITSC_NATIVE:
+ 		if ((mask & AUDIT_PERM_WRITE) &&
+ 		     audit_match_class(AUDIT_CLASS_WRITE, n))
+ 			return 1;
+@@ -177,7 +177,7 @@ static int audit_match_perm(struct audit_context *ctx, int mask)
+ 		     audit_match_class(AUDIT_CLASS_CHATTR, n))
+ 			return 1;
+ 		return 0;
+-	case 1: /* 32bit on biarch */
++	case AUDITSC_COMPAT: /* 32bit on biarch */
+ 		if ((mask & AUDIT_PERM_WRITE) &&
+ 		     audit_match_class(AUDIT_CLASS_WRITE_32, n))
+ 			return 1;
+@@ -188,13 +188,13 @@ static int audit_match_perm(struct audit_context *ctx, int mask)
+ 		     audit_match_class(AUDIT_CLASS_CHATTR_32, n))
+ 			return 1;
+ 		return 0;
+-	case 2: /* open */
++	case AUDITSC_OPEN:
+ 		return mask & ACC_MODE(ctx->argv[1]);
+-	case 3: /* openat */
++	case AUDITSC_OPENAT:
+ 		return mask & ACC_MODE(ctx->argv[2]);
+-	case 4: /* socketcall */
++	case AUDITSC_SOCKETCALL:
+ 		return ((mask & AUDIT_PERM_WRITE) && ctx->argv[0] == SYS_BIND);
+-	case 5: /* execve */
++	case AUDITSC_EXECVE:
+ 		return mask & AUDIT_PERM_EXEC;
+ 	default:
+ 		return 0;
+diff --git a/lib/audit.c b/lib/audit.c
+index 5004bff928a7..3ec1a94d8d64 100644
+--- a/lib/audit.c
++++ b/lib/audit.c
+@@ -45,23 +45,23 @@ int audit_classify_syscall(int abi, unsigned syscall)
+ 	switch(syscall) {
+ #ifdef __NR_open
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ #endif
+ #ifdef __NR_openat
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ #endif
+ #ifdef __NR_socketcall
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ #endif
+ #ifdef __NR_execveat
+ 	case __NR_execveat:
+ #endif
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 0;
++		return AUDITSC_NATIVE;
+ 	}
+ }
+ 
+diff --git a/lib/compat_audit.c b/lib/compat_audit.c
+index 77eabad69b4a..a38b282d353f 100644
+--- a/lib/compat_audit.c
++++ b/lib/compat_audit.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/init.h>
+ #include <linux/types.h>
++#include <linux/auditsc_classmacros.h>
+ #include <asm/unistd32.h>
+ 
+ unsigned compat_dir_class[] = {
+@@ -33,19 +34,19 @@ int audit_classify_compat_syscall(int abi, unsigned syscall)
+ 	switch (syscall) {
+ #ifdef __NR_open
+ 	case __NR_open:
+-		return 2;
++		return AUDITSC_OPEN;
+ #endif
+ #ifdef __NR_openat
+ 	case __NR_openat:
+-		return 3;
++		return AUDITSC_OPENAT;
+ #endif
+ #ifdef __NR_socketcall
+ 	case __NR_socketcall:
+-		return 4;
++		return AUDITSC_SOCKETCALL;
+ #endif
+ 	case __NR_execve:
+-		return 5;
++		return AUDITSC_EXECVE;
+ 	default:
+-		return 1;
++		return AUDITSC_COMPAT;
+ 	}
+ }
 -- 
-Florian
+2.27.0
+
