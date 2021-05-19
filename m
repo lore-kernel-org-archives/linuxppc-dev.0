@@ -2,61 +2,65 @@ Return-Path: <SRS0=tyeE=KO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9CB0C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:43:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E794C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:44:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E387C6135A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:43:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E387C6135A
+	by mail.kernel.org (Postfix) with ESMTPS id BA1C76109F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:44:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA1C76109F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlbGj3PPlz301C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:43:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlbH33klmz3byJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:44:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FlbGG1x5sz2yZ2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:43:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlbGN6XDmz2yx6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:43:40 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4FlbG812B3z9sWS;
- Wed, 19 May 2021 16:43:28 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FlbG93L2tz9sWT;
+ Wed, 19 May 2021 16:43:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qorOCowr6Gbv; Wed, 19 May 2021 16:43:28 +0200 (CEST)
+ with ESMTP id T_PZjOGCd8yp; Wed, 19 May 2021 16:43:29 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4FlbG775dWz9sWQ;
- Wed, 19 May 2021 16:43:27 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4FlbG92QRyz9sWQ;
+ Wed, 19 May 2021 16:43:29 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D33C18B7F5;
- Wed, 19 May 2021 16:43:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1763F8B7F5;
+ Wed, 19 May 2021 16:43:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id t4ptb7JajGFM; Wed, 19 May 2021 16:43:27 +0200 (CEST)
+ with ESMTP id 9uqlt0qv50it; Wed, 19 May 2021 16:43:29 +0200 (CEST)
 Received: from po15610vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F7358B7E0;
- Wed, 19 May 2021 16:43:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8EC838B7E0;
+ Wed, 19 May 2021 16:43:28 +0200 (CEST)
 Received: by po15610vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6B49E64C3A; Wed, 19 May 2021 14:43:27 +0000 (UTC)
-Message-Id: <cover.1621435024.git.christophe.leroy@csgroup.eu>
+ id 6CAE564C3A; Wed, 19 May 2021 14:43:28 +0000 (UTC)
+Message-Id: <0320e5b41a794fd456ab8c5993bbfadcf9e1d8b4.1621435024.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1621435024.git.christophe.leroy@csgroup.eu>
+References: <cover.1621435024.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 00/12] Cleanup use of 'struct ppc_inst'
+Subject: [PATCH v1 01/12] powerpc/inst: Fix sparse detection on
+ get_user_instr()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  naveen.n.rao@linux.vnet.ibm.com, jniethe5@gmail.com
-Date: Wed, 19 May 2021 14:43:27 +0000 (UTC)
+Date: Wed, 19 May 2021 14:43:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,59 +77,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series is a cleanup of the use of 'struct ppc_inst'.
+get_user_instr() lacks sparse detection for the __user tag.
 
-A confusion is made between internal representation of powerpc
-instructions with 'struct ppc_inst' and in-memory code which is
-and will always be an array of 'unsigned int'.
+This is because __gui_ptr is assigned with a cast.
 
-This series cleans it up.
+Fix that by adding a __chk_user_ptr()
 
-First patch is fixing detection of missing '__user' flag by sparse
-when using get_user_instr().
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/inst.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Last part of the series does some source code cleanup in
-optprobes, it is put at the ends of this series because of
-clashes with the 'struct ppc_inst' cleanups.
-
-Christophe Leroy (12):
-  powerpc/inst: Fix sparse detection on get_user_instr()
-  powerpc/inst: Reduce casts in get_user_instr()
-  powerpc/inst: Improve readability of get_user_instr() and friends
-  powerpc/inst: Avoid pointer dereferencing in ppc_inst_equal()
-  powerpc: Do not dereference code as 'struct ppc_inst' (uprobe,
-    code-patching, feature-fixups)
-  powerpc/lib/code-patching: Make instr_is_branch_to_addr() static
-  powerpc/lib/code-patching: Don't use struct 'ppc_inst' for runnable
-    code in tests.
-  powerpc: Don't use 'struct ppc_inst' to reference instruction location
-  powerpc/inst: Refactor PPC32 and PPC64 versions
-  powerpc/optprobes: Minimise casts
-  powerpc/optprobes: Compact code source a bit.
-  powerpc/optprobes: use PPC_RAW_ macros
-
- arch/powerpc/include/asm/code-patching.h  |  23 ++-
- arch/powerpc/include/asm/inst.h           |  95 +++++--------
- arch/powerpc/include/asm/ppc-opcode.h     |  11 +-
- arch/powerpc/include/asm/uprobes.h        |   4 +-
- arch/powerpc/kernel/crash_dump.c          |   4 +-
- arch/powerpc/kernel/epapr_paravirt.c      |   4 +-
- arch/powerpc/kernel/jump_label.c          |   2 +-
- arch/powerpc/kernel/kgdb.c                |   6 +-
- arch/powerpc/kernel/kprobes.c             |  17 ++-
- arch/powerpc/kernel/mce_power.c           |   2 +-
- arch/powerpc/kernel/optprobes.c           | 124 +++++-----------
- arch/powerpc/kernel/setup_32.c            |   2 +-
- arch/powerpc/kernel/trace/ftrace.c        |  26 ++--
- arch/powerpc/kernel/uprobes.c             |   6 +-
- arch/powerpc/lib/code-patching.c          | 165 ++++++++++++----------
- arch/powerpc/lib/feature-fixups.c         |  98 ++++++-------
- arch/powerpc/perf/core-book3s.c           |   4 +-
- arch/powerpc/platforms/86xx/mpc86xx_smp.c |   2 +-
- arch/powerpc/platforms/powermac/smp.c     |   4 +-
- arch/powerpc/xmon/xmon.c                  |  10 +-
- 20 files changed, 274 insertions(+), 335 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 268d3bd073c8..887ef150fdda 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -12,6 +12,8 @@
+ 	unsigned long __gui_ptr = (unsigned long)ptr;			\
+ 	struct ppc_inst __gui_inst;					\
+ 	unsigned int __prefix, __suffix;				\
++									\
++	__chk_user_ptr(ptr);						\
+ 	__gui_ret = gu_op(__prefix, (unsigned int __user *)__gui_ptr);	\
+ 	if (__gui_ret == 0) {						\
+ 		if ((__prefix >> 26) == OP_PREFIX) {			\
+@@ -29,7 +31,10 @@
+ })
+ #else /* !CONFIG_PPC64 */
+ #define ___get_user_instr(gu_op, dest, ptr)				\
+-	gu_op((dest).val, (u32 __user *)(ptr))
++({									\
++	__chk_user_ptr(ptr);						\
++	gu_op((dest).val, (u32 __user *)(ptr));				\
++})
+ #endif /* CONFIG_PPC64 */
+ 
+ #define get_user_instr(x, ptr) \
 -- 
 2.25.0
 
