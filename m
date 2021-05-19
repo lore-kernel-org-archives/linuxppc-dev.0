@@ -2,96 +2,61 @@ Return-Path: <SRS0=tyeE=KO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B32AC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:01:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F396C43460
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:10:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED47261007
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:01:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED47261007
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C3D296135A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 19:10:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3D296135A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlhzH3dC0z30FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 05:00:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FljBS3Yb9z306G
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 05:10:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=TKwRdnu4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hfEtSjjj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033;
- helo=mail-pj1-x1033.google.com; envelope-from=f.fainelli@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=TKwRdnu4; dkim-atps=neutral
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com
- [IPv6:2607:f8b0:4864:20::1033])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=hfEtSjjj; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FlhyP1lC6z3074
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:00:12 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id
- ne24-20020a17090b3758b029015f2dafecb0so2753838pjb.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 12:00:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=bliAyPcCTKuHaZYRIw5XXZxaaB4NHvg1JF88TNVLe3Q=;
- b=TKwRdnu4+Sp1YkQdeC//ZaZe5gFK1OBbc6fiWqiSSxtaemxo8tsS6cyyKonvkggi45
- AkmXBkDwPjivTxMkW/6u87n74jtYP0vz5yoiKDWAMEYfh+QJdqbXNMoLboJ95qsaB+Sz
- evhXDQC1zkb888kY45tuzx3cOkf8aRLE0tysepxM3+bqwCkk54R2Q027+/7CcS0ORj65
- 6mx2ltgEPNZ+I2TPARzQB2NU/eRypDG4kJedWyyBabBiqBkk+XEYxHjO+wV8NZqkj5Xb
- Wiz3FWUYSWAt8nsw3SelNmNlkX4sXNF7RuifyB1BY+CyHdw4EnNC9bgPveVhRQQuluiO
- dhqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=bliAyPcCTKuHaZYRIw5XXZxaaB4NHvg1JF88TNVLe3Q=;
- b=QoWIZ8LhBXWkRNNZBADNcguTOMlBK9jghM2oiGbDgul0mTeJGpJo6nres9FH1vl9P9
- AUKWodNTXSVGsPGEVSx6YzwXAPL7yBwg8/Toar/jsQyAoRfGTrZ94x3BUx5JVP6aO43q
- qAIy1qd6aBLMUGyXqCR5f7J8n54PH9lfpHyo+Y90jNtcrXnWWmzwr6+m4nBdfD/qCq0e
- DGiBV4fW8yDIptwIkga+XVnxLN1+SP3rkl0KLguvy3OKpK+NAJQI9e3z+Yu8U5q4fw1W
- sdA0IYSPveR44jGsZwnbxFpEQM22pu2KDE2au/XFyFq6Ap0Q4CaliUa4wyROwelEZn8k
- Rg6Q==
-X-Gm-Message-State: AOAM533CGU9kOMAj/8PEV/Pn8OLZkYCKiUB9MjA+Gh4T4TeRoI8e6oLM
- QX8XVYbjq/4byKN7B2O//8Y=
-X-Google-Smtp-Source: ABdhPJzSFi5vywroBZ7tSNHRQs1V9GPTz+dOSZzWMkXvwkz7CoWyRh73gQHWXYp/m+DT8rff9721jw==
-X-Received: by 2002:a17:903:10a:b029:f4:109c:dc08 with SMTP id
- y10-20020a170903010ab02900f4109cdc08mr1027246plc.10.1621450810600; 
- Wed, 19 May 2021 12:00:10 -0700 (PDT)
-Received: from [10.230.29.202] ([192.19.223.252])
- by smtp.gmail.com with ESMTPSA id y26sm89076pge.94.2021.05.19.12.00.04
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 19 May 2021 12:00:09 -0700 (PDT)
-Subject: Re: [PATCH v7 03/15] swiotlb: Add DMA_RESTRICTED_POOL
-To: Claire Chang <tientzu@chromium.org>, Rob Herring <robh+dt@kernel.org>,
- mpe@ellerman.id.au, Joerg Roedel <joro@8bytes.org>,
- Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
- jgross@suse.com, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20210518064215.2856977-1-tientzu@chromium.org>
- <20210518064215.2856977-4-tientzu@chromium.org>
-From: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <d9975ce8-7ae9-2ece-a1c5-a16d0aed8143@gmail.com>
-Date: Wed, 19 May 2021 12:00:03 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Firefox/78.0 Thunderbird/78.10.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Flj9x0BXQz2xtn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:10:12 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id D5D3F6108D;
+ Wed, 19 May 2021 19:10:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1621451409;
+ bh=mgLUY+f2akZHJbZWL/mYxBrxRzaLsj4xwqxjtQgeUMk=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=hfEtSjjjmkJ8yflpHTJVxTH6R+xYqyELxRzaUHLUy8xxXrzlRrwxitY81IsbE39jb
+ zDFYb6RTO/xURpftxACtBg/n1BrwHAj4Gv6HBNKrf2MACsTgDQ9cw7ATcWVmG7xav5
+ UyzPcKl7sckLAV3cm8tki/TFQgn80Ra2SO1Ub4QOz0PD2uhW7TGnJlFE+xd0C6pDpY
+ ujHKc5q0c7HVCwTJsQuiAuFH/uqwtYVNRX1ObFxzs91ocZ/ruLCcW3VYVBlx+151Rl
+ jV+Y6egSeSWtjJ6vWojTbxmvWj6KtrdV3vUSB+k+6PUXwKgvPnFMnMMMFafsZUt7rH
+ gMQdGdzmSwrfA==
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20210518064215.2856977-4-tientzu@chromium.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH net-next] ibmveth: fix kobj_to_dev.cocci warnings
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <162145140980.13987.12676480557847918732.git-patchwork-notify@kernel.org>
+Date: Wed, 19 May 2021 19:10:09 +0000
+References: <20210519022849.12752-1-yuehaibing@huawei.com>
+In-Reply-To: <20210519022849.12752-1-yuehaibing@huawei.com>
+To: YueHaibing <yuehaibing@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,37 +68,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
- sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
- xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
- bhelgaas@google.com, Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: cforno12@linux.ibm.com, dwilder@us.ibm.com, linux-kernel@vger.kernel.org,
+ paulus@samba.org, netdev@vger.kernel.org, kuba@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello:
 
+This patch was applied to netdev/net-next.git (refs/heads/master):
 
-On 5/17/2021 11:42 PM, Claire Chang wrote:
-> Add a new kconfig symbol, DMA_RESTRICTED_POOL, for restricted DMA pool.
+On Wed, 19 May 2021 10:28:49 +0800 you wrote:
+> Use kobj_to_dev() instead of container_of()
 > 
-> Signed-off-by: Claire Chang <tientzu@chromium.org>
+> Generated by: scripts/coccinelle/api/kobj_to_dev.cocci
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+>  drivers/net/ethernet/ibm/ibmveth.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
--- 
-Florian
+Here is the summary with links:
+  - [net-next] ibmveth: fix kobj_to_dev.cocci warnings
+    https://git.kernel.org/netdev/net-next/c/1756055de284
+
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
