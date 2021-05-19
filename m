@@ -2,86 +2,90 @@ Return-Path: <SRS0=tyeE=KO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E53F0C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 07:56:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A797DC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 07:57:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9158561363
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 07:56:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9158561363
+	by mail.kernel.org (Postfix) with ESMTPS id 380D861364
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 07:57:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 380D861364
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlQDJ2KKBz3btl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 17:56:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlQFy5vPKz3bv2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 17:57:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=NyS2LXGA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=OR0eliZr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030;
- helo=mail-pj1-x1030.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b;
+ helo=mail-pj1-x102b.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=NyS2LXGA; dkim-atps=neutral
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
- [IPv6:2607:f8b0:4864:20::1030])
+ header.s=20161025 header.b=OR0eliZr; dkim-atps=neutral
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com
+ [IPv6:2607:f8b0:4864:20::102b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FlQCm5CJ6z2xZN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 17:55:47 +1000 (AEST)
-Received: by mail-pj1-x1030.google.com with SMTP id
- b9-20020a17090a9909b029015cf9effaeaso3038952pjp.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 00:55:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlQFS73fvz2xYt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 17:57:16 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id
+ j6-20020a17090adc86b02900cbfe6f2c96so3000704pjv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 00:57:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :message-id:content-transfer-encoding;
- bh=GmmNZdO9FoNP+URm8CVNoqZEAE+6NAUH5yKD/2Xach0=;
- b=NyS2LXGAiHslbRFa3JaBrL6GdYzEAePCOhxgssi2OqhPB9zLNDzxhhdeGmTmPBYmuY
- DILDDwQ82iet2ZqLY6EjMRf7yeLuW4RAtIDgB6fwJoROLEt8NoCktz98mycuYD9yjEW+
- 1DOLY8avYf9lRpAfzZUVsTAnUmSVcp6YkDRcc5FtrU+gpkaX6vERiE+sPOL8yLbR6cm6
- D4f6Gu8f1H48fjgcCaVXOBI2XKl0tSHap1ewqmumUz0Un8j68P8RSOVp0Ib+C2/2DZ4/
- +cBjE0r2BnGnGvAoYzJIF/NS7j0WUmNdycOdY/+bq6vWJFfV5eurfucDM/4B+UN97kOx
- Pzew==
+ bh=KhG7DdiIupXeHhCtT3OzrIBr8xIgzyTCtv60R9AOj28=;
+ b=OR0eliZr0wy/juooXT/WN9fNlZ1v+u38YQwZuxS0rVatYjKFsRf9/Lz33Y15Tvki+D
+ 0YhA0mtJF8GYUcmnT4LflZv06fK+up0uZrCxcXfsRySFKMfkwR3nNHd40WNXYzGq1gVS
+ Y9ofSfBi2bvTI0nY/7PO0/js4np2UQlIdMWPwAO/e+oABp52H6GKs4eqk6+AEvfvYXCW
+ qo8mCljXrRnBN4yGKow6W3yT5lHJysfgy5YZOM8mKM2eVu7gnklYhMNmvzTQzBi1b4Ix
+ 0KBRJ/9A/NjqnSyEiOFSlUOuF8q9FejwqkwMUVMT9F9vwril5flxM4gH0RpKkhliduOZ
+ dB2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:message-id:content-transfer-encoding;
- bh=GmmNZdO9FoNP+URm8CVNoqZEAE+6NAUH5yKD/2Xach0=;
- b=q7kQ1vctfLJOkDm8T+75DOyzRvpy7DHto7lJxcg+5bUauean+ZBv2hpbr0ipo2xxmI
- CUdNiUBxgIsOY5mNPkAkimdf4rWg2+xrcOkXNl8bK80yiy8/Fep0Few6tjXlcyZmr8NF
- NVpxWKKfbzzAt3C7GU5alMqPeGXOoXtT8/J1lp1JQXhz6F7Dn3Dhrv+O6vYmOGk/Dflj
- FPTKGTrRTPIpUEHpD8G04Pf+V4rD5wepmSvM89Lz6udEfqU3VvgCB7ymTD4xD/svjkxm
- b2T6YH8VwinMfQlpQ/KeNyXRPM+FEZ++6O5XCj1WacNSqJf+fFl4+qqHp4JFtSMwbQEn
- UjAw==
-X-Gm-Message-State: AOAM531nVlO4MAb8rBFl4Mbp9QG+vYQ8EGA9tVuza/w30rUSr4GC04mK
- Z4crxHfMELFPoiyOcjQH95s=
-X-Google-Smtp-Source: ABdhPJyxixB1OI/aDHOrXuCSWxO1sTnVnOdgtw1LfeEEZG1X/SV2T9BzrHfTlNyK4EM1OAwePFLTdA==
-X-Received: by 2002:a17:903:20cc:b029:f0:cc11:51c2 with SMTP id
- i12-20020a17090320ccb02900f0cc1151c2mr9571799plb.32.1621410941336; 
- Wed, 19 May 2021 00:55:41 -0700 (PDT)
+ bh=KhG7DdiIupXeHhCtT3OzrIBr8xIgzyTCtv60R9AOj28=;
+ b=r3FuAbil7fvDQNAk62JuICzuElblqLM3iAdb3F3rabScDgx/vFVGWOwT9I/snMa7AP
+ tdNF2KENyTB942tCXh/r76+SPHOT8K2Hi0S0Y5bGTDqk26DM/++53Oit5qnof/uHE/Og
+ JWYy9jREZMfR1iAjy6A4LtlkxWBr+uNhDTOZ/imzrv2j3d4xRRaMRHdBcB4Eo2GxBZ1o
+ VgkVqW5V4VS6EFrY37FAkJ74w9Xqbvz3xEx3nFH3e1CXM2NOcoB4znxh4SM5Rr4uZLZd
+ j1cSD2zFLJU5A6d/h2euwhTtTP1lmVcSpkY8VvDcGNUQjEL3uqLRlL+d5p6tvuCdxpeE
+ wPqw==
+X-Gm-Message-State: AOAM532YilrWy4bt2cx1ByUioMBqUdwa5y31/vZ4kMi5uccSa1BeNvtd
+ 7EAp8SLzfoWAuvQMZwkQ/OA=
+X-Google-Smtp-Source: ABdhPJwodw2G3AahH5x15v3WvTxAdf5SvVJDcjC0WYbwBARN1Msn6qODLQ/HYJ6/ayY/vCex5tJS2Q==
+X-Received: by 2002:a17:902:e04f:b029:eb:66b0:6d08 with SMTP id
+ x15-20020a170902e04fb02900eb66b06d08mr9485408plx.50.1621411033621; 
+ Wed, 19 May 2021 00:57:13 -0700 (PDT)
 Received: from localhost (14-201-155-8.tpgi.com.au. [14.201.155.8])
- by smtp.gmail.com with ESMTPSA id c191sm5878014pfc.94.2021.05.19.00.55.40
+ by smtp.gmail.com with ESMTPSA id n20sm14926827pjq.45.2021.05.19.00.57.12
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 19 May 2021 00:55:40 -0700 (PDT)
-Date: Wed, 19 May 2021 17:55:35 +1000
+ Wed, 19 May 2021 00:57:13 -0700 (PDT)
+Date: Wed, 19 May 2021 17:57:08 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: Linux powerpc new system call instruction and ABI
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>, "ldv@altlinux.org"
- <ldv@altlinux.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-References: <20200611081203.995112-1-npiggin@gmail.com>
- <20210518231331.GA8464@altlinux.org>
- <9b5ea7059c5a5d4e9ccccd7d73ce2c66b2203f52.camel@infinera.com>
-In-Reply-To: <9b5ea7059c5a5d4e9ccccd7d73ce2c66b2203f52.camel@infinera.com>
+Subject: Re: [FSL P50x0] KVM HV doesn't work anymore
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Christian Zigotzky
+ <chzigotzky@xenosoft.de>, "kvm-ppc@vger.kernel.org"
+ <kvm-ppc@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <04526309-4653-3349-b6de-e7640c2258d6@xenosoft.de>
+ <34617b1b-e213-668b-05f6-6fce7b549bf0@xenosoft.de>
+ <9af2c1c9-2caf-120b-2f97-c7722274eee3@csgroup.eu>
+ <199da427-9511-34fe-1a9e-08e24995ea85@xenosoft.de>
+ <1621236734.xfc1uw04eb.astroid@bobo.none>
+ <e6ed7674-3df9-ec3e-8bcf-dcd8ff0fecf8@xenosoft.de>
+In-Reply-To: <e6ed7674-3df9-ec3e-8bcf-dcd8ff0fecf8@xenosoft.de>
 MIME-Version: 1.0
-Message-Id: <1621410291.c7si38sa9q.astroid@bobo.none>
+Message-Id: <1621410977.cgh0d6nvlo.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,35 +99,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
- "musl@lists.openwall.com" <musl@lists.openwall.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Joakim Tjernlund's message of May 19, 2021 5:33 pm:
-> On Wed, 2021-05-19 at 02:13 +0300, Dmitry V. Levin wrote:
->> Hi,
->>=20
->> On Thu, Jun 11, 2020 at 06:12:01PM +1000, Nicholas Piggin wrote:
->> [...]
->> > - Error handling: The consensus among kernel, glibc, and musl is to mo=
-ve to
->> > =C2=A0=C2=A0using negative return values in r3 rather than CR0[SO]=3D1=
- to indicate error,
->> > =C2=A0=C2=A0which matches most other architectures, and is closer to a=
- function call.
+Excerpts from Christian Zigotzky's message of May 17, 2021 7:42 pm:
+> On 17 May 2021 at 09:42am, Nicholas Piggin wrote:
+>> Excerpts from Christian Zigotzky's message of May 15, 2021 11:46 pm:
+>>> On 15 May 2021 at 12:08pm Christophe Leroy wrote:
+>>>>
+>>>> Le 15/05/2021 =C3=A0 11:48, Christian Zigotzky a =C3=A9crit=C2=A0:
+>>>>> Hi All,
+>>>>>
+>>>>> I bisected today [1] and the bisecting itself was OK but the
+>>>>> reverting of the bad commit doesn't solve the issue. Do you have an
+>>>>> idea which commit could be resposible for this issue? Maybe the
+>>>>> bisecting wasn't successful. I will look in the kernel git log. Maybe
+>>>>> there is a commit that affected KVM HV on FSL P50x0 machines.
+>>>> If the uImage doesn't load, it may be because of the size of uImage.
+>>>>
+>>>> See https://github.com/linuxppc/issues/issues/208
+>>>>
+>>>> Is there a significant size difference with and without KVM HV ?
+>>>>
+>>>> Maybe you can try to remove another option to reduce the size of the
+>>>> uImage.
+>>> I tried it but it doesn't solve the issue. The uImage works without KVM
+>>> HV in a virtual e5500 QEMU machine.
+>> Any more progress with this? I would say that bisect might have just
+>> been a bit unstable and maybe by chance some things did not crash so
+>> it's pointing to the wrong patch.
+>>
+>> Upstream merge of powerpc-5.13-1 was good and powerpc-5.13-2 was bad?
+>>
+>> Between that looks like some KVM MMU rework. You could try the patch
+>> before this one b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU
+>> notifier callbacks"). That won't revert cleanly so just try run the
+>> tree at that point. If it works, test the patch and see if it fails.
+>>
+>> Thanks,
+>> Nick
+> Hi Nick,
 >=20
-> What about syscalls like times(2) which can return -1 without it being an=
- error?
+> Thanks a lot for your answer. Yes, there is a little bit of progress.=20
+> The RC2 of kernel 5.13 successfully boots with -smp 3 in a virtual e5500=20
+> QEMU machine.
+> -smp 4 doesn't work anymore since the PowerPC updates 5.13-2. I used=20
+> -smp 4 before 5.13 because my FSL P5040 machine has 4 cores.
+>=20
+> Could you please post a patch for reverting the commit before=20
+> b1c5356e873c ("KVM: PPC: Convert to the gfn-based MMU notifier callbacks"=
+)?
 
-They do become errors / indistinguishable and have to be dealt with by=20
-libc or userspace. Which does follow what most architectures do (all=20
-except ia64, mips, sparc, and powerpc actually).
-
-Interesting question though, it should have been noted.
+You could `git checkout b1c5356e873c~1`
 
 Thanks,
 Nick
+>=20
