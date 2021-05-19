@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BBBEC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67CA7C43460
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:47:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 210D360FDB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:47:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 210D360FDB
+	by mail.kernel.org (Postfix) with ESMTPS id 0D4C460FDB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:47:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D4C460FDB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlbLF65lDz3dcQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:47:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlbLb5WFLz3dhl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:47:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,39 +27,39 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FlbH35x3Pz3bvk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:44:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlbH81lBxz3c08
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:44:20 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4FlbGL1wbPz9sWc;
- Wed, 19 May 2021 16:43:38 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4FlbGM3W42z9sX6;
+ Wed, 19 May 2021 16:43:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hZXD86HLABre; Wed, 19 May 2021 16:43:38 +0200 (CEST)
+ with ESMTP id Ay4mlZa3r2pw; Wed, 19 May 2021 16:43:39 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4FlbGK34tXz9sWf;
- Wed, 19 May 2021 16:43:37 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4FlbGL2Zf9z9sWf;
+ Wed, 19 May 2021 16:43:38 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4CA458B7FC;
- Wed, 19 May 2021 16:43:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3F5568B7F5;
+ Wed, 19 May 2021 16:43:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 84IlX600yT9j; Wed, 19 May 2021 16:43:37 +0200 (CEST)
+ with ESMTP id 0YMn1Rwtryah; Wed, 19 May 2021 16:43:38 +0200 (CEST)
 Received: from po15610vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E391B8B7E0;
- Wed, 19 May 2021 16:43:36 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E95008B7E0;
+ Wed, 19 May 2021 16:43:37 +0200 (CEST)
 Received: by po15610vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BED6064C3A; Wed, 19 May 2021 14:43:36 +0000 (UTC)
-Message-Id: <f395c2e790564d351a9829e84bc9c31fab75378c.1621435024.git.christophe.leroy@csgroup.eu>
+ id C4C0164C3A; Wed, 19 May 2021 14:43:37 +0000 (UTC)
+Message-Id: <fbd8a6e6f44366cd005efa45839ebad381b8d8d7.1621435024.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1621435024.git.christophe.leroy@csgroup.eu>
 References: <cover.1621435024.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 09/12] powerpc/inst: Refactor PPC32 and PPC64 versions
+Subject: [PATCH v1 10/12] powerpc/optprobes: Minimise casts
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  naveen.n.rao@linux.vnet.ibm.com, jniethe5@gmail.com
-Date: Wed, 19 May 2021 14:43:36 +0000 (UTC)
+Date: Wed, 19 May 2021 14:43:37 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,99 +76,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ppc_inst() ppc_inst_prefixed() ppc_inst_swab() can easily
-be made common to both PPC32 and PPC64.
+nip is already an unsigned long, no cast needed.
+
+op_callback_addr and emulate_step_addr are kprobe_opcode_t *.
+There value is obtained with ppc_kallsyms_lookup_name() which
+returns 'unsigned long', and there values are used create_branch()
+which expects 'unsigned long'. So change them to 'unsigned long'
+to avoid casting them back and forth.
+
+can_optimize() used p->addr several times as 'unsigned long'.
+Use a local 'unsigned long' variable and avoid casting multiple times.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/inst.h | 49 +++++++++------------------------
- 1 file changed, 13 insertions(+), 36 deletions(-)
+ arch/powerpc/kernel/optprobes.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index 9f3513621766..3d4286809cfd 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -61,9 +61,9 @@ static inline int ppc_inst_primary_opcode(struct ppc_inst x)
- 	return get_op(ppc_inst_val(x));
- }
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index adaf31157f6d..8c08ca15faf3 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -66,6 +66,7 @@ static unsigned long can_optimize(struct kprobe *p)
+ 	struct pt_regs regs;
+ 	struct instruction_op op;
+ 	unsigned long nip = 0;
++	unsigned long addr = (unsigned long)p->addr;
  
--#ifdef CONFIG_PPC64
- #define ppc_inst(x) ((struct ppc_inst){ .val = (x) })
+ 	/*
+ 	 * kprobe placed for kretprobe during boot time
+@@ -73,7 +74,7 @@ static unsigned long can_optimize(struct kprobe *p)
+ 	 * So further checks can be skipped.
+ 	 */
+ 	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
+-		return (unsigned long)p->addr + sizeof(kprobe_opcode_t);
++		return addr + sizeof(kprobe_opcode_t);
  
-+#ifdef CONFIG_PPC64
- #define ppc_inst_prefix(x, y) ((struct ppc_inst){ .val = (x), .suffix = (y) })
+ 	/*
+ 	 * We only support optimizing kernel addresses, but not
+@@ -81,11 +82,11 @@ static unsigned long can_optimize(struct kprobe *p)
+ 	 *
+ 	 * FIXME: Optimize kprobes placed in module addresses.
+ 	 */
+-	if (!is_kernel_addr((unsigned long)p->addr))
++	if (!is_kernel_addr(addr))
+ 		return 0;
  
- static inline u32 ppc_inst_suffix(struct ppc_inst x)
-@@ -71,57 +71,34 @@ static inline u32 ppc_inst_suffix(struct ppc_inst x)
- 	return x.suffix;
- }
+ 	memset(&regs, 0, sizeof(struct pt_regs));
+-	regs.nip = (unsigned long)p->addr;
++	regs.nip = addr;
+ 	regs.trap = 0x0;
+ 	regs.msr = MSR_KERNEL;
  
--static inline bool ppc_inst_prefixed(struct ppc_inst x)
--{
--	return ppc_inst_primary_opcode(x) == OP_PREFIX;
--}
-+#else
-+#define ppc_inst_prefix(x, y) ppc_inst(x)
- 
--static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
-+static inline u32 ppc_inst_suffix(struct ppc_inst x)
+@@ -195,7 +196,8 @@ static void patch_imm_load_insns(unsigned long val, int reg, kprobe_opcode_t *ad
+ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
  {
--	return ppc_inst_prefix(swab32(ppc_inst_val(x)), swab32(ppc_inst_suffix(x)));
-+	return 0;
- }
+ 	struct ppc_inst branch_op_callback, branch_emulate_step, temp;
+-	kprobe_opcode_t *op_callback_addr, *emulate_step_addr, *buff;
++	unsigned long op_callback_addr, emulate_step_addr;
++	kprobe_opcode_t *buff;
+ 	long b_offset;
+ 	unsigned long nip, size;
+ 	int rc, i;
+@@ -225,8 +227,7 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+ 		goto error;
  
-+#endif /* CONFIG_PPC64 */
-+
- static inline struct ppc_inst ppc_inst_read(const unsigned int *ptr)
- {
--	u32 val, suffix;
--
--	val = *ptr;
--	if (get_op(val) == OP_PREFIX) {
--		suffix = *(ptr + 1);
--		return ppc_inst_prefix(val, suffix);
--	} else {
--		return ppc_inst(val);
--	}
-+	if (IS_ENABLED(CONFIG_PPC64) && get_op(*ptr) == OP_PREFIX)
-+		return ppc_inst_prefix(*ptr, *(ptr + 1));
-+	else
-+		return ppc_inst(*ptr);
- }
+ 	/* Check if the return address is also within 32MB range */
+-	b_offset = (unsigned long)(buff + TMPL_RET_IDX) -
+-			(unsigned long)nip;
++	b_offset = (unsigned long)(buff + TMPL_RET_IDX) - nip;
+ 	if (!is_offset_in_branch_range(b_offset))
+ 		goto error;
  
--#else
--
--#define ppc_inst(x) ((struct ppc_inst){ .val = x })
--
--#define ppc_inst_prefix(x, y) ppc_inst(x)
--
- static inline bool ppc_inst_prefixed(struct ppc_inst x)
- {
--	return false;
--}
--
--static inline u32 ppc_inst_suffix(struct ppc_inst x)
--{
--	return 0;
-+	return IS_ENABLED(CONFIG_PPC64) && ppc_inst_primary_opcode(x) == OP_PREFIX;
- }
+@@ -249,20 +250,18 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+ 	/*
+ 	 * 2. branch to optimized_callback() and emulate_step()
+ 	 */
+-	op_callback_addr = (kprobe_opcode_t *)ppc_kallsyms_lookup_name("optimized_callback");
+-	emulate_step_addr = (kprobe_opcode_t *)ppc_kallsyms_lookup_name("emulate_step");
++	op_callback_addr = ppc_kallsyms_lookup_name("optimized_callback");
++	emulate_step_addr = ppc_kallsyms_lookup_name("emulate_step");
+ 	if (!op_callback_addr || !emulate_step_addr) {
+ 		WARN(1, "Unable to lookup optimized_callback()/emulate_step()\n");
+ 		goto error;
+ 	}
  
- static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
- {
--	return ppc_inst(swab32(ppc_inst_val(x)));
--}
--
--static inline struct ppc_inst ppc_inst_read(const unsigned int *ptr)
--{
--	return ppc_inst(*ptr);
-+	return ppc_inst_prefix(swab32(ppc_inst_val(x)), swab32(ppc_inst_suffix(x)));
- }
+ 	rc = create_branch(&branch_op_callback, buff + TMPL_CALL_HDLR_IDX,
+-			   (unsigned long)op_callback_addr,
+-			   BRANCH_SET_LINK);
++			   op_callback_addr, BRANCH_SET_LINK);
  
--#endif /* CONFIG_PPC64 */
--
- static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
- {
- 	if (ppc_inst_val(x) != ppc_inst_val(y))
+ 	rc |= create_branch(&branch_emulate_step, buff + TMPL_EMULATE_IDX,
+-			    (unsigned long)emulate_step_addr,
+-			    BRANCH_SET_LINK);
++			    emulate_step_addr, BRANCH_SET_LINK);
+ 
+ 	if (rc)
+ 		goto error;
 -- 
 2.25.0
 
