@@ -2,59 +2,91 @@ Return-Path: <SRS0=tyeE=KO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF43C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 12:09:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99A66C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 12:48:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC3076109F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 12:09:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC3076109F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id F13E0611BF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 12:48:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F13E0611BF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ascii.art.br
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlWrp4RM9z3c2g
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 22:09:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlXjl5Pcyz305q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 22:48:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4FlWrP38QCz2yxB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 22:09:24 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 14JC39Wa013687;
- Wed, 19 May 2021 07:03:09 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 14JC36gU013684;
- Wed, 19 May 2021 07:03:06 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Wed, 19 May 2021 07:03:06 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 5/9] powerpc/mm/book3s64: Update tlb flush routines to
- take a page walk cache flush argument
-Message-ID: <20210519120306.GD10366@gate.crashing.org>
-References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
- <20210422054323.150993-6-aneesh.kumar@linux.ibm.com>
- <20210515163525.GA1106462@roeck-us.net>
- <e0eba73a-c2df-71c3-e03d-d4074d908fca@linux.ibm.com>
- <d830fce9-c00a-e879-4115-94a2346a806f@roeck-us.net>
- <87pmxpqxb1.fsf@linux.ibm.com>
- <a7dd34f3-7d79-c933-fb62-eaad5c83d37a@roeck-us.net>
- <87a6ork1qp.fsf@mpe.ellerman.id.au>
- <20210519004514.GC10366@gate.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210519004514.GC10366@gate.crashing.org>
-User-Agent: Mutt/1.4.2.3i
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ascii.art.br header.i=@ascii.art.br header.a=rsa-sha1 header.s=ascii.art.br header.b=TI2OTUkb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=ascii.art.br (client-ip=23.83.212.17;
+ helo=bird.elm.relay.mailchannels.net; envelope-from=tuliom@ascii.art.br;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=ascii.art.br header.i=@ascii.art.br header.a=rsa-sha1
+ header.s=ascii.art.br header.b=TI2OTUkb; 
+ dkim-atps=neutral
+Received: from bird.elm.relay.mailchannels.net
+ (bird.elm.relay.mailchannels.net [23.83.212.17])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlXj80tWDz2yRy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 22:48:09 +1000 (AEST)
+X-Sender-Id: dreamhost|x-authsender|tuliom@ascii.art.br
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+ by relay.mailchannels.net (Postfix) with ESMTP id D9342342272;
+ Wed, 19 May 2021 12:39:41 +0000 (UTC)
+Received: from pdx1-sub0-mail-a6.g.dreamhost.com
+ (100-96-16-62.trex.outbound.svc.cluster.local [100.96.16.62])
+ (Authenticated sender: dreamhost)
+ by relay.mailchannels.net (Postfix) with ESMTPA id 1BE5B34255C;
+ Wed, 19 May 2021 12:39:41 +0000 (UTC)
+X-Sender-Id: dreamhost|x-authsender|tuliom@ascii.art.br
+Received: from pdx1-sub0-mail-a6.g.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384)
+ by 100.96.16.62 (trex/6.2.1); Wed, 19 May 2021 12:39:41 +0000
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|tuliom@ascii.art.br
+X-MailChannels-Auth-Id: dreamhost
+X-Harmony-Bottle: 414366c233488d91_1621427981418_23098169
+X-MC-Loop-Signature: 1621427981418:425922509
+X-MC-Ingress-Time: 1621427981418
+Received: from pdx1-sub0-mail-a6.g.dreamhost.com (localhost [127.0.0.1])
+ by pdx1-sub0-mail-a6.g.dreamhost.com (Postfix) with ESMTP id D053587870;
+ Wed, 19 May 2021 05:39:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed; d=ascii.art.br; h=from:to:cc
+ :subject:in-reply-to:references:date:message-id:mime-version
+ :content-type; s=ascii.art.br; bh=Moiw1J8H3kFxYbF9Og3ijiVM3XY=; b=
+ TI2OTUkb2gOk2/7xGzALPcJAIQiK+aa2a2Xcsj0Ub7UyauxJc5A2N2962czBl/nX
+ QG18QIdDGFE1Wt5XFvq9ia/CnpPWTjl7a6Oyv2xAV9bE8m5JibK1tGCVCW1Igctb
+ dvmp2xy1ygBzlKUeZdXMk8VhoioaFduOrZvLhbSueI8=
+Received: from ascii.art.br (ip-131-161-4-75.isp.valenet.com.br [131.161.4.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ (Authenticated sender: tuliom@ascii.art.br)
+ by pdx1-sub0-mail-a6.g.dreamhost.com (Postfix) with ESMTPSA id 393D47FFC7;
+ Wed, 19 May 2021 05:39:37 -0700 (PDT)
+X-DH-BACKEND: pdx1-sub0-mail-a6
+From: Tulio Magno Quites Machado Filho <tuliom@ascii.art.br>
+To: Nicholas Piggin <npiggin@gmail.com>, "Dmitry V. Levin" <ldv@altlinux.org>
+Subject: Re: Linux powerpc new system call instruction and ABI
+In-Reply-To: <1621421721.r9fefebis8.astroid@bobo.none>
+References: <20200611081203.995112-1-npiggin@gmail.com>
+ <20210518231331.GA8464@altlinux.org>
+ <1621385544.nttlk5qugb.astroid@bobo.none>
+ <20210519102403.GA15207@altlinux.org>
+ <1621421721.r9fefebis8.astroid@bobo.none>
+User-Agent: Notmuch/0.31.3 (http://notmuchmail.org) Emacs/27.2
+ (x86_64-redhat-linux-gnu)
+Date: Wed, 19 May 2021 09:39:33 -0300
+Message-ID: <87r1i2kid6.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,40 +98,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- linux-mm@kvack.org, kaleshsingh@google.com, joel@joelfernandes.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+Cc: musl@lists.openwall.com, linuxppc-dev@lists.ozlabs.org,
+ libc-alpha@sourceware.org, libc-dev@lists.llvm.org, linux-api@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 18, 2021 at 07:45:14PM -0500, Segher Boessenkool wrote:
-> On Wed, May 19, 2021 at 10:26:22AM +1000, Michael Ellerman wrote:
-> > Guenter Roeck <linux@roeck-us.net> writes:
-> > > Ah, sorry. I wasn't aware that the following is valid C code
-> > >
-> > > void f1()
-> > > {
-> > >      return f2();
-> > >      ^^^^^^
-> > > }
-> > >
-> > > as long as f2() is void as well. Confusing, but we live and learn.
-> > 
-> > It might be valid, but it's still bad IMHO.
-> > 
-> > It's confusing to readers, and serves no useful purpose.
-> 
-> And it actually explicitly is undefined behaviour in C90 already
-> (3.6.6.4 in C90, 6.8.6.4 in C99 and later).
+Nicholas Piggin via Libc-alpha <libc-alpha@sourceware.org> writes:
 
-... but there is a GCC extension that allows this by default:
-<https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type>
-  For C only, warn about a 'return' statement with an expression in a
-  function whose return type is 'void', unless the expression type is
-  also 'void'.  As a GNU extension, the latter case is accepted
-  without a warning unless '-Wpedantic' is used.
+> As a more hacky thing you could make a syscall with -1 and see how
+> the error looks, and then assume all syscalls will be the same.
 
+I'm not sure this would work.
+Even in glibc, it's expected that early syscalls will use sc while scv is used
+later in the execution.
 
-Segher
+-- 
+Tulio Magno
