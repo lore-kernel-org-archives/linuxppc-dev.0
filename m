@@ -4,57 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB98AC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:27:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 583C7C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:42:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3ABC661355
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:27:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3ABC661355
+	by mail.kernel.org (Postfix) with ESMTPS id 731EC6105A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 May 2021 14:42:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 731EC6105A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FlZvg5yxpz303H
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:27:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FlbF05HwSz30C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 00:42:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
  (client-ip=63.228.1.57; helo=gate.crashing.org;
  envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4FlZvJ4cPgz2xg1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:27:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FlbDf0SSpz2yZ2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 00:42:09 +1000 (AEST)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 14JEKjJt024903;
- Wed, 19 May 2021 09:20:45 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 14JEceF1026439;
+ Wed, 19 May 2021 09:38:40 -0500
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 14JEKhmf024894;
- Wed, 19 May 2021 09:20:43 -0500
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 14JEcaGd026433;
+ Wed, 19 May 2021 09:38:36 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Wed, 19 May 2021 09:20:38 -0500
+Date: Wed, 19 May 2021 09:38:36 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 5/9] powerpc/mm/book3s64: Update tlb flush routines to
- take a page walk cache flush argument
-Message-ID: <20210519142038.GI10366@gate.crashing.org>
-References: <20210422054323.150993-6-aneesh.kumar@linux.ibm.com>
- <20210515163525.GA1106462@roeck-us.net>
- <e0eba73a-c2df-71c3-e03d-d4074d908fca@linux.ibm.com>
- <d830fce9-c00a-e879-4115-94a2346a806f@roeck-us.net>
- <87pmxpqxb1.fsf@linux.ibm.com>
- <a7dd34f3-7d79-c933-fb62-eaad5c83d37a@roeck-us.net>
- <87a6ork1qp.fsf@mpe.ellerman.id.au>
- <20210519004514.GC10366@gate.crashing.org>
- <20210519120306.GD10366@gate.crashing.org>
- <46cedc01-bca7-236d-9f74-a9cc24391512@roeck-us.net>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: Linux powerpc new system call instruction and ABI
+Message-ID: <20210519143836.GJ10366@gate.crashing.org>
+References: <20200611081203.995112-1-npiggin@gmail.com>
+ <20210518231331.GA8464@altlinux.org>
+ <9b5ea7059c5a5d4e9ccccd7d73ce2c66b2203f52.camel@infinera.com>
+ <1621410291.c7si38sa9q.astroid@bobo.none>
+ <fb9b6a6099855bd00efc6ffe540ccad14dd9a365.camel@infinera.com>
+ <1621413143.oec64jaci5.astroid@bobo.none>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46cedc01-bca7-236d-9f74-a9cc24391512@roeck-us.net>
+In-Reply-To: <1621413143.oec64jaci5.astroid@bobo.none>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,62 +62,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, kaleshsingh@google.com,
- joel@joelfernandes.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "musl@lists.openwall.com" <musl@lists.openwall.com>,
+ "ldv@altlinux.org" <ldv@altlinux.org>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
+ "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 19, 2021 at 06:37:44AM -0700, Guenter Roeck wrote:
-> On 5/19/21 5:03 AM, Segher Boessenkool wrote:
-> >On Tue, May 18, 2021 at 07:45:14PM -0500, Segher Boessenkool wrote:
-> >>And it actually explicitly is undefined behaviour in C90 already
-> >>(3.6.6.4 in C90, 6.8.6.4 in C99 and later).
-> >
-> >... but there is a GCC extension that allows this by default:
-> ><https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type>
-> >   For C only, warn about a 'return' statement with an expression in a
-> >   function whose return type is 'void', unless the expression type is
-> >   also 'void'.  As a GNU extension, the latter case is accepted
-> >   without a warning unless '-Wpedantic' is used.
+On Wed, May 19, 2021 at 06:42:40PM +1000, Nicholas Piggin wrote:
+> Excerpts from Joakim Tjernlund's message of May 19, 2021 6:08 pm:
+> > I always figured the ppc way was superior. It begs the question if not the other archs should
+> > change instead?
 > 
-> In C99:
-> 
-> "6.8.6.4 The return statement
-> Constraints
-> 
-> A return statement with an expression shall not appear in a function whose 
-> return type
-> is void. A return statement without an expression shall only appear in a 
-> function
-> whose return type is void."
-> 
-> Sounds like invalid to me, not just undefined behavior.
+> It is superior in some ways, not enough to be worth being different.
 
-I don't know what "invalid" would mean here other than UB, it isn't a
-specific defined term, unlike the latter, which is precisely defined in
-3.4.3/1:
-  undefined behavior
-  behavior, upon use of a nonportable or erroneous program construct or
-  of erroneous data, for which this International Standard imposes no
-  requirements
+The PowerPC syscall ABI *requires* using cr0.3 for indicating errors,
+you will have to do that whether you conflate the concepts of return
+code and error indicator or not!
 
-This is the strongest thing the standard can say, it is not Law, it does
-not prohibit anyone from doing anything :-)
+> Other archs are unlikely to change because it would be painful for
+> not much benefit.
 
-"Shall" and "shall not" X means it is undefined behaviour if X (or its
-inverse)  is violated.  See 4.2:
-  If a ''shall'' or ''shall not'' requirement that appears outside of a
-  constraint or runtime-constraint is violated, the behavior is
-  undefined.  Undefined behavior is otherwise indicated in this
-  International Standard by the words ''undefined behavior'' or by the
-  omission of any explicit definition of behavior.  There is no
-  difference in emphasis among these three; they all describe ''behavior
-  that is undefined''.
-which also explains that what you call "invalid" has undefined behaviour
-just as well, most likely.
+Other archs cannot easily change for much the same reason :-)
+
+> New system calls just should be made to not return
+> error numbers.
+
+Which sometimes is a difficult / non-natural / clumsy thing to do.
 
 
 Segher
