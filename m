@@ -2,87 +2,71 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24B3AC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:15:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B195C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:18:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C42A61186
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:14:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C42A61186
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id A65C361186
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:18:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A65C361186
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm7wL1kSdz3c0K
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:14:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=FwbLKM2K;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm80G1q28z3btv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:18:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::335;
- helo=mail-wm1-x335.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=FwbLKM2K; dkim-atps=neutral
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com
- [IPv6:2a00:1450:4864:20::335])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 488 seconds by postgrey-1.36 at boromir;
+ Thu, 20 May 2021 22:18:00 AEST
+Received: from smtpout1.mo529.mail-out.ovh.net
+ (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm7vY1wfwz3090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:14:16 +1000 (AEST)
-Received: by mail-wm1-x335.google.com with SMTP id
- l18-20020a1ced120000b029014c1adff1edso5277028wmh.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:14:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=63aR0ApZJ3bwroQWXqAaSkH9cV6NbSWgeKUqcgHI7+A=;
- b=FwbLKM2KkOv0flbvtj3nJnPuN0+A2r3yE/1kP07JVzwHo5CAewGS3FlOHT47wv+eje
- Ukb+qynmxWBL1JoL3mzRQiWF+x5dTlrdiwmyJ1CelSy6zUItrLRiDVyOfMFbL7uj7hon
- waxf4ZxdWSpAi2zOuJAXJ0NcgWVnl7PXa7AePVpn/y5ZdvWmSqVp1aflW3D9V9+i0Smu
- ALyRNqMW9E3jjT1z1bLSeRAlyh22qBbRn3ci9A+j298IVUCYzQo/vZEkvDm2KeUd0mX2
- lUWLleyUEqIDi8dwHDGlDdxoey80XmBjZKrw+PwTLvI1LP87RDpDU+HjgP8iSc/+8PBJ
- GPOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=63aR0ApZJ3bwroQWXqAaSkH9cV6NbSWgeKUqcgHI7+A=;
- b=kCRlnPjDKF9m05/UXB5vzXJJuerrGKal0/Dt+KJCZh2LwQkY3rYOWLU/9iJlMq4+4c
- H0kEXj9N5hNZZkZ7P0OcBbHfKMxyU5Peesx4byuyVB2my5AuMOJfGoDcWpCOjwACovzo
- iUu7cKXy9ZF5gQ1fNQnFcQqP3QwmbCyRSdy9V/vHfSyAiP9TiemFSrC9+o3TMguSI+IR
- 6bwcvLwsYGydERNA/nvjOR6obklR6sxU2jGw3xOieI21aarx6BMieuTWW5zx4YRSh/rT
- ZdPrdH7iFRMcfOrPzVR16Dqpgi4RDaCiASZQkk1ZKMw4dSxkuLERZZJZ4Cq8zZ8ThssB
- eBfw==
-X-Gm-Message-State: AOAM532EDyqGQQZmP30nVWFVyA1lR+2QdFfQG9ir9v0MMBsVdeXkNFyG
- HoSSpYeCVL0Wdm2YHsTbC9sNfA==
-X-Google-Smtp-Source: ABdhPJw1Fp+Jmjls9UkJh6YCn4HHFBXPq5pRCzpBsC65iVfftho44k60NMHVqYTzgP4lBPc3lSuE+g==
-X-Received: by 2002:a05:600c:410a:: with SMTP id
- j10mr3730747wmi.26.1621512853737; 
- Thu, 20 May 2021 05:14:13 -0700 (PDT)
-Received: from dell.default ([91.110.221.215])
- by smtp.gmail.com with ESMTPSA id 61sm3393704wrm.52.2021.05.20.05.14.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 20 May 2021 05:14:13 -0700 (PDT)
-From: Lee Jones <lee.jones@linaro.org>
-To: lee.jones@linaro.org
-Subject: [PATCH 15/16] char: hw_random: pseries-rng: Demote non-conformant
- kernel-doc header
-Date: Thu, 20 May 2021 13:13:46 +0100
-Message-Id: <20210520121347.3467794-16-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210520121347.3467794-1-lee.jones@linaro.org>
-References: <20210520121347.3467794-1-lee.jones@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm7zr32Mpz2xvG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:17:59 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.4.141])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 9CBFAA60B8ED;
+ Thu, 20 May 2021 14:09:43 +0200 (CEST)
+Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.10; Thu, 20 May
+ 2021 14:09:42 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-105G006626da0d7-f5c3-497a-ba31-8c8936d191c4,
+ 2C87984337330801490BFDABE922B5CE11A7A10A) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 176.145.65.252
+Subject: Re: [PATCH 15/31] KVM: PPC: Book3S HV: XIVE: Fix mapping of
+ passthrough interrupts
+To: Marc Zyngier <maz@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+References: <20210430080407.4030767-1-clg@kaod.org>
+ <20210430080407.4030767-16-clg@kaod.org>
+ <87im3l2g48.ffs@nanos.tec.linutronix.de> <878s4g5lfs.wl-maz@kernel.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <638e0250-b8c3-33a4-1b88-02d29d7a80b0@kaod.org>
+Date: Thu, 20 May 2021 14:09:41 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <878s4g5lfs.wl-maz@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.105]
+X-ClientProxiedBy: DAG5EX2.mxp5.local (172.16.2.42) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: afaecca4-bc4a-4e53-bb12-1bd74470d8e1
+X-Ovh-Tracer-Id: 5874664239050492835
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdejuddggeekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehmrgiisehkvghrnhgvlhdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,51 +78,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
- Lijun Pan <ljp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes the following W=1 kernel build warning(s):
+On 5/15/21 12:40 PM, Marc Zyngier wrote:
+> On Fri, 14 May 2021 21:51:51 +0100,
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+>>
+>> On Fri, Apr 30 2021 at 10:03, Cédric Le Goater wrote:
+>>
+>> CC: +Marc
+> 
+> Thanks Thomas.
+> 
+>>
+>>> PCI MSI interrupt numbers are now mapped in a PCI-MSI domain but the
+>>> underlying calls handling the passthrough of the interrupt in the
+>>> guest need a number in the XIVE IRQ domain.
+>>>
+>>> Use the IRQ data mapped in the XIVE IRQ domain and not the one in the
+>>> PCI-MSI domain.
+>>>
+>>> Exporting irq_get_default_host() might not be the best solution.
+>>>
+>>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>>> Cc: Paul Mackerras <paulus@ozlabs.org>
+>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>> ---
+>>>  arch/powerpc/kvm/book3s_xive.c | 3 ++-
+>>>  kernel/irq/irqdomain.c         | 1 +
+>>>  2 files changed, 3 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>>> index 3a7da42bed57..81b9f4fc3978 100644
+>>> --- a/arch/powerpc/kvm/book3s_xive.c
+>>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>>> @@ -861,7 +861,8 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
+>>>  	struct kvmppc_xive *xive = kvm->arch.xive;
+>>>  	struct kvmppc_xive_src_block *sb;
+>>>  	struct kvmppc_xive_irq_state *state;
+>>> -	struct irq_data *host_data = irq_get_irq_data(host_irq);
+>>> +	struct irq_data *host_data =
+>>> +		irq_domain_get_irq_data(irq_get_default_host(), host_irq);
+>>>  	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(host_data);
+>>>  	u16 idx;
+>>>  	u8 prio;
+>>> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+>>> index d10ab1d689d5..8a073d1ce611 100644
+>>> --- a/kernel/irq/irqdomain.c
+>>> +++ b/kernel/irq/irqdomain.c
+>>> @@ -481,6 +481,7 @@ struct irq_domain *irq_get_default_host(void)
+>>>  {
+>>>  	return irq_default_domain;
+>>>  }
+>>> +EXPORT_SYMBOL_GPL(irq_get_default_host);
+>>>  
+>>>  static void irq_domain_clear_mapping(struct irq_domain *domain,
+>>>  				     irq_hw_number_t hwirq)
+>>
+> 
+> Is there any reason why we should add more users of the "default host"
+> fallback? I would really hope that new code would actually track their
+> irqdomain in a more fine-grained way, specially when using the
+> hierarchical MSi setup, which seems to be the goal of this series.
+> 
+> Don't you have enough topology information that you can make use of to
+> correctly assign a domain identifier (of_node or otherwise)?
 
- drivers/char/hw_random/pseries-rng.c:42: warning: Function parameter or member 'vdev' not described in 'pseries_rng_get_desired_dma'
 
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Lijun Pan <ljp@linux.ibm.com>
-Cc: "Uwe Kleine-König" <uwe@kleine-koenig.org>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: linux-crypto@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/char/hw_random/pseries-rng.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+PHB have a node ID and this is taken into account by the MSI domains.
+However, one thing PPC (pSeries and PowerNV) lacks is an interrupt
+controller node per chip which makes the IRQ domain hierarchy a bit
+incomplete.
 
-diff --git a/drivers/char/hw_random/pseries-rng.c b/drivers/char/hw_random/pseries-rng.c
-index f4949b689bd5a..62bdd5af1339f 100644
---- a/drivers/char/hw_random/pseries-rng.c
-+++ b/drivers/char/hw_random/pseries-rng.c
-@@ -29,7 +29,7 @@ static int pseries_rng_read(struct hwrng *rng, void *data, size_t max, bool wait
- 	return 8;
- }
- 
--/**
-+/*
-  * pseries_rng_get_desired_dma - Return desired DMA allocate for CMO operations
-  *
-  * This is a required function for a driver to operate in a CMO environment
--- 
-2.31.1
+It will be difficult to change the pseries platform (VM) since the
+PAPR architecture only specifies a single interrupt domain for the
+whole machine. The PowerNV platform is designed in a similar way
+(because the pseries platform preexisted) and the OPAL firmware hides
+the interrupt controllers of each chip behind a single node. The
+underlying topology is encoded in HW interrupt numbers. This is a bit
+unfortunate since some PowerNV Linux drivers need that information.
+Rewriting a new interrupt controller driver in OPAL would be a lot of
+work and it won't happen any time soon. But it's feasible.
+
+All that to say that we have a default IRQ domain on these platforms
+and not one  IRQ domain per node/chip.
+
+Also, there are two types of interrupt models to consider: the older
+XICS (for P8/P7 processors) and the newer XIVE (for P9/P10).
+
+Regarding MSI passthrough, the XIVE side is simpler (I can't believe I
+am saying that, XIVE is anything but simple) and I think we can rework
+kvmppc_xive_set_mapped() and xive_irq_set_vcpu_affinity() to remove
+the IRQ domain bypass. 
+
+XICS adds optimizations for passthrough done in real mode:
+
+ e3c13e56a471 ("KVM: PPC: Book3S HV: Handle passthrough interrupts in guest")
+ 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through interrupts")
+
+That's a ~10% bandwidth improvements on CX5 adapters, it's good to
+have but they are much more complex to rework. I took some time to
+look for a solution for these because of the use of irq_to_desc() and
+the use of the host IRQ in the XICS domain which are ugly but nothing
+comes to mind yet.
+
+For the time being, I think these changes bypassing the IRQ domains
+are fine. I need some more time to mature an alternative.
+
+Thanks,
+
+C. 
 
