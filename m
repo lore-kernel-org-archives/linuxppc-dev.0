@@ -2,54 +2,110 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1574DC433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 01:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6129C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 02:19:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFA4A60D07
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 01:06:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFA4A60D07
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8509C600D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 02:19:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8509C600D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fls561CJhz3bs4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 11:06:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fltj60PKVz30Gt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:19:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aMy+3gB9;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BaeI4QYa;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=altlinux.org (client-ip=194.107.17.57;
- helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org;
+ smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com;
  receiver=<UNKNOWN>)
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Fls4l0Kscz2yXT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 11:06:14 +1000 (AEST)
-Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
- by vmicros1.altlinux.org (Postfix) with ESMTP id 3FDFF72C8BA;
- Thu, 20 May 2021 04:06:12 +0300 (MSK)
-Received: by mua.local.altlinux.org (Postfix, from userid 508)
- id 3018A7CC8A6; Thu, 20 May 2021 04:06:12 +0300 (MSK)
-Date: Thu, 20 May 2021 04:06:12 +0300
-From: "Dmitry V. Levin" <ldv@altlinux.org>
-To: Rich Felker <dalias@libc.org>
-Subject: Re: Linux powerpc new system call instruction and ABI
-Message-ID: <20210520010612.GA25599@altlinux.org>
-References: <20210518231331.GA8464@altlinux.org>
- <9b5ea7059c5a5d4e9ccccd7d73ce2c66b2203f52.camel@infinera.com>
- <1621410291.c7si38sa9q.astroid@bobo.none>
- <fb9b6a6099855bd00efc6ffe540ccad14dd9a365.camel@infinera.com>
- <1621413143.oec64jaci5.astroid@bobo.none>
- <20210519143836.GJ10366@gate.crashing.org>
- <11d62aa2488e51ec00fe77f24a1d7cdcc21af0b8.camel@infinera.com>
- <20210519152205.GL10366@gate.crashing.org>
- <adec4377144a44b6f9ddd10c1b5256b80c9ceb50.camel@infinera.com>
- <20210519234846.GS2546@brightrain.aerifal.cx>
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=aMy+3gB9; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=BaeI4QYa; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FlthX06hyz2yXb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 12:18:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621477127;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=sHDqMefuS0jfZY78aneKv+C4tqai2cafaPaE1zr9kR4=;
+ b=aMy+3gB9J5QTPEyxjN2/r/RI7Sz4WA2SyLr4r8s5GgXd9qgfAhRXLQ7tnqWUrRCw7yiPf1
+ xo5ZLw9n5A/XmpJg7Ymvj4Eqsb8Q2fUjV2S8QeZofY/mhOxDYNvQ144h2ChhZHl21a9KiK
+ 1Mdw8Favoe9NVRF951PzLNkMi9kRwcM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621477128;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=sHDqMefuS0jfZY78aneKv+C4tqai2cafaPaE1zr9kR4=;
+ b=BaeI4QYaSbRvvObttBGJ4e+g3bxT026oFnJzDmYHcokIVJyYWBGle3yA81tyDD/9kEzv1z
+ SCeVSLd4Web8JXVxHym2Qm/eaPpmFGsNYoK+4oqUhiEm5rHYS6EHCEeb7vJiADgARZILWX
+ +1o+u0+l3bm9TgxdUuS8O/TPoLDiJ+4=
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com
+ [209.85.222.197]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-336-bDCSYvF1Nh-AJ2IRm358Lw-1; Wed, 19 May 2021 22:18:45 -0400
+X-MC-Unique: bDCSYvF1Nh-AJ2IRm358Lw-1
+Received: by mail-qk1-f197.google.com with SMTP id
+ l6-20020a3770060000b02902fa5329f2b4so11292597qkc.18
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2021 19:18:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=sHDqMefuS0jfZY78aneKv+C4tqai2cafaPaE1zr9kR4=;
+ b=QZ8gfOonXdcGZys9rEq44qc6or89dAe6InHrGAuwRiL+eQ//U5/EVWf08fzARMhCpC
+ 0kyg6VmIbv7ft+uY/eINEdJPPbbYDCh2lTdchVrAjETFcNF8+6cpYMtF4V63tzrNBD/5
+ zjpo980K5s38ic2snksG94uS3oK0Z8FlECl7sVRffzrBQrdIuWUTx9sUHVLP/IRx4Diz
+ jYGNkSE1lFoa9aXylpXQBQAs93fUfHmFWp79g/3SqVN6rm2G7WYteBTzLo7TH9MMm76C
+ HNRjZ2vQCNQULIefil0iwN/f2MdOd+OAC7a+VdTpqR4dVM8KcZbLXEW7z0hp1mw0dyhu
+ w2dw==
+X-Gm-Message-State: AOAM532u15eiImKVTAwLGkISR2UmEgSc1QQtp+T6azNMvAj45LXSz1tT
+ xnVOu6we/l6Ttz3/oTY7t6co1ErpmjZjrPvMN63uPiksAiv+y53xLNMyNaU2PX1qEeqoYQEoy+d
+ i962Q9sL/YFXdIVOsQUvwCtW+4A==
+X-Received: by 2002:a0c:e601:: with SMTP id z1mr2909838qvm.62.1621477125439;
+ Wed, 19 May 2021 19:18:45 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyPjm1JJXTWz/eOauSQvLjSeZzx1RIOLWGjlNLXK3o/XwUebWLz4kqwZAF4my19038LoZ+q1g==
+X-Received: by 2002:a0c:e601:: with SMTP id z1mr2909808qvm.62.1621477125084;
+ Wed, 19 May 2021 19:18:45 -0700 (PDT)
+Received: from t490s (bras-base-toroon474qw-grc-72-184-145-4-219.dsl.bell.ca.
+ [184.145.4.219])
+ by smtp.gmail.com with ESMTPSA id m21sm980797qtu.11.2021.05.19.19.18.43
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 19 May 2021 19:18:44 -0700 (PDT)
+Date: Wed, 19 May 2021 22:18:43 -0400
+From: Peter Xu <peterx@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v5 3/9] mm/mremap: Use pmd/pud_poplulate to update page
+ table entries
+Message-ID: <YKXHA8/HmP6HXngO@t490s>
+References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
+ <20210422054323.150993-4-aneesh.kumar@linux.ibm.com>
+ <YKQdxpHVYB9H0M0j@Ryzen-9-3900X.localdomain>
+ <87mtsrqqk0.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87mtsrqqk0.fsf@linux.ibm.com>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=peterx@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20210519234846.GS2546@brightrain.aerifal.cx>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,23 +117,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: musl@lists.openwall.com, Nicholas Piggin <npiggin@gmail.com>,
- linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, Nathan Chancellor <nathan@kernel.org>,
+ linux-mm@kvack.org, kaleshsingh@google.com, joel@joelfernandes.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 19, 2021 at 07:48:47PM -0400, Rich Felker wrote:
-> On Wed, May 19, 2021 at 06:09:25PM +0000, Joakim Tjernlund wrote:
-[...]
-> > W.r.t breaking ABI, isn't that what PowerPC is trying to do with the new syscall I/F? 
+On Wed, May 19, 2021 at 10:16:07AM +0530, Aneesh Kumar K.V wrote:
+> > On Thu, Apr 22, 2021 at 11:13:17AM +0530, Aneesh Kumar K.V wrote:
+> >> pmd/pud_populate is the right interface to be used to set the respective
+> >> page table entries. Some architectures like ppc64 do assume that set_pmd/pud_at
+> >> can only be used to set a hugepage PTE. Since we are not setting up a hugepage
+> >> PTE here, use the pmd/pud_populate interface.
+
+[1]
+
+> Can you try this change?
 > 
-> No, it's a new independent interface.
+> modified   mm/mremap.c
+> @@ -279,7 +279,7 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+>  	pmd_clear(old_pmd);
+>  
+>  	VM_BUG_ON(!pmd_none(*new_pmd));
+> -	pmd_populate(mm, new_pmd, (pgtable_t)pmd_page_vaddr(pmd));
+> +	pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
+>  
+>  	if (new_ptl != old_ptl)
+>  		spin_unlock(new_ptl);
 
-Unfortunately, being a new independent interface doesn't mean it isn't
-an ABI break.  In fact, it was a severe ABI break, and this thread is
-an attempt to find a hotfix.
+I reported this issue today somewhere else:
 
+https://lore.kernel.org/linux-mm/YKVemB5DuSqLFmmz@t490s/
+
+And came to this same line after the bisection.
+
+This seems to work at least for my userfaultfd test on shmem, however I don't
+fully understand the commit message [1] on: How do we guarantee we're not
+moving a thp pte?
 
 -- 
-ldv
+Peter Xu
+
