@@ -2,70 +2,69 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A75C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:58:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5996C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 13:10:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9B3161004
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:58:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9B3161004
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id EB28B611BD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 13:10:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB28B611BD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm8tY08JMz3bxj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:58:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.131; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm8t80g4yz2yjK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:58:07 +1000 (AEST)
-Received: from mail-wr1-f42.google.com ([209.85.221.42]) by
- mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MnaY1-1l13i343mP-00jcOW for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May
- 2021 14:58:03 +0200
-Received: by mail-wr1-f42.google.com with SMTP id j14so15834900wrq.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:58:02 -0700 (PDT)
-X-Gm-Message-State: AOAM5325vF+kRfjime9Bq5lq1llROFLNvfQpLYTgE1IKFw46LGTAOVAZ
- RyPl5Pwxee71vIzVErbixMnIECMJCNq1lkCHB60=
-X-Google-Smtp-Source: ABdhPJzjF6dsH5HoZqJvsW8Z8vuY/KQcYke0jL+BR2nKnLRzRk59Q8j7MY6u03gtUYt403a0Fz/TtBgmPs8YgE0TcrY=
-X-Received: by 2002:a05:6000:18a:: with SMTP id
- p10mr4175890wrx.99.1621515471669; 
- Thu, 20 May 2021 05:57:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm98v2wfbz306S
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 23:10:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=188.165.49.222; helo=6.mo52.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 2117 seconds by postgrey-1.36 at boromir;
+ Thu, 20 May 2021 23:10:31 AEST
+Received: from 6.mo52.mail-out.ovh.net (6.mo52.mail-out.ovh.net
+ [188.165.49.222])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm98R3gQ8z2xts
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 23:10:30 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.4.141])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id A9789278C15;
+ Thu, 20 May 2021 14:33:52 +0200 (CEST)
+Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.10; Thu, 20 May
+ 2021 14:33:51 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-100R0034b3e5fb3-78e8-4702-a242-a6f448bdfd52,
+ 2C87984337330801490BFDABE922B5CE11A7A10A) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 176.145.65.252
+Subject: Re: [PATCH 09/31] powerpc/pseries/pci: Add a msi_free() handler to
+ clear XIVE data
+To: <linuxppc-dev@lists.ozlabs.org>
+References: <20210430080407.4030767-1-clg@kaod.org>
+ <20210430080407.4030767-10-clg@kaod.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <04d8db4a-b156-1d60-be86-dbe9ac60c6c3@kaod.org>
+Date: Thu, 20 May 2021 14:33:50 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-References: <20210520121347.3467794-1-lee.jones@linaro.org>
-In-Reply-To: <20210520121347.3467794-1-lee.jones@linaro.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 20 May 2021 14:56:36 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0VujuG8eU_CEVSvzbk4nAJz8fStedM5eMUrLAr9EJxDQ@mail.gmail.com>
-Message-ID: <CAK8P3a0VujuG8eU_CEVSvzbk4nAJz8fStedM5eMUrLAr9EJxDQ@mail.gmail.com>
-Subject: Re: [PATCH 00/16] Rid W=1 warnings from Char
-To: Lee Jones <lee.jones@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:20c6Xf9KOtvhlAGgThCMfcb6P7Y2Oiw+2Gc60CYM3h0/OnQKa5C
- 1y4/r9N2J6Y89TwF97+H2Z4ERSgZ6KoYaQg/tNQfEToxMs5UIDS5PqEpcCLtTQstq1ewGVC
- wDV+1zzsOBCIZLgjaPrTu9HKOrBhDjF+6sPjI3a+rtiwMQxzQe7TJulDD+v4bzGjNlxbX90
- gqwxRwqU7FVsihSBd3nmw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:IBE8t81oDrY=:YxP1bUg3rkKVieCw4+QCt7
- FWTnjMjGOkl13bZnvDNAhmqwQ1T+UqaBjd3JiXJWGlP6eZHYeNIHPTMcqUgBL3mm1GY5kvjTl
- qyEfKH7UVEAaL/XYipr0OGzzPu50UKTC+ApdqKcDxGU7a1N6jtL4yxOQjXtJravKE8q2iJdMN
- thd6sAi1kfgDB0P8wjTDRD+2zbYJXNK6qakyAsheQ6RTTztYit6uCnqPuKiU5JuiIXKfD1Vwc
- qQgmK+OUOYQF44j8k8wl6gDIq0ocLC9MCEkLHVDTq/Za39ybX2Yh3NDbVj5THuOyjFbm8Zl6v
- AnR1qULO5hKgUjm50+7IqGBw/vO9+5LGnlnushSWpuFQrYPNVuQU8o4o4EHk39bMlF/zq+oB2
- Ss2v0soKbtks2neg7KRGfWWs6R327eFtC0mWEO4HBzPcyjeIRTEZcVowNGifegHGrydlRJxOu
- rktWmBxnxbBjYNm9YE1pR0dkha/KsLyezDUyDdBJKWMWLv++i5oJkik+POeXTxmHghOqmsLED
- +6oPrpNYvin2PGSZp4OjXplIhRRfI1XsrM2o+043/o3mMjb+QJPNfGOykOLW0RL3gcNhQCy07
- eW0dfQgV2EY6C3cTJC4rm7F8+ZVmNAJ4By+HT/wkD2Ha8Ppnc9/Hypf0l3GzYx5vE2SvyctxP
- WaYA=
+In-Reply-To: <20210430080407.4030767-10-clg@kaod.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.100]
+X-ClientProxiedBy: DAG3EX2.mxp5.local (172.16.2.22) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: df1a922f-5310-426b-876c-a3303906ec20
+X-Ovh-Tracer-Id: 6282521483775937504
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdejuddgheefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,61 +76,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, David Airlie <airlied@linux.ie>,
- Clemens Ladisch <clemens@ladisch.de>,
- "C. Scott Ananian" <cananian@alumni.princeton.edu>,
- Paul Mackerras <paulus@samba.org>, Kylene Hall <kjhall@us.ibm.com>,
- Jerome Glisse <j.glisse@gmail.com>, Peter Huewe <peterhuewe@gmx.de>,
- Michael Neuling <mikey@neuling.org>, Herbert Xu <herbert@gondor.apana.org.au>,
- Dave Safford <safford@watson.ibm.com>, Harald Welte <laforge@gnumonks.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Kanoj Sarcar <kanoj@sgi.com>,
- David Woodhouse <dwmw2@infradead.org>, Bob Picco <robert.picco@hp.com>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <uwe@kleine-koenig.org>,
- Thirupathaiah Annapureddy <thiruan@microsoft.com>,
- "cs.c" <support.linux@omnikey.com>, Lijun Pan <ljp@linux.ibm.com>,
- Reiner Sailer <sailer@watson.ibm.com>, Matt Mackall <mpm@selenic.com>,
- van Doorn <leendert@watson.ibm.com>, Theodore Ts'o <tytso@mit.edu>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Fulghum <paulkf@microgate.com>, Jarkko Sakkinen <jarkko@kernel.org>,
- "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
- <linux-crypto@vger.kernel.org>, linux-integrity@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Marc Zyngier <maz@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 20, 2021 at 2:13 PM Lee Jones <lee.jones@linaro.org> wrote:
+Adding Marc.
+
+On 4/30/21 10:03 AM, Cédric Le Goater wrote:
+> The MSI domain clears the IRQ with msi_domain_free(), which calls
+> irq_domain_free_irqs_top(), which clears the handler data. This is a
+> problem for the XIVE controller since we need to unmap MMIO pages and
+> free a specific XIVE structure.
+> 
+> The 'msi_free()' handler is called before irq_domain_free_irqs_top()
+> when the handler data is still available. Use that to clear the XIVE
+> controller data.
+This feels like a clumsy way of doing so. 
+
+irq_domain_free_irqs_parent() would be my preferred way to clear the 
+lowlevel handler data but we can't today. Could there be a smarter way ?
+
+Thanks,
+
+C.
+
+
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 >
-> This set is part of a larger effort attempting to clean-up W=1
-> kernel builds, which are currently overwhelmingly riddled with
-> niggly little warnings.
->
-> Lee Jones (16):
->   char: pcmcia: cm4000_cs: Remove unused variable 'tmp'
->   char: pcmcia: cm4040_cs: Remove unused variable 'uc'
->   char: random: Include header containing our prototypes
->   char: pcmcia: synclink_cs: Fix a bunch of kernel-doc issues
->   char: pcmcia: synclink_cs: Fix a bunch of kernel-doc issues
->   char: applicom: Remove 3 unused variables 'ret' and 2 instances of
->     'byte_reset_it'
->   char: tpm: tpm1-cmd: Fix a couple of misnamed functions
->   char: tpm: tpm_ftpm_tee: Fix a couple of kernel-doc misdemeanours
->   char: agp: backend: Demote some non-conformant kernel-doc headers
->   char: agp: frontend: Include header file containing our prototypes
->   char: agp: via-agp: Remove unused variable 'current_size'
->   char: hpet: Remove unused variable 'm'
->   char: agp: generic: Place braces around optimised out function in if()
->   char: agp: uninorth-agp: Remove unused variable 'size'
->   char: hw_random: pseries-rng: Demote non-conformant kernel-doc header
->   char: mem: Provide local prototype for non-static function
+> ---
+>  arch/powerpc/include/asm/xive.h      |  1 +
+>  arch/powerpc/platforms/pseries/msi.c | 16 +++++++++++++++-
+>  arch/powerpc/sysdev/xive/common.c    |  5 ++++-
+>  3 files changed, 20 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> index aa094a8655b0..20ae50ab083c 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -111,6 +111,7 @@ void xive_native_free_vp_block(u32 vp_base);
+>  int xive_native_populate_irq_data(u32 hw_irq,
+>  				  struct xive_irq_data *data);
+>  void xive_cleanup_irq_data(struct xive_irq_data *xd);
+> +void xive_irq_free_data(unsigned int virq);
+>  void xive_native_free_irq(u32 irq);
+>  int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq);
+>  
+> diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+> index a41c448520d4..da9d63a088bb 100644
+> --- a/arch/powerpc/platforms/pseries/msi.c
+> +++ b/arch/powerpc/platforms/pseries/msi.c
+> @@ -529,6 +529,19 @@ static int pseries_msi_ops_prepare(struct irq_domain *domain, struct device *dev
+>  	return rtas_prepare_msi_irqs(pdev, nvec, type, arg);
+>  }
+>  
+> +/*
+> + * ->msi_free() is called before irq_domain_free_irqs_top() when the
+> + * handler data is still available. Use that to clear the XIVE
+> + * controller data.
+> + */
+> +static void pseries_msi_ops_msi_free(struct irq_domain *domain,
+> +				     struct msi_domain_info *info,
+> +				     unsigned int irq)
+> +{
+> +	if (xive_enabled())
+> +		xive_irq_free_data(irq);
+> +}
+> +
+>  /*
+>   * RTAS can not disable one MSI at a time. It's all or nothing. Do it
+>   * at the end after all IRQs have been freed.
+> @@ -546,6 +559,7 @@ static void pseries_msi_domain_free_irqs(struct irq_domain *domain,
+>  
+>  static struct msi_domain_ops pseries_pci_msi_domain_ops = {
+>  	.msi_prepare	= pseries_msi_ops_prepare,
+> +	.msi_free	= pseries_msi_ops_msi_free,
+>  	.domain_free_irqs = pseries_msi_domain_free_irqs,
+>  };
+>  
+> @@ -660,7 +674,7 @@ static void pseries_irq_domain_free(struct irq_domain *domain, unsigned int virq
+>  
+>  	pr_debug("%s bridge %pOF %d #%d\n", __func__, phb->dn, virq, nr_irqs);
+>  
+> -	irq_domain_free_irqs_parent(domain, virq, nr_irqs);
+> +	/* XIVE domain data is cleared through ->msi_free() */
+>  }
+>  
+>  static const struct irq_domain_ops pseries_irq_domain_ops = {
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index 3485baf9ec8c..191cd80ec534 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -980,6 +980,8 @@ EXPORT_SYMBOL_GPL(is_xive_irq);
+>  
+>  void xive_cleanup_irq_data(struct xive_irq_data *xd)
+>  {
+> +	pr_debug("%s for HW %x\n", __func__, xd->hw_irq);
+> +
+>  	if (xd->eoi_mmio) {
+>  		unmap_kernel_range((unsigned long)xd->eoi_mmio,
+>  				   1u << xd->esb_shift);
+> @@ -1025,7 +1027,7 @@ static int xive_irq_alloc_data(unsigned int virq, irq_hw_number_t hw)
+>  	return 0;
+>  }
+>  
+> -static void xive_irq_free_data(unsigned int virq)
+> +void xive_irq_free_data(unsigned int virq)
+>  {
+>  	struct xive_irq_data *xd = irq_get_handler_data(virq);
+>  
+> @@ -1035,6 +1037,7 @@ static void xive_irq_free_data(unsigned int virq)
+>  	xive_cleanup_irq_data(xd);
+>  	kfree(xd);
+>  }
+> +EXPORT_SYMBOL_GPL(xive_irq_free_data);
+>  
+>  #ifdef CONFIG_SMP
+>  
+> 
 
-Thanks a lot!
-
-I've looked all the patches now and commented on patches 6 and 16.
-With my comments addressed
-
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-
-       Arnd
