@@ -2,69 +2,116 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B31BC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 14:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25F6CC433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 14:58:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22DFB61073
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 14:55:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22DFB61073
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6FBDD61059
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 14:58:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FBDD61059
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FmCV03Xhzz3bsW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 00:55:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FmCY8604Pz3087
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 00:58:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Mu1k7wq7;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Mu1k7wq7;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.48.137; helo=9.mo51.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 6612 seconds by postgrey-1.36 at boromir;
- Fri, 21 May 2021 00:55:28 AEST
-Received: from 9.mo51.mail-out.ovh.net (9.mo51.mail-out.ovh.net
- [46.105.48.137])
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=Mu1k7wq7; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Mu1k7wq7; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FmCTX4plJz2xfr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 00:55:26 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.192])
- by mo51.mail-out.ovh.net (Postfix) with ESMTPS id 1A76629D677;
- Thu, 20 May 2021 14:27:11 +0200 (CEST)
-Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.10; Thu, 20 May
- 2021 14:27:11 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-103G00519fae841-2a46-42a8-9273-0eeeffdc5bf7,
- 2C87984337330801490BFDABE922B5CE11A7A10A) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 176.145.65.252
-Subject: Re: [PATCH 31/31] genirq: Improve "hwirq" output in /proc and /sys/
-To: Thomas Gleixner <tglx@linutronix.de>, <linuxppc-dev@lists.ozlabs.org>
-References: <20210430080407.4030767-1-clg@kaod.org>
- <20210430080407.4030767-32-clg@kaod.org>
- <87mtsx2g7l.ffs@nanos.tec.linutronix.de>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <14b71a4b-fac6-a1c0-1707-436c86b9b6ec@kaod.org>
-Date: Thu, 20 May 2021 14:27:09 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FmCXc2DQ1z2xvB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 00:58:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621522684;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=IFy+kDGy5FjXwv8NN0pfzTAzqZNfkA1UTKIoWhwHib8=;
+ b=Mu1k7wq7g3xNKVd+GlcHQVvuSftHt3VbULZv+xGbkdaVpOw6ct0zBK/px3WNIGxl0M15aS
+ F+CKA3HbTM5vLwCkjvWhyXvhxXRxxv612TC6fx/3elxeVz+quUj3fCX2HAILta+rjkwXQ8
+ IU32TWgXO8juJydbvKEDRRoZwFxoOwE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1621522684;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=IFy+kDGy5FjXwv8NN0pfzTAzqZNfkA1UTKIoWhwHib8=;
+ b=Mu1k7wq7g3xNKVd+GlcHQVvuSftHt3VbULZv+xGbkdaVpOw6ct0zBK/px3WNIGxl0M15aS
+ F+CKA3HbTM5vLwCkjvWhyXvhxXRxxv612TC6fx/3elxeVz+quUj3fCX2HAILta+rjkwXQ8
+ IU32TWgXO8juJydbvKEDRRoZwFxoOwE=
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
+ [209.85.160.198]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-201-GNRQvtP1NDaN-wdu-xpUuw-1; Thu, 20 May 2021 10:58:00 -0400
+X-MC-Unique: GNRQvtP1NDaN-wdu-xpUuw-1
+Received: by mail-qt1-f198.google.com with SMTP id
+ 69-20020aed304b0000b02901c6d87aed7fso12412904qte.21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 07:57:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=IFy+kDGy5FjXwv8NN0pfzTAzqZNfkA1UTKIoWhwHib8=;
+ b=q3MDc460lajhdu1u6xSrlRFGDnKmRyOUW7S6RpEyHSNlot5lMvQSd7qudqoq7YWcYf
+ ud6bIjA+x15Mt3lwKYzx75WVkSyVu8x/JuJKIVwaB52GChXPiXn7JIlP6AyQvEhD26Z8
+ 1Seje+VJOHkC5NJHt/rTfViNzfBe1U4PaPEJHASh++3qvdO/lUEfpJ+Fc/vREDvGjw0c
+ rjzGcOknFpRNAI4sxf/YAtZdRKgzBYgcZ0kfZiwOseaMF46GWwO266nbQIw6XXaf0Zqs
+ AblooqSPWypHgEW3ajHGyXtob6TJORBQQ2zURz9Hzn19kkIPuDL4eULmjwYps6o8oNPv
+ H9vQ==
+X-Gm-Message-State: AOAM532Lo8Oom7pD9cVP2qrFkEJ3sXC7AkUeDxpw+TdpgEgEAXzySs1P
+ RUGlz/UeMzdux+AsgdMNeFJXXbJv2wvGKKps9qNBAtgIke+0QLxXF5wZKZUO6U8Zm/8BSndRtZh
+ QnSV5ZnP4NiviG6jWbOHb/f/PRA==
+X-Received: by 2002:a05:620a:133b:: with SMTP id
+ p27mr5255796qkj.354.1621522679424; 
+ Thu, 20 May 2021 07:57:59 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxUwFU67C8yrPnfpE5qhvyk2qLh59LFKNHs9lIWRvVbD2sY6jO7wZyKH2elnhPr9KzFI/TEfA==
+X-Received: by 2002:a05:620a:133b:: with SMTP id
+ p27mr5255763qkj.354.1621522679102; 
+ Thu, 20 May 2021 07:57:59 -0700 (PDT)
+Received: from t490s (bras-base-toroon474qw-grc-72-184-145-4-219.dsl.bell.ca.
+ [184.145.4.219])
+ by smtp.gmail.com with ESMTPSA id u186sm2253425qkd.30.2021.05.20.07.57.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 20 May 2021 07:57:58 -0700 (PDT)
+Date: Thu, 20 May 2021 10:57:56 -0400
+From: Peter Xu <peterx@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v5 3/9] mm/mremap: Use pmd/pud_poplulate to update page
+ table entries
+Message-ID: <YKZ49Nrz2OojQUBR@t490s>
+References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
+ <20210422054323.150993-4-aneesh.kumar@linux.ibm.com>
+ <YKQdxpHVYB9H0M0j@Ryzen-9-3900X.localdomain>
+ <87mtsrqqk0.fsf@linux.ibm.com> <YKXHA8/HmP6HXngO@t490s>
+ <6e0dbb76-2b33-53f1-246e-30cec2b871e2@linux.ibm.com>
+ <YKZaLHurH9nJWvbj@t490s>
+ <e6525655-2e51-a0c0-fe54-596cfae9ce21@linux.ibm.com>
+ <87o8d5le4q.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87mtsx2g7l.ffs@nanos.tec.linutronix.de>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.103]
-X-ClientProxiedBy: DAG3EX1.mxp5.local (172.16.2.21) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: fa3c8968-2b80-4b8b-beaf-2916292170ad
-X-Ovh-Tracer-Id: 6169650017286458333
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdejuddghedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeejkeduueduveelgeduueegkeelffevledujeetffeivdelvdfgkeeufeduheehfeenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepthhglhigsehlihhnuhhtrhhonhhigidruggv
+In-Reply-To: <87o8d5le4q.fsf@linux.ibm.com>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=peterx@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,61 +123,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: npiggin@gmail.com, Nathan Chancellor <nathan@kernel.org>,
+ linux-mm@kvack.org, kaleshsingh@google.com, joel@joelfernandes.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/14/21 10:49 PM, Thomas Gleixner wrote:
-> On Fri, Apr 30 2021 at 10:04, Cédric Le Goater wrote:
->> The HW IRQ numbers generated by the PCI MSI layer can be quite large
->> on a pSeries machine when running under the IBM Hypervisor and they
->> appear as negative. Use '%u' to show them correctly.
->>
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  kernel/irq/irqdesc.c | 2 +-
->>  kernel/irq/proc.c    | 2 +-
->>  2 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
->> index cc1a09406c6e..85054eb2ae51 100644
->> --- a/kernel/irq/irqdesc.c
->> +++ b/kernel/irq/irqdesc.c
->> @@ -188,7 +188,7 @@ static ssize_t hwirq_show(struct kobject *kobj,
->>  
->>  	raw_spin_lock_irq(&desc->lock);
->>  	if (desc->irq_data.domain)
->> -		ret = sprintf(buf, "%d\n", (int)desc->irq_data.hwirq);
->> +		ret = sprintf(buf, "%u\n", (int)desc->irq_data.hwirq);
+On Thu, May 20, 2021 at 07:07:57PM +0530, Aneesh Kumar K.V wrote:
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 > 
-> Which makes the (int) cast pointless, right?
+> > On 5/20/21 6:16 PM, Peter Xu wrote:
+> >> On Thu, May 20, 2021 at 01:56:54PM +0530, Aneesh Kumar K.V wrote:
+> >>>> This seems to work at least for my userfaultfd test on shmem, however I don't
+> >>>> fully understand the commit message [1] on: How do we guarantee we're not
+> >>>> moving a thp pte?
+> >>>>
+> >>>
+> >>> move_page_tables() checks for pmd_trans_huge() and ends up calling
+> >>> move_huge_pmd if it is a THP entry.
+> >> 
+> >> Sorry to be unclear: what if a huge pud thp?
+> >> 
+> >
+> > I am still checking. Looking at the code before commit 
+> > c49dd340180260c6239e453263a9a244da9a7c85, I don't see kernel handling 
+> > huge pud thp. I haven't studied huge pud thp enough to understand 
+> > whether c49dd340180260c6239e453263a9a244da9a7c85 intent to add that 
+> > support.
+> >
+> > We can do a move_huge_pud() like we do for huge pmd thp. But I am not 
+> > sure whether we handle those VMA's earlier and restrict mremap on them?
+> 
+> something like this? (not even compile tested). I am still not sure
+> whether this is really needed or we handle DAX VMA's in some other form.
 
-Well, hwirq is a long. Would you prefer a "%lu" for both ?
+Yeah maybe (you may want to at least drop that extra "case HPAGE_PUD").
 
-Thanks,
+It's just that if with CONFIG_HAVE_MOVE_PUD (x86 and arm64 enables it by
+default so far) it does seem to work even with huge pud, while after this patch
+it seems to be not working anymore, even with your follow up fix.
 
-C.
+Indeed I saw CONFIG_HAVE_MOVE_PUD is introduced a few months ago so breaking
+someone seems to be unlikely, perhaps no real user yet to mremap() a huge pud
+for dax or whatever backend?
 
-> 
->>  	raw_spin_unlock_irq(&desc->lock);
->>  
->>  	return ret;
->> diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
->> index 98138788cb04..e2392f05da04 100644
->> --- a/kernel/irq/proc.c
->> +++ b/kernel/irq/proc.c
->> @@ -513,7 +513,7 @@ int show_interrupts(struct seq_file *p, void *v)
->>  		seq_printf(p, " %8s", "None");
->>  	}
->>  	if (desc->irq_data.domain)
->> -		seq_printf(p, " %*d", prec, (int) desc->irq_data.hwirq);
->> +		seq_printf(p, " %*u", prec, (int)desc->irq_data.hwirq);
-> 
-> ditto.
-> 
-> Thanks,
-> 
->         tglx
-> 
+Ideally maybe rework this patch (or series?) and repost it for a better review?
+Agree the risk seems low.  I'll leave that to you and Andrew to decide..
+
+-- 
+Peter Xu
 
