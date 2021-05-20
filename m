@@ -2,98 +2,81 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A969C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 11:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C59C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:14:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D658460FEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 11:56:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D658460FEF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	by mail.kernel.org (Postfix) with ESMTPS id 8648E61186
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:14:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8648E61186
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm7WS1K9tz3bss
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 21:56:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm7vt0TF5z300K
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:14:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=tMou58N9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=cR3MbNlH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::836;
- helo=mail-qt1-x836.google.com; envelope-from=groeck7@gmail.com;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::330;
+ helo=mail-wm1-x330.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=tMou58N9; dkim-atps=neutral
-Received: from mail-qt1-x836.google.com (mail-qt1-x836.google.com
- [IPv6:2607:f8b0:4864:20::836])
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=cR3MbNlH; dkim-atps=neutral
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com
+ [IPv6:2a00:1450:4864:20::330])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm7Vy3gP2z2xvc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 21:56:24 +1000 (AEST)
-Received: by mail-qt1-x836.google.com with SMTP id m13so12473720qtk.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 04:56:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:to:cc:references:from:subject:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=4NwcGNbUiLWOZxk3Po/t8ltzFfv9Dmek7i9uGh5YXhs=;
- b=tMou58N9AsYp7b3didtdforKkhve5y6UEbSKe9s9y/TlxOj/Rgb07i/jT6K+OSXcXD
- NogA0utjZXXCu46qXSFt7fbeyIDmqp7VC0DpIouJzA/gcBb4b8oLwxxhEeE8G1Qd7Ca+
- Rgqvz3BeWv38aRsnVs0fTfbH52ZHb9+8qNUmri0jMSznuhnMS5gY2HXMPkcOUqjw8dLT
- Wwr6H3uofyYxmpMlFqw+BhtLFQoYtr+bzZALH1TcmsO2dKaXKNFvgSUKqMuGz+CV0qHw
- kFqrsU0fPgFpqRcVb4r4WFuv9Y44eQTX0luZoqGvF5svEYJaqEMWjSjJQ8ofU7tsi57c
- DmaQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm7vK6jPWz2xv2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:14:03 +1000 (AEST)
+Received: by mail-wm1-x330.google.com with SMTP id b7so8452376wmh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:14:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=N+rsDWAMv4x1ZiNx5AapS5e6MR/cbmzAQ/wF+EUOxGU=;
+ b=cR3MbNlHRY+hSafJx7VAjfSope7BFgR94/44HuaDrveC1bGEnVAaWRp72T7xvM0XoU
+ OTDDqMvOLczZa0Yvp5vjEaVW5Exg5f5iypjfSszL7Pv/7/5oSjatQAHxdeMrD/CSxPmP
+ 8XbqrDRkkfYJAlnaICjiZD7MIHTWYiFNH0cEy/lXgNFMkwo28P57IbtdVRsrhxAn+q9p
+ S5SSJBsrkkm8/LbtosRlsbtzn7QgwanZfaqwoxfOHC69k6CHIljV5dyJ9RWYnRzTlG6R
+ v1m1BolGX8TjunA9APuGjMSeBGGGxaMaO6jVTKKwGm+M2rQw3SEwbNWRVcLOeUzuHSC3
+ YHhg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:to:cc:references:from:subject:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=4NwcGNbUiLWOZxk3Po/t8ltzFfv9Dmek7i9uGh5YXhs=;
- b=t4JAhO/1IfC9hvITRmyaY3RHNZtwYUA1v5Oz9ftqksuHkbgWZ9i/a5Nfrv9PgrJcAh
- iXgOPbLv5R7RmO5L7U9LvkUqeKkw6o7b0NUoV/cHx6R+Ne8ZcV4HgOqe9GFLLkipCtKH
- n2U5UV1IFUf9xyPwQPvlXMQL4zPaO/N2LJGk8Pg8egmeOjJXeXjxWu5mvfWnuiAQBNBi
- 1If4gu4vr63Pz8dEEz7vhPZBvOlxfMKrqFm95AUU9kOnf2OdaVgSSiBaVEK/VQhy5t+h
- rCAiswN8QUxNdY5LQilUu7F5Q9VrG87kSJdqvVXk63jEMXi2WHXfioQHFhWfzRpQq1MU
- LyPQ==
-X-Gm-Message-State: AOAM530PzeHevBfWvLHcJftgLLsKILidWilBsdnIhqPq8aZHmd5BM9ly
- z7/YEdvjJ6ov492hW7mTntY=
-X-Google-Smtp-Source: ABdhPJwbtFMmRH/lQLxI0xaeHJA4iAHYjZ+u77Kze81ydq8mtfRcYReCgbscjlFfUq1VbMIJ2FPePA==
-X-Received: by 2002:aed:2128:: with SMTP id 37mr4519811qtc.163.1621511780559; 
- Thu, 20 May 2021 04:56:20 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id
- j6sm1715403qti.4.2021.05.20.04.56.18
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 20 May 2021 04:56:20 -0700 (PDT)
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
- <20210422054323.150993-6-aneesh.kumar@linux.ibm.com>
- <20210515163525.GA1106462@roeck-us.net>
- <e0eba73a-c2df-71c3-e03d-d4074d908fca@linux.ibm.com>
- <d830fce9-c00a-e879-4115-94a2346a806f@roeck-us.net>
- <87pmxpqxb1.fsf@linux.ibm.com>
- <a7dd34f3-7d79-c933-fb62-eaad5c83d37a@roeck-us.net>
- <87a6ork1qp.fsf@mpe.ellerman.id.au>
- <969f377f-fddb-c2de-781c-fde37d121a4d@roeck-us.net>
- <87wnrtiqjp.fsf@mpe.ellerman.id.au>
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 5/9] powerpc/mm/book3s64: Update tlb flush routines to
- take a page walk cache flush argument
-Message-ID: <52aa88b9-1f88-dc5f-c3f5-b7ead24e38df@roeck-us.net>
-Date: Thu, 20 May 2021 04:56:17 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ bh=N+rsDWAMv4x1ZiNx5AapS5e6MR/cbmzAQ/wF+EUOxGU=;
+ b=W4FO2q6aQtZrvWw2+pibkOmmmMNbUK6r0bGuDgPjvBw7OWZWIe1hFp/83ey27CxaZa
+ wCl9EhpRcTNHqanXd3gHgpHwRbLE9H0uvvp8CSLekizodoFWeqzyhzgaOhQdxmd9Lr+N
+ WcHQPbEp5xnJHAf4OmukU1IUCK7PcZe8LGi1Vt375PWx7K2zyQs5rpE172gNUVAjVOrL
+ JV7cwgBlgbSxdQTXC2aYkv3fA4/O3D8dbXqsqOohD9qkAtwH+JQXIJeYSIAqX6XrdD36
+ o7YMtq9gSm+0Wwos4u15qAJEaK0jDnNjmT7Wsb/8Kc9Jr4y/9avs4rrH7/vtEyrVourL
+ 0I4Q==
+X-Gm-Message-State: AOAM531i1jveKc5ISzOl+JkHdnHMGNghm8iQRHNJonZnZqp1V68d2rGg
+ 9cbmgalp1wV9gYHx0ByMTw6Evg==
+X-Google-Smtp-Source: ABdhPJyASSt/x1V8q95MVvVq2U/YMyWW3NXlYBCB6FmxOMXdwlT2RPBDCPtfjX12ceL8X8BK7YpF8Q==
+X-Received: by 2002:a7b:c34a:: with SMTP id l10mr3390379wmj.46.1621512835550; 
+ Thu, 20 May 2021 05:13:55 -0700 (PDT)
+Received: from dell.default ([91.110.221.215])
+ by smtp.gmail.com with ESMTPSA id 61sm3393704wrm.52.2021.05.20.05.13.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 20 May 2021 05:13:55 -0700 (PDT)
+From: Lee Jones <lee.jones@linaro.org>
+To: lee.jones@linaro.org
+Subject: [PATCH 00/16] Rid W=1 warnings from Char
+Date: Thu, 20 May 2021 13:13:31 +0100
+Message-Id: <20210520121347.3467794-1-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <87wnrtiqjp.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,51 +89,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, linux-mm@kvack.org, kaleshsingh@google.com,
- joel@joelfernandes.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, David Airlie <airlied@linux.ie>,
+ Clemens Ladisch <clemens@ladisch.de>,
+ "C. Scott Ananian" <cananian@alumni.princeton.edu>,
+ Paul Mackerras <paulus@samba.org>, Kylene Hall <kjhall@us.ibm.com>,
+ Jerome Glisse <j.glisse@gmail.com>, Peter Huewe <peterhuewe@gmx.de>,
+ Michael Neuling <mikey@neuling.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Dave Safford <safford@watson.ibm.com>, Harald Welte <laforge@gnumonks.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Kanoj Sarcar <kanoj@sgi.com>,
+ Bob Picco <robert.picco@hp.com>, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ Thirupathaiah Annapureddy <thiruan@microsoft.com>,
+ "cs.c" <support.linux@omnikey.com>, Lijun Pan <ljp@linux.ibm.com>,
+ Reiner Sailer <sailer@watson.ibm.com>, Matt Mackall <mpm@selenic.com>,
+ van Doorn <leendert@watson.ibm.com>, Theodore Ts'o <tytso@mit.edu>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ paulkf@microgate.com, Jarkko Sakkinen <jarkko@kernel.org>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
+ linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org,
+ dwmw2@infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/20/21 4:38 AM, Michael Ellerman wrote:
-> Guenter Roeck <linux@roeck-us.net> writes:
->> On 5/18/21 5:26 PM, Michael Ellerman wrote:
->> [ ... ]
->>>>> That was the generic header change in the patch. I was commenting about the
->>>>> ppc64 specific change causing build failures.
->>>>
->>>> Ah, sorry. I wasn't aware that the following is valid C code
->>>>
->>>> void f1()
->>>> {
->>>>        return f2();
->>>>        ^^^^^^
->>>> }
->>>>
->>>> as long as f2() is void as well. Confusing, but we live and learn.
->>>
->>> It might be valid, but it's still bad IMHO.
->>>
->>> It's confusing to readers, and serves no useful purpose.
->>>
->>
->> Agreed, but it is surprisingly wide-spread. Try to run the coccinelle
->> script below, just for fun. The script doesn't even catch instances
->> in include files, yet there are more than 450 hits.
-> 
-> Yikes, that is a lot.
-> 
-> I guess they're pretty harmless, but would be nice to clean them up
-> eventually.
-> 
-> Why doesn't the script work for instances in headers?
-> 
+This set is part of a larger effort attempting to clean-up W=1
+kernel builds, which are currently overwhelmingly riddled with
+niggly little warnings.
 
-Ah, that is one of those Coccinelle details. No idea. I run the script with
+Lee Jones (16):
+  char: pcmcia: cm4000_cs: Remove unused variable 'tmp'
+  char: pcmcia: cm4040_cs: Remove unused variable 'uc'
+  char: random: Include header containing our prototypes
+  char: pcmcia: synclink_cs: Fix a bunch of kernel-doc issues
+  char: pcmcia: synclink_cs: Fix a bunch of kernel-doc issues
+  char: applicom: Remove 3 unused variables 'ret' and 2 instances of
+    'byte_reset_it'
+  char: tpm: tpm1-cmd: Fix a couple of misnamed functions
+  char: tpm: tpm_ftpm_tee: Fix a couple of kernel-doc misdemeanours
+  char: agp: backend: Demote some non-conformant kernel-doc headers
+  char: agp: frontend: Include header file containing our prototypes
+  char: agp: via-agp: Remove unused variable 'current_size'
+  char: hpet: Remove unused variable 'm'
+  char: agp: generic: Place braces around optimised out function in if()
+  char: agp: uninorth-agp: Remove unused variable 'size'
+  char: hw_random: pseries-rng: Demote non-conformant kernel-doc header
+  char: mem: Provide local prototype for non-static function
 
-make coccicheck COCCI="return-void.cocci" MODE=report M=.
+ drivers/char/agp/backend.c           |  4 +-
+ drivers/char/agp/frontend.c          |  1 +
+ drivers/char/agp/generic.c           |  3 +-
+ drivers/char/agp/uninorth-agp.c      |  3 --
+ drivers/char/agp/via-agp.c           |  3 --
+ drivers/char/applicom.c              | 10 ++--
+ drivers/char/hpet.c                  |  4 +-
+ drivers/char/hw_random/pseries-rng.c |  2 +-
+ drivers/char/mem.c                   |  2 +
+ drivers/char/pcmcia/cm4000_cs.c      |  3 +-
+ drivers/char/pcmcia/cm4040_cs.c      |  3 +-
+ drivers/char/pcmcia/synclink_cs.c    | 74 +++++++++++++++-------------
+ drivers/char/random.c                |  1 +
+ drivers/char/tpm/tpm1-cmd.c          |  4 +-
+ drivers/char/tpm/tpm_ftpm_tee.c      |  6 +--
+ 15 files changed, 60 insertions(+), 63 deletions(-)
 
-Probably there is a better way to invoke it which does handle include files.
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Bob Picco <robert.picco@hp.com>
+Cc: Clemens Ladisch <clemens@ladisch.de>
+Cc: "C. Scott Ananian" <cananian@alumni.princeton.edu>
+Cc: "cs.c" <support.linux@omnikey.com>
+Cc: Dave Safford <safford@watson.ibm.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: dwmw2@infradead.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Harald Welte <laforge@gnumonks.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jarkko Sakkinen <jarkko@kernel.org>
+Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Jerome Glisse <j.glisse@gmail.com>
+Cc: Kanoj Sarcar <kanoj@sgi.com>
+Cc: Kylene Hall <kjhall@us.ibm.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Lijun Pan <ljp@linux.ibm.com>
+Cc: linux-crypto@vger.kernel.org
+Cc: linux-integrity@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: paulkf@microgate.com
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Huewe <peterhuewe@gmx.de>
+Cc: Reiner Sailer <sailer@watson.ibm.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Thirupathaiah Annapureddy <thiruan@microsoft.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: "Uwe Kleine-König" <uwe@kleine-koenig.org>
+Cc: van Doorn <leendert@watson.ibm.com>
+-- 
+2.31.1
 
-Guenter
