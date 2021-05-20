@@ -2,111 +2,79 @@ Return-Path: <SRS0=6/er=KP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D0EC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:47:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 530E1C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:57:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1ADC661001
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:47:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ADC661001
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id A360C61004
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 12:57:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A360C61004
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm8dW4Dvrz3bt1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:47:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fm8sc30rrz3bt9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 May 2021 22:57:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d4QuOoug;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d4QuOoug;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=alir19LI;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=DL1evq+j;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com;
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=d4QuOoug; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=d4QuOoug; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=alir19LI; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=DL1evq+j; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm8d141Fjz2xg6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:46:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1621514801;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fm8s74y64z2yjK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 22:57:15 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1621515430;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=e4Fywv1ENiQVYa4wbDxfInSTJhNzcF1YbxHx9cQFq/I=;
- b=d4QuOougWAhbhCRx2V2EGZmoEh8sL+QdswEkKYCFuwAxL/Wk/BsCJMDW04O+lK1qYpSANX
- WCjunSKn7tSJ6dC9nVweVtPs11yXtBE4T8WqAi/u1t/tuzoNddLjJD3rZSzGBv8lkeqehb
- //VyohoD5Fe4oiLBZIojw6AB9UtdL4Q=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1621514801;
+ bh=jUamPXx65pH1aIvGNwlHBxESop2vxwhREte/s9pPY68=;
+ b=alir19LI/CdKq1z4lqWyLjPY6ziLkz4WCUgtwXLdy85WQEV/v87P2dq1F72FbncovUXhKy
+ hGPGbeflZJ0TzKNNkKpI+zNBGU7UCdLR2yW3Fe6lnDx5zw5j53t9nUPsL0I6fHMOpKBULv
+ uQZFl2ZDcZkEc++pAwKRQuFcliF5G+qOQXfxLY75wGKlysbgRJ935QGwLROv5i06bgQ3ty
+ ZNzeuZ2DqpDgXBUKWhcwHHTTLPIviAozwKAOfEYzTixEX0ku8KwzSX3yBfdvaurty9Qgd4
+ 699cq01D23sb2jP8ejWzxEw9otk1tNw5QdWCYdcnR2cSFg126VduL9XSBsY1dQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1621515430;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=e4Fywv1ENiQVYa4wbDxfInSTJhNzcF1YbxHx9cQFq/I=;
- b=d4QuOougWAhbhCRx2V2EGZmoEh8sL+QdswEkKYCFuwAxL/Wk/BsCJMDW04O+lK1qYpSANX
- WCjunSKn7tSJ6dC9nVweVtPs11yXtBE4T8WqAi/u1t/tuzoNddLjJD3rZSzGBv8lkeqehb
- //VyohoD5Fe4oiLBZIojw6AB9UtdL4Q=
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
- [209.85.222.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-507-k8u03jr9NvmLjxr1H5XHwA-1; Thu, 20 May 2021 08:46:39 -0400
-X-MC-Unique: k8u03jr9NvmLjxr1H5XHwA-1
-Received: by mail-qk1-f198.google.com with SMTP id
- z12-20020a05620a08ccb02902ea1e4a963dso12338754qkz.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2021 05:46:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=e4Fywv1ENiQVYa4wbDxfInSTJhNzcF1YbxHx9cQFq/I=;
- b=huo24eNlCc40D/VjnwHW4dz7jFctbnEToizso4nJqrZp7RnwwmMJ5UzG+a9K/ye+pL
- 8QEBYwVAygBV5JSR/J0TUDtlWzd/enrGbLqHnGIDkjOEcMBhLPelt7soNwPoA1+g3Oul
- ziDiW4qd7bUjuuz+oFt8CCaPVfRKV/S3uX4mzSxAsHwJ6u6nr2UB7N5pt0k1Es8XwqQl
- ECw/+tWRwnRO0Y8KD0MvsPF5NP3noVz+3os8p/B1W62s3Jpcs/usdo8t2iLdjbhYi/oW
- 4a3/Jf6HLRCDnjahKi5d41cveTKXn/4k9W0hf4wkb9GxCb+i61guZ3u9U+xu+A61OZMN
- /AjQ==
-X-Gm-Message-State: AOAM5315ud2/2jQt6sogRJumzdxPwnNFwSrvqMJd36yxz5aHMEE4cMkN
- HGBWbTpWFFur7EmkOPG5s7f0T9NSKEXdoYvMCy5XZ+SKfXAw6WQVqEo1budr5jBWnU36Bpgej8l
- ulTXthG1vTOMCudsT7+bwhNh7ww==
-X-Received: by 2002:a0c:a9db:: with SMTP id c27mr5484597qvb.50.1621514799222; 
- Thu, 20 May 2021 05:46:39 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJykH36WPuvRGC1ihzQ0iEIBjEHESz262HbbXiVKUFg4El15AaxsQh3dm6Y8Q9wTut0JQgl2Mg==
-X-Received: by 2002:a0c:a9db:: with SMTP id c27mr5484570qvb.50.1621514798898; 
- Thu, 20 May 2021 05:46:38 -0700 (PDT)
-Received: from t490s (bras-base-toroon474qw-grc-72-184-145-4-219.dsl.bell.ca.
- [184.145.4.219])
- by smtp.gmail.com with ESMTPSA id t17sm1690165qto.92.2021.05.20.05.46.37
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 20 May 2021 05:46:38 -0700 (PDT)
-Date: Thu, 20 May 2021 08:46:36 -0400
-From: Peter Xu <peterx@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v5 3/9] mm/mremap: Use pmd/pud_poplulate to update page
- table entries
-Message-ID: <YKZaLHurH9nJWvbj@t490s>
-References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
- <20210422054323.150993-4-aneesh.kumar@linux.ibm.com>
- <YKQdxpHVYB9H0M0j@Ryzen-9-3900X.localdomain>
- <87mtsrqqk0.fsf@linux.ibm.com> <YKXHA8/HmP6HXngO@t490s>
- <6e0dbb76-2b33-53f1-246e-30cec2b871e2@linux.ibm.com>
+ bh=jUamPXx65pH1aIvGNwlHBxESop2vxwhREte/s9pPY68=;
+ b=DL1evq+jK12vEToQZ9SDQqrrOm3r6kpwJZjI8t4D47d0yAWp3EQps31avf1HZXvx0+ttmc
+ S6Abu7NtSmu9liDg==
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 31/31] genirq: Improve "hwirq" output in /proc and /sys/
+In-Reply-To: <14b71a4b-fac6-a1c0-1707-436c86b9b6ec@kaod.org>
+References: <20210430080407.4030767-1-clg@kaod.org>
+ <20210430080407.4030767-32-clg@kaod.org>
+ <87mtsx2g7l.ffs@nanos.tec.linutronix.de>
+ <14b71a4b-fac6-a1c0-1707-436c86b9b6ec@kaod.org>
+Date: Thu, 20 May 2021 14:57:10 +0200
+Message-ID: <87r1i1bm1l.ffs@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <6e0dbb76-2b33-53f1-246e-30cec2b871e2@linux.ibm.com>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=peterx@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,24 +86,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, Nathan Chancellor <nathan@kernel.org>,
- linux-mm@kvack.org, kaleshsingh@google.com, joel@joelfernandes.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 20, 2021 at 01:56:54PM +0530, Aneesh Kumar K.V wrote:
-> > This seems to work at least for my userfaultfd test on shmem, however I don't
-> > fully understand the commit message [1] on: How do we guarantee we're not
-> > moving a thp pte?
-> > 
-> 
-> move_page_tables() checks for pmd_trans_huge() and ends up calling
-> move_huge_pmd if it is a THP entry.
+On Thu, May 20 2021 at 14:27, C=C3=A9dric Le Goater wrote:
+> On 5/14/21 10:49 PM, Thomas Gleixner wrote:
+>> On Fri, Apr 30 2021 at 10:04, C=C3=A9dric Le Goater wrote:
+>>> The HW IRQ numbers generated by the PCI MSI layer can be quite large
+>>> on a pSeries machine when running under the IBM Hypervisor and they
+>>> appear as negative. Use '%u' to show them correctly.
+>>>
+>>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>>> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+>>> ---
+>>>  kernel/irq/irqdesc.c | 2 +-
+>>>  kernel/irq/proc.c    | 2 +-
+>>>  2 files changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+>>> index cc1a09406c6e..85054eb2ae51 100644
+>>> --- a/kernel/irq/irqdesc.c
+>>> +++ b/kernel/irq/irqdesc.c
+>>> @@ -188,7 +188,7 @@ static ssize_t hwirq_show(struct kobject *kobj,
+>>>=20=20
+>>>  	raw_spin_lock_irq(&desc->lock);
+>>>  	if (desc->irq_data.domain)
+>>> -		ret =3D sprintf(buf, "%d\n", (int)desc->irq_data.hwirq);
+>>> +		ret =3D sprintf(buf, "%u\n", (int)desc->irq_data.hwirq);
+>>=20
+>> Which makes the (int) cast pointless, right?
+>
+> Well, hwirq is a long.
 
-Sorry to be unclear: what if a huge pud thp?
+And that makes '%u' plus an int casted argument any more correct?
 
--- 
-Peter Xu
+Aside of that hwirq is an unsigned long type and not long.
 
+> Would you prefer a "%lu" for both ?
+
+That's the obvious right thing to do, isn't it?
+
+Thanks,
+
+        tglx
