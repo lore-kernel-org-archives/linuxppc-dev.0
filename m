@@ -2,71 +2,112 @@ Return-Path: <SRS0=GbMY=KQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-18.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47D99C4707A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:44:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C323C4707A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 19:41:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA56F61261
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:44:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA56F61261
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 88721611ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 19:41:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88721611ED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FmvBB3Jq5z308T
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 May 2021 03:44:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FmxnC3sS8z3bxr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 May 2021 05:41:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EgOMDthD;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.215.182;
- helo=mail-pg1-f182.google.com; envelope-from=mcgrof@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=msc@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com
- [209.85.215.182])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=EgOMDthD; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fmv9m2fsHz2xv2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 May 2021 03:44:11 +1000 (AEST)
-Received: by mail-pg1-f182.google.com with SMTP id v14so12074772pgi.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 10:44:11 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=lcP+zO2F1IGQjzr8jBvO9rG6CcCMMr/Whp/T20TGCRM=;
- b=DizJw4nSDQuXGA18xC49fQqeIhcOipDI1nAFCaST6Gh0VYnotfv3432GUZFyiWJu4V
- ym2B8iUKGl7k7ZKxo3Ui0RgBl/WePhVi+7GVHRVw1HquALis7BPcT0sLLhqfARwEdwjT
- ShTPtKJHGOqkJqAx+ODm4mbbVN1xM9OIf1HBDXwZHeThskQ6TbZN5Fyd8TL0KjTfwuT+
- oHE8s4Mp9DNVYhPCANuaija8m0+Qx8VdQn9dqliscKdDica15GbJ0zRQj4GSwDT1AQdw
- SeCt+cl5HNa72AI+K7IFT23wIIztV0kyOZXn9AGm4SjGV8jfTppEOLCS5HmSN3RidmiW
- o9tQ==
-X-Gm-Message-State: AOAM530fJPCybEiOGsXzliwpSNVB2oEGT2gncGZdjunWzgf6CUGeEZl5
- 9AbmVm2u4qXawt2byrrWEBY=
-X-Google-Smtp-Source: ABdhPJx2cr14kVfs56RCS6Lg1N9a0F2CxWXa6sTYNwZ2wWHW3RuCIJw00Zxq6x/ufjwVbJsYm0Ya2A==
-X-Received: by 2002:a05:6a00:15d4:b029:2de:a538:c857 with SMTP id
- o20-20020a056a0015d4b02902dea538c857mr11480779pfu.51.1621619049288; 
- Fri, 21 May 2021 10:44:09 -0700 (PDT)
-Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id o3sm4974976pgh.22.2021.05.21.10.44.08
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 21 May 2021 10:44:08 -0700 (PDT)
-Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id 766BF423A3; Fri, 21 May 2021 17:44:07 +0000 (UTC)
-Date: Fri, 21 May 2021 17:44:07 +0000
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [dm-devel] [PATCH 05/26] block: add blk_alloc_disk and
- blk_cleanup_disk APIs
-Message-ID: <20210521174407.GA25291@42.do-not-panic.com>
-References: <20210521055116.1053587-1-hch@lst.de>
- <20210521055116.1053587-6-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FmxmZ6S3Lz2yWJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 May 2021 05:41:02 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14LJYMvI034006; Fri, 21 May 2021 15:40:36 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=references : from : to :
+ cc : subject : message-id : in-reply-to : date : content-type :
+ mime-version; s=pp1; bh=qMykcIuYawdYRjvJyzIEJbpxErll2khR6P6J5+MZgDs=;
+ b=EgOMDthDfsGaA+r3W+BTBQM2c9nsku0Y3ngQhWJCVvdAN7bm2EKJNTlxEGtbXUOp2TWc
+ Xsj5wn1O9TaCh3UKRPZHqfUN2DI5wEAMx5G0etp2YxUxH/9oSaOkXojv7+3NzDwYr6sF
+ Vy5HuZlAroBaReS6njXVaSghqfP77QZbqRhjhwJyKauW5JlKJdLo/s355TwqK+Rowq34
+ /SX7YKoLKdwJvi5ERsmpqq4Wr4sOKjGKPODbQD6XrVmX+9xW4Sp0q+gL/dunoEz5MosJ
+ hyujCgmQKr1u1xo/rwEZJYVrSCaP3ibpGWG2U6+QsOlOQpZd8BgNTTDWBxEc0xf6/68O pQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38pjdp13nr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 21 May 2021 15:40:36 -0400
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14LJYNL0034110;
+ Fri, 21 May 2021 15:40:35 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38pjdp13ng-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 21 May 2021 15:40:35 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14LJctPU008089;
+ Fri, 21 May 2021 19:40:34 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma04dal.us.ibm.com with ESMTP id 38j5xaxmjt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 21 May 2021 19:40:34 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14LJeYB327394346
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 21 May 2021 19:40:34 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 02BC4AE063;
+ Fri, 21 May 2021 19:40:34 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2403BAE067;
+ Fri, 21 May 2021 19:40:32 +0000 (GMT)
+Received: from TP480.linux.ibm.com (unknown [9.160.176.31])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 21 May 2021 19:40:31 +0000 (GMT)
+References: <20200611081203.995112-1-npiggin@gmail.com>
+ <20210518231331.GA8464@altlinux.org>
+ <1621385544.nttlk5qugb.astroid@bobo.none>
+ <1621400263.gf0mbqhkrf.astroid@bobo.none>
+User-agent: mu4e 1.4.10; emacs 27.2
+From: Matheus Castanho <msc@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: Linux powerpc new system call instruction and ABI
+Message-ID: <87a6oo4312.fsf@linux.ibm.com>
+In-reply-to: <1621400263.gf0mbqhkrf.astroid@bobo.none>
+Date: Fri, 21 May 2021 16:40:30 -0300
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: FmX8gShoI7DNy5B3IP4XWytJ3AtWUCi7
+X-Proofpoint-ORIG-GUID: HyvNHvMilIbfmniBGeykewaTqxRx90wx
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210521055116.1053587-6-hch@lst.de>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-21_08:2021-05-20,
+ 2021-05-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0
+ mlxlogscore=999 bulkscore=0 priorityscore=1501 phishscore=0
+ impostorscore=0 malwarescore=0 mlxscore=0 suspectscore=0
+ lowpriorityscore=0 clxscore=1011 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2104190000 definitions=main-2105210103
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,72 +119,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>,
- Mike Snitzer <snitzer@redhat.com>, linux-m68k@vger.kernel.org,
- linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>,
- dm-devel@redhat.com, Joshua Morris <josh.h.morris@us.ibm.com>,
- linux-s390@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>,
- Maxim Levitsky <maximlevitsky@gmail.com>,
- Vishal Verma <vishal.l.verma@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matias Bjorling <mb@lightnvm.io>,
- Nitin Gupta <ngupta@vflare.org>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-xtensa@linux-xtensa.org, Alex Dubov <oakad@yahoo.com>,
- Heiko Carstens <hca@linux.ibm.com>, Coly Li <colyli@suse.de>,
- linux-raid@vger.kernel.org, linux-bcache@vger.kernel.org,
- linux-block@vger.kernel.org, drbd-dev@tron.linbit.com,
- Philip Kelleher <pjk1939@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, Jens Axboe <axboe@kernel.dk>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>,
- Jim Paris <jim@jtan.com>, Minchan Kim <minchan@kernel.org>,
- Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org
+Cc: libc-alpha@sourceware.org, musl@lists.openwall.com,
+ "Dmitry V. Levin" <ldv@altlinux.org>, linux-api@vger.kernel.org,
+ libc-dev@lists.llvm.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 21, 2021 at 07:50:55AM +0200, Christoph Hellwig wrote:
-> Add two new APIs to allocate and free a gendisk including the
-> request_queue for use with BIO based drivers.  This is to avoid
-> boilerplate code in drivers.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Nicholas Piggin <npiggin@gmail.com> writes:
+
+> Excerpts from Nicholas Piggin's message of May 19, 2021 12:50 pm:
+>> Excerpts from Dmitry V. Levin's message of May 19, 2021 9:13 am:
+>>> Hi,
+>>>
+>>> On Thu, Jun 11, 2020 at 06:12:01PM +1000, Nicholas Piggin wrote:
+>>> [...]
+>>>> - Error handling: The consensus among kernel, glibc, and musl is to move to
+>>>>   using negative return values in r3 rather than CR0[SO]=1 to indicate error,
+>>>>   which matches most other architectures, and is closer to a function call.
+>>>
+>>> Apparently, the patchset merged by commit v5.9-rc1~100^2~164 was
+>>> incomplete: all functions defined in arch/powerpc/include/asm/ptrace.h and
+>>> arch/powerpc/include/asm/syscall.h that use ccr are broken when scv is used.
+>>> This includes syscall_get_error() and all its users including
+>>> PTRACE_GET_SYSCALL_INFO API, which in turn makes strace unusable
+>>> when scv is used.
+>>>
+>>> See also https://bugzilla.redhat.com/1929836
+>>
+>> I see, thanks. Using latest strace from github.com, the attached kernel
+>> patch makes strace -k check results a lot greener.
+>>
+>> Some of the remaining failing tests look like this (I didn't look at all
+>> of them yet):
+>>
+>> signal(SIGUSR1, 0xfacefeeddeadbeef)     = 0 (SIG_DFL)
+>> write(1, "signal(SIGUSR1, 0xfacefeeddeadbe"..., 50signal(SIGUSR1, 0xfacefeeddeadbeef) = 0 (SIG_DFL)
+>> ) = 50
+>> signal(SIGUSR1, SIG_IGN)                = 0xfacefeeddeadbeef
+>> write(2, "errno2name.c:461: unknown errno "..., 41errno2name.c:461: unknown errno 559038737) = 41
+>> write(2, ": Unknown error 559038737\n", 26: Unknown error 559038737
+>> ) = 26
+>> exit_group(1)                           = ?
+>>
+>> I think the problem is glibc testing for -ve, but it should be comparing
+>> against -4095 (+cc Matheus)
+>>
+>>   #define RET_SCV \
+>>       cmpdi r3,0; \
+>>       bgelr+; \
+>>       neg r3,r3;
+>
+> This glibc patch at least gets that signal test working. Haven't run the
+> full suite yet because of trouble making it work with a local glibc
+> install...
+>
+> Thanks,
+> Nick
+>
 > ---
->  block/genhd.c         | 35 +++++++++++++++++++++++++++++++++++
->  include/linux/genhd.h | 22 ++++++++++++++++++++++
->  2 files changed, 57 insertions(+)
-> 
-> diff --git a/block/genhd.c b/block/genhd.c
-> index e4974af3d729..6d4ce962866d 100644
-> --- a/block/genhd.c
-> +++ b/block/genhd.c
-> @@ -1302,6 +1302,25 @@ struct gendisk *__alloc_disk_node(int minors, int node_id)
->  }
->  EXPORT_SYMBOL(__alloc_disk_node);
->  
-> +struct gendisk *__blk_alloc_disk(int node)
-> +{
-> +	struct request_queue *q;
-> +	struct gendisk *disk;
-> +
-> +	q = blk_alloc_queue(node);
-> +	if (!q)
-> +		return NULL;
-> +
-> +	disk = __alloc_disk_node(0, node);
-> +	if (!disk) {
-> +		blk_cleanup_queue(q);
-> +		return NULL;
-> +	}
-> +	disk->queue = q;
-> +	return disk;
-> +}
-> +EXPORT_SYMBOL(__blk_alloc_disk);
+>
+> diff --git a/sysdeps/powerpc/powerpc64/sysdep.h b/sysdeps/powerpc/powerpc64/sysdep.h
+> index c57bb1c05d..1ea4c3b917 100644
+> --- a/sysdeps/powerpc/powerpc64/sysdep.h
+> +++ b/sysdeps/powerpc/powerpc64/sysdep.h
+> @@ -398,8 +398,9 @@ LT_LABELSUFFIX(name,_name_end): ; \
+>  #endif
+>
+>  #define RET_SCV \
+> -    cmpdi r3,0; \
+> -    bgelr+; \
+> +    li r9,-4095; \
+> +    cmpld r3,r9; \
+> +    bltlr+; \
+>      neg r3,r3;
+>
+>  #define RET_SC \
 
-Its not obvious to me why using this new API requires you then to
-set minors explicitly to 1, and yet here underneath we see the minors
-argument passed is 0.
+Hi Nick,
 
-Nor is it clear from the documentation.
+I agree the current code is accepting more values as errors than it
+should. This change looks good to me. All glibc tests are passing with
+it. I also built strace and checked one of the failing tests against a
+glibc with your patch:
 
-  Luis
+~/src/strace/tests$ uname -r
+5.10.16-1-default
+
+~/src/strace/tests$ /lib64/libc.so.6
+GNU C Library (GNU libc) release release version 2.33 (git 9826b03b74).
+[...]
+
+~/src/strace/tests$ ./signal.gen.test
+errno2name.c:461: unknown errno 559038737: Unknown error 559038737
+signal.gen.test: failed test: ../signal failed with code 1
+
+~/src/strace/tests$ ./signal
+signal(SIGUSR1, SIG_IGN) = 0 (SIG_DFL)
+signal(SIGUSR1, SIG_DFL) = 0x1 (SIG_IGN)
+signal(SIGUSR1, 0xfacefeeddeadbeef) = 0 (SIG_DFL)
+errno2name.c:461: unknown errno 559038737: Unknown error 559038737
+
+
+Running with glibc containing the patch:
+
+~/src/strace/tests$ ~/build/glibc/testrun.sh ./signal
+signal(SIGUSR1, SIG_IGN) = 0 (SIG_DFL)
+signal(SIGUSR1, SIG_DFL) = 0x1 (SIG_IGN)
+signal(SIGUSR1, 0xfacefeeddeadbeef) = 0 (SIG_DFL)
+signal(SIGUSR1, SIG_IGN) = 0xfacefeeddeadbeef
+signal(-559038737, SIG_IGN) = -1 EINVAL (Invalid argument)
++++ exited with 0 +++
+
+
+
+If the patch below looks OK to you and no one objects, I'll commit it to
+glibc on Monday.
+
+Thanks,
+Matheus Castanho
+
+---
+
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 1/1] powerpc: Fix handling of scv return error codes
+
+When using scv on templated ASM syscalls, current code interprets any
+negative return value as error, but the only valid error codes are in
+the range -4095..-1 according to the ABI.
+
+Reviewed-by: Matheus Castanho <msc@linux.ibm.com>
+---
+ sysdeps/powerpc/powerpc64/sysdep.h | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/sysdeps/powerpc/powerpc64/sysdep.h b/sysdeps/powerpc/powerpc64/sysdep.h
+index c57bb1c05d..1ea4c3b917 100644
+--- a/sysdeps/powerpc/powerpc64/sysdep.h
++++ b/sysdeps/powerpc/powerpc64/sysdep.h
+@@ -398,8 +398,9 @@ LT_LABELSUFFIX(name,_name_end): ; \
+ #endif
+
+ #define RET_SCV \
+-    cmpdi r3,0; \
+-    bgelr+; \
++    li r9,-4095; \
++    cmpld r3,r9; \
++    bltlr+; \
+     neg r3,r3;
+
+ #define RET_SC \
+--
+2.31.1
