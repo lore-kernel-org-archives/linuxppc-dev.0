@@ -2,112 +2,81 @@ Return-Path: <SRS0=GbMY=KQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D48B2C433ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 03:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25725C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 05:52:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 450C96100A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 03:29:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 450C96100A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2E4C9613BB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 05:52:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E4C9613BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FmXCj5kFmz3085
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 13:29:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FmbNV4zF7z3bsg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 15:52:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZMqfIB5M;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=H16lnaBV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+940d4f53d1157bf1ee93+6480+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=ZMqfIB5M; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=H16lnaBV; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FmXC869MZz2xYp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 13:29:08 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14L332Ff086023; Thu, 20 May 2021 23:28:57 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=BDtIoiQUxTbyuOnUSSwWoQxRurIDpZufH5SHZlL8KTE=;
- b=ZMqfIB5M+8xgYXRKbOt3QMqPkC5PYovlRT/7/pRR5G8olB5YaaSnFt6zhn4pBEVryDcW
- W2VfftM1U0Ni9WsHl8Ye8Ir5vyTL34KAMGCx/4vfHPLXGXqZtP7ca1XiiDb10JJOV0AP
- /v5WSpYyDRTQM9M0XEPDufs9TGhsBMoaSvpsMM34RE0lc14f4FgsJVqsoKim7YhaaJ6d
- LGaRbkI53qx35r0MbkQFkj284L0AneZf71qukKXD54fbvaCtQHvhuqsK0xqjU43JOFQM
- TKrzL15YUvkNU9lzlhKJczl/JNiKybyW0n+2SUqKtIKFSyOlcInHzQ8vgPPXPSE6P4xK ZA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38p2kujmbf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 May 2021 23:28:57 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14L3Os1R159886;
- Thu, 20 May 2021 23:28:56 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38p2kujmbb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 20 May 2021 23:28:56 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14L3SUX4015605;
- Fri, 21 May 2021 03:28:56 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01wdc.us.ibm.com with ESMTP id 38j5x9mqdg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 21 May 2021 03:28:56 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14L3StHs31261138
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 May 2021 03:28:55 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CBCE3AE063;
- Fri, 21 May 2021 03:28:55 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C1A04AE068;
- Fri, 21 May 2021 03:28:52 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.199.42.28])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 21 May 2021 03:28:52 +0000 (GMT)
-X-Mailer: emacs 28.0.50 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v5 7/9] mm/mremap: Move TLB flush outside page table lock
-In-Reply-To: <f676b053-bda4-a1f5-321e-f00fb3de8a40@linux.ibm.com>
-References: <20210422054323.150993-1-aneesh.kumar@linux.ibm.com>
- <20210422054323.150993-8-aneesh.kumar@linux.ibm.com>
- <b3047082-fc82-b326-dbdb-835b88df78d0@linux.ibm.com>
- <2eafd7df-65fd-1e2c-90b6-d143557a1fdc@linux.ibm.com>
- <CAHk-=wjq8thag3uNv-2MMu75OgX5ybMon7gZDUHYwzeTwcZHoA@mail.gmail.com>
- <f676b053-bda4-a1f5-321e-f00fb3de8a40@linux.ibm.com>
-Date: Fri, 21 May 2021 08:58:50 +0530
-Message-ID: <877djsn4st.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FmbMv3rCxz2yyS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 15:51:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=EkLd0nYnyLCmBXUO0GObaMtosm7d26bg6Wbjy71f0gk=; b=H16lnaBVNTx3ZSC9sj1cvZgwUY
+ 5wtcjGkslusA/lPPGRK00Zg5f+ektzZtdlNvpnt/DvdW93zHAi1Xm7UKhy0ZlRMevF0euZFYFtf+0
+ HYPcCnoxUdyzg1EP5GMzj4i08ZcFl7CRQMVETjJPCKSCauZfWFZJm0cC8ECVWhdayO3bieBEpUVZO
+ 2YTQLWauA09cDW+g23ZVJ40RX1QYgL6hKJECzmbUZZBG8B7p9v2PaTEM8Tqz5KS59aUypSCP2j5Wh
+ 7aNm83AH7YV9Y6e8rccM1df8RQG5SBihr9nfbP1ZD0oX8KqQRBeFKmecZSO6T/3wQultej6dRPy5U
+ 5ltNPdDg==;
+Received: from [2001:4bb8:180:5add:4fd7:4137:d2f2:46e6] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
+ id 1ljy4A-00Gpwn-Ii; Fri, 21 May 2021 05:51:23 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Philipp Reisner <philipp.reisner@linbit.com>,
+ Lars Ellenberg <lars.ellenberg@linbit.com>, Jim Paris <jim@jtan.com>,
+ Joshua Morris <josh.h.morris@us.ibm.com>,
+ Philip Kelleher <pjk1939@linux.ibm.com>, Minchan Kim <minchan@kernel.org>,
+ Nitin Gupta <ngupta@vflare.org>, Matias Bjorling <mb@lightnvm.io>,
+ Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+ Song Liu <song@kernel.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
+ Alex Dubov <oakad@yahoo.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: [PATCH 01/26] block: refactor device number setup in __device_add_disk
+Date: Fri, 21 May 2021 07:50:51 +0200
+Message-Id: <20210521055116.1053587-2-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210521055116.1053587-1-hch@lst.de>
+References: <20210521055116.1053587-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: X-WFiMnOPC3rVK5TMEXJKbgXIMiaQPMS
-X-Proofpoint-ORIG-GUID: jGoVescxMIQr_u6OvbdRbUNwbY03BzW7
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-21_02:2021-05-20,
- 2021-05-21 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 mlxscore=0 mlxlogscore=999 phishscore=0 spamscore=0
- malwarescore=0 bulkscore=0 clxscore=1015 suspectscore=0 impostorscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105210021
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,88 +88,222 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Piggin <npiggin@gmail.com>, Linux-MM <linux-mm@kvack.org>,
- Kalesh Singh <kaleshsingh@google.com>, Joel Fernandes <joel@joelfernandes.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-bcache@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-raid@vger.kernel.org, nvdimm@lists.linux.dev, linux-s390@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-nvme@lists.infradead.org, linux-block@vger.kernel.org,
+ dm-devel@redhat.com, linuxppc-dev@lists.ozlabs.org, drbd-dev@lists.linbit.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+Untangle the mess around blk_alloc_devt by moving the check for
+the used allocation scheme into the callers.
 
-> On 5/21/21 8:10 AM, Linus Torvalds wrote:
->> On Thu, May 20, 2021 at 6:57 AM Aneesh Kumar K.V
->> <aneesh.kumar@linux.ibm.com> wrote:
->>>
->>> Wondering whether this is correct considering we are holding mmap_sem in
->>> write mode in mremap.
->> 
->> Right. So *normally* the rule is to EITHER
->> 
->>   - hold the mmap_sem for writing
->> 
->> OR
->> 
->>   - hold the page table lock
->> 
->> and that the TLB flush needs to happen before you release that lock.
->> 
->> But as that commit message of commit eb66ae030829 ("mremap: properly
->> flush TLB before releasing the page") says, "mremap()" is a bit
->> special. It's special because mremap() didn't take ownership of the
->> page - it only moved it somewhere else. So now the page-out logic -
->> that relies on the page table lock - can free the page immediately
->> after we've released the page table lock.
->> 
->> So basically, in order to delay the TLB flush after releasing the page
->> table lock, it's not really sufficient to _just_ hold the mmap_sem for
->> writing. You also need to guarantee that the lifetime of the page
->> itself is held until after the TLB flush.
->> 
->> For normal operations like "munmap()", this happens naturally, because
->> we remove the page from the page table, and add it to the list of
->> pages to be freed after the TLB flush.
->> 
->> But mremap never did that "remove the page and add it to a list to be
->> free'd later". Instead, it just moved the page somewhere else. And
->> thus there is no guarantee that the page that got moved will continue
->> to exist until a TLB flush is done.
->> 
->> So mremap does need to flush the TLB before releasing the page table
->> lock, because that's the lifetime boundary for the page that got
->> moved.
->
-> How will we avoid that happening with 
-> c49dd340180260c6239e453263a9a244da9a7c85 / 
-> 2c91bd4a4e2e530582d6fd643ea7b86b27907151 . The commit improves mremap 
-> performance by moving level3/level2 page table entries. When doing so we 
-> are not holding level 4 ptl lock (pte_lock()). But rather we are holding 
-> pmd_lock or pud_lock(). So if we move pages around without holding the 
-> pte lock, won't the above issue happen even if we do a tlb flush with 
-> holding pmd lock/pud lock?
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ block/blk.h             |  4 +-
+ block/genhd.c           | 96 ++++++++++++++++-------------------------
+ block/partitions/core.c | 15 +++++--
+ 3 files changed, 49 insertions(+), 66 deletions(-)
 
-This should help? ie, we flush tlb before we move pagetables to the new
-address? 
-
-modified   mm/mremap.c
-@@ -277,11 +277,14 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
- 	/* Clear the pmd */
- 	pmd = *old_pmd;
- 	pmd_clear(old_pmd);
--
-+	/*
-+	 * flush the TLB before we move the page table entries.
-+	 * TLB flush includes necessary barriers.
-+	 */
-+	flush_pte_tlb_pwc_range(vma, old_addr, old_addr + PMD_SIZE);
- 	VM_BUG_ON(!pmd_none(*new_pmd));
- 	pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
+diff --git a/block/blk.h b/block/blk.h
+index 8b3591aee0a5..cba3a94aabfa 100644
+--- a/block/blk.h
++++ b/block/blk.h
+@@ -343,8 +343,8 @@ static inline void blk_queue_free_zone_bitmaps(struct request_queue *q) {}
+ static inline void blk_queue_clear_zone_settings(struct request_queue *q) {}
+ #endif
  
--	flush_pte_tlb_pwc_range(vma, old_addr, old_addr + PMD_SIZE);
- 	if (new_ptl != old_ptl)
- 		spin_unlock(new_ptl);
- 	spin_unlock(old_ptl);
+-int blk_alloc_devt(struct block_device *part, dev_t *devt);
+-void blk_free_devt(dev_t devt);
++int blk_alloc_ext_minor(void);
++void blk_free_ext_minor(unsigned int minor);
+ char *disk_name(struct gendisk *hd, int partno, char *buf);
+ #define ADDPART_FLAG_NONE	0
+ #define ADDPART_FLAG_RAID	1
+diff --git a/block/genhd.c b/block/genhd.c
+index 39ca97b0edc6..2c00bc3261d9 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -335,52 +335,22 @@ static int blk_mangle_minor(int minor)
+ 	return minor;
+ }
+ 
+-/**
+- * blk_alloc_devt - allocate a dev_t for a block device
+- * @bdev: block device to allocate dev_t for
+- * @devt: out parameter for resulting dev_t
+- *
+- * Allocate a dev_t for block device.
+- *
+- * RETURNS:
+- * 0 on success, allocated dev_t is returned in *@devt.  -errno on
+- * failure.
+- *
+- * CONTEXT:
+- * Might sleep.
+- */
+-int blk_alloc_devt(struct block_device *bdev, dev_t *devt)
++int blk_alloc_ext_minor(void)
+ {
+-	struct gendisk *disk = bdev->bd_disk;
+ 	int idx;
+ 
+-	/* in consecutive minor range? */
+-	if (bdev->bd_partno < disk->minors) {
+-		*devt = MKDEV(disk->major, disk->first_minor + bdev->bd_partno);
+-		return 0;
+-	}
+-
+ 	idx = ida_alloc_range(&ext_devt_ida, 0, NR_EXT_DEVT, GFP_KERNEL);
+-	if (idx < 0)
+-		return idx == -ENOSPC ? -EBUSY : idx;
+-
+-	*devt = MKDEV(BLOCK_EXT_MAJOR, blk_mangle_minor(idx));
+-	return 0;
++	if (idx < 0) {
++		if (idx == -ENOSPC)
++			return -EBUSY;
++		return idx;
++	}
++	return blk_mangle_minor(idx);
+ }
+ 
+-/**
+- * blk_free_devt - free a dev_t
+- * @devt: dev_t to free
+- *
+- * Free @devt which was allocated using blk_alloc_devt().
+- *
+- * CONTEXT:
+- * Might sleep.
+- */
+-void blk_free_devt(dev_t devt)
++void blk_free_ext_minor(unsigned int minor)
+ {
+-	if (MAJOR(devt) == BLOCK_EXT_MAJOR)
+-		ida_free(&ext_devt_ida, blk_mangle_minor(MINOR(devt)));
++	ida_free(&ext_devt_ida, blk_mangle_minor(minor));
+ }
+ 
+ static char *bdevt_str(dev_t devt, char *buf)
+@@ -501,8 +471,7 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
+ 			      const struct attribute_group **groups,
+ 			      bool register_queue)
+ {
+-	dev_t devt;
+-	int retval;
++	int ret;
+ 
+ 	/*
+ 	 * The disk queue should now be all set with enough information about
+@@ -513,23 +482,29 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
+ 	if (register_queue)
+ 		elevator_init_mq(disk->queue);
+ 
+-	/* minors == 0 indicates to use ext devt from part0 and should
+-	 * be accompanied with EXT_DEVT flag.  Make sure all
+-	 * parameters make sense.
++	/*
++	 * If the driver provides an explicit major number it also must provide
++	 * the number of minors numbers supported, and those will be used to
++	 * setup the gendisk.
++	 * Otherwise just allocate the device numbers for both the whole device
++	 * and all partitions from the extended dev_t space.
+ 	 */
+-	WARN_ON(disk->minors && !(disk->major || disk->first_minor));
+-	WARN_ON(!disk->minors &&
+-		!(disk->flags & (GENHD_FL_EXT_DEVT | GENHD_FL_HIDDEN)));
+-
+-	disk->flags |= GENHD_FL_UP;
++	if (disk->major) {
++		WARN_ON(!disk->minors);
++	} else {
++		WARN_ON(disk->minors);
++		WARN_ON(!(disk->flags & (GENHD_FL_EXT_DEVT | GENHD_FL_HIDDEN)));
+ 
+-	retval = blk_alloc_devt(disk->part0, &devt);
+-	if (retval) {
+-		WARN_ON(1);
+-		return;
++		ret = blk_alloc_ext_minor();
++		if (ret < 0) {
++			WARN_ON(1);
++			return;
++		}
++		disk->major = BLOCK_EXT_MAJOR;
++		disk->first_minor = MINOR(ret);
+ 	}
+-	disk->major = MAJOR(devt);
+-	disk->first_minor = MINOR(devt);
++
++	disk->flags |= GENHD_FL_UP;
+ 
+ 	disk_alloc_events(disk);
+ 
+@@ -543,14 +518,14 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
+ 	} else {
+ 		struct backing_dev_info *bdi = disk->queue->backing_dev_info;
+ 		struct device *dev = disk_to_dev(disk);
+-		int ret;
+ 
+ 		/* Register BDI before referencing it from bdev */
+-		dev->devt = devt;
+-		ret = bdi_register(bdi, "%u:%u", MAJOR(devt), MINOR(devt));
++		dev->devt = MKDEV(disk->major, disk->first_minor);
++		ret = bdi_register(bdi, "%u:%u",
++				   disk->major, disk->first_minor);
+ 		WARN_ON(ret);
+ 		bdi_set_owner(bdi, dev);
+-		bdev_add(disk->part0, devt);
++		bdev_add(disk->part0, dev->devt);
+ 	}
+ 	register_disk(parent, disk, groups);
+ 	if (register_queue)
+@@ -1129,7 +1104,8 @@ static void disk_release(struct device *dev)
+ 
+ 	might_sleep();
+ 
+-	blk_free_devt(dev->devt);
++	if (MAJOR(dev->devt) == BLOCK_EXT_MAJOR)
++		blk_free_ext_minor(MINOR(dev->devt));
+ 	disk_release_events(disk);
+ 	kfree(disk->random);
+ 	xa_destroy(&disk->part_tbl);
+diff --git a/block/partitions/core.c b/block/partitions/core.c
+index dc60ecf46fe6..504297bdc8bf 100644
+--- a/block/partitions/core.c
++++ b/block/partitions/core.c
+@@ -260,7 +260,8 @@ static const struct attribute_group *part_attr_groups[] = {
+ 
+ static void part_release(struct device *dev)
+ {
+-	blk_free_devt(dev->devt);
++	if (MAJOR(dev->devt) == BLOCK_EXT_MAJOR)
++		blk_free_ext_minor(MINOR(dev->devt));
+ 	bdput(dev_to_bdev(dev));
+ }
+ 
+@@ -379,9 +380,15 @@ static struct block_device *add_partition(struct gendisk *disk, int partno,
+ 	pdev->type = &part_type;
+ 	pdev->parent = ddev;
+ 
+-	err = blk_alloc_devt(bdev, &devt);
+-	if (err)
+-		goto out_put;
++	/* in consecutive minor range? */
++	if (bdev->bd_partno < disk->minors) {
++		devt = MKDEV(disk->major, disk->first_minor + bdev->bd_partno);
++	} else {
++		err = blk_alloc_ext_minor();
++		if (err < 0)
++			goto out_put;
++		devt = MKDEV(BLOCK_EXT_MAJOR, err);
++	}
+ 	pdev->devt = devt;
+ 
+ 	/* delay uevent until 'holders' subdir is created */
+-- 
+2.30.2
 
-
--aneesh
