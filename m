@@ -2,51 +2,47 @@ Return-Path: <SRS0=GbMY=KQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 054F0C433B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 06:16:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B68C433B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 06:23:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69D6861004
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 06:16:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69D6861004
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id BEA7B613B6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 06:23:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEA7B613B6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fmbvv1FLJz3cXs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 16:16:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fmc4Q2N00z3cVw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 16:23:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=colyli@suse.de;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FmbvP5SsWz2xYp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 16:15:45 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id C9DB4AC87;
- Fri, 21 May 2021 06:15:41 +0000 (UTC)
-To: Christoph Hellwig <hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fmc3y1XQsz2xfY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 16:23:09 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id C508C6736F; Fri, 21 May 2021 08:23:01 +0200 (CEST)
+Date: Fri, 21 May 2021 08:23:01 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Coly Li <colyli@suse.de>
+Subject: Re: [PATCH 12/26] bcache: convert to blk_alloc_disk/blk_cleanup_disk
+Message-ID: <20210521062301.GA10244@lst.de>
 References: <20210521055116.1053587-1-hch@lst.de>
  <20210521055116.1053587-13-hch@lst.de>
-From: Coly Li <colyli@suse.de>
-Subject: Re: [PATCH 12/26] bcache: convert to blk_alloc_disk/blk_cleanup_disk
-Message-ID: <d4f1c005-2ce0-51b5-c861-431f0ffb3dcf@suse.de>
-Date: Fri, 21 May 2021 14:15:32 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.10.1
+ <d4f1c005-2ce0-51b5-c861-431f0ffb3dcf@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20210521055116.1053587-13-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d4f1c005-2ce0-51b5-c861-431f0ffb3dcf@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,11 +56,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: nvdimm@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>,
  Mike Snitzer <snitzer@redhat.com>, linux-nvme@lists.infradead.org,
- Philipp Reisner <philipp.reisner@linbit.com>, Song Liu <song@kernel.org>,
- dm-devel@redhat.com, Joshua Morris <josh.h.morris@us.ibm.com>,
- drbd-dev@lists.linbit.com, linux-s390@vger.kernel.org,
- Dave Jiang <dave.jiang@intel.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
- Vishal Verma <vishal.l.verma@intel.com>,
+ Philipp Reisner <philipp.reisner@linbit.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, dm-devel@redhat.com,
+ Joshua Morris <josh.h.morris@us.ibm.com>, drbd-dev@lists.linbit.com,
+ linux-s390@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>,
+ Maxim Levitsky <maximlevitsky@gmail.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Christoph Hellwig <hch@lst.de>,
  Christian Borntraeger <borntraeger@de.ibm.com>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Matias Bjorling <mb@lightnvm.io>,
  Nitin Gupta <ngupta@vflare.org>, Vasily Gorbik <gor@linux.ibm.com>,
@@ -73,7 +70,7 @@ Cc: nvdimm@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>,
  linux-bcache@vger.kernel.org, linux-block@vger.kernel.org,
  Philip Kelleher <pjk1939@linux.ibm.com>,
  Dan Williams <dan.j.williams@intel.com>, Jens Axboe <axboe@kernel.dk>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Chris Zankel <chris@zankel.net>, Song Liu <song@kernel.org>,
  linux-mmc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
  Jim Paris <jim@jtan.com>, Minchan Kim <minchan@kernel.org>,
  Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org
@@ -81,75 +78,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/21/21 1:51 PM, Christoph Hellwig wrote:
-> Convert the bcache driver to use the blk_alloc_disk and blk_cleanup_disk
-> helpers to simplify gendisk and request_queue allocation.
+On Fri, May 21, 2021 at 02:15:32PM +0800, Coly Li wrote:
+> The  above 2 lines are added on purpose to prevent an refcount
+> underflow. It is from commit 86da9f736740 ("bcache: fix refcount
+> underflow in bcache_device_free()").
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  drivers/md/bcache/super.c | 15 ++++-----------
->  1 file changed, 4 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/md/bcache/super.c b/drivers/md/bcache/super.c
-> index bea8c4429ae8..185246a0d855 100644
-> --- a/drivers/md/bcache/super.c
-> +++ b/drivers/md/bcache/super.c
-> @@ -890,13 +890,9 @@ static void bcache_device_free(struct bcache_device *d)
->  		if (disk_added)
->  			del_gendisk(disk);
->  
-> -		if (disk->queue)
-> -			blk_cleanup_queue(disk->queue);
-> -
-> +		blk_cleanup_disk(disk);
->  		ida_simple_remove(&bcache_device_idx,
->  				  first_minor_to_idx(disk->first_minor));
-> -		if (disk_added)
-> -			put_disk(disk);
+> Maybe add a parameter to blk_cleanup_disk() or checking (disk->flags &
+> GENHD_FL_UP) inside blk_cleanup_disk() ?
 
-The  above 2 lines are added on purpose to prevent an refcount
-underflow. It is from commit 86da9f736740 ("bcache: fix refcount
-underflow in bcache_device_free()").
-
-Maybe add a parameter to blk_cleanup_disk() or checking (disk->flags &
-GENHD_FL_UP) inside blk_cleanup_disk() ?
-
-Coly Li
-
-
->  	}
->  
->  	bioset_exit(&d->bio_split);
-> @@ -946,7 +942,7 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
->  			BIOSET_NEED_BVECS|BIOSET_NEED_RESCUER))
->  		goto err;
->  
-> -	d->disk = alloc_disk(BCACHE_MINORS);
-> +	d->disk = blk_alloc_disk(NUMA_NO_NODE);
->  	if (!d->disk)
->  		goto err;
->  
-> @@ -955,14 +951,11 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
->  
->  	d->disk->major		= bcache_major;
->  	d->disk->first_minor	= idx_to_first_minor(idx);
-> +	d->disk->minors		= BCACHE_MINORS;
->  	d->disk->fops		= ops;
->  	d->disk->private_data	= d;
->  
-> -	q = blk_alloc_queue(NUMA_NO_NODE);
-> -	if (!q)
-> -		return -ENOMEM;
-> -
-> -	d->disk->queue			= q;
-> +	q = d->disk->queue;
->  	q->limits.max_hw_sectors	= UINT_MAX;
->  	q->limits.max_sectors		= UINT_MAX;
->  	q->limits.max_segment_size	= UINT_MAX;
-> 
-
-The rested looks fine to me.
-
-Thanks.
-
-Coly Li
+Please take a look at patch 4 in the series.
