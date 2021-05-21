@@ -2,70 +2,62 @@ Return-Path: <SRS0=GbMY=KQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1C65C4707A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73B5BC47076
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:43:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E31661168
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:29:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E31661168
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E81A061353
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 May 2021 17:43:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E81A061353
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FmtrM1G5yz3bx4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 May 2021 03:29:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fmv8Q39ykz3brx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 May 2021 03:43:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.216.48; helo=mail-pj1-f48.google.com;
- envelope-from=mcgrof@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com
- [209.85.216.48])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fmtqy4HsKz305w
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 May 2021 03:28:45 +1000 (AEST)
-Received: by mail-pj1-f48.google.com with SMTP id kr9so3258547pjb.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 May 2021 10:28:45 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=B30rffgHFLYBI6xwi77IEdIESyslCgwa8HluqL6arQs=;
- b=XWppWywbOuN8mRgCa8blE9LAix2Z4rf8lAxBEVnDrqFq8CcSPT/eoy/lncD/cSgWqn
- mp2ktZZvqk403pJQBfzZiFXVVopzc8GxXVEUsfso1zSeubAD9NDLL6ayrcFlU2NhckV/
- ZtF6Q+OB0hD7oC7BHv0sXYkIbuP6BIpZyU1s1AeSTBnz8kUBa5D7OdkN6NtFt43Ilx8o
- BaeZuwJmbkfjsDpA3BsrSIkzyZSPOnOvul1sWHKjP9fOqyYKyVmvNBxGh/6pzn9BDLa4
- JQTb1Z2YVz3pWkHRw6WN6BmfxMlylNFTAyAQeB7DxtmZQ1yfRIqv0CUY20Cc7XI2MYWM
- 5UZg==
-X-Gm-Message-State: AOAM530ETN79RfvptiGNr6JSAnkKE2SdDvbVix66S3m7kT2XJTpf3FgY
- Cx4TlrbDpQOzbDxFRMpzRSY=
-X-Google-Smtp-Source: ABdhPJyrNWjuuiPeUt5pQpc8nPl0WeqbdGuJLCj1G2mOrwbN4glaACuKyX0vSa0sudDl68ZR50luTQ==
-X-Received: by 2002:a17:902:e8c8:b029:ee:f249:e416 with SMTP id
- v8-20020a170902e8c8b02900eef249e416mr13149158plg.3.1621618124047; 
- Fri, 21 May 2021 10:28:44 -0700 (PDT)
-Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id p19sm2008772pgi.59.2021.05.21.10.28.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 21 May 2021 10:28:42 -0700 (PDT)
-Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id 77877423A3; Fri, 21 May 2021 17:28:41 +0000 (UTC)
-Date: Fri, 21 May 2021 17:28:41 +0000
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [dm-devel] [PATCH 04/26] block: add a flag to make put_disk on
- partially initalized disks safer
-Message-ID: <20210521172841.GA25211@42.do-not-panic.com>
-References: <20210521055116.1053587-1-hch@lst.de>
- <20210521055116.1053587-5-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fmv834Nrxz2xyC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 May 2021 03:42:39 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 4Fmv7t405xzBBKd;
+ Fri, 21 May 2021 19:42:34 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sGQ2atNXMHyd; Fri, 21 May 2021 19:42:34 +0200 (CEST)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Fmv7t2td7zBBKC;
+ Fri, 21 May 2021 19:42:34 +0200 (CEST)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id 828B3427; Fri, 21 May 2021 19:46:56 +0200 (CEST)
+Received: from 37-169-24-72.coucou-networks.fr
+ (37-169-24-72.coucou-networks.fr [37.169.24.72]) by messagerie.c-s.fr (Horde
+ Framework) with HTTP; Fri, 21 May 2021 19:46:56 +0200
+Date: Fri, 21 May 2021 19:46:56 +0200
+Message-ID: <20210521194656.Horde.hiP1EHfMBv05hLGgUhTorg1@messagerie.c-s.fr>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 01/11] powerpc: remove interrupt exit helpers unused
+ argument
+References: <20210521114422.3179350-1-npiggin@gmail.com>
+ <20210521114422.3179350-2-npiggin@gmail.com>
+In-Reply-To: <20210521114422.3179350-2-npiggin@gmail.com>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210521055116.1053587-5-hch@lst.de>
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,38 +69,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>,
- Mike Snitzer <snitzer@redhat.com>, linux-m68k@vger.kernel.org,
- linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>,
- dm-devel@redhat.com, Joshua Morris <josh.h.morris@us.ibm.com>,
- linux-s390@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>,
- Maxim Levitsky <maximlevitsky@gmail.com>,
- Vishal Verma <vishal.l.verma@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matias Bjorling <mb@lightnvm.io>,
- Nitin Gupta <ngupta@vflare.org>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-xtensa@linux-xtensa.org, Alex Dubov <oakad@yahoo.com>,
- Heiko Carstens <hca@linux.ibm.com>, Coly Li <colyli@suse.de>,
- linux-raid@vger.kernel.org, linux-bcache@vger.kernel.org,
- linux-block@vger.kernel.org, drbd-dev@tron.linbit.com,
- Philip Kelleher <pjk1939@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, Jens Axboe <axboe@kernel.dk>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>,
- Jim Paris <jim@jtan.com>, Minchan Kim <minchan@kernel.org>,
- Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 21, 2021 at 07:50:54AM +0200, Christoph Hellwig wrote:
-> Add a flag to indicate that __device_add_disk did grab a queue reference
-> so that disk_release only drops it if we actually had it.  This sort
-> out one of the major pitfals with partially initialized gendisk that
-> a lot of drivers did get wrong or still do.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Nicholas Piggin <npiggin@gmail.com> a =C3=A9crit=C2=A0:
 
-Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+> The msr argument is not used, remove it.
 
-  Luis
+Why not keep and use that msr argument instead of re-reading regs->msr ?
+
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/asm-prototypes.h | 4 ++--
+>  arch/powerpc/kernel/interrupt.c           | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/asm-prototypes.h=20=20
+>=20b/arch/powerpc/include/asm/asm-prototypes.h
+> index 1c7b75834e04..95492655462e 100644
+> --- a/arch/powerpc/include/asm/asm-prototypes.h
+> +++ b/arch/powerpc/include/asm/asm-prototypes.h
+> @@ -71,8 +71,8 @@ void __init machine_init(u64 dt_ptr);
+>  #endif
+>  long system_call_exception(long r3, long r4, long r5, long r6, long=20=
+=20
+>=20r7, long r8, unsigned long r0, struct pt_regs *regs);
+>  notrace unsigned long syscall_exit_prepare(unsigned long r3, struct=20=
+=20
+>=20pt_regs *regs, long scv);
+> -notrace unsigned long interrupt_exit_user_prepare(struct pt_regs=20=20
+>=20*regs, unsigned long msr);
+> -notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs=20=20
+>=20*regs, unsigned long msr);
+> +notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs);
+> +notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs=
+);
+>
+>  long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_lo=
+w,
+>  		      u32 len_high, u32 len_low);
+> diff --git a/arch/powerpc/kernel/interrupt.c=20=20
+>=20b/arch/powerpc/kernel/interrupt.c
+> index e0938ba298f2..38ae7057d6c2 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -352,7 +352,7 @@ notrace unsigned long=20=20
+>=20syscall_exit_prepare(unsigned long r3,
+>  	return ret;
+>  }
+>
+> -notrace unsigned long interrupt_exit_user_prepare(struct pt_regs=20=20
+>=20*regs, unsigned long msr)
+> +notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
+>  {
+>  	unsigned long ti_flags;
+>  	unsigned long flags;
+> @@ -431,7 +431,7 @@ notrace unsigned long=20=20
+>=20interrupt_exit_user_prepare(struct pt_regs *regs, unsigned
+>
+>  void preempt_schedule_irq(void);
+>
+> -notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs=20=20
+>=20*regs, unsigned long msr)
+> +notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs=
+)
+>  {
+>  	unsigned long flags;
+>  	unsigned long ret =3D 0;
+> --
+> 2.23.0
+
+
