@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 530B4C4707A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:22:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74115C4707A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:23:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6DA161263
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:22:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6DA161263
+	by mail.kernel.org (Postfix) with ESMTPS id 12C8B6127A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:23:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12C8B6127A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fntcl2x5Vz3c34
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 18:22:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FntdS5YYCz3c6C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 18:23:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=QAvm8xM1;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hfVPiopp;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gVo/Rp9x;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=XR8EkU8y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
@@ -30,38 +30,38 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=QAvm8xM1; 
+ header.s=susede2_rsa header.b=gVo/Rp9x; 
  dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=hfVPiopp; 
+ header.s=susede2_ed25519 header.b=XR8EkU8y; 
  dkim-atps=neutral
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FntcF3JCJz2xYZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 May 2021 18:22:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fntcx3qDmz2y07
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 May 2021 18:22:41 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1621758123; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ t=1621758159; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=YQQWRoogfmmaPmjYDnUApC/urhgC3ohzJzGclI+kNAY=;
- b=QAvm8xM1Tu7PTIZR2c618jxA4gFNehSBGvBbJRfsqKxfckk9nXpp181gck8Ltqu93C1u6o
- WdQSkxWK2H+hL6xavq/F066nKUun4peZXFjY+uG/nRAFvp/LOHP6cHvC8qW3dF8U4EyOCL
- CPZniffut/KbCywfhiFjLs0PyQs/nS0=
+ bh=S1y74Yz8aRDmaEpP4USMBwGPpMEghkmdz7uUjWMk06s=;
+ b=gVo/Rp9xVv3RM0rK56RgaIrVdgQ5+xPUCaCJ9huA7R098TWdnoGhVqlpNeh3f2fc//8Bqt
+ MhOjYgIPBG43WD6PMu/5H//gtao1z/x53ygH/nndaqazp3rBIVxgJQteyG8eL+vGEMn0D6
+ M8na4uHWh+OLKyfMTLmux77AU5bhKrs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1621758123;
+ s=susede2_ed25519; t=1621758159;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=YQQWRoogfmmaPmjYDnUApC/urhgC3ohzJzGclI+kNAY=;
- b=hfVPioppNG9oLDkzP4Hfy0sygQgH2uM6EnHs7gLEgwzV3/Ha9WTbtyFP3W8vQkimSGpUH4
- lFUfy1w+NRCbOkBw==
+ bh=S1y74Yz8aRDmaEpP4USMBwGPpMEghkmdz7uUjWMk06s=;
+ b=XR8EkU8yWIajZjsc2/yz6GRtH/oBvAI4XOjK022mKTC6szMsfZgk34MSoeHVzdzJATjoIt
+ H7rfc2a0rjG3FvDg==
 Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 03346ABB1;
- Sun, 23 May 2021 08:22:03 +0000 (UTC)
-Subject: Re: [PATCH 20/26] simdisk: convert to blk_alloc_disk/blk_cleanup_disk
+ by mx2.suse.de (Postfix) with ESMTP id 21638AB7C;
+ Sun, 23 May 2021 08:22:39 +0000 (UTC)
+Subject: Re: [PATCH 21/26] n64cart: convert to blk_alloc_disk
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>,
@@ -77,14 +77,14 @@ To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
  Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>
 References: <20210521055116.1053587-1-hch@lst.de>
- <20210521055116.1053587-21-hch@lst.de>
+ <20210521055116.1053587-22-hch@lst.de>
 From: Hannes Reinecke <hare@suse.de>
-Message-ID: <5ca7f9e3-b682-429f-0fc3-db4930e45d86@suse.de>
-Date: Sun, 23 May 2021 10:22:01 +0200
+Message-ID: <d1935d23-a45c-af53-e60c-cdc3b2ca0dc9@suse.de>
+Date: Sun, 23 May 2021 10:22:37 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210521055116.1053587-21-hch@lst.de>
+In-Reply-To: <20210521055116.1053587-22-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -109,14 +109,15 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 5/21/21 7:51 AM, Christoph Hellwig wrote:
-> Convert the simdisk driver to use the blk_alloc_disk and blk_cleanup_disk
-> helpers to simplify gendisk and request_queue allocation.
+> Convert the n64cart driver to use the blk_alloc_disk helper to simplify
+> gendisk and request_queue allocation.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->   arch/xtensa/platforms/iss/simdisk.c | 29 +++++++----------------------
->   1 file changed, 7 insertions(+), 22 deletions(-)
-> Reviewed-by: Hannes Reinecke <hare@suse.de>
+>   drivers/block/n64cart.c | 6 +-----
+>   1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+Reviewed-by: Hannes Reinecke <hare@suse.de>
 
 Cheers,
 
