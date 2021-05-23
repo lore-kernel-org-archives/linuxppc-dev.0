@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13EE3C4707A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEEC8C47080
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:14:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0BB761168
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:13:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0BB761168
+	by mail.kernel.org (Postfix) with ESMTPS id 7902F61168
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 08:14:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7902F61168
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FntQB0crPz3bss
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 18:13:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FntQz0FYQz30Hk
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 May 2021 18:14:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bmLKYtBm;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TpSTAzMP;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1rRY+x+j;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PASSAcah;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
@@ -30,44 +30,44 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=bmLKYtBm; 
+ header.s=susede2_rsa header.b=1rRY+x+j; 
  dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=TpSTAzMP; 
+ header.s=susede2_ed25519 header.b=PASSAcah; 
  dkim-atps=neutral
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FntPd53Cvz2xfm
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 May 2021 18:12:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FntQR1gR4z2xg1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 May 2021 18:13:35 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1621757571; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ t=1621757613; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=+QPb9JWvY5Mv2CQaqhfS/CQ9rp49Qt1b0dGLtKqWAHI=;
- b=bmLKYtBm8+NBy0rlZh5vgGqGnuUZQLXD5BUZHEsC9KLWeRov/Kd6myZf3F/3Hji8xMjQ4e
- XjNGXj+P/iVCSJDfUijcHK/6GnQs8Q24V+00sjOXcvV369Y7JMbEdHVZbnUo2wP5SwFvtR
- NE9Ud+kiuo+RtjyO7YO79/Vtotp8i1o=
+ bh=tI2srXPKL1sfFSsq/mH3bRr/xYcU9gLEPvDxnRGnFkc=;
+ b=1rRY+x+jwuLrSlX62D57der6kilmshvZfzKCkK7odG4vZE5sSfeTwBWPdTtbwdIAEzQ35V
+ hyYDGVVVtFJhIfj6Y/8gnBajvsdCzW+OEnVfsoi2o5528aCTU1Fit1n1MBRuG5lRjcB2ai
+ iPiGur9nfjjqktHzQKkHw4eeOg9d86o=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1621757571;
+ s=susede2_ed25519; t=1621757613;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=+QPb9JWvY5Mv2CQaqhfS/CQ9rp49Qt1b0dGLtKqWAHI=;
- b=TpSTAzMPXkVgQoDLdk+dThL13YkgxTUpmMsPvWCAi0674zr0yAyJez4vAZgVjbOQTqHQTY
- aFmfGWmflFT7I3Ag==
+ bh=tI2srXPKL1sfFSsq/mH3bRr/xYcU9gLEPvDxnRGnFkc=;
+ b=PASSAcahtrFI1qnKoO3sHUsCZUedel5O6is8TbwZ0aX6aAJtVVVIHh2N7GPT9Sl/4OkX6I
+ mOYmmYc8O/F6sFAg==
 Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 009B9AC3A;
- Sun, 23 May 2021 08:12:51 +0000 (UTC)
-Subject: Re: [PATCH 14/26] md: convert to blk_alloc_disk/blk_cleanup_disk
+ by mx2.suse.de (Postfix) with ESMTP id CD1E0AB5F;
+ Sun, 23 May 2021 08:13:32 +0000 (UTC)
+Subject: Re: [PATCH 15/26] nvdimm-blk: convert to
+ blk_alloc_disk/blk_cleanup_disk
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>,
  Philipp Reisner <philipp.reisner@linbit.com>,
  Lars Ellenberg <lars.ellenberg@linbit.com>, Jim Paris <jim@jtan.com>,
- Joshua Morris <josh.h.morris@us.ibm.com>,
  Philip Kelleher <pjk1939@linux.ibm.com>, Minchan Kim <minchan@kernel.org>,
  Nitin Gupta <ngupta@vflare.org>, Matias Bjorling <mb@lightnvm.io>,
  Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
@@ -78,14 +78,14 @@ To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
  Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>
 References: <20210521055116.1053587-1-hch@lst.de>
- <20210521055116.1053587-15-hch@lst.de>
+ <20210521055116.1053587-16-hch@lst.de>
 From: Hannes Reinecke <hare@suse.de>
-Message-ID: <e65de9e6-337c-3e41-b5c2-d033ff236582@suse.de>
-Date: Sun, 23 May 2021 10:12:49 +0200
+Message-ID: <8dd784bd-8fcc-57b6-bdc7-474a170e1c4b@suse.de>
+Date: Sun, 23 May 2021 10:13:31 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210521055116.1053587-15-hch@lst.de>
+In-Reply-To: <20210521055116.1053587-16-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -110,73 +110,15 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 5/21/21 7:51 AM, Christoph Hellwig wrote:
-> Convert the md driver to use the blk_alloc_disk and blk_cleanup_disk
-> helpers to simplify gendisk and request_queue allocation.
+> Convert the nvdimm-blk driver to use the blk_alloc_disk and
+> blk_cleanup_disk helpers to simplify gendisk and request_queue
+> allocation.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->   drivers/md/md.c | 25 +++++++++----------------
->   1 file changed, 9 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/md/md.c b/drivers/md/md.c
-> index 49f897fbb89b..d806be8cc210 100644
-> --- a/drivers/md/md.c
-> +++ b/drivers/md/md.c
-> @@ -5598,12 +5598,10 @@ static void md_free(struct kobject *ko)
->   	if (mddev->sysfs_level)
->   		sysfs_put(mddev->sysfs_level);
->   
-> -	if (mddev->gendisk)
-> +	if (mddev->gendisk) {
->   		del_gendisk(mddev->gendisk);
-> -	if (mddev->queue)
-> -		blk_cleanup_queue(mddev->queue);
-> -	if (mddev->gendisk)
-> -		put_disk(mddev->gendisk);
-> +		blk_cleanup_disk(mddev->gendisk);
-> +	}
->   	percpu_ref_exit(&mddev->writes_pending);
->   
->   	bioset_exit(&mddev->bio_set);
-> @@ -5711,20 +5709,13 @@ static int md_alloc(dev_t dev, char *name)
->   		goto abort;
->   
->   	error = -ENOMEM;
-> -	mddev->queue = blk_alloc_queue(NUMA_NO_NODE);
-> -	if (!mddev->queue)
-> +	disk = blk_alloc_disk(NUMA_NO_NODE);
-> +	if (!disk)
->   		goto abort;
->   
-> -	blk_set_stacking_limits(&mddev->queue->limits);
-> -
-> -	disk = alloc_disk(1 << shift);
-> -	if (!disk) {
-> -		blk_cleanup_queue(mddev->queue);
-> -		mddev->queue = NULL;
-> -		goto abort;
-> -	}
->   	disk->major = MAJOR(mddev->unit);
->   	disk->first_minor = unit << shift;
-> +	disk->minors = 1 << shift;
->   	if (name)
->   		strcpy(disk->disk_name, name);
->   	else if (partitioned)
-> @@ -5733,7 +5724,9 @@ static int md_alloc(dev_t dev, char *name)
->   		sprintf(disk->disk_name, "md%d", unit);
->   	disk->fops = &md_fops;
->   	disk->private_data = mddev;
-> -	disk->queue = mddev->queue;
-> +
-> +	mddev->queue = disk->queue;
-> +	blk_set_stacking_limits(&mddev->queue->limits);
->   	blk_queue_write_cache(mddev->queue, true, true);
->   	/* Allow extended partitions.  This makes the
->   	 * 'mdp' device redundant, but we can't really
-> 
-Wouldn't it make sense to introduce a helper 'blk_queue_from_disk()' or 
-somesuch to avoid having to keep an explicit 'queue' pointer?
-
+>   drivers/nvdimm/blk.c | 26 ++++++--------------------
+>   1 file changed, 6 insertions(+), 20 deletions(-)
+> Reviewed-by: Hannes Reinecke <hare@suse.de>
 
 Cheers,
 
