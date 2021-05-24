@@ -2,57 +2,62 @@ Return-Path: <SRS0=afix=KT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B890CC47082
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 01:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 829E2C47080
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 01:21:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0499561168
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 01:08:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0499561168
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id E7D936100A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 01:21:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7D936100A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lunn.ch
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FpJxX5F4cz3c2d
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 11:08:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com;
- envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FpJwp49h3z2ymC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 11:07:50 +1000 (AEST)
-Received: from dggems706-chm.china.huawei.com (unknown [172.30.72.59])
- by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4FpJsM4r9RzBts8;
- Mon, 24 May 2021 09:04:55 +0800 (CST)
-Received: from dggema769-chm.china.huawei.com (10.1.198.211) by
- dggems706-chm.china.huawei.com (10.3.19.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2176.2; Mon, 24 May 2021 09:07:46 +0800
-Received: from localhost (10.174.179.215) by dggema769-chm.china.huawei.com
- (10.1.198.211) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2176.2; Mon, 24
- May 2021 09:07:45 +0800
-From: YueHaibing <yuehaibing@huawei.com>
-To: <leoyang.li@nxp.com>, <davem@davemloft.net>, <kuba@kernel.org>,
- <rasmus.villemoes@prevas.dk>, <andrew@lunn.ch>, <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 net-next] ethernet: ucc_geth: Use kmemdup() rather than
- kmalloc+memcpy
-Date: Mon, 24 May 2021 09:07:01 +0800
-Message-ID: <20210524010701.24596-1-yuehaibing@huawei.com>
-X-Mailer: git-send-email 2.10.2.windows.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FpKDl2hvDz3bsc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 11:21:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=wVz1tZsk;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch
+ (client-ip=185.16.172.187; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
+ header.s=20171124 header.b=wVz1tZsk; dkim-atps=neutral
+Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FpKDF0RSmz2yY8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 11:21:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=El+XZLB92OFWSNNtDA3CExs5QoARTgqBFwrJ+abZcbI=; b=wVz1tZsk4uVfYWfxhScxy8WxbG
+ uDf3vohtq+lri3NoaDwd5mfH4kGPGjjg+OaxxHb2QmJRwp/5+UcIVPUu/t+lt0X8vwL8WeAuQ9TXY
+ heDO2rAhc+03Hn/W0nnuP56sWvom59PH/uzByo5FzyKCkowVZqvdXRZOptdxbF3xCyO8=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1lkzH9-005tzT-LY; Mon, 24 May 2021 03:20:59 +0200
+Date: Mon, 24 May 2021 03:20:59 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: YueHaibing <yuehaibing@huawei.com>
+Subject: Re: [PATCH v2 net-next] ethernet: ucc_geth: Use kmemdup() rather
+ than kmalloc+memcpy
+Message-ID: <YKr/e4H0fPEyK8px@lunn.ch>
+References: <20210524010701.24596-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.174.179.215]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggema769-chm.china.huawei.com (10.1.198.211)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210524010701.24596-1-yuehaibing@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,37 +69,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rasmus.villemoes@prevas.dk, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, kuba@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Issue identified with Coccinelle.
+On Mon, May 24, 2021 at 09:07:01AM +0800, YueHaibing wrote:
+> Issue identified with Coccinelle.
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
-v2: keep kmemdup oneline
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
- drivers/net/ethernet/freescale/ucc_geth.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index e0936510fa34..0acfafb73db1 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3590,10 +3590,9 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 	if ((ucc_num < 0) || (ucc_num > 7))
- 		return -ENODEV;
- 
--	ug_info = kmalloc(sizeof(*ug_info), GFP_KERNEL);
-+	ug_info = kmemdup(&ugeth_primary_info, sizeof(*ug_info), GFP_KERNEL);
- 	if (ug_info == NULL)
- 		return -ENOMEM;
--	memcpy(ug_info, &ugeth_primary_info, sizeof(*ug_info));
- 
- 	ug_info->uf_info.ucc_num = ucc_num;
- 
--- 
-2.17.1
-
+    Andrew
