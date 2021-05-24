@@ -2,101 +2,113 @@ Return-Path: <SRS0=afix=KT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B47B7C04FF3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 12:03:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC594C04FF3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 12:11:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EACC6109F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 12:03:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EACC6109F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2E69760FEB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 12:11:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E69760FEB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FpbT15Wb5z3bt0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 22:03:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fpbg14tT3z3btd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 May 2021 22:11:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aS7m2zdB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SJPrli0+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=msc@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=aS7m2zdB; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=SJPrli0+; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FpbSV2Q58z2yjJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 22:02:49 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14OBX7Yp001016; Mon, 24 May 2021 08:02:41 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FpbfT1BsGz2ykF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 22:11:28 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14OC3acd064090; Mon, 24 May 2021 08:11:11 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=i+LjMcUWku+lG6vdtq8pFQIa/7R370HK/y0HY7OkrRU=;
- b=aS7m2zdBsKK04bdo+l5gDZBjl1dIqdxBQ4oBd81N08T85xhGG7lLO9rp9bmQX3RRuzOM
- XNs4BeggclekfckAApYrcJFm7ZG66qFd+yAQJeYQ2NjBJLh8idKWg6FuURqBF/+3XOdg
- HrI3Z9a7yKijfe7QfLB55RAR6Q+pLadmaXjMlIXh9MVQSkEtRBJK+8ZIImcleFKnqNcK
- LaBYqs/co3Mcj5ptvBO/uy7azQb/yYjcaJvrkGg0SrRQcyEmYXxSEnrDiM8XmpelrEOC
- KNTvbSvqWIRYyV64plHJ8Efs2Hn++n1YaCfQgD5U0ov+Z5WQbxxYgPIEOY2ACBDXOPp7 EA== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38rak7t0tu-1
+ h=references : from : to :
+ cc : subject : in-reply-to : date : message-id : mime-version :
+ content-type; s=pp1; bh=jDHvzDPLw37qvWxMMMl22IELHnVxoaPzZ6JtzlWI908=;
+ b=SJPrli0+IkbmRFk9J4TVYUQ9oTUsCnugHY+jb07cRa6SaN/5IE1wKauLFhW43Hk7xe/V
+ zyNwZkjH1NWDjQ30tLtnGUvUX7bQXG1oYTl5X9yDuSQwnktLr0RNwbZNT7icfoLcAOtc
+ ggY/JPsj8eGsp7SuQYmyofR3hfBBwrvIyGRdaTASOaw6ZhQIB9zApD+7nSQGXaABPx8h
+ l39/keCb+8DV9mKWERBDbNF2yuOX9D0sTf/Flj3wLtL79Epenv8noBAbCOW5mqbEcEmE
+ /K3eTuFFyXdpbLIU6sJBaUnKIgLDNQMtREEVJPu2pEM/6Hbu87YhuHpRDzm2AvvLohkQ Sg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38ra87tv7s-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 May 2021 08:02:41 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14OC2de1031335;
- Mon, 24 May 2021 12:02:39 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 38psk88dv2-1
+ Mon, 24 May 2021 08:11:11 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14OC3cxS064226;
+ Mon, 24 May 2021 08:11:11 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38ra87tv77-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 May 2021 12:02:39 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14OC2afR12780010
+ Mon, 24 May 2021 08:11:11 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14OC73q7017246;
+ Mon, 24 May 2021 12:11:10 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma04dal.us.ibm.com with ESMTP id 38psk8te9w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 24 May 2021 12:11:10 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14OCB9hT30671232
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 24 May 2021 12:02:36 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2896E4C050;
- Mon, 24 May 2021 12:02:36 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7C8FD4C044;
- Mon, 24 May 2021 12:02:34 +0000 (GMT)
-Received: from naverao1-tp.in.ibm.com (unknown [9.85.75.18])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 24 May 2021 12:02:34 +0000 (GMT)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/configs: Enable STACK_TRACER and FTRACE_SYSCALLS in
- some of the configs
-Date: Mon, 24 May 2021 17:32:27 +0530
-Message-Id: <20210524120227.3333208-1-naveen.n.rao@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.30.2
+ Mon, 24 May 2021 12:11:09 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 76D2FAC065;
+ Mon, 24 May 2021 12:11:09 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D70B7AC05F;
+ Mon, 24 May 2021 12:11:07 +0000 (GMT)
+Received: from TP480.linux.ibm.com (unknown [9.65.94.141])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 24 May 2021 12:11:07 +0000 (GMT)
+References: <20200611081203.995112-1-npiggin@gmail.com>
+ <20210518231331.GA8464@altlinux.org>
+ <1621385544.nttlk5qugb.astroid@bobo.none>
+ <1621400263.gf0mbqhkrf.astroid@bobo.none> <87a6oo4312.fsf@linux.ibm.com>
+ <87k0nr6ezw.fsf@oldenburg.str.redhat.com> <87eedz3li3.fsf@linux.ibm.com>
+ <20210521205204.GA24309@altlinux.org>
+User-agent: mu4e 1.4.10; emacs 27.2
+From: Matheus Castanho <msc@linux.ibm.com>
+To: "Dmitry V. Levin" <ldv@altlinux.org>
+Subject: Re: Linux powerpc new system call instruction and ABI
+In-reply-to: <20210521205204.GA24309@altlinux.org>
+Date: Mon, 24 May 2021 09:11:06 -0300
+Message-ID: <87a6ok2uxx.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Mz55USRAdSL_FpoAHZsyrESvrHABo5BS
-X-Proofpoint-GUID: Mz55USRAdSL_FpoAHZsyrESvrHABo5BS
+X-Proofpoint-GUID: dXh77QyFFxp6TKxbR80PJ57BQbWLHVqR
+X-Proofpoint-ORIG-GUID: SsS5K6-b9wIyy35LWBJsEB91NJaxHQWR
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-24_06:2021-05-24,
+ definitions=2021-05-24_07:2021-05-24,
  2021-05-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- lowpriorityscore=0 clxscore=1015 suspectscore=0 phishscore=0
- mlxlogscore=999 spamscore=0 priorityscore=1501 adultscore=0 malwarescore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105240078
+ malwarescore=0
+ impostorscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
+ bulkscore=0 phishscore=0 adultscore=0 priorityscore=1501 mlxlogscore=999
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2105240080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,64 +120,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Florian Weimer <fweimer@redhat.com>,
+ Matheus Castanho via Libc-alpha <libc-alpha@sourceware.org>,
+ linux-api@vger.kernel.org, musl@lists.openwall.com,
+ Nicholas Piggin <npiggin@gmail.com>, libc-dev@lists.llvm.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Both these config options are generally enabled in distro kernels.
-Enable the same in a few powerpc64 configs to get better coverage and
-testing.
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/configs/powernv_defconfig | 1 +
- arch/powerpc/configs/ppc64_defconfig   | 2 ++
- arch/powerpc/configs/pseries_defconfig | 2 ++
- 3 files changed, 5 insertions(+)
+Dmitry V. Levin <ldv@altlinux.org> writes:
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 2c87e856d839b0..8bfeea6c7de7b4 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -309,6 +309,7 @@ CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_FUNCTION_TRACER=y
- CONFIG_SCHED_TRACER=y
-+CONFIG_STACK_TRACER=y
- CONFIG_FTRACE_SYSCALLS=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_PPC_EMULATED_STATS=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 701811c91a6f3f..0ad2291337a713 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -368,7 +368,9 @@ CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_DEBUG_MUTEXES=y
- CONFIG_FUNCTION_TRACER=y
-+CONFIG_FTRACE_SYSCALLS=y
- CONFIG_SCHED_TRACER=y
-+CONFIG_STACK_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_CODE_PATCHING_SELFTEST=y
- CONFIG_FTR_FIXUP_SELFTEST=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 50168dde4ea598..b183629f1bcfb8 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -289,7 +289,9 @@ CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_FUNCTION_TRACER=y
-+CONFIG_FTRACE_SYSCALLS=y
- CONFIG_SCHED_TRACER=y
-+CONFIG_STACK_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_CODE_PATCHING_SELFTEST=y
- CONFIG_FTR_FIXUP_SELFTEST=y
+> On Fri, May 21, 2021 at 05:00:36PM -0300, Matheus Castanho wrote:
+>> Florian Weimer <fweimer@redhat.com> writes:
+>> > * Matheus Castanho via Libc-alpha:
+>> >> From: Nicholas Piggin <npiggin@gmail.com>
+>> >> Subject: [PATCH 1/1] powerpc: Fix handling of scv return error codes
+>> >>
+>> >> When using scv on templated ASM syscalls, current code interprets any
+>> >> negative return value as error, but the only valid error codes are in
+>> >> the range -4095..-1 according to the ABI.
+>> >>
+>> >> Reviewed-by: Matheus Castanho <msc@linux.ibm.com>
+>> >
+>> > Please reference bug 27892 in the commit message.  I'd also appreciate a
+>> > backport to the 2.33 release branch (where you need to add NEWS manually
+>> > to add the bug reference).
+>>
+>> No problem. [BZ #27892] appended to the commit title. I'll make sure to
+>> backport to 2.33 as well.
+>
+> Could you also mention in the commit message that the change fixes
+> 'signal.gen.test' strace test where it was observed initially?
 
-base-commit: 8dbbcb8a8856c6b4e56ae705218d8dad1f9cf1e9
--- 
-2.30.2
+Sure, no problem. I'll commit it later today.
 
+--
+Matheus Castanho
