@@ -6,84 +6,82 @@ X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 663A8C2B9F8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 03:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B736DC2B9F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 03:15:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9BD261404
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 03:09:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9BD261404
+	by mail.kernel.org (Postfix) with ESMTPS id 5242B61415
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 03:15:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5242B61415
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FpzZC5xSxz3073
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 13:09:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fpzjz4djbz3bnb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 13:15:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=merHIeKN;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Uieisilk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102a;
- helo=mail-pj1-x102a.google.com; envelope-from=tientzu@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d30;
+ helo=mail-io1-xd30.google.com; envelope-from=tientzu@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=merHIeKN; dkim-atps=neutral
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com
- [IPv6:2607:f8b0:4864:20::102a])
+ header.s=google header.b=Uieisilk; dkim-atps=neutral
+Received: from mail-io1-xd30.google.com (mail-io1-xd30.google.com
+ [IPv6:2607:f8b0:4864:20::d30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FpzYc0wWgz2yXT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2021 13:08:33 +1000 (AEST)
-Received: by mail-pj1-x102a.google.com with SMTP id
- n6-20020a17090ac686b029015d2f7aeea8so12418613pjt.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 20:08:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FpzjR4DXgz2xv5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2021 13:15:22 +1000 (AEST)
+Received: by mail-io1-xd30.google.com with SMTP id z24so30026104ioi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 20:15:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=VHDFyefEfXv2T1h/kXDPOn5vVw8tSm/6FW05x+E2j40=;
- b=merHIeKNi5Uu6C9TAUujDNIN9FxrI34YUx7aW4WyFELIyYppIt99C4UwGvzWaArcmu
- 9EaYZFbnrmtDjrMZ7c8349ke6DKJjWiZDCUD5epOu2PqMIr5kYM1CoXZ0XNE1vQ3QFiu
- bvf2bDyHaIMES3MNNrHcengJbyjgwpDl3VY20=
+ :cc; bh=ibLnJElvlxlVpclpJPUNJ2cC/oiUOQSOujwiFR/Tp+s=;
+ b=UieisilkjhqvCv5TM4Uhta7TWRN2Fo+qizEnyHuJxA4va8bXfSD+rLVykfuHhWprMs
+ LshPVy4dFsoXIkmd56qov4ggYtlL759ArIJ4nJdiIlOu+d8oU3Tdh/1w/BJ1fDxfpbcA
+ V3s9TTUmNV6cOGqUjcXpB0nmY9PGjsUH8vbqY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=VHDFyefEfXv2T1h/kXDPOn5vVw8tSm/6FW05x+E2j40=;
- b=ZPCPKAfnX6ffhzkU8aH41jlRBBBuhVUgShVjr9+RlyW/O+mVeE7IQfG9VIOk91kzKA
- 8r/r64A4aLFmN9vlewK5PxXFKKpK/AJRXJY2lyzAyymn8MumL0Mv3RF2M4+1FmiEelhv
- rryzY3srt3OR+Chr6JvXUpI6UJ/uoWSU3H9AqHQc/PVcDPDO20H9kgRSyhjKfjMsZPrr
- fSls4+db8+5tGlERGL8KApO4ROcoHiqNPdRfOsfWwkjVGw6aX0caiU/w0TTFJNWSsPJC
- 673cO5VlyRv3mRrh/olWrIiNKpzTxXatLIT75A3+3TfUNFwq1/j+gY3nsyWq/foy8TiB
- bI0Q==
-X-Gm-Message-State: AOAM532qicsjz4gQm8QDvY2UkqW1dIbNxbA8aKu/9KohVDVlYx7fweKB
- KcfVZo71F+fzOQPdEm+BqApFnkAelBWYfg==
-X-Google-Smtp-Source: ABdhPJzoKfQFHTJeJ6Y2WJEMwWCjqFZSecLg3os56HNovFPzmgsYtkLWor4YhdRW+hfFqYFOZzp7bQ==
-X-Received: by 2002:a17:902:934a:b029:fb:424b:7262 with SMTP id
- g10-20020a170902934ab02900fb424b7262mr4675461plp.17.1621912105309; 
- Mon, 24 May 2021 20:08:25 -0700 (PDT)
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com.
- [209.85.210.170])
- by smtp.gmail.com with ESMTPSA id u12sm11043129pfm.2.2021.05.24.20.08.24
+ bh=ibLnJElvlxlVpclpJPUNJ2cC/oiUOQSOujwiFR/Tp+s=;
+ b=kfJWaMmCnhGkhVHLidD1b7gOkPTaZJ8k0qzDfgZuO05cFWc1nhjpAzZWo7/SLe5sd+
+ P3xR49yFgui4qQoLAnU+TDxYilq2Vw+FCwOH8gMrCRS+51STF3DoyvwDa5JLvGUdkgQk
+ zCOzJPedinu/Vi0HWH6mKwM918Zhi7f5xIOW+9x04QG4FxNXJyuwPyzxPt0rV6t3fd1t
+ oJQEm1DvWwascuRjiJXF57dCnxemUhRClsKjqB+GnKmy2pUmRpfJWo8G/82xGNXrBipw
+ o36sqKpYjB8GB5MHBMidPkTzZfFwun3WV4fdnkU65ufjOH2t6aQSt2zcgyp00f9B5hlj
+ PYyw==
+X-Gm-Message-State: AOAM532XKtddAtB8MXQKy7UbK39M/V5vGHp/nTb5hD8+VBtXqa9zp+Vk
+ YMQlWC3uc5/yR/UTEvQivVnGkn7cnwjj7w==
+X-Google-Smtp-Source: ABdhPJxt85ySRCQi6Oz8UMvRRGk9AKENr3HjRObLSCZtGhsr4ORIDYwxUzxFUZhOrRhPxDJmtGQN8A==
+X-Received: by 2002:a02:866a:: with SMTP id e97mr28822229jai.136.1621912518624; 
+ Mon, 24 May 2021 20:15:18 -0700 (PDT)
+Received: from mail-io1-f54.google.com (mail-io1-f54.google.com.
+ [209.85.166.54])
+ by smtp.gmail.com with ESMTPSA id g12sm12036989ile.23.2021.05.24.20.15.18
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 24 May 2021 20:08:25 -0700 (PDT)
-Received: by mail-pf1-f170.google.com with SMTP id q25so4435151pfn.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 20:08:24 -0700 (PDT)
-X-Received: by 2002:a6b:7b08:: with SMTP id l8mr16990516iop.50.1621912094090; 
- Mon, 24 May 2021 20:08:14 -0700 (PDT)
+ Mon, 24 May 2021 20:15:18 -0700 (PDT)
+Received: by mail-io1-f54.google.com with SMTP id v9so3552678ion.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 May 2021 20:15:18 -0700 (PDT)
+X-Received: by 2002:a05:6e02:b:: with SMTP id
+ h11mr18955732ilr.18.1621912124990; 
+ Mon, 24 May 2021 20:08:44 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210518064215.2856977-1-tientzu@chromium.org>
- <20210518064215.2856977-2-tientzu@chromium.org>
- <170a54f2-be20-ec29-1d7f-3388e5f928c6@gmail.com>
- <CALiNf2-9fRbH3Xs=fA+N1iRztFxeC0iTsyOSZFe=F42uwXS0Sg@mail.gmail.com>
- <YKvL865kutnHqkVc@0xbeefdead.lan>
-In-Reply-To: <YKvL865kutnHqkVc@0xbeefdead.lan>
+ <20210518064215.2856977-6-tientzu@chromium.org>
+ <CALiNf28ke3c91Y7xaHUgvJePKXqYA7UmsYJV9yaeZc3-4Lzs8Q@mail.gmail.com>
+ <YKvLc9onyqdsINP7@0xbeefdead.lan>
+In-Reply-To: <YKvLc9onyqdsINP7@0xbeefdead.lan>
 From: Claire Chang <tientzu@chromium.org>
-Date: Tue, 25 May 2021 11:08:03 +0800
-X-Gmail-Original-Message-ID: <CALiNf2_iq3OS+95as4fj+AOMDVYgGL71A1811QLaZ=5T7TRjww@mail.gmail.com>
-Message-ID: <CALiNf2_iq3OS+95as4fj+AOMDVYgGL71A1811QLaZ=5T7TRjww@mail.gmail.com>
-Subject: Re: [PATCH v7 01/15] swiotlb: Refactor swiotlb init functions
+Date: Tue, 25 May 2021 11:08:34 +0800
+X-Gmail-Original-Message-ID: <CALiNf28=fn5r_O8ET0TNM6cS7WO0mwXiMzR5z=eJXmNKFWKdzA@mail.gmail.com>
+Message-ID: <CALiNf28=fn5r_O8ET0TNM6cS7WO0mwXiMzR5z=eJXmNKFWKdzA@mail.gmail.com>
+Subject: Re: [PATCH v7 05/15] swiotlb: Add a new get_io_tlb_mem getter
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -102,8 +100,8 @@ Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
  dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
  grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
  mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ Joerg Roedel <joro@8bytes.org>,
  "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
  Christoph Hellwig <hch@lst.de>,
  Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
@@ -121,28 +119,23 @@ Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
  Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
  Tomasz Figa <tfiga@chromium.org>,
  "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- sstabellini@kernel.org, Jim Quinlan <james.quinlan@broadcom.com>,
- xypron.glpk@gmx.de, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 24, 2021 at 11:53 PM Konrad Rzeszutek Wilk
+On Mon, May 24, 2021 at 11:51 PM Konrad Rzeszutek Wilk
 <konrad.wilk@oracle.com> wrote:
 >
-> > > do the set_memory_decrypted()+memset(). Is this okay or should
-> > > swiotlb_init_io_tlb_mem() add an additional argument to do this
-> > > conditionally?
-> >
-> > I'm actually not sure if this it okay. If not, will add an additional
-> > argument for it.
+> On Tue, May 18, 2021 at 02:51:52PM +0800, Claire Chang wrote:
+> > Still keep this function because directly using dev->dma_io_tlb_mem
+> > will cause issues for memory allocation for existing devices. The pool
+> > can't support atomic coherent allocation so we need to distinguish the
+> > per device pool and the default pool in swiotlb_alloc.
 >
-> Any observations discovered? (Want to make sure my memory-cache has the
-> correct semantics for set_memory_decrypted in mind).
+> This above should really be rolled in the commit. You can prefix it by
+> "The reason it was done this way was because directly using .."
+>
 
-It works fine on my arm64 device.
-
-> >
-> > > --
-> > > Florian
+Will add it.
