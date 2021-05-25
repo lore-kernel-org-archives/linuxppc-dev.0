@@ -2,26 +2,26 @@ Return-Path: <SRS0=f++S=KU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CB1C2B9F8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 08:35:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6ED1C2B9F8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 08:45:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5731461400
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 08:35:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5731461400
+	by mail.kernel.org (Postfix) with ESMTPS id 245BA6101E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 08:45:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 245BA6101E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fq6pj0bRBz3byW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 18:35:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fq71s4kx4z3080
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 May 2021 18:45:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VY7P6lcf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QiwqkbM4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -29,81 +29,83 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VY7P6lcf; dkim-atps=neutral
+ header.s=pp1 header.b=QiwqkbM4; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fq6nZ3gBpz2yRS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2021 18:34:25 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fq71F4F6Xz2y88
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2021 18:44:32 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14P8Y4tV046089; Tue, 25 May 2021 04:34:09 -0400
+ 14P8XUTN088268; Tue, 25 May 2021 04:44:19 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=1CZV2oWhvddTbDHFXWMDZlBJJyfSVlv//BAQO+GCgpg=;
- b=VY7P6lcf8lWW4QUlDSHr90ygWLpggMrCSTG+acJBY3rHMcOlKqZ52QYDr7JJOe994K79
- RmlG46qGsGeaetfTX23og3xXdiHVsN+7HgcBRGgRLzY4gE+8P5OsUEyCnQV3cz2ZEfGi
- IxqQM+8WIwijGJNUHPILmjVRSvy5wlh4HLlzQ3tmVEBHUGCQzxT5Lq6w+C3cx01FiqZA
- ynJKP/eAbb+vTuArKGuIgrIDxutF628uZMDkIOsb1LC7n5hCQ+posyZUCo3VgTPdR14S
- +fRo0TD4q+IE0EJQVbrMiMR0bYLl4cBnQ7KTwHq/sCKrsE5lwYSNN/sIC9yoxrn6IUyz Hg== 
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=eUev9Tuv4QzoT5jEjuvSv7y2xh5ahwKSkXZbd0VRzrY=;
+ b=QiwqkbM4jqbX4UyAnyxDFqqyxrmUgwZ5G6U2n1Hb9z690KWKoK1DYSCV8+VWYwFXGWFn
+ Ya/rcGTRZdsBZVugFF0weRrwjg+gmif4sh1xgypyrnIfvITESJwqv4YNzi+0If0noJce
+ 12t6HmExZvrh9qKPO2cWkdcn7iNKugNZSfg7A5LWbbtob5CCC6aIqWUHmTcmbgyxaeEE
+ sZnzloY59DVXIjlVzo4yX0Pue4qrNk2j6GsLzw/IsGd4H7lcxDsFUhMDhxzokr4LNZ46
+ 9e+Y5oZ1AWlVoGsGADfrnZ4xvwN3TZ+uP8Ahilg8d1MRTxUwbOIcudfBEV/1dWCWNgoQ uQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38rw7gh6jx-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38rws18en3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 May 2021 04:34:09 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14P8Y4kU046154;
- Tue, 25 May 2021 04:34:08 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38rw7gh6j6-1
+ Tue, 25 May 2021 04:44:18 -0400
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14P8XdUu089148;
+ Tue, 25 May 2021 04:44:18 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38rws18emq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 May 2021 04:34:08 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14P8S0W9025797;
- Tue, 25 May 2021 08:34:07 GMT
+ Tue, 25 May 2021 04:44:18 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 14P8RRWE010414;
+ Tue, 25 May 2021 08:44:17 GMT
 Received: from b03cxnp07027.gho.boulder.ibm.com
  (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by ppma03dal.us.ibm.com with ESMTP id 38psk92se2-1
+ by ppma02dal.us.ibm.com with ESMTP id 38psk92ukj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 May 2021 08:34:07 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ Tue, 25 May 2021 08:44:17 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
  by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14P8Y6aF27787632
+ 14P8iGI530605612
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 25 May 2021 08:34:06 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5AAFDC6061;
- Tue, 25 May 2021 08:34:06 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8CF95C605F;
- Tue, 25 May 2021 08:34:02 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.69.234])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 25 May 2021 08:34:02 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [RFC PATCH 1/2] mm/mremap: Fix race between MOVE_PMD mremap and
+ Tue, 25 May 2021 08:44:16 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 149C66A051;
+ Tue, 25 May 2021 08:44:16 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7026D6A04D;
+ Tue, 25 May 2021 08:44:12 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.69.234])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 25 May 2021 08:44:12 +0000 (GMT)
+X-Mailer: emacs 28.0.50 (via feedmail 11-beta-1 I)
+From: "A lneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v6 updated 9/11] mm/mremap: Fix race between mremap and
  pageout
-Date: Tue, 25 May 2021 14:03:43 +0530
-Message-Id: <20210525083344.162377-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: hd65BHOSNHL-jGQwKAQEJn50Epj6OaHU
-X-Proofpoint-ORIG-GUID: MTyE2jYdDIuMha-iy4z4wfXD8Av98DWD
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <CAHk-=whtmtA0SC5pjoeJ5+nHeiroQen0bph1abMJyb6Ge1b_wQ@mail.gmail.com>
+References: <20210524133818.84955-1-aneesh.kumar@linux.ibm.com>
+ <CAHk-=whtmtA0SC5pjoeJ5+nHeiroQen0bph1abMJyb6Ge1b_wQ@mail.gmail.com>
+Date: Tue, 25 May 2021 14:14:09 +0530
+Message-ID: <87pmxf6w4m.fsf@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: nigwuyO_9yDuwnQg2ve-XwUdJFN1w_6t
+X-Proofpoint-ORIG-GUID: QGAyXxJtck2pUhQMQtrBvxtbbEW7jPdQ
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-25_05:2021-05-24,
  2021-05-25 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- lowpriorityscore=0 spamscore=0 clxscore=1011 adultscore=0 mlxlogscore=999
- mlxscore=0 phishscore=0 priorityscore=1501 bulkscore=0 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ adultscore=0 impostorscore=0
+ priorityscore=1501 malwarescore=0 phishscore=0 mlxlogscore=905
+ suspectscore=0 mlxscore=0 clxscore=1015 spamscore=0 bulkscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104190000 definitions=main-2105250059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -116,13 +118,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, npiggin@gmail.com,
- kaleshsingh@google.com, joel@joelfernandes.org,
- "Kirill A . Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org
+Cc: Nick Piggin <npiggin@gmail.com>, Linux-MM <linux-mm@kvack.org>,
+ Kalesh Singh <kaleshsingh@google.com>, Joel Fernandes <joel@joelfernandes.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> On Mon, May 24, 2021 at 3:38 AM Aneesh Kumar K.V
+> <aneesh.kumar@linux.ibm.com> wrote:
+>>
+>> Avoid the above race with MOVE_PMD by holding pte ptl in mremap and waiting for
+>> parallel pagetable walk to finish operating on pte before updating new_pmd
+>
+> Ack on the concept.
+
+
+Should we worry about the below race. The window would be small
 
 CPU 1				CPU 2					CPU 3
 
@@ -131,150 +146,64 @@ mremap(old_addr, new_addr)      page_shrinker/try_to_unmap_one
 mmap_write_lock_killable()
 
 				addr = old_addr
-				lock(pte_ptl)
+
 lock(pmd_ptl)
 pmd = *old_pmd
 pmd_clear(old_pmd)
 flush_tlb_range(old_addr)
 
+lock(pte_ptl)
 *new_pmd = pmd
+unlock(pte_ptl)
+
+unlock(pmd_ptl)
+				lock(pte_ptl)
 									*new_addr = 10; and fills
 									TLB with new addr
 									and old pfn
 
-unlock(pmd_ptl)
-				ptep_clear_flush()
+				ptep_clear_flush(old_addr)
 				old pfn is free.
 									Stale TLB entry
 
-Fix this race by holding pmd lock in pageout. This still doesn't handle the race
-between MOVE_PUD and pageout.
 
-Fixes: 2c91bd4a4e2e ("mm: speed up mremap by 20x on large regions")
-Link: https://lore.kernel.org/linux-mm/CAHk-=wgXVR04eBNtxQfevontWnP6FDm+oj5vauQXP3S-huwbPw@mail.gmail.com
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- include/linux/rmap.h |  9 ++++++---
- mm/page_vma_mapped.c | 36 ++++++++++++++++++------------------
- 2 files changed, 24 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index def5c62c93b3..272ab0c2b60b 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -207,7 +207,8 @@ struct page_vma_mapped_walk {
- 	unsigned long address;
- 	pmd_t *pmd;
- 	pte_t *pte;
--	spinlock_t *ptl;
-+	spinlock_t *pte_ptl;
-+	spinlock_t *pmd_ptl;
- 	unsigned int flags;
- };
- 
-@@ -216,8 +217,10 @@ static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
- 	/* HugeTLB pte is set to the relevant page table entry without pte_mapped. */
- 	if (pvmw->pte && !PageHuge(pvmw->page))
- 		pte_unmap(pvmw->pte);
--	if (pvmw->ptl)
--		spin_unlock(pvmw->ptl);
-+	if (pvmw->pte_ptl)
-+		spin_unlock(pvmw->pte_ptl);
-+	if (pvmw->pmd_ptl)
-+		spin_unlock(pvmw->pmd_ptl);
- }
- 
- bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
-diff --git a/mm/page_vma_mapped.c b/mm/page_vma_mapped.c
-index 2cf01d933f13..87a2c94c7e27 100644
---- a/mm/page_vma_mapped.c
-+++ b/mm/page_vma_mapped.c
-@@ -47,8 +47,10 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
- 				return false;
- 		}
- 	}
--	pvmw->ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
--	spin_lock(pvmw->ptl);
-+	if (USE_SPLIT_PTE_PTLOCKS) {
-+		pvmw->pte_ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
-+		spin_lock(pvmw->pte_ptl);
-+	}
- 	return true;
- }
- 
-@@ -162,8 +164,8 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 		if (!pvmw->pte)
- 			return false;
- 
--		pvmw->ptl = huge_pte_lockptr(page_hstate(page), mm, pvmw->pte);
--		spin_lock(pvmw->ptl);
-+		pvmw->pte_ptl = huge_pte_lockptr(page_hstate(page), mm, pvmw->pte);
-+		spin_lock(pvmw->pte_ptl);
- 		if (!check_pte(pvmw))
- 			return not_found(pvmw);
- 		return true;
-@@ -179,6 +181,7 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 	if (!pud_present(*pud))
- 		return false;
- 	pvmw->pmd = pmd_offset(pud, pvmw->address);
-+	pvmw->pmd_ptl = pmd_lock(mm, pvmw->pmd);
- 	/*
- 	 * Make sure the pmd value isn't cached in a register by the
- 	 * compiler and used as a stale value after we've observed a
-@@ -186,7 +189,6 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 	 */
- 	pmde = READ_ONCE(*pvmw->pmd);
- 	if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde)) {
--		pvmw->ptl = pmd_lock(mm, pvmw->pmd);
- 		if (likely(pmd_trans_huge(*pvmw->pmd))) {
- 			if (pvmw->flags & PVMW_MIGRATION)
- 				return not_found(pvmw);
-@@ -206,14 +208,10 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 				}
- 			}
- 			return not_found(pvmw);
--		} else {
--			/* THP pmd was split under us: handle on pte level */
--			spin_unlock(pvmw->ptl);
--			pvmw->ptl = NULL;
- 		}
--	} else if (!pmd_present(pmde)) {
--		return false;
--	}
-+	} else if (!pmd_present(pmde))
-+		return not_found(pvmw);
-+
- 	if (!map_pte(pvmw))
- 		goto next_pte;
- 	while (1) {
-@@ -233,19 +231,21 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 			/* Did we cross page table boundary? */
- 			if (pvmw->address % PMD_SIZE == 0) {
- 				pte_unmap(pvmw->pte);
--				if (pvmw->ptl) {
--					spin_unlock(pvmw->ptl);
--					pvmw->ptl = NULL;
-+				if (pvmw->pte_ptl) {
-+					spin_unlock(pvmw->pte_ptl);
-+					pvmw->pte_ptl = NULL;
- 				}
-+				spin_unlock(pvmw->pmd_ptl);
-+				pvmw->pmd_ptl = NULL;
- 				goto restart;
- 			} else {
- 				pvmw->pte++;
- 			}
- 		} while (pte_none(*pvmw->pte));
- 
--		if (!pvmw->ptl) {
--			pvmw->ptl = pte_lockptr(mm, pvmw->pmd);
--			spin_lock(pvmw->ptl);
-+		if (USE_SPLIT_PTE_PTLOCKS && !pvmw->pte_ptl) {
-+			pvmw->pte_ptl = pte_lockptr(mm, pvmw->pmd);
-+			spin_lock(pvmw->pte_ptl);
- 		}
- 	}
- }
--- 
-2.31.1
+>
+> However, not so much on the patch.
+>
+> Odd whitespace change:
+>
+>> @@ -254,6 +254,7 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+>>         if (WARN_ON_ONCE(!pmd_none(*new_pmd)))
+>>                 return false;
+>>
+>> +
+>>         /*
+>>          * We don't have to worry about the ordering of src and dst
+>>          * ptlocks because exclusive mmap_lock prevents deadlock.
+>
+> And new optimization for empty pmd, which seems unrelated to the
+> change and should presumably be separate:
 
+That was added that we can safely do pte_lockptr() below
+
+>
+>> @@ -263,6 +264,10 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+>>         if (new_ptl != old_ptl)
+>>                 spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+>>
+>> +       if (pmd_none(*old_pmd))
+>> +               goto unlock_out;
+>> +
+>> +       pte_ptl = pte_lockptr(mm, old_pmd);
+>>         /* Clear the pmd */
+>>         pmd = *old_pmd;
+>>         pmd_clear(old_pmd);
+>
+> And also, why does the above assign 'pte_ptl' without using it, when
+> the actual use is ten lines further down?
+
+So that we fetch the pte_ptl before we clear old_pmd. 
+
+
+-aneesh
