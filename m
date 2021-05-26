@@ -2,113 +2,109 @@ Return-Path: <SRS0=OfUe=KV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69367C2B9F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 06:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ED99C2B9F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 07:27:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D2B0613BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 06:13:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D2B0613BA
+	by mail.kernel.org (Postfix) with ESMTPS id A2DE961355
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 07:27:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2DE961355
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fqgcp0ywDz300b
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 16:13:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FqjGC0Dclz2yss
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 17:27:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q4sB5iHU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MQXZo2y8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Q4sB5iHU; dkim-atps=neutral
+ header.s=pp1 header.b=MQXZo2y8; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqgcD6nfPz2xv8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 16:13:16 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FqjFh4DyXz2xZ9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 17:27:20 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14Q64EUF013326; Wed, 26 May 2021 02:13:09 -0400
+ 14Q730H0132087; Wed, 26 May 2021 03:27:08 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=HEh6jiRhEKHTKOcKijy1XwvxEAL7bFyMz0AfMl/HghQ=;
- b=Q4sB5iHU40TBoxxVec8MTMi7eaRf9uTzUK9+j4thgxQpVB6bKGJPtBRXdEkSU5j7HSUH
- ShcJiulF5cllD858yclxwzG7R8dltgP/N2uJZe9O/Klogr2z4nclL2v6H0BkhabEiiZ8
- fSb2XWv1Fyb2b5+o6wr5RCim+osN2wThsatx3k9H83wOXPzJ7cSo94OkxovQJGl0HiJ9
- iUpL7I1b3pUnlQdpDjdZrqU5rtNs6ANgvlHqBkuwlyYGnl1y4VhYQ8QkG/CTQHKLTxva
- r+bu7ClkB7PE3MDAu8jTwZgXhKUKt/+vlY0gYWlfV8JDBVawdBqQJ68nGfaFRxcSHXxA 3A== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38sgev0mcn-1
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=c9STaME5/gu1wo8vKEuUVygP/no3fdE29B/HI/RcCXU=;
+ b=MQXZo2y8bfXZKnK+TjWFy0N5qv70M6TLxguPh1at21A1LF2LKrw4G3k93myERTvngWIa
+ 32h/niQ/7HOHbcIxYFPg705be1HfAkK74yp0sqzJdjsAufYro1W/D8hNJU/G/ou+q8WM
+ F7S8gOVajkeon4XkqiKw9EQCGG71tNB/PcS7KDMWP2HpajKi9vzgwXe+xvFHnkxSN/WC
+ t1YpxVP4AZaZoEmQ/vmaJp6AGXiGPSQSfcym2MGatq1AArfxi4jw6CK9J6CYM1jIc/hi
+ /bFhJtdzfuCMlRNYwzKLnwtntH+BPKS+gHfXw9Cv9HDkiusVDFERW/zC6jvKZZv59iR4 Tg== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38shad9428-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 26 May 2021 02:13:09 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14Q64HAk013582;
- Wed, 26 May 2021 02:13:08 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38sgev0mbj-1
+ Wed, 26 May 2021 03:27:08 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 14Q7Bsvh010303;
+ Wed, 26 May 2021 07:27:07 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma01wdc.us.ibm.com with ESMTP id 38s1q6pcsg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 26 May 2021 02:13:08 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 14Q6CQJC002713;
- Wed, 26 May 2021 06:13:06 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma04fra.de.ibm.com with ESMTP id 38s1ht06dx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 26 May 2021 06:13:06 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14Q6D2Zk26607958
+ Wed, 26 May 2021 07:27:07 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14Q7R5Hn32375074
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 26 May 2021 06:13:03 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D94BBA405C;
- Wed, 26 May 2021 06:13:02 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0FEBBA4064;
- Wed, 26 May 2021 06:13:01 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.85.126.125])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 26 May 2021 06:13:00 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.80.0.2.43\))
-Subject: Re: [PATCH] perf vendor events: Fix eventcode of power10 json events
-From: Nageswara Sastry <rnsastry@linux.ibm.com>
-In-Reply-To: <20210525152736.GB2135213@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
-Date: Wed, 26 May 2021 11:42:58 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <5960AF7C-64BD-4E57-BA6D-08AA9932B063@linux.ibm.com>
-References: <20210525063723.1191514-1-kjain@linux.ibm.com>
- <20210525144215.GA2135213@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
- <20210525152736.GB2135213@li-24c3614c-2adc-11b2-a85c-85f334518bdb.ibm.com>
-To: "Paul A. Clarke" <pc@us.ibm.com>
-X-Mailer: Apple Mail (2.3654.80.0.2.43)
+ Wed, 26 May 2021 07:27:05 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A14E46A098;
+ Wed, 26 May 2021 07:27:05 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6B4AC6A04D;
+ Wed, 26 May 2021 07:27:00 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.199.37.104])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 26 May 2021 07:26:59 +0000 (GMT)
+Subject: Re: [RFC v2 4/4] powerpc/papr_scm: Add cpu hotplug support for nvdimm
+ pmu device
+To: Peter Zijlstra <peterz@infradead.org>
+References: <20210525132216.1239259-1-kjain@linux.ibm.com>
+ <20210525132216.1239259-5-kjain@linux.ibm.com>
+ <YK0G1nmvhOPimRay@hirez.programming.kicks-ass.net>
+From: kajoljain <kjain@linux.ibm.com>
+Message-ID: <b89d1954-638b-34c0-2d79-5d1ce4e72a3a@linux.ibm.com>
+Date: Wed, 26 May 2021 12:56:58 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
+MIME-Version: 1.0
+In-Reply-To: <YK0G1nmvhOPimRay@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: koH-ecw_P2N0alB5FHKm8Ve0RZ14XCAX
-X-Proofpoint-ORIG-GUID: rhyOl8TBPd5YISrdFAxBctYknR2qzSfT
+X-Proofpoint-ORIG-GUID: -M87MocfDUmtPMjzmwQ6zYbl3o-iTrLc
+X-Proofpoint-GUID: -M87MocfDUmtPMjzmwQ6zYbl3o-iTrLc
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-05-26_04:2021-05-25,
  2021-05-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- bulkscore=0 clxscore=1015 lowpriorityscore=0 spamscore=0 malwarescore=0
- phishscore=0 mlxlogscore=999 mlxscore=0 suspectscore=0 impostorscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105260040
+ mlxscore=0 mlxlogscore=946
+ impostorscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0 phishscore=0
+ spamscore=0 malwarescore=0 priorityscore=1501 suspectscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
+ definitions=main-2105260045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,32 +116,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
- Kajol Jain <kjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, acme@kernel.org,
- linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, jolsa@redhat.com
+Cc: santosh@fossix.org, maddy@linux.vnet.ibm.com, ira.weiny@intel.com,
+ linux-nvdimm@lists.01.org, rnsastry@linux.ibm.com,
+ linux-kernel@vger.kernel.org, atrajeev@linux.vnet.ibm.com,
+ aneesh.kumar@linux.ibm.com, vaibhav@linux.ibm.com, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-> On 25-May-2021, at 8:57 PM, Paul A. Clarke <pc@us.ibm.com> wrote:
->>=20
-> I lost the original message, but Nageswara Sastry said:
->> 1. Extracted all the 244 events from the patch.
->> 2. Check them in 'perf list' - all 244 events found
->> 3. Ran all the events with 'perf stat -e "event name" sleep 1', all =
-ran fine.
->>    No errors were seen in 'dmesg'
->=20
-> I count 255 events.
->=20
-> PC
+On 5/25/21 7:46 PM, Peter Zijlstra wrote:
+> On Tue, May 25, 2021 at 06:52:16PM +0530, Kajol Jain wrote:
+>> Patch here adds cpu hotplug functions to nvdimm pmu.
+> 
+> I'm thinking "Patch here" qualifies for "This patch", see
+> Documentation/process/submitting-patches.rst .
+> 
+Hi Peter,
+   I will reword this commit message.
 
-Seems while extracting I filtered out newly added ones, so I got =
-244(255-11).=20
-Now checked with all 255 events. Thanks for pointing out.
+>> It adds cpumask to designate a cpu to make HCALL to
+>> collect the counter data for the nvdimm device and
+>> update ABI documentation accordingly.
+>>
+>> Result in power9 lpar system:
+>> command:# cat /sys/devices/nmem0/cpumask
+>> 0
+> 
+> Is this specific to the papr thing, or should this be in generic nvdimm
+> code?
 
-Thanks!!
-R.Nageswara Sastry=
+This code is not specific to papr device and we can move it to
+generic nvdimm interface. But do we need to add some checks on whether
+any arch/platform specific driver want that support or we can assume 
+that this will be something needed by all platforms?
+
+Thanks,
+Kajol Jain
