@@ -7,62 +7,62 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7960FC4707F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 01:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF49AC4707F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 01:03:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63D8A61429
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 01:02:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63D8A61429
+	by mail.kernel.org (Postfix) with ESMTPS id 498BC613F1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 01:03:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 498BC613F1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FqXjw66bxz3097
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 11:02:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FqXkN0S6Wz2ykR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 11:03:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=oHVrEdNn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=p6bYg521;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=oHVrEdNn; 
+ header.a=rsa-sha256 header.s=201909 header.b=p6bYg521; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqXjR1fycz2xvP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 11:02:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FqXjb5fvvz304G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 11:02:27 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4FqXjH4nDhz9s1l;
- Wed, 26 May 2021 11:02:11 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FqXjZ6tj2z9s1l;
+ Wed, 26 May 2021 11:02:26 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1621990932;
- bh=7YFaEXfPr9zaWFglhtnONuAD5PnCnM4K1fEPjwflXkk=;
+ s=201909; t=1621990947;
+ bh=ovmd0QF/+rpAnQrJvBUm7otUcw+qV5Ofv5ggDfLR6Xc=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=oHVrEdNnGr2oj9KRqvebzUCeS+mmscnS/EH66JqawKZP922vwiSxH10iV5/+2mhQH
- OLbb8bi7+AuooHvmyQiAS2NrrzFTIx56EigazAl/Ja4jPyvlw+Nr0rA53ukrCBra2G
- V8roIGSpzVK96pg1XYHKa+cr6s1zLDHC/BYd6ABr3rEdh9ngdnQzeMWsHQK8uILXbL
- ADPab14Rqui7tx6TE7Zw6D19DHPkW+faFNLtIDVUQKnh+Rul/TGO72b2HR3oHIBwqf
- dIW0KHamcspLPKd/T09N2KT/BWIly+XS9lsV5k+KK60GyxtiLmiOcyjbmz6rcFPFbK
- ecugbPRrEnlMA==
+ b=p6bYg521w6h6ZLZ4HKv4fMMUYE1um6gMHa4CCo11P+CNv8k3t4VY708RdlLJKQ7BN
+ FfeoldeuFU+NKz8DfiDtrZACNYxwH/Fphp2P4M3Dv0SEsF2FBt5yoVuhO5NyIyCeLb
+ zr0OEXpyVuZE7e0N072prtqci6KDWDLoPHU/ny4/BMheg+eBHayHSgyH7FaOEgrpQZ
+ xSRSWkPHHjdY8TYncZj5Uk/w/0PGTiKUWoGsStN4qqqmAYVnT+7duEx84qjd+3V24V
+ UGbofM4eKqRN8smR3tP/hNAtxcDKQLoD0BpfkkWMD1yn+M+89Kenc4jNSWwIWWg1q+
+ eFESgryfTEU8Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Chris Packham <chris.packham@alliedtelesis.co.nz>, wsa@kernel.org,
  andriy.shevchenko@linux.intel.com, andy.shevchenko@gmail.com,
  robh+dt@kernel.org
-Subject: Re: [PATCH v3 2/4] powerpc/fsl: set fsl,i2c-erratum-a004447 flag
- for P2041 i2c controllers
-In-Reply-To: <20210511212052.27242-3-chris.packham@alliedtelesis.co.nz>
+Subject: Re: [PATCH v3 3/4] powerpc/fsl: set fsl,i2c-erratum-a004447 flag
+ for P1010 i2c controllers
+In-Reply-To: <20210511212052.27242-4-chris.packham@alliedtelesis.co.nz>
 References: <20210511212052.27242-1-chris.packham@alliedtelesis.co.nz>
- <20210511212052.27242-3-chris.packham@alliedtelesis.co.nz>
-Date: Wed, 26 May 2021 11:02:05 +1000
-Message-ID: <874keqi9yq.fsf@mpe.ellerman.id.au>
+ <20210511212052.27242-4-chris.packham@alliedtelesis.co.nz>
+Date: Wed, 26 May 2021 11:02:26 +1000
+Message-ID: <871r9ui9y5.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,47 +85,43 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Chris Packham <chris.packham@alliedtelesis.co.nz> writes:
-> The i2c controllers on the P2040/P2041 have an erratum where the
-> documented scheme for i2c bus recovery will not work (A-004447). A
-> different mechanism is needed which is documented in the P2040 Chip
-> Errata Rev Q (latest available at the time of writing).
+> The i2c controllers on the P1010 have an erratum where the documented
+> scheme for i2c bus recovery will not work (A-004447). A different
+> mechanism is needed which is documented in the P1010 Chip Errata Rev L.
 >
 > Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
 > ---
->  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+>
+> Notes:
+>     Changes in v3:
+>     - New
+>
+>  arch/powerpc/boot/dts/fsl/p1010si-post.dtsi | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
 
-> diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-> index 872e4485dc3f..ddc018d42252 100644
-> --- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-> @@ -371,7 +371,23 @@ sdhc@114000 {
+> diff --git a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+> index c2717f31925a..ccda0a91abf0 100644
+> --- a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+> @@ -122,7 +122,15 @@ memory-controller@2000 {
 >  	};
 >  
->  /include/ "qoriq-i2c-0.dtsi"
-> +	i2c@118000 {
+>  /include/ "pq3-i2c-0.dtsi"
+> +	i2c@3000 {
 > +		fsl,i2c-erratum-a004447;
 > +	};
 > +
-> +	i2c@118100 {
+>  /include/ "pq3-i2c-1.dtsi"
+> +	i2c@3100 {
 > +		fsl,i2c-erratum-a004447;
 > +	};
 > +
->  /include/ "qoriq-i2c-1.dtsi"
-> +	i2c@119000 {
-> +		fsl,i2c-erratum-a004447;
-> +	};
-> +
-> +	i2c@119100 {
-> +		fsl,i2c-erratum-a004447;
-> +	};
-> +
->  /include/ "qoriq-duart-0.dtsi"
->  /include/ "qoriq-duart-1.dtsi"
->  /include/ "qoriq-gpio-0.dtsi"
+>  /include/ "pq3-duart-0.dtsi"
+>  /include/ "pq3-espi-0.dtsi"
+>  	spi0: spi@7000 {
 > -- 
 > 2.31.1
