@@ -2,103 +2,84 @@ Return-Path: <SRS0=OfUe=KV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D863C2B9F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 11:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3EB5C2B9F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 12:00:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 785E861360
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 11:45:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 785E861360
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9B50061005
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 12:00:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B50061005
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fqq014qsjz309H
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 21:45:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FqqKC0GdLz30DQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 22:00:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kuhbd30J;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kuhbd30J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=cpqeZJM2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=omosnace@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634;
+ helo=mail-pl1-x634.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Kuhbd30J; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kuhbd30J; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=cpqeZJM2; dkim-atps=neutral
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
+ [IPv6:2607:f8b0:4864:20::634])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqpzT5pV7z2xZG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 21:45:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1622029519;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=5Uw+/IY4PFLhc9QD0XQTD8Vq22Bv9V1A42B8cw/tcfQ=;
- b=Kuhbd30J9x/y4HQUnZ9h1s4PvK8YEhrAeOiu61Mmq05kpIckdxQfU2GoAyMMCrxp2Y3Fx8
- 4Ew/m1+3OdXqZVqzN5LyATLbQbSx9ugDGtIxwVpezVNYW7rPatjhDlJpeKVDpahfzwYvST
- x0HaU/28DMema5M+T5gBdd6GqKHRTMM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1622029519;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=5Uw+/IY4PFLhc9QD0XQTD8Vq22Bv9V1A42B8cw/tcfQ=;
- b=Kuhbd30J9x/y4HQUnZ9h1s4PvK8YEhrAeOiu61Mmq05kpIckdxQfU2GoAyMMCrxp2Y3Fx8
- 4Ew/m1+3OdXqZVqzN5LyATLbQbSx9ugDGtIxwVpezVNYW7rPatjhDlJpeKVDpahfzwYvST
- x0HaU/28DMema5M+T5gBdd6GqKHRTMM=
-Received: from mail-yb1-f200.google.com (mail-yb1-f200.google.com
- [209.85.219.200]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-532-8cavWTLaOX2CLCu4l3u8Ag-1; Wed, 26 May 2021 07:45:15 -0400
-X-MC-Unique: 8cavWTLaOX2CLCu4l3u8Ag-1
-Received: by mail-yb1-f200.google.com with SMTP id
- d4-20020a25b5c40000b02904f8e3c8c6c9so1322299ybg.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 04:45:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FqqJf2cz2z2y0D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 22:00:17 +1000 (AEST)
+Received: by mail-pl1-x634.google.com with SMTP id n8so493238plf.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 05:00:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=RNOewunu1/YI5ycKKjgkCiFR8rult6PJWWdN0KnYOJQ=;
+ b=cpqeZJM2SgzRAOE7tNBsKq19UCCXqSnnMbjtrm4cAk/IRW75KAc2WEsmeE/jRyyT5x
+ 6whZxpsdMsmBAbY1kT7YYo0XfuP/+VIexve5+YRLf5Lk8jxT0yGhmt81awjwV54vk6m1
+ mENwGkYLgxKBgNQjhzSDqt8XCUGM5TbiDoLvmm7+RiK4366UVsxiFCGUzj+7yXkZ4iI5
+ c7gfZTISJlfzqV+rFqlV9qv4NhI7v9HrlOQFKhK9XKJyTJUWJJRYLbRYw4/75gxeFBCG
+ xHwUZQLc1NbB5l4ysgo/oJjtDzN2MjDgd3MxoJ0Ap2C9csNKN60YYyBckuQuSjLCV7ol
+ fcIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=5Uw+/IY4PFLhc9QD0XQTD8Vq22Bv9V1A42B8cw/tcfQ=;
- b=KUWpshvvaVmHdfWfXehLEp2TWHZUXz3EDej//B5nJiiLLfd7Q828+hf8MCUhIcc0rh
- mGUcgFhNS+9ddT6N4wsNq4VGa0DIBVi7AG6+LKrmKrNLVdb/M34ZjPwLWF6o9CEbML/G
- oyK0DrlGO6WTzdg9MqFPZfEsWAocn9ynPsUIohHqaxxcXT1TlwDeOtzbFiAnIekf5yVf
- fsYdWWa4XUFDk872INFz4oxYOGwiIlW2WqO4Hk9O3gNB3iMdZmJ7fRIdC1ZVB2dKMIei
- hFosMJiVVgrCMDgEiBPjsdyXTfzi8RO8RGP9rpU9rmmmh5P0W9dLZsQA1I7evvXj8N8U
- EE7Q==
-X-Gm-Message-State: AOAM530B1r/zKujwK9STZwUorpKtVFEdViMAfxBl36jN7J/zkl4k0kXS
- NimwAdXyhW61FBgWksr6TkTZjES3y0oPTsGkUGW6Xd/o5G0Q+Sw6LQiF6tQEW3RU1sF3pM13RAl
- 5I5loBT8g7QuaN07rVsiiH/N9LZmvj7gTcOPycsSnng==
-X-Received: by 2002:a25:f50e:: with SMTP id a14mr48352353ybe.172.1622029514557; 
- Wed, 26 May 2021 04:45:14 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw7JX0t9Q+MjZUdNuGYqNNwFWjv7mwlUzB5zjT5J9a7c3DzGoUhB3CdgL/OZI5wwTVrJZE9FoOnkmowu6kRXnk=
-X-Received: by 2002:a25:f50e:: with SMTP id a14mr48352333ybe.172.1622029514339; 
- Wed, 26 May 2021 04:45:14 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=RNOewunu1/YI5ycKKjgkCiFR8rult6PJWWdN0KnYOJQ=;
+ b=FmWlRW10ptkOWrtds96LcA2cZJkaUfuUUF5qSvEOkEyZIl34Mex++oFe4SIG5efzxm
+ 9n3hPJ4yUBZQ+J0Xg/6/9Jx7xw2bphdxmuMM5hrtFtK/zfu1IhzW2s85kkOAdL8fI7Sf
+ jMnyk0U368D1SUpNSZ7YC0jsk+3/Xoi3YV7Vlp9VAfVwweEs5l2eUDJHiT7MMl16hYRn
+ AJS1IBbOpnoaDIWRcd2+OPVSINRKI25NWkjZWr6n5veeUULqAe8m3FJnQYUIn1R07q8p
+ sz9nl7CStyy/Le7B9ybRgPby4tAiVkEMhbQ5zrH8pYALskHVUpSc4PezBmOPOCu+jBk+
+ bAHQ==
+X-Gm-Message-State: AOAM533d3MSBDwQkDY999S3b+5tIcW8uKWvcZP4Y+CChhstFD3fcBE4G
+ 9WT3kfGC216NXc4+fIA2IGu4SO4Dgj0=
+X-Google-Smtp-Source: ABdhPJzdjQ9Lk9R36+NfAZ+XV0vJ/nJkSoyeeRQ+1ah2J9ueTMoVJRkOPswSoVmd4+1eQNwGDHJiNg==
+X-Received: by 2002:a17:902:aa95:b029:fd:8e4a:f341 with SMTP id
+ d21-20020a170902aa95b02900fd8e4af341mr2351560plr.78.1622030413959; 
+ Wed, 26 May 2021 05:00:13 -0700 (PDT)
+Received: from bobo.ibm.com (124-169-110-219.tpgi.com.au. [124.169.110.219])
+ by smtp.gmail.com with ESMTPSA id h18sm15831712pfr.49.2021.05.26.05.00.11
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 26 May 2021 05:00:13 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v2] KVM: PPC: Book3S HV: Fix reverse map real-mode address
+ lookup with huge vmalloc
+Date: Wed, 26 May 2021 22:00:05 +1000
+Message-Id: <20210526120005.3432222-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-References: <20210517092006.803332-1-omosnace@redhat.com>
- <87o8d9k4ln.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87o8d9k4ln.fsf@mpe.ellerman.id.au>
-From: Ondrej Mosnacek <omosnace@redhat.com>
-Date: Wed, 26 May 2021 13:44:59 +0200
-Message-ID: <CAFqZXNtUvrGxT6UMy81WfMsfZsydGN5k-VGFBq8yjDWN5ARAWw@mail.gmail.com>
-Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
- permission checks
-To: Michael Ellerman <mpe@ellerman.id.au>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=omosnace@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,68 +91,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Moore <paul@paul-moore.com>, SElinux list <selinux@vger.kernel.org>,
- network dev <netdev@vger.kernel.org>,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- James Morris <jmorris@namei.org>, Steven Rostedt <rostedt@goodmis.org>,
- Linux kernel mailing list <linux-kernel@vger.kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Linux Security Module list <linux-security-module@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- bpf <bpf@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 17, 2021 at 1:00 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Ondrej Mosnacek <omosnace@redhat.com> writes:
-> > Commit 59438b46471a ("security,lockdown,selinux: implement SELinux
-> > lockdown") added an implementation of the locked_down LSM hook to
-> > SELinux, with the aim to restrict which domains are allowed to perform
-> > operations that would breach lockdown.
-> >
-> > However, in several places the security_locked_down() hook is called in
-> > situations where the current task isn't doing any action that would
-> > directly breach lockdown, leading to SELinux checks that are basically
-> > bogus.
-> >
-> > Since in most of these situations converting the callers such that
-> > security_locked_down() is called in a context where the current task
-> > would be meaningful for SELinux is impossible or very non-trivial (and
-> > could lead to TOCTOU issues for the classic Lockdown LSM
-> > implementation), fix this by modifying the hook to accept a struct cred
-> > pointer as argument, where NULL will be interpreted as a request for a
-> > "global", task-independent lockdown decision only. Then modify SELinux
-> > to ignore calls with cred == NULL.
-> >
-> > Since most callers will just want to pass current_cred() as the cred
-> > parameter, rename the hook to security_cred_locked_down() and provide
-> > the original security_locked_down() function as a simple wrapper around
-> > the new hook.
-> >
-> > The callers migrated to the new hook, passing NULL as cred:
-> > 1. arch/powerpc/xmon/xmon.c
-> >      Here the hook seems to be called from non-task context and is only
-> >      used for redacting some sensitive values from output sent to
-> >      userspace.
->
-> It's hard to follow but it actually disables interactive use of xmon
-> entirely if lockdown is in confidentiality mode, and disables
-> modifications of the kernel in integrity mode.
->
-> But that's not really that important, the patch looks fine.
->
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+real_vmalloc_addr() does not currently work for huge vmalloc, which is
+what the reverse map can be allocated with for radix host, hash guest.
 
-Thanks, Michael!
+Extract the hugepage aware equivalent from eeh code into a helper, and
+convert existing sites including this one to use it.
 
-James/Paul, is there anything blocking this patch from being merged?
-Especially the BPF case is causing real trouble for people and the
-only workaround is to broadly allow lockdown::confidentiality in the
-policy.
+Fixes: 8abddd968a30 ("powerpc/64s/radix: Enable huge vmalloc mappings")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+Since v1:
+- Factor out the same 3 patterns.
+- Improve code and use PFN_PHYS [Christophe]
 
---
-Ondrej Mosnacek
-Software Engineer, Linux Security - SELinux kernel
-Red Hat, Inc.
+ arch/powerpc/include/asm/pte-walk.h  | 29 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/eeh.c            | 23 +---------------------
+ arch/powerpc/kernel/io-workarounds.c | 15 +++-----------
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c  | 15 ++------------
+ 4 files changed, 35 insertions(+), 47 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pte-walk.h b/arch/powerpc/include/asm/pte-walk.h
+index 33fa5dd8ee6a..714a35f0d425 100644
+--- a/arch/powerpc/include/asm/pte-walk.h
++++ b/arch/powerpc/include/asm/pte-walk.h
+@@ -31,6 +31,35 @@ static inline pte_t *find_init_mm_pte(unsigned long ea, unsigned *hshift)
+ 	pgd_t *pgdir = init_mm.pgd;
+ 	return __find_linux_pte(pgdir, ea, NULL, hshift);
+ }
++
++/*
++ * Convert a kernel vmap virtual address (vmalloc or ioremap space) to a
++ * physical address, without taking locks. This can be used in real-mode.
++ */
++static inline phys_addr_t ppc_find_vmap_phys(unsigned long addr)
++{
++	pte_t *ptep;
++	phys_addr_t pa;
++	int hugepage_shift;
++
++	/*
++	 * init_mm does not free page tables, and does not do THP. It may
++	 * have huge pages from huge vmalloc / ioremap etc.
++	 */
++	ptep = find_init_mm_pte(addr, &hugepage_shift);
++	if (WARN_ON(!ptep))
++		return 0;
++
++	pa = PFN_PHYS(pte_pfn(*ptep));
++
++	if (!hugepage_shift)
++		hugepage_shift = PAGE_SHIFT;
++
++	pa |= addr & ((1ul << hugepage_shift) - 1);
++
++	return pa;
++}
++
+ /*
+  * This is what we should always use. Any other lockless page table lookup needs
+  * careful audit against THP split.
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index f24cd53ff26e..3bbdcc86d01b 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -346,28 +346,7 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+  */
+ static inline unsigned long eeh_token_to_phys(unsigned long token)
+ {
+-	pte_t *ptep;
+-	unsigned long pa;
+-	int hugepage_shift;
+-
+-	/*
+-	 * We won't find hugepages here(this is iomem). Hence we are not
+-	 * worried about _PAGE_SPLITTING/collapse. Also we will not hit
+-	 * page table free, because of init_mm.
+-	 */
+-	ptep = find_init_mm_pte(token, &hugepage_shift);
+-	if (!ptep)
+-		return token;
+-
+-	pa = pte_pfn(*ptep);
+-
+-	/* On radix we can do hugepage mappings for io, so handle that */
+-	if (!hugepage_shift)
+-		hugepage_shift = PAGE_SHIFT;
+-
+-	pa <<= PAGE_SHIFT;
+-	pa |= token & ((1ul << hugepage_shift) - 1);
+-	return pa;
++	return ppc_find_vmap_phys(token);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/kernel/io-workarounds.c b/arch/powerpc/kernel/io-workarounds.c
+index 51bbaae94ccc..ddba8761e58c 100644
+--- a/arch/powerpc/kernel/io-workarounds.c
++++ b/arch/powerpc/kernel/io-workarounds.c
+@@ -65,22 +65,13 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+ 		bus = &iowa_busses[token - 1];
+ 	else {
+ 		unsigned long vaddr, paddr;
+-		pte_t *ptep;
+ 
+ 		vaddr = (unsigned long)PCI_FIX_ADDR(addr);
+ 		if (vaddr < PHB_IO_BASE || vaddr >= PHB_IO_END)
+ 			return NULL;
+-		/*
+-		 * We won't find huge pages here (iomem). Also can't hit
+-		 * a page table free due to init_mm
+-		 */
+-		ptep = find_init_mm_pte(vaddr, &hugepage_shift);
+-		if (ptep == NULL)
+-			paddr = 0;
+-		else {
+-			WARN_ON(hugepage_shift);
+-			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
+-		}
++
++		paddr = ppc_find_vmap_phys(vaddr);
++
+ 		bus = iowa_pci_find(vaddr, paddr);
+ 
+ 		if (bus == NULL)
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 7af7c70f1468..7a0f12404e0e 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -23,20 +23,9 @@
+ #include <asm/pte-walk.h>
+ 
+ /* Translate address of a vmalloc'd thing to a linear map address */
+-static void *real_vmalloc_addr(void *x)
++static void *real_vmalloc_addr(void *addr)
+ {
+-	unsigned long addr = (unsigned long) x;
+-	pte_t *p;
+-	/*
+-	 * assume we don't have huge pages in vmalloc space...
+-	 * So don't worry about THP collapse/split. Called
+-	 * Only in realmode with MSR_EE = 0, hence won't need irq_save/restore.
+-	 */
+-	p = find_init_mm_pte(addr, NULL);
+-	if (!p || !pte_present(*p))
+-		return NULL;
+-	addr = (pte_pfn(*p) << PAGE_SHIFT) | (addr & ~PAGE_MASK);
+-	return __va(addr);
++	return __va(ppc_find_vmap_phys((unsigned long)addr));
+ }
+ 
+ /* Return 1 if we need to do a global tlbie, 0 if we can use tlbiel */
+-- 
+2.23.0
 
