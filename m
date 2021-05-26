@@ -2,106 +2,79 @@ Return-Path: <SRS0=OfUe=KV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC1D0C2B9F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 07:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B15C8C2B9F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 08:08:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1687C613B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 07:30:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1687C613B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E0020613E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 08:08:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0020613E1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FqjK74WNRz2yx6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 17:30:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fqk9Q03hxz306W
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 18:08:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Vwy4bkiv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=woqt8Bnx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com;
+ smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::929;
+ helo=mail-ua1-x929.google.com; envelope-from=ulf.hansson@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Vwy4bkiv; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=woqt8Bnx; dkim-atps=neutral
+Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com
+ [IPv6:2607:f8b0:4864:20::929])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fqj8C64ywz2yWJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 17:22:35 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 14Q73OHW001539; Wed, 26 May 2021 03:22:27 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : message-id :
- content-type : subject : date : in-reply-to : cc : to : references :
- mime-version; s=pp1; bh=/hwYzabrOhyvuUQpPQzTXBZ7OIfcjz5RsrcQ6cWsD48=;
- b=Vwy4bkivgiXZjmxWnqUBIhrmFAFYCnFPhLtYRYx5Kzjz07rYwumNPEcsjMla8mq+m4Rn
- 7o3AS7e0fV8vPzTgslh7z4bROhRWEqxe7VPwvZ5jU6FHCKIK87StFtJlkUvPUlZ9oHJ7
- 9MYtPAo7HjtZ0LRfdcvud/oGdzSBNHG+GM4J78KnyO84gEXrUrS1jyMURRBXQg995jph
- BN1x4WzmrpcB9raXbKZBYYEBFcNpCYCYeUPBnXOQGVq/7WqtfQS1cwOkFaZ2qu4GqtYB
- CWotDEz095ro1H23gcn8Fdu8iv3BKBXNc3T+IaEu6h4ldr4veFE6qjBBksDga25SQm+Z wQ== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 38shaqs0gt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 26 May 2021 03:22:26 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 14Q7C2qR017187;
- Wed, 26 May 2021 07:22:25 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04fra.de.ibm.com with ESMTP id 38s1ht06yp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 26 May 2021 07:22:25 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 14Q7MMiP27460006
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 26 May 2021 07:22:22 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 22E2BA4060;
- Wed, 26 May 2021 07:22:22 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0CBE4A4066;
- Wed, 26 May 2021 07:22:21 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.85.68.222])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 26 May 2021 07:22:20 +0000 (GMT)
-From: Nageswara Sastry <rnsastry@linux.ibm.com>
-Message-Id: <ADC327AB-A5AE-4CED-BAB1-D135DAD0EDBF@linux.ibm.com>
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_3643135C-FADC-4D45-905D-1D7658752305"
-Subject: Re: [PATCH V3 0/2] selftests/powerpc: Updates to EBB selftest for ISA
- v3.1
-Date: Wed, 26 May 2021 12:52:19 +0530
-In-Reply-To: <1621950703-1532-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-References: <1621950703-1532-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-Mailer: Apple Mail (2.3654.100.0.2.22)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: VkU_vnHDpvnYni4vJE5OEqosm5rpfYfz
-X-Proofpoint-ORIG-GUID: VkU_vnHDpvnYni4vJE5OEqosm5rpfYfz
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fqk8t3Jc1z2xvC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 18:08:11 +1000 (AEST)
+Received: by mail-ua1-x929.google.com with SMTP id z14so299625uan.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 01:08:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=GrfL+UvsoUYJEVH3FOBXMPqeLzeAwHNpUWgDzMspWKw=;
+ b=woqt8BnxKZukeBLeJd4w4lKnQ3cKCzoRk7QnVN0RWefRH0Lak2HbQbLhx/frNziCrW
+ vzOd63E9Idh6uhMeJbijddzANEGlwhq2a94sp+UT6X33w/HJrP0R4Xxsur3qtd3UJ9V3
+ RXhO2WmDqsPWGOOFe4Z1vXtU3Ajlf9H69hO1WGEkh2/q7XWi3knfCY64J+SzmkNKOe36
+ kp6uvOs+ndgfRymDdtUOUv9NQPYP8RiXXMABsN8MVSRmmehasPQ8UDsDcWRSt1e77qBG
+ 1jHw1+BN8mfEhYZIvRTg/wyYkLYEyw3TBricpiOdb+JF5bZQWiaQ0RSSDpINkEteioTM
+ z8Uw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=GrfL+UvsoUYJEVH3FOBXMPqeLzeAwHNpUWgDzMspWKw=;
+ b=dIblZDEF4Ne4UCP8c8THivLAVDb3caz4KdG/x/5ULyMJdpOEicEkPp2qIfOJ4TItTi
+ ds03x6jdCclK168Cu8A5a2zAmlAtcPQuYBJPElyiRLfIsfu0GUd1jxbtfGZlTXC8JR6O
+ vR4KpUq0ioW7VPxK3XrIEEQYCOqm8LjsT1kbg/pjmrrHDj2zEdfz3g/u0KOLqk7KpYu1
+ +JxiM1RujwV8vmmnVcvP9KHcSAPV0h2x+Li+I/nFD3iB5FxbHoxzPO0whU6EtD/Z1WnO
+ Vm2Hfrom78GRIiurlDoXJ95ui6K/FeEjENUlzE9C6oiUjcEIQcy6g1M4Y0EqaJ3p/pcK
+ /YiA==
+X-Gm-Message-State: AOAM531FcU0GIZJv6DXMQg9cNxnFgFnUVm1lmBT1RNiJ40RUTVcTNbCB
+ NOe38abwOTC29W0qu5MwmubX+EEX4/HEh4Umch7j9A==
+X-Google-Smtp-Source: ABdhPJxEKZ+yyN+wbXXVH9CKQ94TxTUrIX6SVT7ztQ9Bwftr62IUqVIB3GNBh5QlN3mdzVdDkjsC7QK+8McmDny5XO0=
+X-Received: by 2002:ab0:3351:: with SMTP id h17mr31776765uap.15.1622016487939; 
+ Wed, 26 May 2021 01:08:07 -0700 (PDT)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-05-26_04:2021-05-25,
- 2021-05-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=0 malwarescore=0 impostorscore=0 priorityscore=1501
- clxscore=1015 bulkscore=0 adultscore=0 phishscore=0 mlxscore=0 spamscore=0
- mlxlogscore=788 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2105260045
-X-Mailman-Approved-At: Wed, 26 May 2021 17:29:50 +1000
+References: <20210521055116.1053587-1-hch@lst.de>
+ <CAPDyKFpqdSYeA+Zg=9Ewi46CmSWNpXQbju6HQo7aviCcRzyAAg@mail.gmail.com>
+ <20210526044943.GA28551@lst.de>
+In-Reply-To: <20210526044943.GA28551@lst.de>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 26 May 2021 10:07:31 +0200
+Message-ID: <CAPDyKFpR0maO_Dj6bxWSLvh_jcGnrcZ=na42atXfNdkmMkmdig@mail.gmail.com>
+Subject: Re: simplify gendisk and request_queue allocation for bio based
+ drivers
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,93 +86,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kajol Jain <kjain@linux.ibm.com>, maddy@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, shirisha.ganta1@ibm.com
+Cc: nvdimm@lists.linux.dev, Mike Snitzer <snitzer@redhat.com>,
+ linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>,
+ dm-devel@redhat.com, linux-bcache@vger.kernel.org,
+ Joshua Morris <josh.h.morris@us.ibm.com>, drbd-dev@lists.linbit.com,
+ linux-s390@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>,
+ Maxim Levitsky <maximlevitsky@gmail.com>,
+ Vishal Verma <vishal.l.verma@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Matias Bjorling <mb@lightnvm.io>,
+ Nitin Gupta <ngupta@vflare.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-xtensa@linux-xtensa.org, Alex Dubov <oakad@yahoo.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Coly Li <colyli@suse.de>,
+ linux-block <linux-block@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
+ Philip Kelleher <pjk1939@linux.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ Chris Zankel <chris@zankel.net>, linux-raid@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Philipp Reisner <philipp.reisner@linbit.com>, Jim Paris <jim@jtan.com>,
+ Minchan Kim <minchan@kernel.org>, Lars Ellenberg <lars.ellenberg@linbit.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, 26 May 2021 at 06:49, Christoph Hellwig <hch@lst.de> wrote:
+>
+> On Wed, May 26, 2021 at 12:41:37AM +0200, Ulf Hansson wrote:
+> > On Fri, 21 May 2021 at 07:51, Christoph Hellwig <hch@lst.de> wrote:
+> > >
+> > > Hi all,
+> > >
+> > > this series is the first part of cleaning up lifetimes and allocation of
+> > > the gendisk and request_queue structure.  It adds a new interface to
+> > > allocate the disk and queue together for bio based drivers, and a helper
+> > > for cleanup/free them when a driver is unloaded or a device is removed.
+> >
+> > May I ask what else you have in the pipe for the next steps?
+> >
+> > The reason why I ask is that I am looking into some issues related to
+> > lifecycle problems of gendisk/mmc, typically triggered at SD/MMC card
+> > removal.
+>
+> In the short run not much more than superficial cleanups.  Eventually
+> I want bio based drivers to not require a separate request_queue, leaving
+> that purely as a data structure for blk-mq based drivers.  But it will
+> take a while until we get there, so it should not block any fixes.
 
---Apple-Mail=_3643135C-FADC-4D45-905D-1D7658752305
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Alright, thanks for clarifying.
 
+>
+> For hot unplug handling it might be worth to take a look at nvme, as it
+> is tested a lot for that case.
 
+Okay, thanks for the hint.
 
-> On 25-May-2021, at 7:21 PM, Athira Rajeev <atrajeev@linux.vnet.ibm.com> w=
-rote:
->=20
-> The "no_handler_test" in ebb selftests attempts to read the PMU
-> registers after closing of the event via helper function
-> "dump_ebb_state". With the MMCR0 control bit (PMCCEXT) in ISA v3.1,
-> read access to group B registers is restricted when MMCR0 PMCC=3D0b00.
-> Hence the call to dump_ebb_state after closing of event will generate
-> a SIGILL, which is expected.
->=20
-> Test has below in logs:
-> <<>>
-> !! child died by signal 4
-> failure: no_handler_test
-> <<>>
->=20
-Tested patches on Power9 and Power10 - PowerVM environment.
-
-Power9 - no_handler_test - with and without patch - success
-Power10 - no_handler_test - without patch - failure
-Power10 - no_handler_test - with patch - success
-
-Power9 - regs_access_pmccext_test - with patch - success
-Power10 - regs_access_pmccext_test - with patch - success
-
-Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com <mailto:rnsastry@linu=
-x.ibm.com>>
-
-Thank you.=
-
---Apple-Mail=_3643135C-FADC-4D45-905D-1D7658752305
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=us-ascii
-
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
-charset=3Dus-ascii"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
-class=3D""><div><br class=3D""><blockquote type=3D"cite" class=3D""><div =
-class=3D"">On 25-May-2021, at 7:21 PM, Athira Rajeev &lt;<a =
-href=3D"mailto:atrajeev@linux.vnet.ibm.com" =
-class=3D"">atrajeev@linux.vnet.ibm.com</a>&gt; wrote:</div><br =
-class=3D"Apple-interchange-newline"><div class=3D""><div class=3D"">The =
-"no_handler_test" in ebb selftests attempts to read the PMU<br =
-class=3D"">registers after closing of the event via helper function<br =
-class=3D"">"dump_ebb_state". With the MMCR0 control bit (PMCCEXT) in ISA =
-v3.1,<br class=3D"">read access to group B registers is restricted when =
-MMCR0 PMCC=3D0b00.<br class=3D"">Hence the call to dump_ebb_state after =
-closing of event will generate<br class=3D"">a SIGILL, which is =
-expected.<br class=3D""><br class=3D"">Test has below in logs:<br =
-class=3D"">&lt;&lt;&gt;&gt;<br class=3D"">!! child died by signal 4<br =
-class=3D"">failure: no_handler_test<br class=3D"">&lt;&lt;&gt;&gt;<br =
-class=3D""><br class=3D""></div></div></blockquote></div>Tested patches =
-on Power9 and Power10 - PowerVM environment.<div class=3D""><br =
-class=3D""></div><div class=3D"">Power9 -&nbsp;no_handler_test - with =
-and without patch - success</div><div class=3D"">Power10 =
--&nbsp;no_handler_test - without patch - failure</div><div =
-class=3D"">Power10 -&nbsp;no_handler_test - with patch - =
-success</div><div class=3D""><div class=3D""><br class=3D""></div><div =
-class=3D"">Power9 -&nbsp;regs_access_pmccext_test - with patch - =
-success</div><div class=3D"">Power10 -&nbsp;regs_access_pmccext_test - =
-with patch - success</div></div><div class=3D""><br class=3D""></div><div =
-class=3D""><div style=3D"margin: 0px; font-stretch: normal; line-height: =
-normal;" class=3D""><span style=3D"font-kerning: none" =
-class=3D"">Tested-by: Nageswara R Sastry &lt;<a =
-href=3D"mailto:rnsastry@linux.ibm.com" class=3D""><span =
-style=3D"-webkit-font-kerning: none; color: rgb(9, 79, 209);" =
-class=3D"">rnsastry@linux.ibm.com</span></a>&gt;</span></div></div><div =
-style=3D"margin: 0px; font-stretch: normal; line-height: normal;" =
-class=3D""><span style=3D"font-kerning: none" class=3D""><br =
-class=3D""></span></div><div style=3D"margin: 0px; font-stretch: normal; =
-line-height: normal;" class=3D""><span style=3D"font-kerning: none" =
-class=3D"">Thank you.</span></div></body></html>=
-
---Apple-Mail=_3643135C-FADC-4D45-905D-1D7658752305--
-
+Kind regards
+Uffe
