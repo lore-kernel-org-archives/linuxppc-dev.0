@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC747C2B9F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 09:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E65C2B9F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 09:11:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 382AF6142D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 09:11:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 382AF6142D
+	by mail.kernel.org (Postfix) with ESMTPS id 75E0C61402
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 09:11:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E0C61402
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FqlYS0Gckz3bwl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 19:11:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FqlYp2HvWz3c3w
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 19:11:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com;
  envelope-from=chenhuang5@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqlXh6hXPz2xv4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 19:10:28 +1000 (AEST)
-Received: from dggems701-chm.china.huawei.com (unknown [172.30.72.58])
- by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FqlTG3KXMz1BQTF;
- Wed, 26 May 2021 17:07:30 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FqlXk6mY0z2yY7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 19:10:30 +1000 (AEST)
+Received: from dggems702-chm.china.huawei.com (unknown [172.30.72.60])
+ by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4FqlTK1TgvzkYSH;
+ Wed, 26 May 2021 17:07:33 +0800 (CST)
 Received: from dggema756-chm.china.huawei.com (10.1.198.198) by
- dggems701-chm.china.huawei.com (10.3.19.178) with Microsoft SMTP Server
+ dggems702-chm.china.huawei.com (10.3.19.179) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2176.2; Wed, 26 May 2021 17:10:22 +0800
+ 15.1.2176.2; Wed, 26 May 2021 17:10:24 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  dggema756-chm.china.huawei.com (10.1.198.198) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2176.2; Wed, 26 May 2021 17:10:21 +0800
+ 15.1.2176.2; Wed, 26 May 2021 17:10:23 +0800
 From: Chen Huang <chenhuang5@huawei.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Boris
@@ -51,10 +51,9 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  Axboe" <axboe@kernel.dk>, Yang Yingliang <yangyingliang@huawei.com>,
  "Masahiro Yamada" <masahiroy@kernel.org>, Dan Carpenter
  <dan.carpenter@oracle.com>
-Subject: [PATCH -next 2/3] xen: balloon: Replaced simple_strtoull() with
- kstrtoull()
-Date: Wed, 26 May 2021 09:20:19 +0000
-Message-ID: <20210526092020.554341-2-chenhuang5@huawei.com>
+Subject: [PATCH -next 3/3] ocfs2: Replaced simple_strtoull() with kstrtoull()
+Date: Wed, 26 May 2021 09:20:20 +0000
+Message-ID: <20210526092020.554341-3-chenhuang5@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210526092020.554341-1-chenhuang5@huawei.com>
 References: <20210526092020.554341-1-chenhuang5@huawei.com>
@@ -83,37 +82,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The simple_strtoull() function is deprecated in some situation, since
+The simple_strtoull() function is deprecated in some situation since
 it does not check for the range overflow, use kstrtoull() instead.
 
 Signed-off-by: Chen Huang <chenhuang5@huawei.com>
 ---
- drivers/xen/xen-balloon.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ fs/ocfs2/cluster/heartbeat.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/xen/xen-balloon.c b/drivers/xen/xen-balloon.c
-index a8d24433c8e9..1fba838963d2 100644
---- a/drivers/xen/xen-balloon.c
-+++ b/drivers/xen/xen-balloon.c
-@@ -163,13 +163,16 @@ static ssize_t store_target_kb(struct device *dev,
- 			       const char *buf,
- 			       size_t count)
- {
--	char *endchar;
+diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
+index 1169c8dc9106..f89ffcbd585f 100644
+--- a/fs/ocfs2/cluster/heartbeat.c
++++ b/fs/ocfs2/cluster/heartbeat.c
+@@ -1596,12 +1596,13 @@ static ssize_t o2hb_region_start_block_store(struct config_item *item,
+ 	struct o2hb_region *reg = to_o2hb_region(item);
+ 	unsigned long long tmp;
+ 	char *p = (char *)page;
 +	ssize_t ret;
- 	unsigned long long target_bytes;
  
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
+ 	if (reg->hr_bdev)
+ 		return -EINVAL;
  
--	target_bytes = simple_strtoull(buf, &endchar, 0) * 1024;
-+	ret = kstrtoull(buf, 0, &target_bytes);
+-	tmp = simple_strtoull(p, &p, 0);
+-	if (!p || (*p && (*p != '\n')))
++	ret = kstrtoull(p, 0, &tmp);
 +	if (ret)
-+		return ret;
-+	target_bytes *= 1024;
+ 		return -EINVAL;
  
- 	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
- 
+ 	reg->hr_start_block = tmp;
 -- 
 2.25.1
 
