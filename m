@@ -2,83 +2,78 @@ Return-Path: <SRS0=OfUe=KV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C21EDC47082
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 12:59:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F9A3C47082
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 14:34:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE46E6113D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 12:59:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE46E6113D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5B9AE6113D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 14:34:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B9AE6113D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fqrd12dcjz3073
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 22:59:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FqtkD4vxbz3036
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 00:34:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Qi4KZV+F;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HykoxAdS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036;
- helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Qi4KZV+F; dkim-atps=neutral
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
- [IPv6:2607:f8b0:4864:20::1036])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=HykoxAdS; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqrcV4zkNz2xtp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 22:59:05 +1000 (AEST)
-Received: by mail-pj1-x1036.google.com with SMTP id t11so757683pjm.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 05:59:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=vxiCQ/dRV0Krfx+r0SoICDlOrL4kF9ou2YVb/r4kcAg=;
- b=Qi4KZV+Fz1jfZwmQQLjz7Y9pTXAWcB4Nhpbi8tMbkb6Bzf0IV5ZhhaKgJWsbPPqr63
- JVt4FW7AfN6fg59WAJ1sHHG2krzZwsM7VGfeiPKHo/GQB6ET+uYvuqb99TSASm8nDYqO
- wwTdClSGlH1/+55PQ5dOcB2bRS7n3P/wJInBz34URqpqYkY6qsiBz5xmXIgdtHdFNuWe
- A+p6wFFanHVsFWUmbzIHo2r7L9agnkX2k7ZH4/sN/W3uLF1GQzQu83IE3ULaEZ6QRrZ+
- 6A1YSvTGWsIZHQGF6zvAesxYVgk/sKzBbkjgKl4QAiZd40Amvuvimckrp2T8m3rwpZrU
- X6oQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=vxiCQ/dRV0Krfx+r0SoICDlOrL4kF9ou2YVb/r4kcAg=;
- b=bkx6yyReqbZ8qrfb0SAgKkBK+9E9R022j8QUIqDdLBVJnNEpnTiv9jFMiXDInp6Lpf
- PPODEPxIUdWJ8Atvm46SuItL6SfwclNuPuvtFvLzjKU9jBO+kuMVHgrfyK8j8beUT7j+
- 0o6UDpKQzAnuAViCVs38c+5XJZkSDt61xDkLgMx+D2fZHBbLwZKNa0INZflQP9U1lp/N
- TZeKgtBjQ/ewScJOS7Pum/Hs/3BqWo/6zhNzrxz5VTg6NFY0hTwljKuqrCp2Opf3KJ/0
- HjxWF4kZw3ilLIkkj7jXWqYBnMAGlRf1vYnOmCDtyvlI2SOEcJrDRFM4XAT+DAQYGhj1
- Eatw==
-X-Gm-Message-State: AOAM531RW6scoVukMohYkWJXUG1Kyj5bf3c4/1yJzQDbRih6Lw9j0dAU
- mtgp94eBfEexOSVzZhsTWJc=
-X-Google-Smtp-Source: ABdhPJz0fzfxG6UiWQFqptNQ7oK7usGFx8c4WW0LrwbKAvBiW4ou/lDvYpmuH4Uv2LyAc9VyNxj6tA==
-X-Received: by 2002:a17:90a:3948:: with SMTP id
- n8mr36896088pjf.32.1622033941300; 
- Wed, 26 May 2021 05:59:01 -0700 (PDT)
-Received: from bobo.ibm.com (124-169-110-219.tpgi.com.au. [124.169.110.219])
- by smtp.gmail.com with ESMTPSA id e6sm4364773pjt.1.2021.05.26.05.58.58
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 26 May 2021 05:59:01 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v2] KVM: PPC: Book3S HV: Save host FSCR in the P7/8 path
-Date: Wed, 26 May 2021 22:58:51 +1000
-Message-Id: <20210526125851.3436735-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fqtjh2GD7z2xvB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2021 00:33:44 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 904B4611CD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 14:33:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1622039621;
+ bh=VBL/ctGvMWzbD909sEDSUxz/S8LNJpBYFv2+gD5dUhA=;
+ h=From:To:Subject:Date:From;
+ b=HykoxAdSmxjfxpcp1m+bxklpyNCHABL9E4iI4rFLmjcEUT8Ek3+7onehop/vLCor1
+ 8+FxFvua6bhvgnuZMHMHAgNj0cV5P9g+7ghWHXxcjUoHQLCA3+37N9xQnpJtRlDgB/
+ dE/LwHMh8uVKBC755YAISa+CuH65dh2FWklgFoIvV6I62eySJ3YYp336kcsmAejoXv
+ qb92w8jfQCqHy1gtZIzm/yULCbYPx0XMJHm2DRbyeXW3kO6CaXDXtSdul81V14jjSE
+ 5vsiaontz+BSfLmcUFafoztTCZDjT4S3QWdmr5tDOfJAiQaApW9zaTppQJwlpkbOwF
+ WckGPg+rMs0sw==
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 213221] New: Lockdep self tests failing on e6500 system
+Date: Wed, 26 May 2021 14:33:41 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mail@jakemoroni.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cf_regression attachments.created
+Message-ID: <bug-213221-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,74 +85,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- Fabiano Rosas <farosas@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Similar to commit 25edcc50d76c ("KVM: PPC: Book3S HV: Save and restore
-FSCR in the P9 path"), ensure the P7/8 path saves and restores the host
-FSCR. The logic explained in that patch actually applies there to the
-old path well: a context switch can be made before kvmppc_vcpu_run_hv
-restores the host FSCR and returns.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D213221
 
-Now both the p9 and the p7/8 paths now save and restore their FSCR, it
-no longer needs to be restored at the end of kvmppc_vcpu_run_hv
+            Bug ID: 213221
+           Summary: Lockdep self tests failing on e6500 system
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 5.12.6
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-64
+          Assignee: platform_ppc-64@kernel-bugs.osdl.org
+          Reporter: mail@jakemoroni.com
+        Regression: No
 
-Fixes: b005255e12a3 ("KVM: PPC: Book3S HV: Context-switch new POWER8 SPRs")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Since v1:
-- Remove the now unnecessary FSCR restore at vcpu_run exit [Fabiano]
- arch/powerpc/kvm/book3s_hv.c            | 1 -
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 7 +++++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+Created attachment 296989
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D296989&action=3Dedit
+lcokdep self test failures
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 28a80d240b76..13728495ac66 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4455,7 +4455,6 @@ static int kvmppc_vcpu_run_hv(struct kvm_vcpu *vcpu)
- 		mtspr(SPRN_EBBRR, ebb_regs[1]);
- 		mtspr(SPRN_BESCR, ebb_regs[2]);
- 		mtspr(SPRN_TAR, user_tar);
--		mtspr(SPRN_FSCR, current->thread.fscr);
- 	}
- 	mtspr(SPRN_VRSAVE, user_vrsave);
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 5e634db4809b..004f0d4e665f 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -59,6 +59,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- #define STACK_SLOT_UAMOR	(SFS-88)
- #define STACK_SLOT_DAWR1	(SFS-96)
- #define STACK_SLOT_DAWRX1	(SFS-104)
-+#define STACK_SLOT_FSCR		(SFS-112)
- /* the following is used by the P9 short path */
- #define STACK_SLOT_NVGPRS	(SFS-152)	/* 18 gprs */
- 
-@@ -686,6 +687,8 @@ BEGIN_FTR_SECTION
- 	std	r6, STACK_SLOT_DAWR0(r1)
- 	std	r7, STACK_SLOT_DAWRX0(r1)
- 	std	r8, STACK_SLOT_IAMR(r1)
-+	mfspr	r5, SPRN_FSCR
-+	std	r5, STACK_SLOT_FSCR(r1)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- BEGIN_FTR_SECTION
- 	mfspr	r6, SPRN_DAWR1
-@@ -1663,6 +1666,10 @@ FTR_SECTION_ELSE
- 	ld	r7, STACK_SLOT_HFSCR(r1)
- 	mtspr	SPRN_HFSCR, r7
- ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
-+BEGIN_FTR_SECTION
-+	ld	r5, STACK_SLOT_FSCR(r1)
-+	mtspr	SPRN_FSCR, r5
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	/*
- 	 * Restore various registers to 0, where non-zero values
- 	 * set by the guest could disrupt the host.
--- 
-2.23.0
+Hello,
 
+I noticed that some of the lockdep self tests are failing on my device. The
+system is based on an NXP T2080 SoC, which has four 64-bit Power PC e6500 c=
+ores
+(2 threads each).=20
+
+See attached log.
+
+I'm running kernel 5.12.6 straight from kernel dot org. No modifications.
+
+For what it's worth, I have been experiencing random instability issues, wh=
+ich
+is what prompted me to enable lock debugging in the first place.
+
+Thanks,
+- Jake
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are watching the assignee of the bug.=
