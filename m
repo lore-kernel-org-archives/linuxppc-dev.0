@@ -2,63 +2,77 @@ Return-Path: <SRS0=OfUe=KV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E0C7C47082
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 15:54:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F73BC47088
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 22:06:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAE1561184
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 15:54:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAE1561184
+	by mail.kernel.org (Postfix) with ESMTPS id 5CDC4613B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 May 2021 22:06:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CDC4613B0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FqwVM4Lt7z309L
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 01:54:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fr4m272wxz301D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 08:06:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B4UuFsxu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=tedR2/J3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.90;
+ helo=conssluserg-05.nifty.com; envelope-from=masahiroy@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=B4UuFsxu; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=tedR2/J3; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
+ [210.131.2.90])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FqwTq5tRyz2xvb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2021 01:53:35 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 063E7611CD;
- Wed, 26 May 2021 15:53:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1622044412;
- bh=OnL/4Jq+LKq6vWvDBS0xA9CvVYxTMOTBjml/zh+3Ar0=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=B4UuFsxu1r3HigmEjVwQF/otX4DrMd38lSSUyIbdumWlwAz4mqWFVwTfX3tV+cLTK
- ezumxJCPuSoiNTejbR/1l7Q+EyQuGnIdMF026YW9wZDBrp0Etki3m3VqLD3t52Z+ML
- aIGQuwBPRYJXDmtAfPisyQiC2L9qX6xiRg823CR+7DK1ZJFKUWOyliFfy6nu3kEBra
- 72iE6bgTyqyaVJ438e+wldUwZTA5bJjB+laj7DX9kULouD8NbVtF/6oVvQWdjQCza8
- vTg4CtjTc7cs0vgmNuLf7hWhlxI/bnFdiE1zs5zIETRjnoBXmZKSOwwvGM2DpAYygJ
- B11ILWs8v9zvg==
-Date: Wed, 26 May 2021 16:53:21 +0100
-From: Will Deacon <will@kernel.org>
-To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v7 14/15] dt-bindings: of: Add restricted DMA pool
-Message-ID: <20210526155321.GA19633@willie-the-truck>
-References: <20210518064215.2856977-1-tientzu@chromium.org>
- <20210518064215.2856977-15-tientzu@chromium.org>
- <20210526121322.GA19313@willie-the-truck>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FqtjY1VGpz2xv8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2021 00:33:36 +1000 (AEST)
+Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com
+ [209.85.222.47]) (authenticated)
+ by conssluserg-05.nifty.com with ESMTP id 14QEXB3o014766
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 23:33:11 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com 14QEXB3o014766
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1622039592;
+ bh=K2JBpUyGmknhlRJpT71wl4Baxz8GsbPi2HBWhe0fUJY=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=tedR2/J3MXbq2+UFof6TW/eBglmgneC4XsqWdbxckP9MaPf/QDGw4OLzyvpynUT0/
+ O8CvFbSHJ+UUGqhPeedd32O61oMqpnLkC5U/SskyY3TsXKd4ERnDVmK5g5kjc9XRmm
+ 4byyjamSqkclCGIvRcpKR2eBLwK8n9xqdwGULgUp90Y0dWdrxfnSmHzemUvksGYSj7
+ OoqcFpFbqf77bj8PaZ1sPW+cf0f/9Ckh1G0tEc6eCazslp7BaJF9SgKo1vUgOCT2nP
+ kIkPsdoIW+o5jKcWMBJBDCbaLIAWZY72aDRKYVtATELxQSvaZS3LmL489rdeXs+31a
+ 6bYw+6HJHe/ww==
+X-Nifty-SrcIP: [209.85.222.47]
+Received: by mail-ua1-f47.google.com with SMTP id z14so884461uan.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 May 2021 07:33:11 -0700 (PDT)
+X-Gm-Message-State: AOAM533pOU375QL2K4Ad3TZUfPDHESA88z82gViVhTT76xrlO73EcVE6
+ CtfDvlUk6wSU36rZGW50NXL4U1yPl2AdSHk5IZY=
+X-Google-Smtp-Source: ABdhPJw/7i4Yr5Lur94Y0RHgLFU9NY7pValTqlXUvZTdqsgLwd6wmbbeeFmUfP1tSYkLq/bZEryNx1br7CSMU1EHLow=
+X-Received: by 2002:a17:902:541:b029:f0:3187:409b with SMTP id
+ 59-20020a1709020541b02900f03187409bmr36247746plf.47.1622039579510; Wed, 26
+ May 2021 07:32:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210526121322.GA19313@willie-the-truck>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20210512075729.60291-1-masahiroy@kernel.org>
+In-Reply-To: <20210512075729.60291-1-masahiroy@kernel.org>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Wed, 26 May 2021 23:32:22 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAS7cEj9h=Hi0O-AoFjJPg2mxp0zbi8boXj4O9aYt_yg6Q@mail.gmail.com>
+Message-ID: <CAK7LNAS7cEj9h=Hi0O-AoFjJPg2mxp0zbi8boXj4O9aYt_yg6Q@mail.gmail.com>
+Subject: Re: [PATCH 1/5] kbuild: require all architectures to have
+ arch/$(SRCARCH)/Kbuild
+To: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Thu, 27 May 2021 08:06:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,138 +84,333 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
- mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
- sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
- Joerg Roedel <joro@8bytes.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- jxgao@google.com, daniel@ffwll.ch,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- maarten.lankhorst@linux.intel.com, airlied@linux.ie,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
- jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
- rodrigo.vivi@intel.com, bhelgaas@google.com, boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
- tfiga@chromium.org,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
- Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ linux-csky@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, linux-hexagon@vger.kernel.org,
+ "open list:SIFIVE DRIVERS" <linux-riscv@lists.infradead.org>,
+ Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, linux-s390 <linux-s390@vger.kernel.org>,
+ Brian Cain <bcain@codeaurora.org>, Helge Deller <deller@gmx.de>,
+ X86 ML <x86@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Ley Foon Tan <ley.foon.tan@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>,
+ arcml <linux-snps-arc@lists.infradead.org>, Jeff Dike <jdike@addtoit.com>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org,
+ linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Michal Marek <michal.lkml@markovi.net>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Nick Hu <nickhu@andestech.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ openrisc@lists.librecores.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 26, 2021 at 01:13:22PM +0100, Will Deacon wrote:
-> On Tue, May 18, 2021 at 02:42:14PM +0800, Claire Chang wrote:
-> > @@ -138,4 +160,9 @@ one for multimedia processing (named multimedia-memory@77000000, 64MiB).
-> >  		memory-region = <&multimedia_reserved>;
-> >  		/* ... */
-> >  	};
-> > +
-> > +	pcie_device: pcie_device@0,0 {
-> > +		memory-region = <&restricted_dma_mem_reserved>;
-> > +		/* ... */
-> > +	};
-> 
-> I still don't understand how this works for individual PCIe devices -- how
-> is dev->of_node set to point at the node you have above?
-> 
-> I tried adding the memory-region to the host controller instead, and then
-> I see it crop up in dmesg:
-> 
->   | pci-host-generic 40000000.pci: assigned reserved memory node restricted_dma_mem_reserved
-> 
-> but none of the actual PCI devices end up with 'dma_io_tlb_mem' set, and
-> so the restricted DMA area is not used. In fact, swiotlb isn't used at all.
-> 
-> What am I missing to make this work with PCIe devices?
+On Wed, May 12, 2021 at 5:00 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> arch/$(SRCARCH)/Kbuild is useful for Makefile cleanups because you can
+> use the obj-y syntax.
+>
+> Add an empty file if it is missing in arch/$(SRCARCH)/.
+>
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> ---
 
-Aha, looks like we're just missing the logic to inherit the DMA
-configuration. The diff below gets things working for me.
 
-Will
+Applied to linux-kbuild.
 
---->8
+>
+>  Makefile               | 2 +-
+>  arch/alpha/Kbuild      | 1 +
+>  arch/arc/Makefile      | 3 ---
+>  arch/arm/Makefile      | 1 -
+>  arch/arm64/Makefile    | 1 -
+>  arch/csky/Kbuild       | 1 +
+>  arch/h8300/Kbuild      | 1 +
+>  arch/hexagon/Kbuild    | 1 +
+>  arch/ia64/Kbuild       | 1 +
+>  arch/microblaze/Kbuild | 1 +
+>  arch/mips/Makefile     | 3 ---
+>  arch/nds32/Kbuild      | 1 +
+>  arch/nios2/Kbuild      | 1 +
+>  arch/openrisc/Makefile | 1 -
+>  arch/parisc/Kbuild     | 1 +
+>  arch/powerpc/Makefile  | 3 ---
+>  arch/riscv/Makefile    | 1 -
+>  arch/s390/Makefile     | 3 ---
+>  arch/sh/Kbuild         | 1 +
+>  arch/sparc/Makefile    | 3 ---
+>  arch/um/Kbuild         | 1 +
+>  arch/x86/Makefile      | 3 ---
+>  arch/xtensa/Kbuild     | 1 +
+>  23 files changed, 13 insertions(+), 23 deletions(-)
+>  create mode 100644 arch/alpha/Kbuild
+>  create mode 100644 arch/csky/Kbuild
+>  create mode 100644 arch/h8300/Kbuild
+>  create mode 100644 arch/hexagon/Kbuild
+>  create mode 100644 arch/ia64/Kbuild
+>  create mode 100644 arch/microblaze/Kbuild
+>  create mode 100644 arch/nds32/Kbuild
+>  create mode 100644 arch/nios2/Kbuild
+>  create mode 100644 arch/parisc/Kbuild
+>  create mode 100644 arch/sh/Kbuild
+>  create mode 100644 arch/um/Kbuild
+>  create mode 100644 arch/xtensa/Kbuild
+>
+> diff --git a/Makefile b/Makefile
+> index 15b6476d0f89..7df040b1b023 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -658,7 +658,7 @@ endif
+>
+>  ifeq ($(KBUILD_EXTMOD),)
+>  # Objects we will link into vmlinux / subdirs we need to visit
+> -core-y         := init/ usr/
+> +core-y         := init/ usr/ arch/$(SRCARCH)/
+>  drivers-y      := drivers/ sound/
+>  drivers-$(CONFIG_SAMPLES) += samples/
+>  drivers-$(CONFIG_NET) += net/
+> diff --git a/arch/alpha/Kbuild b/arch/alpha/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/alpha/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/arc/Makefile b/arch/arc/Makefile
+> index 4392c9c189c4..3e6d4b84797f 100644
+> --- a/arch/arc/Makefile
+> +++ b/arch/arc/Makefile
+> @@ -85,9 +85,6 @@ KBUILD_LDFLAGS        += $(ldflags-y)
+>
+>  head-y         := arch/arc/kernel/head.o
+>
+> -# See arch/arc/Kbuild for content of core part of the kernel
+> -core-y         += arch/arc/
+> -
+>  # w/o this dtb won't embed into kernel binary
+>  core-y         += arch/arc/boot/dts/
+>
+> diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+> index 415c3514573a..173da685a52e 100644
+> --- a/arch/arm/Makefile
+> +++ b/arch/arm/Makefile
+> @@ -252,7 +252,6 @@ endif
+>
+>  export TEXT_OFFSET GZFLAGS MMUEXT
+>
+> -core-y                         += arch/arm/
+>  # If we have a machine-specific directory, then include it in the build.
+>  core-y                         += $(machdirs) $(platdirs)
+>
+> diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
+> index 7ef44478560d..b73c151f3a53 100644
+> --- a/arch/arm64/Makefile
+> +++ b/arch/arm64/Makefile
+> @@ -149,7 +149,6 @@ KBUILD_CFLAGS += -DKASAN_SHADOW_SCALE_SHIFT=$(KASAN_SHADOW_SCALE_SHIFT)
+>  KBUILD_CPPFLAGS += -DKASAN_SHADOW_SCALE_SHIFT=$(KASAN_SHADOW_SCALE_SHIFT)
+>  KBUILD_AFLAGS += -DKASAN_SHADOW_SCALE_SHIFT=$(KASAN_SHADOW_SCALE_SHIFT)
+>
+> -core-y         += arch/arm64/
+>  libs-y         := arch/arm64/lib/ $(libs-y)
+>  libs-$(CONFIG_EFI_STUB) += $(objtree)/drivers/firmware/efi/libstub/lib.a
+>
+> diff --git a/arch/csky/Kbuild b/arch/csky/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/csky/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/h8300/Kbuild b/arch/h8300/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/h8300/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/hexagon/Kbuild b/arch/hexagon/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/hexagon/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/ia64/Kbuild b/arch/ia64/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/ia64/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/microblaze/Kbuild b/arch/microblaze/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/microblaze/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/mips/Makefile b/arch/mips/Makefile
+> index 258234c35a09..4e942b7ef022 100644
+> --- a/arch/mips/Makefile
+> +++ b/arch/mips/Makefile
+> @@ -332,9 +332,6 @@ head-y := arch/mips/kernel/head.o
+>  libs-y                 += arch/mips/lib/
+>  libs-$(CONFIG_MIPS_FP_SUPPORT) += arch/mips/math-emu/
+>
+> -# See arch/mips/Kbuild for content of core part of the kernel
+> -core-y += arch/mips/
+> -
+>  drivers-y                      += arch/mips/crypto/
+>
+>  # suspend and hibernation support
+> diff --git a/arch/nds32/Kbuild b/arch/nds32/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/nds32/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/nios2/Kbuild b/arch/nios2/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/nios2/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/openrisc/Makefile b/arch/openrisc/Makefile
+> index 410e7abfac69..c52de526e518 100644
+> --- a/arch/openrisc/Makefile
+> +++ b/arch/openrisc/Makefile
+> @@ -42,7 +42,6 @@ endif
+>
+>  head-y                 := arch/openrisc/kernel/head.o
+>
+> -core-y         += arch/openrisc/
+>  libs-y         += $(LIBGCC)
+>
+>  PHONY += vmlinux.bin
+> diff --git a/arch/parisc/Kbuild b/arch/parisc/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/parisc/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 3212d076ac6a..af669aa75b73 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -267,9 +267,6 @@ head-$(CONFIG_PPC_FPU)              += arch/powerpc/kernel/fpu.o
+>  head-$(CONFIG_ALTIVEC)         += arch/powerpc/kernel/vector.o
+>  head-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)  += arch/powerpc/kernel/prom_init.o
+>
+> -# See arch/powerpc/Kbuild for content of core part of the kernel
+> -core-y += arch/powerpc/
+> -
+>  # Default to zImage, override when needed
+>  all: zImage
+>
+> diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+> index 3eb9590a0775..c5f359540862 100644
+> --- a/arch/riscv/Makefile
+> +++ b/arch/riscv/Makefile
+> @@ -90,7 +90,6 @@ endif
+>
+>  head-y := arch/riscv/kernel/head.o
+>
+> -core-y += arch/riscv/
+>  core-$(CONFIG_RISCV_ERRATA_ALTERNATIVE) += arch/riscv/errata/
+>
+>  libs-y += arch/riscv/lib/
+> diff --git a/arch/s390/Makefile b/arch/s390/Makefile
+> index e443ed9947bd..37b61645694c 100644
+> --- a/arch/s390/Makefile
+> +++ b/arch/s390/Makefile
+> @@ -128,9 +128,6 @@ OBJCOPYFLAGS        := -O binary
+>
+>  head-y         := arch/s390/kernel/head64.o
+>
+> -# See arch/s390/Kbuild for content of core part of the kernel
+> -core-y         += arch/s390/
+> -
+>  libs-y         += arch/s390/lib/
+>  drivers-y      += drivers/s390/
+>
+> diff --git a/arch/sh/Kbuild b/arch/sh/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/sh/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
+> index bee99e65fe23..4e65245bc755 100644
+> --- a/arch/sparc/Makefile
+> +++ b/arch/sparc/Makefile
+> @@ -58,9 +58,6 @@ endif
+>
+>  head-y                 := arch/sparc/kernel/head_$(BITS).o
+>
+> -# See arch/sparc/Kbuild for the core part of the kernel
+> -core-y                 += arch/sparc/
+> -
+>  libs-y                 += arch/sparc/prom/
+>  libs-y                 += arch/sparc/lib/
+>
+> diff --git a/arch/um/Kbuild b/arch/um/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/um/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+> index c77c5d8a7b3e..4307bf48ec53 100644
+> --- a/arch/x86/Makefile
+> +++ b/arch/x86/Makefile
+> @@ -239,9 +239,6 @@ head-y += arch/x86/kernel/platform-quirks.o
+>
+>  libs-y  += arch/x86/lib/
+>
+> -# See arch/x86/Kbuild for content of core part of the kernel
+> -core-y += arch/x86/
+> -
+>  # drivers-y are linked after core-y
+>  drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/
+>  drivers-$(CONFIG_PCI)            += arch/x86/pci/
+> diff --git a/arch/xtensa/Kbuild b/arch/xtensa/Kbuild
+> new file mode 100644
+> index 000000000000..a4e40e534e6a
+> --- /dev/null
+> +++ b/arch/xtensa/Kbuild
+> @@ -0,0 +1 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> --
+> 2.27.0
+>
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index c562a9ff5f0b..bf499fdd6e93 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -1113,25 +1113,25 @@ bool of_dma_is_coherent(struct device_node *np)
- }
- EXPORT_SYMBOL_GPL(of_dma_is_coherent);
- 
--int of_dma_set_restricted_buffer(struct device *dev)
-+int of_dma_set_restricted_buffer(struct device *dev, struct device_node *np)
- {
--	struct device_node *node;
- 	int count, i;
- 
--	if (!dev->of_node)
-+	if (!np)
- 		return 0;
- 
--	count = of_property_count_elems_of_size(dev->of_node, "memory-region",
-+	count = of_property_count_elems_of_size(np, "memory-region",
- 						sizeof(phandle));
- 	for (i = 0; i < count; i++) {
--		node = of_parse_phandle(dev->of_node, "memory-region", i);
-+		struct device_node *node;
-+
-+		node = of_parse_phandle(np, "memory-region", i);
- 		/* There might be multiple memory regions, but only one
--		 * restriced-dma-pool region is allowed.
-+		 * restricted-dma-pool region is allowed.
- 		 */
- 		if (of_device_is_compatible(node, "restricted-dma-pool") &&
- 		    of_device_is_available(node))
--			return of_reserved_mem_device_init_by_idx(
--				dev, dev->of_node, i);
-+			return of_reserved_mem_device_init_by_idx(dev, np, i);
- 	}
- 
- 	return 0;
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index d8d865223e51..2defdca418ec 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -166,7 +166,7 @@ int of_dma_configure_id(struct device *dev, struct device_node *np,
- 	arch_setup_dma_ops(dev, dma_start, size, iommu, coherent);
- 
- 	if (!iommu)
--		return of_dma_set_restricted_buffer(dev);
-+		return of_dma_set_restricted_buffer(dev, np);
- 
- 	return 0;
- }
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 9fc874548528..8fde97565d11 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -163,14 +163,15 @@ struct bus_dma_region;
- #if defined(CONFIG_OF_ADDRESS) && defined(CONFIG_HAS_DMA)
- int of_dma_get_range(struct device_node *np,
- 		const struct bus_dma_region **map);
--int of_dma_set_restricted_buffer(struct device *dev);
-+int of_dma_set_restricted_buffer(struct device *dev, struct device_node *np);
- #else
- static inline int of_dma_get_range(struct device_node *np,
- 		const struct bus_dma_region **map)
- {
- 	return -ENODEV;
- }
--static inline int of_dma_set_restricted_buffer(struct device *dev)
-+static inline int of_dma_set_restricted_buffer(struct device *dev,
-+					       struct device_node *np)
- {
- 	return -ENODEV;
- }
+
+-- 
+Best Regards
+Masahiro Yamada
