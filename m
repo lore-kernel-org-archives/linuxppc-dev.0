@@ -2,61 +2,108 @@ Return-Path: <SRS0=fJvf=KW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98569C4708F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 15:13:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 491ECC4708B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 15:17:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D077613BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 15:13:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D077613BF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 77CEA610A8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 15:17:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77CEA610A8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FrWYR3ryHz3bTb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:13:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FrWdD1z12z30G8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:17:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TpgEYLQa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2020-01-29 header.b=COG/l0eF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=oracle.com (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=TpgEYLQa; 
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=COG/l0eF; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+X-Greylist: delayed 2240 seconds by postgrey-1.36 at boromir;
+ Fri, 28 May 2021 01:16:34 AEST
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FrWXt2pHdz2xvN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 01:13:18 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8B3AE613BA;
- Thu, 27 May 2021 15:13:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1622128395;
- bh=v4Y5CgfBMzp5T0CX+Epz9rKs73Qi5rHOJJTJ8WdHbRY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=TpgEYLQa6fww76pD+EXqPpG4tWw4RVeiOxm1IKDenxYeudi6q9QrsMPBj8vWQKGHF
- V7/AI4UcdJsv4V6xu6Hb60ZhUJrk6fiYerMLikOSbIqSBxzhi3g7f2UU+7FR9Gqt9V
- C3Ne5JKZLMQDRYjaw8c8GWIEPtvXypd/75O7SfurJguzt92R4evulYOP3jYxwMk/E8
- HZLWeWb5dUdXXuTLVqxBjcStrY3S9YlmYJhjfnYYjB+C/OSSHD9RmNC0VDFJpsIM6w
- Pnmu3HDTg3AIUWWdpgI7DQ0ETS3eDvwT+YkmrmCWtuEnOu7h1QNKbK4vk/AJe8ndtI
- rvDl0qboF0+VQ==
-Date: Thu, 27 May 2021 18:13:03 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: Re: [PATCH] mm: generalize ZONE_[DMA|DMA32]
-Message-ID: <YK+2/79IZ0M9wtCm@kernel.org>
-References: <20210527143047.123611-1-wangkefeng.wang@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FrWcf0cdjz2xvN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 01:16:33 +1000 (AEST)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14REZINU091897;
+ Thu, 27 May 2021 14:37:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2020-01-29;
+ bh=2cWNSzPHxT4+TtO20cktydNM136a4XNJfF9qm2ldDgc=;
+ b=COG/l0eFrIGy2v8yfYCjPo096ZmT871QOihIxtXKWxdX/gRd2i64dkO9nJR9mFsFcg8s
+ 3d+wIDdy60rKaLYivKQpZPfVzToBYwUnV9vAVW/pcIyHdLiAaVgsi9Tu2onm4ZFfp54w
+ joeJwhrG6Fwb/1rf4pDvTdhkcGQ9RsDP692VcxB62fISCWEaAg3BMGUSqkN0ZnTHNiec
+ UnOo8ZapdzcIPJFw5rBK/0kdw1QF/1LSdXdflbdWDpDM28s/pv52J23rsgzrFEPPFqHD
+ 7QxtJIdiBoTY9vGbkbOzZGabxFxQ4Yl2Kd0Oh+0S40V99J/6uxTA0OyyOm+am9CAIJcD Fg== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+ by aserp2130.oracle.com with ESMTP id 38pqfcmea7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 May 2021 14:37:54 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+ by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14REaAXE101211;
+ Thu, 27 May 2021 14:37:54 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by aserp3030.oracle.com with ESMTP id 38pr0dn4mk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 May 2021 14:37:54 +0000
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 14REbrPF103775;
+ Thu, 27 May 2021 14:37:53 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by aserp3030.oracle.com with ESMTP id 38pr0dn4mb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 May 2021 14:37:53 +0000
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 14REbqlO103757;
+ Thu, 27 May 2021 14:37:52 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+ by aserp3030.oracle.com with ESMTP id 38pr0dn4m2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 May 2021 14:37:52 +0000
+Received: from abhmp0004.oracle.com (abhmp0004.oracle.com [141.146.116.10])
+ by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 14REbffR028351;
+ Thu, 27 May 2021 14:37:41 GMT
+Received: from kadam (/41.212.42.34) by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Thu, 27 May 2021 14:37:40 +0000
+Date: Thu, 27 May 2021 17:37:30 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH -next 2/3] xen: balloon: Replaced simple_strtoull() with
+ kstrtoull()
+Message-ID: <20210527143729.GL24442@kadam>
+References: <20210526092020.554341-1-chenhuang5@huawei.com>
+ <20210526092020.554341-2-chenhuang5@huawei.com>
+ <0f03f9b9ff41460db2935e077f7f80c7@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210527143047.123611-1-wangkefeng.wang@huawei.com>
+In-Reply-To: <0f03f9b9ff41460db2935e077f7f80c7@AcuMS.aculab.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-ORIG-GUID: xI1PN-Oc27c8aWvBSQ4m3wXmnwlPjzpN
+X-Proofpoint-GUID: xI1PN-Oc27c8aWvBSQ4m3wXmnwlPjzpN
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9996
+ signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
+ spamscore=0 mlxscore=0
+ malwarescore=0 mlxlogscore=999 lowpriorityscore=0 impostorscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 clxscore=1011 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
+ definitions=main-2105270095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,384 +115,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- linux-ia64@vger.kernel.org, Will Deacon <will@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@dabbelt.com>,
- linux-mips@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Joseph Qi <joseph.qi@linux.alibaba.com>, Paul Mackerras <paulus@samba.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Stefano Stabellini <sstabellini@kernel.org>, Mark Fasheh <mark@fasheh.com>,
+ Yang Yingliang <yangyingliang@huawei.com>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ Nathan Lynch <nathanl@linux.ibm.com>, Jens Axboe <axboe@kernel.dk>,
+ Andrew Donnellan <ajd@linux.ibm.com>, 'Chen Huang' <chenhuang5@huawei.com>,
+ Joel Becker <jlbec@evilplan.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Juergen Gross <jgross@suse.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Masahiro Yamada <masahiroy@kernel.org>,
+ "ocfs2-devel@oss.oracle.com" <ocfs2-devel@oss.oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 27, 2021 at 10:30:47PM +0800, Kefeng Wang wrote:
-> ZONE_[DMA|DMA32] configs have duplicate definitions on platforms
-> that subscribe them. Instead, just make them generic options which
-> can be selected on applicable platforms.
+On Thu, May 27, 2021 at 02:10:21PM +0000, David Laight wrote:
+> From: Chen Huang
+> > Sent: 26 May 2021 10:20
+> > 
+> > The simple_strtoull() function is deprecated in some situation, since
+> > it does not check for the range overflow, use kstrtoull() instead.
+> > 
+> ...
+> > -	target_bytes = simple_strtoull(buf, &endchar, 0) * 1024;
+> > +	ret = kstrtoull(buf, 0, &target_bytes);
+> > +	if (ret)
+> > +		return ret;
+> > +	target_bytes *= 1024;
 > 
-> Also only x86/arm64 architectures could enable both ZONE_DMA and
-> ZONE_DMA32 if EXPERT, add ARCH_HAS_ZONE_DMA_SET to make dma zone
-> configurable and visible on the two architectures.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org> 
-> Cc: Catalin Marinas <catalin.marinas@arm.com> 
-> Cc: Will Deacon <will@kernel.org> 
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org> 
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de> 
-> Cc: "David S. Miller" <davem@davemloft.net> 
-> Cc: Ingo Molnar <mingo@redhat.com> 
-> Cc: Borislav Petkov <bp@alien8.de> 
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Richard Henderson <rth@twiddle.net> 
-> Cc: Russell King <linux@armlinux.org.uk>
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+> I'd have thought it was more important to check *endchar
+> than overflow.
 
-Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+That's one of the differences between simple_strtoull() and kstrtoull().
+The simple_strtoull() will accept a string like "123ABC", but kstrtoull()
+will only accept NUL terminated numbers or a newline followed by a NUL
+terminator.  Which is fine in this context because users will be doing
+"echo 1234 > /sys/foo".
 
-> ---
->  arch/alpha/Kconfig                     |  5 +----
->  arch/arm/Kconfig                       |  3 ---
->  arch/arm64/Kconfig                     |  9 +--------
->  arch/ia64/Kconfig                      |  4 +---
->  arch/m68k/Kconfig                      |  5 +----
->  arch/microblaze/Kconfig                |  4 +---
->  arch/mips/Kconfig                      |  7 -------
->  arch/powerpc/Kconfig                   |  4 ----
->  arch/powerpc/platforms/Kconfig.cputype |  1 +
->  arch/riscv/Kconfig                     |  5 +----
->  arch/s390/Kconfig                      |  4 +---
->  arch/sparc/Kconfig                     |  5 +----
->  arch/x86/Kconfig                       | 15 ++-------------
->  mm/Kconfig                             | 11 +++++++++++
->  14 files changed, 22 insertions(+), 60 deletions(-)
-> 
-> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-> index 5998106faa60..6a69a14c4825 100644
-> --- a/arch/alpha/Kconfig
-> +++ b/arch/alpha/Kconfig
-> @@ -40,6 +40,7 @@ config ALPHA
->  	select MMU_GATHER_NO_RANGE
->  	select SET_FS
->  	select SPARSEMEM_EXTREME if SPARSEMEM
-> +	select ZONE_DMA
->  	help
->  	  The Alpha is a 64-bit general-purpose processor designed and
->  	  marketed by the Digital Equipment Corporation of blessed memory,
-> @@ -65,10 +66,6 @@ config GENERIC_CALIBRATE_DELAY
->  	bool
->  	default y
->  
-> -config ZONE_DMA
-> -	bool
-> -	default y
-> -
->  config GENERIC_ISA_DMA
->  	bool
->  	default y
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 24804f11302d..000c3f80b58e 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -218,9 +218,6 @@ config GENERIC_CALIBRATE_DELAY
->  config ARCH_MAY_HAVE_PC_FDC
->  	bool
->  
-> -config ZONE_DMA
-> -	bool
-> -
->  config ARCH_SUPPORTS_UPROBES
->  	def_bool y
->  
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 9f1d8566bbf9..42794474f37f 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -42,6 +42,7 @@ config ARM64
->  	select ARCH_HAS_SYSCALL_WRAPPER
->  	select ARCH_HAS_TEARDOWN_DMA_OPS if IOMMU_SUPPORT
->  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
-> +	select ARCH_HAS_ZONE_DMA_SET if EXPERT
->  	select ARCH_HAVE_ELF_PROT
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select ARCH_INLINE_READ_LOCK if !PREEMPTION
-> @@ -307,14 +308,6 @@ config GENERIC_CSUM
->  config GENERIC_CALIBRATE_DELAY
->  	def_bool y
->  
-> -config ZONE_DMA
-> -	bool "Support DMA zone" if EXPERT
-> -	default y
-> -
-> -config ZONE_DMA32
-> -	bool "Support DMA32 zone" if EXPERT
-> -	default y
-> -
->  config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
->  	def_bool y
->  
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index 279252e3e0f7..fd8503a0088a 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -60,6 +60,7 @@ config IA64
->  	select NUMA if !FLATMEM
->  	select PCI_MSI_ARCH_FALLBACKS if PCI_MSI
->  	select SET_FS
-> +	select ZONE_DMA32
->  	default y
->  	help
->  	  The Itanium Processor Family is Intel's 64-bit successor to
-> @@ -72,9 +73,6 @@ config 64BIT
->  	select ATA_NONSTANDARD if ATA
->  	default y
->  
-> -config ZONE_DMA32
-> -	def_bool y
-> -
->  config MMU
->  	bool
->  	default y
-> diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-> index 372e4e69c43a..05a729c6ad7f 100644
-> --- a/arch/m68k/Kconfig
-> +++ b/arch/m68k/Kconfig
-> @@ -34,6 +34,7 @@ config M68K
->  	select SET_FS
->  	select UACCESS_MEMCPY if !MMU
->  	select VIRT_TO_BUS
-> +	select ZONE_DMA
->  
->  config CPU_BIG_ENDIAN
->  	def_bool y
-> @@ -62,10 +63,6 @@ config TIME_LOW_RES
->  config NO_IOPORT_MAP
->  	def_bool y
->  
-> -config ZONE_DMA
-> -	bool
-> -	default y
-> -
->  config HZ
->  	int
->  	default 1000 if CLEOPATRA
-> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-> index 0660f47012bc..14a67a42fcae 100644
-> --- a/arch/microblaze/Kconfig
-> +++ b/arch/microblaze/Kconfig
-> @@ -43,6 +43,7 @@ config MICROBLAZE
->  	select MMU_GATHER_NO_RANGE
->  	select SPARSE_IRQ
->  	select SET_FS
-> +	select ZONE_DMA
->  
->  # Endianness selection
->  choice
-> @@ -60,9 +61,6 @@ config CPU_LITTLE_ENDIAN
->  
->  endchoice
->  
-> -config ZONE_DMA
-> -	def_bool y
-> -
->  config ARCH_HAS_ILOG2_U32
->  	def_bool n
->  
-> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-> index ed51970c08e7..430d5324f1af 100644
-> --- a/arch/mips/Kconfig
-> +++ b/arch/mips/Kconfig
-> @@ -3277,13 +3277,6 @@ config I8253
->  	select CLKSRC_I8253
->  	select CLKEVT_I8253
->  	select MIPS_EXTERNAL_TIMER
-> -
-> -config ZONE_DMA
-> -	bool
-> -
-> -config ZONE_DMA32
-> -	bool
-> -
->  endmenu
->  
->  config TRAD_SIGNALS
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 088dd2afcfe4..0f78bb383a12 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -403,10 +403,6 @@ config PPC_ADV_DEBUG_DAC_RANGE
->  config PPC_DAWR
->  	bool
->  
-> -config ZONE_DMA
-> -	bool
-> -	default y if PPC_BOOK3E_64
-> -
->  config PGTABLE_LEVELS
->  	int
->  	default 2 if !PPC64
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index f998e655b570..7d271de8fcbd 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -111,6 +111,7 @@ config PPC_BOOK3E_64
->  	select PPC_FPU # Make it a choice ?
->  	select PPC_SMP_MUXED_IPI
->  	select PPC_DOORBELL
-> +	select ZONE_DMA
->  
->  endchoice
->  
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index a8ad8eb76120..d29643dee126 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -103,6 +103,7 @@ config RISCV
->  	select SYSCTL_EXCEPTION_TRACE
->  	select THREAD_INFO_IN_TASK
->  	select UACCESS_MEMCPY if !MMU
-> +	select ZONE_DMA32 if 64BIT
->  
->  config ARCH_MMAP_RND_BITS_MIN
->  	default 18 if 64BIT
-> @@ -132,10 +133,6 @@ config MMU
->  	  Select if you want MMU-based virtualised addressing space
->  	  support by paged memory management. If unsure, say 'Y'.
->  
-> -config ZONE_DMA32
-> -	bool
-> -	default y if 64BIT
-> -
->  config VA_BITS
->  	int
->  	default 32 if 32BIT
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index b4c7c34069f8..daab9d56957a 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -2,9 +2,6 @@
->  config MMU
->  	def_bool y
->  
-> -config ZONE_DMA
-> -	def_bool y
-> -
->  config CPU_BIG_ENDIAN
->  	def_bool y
->  
-> @@ -210,6 +207,7 @@ config S390
->  	select THREAD_INFO_IN_TASK
->  	select TTY
->  	select VIRT_CPU_ACCOUNTING
-> +	select ZONE_DMA
->  	# Note: keep the above list sorted alphabetically
->  
->  config SCHED_OMIT_FRAME_POINTER
-> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-> index 164a5254c91c..39679664cc9a 100644
-> --- a/arch/sparc/Kconfig
-> +++ b/arch/sparc/Kconfig
-> @@ -59,6 +59,7 @@ config SPARC32
->  	select CLZ_TAB
->  	select HAVE_UID16
->  	select OLD_SIGACTION
-> +	select ZONE_DMA
->  
->  config SPARC64
->  	def_bool 64BIT
-> @@ -141,10 +142,6 @@ config HIGHMEM
->  	default y if SPARC32
->  	select KMAP_LOCAL
->  
-> -config ZONE_DMA
-> -	bool
-> -	default y if SPARC32
-> -
->  config GENERIC_ISA_DMA
->  	bool
->  	default y if SPARC32
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 0045e1b44190..11cf8a0d6800 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -33,6 +33,7 @@ config X86_64
->  	select NEED_DMA_MAP_STATE
->  	select SWIOTLB
->  	select ARCH_HAS_ELFCORE_COMPAT
-> +	select ZONE_DMA32
->  
->  config FORCE_DYNAMIC_FTRACE
->  	def_bool y
-> @@ -93,6 +94,7 @@ config X86
->  	select ARCH_HAS_SYSCALL_WRAPPER
->  	select ARCH_HAS_UBSAN_SANITIZE_ALL
->  	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_ZONE_DMA_SET if EXPERT
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
->  	select ARCH_MIGHT_HAVE_PC_PARPORT
-> @@ -343,9 +345,6 @@ config ARCH_SUSPEND_POSSIBLE
->  config ARCH_WANT_GENERAL_HUGETLB
->  	def_bool y
->  
-> -config ZONE_DMA32
-> -	def_bool y if X86_64
-> -
->  config AUDIT_ARCH
->  	def_bool y if X86_64
->  
-> @@ -393,16 +392,6 @@ config CC_HAS_SANE_STACKPROTECTOR
->  
->  menu "Processor type and features"
->  
-> -config ZONE_DMA
-> -	bool "DMA memory allocation support" if EXPERT
-> -	default y
-> -	help
-> -	  DMA memory allocation support allows devices with less than 32-bit
-> -	  addressing to allocate within the first 16MB of address space.
-> -	  Disable if no such devices will be used.
-> -
-> -	  If unsure, say Y.
-> -
->  config SMP
->  	bool "Symmetric multi-processing support"
->  	help
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 02d44e3420f5..68b0cbdc7968 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -789,6 +789,17 @@ config ARCH_HAS_CACHE_LINE_SIZE
->  config ARCH_HAS_PTE_DEVMAP
->  	bool
->  
-> +config ARCH_HAS_ZONE_DMA_SET
-> +	bool
-> +
-> +config ZONE_DMA
-> +	bool "Support DMA zone" if ARCH_HAS_ZONE_DMA_SET
-> +	default y if ARM64
-> +
-> +config ZONE_DMA32
-> +	bool "Support DMA32 zone" if ARCH_HAS_ZONE_DMA_SET
-> +	default y if ARM64
-> +
->  config ZONE_DEVICE
->  	bool "Device memory (pmem, HMM, etc...) hotplug support"
->  	depends on MEMORY_HOTPLUG
-> -- 
-> 2.26.2
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+> If you are worried about overflow you need a range check
+> before the multiply.
 
--- 
-Sincerely yours,
-Mike.
+This is probably a case where if the users cause an integer overflow
+then they get what they deserve.
+
+regards,
+dan carpenter
