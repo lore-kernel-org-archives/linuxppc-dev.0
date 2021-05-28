@@ -1,67 +1,82 @@
-Return-Path: <SRS0=fJvf=KW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=g7Ik=KX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D8D0C4707F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 22:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C58FC47089
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:38:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F9106124C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 May 2021 22:44:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F9106124C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=green-communications.fr
+	by mail.kernel.org (Postfix) with ESMTPS id A8505613B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:38:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8505613B4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FrjYQ43Y8z3bnj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 08:44:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=green-communications.fr (client-ip=217.72.192.73;
- helo=mout.kundenserver.de;
- envelope-from=nicolas.cavallari@green-communications.fr; receiver=<UNKNOWN>)
-X-Greylist: delayed 841 seconds by postgrey-1.36 at boromir;
- Fri, 28 May 2021 02:50:04 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FrnQ603N6z3bnh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 11:38:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=POerS0Ux;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=paul-moore.com
+ (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com;
+ envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
+ header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=POerS0Ux; dkim-atps=neutral
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com
+ [IPv6:2a00:1450:4864:20::630])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FrYhX6xXdz2ykG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 02:50:00 +1000 (AEST)
-Received: from evilbit.green-communications.fr ([92.154.77.116]) by
- mrelayeu.kundenserver.de (mreue109 [213.165.67.119]) with ESMTPSA (Nemesis)
- id 1MxDgs-1lWi1Y41ay-00xb4U; Thu, 27 May 2021 18:35:05 +0200
-From: Nicolas Cavallari <nicolas.cavallari@green-communications.fr>
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Shengjiu Wang <shengjiu.wang@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Subject: [PATCH] ASoC: fsl-asoc-card: Set .owner attribute when registering
- card.
-Date: Thu, 27 May 2021 18:34:09 +0200
-Message-Id: <20210527163409.22049-1-nicolas.cavallari@green-communications.fr>
-X-Mailer: git-send-email 2.32.0.rc0
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FrnPY0SvKz2xxq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 11:37:51 +1000 (AEST)
+Received: by mail-ej1-x630.google.com with SMTP id ss26so2968608ejb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2021 18:37:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=OCl/OoNf08gbSAkv21GdMjWI/U5EK/VtpzFkOjaRXDc=;
+ b=POerS0Ux4ct2bWMhkrOhHCReDGmKwGq49OtylDhjF9lBGQePK0TFjOCijyW8C1Kp/o
+ Xh/madiE0TnJlXbz8A9quFOg+/RI5jAUOif+6JsRURl3t/ze4YQnI44921ViT1tdrrM4
+ HjuPpQdlOCOYZPPbHCLCzTx/HQU+AEBcGTknBjcNeZrWDZ8YoRD7/wVOL3h3fMalQU3w
+ RHKDeBAQIYl6E/bgA3OnVAijXoVpCgmqz+qBj1zfhN7HjvWBWklw9U4UDflAOFogdwNn
+ LQdislTgKFgkdjsNn26pf+B5s1Ifqow6EwLkeFnrksRVYEWkqLWG9JczSwAXar565r2c
+ BXqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=OCl/OoNf08gbSAkv21GdMjWI/U5EK/VtpzFkOjaRXDc=;
+ b=sycy9h5AGVgHeyDjEjSTYl7H4LPbCfhJ3m2sfLtVgq2JQz8G4fhNGDB/lhsgOp+vsP
+ B2XIYaQxwEzdcK1qA4bginZSQNCamA+YMV7Kily13hOEvnvhOfVW+oozEioknW6NsnDo
+ /WR4UIsguLZi0nqYQkWl/MwfvBQPOgDeYxHzYJmnV7jpDGlMMlV5jXcTJRAmQLIYcwl2
+ ae1x21dnoLeJ4JL1iMNu7np8ry3bjQLRF9i7QIio6KzwTiVOm0SObVSPO0x9cc1gvgXL
+ yqy8liQh0c/UOvT66dtMbW0j5T+HXFAVqymakq1txmCz5BpyVExsh4Bo7L32fzQUcEGC
+ 9rTw==
+X-Gm-Message-State: AOAM531ZOIwP316LzLqaEeNsMlKeDSZeeciSzRF9znXJKfmG0/UUyLR7
+ t0d09ODSXLlksH4QlWHIXQHhtf+SRQPbuhRJF85f
+X-Google-Smtp-Source: ABdhPJxLOItL9vdGc/YxGb4zM3gCgphGyyxSx8AHRjJ/9K0sjs3QF6XIJzfJvXSrGS6ej4rkXclv/bfnao0YEc+kFow=
+X-Received: by 2002:a17:906:b2ce:: with SMTP id
+ cf14mr6910759ejb.178.1622165863989; 
+ Thu, 27 May 2021 18:37:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:2Xcz2Picz7QfmT/3RZBi3M8YNs4IfW4bK0TwJV+1zVrQF9+vlSl
- SpyEYVbT+4phkVcPD0ZG9bn4CAhEsIknv5lWwzPzDyXjwUVbUyGnIcI/zSyao3qv97Uyo4i
- 8I+4g8168s60kXemjwIW7S501zxCz+aUwNwwO7y+Pb2ZprPbNdy7M8pHZeG2EZATaEWW/9y
- 6O8qBSxcDQtKbzu8xhHQw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Ni03RLG98I4=:0oDR6vjMS/6XB6RorvHIwE
- sV06cCEbpNksNjjzCgkM6fLYlIJPJKoBRTj33QVsh6k6VAIVagmbHM5ROgopQ/hlKIQjO2cqk
- ZOe4REtM+e2uFUjafvXOx9vFNW4HGbjPNKSnt5fxeaBra+EYulgDjGaJ4axdxrxs9RSV9v/6l
- 6UtQUzJzNGTayK1Zcq9Ct4Wa7QXud4ixCB/0+K2L4/g6tCN2XW0Yo5VB4dk7L4X2shpeTGBj0
- USl346R2jKMNlTyUgig/6z+l/71on7Oz6uUvgrsdIrWNoOGAIE6rAbJAcAw+fc5ioEb5FbqSI
- GV7EuZrGR4C5Sgu5vO3iiAFJcj3igmo+LpmETn+k+omR27gci4yz1G4sPWiEneVF4jfLr6xzh
- 9rsnOcBFLSjV8RzZI39hvHdrKm5vqAj3C0QsKvnf6INKkFoLlAtn4UbfskSVX/qPTsCKGjWwZ
- TQnXnj/pvK2TWGaz6hF4iPMt3hy68OSo7jH0RYWa1lLeD6ijgYDMWNZEQT/O++4MJERG6aSfe
- 5VA6HKsvkfwSl5g+UBf73ib8+qU+0ImzxUZxERPueVkXQqQq32C7RCkbtVYeplJnQ==
-X-Mailman-Approved-At: Fri, 28 May 2021 08:44:07 +1000
+References: <20210517092006.803332-1-omosnace@redhat.com>
+In-Reply-To: <20210517092006.803332-1-omosnace@redhat.com>
+From: Paul Moore <paul@paul-moore.com>
+Date: Thu, 27 May 2021 21:37:33 -0400
+Message-ID: <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
+Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
+ permission checks
+To: Ondrej Mosnacek <omosnace@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,47 +88,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: selinux@vger.kernel.org, netdev@vger.kernel.org,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ James Morris <jmorris@namei.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>,
+ linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Otherwise, when compiled as module, a WARN_ON is triggered:
+On Mon, May 17, 2021 at 5:22 AM Ondrej Mosnacek <omosnace@redhat.com> wrote:
+>
+> Commit 59438b46471a ("security,lockdown,selinux: implement SELinux
+> lockdown") added an implementation of the locked_down LSM hook to
+> SELinux, with the aim to restrict which domains are allowed to perform
+> operations that would breach lockdown.
+>
+> However, in several places the security_locked_down() hook is called in
+> situations where the current task isn't doing any action that would
+> directly breach lockdown, leading to SELinux checks that are basically
+> bogus.
+>
+> Since in most of these situations converting the callers such that
+> security_locked_down() is called in a context where the current task
+> would be meaningful for SELinux is impossible or very non-trivial (and
+> could lead to TOCTOU issues for the classic Lockdown LSM
+> implementation), fix this by modifying the hook to accept a struct cred
+> pointer as argument, where NULL will be interpreted as a request for a
+> "global", task-independent lockdown decision only. Then modify SELinux
+> to ignore calls with cred == NULL.
 
-WARNING: CPU: 0 PID: 5 at sound/core/init.c:208 snd_card_new+0x310/0x39c [snd]
-[...]
-CPU: 0 PID: 5 Comm: kworker/0:0 Not tainted 5.10.39 #1
-Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
-Workqueue: events deferred_probe_work_func
-[<c0111988>] (unwind_backtrace) from [<c010c8ac>] (show_stack+0x10/0x14)
-[<c010c8ac>] (show_stack) from [<c092784c>] (dump_stack+0xdc/0x104)
-[<c092784c>] (dump_stack) from [<c0129710>] (__warn+0xd8/0x114)
-[<c0129710>] (__warn) from [<c0922a48>] (warn_slowpath_fmt+0x5c/0xc4)
-[<c0922a48>] (warn_slowpath_fmt) from [<bf0496f8>] (snd_card_new+0x310/0x39c [snd])
-[<bf0496f8>] (snd_card_new [snd]) from [<bf1d7df8>] (snd_soc_bind_card+0x334/0x9c4 [snd_soc_core])
-[<bf1d7df8>] (snd_soc_bind_card [snd_soc_core]) from [<bf1e9cd8>] (devm_snd_soc_register_card+0x30/0x6c [snd_soc_core])
-[<bf1e9cd8>] (devm_snd_soc_register_card [snd_soc_core]) from [<bf22d964>] (fsl_asoc_card_probe+0x550/0xcc8 [snd_soc_fsl_asoc_card])
-[<bf22d964>] (fsl_asoc_card_probe [snd_soc_fsl_asoc_card]) from [<c060c930>] (platform_drv_probe+0x48/0x98)
-[...]
+I'm not overly excited about skipping the access check when cred is
+NULL.  Based on the description and the little bit that I've dug into
+thus far it looks like using SECINITSID_KERNEL as the subject would be
+much more appropriate.  *Something* (the kernel in most of the
+relevant cases it looks like) is requesting that a potentially
+sensitive disclosure be made, and ignoring it seems like the wrong
+thing to do.  Leaving the access control intact also provides a nice
+avenue to audit these requests should users want to do that.
 
-Signed-off-by: Nicolas Cavallari <nicolas.cavallari@green-communications.fr>
----
- sound/soc/fsl/fsl-asoc-card.c | 1 +
- 1 file changed, 1 insertion(+)
+Those users that generally don't care can grant kernel_t all the
+necessary permissions without much policy.
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index c62bfd1c3ac7..4f55b316cf0f 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -744,6 +744,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	/* Initialize sound card */
- 	priv->pdev = pdev;
- 	priv->card.dev = &pdev->dev;
-+	priv->card.owner = THIS_MODULE;
- 	ret = snd_soc_of_parse_card_name(&priv->card, "model");
- 	if (ret) {
- 		snprintf(priv->name, sizeof(priv->name), "%s-audio",
+> Since most callers will just want to pass current_cred() as the cred
+> parameter, rename the hook to security_cred_locked_down() and provide
+> the original security_locked_down() function as a simple wrapper around
+> the new hook.
+
+I know you and Casey went back and forth on this in v1, but I agree
+with Casey that having two LSM hooks here is a mistake.  I know it
+makes backports hard, but spoiler alert: maintaining complex software
+over any non-trivial period of time is hard, reeeeally hard sometimes
+;)
+
+> The callers migrated to the new hook, passing NULL as cred:
+> 1. arch/powerpc/xmon/xmon.c
+>      Here the hook seems to be called from non-task context and is only
+>      used for redacting some sensitive values from output sent to
+>      userspace.
+
+This definitely sounds like kernel_t based on the description above.
+
+> 2. fs/tracefs/inode.c:tracefs_create_file()
+>      Here the call is used to prevent creating new tracefs entries when
+>      the kernel is locked down. Assumes that locking down is one-way -
+>      i.e. if the hook returns non-zero once, it will never return zero
+>      again, thus no point in creating these files.
+
+More kernel_t.
+
+> 3. kernel/trace/bpf_trace.c:bpf_probe_read_kernel{,_str}_common()
+>      Called when a BPF program calls a helper that could leak kernel
+>      memory. The task context is not relevant here, since the program
+>      may very well be run in the context of a different task than the
+>      consumer of the data.
+>      See: https://bugzilla.redhat.com/show_bug.cgi?id=1955585
+
+The access control check isn't so much who is consuming the data, but
+who is requesting a potential violation of a "lockdown", yes?  For
+example, the SELinux policy rule for the current lockdown check looks
+something like this:
+
+  allow <who> <who> : lockdown { <reason> };
+
+It seems to me that the task context is relevant here and performing
+the access control check based on the task's domain is correct.  If we
+are also concerned about who has access to this sensitive information
+once it has been determined that the task can cause it to be sent, we
+should have another check point for that, assuming the access isn't
+already covered by another check/hook.
+
+> 4. net/xfrm/xfrm_user.c:copy_to_user_*()
+>      Here a cryptographic secret is redacted based on the value returned
+>      from the hook. There are two possible actions that may lead here:
+>      a) A netlink message XFRM_MSG_GETSA with NLM_F_DUMP set - here the
+>         task context is relevant, since the dumped data is sent back to
+>         the current task.
+
+If the task context is relevant we should use it.
+
+>      b) When deleting an SA via XFRM_MSG_DELSA, the dumped SAs are
+>         broadcasted to tasks subscribed to XFRM events - here the
+>         SELinux check is not meningful as the current task's creds do
+>         not represent the tasks that could potentially see the secret.
+
+This looks very similar to the BPF hook discussed above, I believe my
+comments above apply here as well.
+
+>      It really doesn't seem worth it to try to preserve the check in the
+>      a) case ...
+
+After you've read all of the above I hope you can understand why I
+disagree with this.
+
+>      ... since the eventual leak can be circumvented anyway via b)
+
+I don't follow the statement above ... ?  However I'm not sure it
+matters much considering my other concerns.
+
+>      plus there is no way for the task to indicate that it doesn't care
+>      about the actual key value, so the check could generate a lot of
+>      noise.
+>
+> Improvements-suggested-by: Casey Schaufler <casey@schaufler-ca.com>
+> Fixes: 59438b46471a ("security,lockdown,selinux: implement SELinux lockdown")
+> Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+> ---
+>
+> v2:
+> - change to a single hook based on suggestions by Casey Schaufler
+>
+> v1: https://lore.kernel.org/lkml/20210507114048.138933-1-omosnace@redhat.com/
+>
+>  arch/powerpc/xmon/xmon.c      |  4 ++--
+>  fs/tracefs/inode.c            |  2 +-
+>  include/linux/lsm_hook_defs.h |  3 ++-
+>  include/linux/lsm_hooks.h     |  3 ++-
+>  include/linux/security.h      | 11 ++++++++---
+>  kernel/trace/bpf_trace.c      |  4 ++--
+>  net/xfrm/xfrm_user.c          |  2 +-
+>  security/lockdown/lockdown.c  |  5 +++--
+>  security/security.c           |  6 +++---
+>  security/selinux/hooks.c      | 12 +++++++++---
+>  10 files changed, 33 insertions(+), 19 deletions(-)
+
 -- 
-2.32.0.rc0
-
+paul moore
+www.paul-moore.com
