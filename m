@@ -2,79 +2,109 @@ Return-Path: <SRS0=g7Ik=KX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BB2FC47089
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:38:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3431DC47087
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 05:22:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8ABD3613B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 01:38:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ABD3613B4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77963613BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 05:22:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77963613BA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FrnQY2sFxz3bxw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 11:38:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FrtNM74pcz307k
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 15:22:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256 header.s=mta-01 header.b=bPQK6f9g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tl66sh/s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
- envelope-from=r.bolshakov@yadro.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256
- header.s=mta-01 header.b=bPQK6f9g; dkim-atps=neutral
-X-Greylist: delayed 496 seconds by postgrey-1.36 at boromir;
- Fri, 28 May 2021 11:38:15 AEST
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Tl66sh/s; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FrnPz1NbNz307W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 11:38:14 +1000 (AEST)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 9F6E041319;
- Fri, 28 May 2021 01:29:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- content-type:content-type:content-transfer-encoding:mime-version
- :x-mailer:message-id:date:date:subject:subject:from:from
- :received:received:received; s=mta-01; t=1622165395; x=
- 1623979796; bh=l5WIiBz2759Ce4tmaO9TSfEOtVvDNp1wIVB46uYGKLY=; b=b
- PQK6f9gWCVuzSZHlOo7ZMXmmd3A4ivlBDJ0Xj80L8JuyINf/LM0HD5KBkzw8kDxE
- JkqRvYA0HLuGffQSyY2rSCJNzWu3I8TS6RsSdgiAOh3A9dbZZxBL9etvWDVISTuB
- KpIobEcVK58gScINBJQktrfxVsC76dQGP8Y7f1lpyQ=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BPGWXwyZgHh8; Fri, 28 May 2021 04:29:55 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com
- [172.17.100.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id BCEA7411D9;
- Fri, 28 May 2021 04:29:54 +0300 (MSK)
-Received: from localhost (172.17.204.212) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Fri, 28
- May 2021 04:29:54 +0300
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] Revert "powerpc: Switch to relative jump labels"
-Date: Fri, 28 May 2021 04:29:43 +0300
-Message-ID: <20210528012943.23192-1-r.bolshakov@yadro.com>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FrtMm1cB9z2yRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 15:21:39 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14S53P5d186076; Fri, 28 May 2021 01:21:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=2T0XzvV0pPf+MKmPLbiuR872pRn1L7YO1Df+f+WOp8s=;
+ b=Tl66sh/syuwOYr/rf2XuZjv1zJXYlnIQC+Nr4hWXV+DpLSbrHasRyPSBvoRfDfGhbDK6
+ 5h6Gj6Mpvzui1ggem5uVtPK/Fo6tzYYZJOo79KjaTiYhaIdb8eLeH7gJ9AN8LU/c7Oai
+ gSMmKtQx35DY5Owb+dzgldHJSFMrqsVSPJ5cTOHCsJ8q4xnA4qBTCAyIQH4SB1HJb5fE
+ DoGTz/N9npsQ8EnBe2qTdzxqA/ANxN5/ERs/syjanEbvwS9++/ts8wrikT9WMpc/XTHb
+ f3oCP7gZya0Pj57/8NZEJmqa44D+ULubG0hyJGWG58NAd3ph+jp+D5UUFoYnfljp7gaw fg== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38tse9gyve-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 28 May 2021 01:21:11 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 14S58pxl003148;
+ Fri, 28 May 2021 05:21:09 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 38s1r49j41-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 28 May 2021 05:21:09 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14S5L6Dm33685844
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 28 May 2021 05:21:06 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 483314C046;
+ Fri, 28 May 2021 05:21:06 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ADDC84C044;
+ Fri, 28 May 2021 05:21:03 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Fri, 28 May 2021 05:21:03 +0000 (GMT)
+Date: Fri, 28 May 2021 10:51:03 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Valentin Schneider <valentin.schneider@arm.com>
+Subject: Re: [PATCH 1/3] sched/topology: Allow archs to populate distance map
+Message-ID: <20210528052103.GN2633526@linux.vnet.ibm.com>
+References: <20210520154427.1041031-1-srikar@linux.vnet.ibm.com>
+ <20210520154427.1041031-2-srikar@linux.vnet.ibm.com>
+ <YKaw33d71FpHjGnR@hirez.programming.kicks-ass.net>
+ <20210521023802.GE2633526@linux.vnet.ibm.com>
+ <YKdr0g6+eIHncqej@hirez.programming.kicks-ass.net>
+ <20210521092830.GF2633526@linux.vnet.ibm.com>
+ <87k0no6wuu.mognet@arm.com>
+ <20210524161829.GL2633526@linux.vnet.ibm.com>
+ <87h7irglm9.mognet@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.17.204.212]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <87h7irglm9.mognet@arm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: u7QPXlkhZCRvKSlvx5XFp9HLC8oENy07
+X-Proofpoint-ORIG-GUID: u7QPXlkhZCRvKSlvx5XFp9HLC8oENy07
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-28_02:2021-05-27,
+ 2021-05-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0
+ mlxlogscore=520 lowpriorityscore=0 clxscore=1015 phishscore=0
+ priorityscore=1501 spamscore=0 bulkscore=0 adultscore=0 mlxscore=0
+ impostorscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2104190000 definitions=main-2105280032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,112 +116,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Roman Bolshakov <r.bolshakov@yadro.com>,
- Anastasia Kovaleva <a.kovaleva@yadro.com>, linux@yadro.com
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
+ Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Scott Cheloha <cheloha@linux.ibm.com>,
+ Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Mel Gorman <mgorman@techsingularity.net>,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit b0b3b2c78ec075cec4721986a95abbbac8c3da4f.
+* Valentin Schneider <valentin.schneider@arm.com> [2021-05-25 11:21:02]:
 
-Otherwise, direct kernel boot with initramfs no longer works in QEMU.
-It's broken in some bizarre way because a valid initramfs is not
-recognized anymore:
+> On 24/05/21 21:48, Srikar Dronamraju wrote:
+> > * Valentin Schneider <valentin.schneider@arm.com> [2021-05-24 15:16:09]:
+> >> Ok so from your arch you can figure out the *size* of the set of unique
+> >> distances, but not the individual node_distance(a, b)... That's quite
+> >> unfortunate.
+> >
+> > Yes, thats true.
+> >
+> >>
+> >> I suppose one way to avoid the hook would be to write some "fake" distance
+> >> values into your distance_lookup_table[] for offline nodes using your
+> >> distance_ref_point_depth thing, i.e. ensure an iteration of
+> >> node_distance(a, b) covers all distance values [1]. You can then keep patch
+> >> 3 around, and that should roughly be it.
+> >>
+> >
+> > Yes, this would suffice but to me its not very clean.
+> > static int found[distance_ref_point_depth];
+> >
+> > for_each_node(node){
+> >       int i, nd, distance = LOCAL_DISTANCE;
+> >               goto out;
+> >
+> >       nd = node_distance(node, first_online_node)
+> >       for (i=0; i < distance_ref_point_depth; i++, distance *= 2) {
+> >               if (node_online) {
+> >                       if (distance != nd)
+> >                               continue;
+> >                       found[i] ++;
+> >                       break;
+> >               }
+> >               if (found[i])
+> >                       continue;
+> >               distance_lookup_table[node][i] = distance_lookup_table[first_online_node][i];
+> >               found[i] ++;
+> >               break;
+> >       }
+> > }
+> >
+> > But do note: We are setting a precedent for node distance between two nodes
+> > to change.
+> >
+> 
+> Indeed. AFAICT it's that or the unique-distance-values hook :/
 
-  Found initrd at 0xc000000001f70000:0xc000000003d61d64
-  rootfs image is not initramfs (XZ-compressed data is corrupt); looks like an initrd
+Peter, Valentin, Michael,
 
-The issue is observed on v5.13-rc3 if the kernel is built with
-defconfig, GCC 7.5.0 and GNU ld 2.32.0.
+Can you please let me know which approach you would want me to follow.
 
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reported-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- arch/powerpc/Kconfig                  |  1 -
- arch/powerpc/include/asm/jump_label.h | 21 +++++++++++++++------
- arch/powerpc/kernel/jump_label.c      |  4 ++--
- 3 files changed, 17 insertions(+), 9 deletions(-)
+Or do let me know any other alternative solutions that you would want me to
+try.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 088dd2afcfe4..59e0d55ee01d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -189,7 +189,6 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMALLOC		if HAVE_ARCH_HUGE_VMAP
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
- 	select HAVE_ARCH_JUMP_LABEL
--	select HAVE_ARCH_JUMP_LABEL_RELATIVE
- 	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
- 	select HAVE_ARCH_KASAN_VMALLOC		if PPC32 && PPC_PAGE_SHIFT <= 14
- 	select HAVE_ARCH_KFENCE			if PPC32
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-index 2d5c6bec2b4f..09297ec9fa52 100644
---- a/arch/powerpc/include/asm/jump_label.h
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -20,8 +20,7 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
- 	asm_volatile_goto("1:\n\t"
- 		 "nop # arch_static_branch\n\t"
- 		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
-+		 JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
- 		 ".popsection \n\t"
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
- 
-@@ -35,8 +34,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- 	asm_volatile_goto("1:\n\t"
- 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
- 		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
-+		 JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
- 		 ".popsection \n\t"
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
- 
-@@ -45,12 +43,23 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- 	return true;
- }
- 
-+#ifdef CONFIG_PPC64
-+typedef u64 jump_label_t;
-+#else
-+typedef u32 jump_label_t;
-+#endif
-+
-+struct jump_entry {
-+	jump_label_t code;
-+	jump_label_t target;
-+	jump_label_t key;
-+};
-+
- #else
- #define ARCH_STATIC_BRANCH(LABEL, KEY)		\
- 1098:	nop;					\
- 	.pushsection __jump_table, "aw";	\
--	.long 1098b - ., LABEL - .;		\
--	FTR_ENTRY_LONG KEY;			\
-+	FTR_ENTRY_LONG 1098b, LABEL, KEY;	\
- 	.popsection
- #endif
- 
-diff --git a/arch/powerpc/kernel/jump_label.c b/arch/powerpc/kernel/jump_label.c
-index ce87dc5ea23c..144858027fa3 100644
---- a/arch/powerpc/kernel/jump_label.c
-+++ b/arch/powerpc/kernel/jump_label.c
-@@ -11,10 +11,10 @@
- void arch_jump_label_transform(struct jump_entry *entry,
- 			       enum jump_label_type type)
- {
--	struct ppc_inst *addr = (struct ppc_inst *)jump_entry_code(entry);
-+	struct ppc_inst *addr = (struct ppc_inst *)(unsigned long)entry->code;
- 
- 	if (type == JUMP_LABEL_JMP)
--		patch_branch(addr, jump_entry_target(entry), 0);
-+		patch_branch(addr, entry->target, 0);
- 	else
- 		patch_instruction(addr, ppc_inst(PPC_INST_NOP));
- }
+
 -- 
-2.31.1
-
+Thanks and Regards
+Srikar Dronamraju
