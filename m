@@ -2,60 +2,58 @@ Return-Path: <SRS0=g7Ik=KX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_RED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B17A4C4708C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 07:29:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EC7C47087
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 07:36:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22E98611C9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 07:29:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22E98611C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iogearbox.net
+	by mail.kernel.org (Postfix) with ESMTPS id 1063360FE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 07:36:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1063360FE9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FrxBl60dzz3bnj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 17:29:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FrxMn5Tn8z309N
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 May 2021 17:36:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=iogearbox.net (client-ip=213.133.104.62;
- helo=www62.your-server.de; envelope-from=daniel@iogearbox.net;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 1098 seconds by postgrey-1.36 at boromir;
- Fri, 28 May 2021 17:28:41 AEST
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FrxBK4GqPz2xxq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 17:28:41 +1000 (AEST)
-Received: from sslproxy03.your-server.de ([88.198.220.132])
- by www62.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
- (Exim 4.92.3) (envelope-from <daniel@iogearbox.net>)
- id 1lmWd4-0004Br-Bp; Fri, 28 May 2021 09:09:58 +0200
-Received: from [85.7.101.30] (helo=linux.home)
- by sslproxy03.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
- (Exim 4.92) (envelope-from <daniel@iogearbox.net>)
- id 1lmWd4-000WOo-1p; Fri, 28 May 2021 09:09:58 +0200
-Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
- permission checks
-To: Paul Moore <paul@paul-moore.com>, Ondrej Mosnacek <omosnace@redhat.com>
-References: <20210517092006.803332-1-omosnace@redhat.com>
- <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
-From: Daniel Borkmann <daniel@iogearbox.net>
-Message-ID: <01135120-8bf7-df2e-cff0-1d73f1f841c3@iogearbox.net>
-Date: Fri, 28 May 2021 09:09:57 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
+ envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FrxMP19mNz2xxq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 May 2021 17:36:32 +1000 (AEST)
+Received: from dggeml716-chm.china.huawei.com (unknown [172.30.72.53])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4FrxFx2wgGzWntx;
+ Fri, 28 May 2021 15:31:49 +0800 (CST)
+Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
+ dggeml716-chm.china.huawei.com (10.3.17.127) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2176.2; Fri, 28 May 2021 15:36:25 +0800
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Fri, 28 May 2021 15:36:24 +0800
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2] mm: generalize ZONE_[DMA|DMA32]
+Date: Fri, 28 May 2021 15:45:57 +0800
+Message-ID: <20210528074557.17768-1-wangkefeng.wang@huawei.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210527143047.123611-1-wangkefeng.wang@huawei.com>
+References: <20210527143047.123611-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: daniel@iogearbox.net
-X-Virus-Scanned: Clear (ClamAV 0.103.2/26183/Thu May 27 13:07:49 2021)
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.113.25]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm500001.china.huawei.com (7.185.36.107)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,154 +65,380 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jolsa@redhat.com, selinux@vger.kernel.org, netdev@vger.kernel.org,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- James Morris <jmorris@namei.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>,
- linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-ia64@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/28/21 3:37 AM, Paul Moore wrote:
-> On Mon, May 17, 2021 at 5:22 AM Ondrej Mosnacek <omosnace@redhat.com> wrote:
->>
->> Commit 59438b46471a ("security,lockdown,selinux: implement SELinux
->> lockdown") added an implementation of the locked_down LSM hook to
->> SELinux, with the aim to restrict which domains are allowed to perform
->> operations that would breach lockdown.
->>
->> However, in several places the security_locked_down() hook is called in
->> situations where the current task isn't doing any action that would
->> directly breach lockdown, leading to SELinux checks that are basically
->> bogus.
->>
->> Since in most of these situations converting the callers such that
->> security_locked_down() is called in a context where the current task
->> would be meaningful for SELinux is impossible or very non-trivial (and
->> could lead to TOCTOU issues for the classic Lockdown LSM
->> implementation), fix this by modifying the hook to accept a struct cred
->> pointer as argument, where NULL will be interpreted as a request for a
->> "global", task-independent lockdown decision only. Then modify SELinux
->> to ignore calls with cred == NULL.
-> 
-> I'm not overly excited about skipping the access check when cred is
-> NULL.  Based on the description and the little bit that I've dug into
-> thus far it looks like using SECINITSID_KERNEL as the subject would be
-> much more appropriate.  *Something* (the kernel in most of the
-> relevant cases it looks like) is requesting that a potentially
-> sensitive disclosure be made, and ignoring it seems like the wrong
-> thing to do.  Leaving the access control intact also provides a nice
-> avenue to audit these requests should users want to do that.
+ZONE_[DMA|DMA32] configs have duplicate definitions on platforms
+that subscribe them. Instead, just make them generic options which
+can be selected on applicable platforms.
 
-I think the rationale/workaround for ignoring calls with cred == NULL (or the previous
-patch with the unimplemented hook) from Ondrej was two-fold, at least speaking for his
-seen tracing cases:
+Also only x86/arm64 architectures could enable both ZONE_DMA and
+ZONE_DMA32 if EXPERT, add ARCH_HAS_ZONE_DMA_SET to make dma zone
+configurable and visible on the two architectures.
 
-   i) The audit events that are triggered due to calls to security_locked_down()
-      can OOM kill a machine, see below details [0].
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Russell King <linux@armlinux.org.uk>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com> # for arm64
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+v2:
+-i386 can't enable ZONE_DMA32, fix it.
+-make ZONE_DMA default y on X86 as before.
+-collect ACKs
 
-  ii) It seems to be causing a deadlock via slow_avc_audit() -> audit_log_end()
-      when presumingly trying to wake up kauditd [1].
+ arch/alpha/Kconfig                     |  5 +----
+ arch/arm/Kconfig                       |  3 ---
+ arch/arm64/Kconfig                     |  9 +--------
+ arch/ia64/Kconfig                      |  4 +---
+ arch/m68k/Kconfig                      |  5 +----
+ arch/microblaze/Kconfig                |  4 +---
+ arch/mips/Kconfig                      |  7 -------
+ arch/powerpc/Kconfig                   |  4 ----
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ arch/riscv/Kconfig                     |  5 +----
+ arch/s390/Kconfig                      |  4 +---
+ arch/sparc/Kconfig                     |  5 +----
+ arch/x86/Kconfig                       | 15 ++-------------
+ mm/Kconfig                             | 12 ++++++++++++
+ 14 files changed, 23 insertions(+), 60 deletions(-)
 
-How would your suggestion above solve both i) and ii)?
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 5998106faa60..6a69a14c4825 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -40,6 +40,7 @@ config ALPHA
+ 	select MMU_GATHER_NO_RANGE
+ 	select SET_FS
+ 	select SPARSEMEM_EXTREME if SPARSEMEM
++	select ZONE_DMA
+ 	help
+ 	  The Alpha is a 64-bit general-purpose processor designed and
+ 	  marketed by the Digital Equipment Corporation of blessed memory,
+@@ -65,10 +66,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config ZONE_DMA
+-	bool
+-	default y
+-
+ config GENERIC_ISA_DMA
+ 	bool
+ 	default y
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 24804f11302d..000c3f80b58e 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -218,9 +218,6 @@ config GENERIC_CALIBRATE_DELAY
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
+ 
+-config ZONE_DMA
+-	bool
+-
+ config ARCH_SUPPORTS_UPROBES
+ 	def_bool y
+ 
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 9f1d8566bbf9..42794474f37f 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -42,6 +42,7 @@ config ARM64
+ 	select ARCH_HAS_SYSCALL_WRAPPER
+ 	select ARCH_HAS_TEARDOWN_DMA_OPS if IOMMU_SUPPORT
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
++	select ARCH_HAS_ZONE_DMA_SET if EXPERT
+ 	select ARCH_HAVE_ELF_PROT
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select ARCH_INLINE_READ_LOCK if !PREEMPTION
+@@ -307,14 +308,6 @@ config GENERIC_CSUM
+ config GENERIC_CALIBRATE_DELAY
+ 	def_bool y
+ 
+-config ZONE_DMA
+-	bool "Support DMA zone" if EXPERT
+-	default y
+-
+-config ZONE_DMA32
+-	bool "Support DMA32 zone" if EXPERT
+-	default y
+-
+ config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
+ 	def_bool y
+ 
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 279252e3e0f7..fd8503a0088a 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -60,6 +60,7 @@ config IA64
+ 	select NUMA if !FLATMEM
+ 	select PCI_MSI_ARCH_FALLBACKS if PCI_MSI
+ 	select SET_FS
++	select ZONE_DMA32
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+@@ -72,9 +73,6 @@ config 64BIT
+ 	select ATA_NONSTANDARD if ATA
+ 	default y
+ 
+-config ZONE_DMA32
+-	def_bool y
+-
+ config MMU
+ 	bool
+ 	default y
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 372e4e69c43a..05a729c6ad7f 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -34,6 +34,7 @@ config M68K
+ 	select SET_FS
+ 	select UACCESS_MEMCPY if !MMU
+ 	select VIRT_TO_BUS
++	select ZONE_DMA
+ 
+ config CPU_BIG_ENDIAN
+ 	def_bool y
+@@ -62,10 +63,6 @@ config TIME_LOW_RES
+ config NO_IOPORT_MAP
+ 	def_bool y
+ 
+-config ZONE_DMA
+-	bool
+-	default y
+-
+ config HZ
+ 	int
+ 	default 1000 if CLEOPATRA
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index 0660f47012bc..14a67a42fcae 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -43,6 +43,7 @@ config MICROBLAZE
+ 	select MMU_GATHER_NO_RANGE
+ 	select SPARSE_IRQ
+ 	select SET_FS
++	select ZONE_DMA
+ 
+ # Endianness selection
+ choice
+@@ -60,9 +61,6 @@ config CPU_LITTLE_ENDIAN
+ 
+ endchoice
+ 
+-config ZONE_DMA
+-	def_bool y
+-
+ config ARCH_HAS_ILOG2_U32
+ 	def_bool n
+ 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index ed51970c08e7..430d5324f1af 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -3277,13 +3277,6 @@ config I8253
+ 	select CLKSRC_I8253
+ 	select CLKEVT_I8253
+ 	select MIPS_EXTERNAL_TIMER
+-
+-config ZONE_DMA
+-	bool
+-
+-config ZONE_DMA32
+-	bool
+-
+ endmenu
+ 
+ config TRAD_SIGNALS
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 088dd2afcfe4..0f78bb383a12 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -403,10 +403,6 @@ config PPC_ADV_DEBUG_DAC_RANGE
+ config PPC_DAWR
+ 	bool
+ 
+-config ZONE_DMA
+-	bool
+-	default y if PPC_BOOK3E_64
+-
+ config PGTABLE_LEVELS
+ 	int
+ 	default 2 if !PPC64
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index f998e655b570..7d271de8fcbd 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -111,6 +111,7 @@ config PPC_BOOK3E_64
+ 	select PPC_FPU # Make it a choice ?
+ 	select PPC_SMP_MUXED_IPI
+ 	select PPC_DOORBELL
++	select ZONE_DMA
+ 
+ endchoice
+ 
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index a8ad8eb76120..d29643dee126 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -103,6 +103,7 @@ config RISCV
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select THREAD_INFO_IN_TASK
+ 	select UACCESS_MEMCPY if !MMU
++	select ZONE_DMA32 if 64BIT
+ 
+ config ARCH_MMAP_RND_BITS_MIN
+ 	default 18 if 64BIT
+@@ -132,10 +133,6 @@ config MMU
+ 	  Select if you want MMU-based virtualised addressing space
+ 	  support by paged memory management. If unsure, say 'Y'.
+ 
+-config ZONE_DMA32
+-	bool
+-	default y if 64BIT
+-
+ config VA_BITS
+ 	int
+ 	default 32 if 32BIT
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index b4c7c34069f8..daab9d56957a 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -2,9 +2,6 @@
+ config MMU
+ 	def_bool y
+ 
+-config ZONE_DMA
+-	def_bool y
+-
+ config CPU_BIG_ENDIAN
+ 	def_bool y
+ 
+@@ -210,6 +207,7 @@ config S390
+ 	select THREAD_INFO_IN_TASK
+ 	select TTY
+ 	select VIRT_CPU_ACCOUNTING
++	select ZONE_DMA
+ 	# Note: keep the above list sorted alphabetically
+ 
+ config SCHED_OMIT_FRAME_POINTER
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 164a5254c91c..39679664cc9a 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -59,6 +59,7 @@ config SPARC32
+ 	select CLZ_TAB
+ 	select HAVE_UID16
+ 	select OLD_SIGACTION
++	select ZONE_DMA
+ 
+ config SPARC64
+ 	def_bool 64BIT
+@@ -141,10 +142,6 @@ config HIGHMEM
+ 	default y if SPARC32
+ 	select KMAP_LOCAL
+ 
+-config ZONE_DMA
+-	bool
+-	default y if SPARC32
+-
+ config GENERIC_ISA_DMA
+ 	bool
+ 	default y if SPARC32
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 0045e1b44190..11cf8a0d6800 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -33,6 +33,7 @@ config X86_64
+ 	select NEED_DMA_MAP_STATE
+ 	select SWIOTLB
+ 	select ARCH_HAS_ELFCORE_COMPAT
++	select ZONE_DMA32
+ 
+ config FORCE_DYNAMIC_FTRACE
+ 	def_bool y
+@@ -93,6 +94,7 @@ config X86
+ 	select ARCH_HAS_SYSCALL_WRAPPER
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+ 	select ARCH_HAS_DEBUG_WX
++	select ARCH_HAS_ZONE_DMA_SET if EXPERT
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+@@ -343,9 +345,6 @@ config ARCH_SUSPEND_POSSIBLE
+ config ARCH_WANT_GENERAL_HUGETLB
+ 	def_bool y
+ 
+-config ZONE_DMA32
+-	def_bool y if X86_64
+-
+ config AUDIT_ARCH
+ 	def_bool y if X86_64
+ 
+@@ -393,16 +392,6 @@ config CC_HAS_SANE_STACKPROTECTOR
+ 
+ menu "Processor type and features"
+ 
+-config ZONE_DMA
+-	bool "DMA memory allocation support" if EXPERT
+-	default y
+-	help
+-	  DMA memory allocation support allows devices with less than 32-bit
+-	  addressing to allocate within the first 16MB of address space.
+-	  Disable if no such devices will be used.
+-
+-	  If unsure, say Y.
+-
+ config SMP
+ 	bool "Symmetric multi-processing support"
+ 	help
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 02d44e3420f5..16930f40f293 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -789,6 +789,18 @@ config ARCH_HAS_CACHE_LINE_SIZE
+ config ARCH_HAS_PTE_DEVMAP
+ 	bool
+ 
++config ARCH_HAS_ZONE_DMA_SET
++	bool
++
++config ZONE_DMA
++	bool "Support DMA zone" if ARCH_HAS_ZONE_DMA_SET
++	default y if ARM64 || X86
++
++config ZONE_DMA32
++	bool "Support DMA32 zone" if ARCH_HAS_ZONE_DMA_SET
++	depends on !X86_32
++	default y if ARM64
++
+ config ZONE_DEVICE
+ 	bool "Device memory (pmem, HMM, etc...) hotplug support"
+ 	depends on MEMORY_HOTPLUG
+-- 
+2.26.2
 
-[0] https://bugzilla.redhat.com/show_bug.cgi?id=1955585 :
-
-   I starting seeing this with F-34. When I run a container that is traced with eBPF
-   to record the syscalls it is doing, auditd is flooded with messages like:
-
-   type=AVC msg=audit(1619784520.593:282387): avc:  denied  { confidentiality } for
-    pid=476 comm="auditd" lockdown_reason="use of bpf to read kernel RAM"
-     scontext=system_u:system_r:auditd_t:s0 tcontext=system_u:system_r:auditd_t:s0 tclass=lockdown permissive=0
-
-   This seems to be leading to auditd running out of space in the backlog buffer and
-   eventually OOMs the machine.
-
-   auditd running at 99% CPU presumably processing all the messages, eventually I get:
-   Apr 30 12:20:42 fedora kernel: audit: backlog limit exceeded
-   Apr 30 12:20:42 fedora kernel: audit: backlog limit exceeded
-   Apr 30 12:20:42 fedora kernel: audit: audit_backlog=2152579 > audit_backlog_limit=64
-   Apr 30 12:20:42 fedora kernel: audit: audit_backlog=2152626 > audit_backlog_limit=64
-   Apr 30 12:20:42 fedora kernel: audit: audit_backlog=2152694 > audit_backlog_limit=64
-   Apr 30 12:20:42 fedora kernel: audit: audit_lost=6878426 audit_rate_limit=0 audit_backlog_limit=64
-   Apr 30 12:20:45 fedora kernel: oci-seccomp-bpf invoked oom-killer: gfp_mask=0x100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=-1000
-   Apr 30 12:20:45 fedora kernel: CPU: 0 PID: 13284 Comm: oci-seccomp-bpf Not tainted 5.11.12-300.fc34.x86_64 #1
-   Apr 30 12:20:45 fedora kernel: Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-2.fc32 04/01/2014
-
-[1] https://lore.kernel.org/linux-audit/CANYvDQN7H5tVp47fbYcRasv4XF07eUbsDwT_eDCHXJUj43J7jQ@mail.gmail.com/ :
-
-   Upstream kernel 5.11.0-rc7 and later was found to deadlock during a bpf_probe_read_compat()
-   call within a sched_switch tracepoint. The problem is reproducible with the reg_alloc3
-   testcase from SystemTap's BPF backend testsuite on x86_64 as well as the runqlat,runqslower
-   tools from bcc on ppc64le. Example stack trace from [1]:
-
-   [  730.868702] stack backtrace:
-   [  730.869590] CPU: 1 PID: 701 Comm: in:imjournal Not tainted, 5.12.0-0.rc2.20210309git144c79ef3353.166.fc35.x86_64 #1
-   [  730.871605] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-2.fc32 04/01/2014
-   [  730.873278] Call Trace:
-   [  730.873770]  dump_stack+0x7f/0xa1
-   [  730.874433]  check_noncircular+0xdf/0x100
-   [  730.875232]  __lock_acquire+0x1202/0x1e10
-   [  730.876031]  ? __lock_acquire+0xfc0/0x1e10
-   [  730.876844]  lock_acquire+0xc2/0x3a0
-   [  730.877551]  ? __wake_up_common_lock+0x52/0x90
-   [  730.878434]  ? lock_acquire+0xc2/0x3a0
-   [  730.879186]  ? lock_is_held_type+0xa7/0x120
-   [  730.880044]  ? skb_queue_tail+0x1b/0x50
-   [  730.880800]  _raw_spin_lock_irqsave+0x4d/0x90
-   [  730.881656]  ? __wake_up_common_lock+0x52/0x90
-   [  730.882532]  __wake_up_common_lock+0x52/0x90
-   [  730.883375]  audit_log_end+0x5b/0x100
-   [  730.884104]  slow_avc_audit+0x69/0x90
-   [  730.884836]  avc_has_perm+0x8b/0xb0
-   [  730.885532]  selinux_lockdown+0xa5/0xd0
-   [  730.886297]  security_locked_down+0x20/0x40
-   [  730.887133]  bpf_probe_read_compat+0x66/0xd0
-   [  730.887983]  bpf_prog_250599c5469ac7b5+0x10f/0x820
-   [  730.888917]  trace_call_bpf+0xe9/0x240
-   [  730.889672]  perf_trace_run_bpf_submit+0x4d/0xc0
-   [  730.890579]  perf_trace_sched_switch+0x142/0x180
-   [  730.891485]  ? __schedule+0x6d8/0xb20
-   [  730.892209]  __schedule+0x6d8/0xb20
-   [  730.892899]  schedule+0x5b/0xc0
-   [  730.893522]  exit_to_user_mode_prepare+0x11d/0x240
-   [  730.894457]  syscall_exit_to_user_mode+0x27/0x70
-   [  730.895361]  entry_SYSCALL_64_after_hwframe+0x44/0xae
-
->> Since most callers will just want to pass current_cred() as the cred
->> parameter, rename the hook to security_cred_locked_down() and provide
->> the original security_locked_down() function as a simple wrapper around
->> the new hook.
-[...]
-> 
->> 3. kernel/trace/bpf_trace.c:bpf_probe_read_kernel{,_str}_common()
->>       Called when a BPF program calls a helper that could leak kernel
->>       memory. The task context is not relevant here, since the program
->>       may very well be run in the context of a different task than the
->>       consumer of the data.
->>       See: https://bugzilla.redhat.com/show_bug.cgi?id=1955585
-> 
-> The access control check isn't so much who is consuming the data, but
-> who is requesting a potential violation of a "lockdown", yes?  For
-> example, the SELinux policy rule for the current lockdown check looks
-> something like this:
-> 
->    allow <who> <who> : lockdown { <reason> };
-> 
-> It seems to me that the task context is relevant here and performing
-> the access control check based on the task's domain is correct.
-This doesn't make much sense to me, it's /not/ the task 'requesting a potential
-violation of a "lockdown"', but rather the running tracing program which is e.g.
-inspecting kernel data structures around the triggered event. If I understood
-you correctly, having an 'allow' check on, say, httpd would be rather odd since
-things like perf/bcc/bpftrace/systemtap/etc is installing the tracing probe instead.
-
-Meaning, if we would /not/ trace such events (like in the prior mentioned syscall
-example), then there is also no call to the security_locked_down() from that same/
-unmodified application.
-
-Thanks,
-Daniel
