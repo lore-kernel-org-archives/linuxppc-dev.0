@@ -2,80 +2,124 @@ Return-Path: <SRS0=4WjV=K2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBF20C47080
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:29:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A11FEC47082
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 13:04:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 32C566124B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:29:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32C566124B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DED4961279
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 13:04:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DED4961279
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ftvjg1cYDz3bt7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 22:29:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FtwVG5JqGz30Bc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 23:04:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=gWoQlUMf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DTw2LX0w;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::934;
- helo=mail-ua1-x934.google.com; envelope-from=linasvepstas@gmail.com;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=srs0=xcnv=k2=linux.ibm.com=hbathini@ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=gWoQlUMf; dkim-atps=neutral
-Received: from mail-ua1-x934.google.com (mail-ua1-x934.google.com
- [IPv6:2607:f8b0:4864:20::934])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=DTw2LX0w; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fts5657zkz2xvL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 20:30:48 +1000 (AEST)
-Received: by mail-ua1-x934.google.com with SMTP id d14so6336129ual.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 03:30:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:reply-to:from:date:message-id
- :subject:to:cc;
- bh=V33iArN2REhN5vJJVGvHtEK16jy1yn/24WOcGkreL78=;
- b=gWoQlUMfUCsSHXNFHCCgcmvKr4l/Wo5NWjNjNwq7EF95jmJyyfkQp90geb6ep9iEpE
- Xe2sPiA8K7QSzrvPLdH0qD3DqHhCwzN9jqFXXZS60OGdlDPxZIjV6CA4iW+Cb3y7LqXU
- prZR07Cm/aeXj+L7E79WXk0YdayCDDgJMgJGWeDPrwrP9mVBPWVKzB205q1MNsgcBBFH
- nmFtiNqml8cinn0aNNgUM2XOfai2vRoZX/dryM7z9jqhhuA2hja/SuqEAf+5DcMM1p/B
- cqKiCw89N0xeeZYyZE4Lo1C5Dgd3QD701MXMuov8x0eQ7o7Sa7jhU6sUmIricFJ1RdEX
- RqVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
- :from:date:message-id:subject:to:cc;
- bh=V33iArN2REhN5vJJVGvHtEK16jy1yn/24WOcGkreL78=;
- b=asxHDm2atIS6ZW4sYPFgvAOAPo7JdTRPEnZK9tZnax9otgV8YQbiQFbHDxx9+zNBN0
- bYTstynDWlt/e236y0WhGmV9GhatU+kYIBRPJDSc6AJCVdSuMkWjSyh6FxKQZEzUaCGg
- 8EI0wdZoKlm/7bNiJpZLm4qyrtdUYcZQeV+38NQe8O6OwWqmnYbmNyufEw5Z+ZZO3wOP
- SiQc39kFge8scWlUqB43Kt44V2kOfhKIXlQNAhXpZLeSglrR3LzhG8EXH80Oj3SFKOVt
- Bmy6f5OuAEqtOgyFS5GDnGIY4RrCcDvTNfFS8eP0YOa/gJgLZUa9Rj+mX2S/hTtQ05ds
- LFpg==
-X-Gm-Message-State: AOAM530HTyS395Cjnevpfg0BFBJuWzK/ImfZNwyERfmTRDe6R1F0juqp
- Wn1cR4eMuqIsU55pu9tOsuST/WI5y96g9mc8e9Y=
-X-Google-Smtp-Source: ABdhPJyTKnb1jzzsLdzQysDi9D9ncxgfGSQF+OQ6Ql10wcGlX8FTToVKYfe3a4TcIuwd7jzmWkVo/fKyn8aaZjs4/ig=
-X-Received: by 2002:ac5:c5b8:: with SMTP id f24mr6097641vkl.14.1622457043272; 
- Mon, 31 May 2021 03:30:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FtwTg2yhfz2xfy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 23:03:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by ozlabs.org (Postfix) with ESMTP id 4FtwTY0tZqz9sWD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 23:03:45 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4FtwTY03Cxz9sW6; Mon, 31 May 2021 23:03:45 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=DTw2LX0w; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4FtwTX2f4sz9sVb;
+ Mon, 31 May 2021 23:03:43 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 14VD2lmg050199; Mon, 31 May 2021 09:03:40 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : from : to : cc
+ : date : message-id : mime-version : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=yVUHgsnJ5MR5rZSoCjet1NcDt0lXtwu9jPTeZ1t5cDw=;
+ b=DTw2LX0wImFQFmP0VuFS9GH0/VK8aI938QzXQoGoYafOxy3F57JCG01gVwLmpxD3MKNb
+ wVuchE0/DpoKSxjegO521RGkJ3jva1o3Zo4Uc/oBKGCKd+UEujGvaHgIq/njVnpUHvho
+ RAz2xQOeDEtGKveFVXCb9viNTB41WCdFPI1gUxdFsmy05U52u0+tfJvwrlmL8CIJCjtF
+ AKXTY2alspCG3ZJ+ck1WkrAiA5MjoeROz8AqLEm8b1lpn8/nD9MfQXOmmXpVWnqv/RZn
+ z40rXEtCNll39ztDaH0Bnc+TcinV5lX/yMmv9N/jHtwlsxV2kOpDg9hR0QqBb23gcBnu Wg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38w0a6r3uw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 31 May 2021 09:03:40 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 14VD3BBf052758;
+ Mon, 31 May 2021 09:03:40 -0400
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 38w0a6r3tu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 31 May 2021 09:03:40 -0400
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 14VD2OoG018660;
+ Mon, 31 May 2021 13:03:37 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma02fra.de.ibm.com with ESMTP id 38ud888jkj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 31 May 2021 13:03:37 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 14VD3YW929294986
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 31 May 2021 13:03:34 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 262EA52054;
+ Mon, 31 May 2021 13:03:34 +0000 (GMT)
+Received: from hbathini-workstation.ibm.com (unknown [9.85.89.198])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5056E52051;
+ Mon, 31 May 2021 13:03:32 +0000 (GMT)
+Subject: [PATCH] powerpc/fadump: register for fadump as early as possible
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 31 May 2021 18:33:31 +0530
+Message-ID: <162246621134.46902.9619354353561918017.stgit@hbathini-workstation.ibm.com>
+User-Agent: StGit/0.23
 MIME-Version: 1.0
-References: <20210531081215.43507-1-wesley.sheng@amd.com>
-In-Reply-To: <20210531081215.43507-1-wesley.sheng@amd.com>
-From: Linas Vepstas <linasvepstas@gmail.com>
-Date: Mon, 31 May 2021 05:30:31 -0500
-Message-ID: <CAHrUA36oJLxJXrQjxygCRztvkSF6bDodqiG1Uhnh5DKfyTDOfg@mail.gmail.com>
-Subject: Re: [PATCH] Documentation PCI: Fix typo in pci-error-recovery.rst
-To: Wesley Sheng <wesley.sheng@amd.com>
-Content-Type: multipart/alternative; boundary="000000000000ba46d605c39db7e4"
-X-Mailman-Approved-At: Mon, 31 May 2021 22:28:20 +1000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: hX-u_RCXYANijPGQ4VOYFRo5OB25mnFb
+X-Proofpoint-ORIG-GUID: qcvsT7W-OTK3G5N5jKUkOmnaXUGFjU-X
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-05-31_08:2021-05-31,
+ 2021-05-31 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 mlxlogscore=999 adultscore=0 phishscore=0
+ spamscore=0 clxscore=1011 bulkscore=0 lowpriorityscore=0 impostorscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2105310092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,98 +131,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: linasvepstas@gmail.com
-Cc: wesleyshenggit@sina.com, Jonathan Corbet <corbet@lwn.net>,
- linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- oohall@gmail.com, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Kairui Song <kasong@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
+ Dave Young <dyoung@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000ba46d605c39db7e4
-Content-Type: text/plain; charset="UTF-8"
+Crash recovery (fadump) is setup in the userspace by some service.
+This service rebuilds initrd with dump capture capability, if it is
+not already dump capture capable and then initiates registration for
+firmware assisted dump (echo 1 > /sys/kernel/fadump/registered). But
+registration for fadump can be done as early as initial kernel boot
+process itself, providing crash recovery support for scenarios where
+kernel crashes before the userspace service could start up. So, try
+registering for fadump while setting it up in the kernel itself. Also,
+have setup_fadump() called by subsys_init_sync() to make sure
+crash_save_vmcoreinfo_init() is done before registering for fadump.
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
+Commit 0823c68b054b ("powerpc/fadump: re-register firmware-assisted
+dump if already registered") would ensure this change does not lead to
+error while the userspace service tries to re-register fadump.
 
-On Mon, May 31, 2021 at 3:12 AM Wesley Sheng <wesley.sheng@amd.com> wrote:
+Also, this change, in rare scenario, can lead to a case where the
+initrd is not dump capture capable, to offload the vmcore after a
+crash. But that does not make the case any worse than it already is.
 
-> Replace "It" with "If", since it is a conditional statement.
->
-> Signed-off-by: Wesley Sheng <wesley.sheng@amd.com>
-> ---
->  Documentation/PCI/pci-error-recovery.rst | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/Documentation/PCI/pci-error-recovery.rst
-> b/Documentation/PCI/pci-error-recovery.rst
-> index 84ceebb08cac..187f43a03200 100644
-> --- a/Documentation/PCI/pci-error-recovery.rst
-> +++ b/Documentation/PCI/pci-error-recovery.rst
-> @@ -295,7 +295,7 @@ and let the driver restart normal I/O processing.
->  A driver can still return a critical failure for this function if
->  it can't get the device operational after reset.  If the platform
->  previously tried a soft reset, it might now try a hard reset (power
-> -cycle) and then call slot_reset() again.  It the device still can't
-> +cycle) and then call slot_reset() again.  If the device still can't
->  be recovered, there is nothing more that can be done;  the platform
->  will typically report a "permanent failure" in such a case.  The
->  device will be considered "dead" in this case.
-> --
-> 2.25.1
->
->
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
+ arch/powerpc/kernel/fadump.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
--- 
-Patrick: Are they laughing at us?
-Sponge Bob: No, Patrick, they are laughing next to us.
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b990075285f5..0f5ecff6210d 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1638,12 +1638,14 @@ int __init setup_fadump(void)
+ 			fadump_invalidate_release_mem();
+ 	}
+ 	/* Initialize the kernel dump memory structure for FAD registration. */
+-	else if (fw_dump.reserve_dump_area_size)
++	else if (fw_dump.reserve_dump_area_size) {
+ 		fw_dump.ops->fadump_init_mem_struct(&fw_dump);
++		register_fadump();
++	}
+ 
+ 	return 1;
+ }
+-subsys_initcall(setup_fadump);
++subsys_initcall_sync(setup_fadump);
+ #else /* !CONFIG_PRESERVE_FA_DUMP */
+ 
+ /* Scan the Firmware Assisted dump configuration details. */
 
---000000000000ba46d605c39db7e4
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr">Signed-off-by: Linas Vepstas &lt;<a href=3D"mailto:linasve=
-pstas@gmail.com">linasvepstas@gmail.com</a>&gt;<br></div><br><div class=3D"=
-gmail_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, May 31, 2021 at =
-3:12 AM Wesley Sheng &lt;<a href=3D"mailto:wesley.sheng@amd.com">wesley.she=
-ng@amd.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=
-=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding=
--left:1ex">Replace &quot;It&quot; with &quot;If&quot;, since it is a condit=
-ional statement.<br>
-<br>
-Signed-off-by: Wesley Sheng &lt;<a href=3D"mailto:wesley.sheng@amd.com" tar=
-get=3D"_blank">wesley.sheng@amd.com</a>&gt;<br>
----<br>
-=C2=A0Documentation/PCI/pci-error-recovery.rst | 2 +-<br>
-=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
-<br>
-diff --git a/Documentation/PCI/pci-error-recovery.rst b/Documentation/PCI/p=
-ci-error-recovery.rst<br>
-index 84ceebb08cac..187f43a03200 100644<br>
---- a/Documentation/PCI/pci-error-recovery.rst<br>
-+++ b/Documentation/PCI/pci-error-recovery.rst<br>
-@@ -295,7 +295,7 @@ and let the driver restart normal I/O processing.<br>
-=C2=A0A driver can still return a critical failure for this function if<br>
-=C2=A0it can&#39;t get the device operational after reset.=C2=A0 If the pla=
-tform<br>
-=C2=A0previously tried a soft reset, it might now try a hard reset (power<b=
-r>
--cycle) and then call slot_reset() again.=C2=A0 It the device still can&#39=
-;t<br>
-+cycle) and then call slot_reset() again.=C2=A0 If the device still can&#39=
-;t<br>
-=C2=A0be recovered, there is nothing more that can be done;=C2=A0 the platf=
-orm<br>
-=C2=A0will typically report a &quot;permanent failure&quot; in such a case.=
-=C2=A0 The<br>
-=C2=A0device will be considered &quot;dead&quot; in this case.<br>
--- <br>
-2.25.1<br>
-<br>
-</blockquote></div><br clear=3D"all"><br>-- <br><div dir=3D"ltr" class=3D"g=
-mail_signature"><div dir=3D"ltr"><div>Patrick: Are they laughing at us?</di=
-v><div>Sponge Bob: No, Patrick, they are laughing next to us.</div><div>=C2=
-=A0<br></div><br></div></div>
-
---000000000000ba46d605c39db7e4--
