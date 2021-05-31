@@ -2,118 +2,79 @@ Return-Path: <SRS0=4WjV=K2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A24F8C47082
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:28:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBF20C47080
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:29:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00D116124B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:28:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00D116124B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=amd.com
+	by mail.kernel.org (Postfix) with ESMTPS id 32C566124B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 12:29:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32C566124B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FtvjB4Xhnz3097
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 22:28:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ftvjg1cYDz3bt7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 22:29:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=fz8Hxe0H;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=gWoQlUMf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=amd.com
- (client-ip=40.107.236.48; helo=nam11-bn8-obe.outbound.protection.outlook.com;
- envelope-from=wesley.sheng@amd.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=fz8Hxe0H; 
- dkim-atps=neutral
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com
- (mail-bn8nam11on2048.outbound.protection.outlook.com [40.107.236.48])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::934;
+ helo=mail-ua1-x934.google.com; envelope-from=linasvepstas@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=gWoQlUMf; dkim-atps=neutral
+Received: from mail-ua1-x934.google.com (mail-ua1-x934.google.com
+ [IPv6:2607:f8b0:4864:20::934])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ftp1d2t9Jz2yWx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 18:12:34 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=V094U0PoGNTiMfB1Uf2iBIUOnVyWi6bEIdxQOTNZ1D0ZMCE9yQ+ub3kf8ehnPkLdMyfFHQbVSVvxqB3i1g7kjeVPAZc84GWG6+V+9T1x55ILDL9W8SLNodGZ1jpOdal1DM5miYc8gobKUvKGxsD2fitwjrF4ZMtIDhJVmaNcUAxp8GadVQRJhEvEbGLDawC6jTgx02xHF2u7hzxrMb7pzDAXkZTF6igeh9Y26IxJQ7dD38MO/tc3GEaZZ1DN/aEt1vf9pui6gXpFvDNaszfK+JKnPVyj5Kk+JzoMzQ6px60GXEuieOf2ufH8G+UgFqywrE68BXsO0H2a1i0z/IZ7hw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XId56xhNNfdRa9xX7oshueAieoYEzbtwOjlk++lG9q4=;
- b=NvXWn0JrA+m2b5/GRcIisW73EIY+zYOHARb3nO0lcl7yWA732NT+u1srB18sEMiIBfDC561jFjH8pxBY+/dc/qhWDa8hSIuKYVzxbySaoOGdWgeju0wGb+SsYUEcE6M09MXtLirAQyBuVcm/P1UuM1XOaHIOYh9qs0EmBdEtlGGShZh+tvppCZkqA3oGeyQMo2z+3s8+Zp2NGxWBQhz9O8TqR8nD3Bit76cRhRRMWqEOE0iRsTzhQq/1QDYNGWEbc9M2Zgw8KQUfOPNE2Ta9a+H3itre8TdVDrgMxWgTGTc9nayysvIQ9fZrDIh4BNdcOcrGUGxaiGTz4C1YNDjGwg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=gmail.com smtp.mailfrom=amd.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=amd.com; dkim=none (message
- not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XId56xhNNfdRa9xX7oshueAieoYEzbtwOjlk++lG9q4=;
- b=fz8Hxe0HepbbfoDBVeQA9iyeKEBR2Q2Qaht4vtsQMmzKl02fYrAXLLR0Ice9DFkTpW6OkAadkOv3yXso+qDfZlnLD+ip3IOUO8ieuMR3f+/fNOEUZDtMUwhxwn3OsYIGP1vgEgVDmJvTVBLUlqeKW855d+e/iAP2UhZNk/1HuIA=
-Received: from BN0PR03CA0008.namprd03.prod.outlook.com (2603:10b6:408:e6::13)
- by DM6PR12MB3738.namprd12.prod.outlook.com (2603:10b6:5:1c7::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4173.24; Mon, 31 May
- 2021 08:12:27 +0000
-Received: from BN8NAM11FT010.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:e6:cafe::40) by BN0PR03CA0008.outlook.office365.com
- (2603:10b6:408:e6::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4173.20 via Frontend
- Transport; Mon, 31 May 2021 08:12:26 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT010.mail.protection.outlook.com (10.13.177.53) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4150.30 via Frontend Transport; Mon, 31 May 2021 08:12:26 +0000
-Received: from SATLEXMB04.amd.com (10.181.40.145) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Mon, 31 May
- 2021 03:12:25 -0500
-Received: from weisheng-Pro-E800-G4-WS950T.amd.com (10.180.168.240) by
- SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server id 15.1.2242.4
- via Frontend Transport; Mon, 31 May 2021 03:12:23 -0500
-From: Wesley Sheng <wesley.sheng@amd.com>
-To: <linasvepstas@gmail.com>, <ruscur@russell.cc>, <oohall@gmail.com>,
- <bhelgaas@google.com>, <corbet@lwn.net>, <linux-pci@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-doc@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Documentation PCI: Fix typo in pci-error-recovery.rst
-Date: Mon, 31 May 2021 16:12:15 +0800
-Message-ID: <20210531081215.43507-1-wesley.sheng@amd.com>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fts5657zkz2xvL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 20:30:48 +1000 (AEST)
+Received: by mail-ua1-x934.google.com with SMTP id d14so6336129ual.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 03:30:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+ :subject:to:cc;
+ bh=V33iArN2REhN5vJJVGvHtEK16jy1yn/24WOcGkreL78=;
+ b=gWoQlUMfUCsSHXNFHCCgcmvKr4l/Wo5NWjNjNwq7EF95jmJyyfkQp90geb6ep9iEpE
+ Xe2sPiA8K7QSzrvPLdH0qD3DqHhCwzN9jqFXXZS60OGdlDPxZIjV6CA4iW+Cb3y7LqXU
+ prZR07Cm/aeXj+L7E79WXk0YdayCDDgJMgJGWeDPrwrP9mVBPWVKzB205q1MNsgcBBFH
+ nmFtiNqml8cinn0aNNgUM2XOfai2vRoZX/dryM7z9jqhhuA2hja/SuqEAf+5DcMM1p/B
+ cqKiCw89N0xeeZYyZE4Lo1C5Dgd3QD701MXMuov8x0eQ7o7Sa7jhU6sUmIricFJ1RdEX
+ RqVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+ :from:date:message-id:subject:to:cc;
+ bh=V33iArN2REhN5vJJVGvHtEK16jy1yn/24WOcGkreL78=;
+ b=asxHDm2atIS6ZW4sYPFgvAOAPo7JdTRPEnZK9tZnax9otgV8YQbiQFbHDxx9+zNBN0
+ bYTstynDWlt/e236y0WhGmV9GhatU+kYIBRPJDSc6AJCVdSuMkWjSyh6FxKQZEzUaCGg
+ 8EI0wdZoKlm/7bNiJpZLm4qyrtdUYcZQeV+38NQe8O6OwWqmnYbmNyufEw5Z+ZZO3wOP
+ SiQc39kFge8scWlUqB43Kt44V2kOfhKIXlQNAhXpZLeSglrR3LzhG8EXH80Oj3SFKOVt
+ Bmy6f5OuAEqtOgyFS5GDnGIY4RrCcDvTNfFS8eP0YOa/gJgLZUa9Rj+mX2S/hTtQ05ds
+ LFpg==
+X-Gm-Message-State: AOAM530HTyS395Cjnevpfg0BFBJuWzK/ImfZNwyERfmTRDe6R1F0juqp
+ Wn1cR4eMuqIsU55pu9tOsuST/WI5y96g9mc8e9Y=
+X-Google-Smtp-Source: ABdhPJyTKnb1jzzsLdzQysDi9D9ncxgfGSQF+OQ6Ql10wcGlX8FTToVKYfe3a4TcIuwd7jzmWkVo/fKyn8aaZjs4/ig=
+X-Received: by 2002:ac5:c5b8:: with SMTP id f24mr6097641vkl.14.1622457043272; 
+ Mon, 31 May 2021 03:30:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 49086c30-0922-40c6-aa50-08d9240bd3ae
-X-MS-TrafficTypeDiagnostic: DM6PR12MB3738:
-X-Microsoft-Antispam-PRVS: <DM6PR12MB3738040D79A3083ADED2AB62953F9@DM6PR12MB3738.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6790;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: N8cS27x14Ch6aGqnA4Qx4ZC12BJezeFEvzidOxQk8E7PywIeix4OzUApGqZ0yUwx4qLPmuAjlErR+b9nfqwkMZOALQpTgtQlHj6h17tmZZ2YZM6Z6KtG5/LJU0yNyqJyEwCF4T0T8kCvdPcDKwxYkOl3rdsiXeiXFuHvBDdY8Rp5/OqXmxmnHNlo1ArXDJgwgdpzY6bagNpthu03bJbXd39urHcZeCywKFSDp1OiDw/9fJxQ8JmAHeYOWqRIk+JR7i9Pw+ZkeegErjd4vG/9uQU3uIpyQckIOdKaqEApvil88dtjEcKpHA7duvXv3OTck6WU+3F1RbvL3zAPeekcQPSWAOhweUm4czO1AdLhpHQXp+Nqd5Y7WGXREkE5FgwijB44cjify+0x0AzJYJ1IRCZXFMOtV6SIxLEn7YeV7fMtC7cbs+gmonxjFii+pp/GYTQShZJ0I2vNjwnOeafubkQYRh5eSku1FLsd+M8kK4NRd45Y/219oiN3Hwx0CpAA2979qwtjSh4lj7oRrYYdn+dKFpUhpdln4cq20mwB8F1mR3wTgZPXXKwQZdoaQPD8guObX6LSZP2fUlrNce6tZnID/I4l1c7J3dQveLl+R9hSJ+ZIUQmhhwum6vVHIWf51a/yMVxe9XVh1+yhu3dSistN0aI6xFTqtIKcuV7OZJnz8LgLBff/+NoEUMHvQfo0FIgy2kVAxWJSzKLi0SJPyg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17; CTRY:US; LANG:en; SCL:1; SRV:;
- IPV:CAL; SFV:NSPM; H:SATLEXMB04.amd.com; PTR:InfoDomainNonexistent; CAT:NONE;
- SFS:(4636009)(346002)(376002)(396003)(39860400002)(136003)(46966006)(36840700001)(316002)(2906002)(426003)(2616005)(8676002)(70206006)(36756003)(44832011)(70586007)(7416002)(6666004)(26005)(36860700001)(7696005)(1076003)(82310400003)(82740400003)(8936002)(5660300002)(4326008)(81166007)(356005)(336012)(54906003)(83380400001)(186003)(47076005)(86362001)(110136005)(478600001)(2101003)(36900700001);
- DIR:OUT; SFP:1101; 
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 May 2021 08:12:26.3875 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 49086c30-0922-40c6-aa50-08d9240bd3ae
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d; Ip=[165.204.84.17];
- Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT010.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB3738
+References: <20210531081215.43507-1-wesley.sheng@amd.com>
+In-Reply-To: <20210531081215.43507-1-wesley.sheng@amd.com>
+From: Linas Vepstas <linasvepstas@gmail.com>
+Date: Mon, 31 May 2021 05:30:31 -0500
+Message-ID: <CAHrUA36oJLxJXrQjxygCRztvkSF6bDodqiG1Uhnh5DKfyTDOfg@mail.gmail.com>
+Subject: Re: [PATCH] Documentation PCI: Fix typo in pci-error-recovery.rst
+To: Wesley Sheng <wesley.sheng@amd.com>
+Content-Type: multipart/alternative; boundary="000000000000ba46d605c39db7e4"
 X-Mailman-Approved-At: Mon, 31 May 2021 22:28:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -126,31 +87,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wesley.sheng@amd.com, wesleyshenggit@sina.com
+Reply-To: linasvepstas@gmail.com
+Cc: wesleyshenggit@sina.com, Jonathan Corbet <corbet@lwn.net>,
+ linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ oohall@gmail.com, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace "It" with "If", since it is a conditional statement.
+--000000000000ba46d605c39db7e4
+Content-Type: text/plain; charset="UTF-8"
 
-Signed-off-by: Wesley Sheng <wesley.sheng@amd.com>
----
- Documentation/PCI/pci-error-recovery.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
 
-diff --git a/Documentation/PCI/pci-error-recovery.rst b/Documentation/PCI/pci-error-recovery.rst
-index 84ceebb08cac..187f43a03200 100644
---- a/Documentation/PCI/pci-error-recovery.rst
-+++ b/Documentation/PCI/pci-error-recovery.rst
-@@ -295,7 +295,7 @@ and let the driver restart normal I/O processing.
- A driver can still return a critical failure for this function if
- it can't get the device operational after reset.  If the platform
- previously tried a soft reset, it might now try a hard reset (power
--cycle) and then call slot_reset() again.  It the device still can't
-+cycle) and then call slot_reset() again.  If the device still can't
- be recovered, there is nothing more that can be done;  the platform
- will typically report a "permanent failure" in such a case.  The
- device will be considered "dead" in this case.
+On Mon, May 31, 2021 at 3:12 AM Wesley Sheng <wesley.sheng@amd.com> wrote:
+
+> Replace "It" with "If", since it is a conditional statement.
+>
+> Signed-off-by: Wesley Sheng <wesley.sheng@amd.com>
+> ---
+>  Documentation/PCI/pci-error-recovery.rst | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/PCI/pci-error-recovery.rst
+> b/Documentation/PCI/pci-error-recovery.rst
+> index 84ceebb08cac..187f43a03200 100644
+> --- a/Documentation/PCI/pci-error-recovery.rst
+> +++ b/Documentation/PCI/pci-error-recovery.rst
+> @@ -295,7 +295,7 @@ and let the driver restart normal I/O processing.
+>  A driver can still return a critical failure for this function if
+>  it can't get the device operational after reset.  If the platform
+>  previously tried a soft reset, it might now try a hard reset (power
+> -cycle) and then call slot_reset() again.  It the device still can't
+> +cycle) and then call slot_reset() again.  If the device still can't
+>  be recovered, there is nothing more that can be done;  the platform
+>  will typically report a "permanent failure" in such a case.  The
+>  device will be considered "dead" in this case.
+> --
+> 2.25.1
+>
+>
+
 -- 
-2.25.1
+Patrick: Are they laughing at us?
+Sponge Bob: No, Patrick, they are laughing next to us.
 
+--000000000000ba46d605c39db7e4
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Signed-off-by: Linas Vepstas &lt;<a href=3D"mailto:linasve=
+pstas@gmail.com">linasvepstas@gmail.com</a>&gt;<br></div><br><div class=3D"=
+gmail_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, May 31, 2021 at =
+3:12 AM Wesley Sheng &lt;<a href=3D"mailto:wesley.sheng@amd.com">wesley.she=
+ng@amd.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=
+=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding=
+-left:1ex">Replace &quot;It&quot; with &quot;If&quot;, since it is a condit=
+ional statement.<br>
+<br>
+Signed-off-by: Wesley Sheng &lt;<a href=3D"mailto:wesley.sheng@amd.com" tar=
+get=3D"_blank">wesley.sheng@amd.com</a>&gt;<br>
+---<br>
+=C2=A0Documentation/PCI/pci-error-recovery.rst | 2 +-<br>
+=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
+<br>
+diff --git a/Documentation/PCI/pci-error-recovery.rst b/Documentation/PCI/p=
+ci-error-recovery.rst<br>
+index 84ceebb08cac..187f43a03200 100644<br>
+--- a/Documentation/PCI/pci-error-recovery.rst<br>
++++ b/Documentation/PCI/pci-error-recovery.rst<br>
+@@ -295,7 +295,7 @@ and let the driver restart normal I/O processing.<br>
+=C2=A0A driver can still return a critical failure for this function if<br>
+=C2=A0it can&#39;t get the device operational after reset.=C2=A0 If the pla=
+tform<br>
+=C2=A0previously tried a soft reset, it might now try a hard reset (power<b=
+r>
+-cycle) and then call slot_reset() again.=C2=A0 It the device still can&#39=
+;t<br>
++cycle) and then call slot_reset() again.=C2=A0 If the device still can&#39=
+;t<br>
+=C2=A0be recovered, there is nothing more that can be done;=C2=A0 the platf=
+orm<br>
+=C2=A0will typically report a &quot;permanent failure&quot; in such a case.=
+=C2=A0 The<br>
+=C2=A0device will be considered &quot;dead&quot; in this case.<br>
+-- <br>
+2.25.1<br>
+<br>
+</blockquote></div><br clear=3D"all"><br>-- <br><div dir=3D"ltr" class=3D"g=
+mail_signature"><div dir=3D"ltr"><div>Patrick: Are they laughing at us?</di=
+v><div>Sponge Bob: No, Patrick, they are laughing next to us.</div><div>=C2=
+=A0<br></div><br></div></div>
+
+--000000000000ba46d605c39db7e4--
