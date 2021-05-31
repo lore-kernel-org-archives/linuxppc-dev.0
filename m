@@ -2,79 +2,62 @@ Return-Path: <SRS0=4WjV=K2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C22C47082
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 07:15:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75CC5C4708F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 08:25:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B1CD6100A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 07:15:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B1CD6100A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 987A1610A8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 08:25:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 987A1610A8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iogearbox.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ftmlj3y8Gz308b
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 17:15:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=KsJ+LNsM;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FtpHv0wqqz2ylk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 May 2021 18:24:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::82e;
- helo=mail-qt1-x82e.google.com; envelope-from=shengjiu.wang@gmail.com;
+ smtp.mailfrom=iogearbox.net (client-ip=213.133.104.62;
+ helo=www62.your-server.de; envelope-from=daniel@iogearbox.net;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=KsJ+LNsM; dkim-atps=neutral
-Received: from mail-qt1-x82e.google.com (mail-qt1-x82e.google.com
- [IPv6:2607:f8b0:4864:20::82e])
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ftml93M8Fz2xZm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 17:15:01 +1000 (AEST)
-Received: by mail-qt1-x82e.google.com with SMTP id s12so7357776qta.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 00:15:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=cCshEX+xv/4SLU2fpFIKz4mOrOPFgrWQEiDI3gvxWCU=;
- b=KsJ+LNsMU7c4m6OF9/SQ64CxWH3Mtnf0VOMuFU3UOZVpbTxN5pOi+NXIzz2IJBVX8h
- VpuOk1e3s9DXPsVcQVtRLBXvGKSR6sjzvD3aCtH8qI5hg6jgYk/3YfuSroi7tybw9Deo
- IU9xXAxq+hLd7cKb3eRWra77WTIEQwfpix6LS3STrUpyv+cEog5iV06hMuuXZ7FiRDgO
- m5BCLsddtVkB6l+pRSBObY6dQaz85QMfRD3gqCfXCyOtezDOZVVav/SqxEX+LAp3bTX1
- mCEptSvETYOWh626Dxji0xnZbsJn+n2f4/ZcFNkuXvCsj3axiRxVBN6y2yG5FNQfOZWE
- AVIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=cCshEX+xv/4SLU2fpFIKz4mOrOPFgrWQEiDI3gvxWCU=;
- b=DYD8EW0ZlOtakNDN1PHWbnEf1Qd3jyVJQFLcnpls5ZBSmekggCA+H13xcNDQO8XCUc
- P4MBBUL638Rixwavw/C/O+MIOdSvBpjxEs3vV3mIEYgudLeCVOU7SbeGOHBa4HrKF5tZ
- Y5TykaNd1gCh1ZqACcn8AG2Mf4iPvP4GmpJUHHU9THI4AE+EcIkjBiGbCkRVXpadKGGp
- DWLOLhqRN1Pqvg5HyVpy6aN4uFFJGpDVa7UBWe6/8qfzfFSoDnrDXPPI7FSEbv8M3r4n
- FD3M0mcCH7f2e4UJV0t5//INCpxiR7WXmb/GWB+XUFUlTCtG48JVaZJi1R+zk9BrnMH1
- VoOA==
-X-Gm-Message-State: AOAM533u5CaKVYgtIiVPSTMFJq121wcXxHsgvDvBm780wxEcZ9wyMNjx
- rVsMQt3sGInhJz1sPW6OEvDS8r/9JTn3kN4Ojpw=
-X-Google-Smtp-Source: ABdhPJy7JbLQBxo12CX0FUQPlIy48WVrz/mKCLthCxTBWukeUjgX6kfkepSU7NBI7LmBSGpXwXp6RuAgKrZDFg569uA=
-X-Received: by 2002:ac8:570a:: with SMTP id 10mr13619650qtw.360.1622445296129; 
- Mon, 31 May 2021 00:14:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FtpHT4M2pz2xff
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 May 2021 18:24:35 +1000 (AEST)
+Received: from sslproxy05.your-server.de ([78.46.172.2])
+ by www62.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
+ (Exim 4.92.3) (envelope-from <daniel@iogearbox.net>)
+ id 1lndDX-000FgJ-MR; Mon, 31 May 2021 10:24:11 +0200
+Received: from [85.7.101.30] (helo=linux-2.home)
+ by sslproxy05.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
+ (Exim 4.92) (envelope-from <daniel@iogearbox.net>)
+ id 1lndDX-000Gza-CF; Mon, 31 May 2021 10:24:11 +0200
+Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
+ permission checks
+To: Paul Moore <paul@paul-moore.com>
+References: <20210517092006.803332-1-omosnace@redhat.com>
+ <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
+ <01135120-8bf7-df2e-cff0-1d73f1f841c3@iogearbox.net>
+ <CAHC9VhR-kYmMA8gsqkiL5=poN9FoL-uCyx1YOLCoG2hRiUBYug@mail.gmail.com>
+ <c7c2d7e1-e253-dce0-d35c-392192e4926e@iogearbox.net>
+ <CAHC9VhS1XRZjKcTFgH1+n5uA-CeT+9BeSP5jvT2+RE5ougLpUg@mail.gmail.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Message-ID: <2e541bdc-ae21-9a07-7ac7-6c6a4dda09e8@iogearbox.net>
+Date: Mon, 31 May 2021 10:24:10 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
 MIME-Version: 1.0
-References: <1622113652-56646-1-git-send-email-zou_wei@huawei.com>
-In-Reply-To: <1622113652-56646-1-git-send-email-zou_wei@huawei.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Mon, 31 May 2021 15:14:45 +0800
-Message-ID: <CAA+D8AOzEUfbCCjhJbEwXav_WWqn_aPX-0krJQ_bOJQiDJu58A@mail.gmail.com>
-Subject: Re: [PATCH -next] ASoC: imx-rpmsg: fix platform_no_drv_owner.cocci
- warnings
-To: Zou Wei <zou_wei@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAHC9VhS1XRZjKcTFgH1+n5uA-CeT+9BeSP5jvT2+RE5ougLpUg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: daniel@iogearbox.net
+X-Virus-Scanned: Clear (ClamAV 0.103.2/26186/Sun May 30 13:11:19 2021)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,49 +69,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: jolsa@redhat.com, selinux@vger.kernel.org, netdev@vger.kernel.org,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Ondrej Mosnacek <omosnace@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
+ linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 27, 2021 at 6:48 PM Zou Wei <zou_wei@huawei.com> wrote:
->
-> ./sound/soc/fsl/imx-rpmsg.c:140:3-8: No need to set .owner here. The core will do it.
->
->  Remove .owner field if calls are used which set it automatically
->
-> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
->
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Zou Wei <zou_wei@huawei.com>
+On 5/29/21 8:48 PM, Paul Moore wrote:
+[...]
+> Daniel's patch side steps that worry by just doing the lockdown
+> permission check when the BPF program is loaded, but that isn't a
+> great solution if the policy changes afterward.  I was hoping there
+> might be some way to perform the permission check as needed, but the
+> more I look the more that appears to be difficult, if not impossible
+> (once again, corrections are welcome).
 
-Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+Your observation is correct, will try to clarify below a bit.
 
-> ---
->  sound/soc/fsl/imx-rpmsg.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
-> index 5a9a470..f0cae8c 100644
-> --- a/sound/soc/fsl/imx-rpmsg.c
-> +++ b/sound/soc/fsl/imx-rpmsg.c
-> @@ -137,7 +137,6 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
->  static struct platform_driver imx_rpmsg_driver = {
->         .driver = {
->                 .name = "imx-audio-rpmsg",
-> -               .owner = THIS_MODULE,
->                 .pm = &snd_soc_pm_ops,
->         },
->         .probe = imx_rpmsg_probe,
-> --
-> 2.6.2
->
+> I'm now wondering if the right solution here is to make use of the LSM
+> notifier mechanism.  I'm not yet entirely sure if this would work from
+> a BPF perspective, but I could envision the BPF subsystem registering
+> a LSM notification callback via register_blocking_lsm_notifier(), see
+> if Infiniband code as an example, and then when the LSM(s) policy
+> changes the BPF subsystem would get a notification and it could
+> revalidate the existing BPF programs and take block/remove/whatever
+> the offending BPF programs.  This obviously requires a few things
+> which I'm not sure are easily done, or even possible:
+> 
+> 1. Somehow the BPF programs would need to be "marked" at
+> load/verification time with respect to their lockdown requirements so
+> that decisions can be made later.  Perhaps a flag in bpf_prog_aux?
+> 
+> 2. While it looks like it should be possible to iterate over all of
+> the loaded BPF programs in the LSM notifier callback via
+> idr_for_each(prog_idr, ...), it is not clear to me if it is possible
+> to safely remove, or somehow disable, BPF programs once they have been
+> loaded.  Hopefully the BPF folks can help answer that question.
+> 
+> 3. Disabling of BPF programs might be preferable to removing them
+> entirely on LSM policy changes as it would be possible to make the
+> lockdown state less restrictive at a future point in time, allowing
+> for the BPF program to be executed again.  Once again, not sure if
+> this is even possible.
+
+Part of why this gets really complex/impossible is that BPF programs in
+the kernel are reference counted from various sides, be it that there
+are references from user space to them (fd from application, BPF fs, or
+BPF links), hooks where they are attached to as well as tail call maps
+where one BPF prog calls into another. There is currently also no global
+infra of some sort where you could piggy back to atomically keep track of
+all the references in a list or such. And the other thing is that BPF progs
+have no ownership that is tied to a specific task after they have been
+loaded. Meaning, once they are loaded into the kernel by an application
+and attached to a specific hook, they can remain there potentially until
+reboot of the node, so lifecycle of the user space application != lifecycle
+of the BPF program.
+
+It's maybe best to compare this aspect to kernel modules in the sense that
+you have an application that loads it into the kernel (insmod, etc, where
+you could also enforce lockdown signature check), but after that, they can
+be managed by other entities as well (implicitly refcounted from kernel,
+removed by other applications, etc).
+
+My understanding of the lockdown settings are that users have options
+to select/enforce a lockdown level of CONFIG_LOCK_DOWN_KERNEL_FORCE_{INTEGRITY,
+CONFIDENTIALITY} at compilation time, they have a lockdown={integrity|
+confidentiality} boot-time parameter, /sys/kernel/security/lockdown,
+and then more fine-grained policy via 59438b46471a ("security,lockdown,selinux:
+implement SELinux lockdown"). Once you have set a global policy level,
+you cannot revert back to a less strict mode. So the SELinux policy is
+specifically tied around tasks to further restrict applications in respect
+to the global policy. I presume that would mean for those users that majority
+of tasks have the confidentiality option set via SELinux with just a few
+necessary using the integrity global policy. So overall the enforcing
+option when BPF program is loaded is the only really sensible option to
+me given only there we have the valid current task where such policy can
+be enforced.
+
+Best,
+Daniel
