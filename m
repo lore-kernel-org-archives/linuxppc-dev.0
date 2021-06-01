@@ -7,54 +7,52 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26A30C47080
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 419D6C4708F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CC0261375
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CC0261375
+	by mail.kernel.org (Postfix) with ESMTPS id 73DC461375
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73DC461375
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FvRY416mJz30CX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 19:23:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FvRYP3tNgz3btf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 19:23:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=libaokun1@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 110 seconds by postgrey-1.36 at boromir;
- Tue, 01 Jun 2021 18:44:12 AEST
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FvQgc2jl1z2yXX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jun 2021 18:44:12 +1000 (AEST)
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.56])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4FvQcL45lqzYrlq;
- Tue,  1 Jun 2021 16:41:22 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FvR014ZGdz2yhm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jun 2021 18:58:22 +1000 (AEST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4FvQZ74j7TzYrxh;
+ Tue,  1 Jun 2021 16:39:27 +0800 (CST)
 Received: from dggpeml500020.china.huawei.com (7.185.36.88) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 1 Jun 2021 16:44:03 +0800
+ 15.1.2176.2; Tue, 1 Jun 2021 16:42:11 +0800
 Received: from huawei.com (10.175.127.227) by dggpeml500020.china.huawei.com
  (7.185.36.88) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2176.2; Tue, 1 Jun 2021
- 16:44:02 +0800
+ 16:42:10 +0800
 From: Baokun Li <libaokun1@huawei.com>
-To: <arnd@arndb.de>, <mpe@ellerman.id.au>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] powerpc/spider-pci: Remove set but not used variable
- 'val'
-Date: Tue, 1 Jun 2021 16:53:19 +0800
-Message-ID: <20210601085319.140461-1-libaokun1@huawei.com>
+To: <jk@ozlabs.org>, <arnd@arndb.de>, <mpe@ellerman.id.au>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] powerpc/spufs: disp: Remove set but not used variable
+ 'dummy'
+Date: Tue, 1 Jun 2021 16:51:27 +0800
+Message-ID: <20210601085127.139598-1-libaokun1@huawei.com>
 X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-Originating-IP: [10.175.127.227]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
  dggpeml500020.china.huawei.com (7.185.36.88)
 X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Tue, 01 Jun 2021 19:23:17 +1000
@@ -77,33 +75,57 @@ Sender: "Linuxppc-dev"
 
 Fixes gcc '-Wunused-but-set-variable' warning:
 
-arch/powerpc/platforms/cell/spider-pci.c: In function 'spiderpci_io_flush':
-arch/powerpc/platforms/cell/spider-pci.c:28:6: warning:
-variable ‘val’ set but not used [-Wunused-but-set-variable]
+arch/powerpc/platforms/cell/spufs/switch.c: In function 'check_ppu_mb_stat':
+arch/powerpc/platforms/cell/spufs/switch.c:1660:6: warning:
+variable ‘dummy’ set but not used [-Wunused-but-set-variable]
+
+arch/powerpc/platforms/cell/spufs/switch.c: In function 'check_ppuint_mb_stat':
+arch/powerpc/platforms/cell/spufs/switch.c:1675:6: warning:
+variable ‘dummy’ set but not used [-Wunused-but-set-variable]
 
 It never used since introduction.
 
 Signed-off-by: Baokun Li <libaokun1@huawei.com>
 ---
- arch/powerpc/platforms/cell/spider-pci.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spufs/switch.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spider-pci.c b/arch/powerpc/platforms/cell/spider-pci.c
-index 93ea41680f54..a1c293f42a1f 100644
---- a/arch/powerpc/platforms/cell/spider-pci.c
-+++ b/arch/powerpc/platforms/cell/spider-pci.c
-@@ -25,10 +25,9 @@ struct spiderpci_iowa_private {
- static void spiderpci_io_flush(struct iowa_bus *bus)
+diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
+index d56b4e3241cd..b41e81b22fdc 100644
+--- a/arch/powerpc/platforms/cell/spufs/switch.c
++++ b/arch/powerpc/platforms/cell/spufs/switch.c
+@@ -1657,14 +1657,13 @@ static inline void restore_spu_mb(struct spu_state *csa, struct spu *spu)
+ static inline void check_ppu_mb_stat(struct spu_state *csa, struct spu *spu)
  {
- 	struct spiderpci_iowa_private *priv;
--	u32 val;
+ 	struct spu_problem __iomem *prob = spu->problem;
+-	u32 dummy = 0;
  
- 	priv = bus->private;
--	val = in_be32(priv->regs + SPIDER_PCI_DUMMY_READ);
-+	in_be32(priv->regs + SPIDER_PCI_DUMMY_READ);
- 	iosync();
+ 	/* Restore, Step 66:
+ 	 *     If CSA.MB_Stat[P]=0 (mailbox empty) then
+ 	 *     read from the PPU_MB register.
+ 	 */
+ 	if ((csa->prob.mb_stat_R & 0xFF) == 0) {
+-		dummy = in_be32(&prob->pu_mb_R);
++		in_be32(&prob->pu_mb_R);
+ 		eieio();
+ 	}
  }
+@@ -1672,14 +1671,13 @@ static inline void check_ppu_mb_stat(struct spu_state *csa, struct spu *spu)
+ static inline void check_ppuint_mb_stat(struct spu_state *csa, struct spu *spu)
+ {
+ 	struct spu_priv2 __iomem *priv2 = spu->priv2;
+-	u64 dummy = 0UL;
  
+ 	/* Restore, Step 66:
+ 	 *     If CSA.MB_Stat[I]=0 (mailbox empty) then
+ 	 *     read from the PPUINT_MB register.
+ 	 */
+ 	if ((csa->prob.mb_stat_R & 0xFF0000) == 0) {
+-		dummy = in_be64(&priv2->puint_mb_R);
++		in_be64(&priv2->puint_mb_R);
+ 		eieio();
+ 		spu_int_stat_clear(spu, 2, CLASS2_ENABLE_MAILBOX_INTR);
+ 		eieio();
 -- 
 2.31.1
 
