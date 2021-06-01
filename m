@@ -2,60 +2,105 @@ Return-Path: <SRS0=UY8D=K3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 419D6C4708F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DF97C47080
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:41:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73DC461375
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:23:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73DC461375
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 72CC9611CA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 09:41:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72CC9611CA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FvRYP3tNgz3btf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 19:23:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FvRxN2Kgvz305s
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 19:41:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RptHl9sO;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=libaokun1@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FvR014ZGdz2yhm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jun 2021 18:58:22 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4FvQZ74j7TzYrxh;
- Tue,  1 Jun 2021 16:39:27 +0800 (CST)
-Received: from dggpeml500020.china.huawei.com (7.185.36.88) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 1 Jun 2021 16:42:11 +0800
-Received: from huawei.com (10.175.127.227) by dggpeml500020.china.huawei.com
- (7.185.36.88) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2176.2; Tue, 1 Jun 2021
- 16:42:10 +0800
-From: Baokun Li <libaokun1@huawei.com>
-To: <jk@ozlabs.org>, <arnd@arndb.de>, <mpe@ellerman.id.au>,
- <benh@kernel.crashing.org>, <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] powerpc/spufs: disp: Remove set but not used variable
- 'dummy'
-Date: Tue, 1 Jun 2021 16:51:27 +0800
-Message-ID: <20210601085127.139598-1-libaokun1@huawei.com>
-X-Mailer: git-send-email 2.31.1
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=RptHl9sO; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FvRwq5kKSz2yXZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jun 2021 19:40:43 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 1519WiXH170898; Tue, 1 Jun 2021 05:40:30 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : subject :
+ to : references : in-reply-to : mime-version : message-id : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=HS7GLo4YPRH9AQ/D6Y/8pCOpDeDKHLzs46UL2AE4h3g=;
+ b=RptHl9sO1biR+I6gm3QMJdyMAXDVaaIuNdm2ZHCwoJFMZsS6kP4lIqs5Vrt19rosQV++
+ XF7uoZ1QU3sOQn+lWRyB92JEkghpQMRQkOMkvblr7UcwzoD7LOlrGsBb73+NI0N4VynO
+ OepZeLevFKewRoBEOXrBxKjgwhhEEsp4L5q+XqlmR+SuBw6cvDWclzcZnwBjqbBiFGrp
+ TY2Zy7gkMRRaMQwOm8dLPaWmvddAJGQ/wWBBPupZ17Dsbrwj/0c5lCnKeIkKsIClPbYs
+ UR3stzdTj5ImoNAFQhAejvQeGt+YFZDfEougxRF9LNlHKuUMrpyfnv8PXzb4pwaGPELF VQ== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 38whnn1ddu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 01 Jun 2021 05:40:29 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1519cSNJ011666;
+ Tue, 1 Jun 2021 09:40:28 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04fra.de.ibm.com with ESMTP id 38ud880v2v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 01 Jun 2021 09:40:27 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 1519dri133882440
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 1 Jun 2021 09:39:53 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8D4944C044;
+ Tue,  1 Jun 2021 09:40:25 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F332B4C04E;
+ Tue,  1 Jun 2021 09:40:24 +0000 (GMT)
+Received: from localhost (unknown [9.85.73.71])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  1 Jun 2021 09:40:24 +0000 (GMT)
+Date: Tue, 01 Jun 2021 15:10:23 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: make show_stack's stack walking KASAN-safe
+To: christophe.leroy@csgroup.eu, Daniel Axtens <dja@axtens.net>,
+ kasan-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org
+References: <20210528074806.1311297-1-dja@axtens.net>
+In-Reply-To: <20210528074806.1311297-1-dja@axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.175.127.227]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpeml500020.china.huawei.com (7.185.36.88)
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Tue, 01 Jun 2021 19:23:17 +1000
+User-Agent: astroid/v0.15-23-gcdc62b30 (https://github.com/astroidmail/astroid)
+Message-Id: <1622539981.k2ctwb25pa.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: vaCDV2d8Q2KLE_33lWuk3O89PWR4ogFg
+X-Proofpoint-GUID: vaCDV2d8Q2KLE_33lWuk3O89PWR4ogFg
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
+ definitions=2021-06-01_05:2021-05-31,
+ 2021-06-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ bulkscore=0 mlxscore=0 lowpriorityscore=0 mlxlogscore=999 suspectscore=0
+ clxscore=1011 phishscore=0 adultscore=0 malwarescore=0 spamscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2106010064
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,65 +112,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: yuehaibing@huawei.com, libaokun1@huawei.com, weiyongjun1@huawei.com,
- yukuai3@huawei.com, yangjihong1@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Daniel Axtens wrote:
+> Make our stack-walking code KASAN-safe by using READ_ONCE_NOCHECK -
+> generic code, arm64, s390 and x86 all do this for similar sorts of
+> reasons: when unwinding a stack, we might touch memory that KASAN has
+> marked as being out-of-bounds. In ppc64 KASAN development, I hit this
+> sometimes when checking for an exception frame - because we're checking
+> an arbitrary offset into the stack frame.
+>=20
+> See commit 20955746320e ("s390/kasan: avoid false positives during stack
+> unwind"), commit bcaf669b4bdb ("arm64: disable kasan when accessing
+> frame->fp in unwind_frame"), commit 91e08ab0c851 ("x86/dumpstack:
+> Prevent KASAN false positive warnings") and commit 6e22c8366416
+> ("tracing, kasan: Silence Kasan warning in check_stack of stack_tracer").
+>=20
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  arch/powerpc/kernel/process.c | 16 +++++++++-------
+>  1 file changed, 9 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
+c
+> index 89e34aa273e2..430cf06f9406 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -2151,8 +2151,8 @@ void show_stack(struct task_struct *tsk, unsigned l=
+ong *stack,
+>  			break;
+> =20
+>  		stack =3D (unsigned long *) sp;
+> -		newsp =3D stack[0];
+> -		ip =3D stack[STACK_FRAME_LR_SAVE];
+> +		newsp =3D READ_ONCE_NOCHECK(stack[0]);
+> +		ip =3D READ_ONCE_NOCHECK(stack[STACK_FRAME_LR_SAVE]);
 
-arch/powerpc/platforms/cell/spufs/switch.c: In function 'check_ppu_mb_stat':
-arch/powerpc/platforms/cell/spufs/switch.c:1660:6: warning:
-variable ‘dummy’ set but not used [-Wunused-but-set-variable]
+Just curious:
+Given that we validate the stack pointer before these accesses, can we=20
+annotate show_stack() with __no_sanitize_address instead?
 
-arch/powerpc/platforms/cell/spufs/switch.c: In function 'check_ppuint_mb_stat':
-arch/powerpc/platforms/cell/spufs/switch.c:1675:6: warning:
-variable ‘dummy’ set but not used [-Wunused-but-set-variable]
+I ask because we have other places where we walk the stack:=20
+arch_stack_walk(), as well as in perf callchain. Similar changes will be=20
+needed there as well.
 
-It never used since introduction.
 
-Signed-off-by: Baokun Li <libaokun1@huawei.com>
----
- arch/powerpc/platforms/cell/spufs/switch.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
-index d56b4e3241cd..b41e81b22fdc 100644
---- a/arch/powerpc/platforms/cell/spufs/switch.c
-+++ b/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -1657,14 +1657,13 @@ static inline void restore_spu_mb(struct spu_state *csa, struct spu *spu)
- static inline void check_ppu_mb_stat(struct spu_state *csa, struct spu *spu)
- {
- 	struct spu_problem __iomem *prob = spu->problem;
--	u32 dummy = 0;
- 
- 	/* Restore, Step 66:
- 	 *     If CSA.MB_Stat[P]=0 (mailbox empty) then
- 	 *     read from the PPU_MB register.
- 	 */
- 	if ((csa->prob.mb_stat_R & 0xFF) == 0) {
--		dummy = in_be32(&prob->pu_mb_R);
-+		in_be32(&prob->pu_mb_R);
- 		eieio();
- 	}
- }
-@@ -1672,14 +1671,13 @@ static inline void check_ppu_mb_stat(struct spu_state *csa, struct spu *spu)
- static inline void check_ppuint_mb_stat(struct spu_state *csa, struct spu *spu)
- {
- 	struct spu_priv2 __iomem *priv2 = spu->priv2;
--	u64 dummy = 0UL;
- 
- 	/* Restore, Step 66:
- 	 *     If CSA.MB_Stat[I]=0 (mailbox empty) then
- 	 *     read from the PPUINT_MB register.
- 	 */
- 	if ((csa->prob.mb_stat_R & 0xFF0000) == 0) {
--		dummy = in_be64(&priv2->puint_mb_R);
-+		in_be64(&priv2->puint_mb_R);
- 		eieio();
- 		spu_int_stat_clear(spu, 2, CLASS2_ENABLE_MAILBOX_INTR);
- 		eieio();
--- 
-2.31.1
+- Naveen
 
