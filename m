@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37311C4708F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18489C47083
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1F0661376
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:07:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1F0661376
+	by mail.kernel.org (Postfix) with ESMTPS id B3375601FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3375601FF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fw0Ts6qKnz3gGc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 17:07:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fw0VL5w6vz3c2Y
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 17:08:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=RmhbmeEg;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=nF5H5Xm7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -30,33 +30,33 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=RmhbmeEg; 
+ header.s=bombadil.20210309 header.b=nF5H5Xm7; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fw0Dv4NkBz3bns
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fw0Dv5nv6z3c4c
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 16:56:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=ZrMEf0Ls9F+Osx12fthB6jYFp7YA2RuOfcMRudkR5eo=; b=RmhbmeEgAua7D4yc0CN6m+daMw
- ggu55W3yOtqsYbnSz5c1dfLFQJ9ncvb9hc3nNvkXY6f0gcSGMOhLStwUwb0UQrJ1aG7h0ZSUng/WX
- es/ejunr+apwEHWPUWRQDfPQvgeX1hrHlUl4NOb5oItwm7czJQwirbV+FChfRP7dM0qxLnCRqVmgI
- bA1/+LYF3tWUOd/53KL9zns/VStS5lpZkIiq55Ah7xS6m/8ryTxd0+2JtSdNyv1ovCOilXcKoWuJr
- 8KfLwtubqhZXD6/OkB2mdwrFmz8NTFBmkmZB+9B1+iGvFIgntGiUljL/AChzeEhq1iCnrHX8J/lkd
- xKgRqjOg==;
+ bh=7GHnP6DNZGlKFwjbxdBpad0uFlCxBKJH9Xsnx8ec7ac=; b=nF5H5Xm7fe4zGXbHdq72l4Rnzy
+ kg+w8MA3+xaOntMSOadwazIKALvfRRzCTRy9MFxfEVrh2sKEgQoBbgUOGRaieuAuAxc4ABeXBS8HN
+ SQtDG1OQjVRLervqQcLcyPmZ3DOCzf6Iza9QUOxa7eEES0n40jma6ts5XDhrZorWgE/EAulN1GwbV
+ Z5MnbQ9Pt4ZuIesxtmUE7CYUNs9IpOi40S5W3ULs7jy5knAcpmh8yHUS3I5I9+QDcpjjk0bMn7Cxn
+ tMuGXllg4mbf6SO7+IH+aPv1V5kGTRswN64kZiIdU1FDVemfSZMUYCMTkt4iBJ9J6ovY+/RiKuAOr
+ KKtQYNhA==;
 Received: from shol69.static.otenet.gr ([83.235.170.67] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1loKnR-0026ec-A8; Wed, 02 Jun 2021 06:56:10 +0000
+ id 1loKnN-0026aZ-Dz; Wed, 02 Jun 2021 06:56:05 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 30/30] z2ram: use blk_mq_alloc_disk and blk_cleanup_disk
-Date: Wed,  2 Jun 2021 09:53:45 +0300
-Message-Id: <20210602065345.355274-31-hch@lst.de>
+Subject: [PATCH 29/30] ataflop: use blk_mq_alloc_disk and blk_cleanup_disk
+Date: Wed,  2 Jun 2021 09:53:44 +0300
+Message-Id: <20210602065345.355274-30-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210602065345.355274-1-hch@lst.de>
 References: <20210602065345.355274-1-hch@lst.de>
@@ -101,45 +101,40 @@ request_queue allocation.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/z2ram.c | 15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+ drivers/block/ataflop.c | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-index c1d20818e649..a8968d9e759b 100644
---- a/drivers/block/z2ram.c
-+++ b/drivers/block/z2ram.c
-@@ -323,27 +323,20 @@ static const struct blk_mq_ops z2_mq_ops = {
- 
- static int z2ram_register_disk(int minor)
+diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
+index d601e49f80e0..a093644ac39f 100644
+--- a/drivers/block/ataflop.c
++++ b/drivers/block/ataflop.c
+@@ -1968,22 +1968,14 @@ static const struct blk_mq_ops ataflop_mq_ops = {
+ static int ataflop_alloc_disk(unsigned int drive, unsigned int type)
  {
--	struct request_queue *q;
  	struct gendisk *disk;
- 
+-	int ret;
+-
 -	disk = alloc_disk(1);
 -	if (!disk)
 -		return -ENOMEM;
--
--	q = blk_mq_init_queue(&tag_set);
--	if (IS_ERR(q)) {
+ 
+-	disk->queue = blk_mq_init_queue(&unit[drive].tag_set);
+-	if (IS_ERR(disk->queue)) {
+-		ret = PTR_ERR(disk->queue);
+-		disk->queue = NULL;
 -		put_disk(disk);
--		return PTR_ERR(q);
+-		return ret;
 -	}
-+	disk = blk_mq_alloc_disk(&tag_set, NULL);
++	disk = blk_mq_alloc_disk(&unit[drive].tag_set, NULL);
 +	if (IS_ERR(disk))
 +		return PTR_ERR(disk);
  
- 	disk->major = Z2RAM_MAJOR;
- 	disk->first_minor = minor;
+ 	disk->major = FLOPPY_MAJOR;
+ 	disk->first_minor = drive + (type << 2);
 +	disk->minors = 1;
- 	disk->fops = &z2_fops;
- 	if (minor)
- 		sprintf(disk->disk_name, "z2ram%d", minor);
- 	else
- 		sprintf(disk->disk_name, "z2ram");
--	disk->queue = q;
- 
- 	z2ram_gendisk[minor] = disk;
- 	add_disk(disk);
+ 	sprintf(disk->disk_name, "fd%d", drive);
+ 	disk->fops = &floppy_fops;
+ 	disk->events = DISK_EVENT_MEDIA_CHANGE;
 -- 
 2.30.2
 
