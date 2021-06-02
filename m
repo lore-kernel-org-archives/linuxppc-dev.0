@@ -2,26 +2,26 @@ Return-Path: <SRS0=7LrA=K4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 134A7C4708F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:09:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BC42C4708F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:09:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 593D661008
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:09:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 593D661008
+	by mail.kernel.org (Postfix) with ESMTPS id A4905613C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:09:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4905613C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FvrXJ3LNQz3bwh
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 11:09:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FvrXk59plz302K
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 11:09:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=MwZdZDEB;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=Nz6X0Tw6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -29,35 +29,37 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=merlin.20170209 header.b=MwZdZDEB; 
+ header.s=merlin.20170209 header.b=Nz6X0Tw6; 
  dkim-atps=neutral
 Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:8b0:10b:1234::107])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FvrWH0t1rz2ykM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 11:08:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FvrWH4CrNz2ykQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 11:08:24 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:Message-Id:
- Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=bGOXjl45VUTLODftVWfvoDeh/WmFH4qkX4gdmJCwboE=; b=MwZdZDEBWLvsxNu63dXFfadjzI
- UUC6D+QJdvHbBXZmzlzcPeQRRWXbSoxaGNzGaiK6EgcEGn7NCH/b3oECeDyWbpJN0C71Bm5FLkI0k
- Bbxtp1r5GDFA1hdf4phWW0IbjCgubbYTT/5afqoeMakmLqmKBb6frqcQFq/s1VHpm0D53au72visK
- 313/jkjcvkWVXMEF7YQo/N0polJ7d8yzEchJLw21/EOxLydRqxudlYqyhq9jyYuF/FOy5/yzfMVOp
- /xdDLG9/KVs4XUzvdn/Y9bq8bowaxfAHsvbXM0oF8PSIjpXRpSyToW9gvjZVouDG26wB0neVJh1rX
- Na0xe95A==;
+ d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
+ In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=STxaxHZrc2prNRJ981YHlxVA6f5nemOp0VpYZSq/p1s=; b=Nz6X0Tw680ByyKZ+ds9pW9aC9i
+ D3l0ILRxKySux4V1bXZzp/uHQWfmtfYoutpn8Yryq+oOSFdRaodHsoffiJSpIWyT20GjGhu9p9l6A
+ uH4WQDlFZckttM6bJ2kPmnwUG9DPURpGDo3OpCIzdKv4X+wgI6I2O7DriUW/mjqg1Laglw+ZIYsjD
+ lY33/g7eV2xH5dAnKcMxs6/QUnfyG4pIQz3U+iZTtDZfzI7xlrR7cHn5CxLp4rDwNdvz3CiOHm1ww
+ 2jNLDRkwS9mrEo8kWc7pUM8xoqHVCHqi/RDDJvKIlR4qTAx693L/md0worjna78E271mIb+zrj9Lx
+ gqXsvBag==;
 Received: from geoff by merlin.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1loFMh-00102Z-RX; Wed, 02 Jun 2021 01:08:12 +0000
-Message-Id: <cover.1622577339.git.geoff@infradead.org>
+ Hat Linux)) id 1loFMj-001037-RW; Wed, 02 Jun 2021 01:08:14 +0000
+Message-Id: <562d0c9ea0100a30c3b186bcc7adb34b0bbd2cd7.1622577339.git.geoff@infradead.org>
+In-Reply-To: <cover.1622577339.git.geoff@infradead.org>
+References: <cover.1622577339.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Patch-Date: Tue, 1 Jun 2021 12:55:39 -0700
-Subject: [PATCH 0/5] DMA fixes for PS3 device drivers
+Patch-Date: Tue, 1 Jun 2021 12:27:43 -0700
+Subject: [PATCH 3/5] powerpc/ps3: Add dma_mask to ps3_dma_region
 To: Michael Ellerman <mpe@ellerman.id.au>, David@lists.ozlabs.org,
 	S.Miller@lists.ozlabs.org,
 	" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>"@lists.ozlabs.org
-Date: Wed, 02 Jun 2021 01:08:11 +0000
+Date: Wed, 02 Jun 2021 01:08:13 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,48 +76,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Commit f959dcd6ddfd29235030e8026471ac1b022ad2b0 (dma-direct: Fix
+potential NULL pointer dereference) added a null check on the
+dma_mask pointer of the kernel's device structure.
 
-This is a set of patches that fix various DMA related problems in the PS3
-device drivers, and add better error checking and improved message logging.
+Add a dma_mask variable to the ps3_dma_region structure and set
+the device structure's dma_mask pointer to point to this new variable.
 
-The gelic network driver had a number of problems and most of the changes are
-in it's sources.
+Fixes runtime errors like these:
 
-Please consider.
+  ps3_system_bus_match:349: dev=8.0(sb_01), drv=8.0(ps3flash): match
+  WARNING: CPU: 0 PID: 1 at kernel/dma/mapping.c:151
+  ps3flash sb_01: ps3stor_setup:193: map DMA region failed
 
--Geoff
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ arch/powerpc/include/asm/ps3.h  |  2 ++
+ arch/powerpc/platforms/ps3/mm.c | 12 ++++++++++++
+ 2 files changed, 14 insertions(+)
 
-The following changes since commit 8124c8a6b35386f73523d27eacb71b5364a68c4c:
-
-  Linux 5.13-rc4 (2021-05-30 11:58:25 -1000)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-gelic
-
-for you to fetch changes up to 4adcfc9735bf8d1987d2bc82e914be154f2ffad8:
-
-  net/ps3_gelic: Cleanups, improve logging (2021-06-01 12:27:43 -0700)
-
-----------------------------------------------------------------
-Geoff Levand (5):
-      powerpc/ps3: Add CONFIG_PS3_VERBOSE_RESULT option
-      powerpc/ps3: Warn on PS3 device errors
-      powerpc/ps3: Add dma_mask to ps3_dma_region
-      net/ps3_gelic: Add gelic_descr structures
-      net/ps3_gelic: Cleanups, improve logging
-
- arch/powerpc/include/asm/ps3.h               |   4 +-
- arch/powerpc/platforms/ps3/Kconfig           |   9 +
- arch/powerpc/platforms/ps3/mm.c              |  12 +
- arch/powerpc/platforms/ps3/system-bus.c      |   9 +-
- drivers/net/ethernet/toshiba/ps3_gelic_net.c | 968 +++++++++++++++------------
- drivers/net/ethernet/toshiba/ps3_gelic_net.h |  24 +-
- drivers/ps3/ps3-vuart.c                      |   2 +-
- drivers/ps3/ps3av.c                          |  22 +-
- 8 files changed, 598 insertions(+), 452 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index 7df145901def..8a0d8fb35328 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -71,6 +71,7 @@ struct ps3_dma_region_ops;
+  * @bus_addr: The 'translated' bus address of the region.
+  * @len: The length in bytes of the region.
+  * @offset: The offset from the start of memory of the region.
++ * @dma_mask: Device dma_mask.
+  * @ioid: The IOID of the device who owns this region
+  * @chunk_list: Opaque variable used by the ioc page manager.
+  * @region_ops: struct ps3_dma_region_ops - dma region operations
+@@ -85,6 +86,7 @@ struct ps3_dma_region {
+ 	enum ps3_dma_region_type region_type;
+ 	unsigned long len;
+ 	unsigned long offset;
++	u64 dma_mask;
+ 
+ 	/* driver variables  (set by ps3_dma_region_create) */
+ 	unsigned long bus_addr;
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index d094321964fb..a81eac35d900 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -6,6 +6,7 @@
+  *  Copyright 2006 Sony Corp.
+  */
+ 
++#include <linux/dma-mapping.h>
+ #include <linux/kernel.h>
+ #include <linux/export.h>
+ #include <linux/memblock.h>
+@@ -1118,6 +1119,7 @@ int ps3_dma_region_init(struct ps3_system_bus_device *dev,
+ 	enum ps3_dma_region_type region_type, void *addr, unsigned long len)
+ {
+ 	unsigned long lpar_addr;
++	int result;
+ 
+ 	lpar_addr = addr ? ps3_mm_phys_to_lpar(__pa(addr)) : 0;
+ 
+@@ -1129,6 +1131,16 @@ int ps3_dma_region_init(struct ps3_system_bus_device *dev,
+ 		r->offset -= map.r1.offset;
+ 	r->len = len ? len : ALIGN(map.total, 1 << r->page_size);
+ 
++	dev->core.dma_mask = &r->dma_mask;
++
++	result = dma_set_mask_and_coherent(&dev->core, DMA_BIT_MASK(32));
++
++	if (result < 0) {
++		dev_err(&dev->core, "%s:%d: dma_set_mask_and_coherent failed: %d\n",
++			__func__, __LINE__, result);
++		return result;
++	}
++
+ 	switch (dev->dev_type) {
+ 	case PS3_DEVICE_TYPE_SB:
+ 		r->region_ops =  (USE_DYNAMIC_DMA)
 -- 
 2.25.1
+
 
