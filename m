@@ -1,86 +1,65 @@
-Return-Path: <SRS0=UY8D=K3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=7LrA=K4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2188BC4708F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 20:48:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC67FC4708F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:09:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2409961360
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jun 2021 20:47:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2409961360
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
+	by mail.kernel.org (Postfix) with ESMTPS id AFE2561008
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 01:08:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AFE2561008
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fvkkj6NzSz309K
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 06:47:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FvrWt2brvz3096
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 11:08:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=a7qjHsKT;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=y5P34QF+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=paul-moore.com
- (client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com;
- envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1234::107; helo=merlin.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
- header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=a7qjHsKT; dkim-atps=neutral
-Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com
- [IPv6:2a00:1450:4864:20::529])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=y5P34QF+; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1234::107])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FvkkC3ZRDz2yjJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 06:47:29 +1000 (AEST)
-Received: by mail-ed1-x529.google.com with SMTP id dj8so189727edb.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jun 2021 13:47:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=tTNIBzYtON70L8W0i/P9C9vefa2RWt2U+aq2jjrO0Nw=;
- b=a7qjHsKTaqa3sWrWdZ5Gh9wO8wYHYyLL1wPg/UcCE7WulKyadI3xcZi7iFuzK0u1Ce
- IkSY1GVr6EEc8j3nyeg4ebI1UMrBkZhJ4VQc/fi9aoa2EltyNevU04GfDQ5ppE1IbA8B
- o/MByBqkj1YE9ylhArUoRCj0NUDDOzKmyG/jCGVAasz7umc4Dr4Pd/t6Eyy7zlYWliQq
- 4ArqLMbKLawihtbRZaRj6YUhJNMF+wo/VNZBxG78x6i56+dgCU1YWPsuNdHxjOGUGzvK
- bHh6Y91IphMkFIda1nqGEdYuSLZ6RDd4IGBJvo9dx8WnU2kK8sOcCJ9N7gn+NW/tjSkf
- aJhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=tTNIBzYtON70L8W0i/P9C9vefa2RWt2U+aq2jjrO0Nw=;
- b=W7gFZ+wqAkxYFJSr5IXjgsumvp8R7iBLalSwQbZ5Y6qj+tmY5HEaU6M7ahw1gLHpBw
- PXidkY+kDHwVSnBZTyObeiRMLx/gomioHG7JG+NlV3p2ZDpSAfgzvHz0cNJ6XO8AaPmd
- +P3ABTA4S7B9qmriX9KtHlBFHFdfrQegY+hYX7drK0MfhdjijarrOsWpbdqhHnX1cJ/f
- DZJneWOU/teibjYRTtYvPIi+gzopxK01+1YIilwGb9tQFRa8kPaAK+k4aCnA+qxaTuNU
- 6pAN0Gy0LR1lyFkoM27ybRSAiJ+nWL5AXuVgGYtbkrLTrgpCy6SZTV5HarflQsa40Rnf
- mTRw==
-X-Gm-Message-State: AOAM530d0CcNoDFtOYTag37lutetn2Ko3NcocovRli+IPuzJPlVXIUTa
- 73zbQMdF1YnW8q9X9EsPSL4eQZ1i++7p2cq20SdU
-X-Google-Smtp-Source: ABdhPJwU7tcZXG/Pm25o7D7/1VUxLtr+XnMQYQgFFvc5bxqJe1U1fscpsf+4cHErKF2itcPOfxYxe2ICVSz4Nvu1ZGs=
-X-Received: by 2002:aa7:d84e:: with SMTP id f14mr21519965eds.12.1622580442071; 
- Tue, 01 Jun 2021 13:47:22 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210517092006.803332-1-omosnace@redhat.com>
- <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
- <01135120-8bf7-df2e-cff0-1d73f1f841c3@iogearbox.net>
- <CAHC9VhR-kYmMA8gsqkiL5=poN9FoL-uCyx1YOLCoG2hRiUBYug@mail.gmail.com>
- <c7c2d7e1-e253-dce0-d35c-392192e4926e@iogearbox.net>
- <CAHC9VhS1XRZjKcTFgH1+n5uA-CeT+9BeSP5jvT2+RE5ougLpUg@mail.gmail.com>
- <2e541bdc-ae21-9a07-7ac7-6c6a4dda09e8@iogearbox.net>
-In-Reply-To: <2e541bdc-ae21-9a07-7ac7-6c6a4dda09e8@iogearbox.net>
-From: Paul Moore <paul@paul-moore.com>
-Date: Tue, 1 Jun 2021 16:47:10 -0400
-Message-ID: <CAHC9VhT464vr9sWxqY3PRB4DAccz=LvRMLgWBsSViWMR0JJvOQ@mail.gmail.com>
-Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
- permission checks
-To: Daniel Borkmann <daniel@iogearbox.net>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FvrWG2cVNz2yX2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 11:08:23 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
+ In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=zWV2AX+O8o2JLh2rehG594XozbXOrGxJ9rl5HuCAxZU=; b=y5P34QF+5JzMn3et5EIUPGgknO
+ x00aP3dEO4LJisNaoFM278KPLN8IHwD2I7iC373x6lsp0b/P5vpA2kz3yJVZNEnPTYT2OezpydGPN
+ QDHZvo/NifUo2Vuvyrc9IubKfIaYwnTcxaKWGA0X1XZ1iFpt2QQnQAV0j5jOTh0onzN2m+PNrOhE0
+ vyy6fE2Nawkh4HyGYeL0XKkKUqHuN4+Ki5OFhIzOFI6nT/pd/9Tgexce0VdD5tPFbGPMEZENGvVBi
+ PYFzRNpvOOd8vnHClx1jmBCFq063Y6InCra7Ub20wrbEept8AuIYyWI84ie/dLN0lJWCG8xZ5DUDW
+ iYNCj+iA==;
+Received: from geoff by merlin.infradead.org with local (Exim 4.94.2 #2 (Red
+ Hat Linux)) id 1loFMl-00103V-0H; Wed, 02 Jun 2021 01:08:16 +0000
+Message-Id: <4adcfc9735bf8d1987d2bc82e914be154f2ffad8.1622577339.git.geoff@infradead.org>
+In-Reply-To: <cover.1622577339.git.geoff@infradead.org>
+References: <cover.1622577339.git.geoff@infradead.org>
+From: Geoff Levand <geoff@infradead.org>
+Patch-Date: Tue, 1 Jun 2021 12:27:43 -0700
+Subject: [PATCH 5/5] net/ps3_gelic: Cleanups, improve logging
+To: Michael Ellerman <mpe@ellerman.id.au>, David@lists.ozlabs.org,
+	S.Miller@lists.ozlabs.org,
+	" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>"@lists.ozlabs.org
+Date: Wed, 02 Jun 2021 01:08:15 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,128 +71,911 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jolsa@redhat.com, selinux@vger.kernel.org, netdev@vger.kernel.org,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- Ondrej Mosnacek <omosnace@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
- linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 31, 2021 at 4:24 AM Daniel Borkmann <daniel@iogearbox.net> wrote:
-> On 5/29/21 8:48 PM, Paul Moore wrote:
-> [...]
-> > Daniel's patch side steps that worry by just doing the lockdown
-> > permission check when the BPF program is loaded, but that isn't a
-> > great solution if the policy changes afterward.  I was hoping there
-> > might be some way to perform the permission check as needed, but the
-> > more I look the more that appears to be difficult, if not impossible
-> > (once again, corrections are welcome).
->
-> Your observation is correct, will try to clarify below a bit.
->
-> > I'm now wondering if the right solution here is to make use of the LSM
-> > notifier mechanism.  I'm not yet entirely sure if this would work from
-> > a BPF perspective, but I could envision the BPF subsystem registering
-> > a LSM notification callback via register_blocking_lsm_notifier(), see
-> > if Infiniband code as an example, and then when the LSM(s) policy
-> > changes the BPF subsystem would get a notification and it could
-> > revalidate the existing BPF programs and take block/remove/whatever
-> > the offending BPF programs.  This obviously requires a few things
-> > which I'm not sure are easily done, or even possible:
-> >
-> > 1. Somehow the BPF programs would need to be "marked" at
-> > load/verification time with respect to their lockdown requirements so
-> > that decisions can be made later.  Perhaps a flag in bpf_prog_aux?
-> >
-> > 2. While it looks like it should be possible to iterate over all of
-> > the loaded BPF programs in the LSM notifier callback via
-> > idr_for_each(prog_idr, ...), it is not clear to me if it is possible
-> > to safely remove, or somehow disable, BPF programs once they have been
-> > loaded.  Hopefully the BPF folks can help answer that question.
-> >
-> > 3. Disabling of BPF programs might be preferable to removing them
-> > entirely on LSM policy changes as it would be possible to make the
-> > lockdown state less restrictive at a future point in time, allowing
-> > for the BPF program to be executed again.  Once again, not sure if
-> > this is even possible.
->
-> Part of why this gets really complex/impossible is that BPF programs in
-> the kernel are reference counted from various sides, be it that there
-> are references from user space to them (fd from application, BPF fs, or
-> BPF links), hooks where they are attached to as well as tail call maps
-> where one BPF prog calls into another. There is currently also no global
-> infra of some sort where you could piggy back to atomically keep track of
-> all the references in a list or such. And the other thing is that BPF progs
-> have no ownership that is tied to a specific task after they have been
-> loaded. Meaning, once they are loaded into the kernel by an application
-> and attached to a specific hook, they can remain there potentially until
-> reboot of the node, so lifecycle of the user space application != lifecycle
-> of the BPF program.
+General source cleanups and improved logging messages.
 
-I don't think the disjoint lifecycle or lack of task ownership is a
-deal breaker from a LSM perspective as the LSMs can stash whatever
-info they need in the security pointer during the program allocation
-hook, e.g. selinux_bpf_prog_alloc() saves the security domain which
-allocates/loads the BPF program.
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c | 395 ++++++++++---------
+ 1 file changed, 216 insertions(+), 179 deletions(-)
 
-The thing I'm worried about would be the case where a LSM policy
-change requires that an existing BPF program be removed or disabled.
-I'm guessing based on the refcounting that there is not presently a
-clean way to remove a BPF program from the system, but is this
-something we could resolve?  If we can't safely remove a BPF program
-from the system, can we replace/swap it with an empty/NULL BPF
-program?
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index e01938128882..9dbcb7c4ec80 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -44,17 +44,17 @@ MODULE_AUTHOR("SCE Inc.");
+ MODULE_DESCRIPTION("Gelic Network driver");
+ MODULE_LICENSE("GPL");
+ 
+-
+-/* set irq_mask */
+ int gelic_card_set_irq_mask(struct gelic_card *card, u64 mask)
+ {
++	struct device *dev = ctodev(card);
+ 	int status;
+ 
+ 	status = lv1_net_set_interrupt_mask(bus_id(card), dev_id(card),
+ 					    mask, 0);
+-	if (status)
+-		dev_info(ctodev(card),
+-			 "%s failed %d\n", __func__, status);
++	if (status) {
++		dev_err(dev, "%s:%d failed: %d\n", __func__, __LINE__, status);
++	}
++
+ 	return status;
+ }
+ 
+@@ -63,6 +63,7 @@ static void gelic_card_rx_irq_on(struct gelic_card *card)
+ 	card->irq_mask |= GELIC_CARD_RXINT;
+ 	gelic_card_set_irq_mask(card, card->irq_mask);
+ }
++
+ static void gelic_card_rx_irq_off(struct gelic_card *card)
+ {
+ 	card->irq_mask &= ~GELIC_CARD_RXINT;
+@@ -70,15 +71,14 @@ static void gelic_card_rx_irq_off(struct gelic_card *card)
+ }
+ 
+ static void gelic_card_get_ether_port_status(struct gelic_card *card,
+-					     int inform)
++	int inform)
+ {
+ 	u64 v2;
+ 	struct net_device *ether_netdev;
+ 
+ 	lv1_net_control(bus_id(card), dev_id(card),
+-			GELIC_LV1_GET_ETH_PORT_STATUS,
+-			GELIC_LV1_VLAN_TX_ETHERNET_0, 0, 0,
+-			&card->ether_port_status, &v2);
++		GELIC_LV1_GET_ETH_PORT_STATUS, GELIC_LV1_VLAN_TX_ETHERNET_0, 0,
++		0, &card->ether_port_status, &v2);
+ 
+ 	if (inform) {
+ 		ether_netdev = card->netdev[GELIC_PORT_ETHERNET_0];
+@@ -105,15 +105,17 @@ gelic_descr_get_status(struct gelic_descr *descr)
+ 
+ static int gelic_card_set_link_mode(struct gelic_card *card, int mode)
+ {
++	struct device *dev = ctodev(card);
+ 	int status;
+ 	u64 v1, v2;
+ 
+ 	status = lv1_net_control(bus_id(card), dev_id(card),
+-				 GELIC_LV1_SET_NEGOTIATION_MODE,
+-				 GELIC_LV1_PHY_ETHERNET_0, mode, 0, &v1, &v2);
++		GELIC_LV1_SET_NEGOTIATION_MODE, GELIC_LV1_PHY_ETHERNET_0, mode,
++		0, &v1, &v2);
++
+ 	if (status) {
+-		pr_info("%s: failed setting negotiation mode %d\n", __func__,
+-			status);
++		dev_err(dev, "%s:%d: Failed setting negotiation mode: %d\n",
++			__func__, __LINE__, status);
+ 		return -EBUSY;
+ 	}
+ 
+@@ -130,13 +132,16 @@ static int gelic_card_set_link_mode(struct gelic_card *card, int mode)
+  */
+ static void gelic_card_disable_txdmac(struct gelic_card *card)
+ {
++	struct device *dev = ctodev(card);
+ 	int status;
+ 
+ 	/* this hvc blocks until the DMA in progress really stopped */
+ 	status = lv1_net_stop_tx_dma(bus_id(card), dev_id(card));
+-	if (status)
+-		dev_err(ctodev(card),
+-			"lv1_net_stop_tx_dma failed, status=%d\n", status);
++
++	if (status) {
++		dev_err(dev, "%s:%d: lv1_net_stop_tx_dma failed: %d\n",
++			__func__, __LINE__, status);
++	}
+ }
+ 
+ /**
+@@ -187,13 +192,16 @@ static void gelic_card_enable_rxdmac(struct gelic_card *card)
+  */
+ static void gelic_card_disable_rxdmac(struct gelic_card *card)
+ {
++	struct device *dev = ctodev(card);
+ 	int status;
+ 
+ 	/* this hvc blocks until the DMA in progress really stopped */
+ 	status = lv1_net_stop_rx_dma(bus_id(card), dev_id(card));
+-	if (status)
+-		dev_err(ctodev(card),
+-			"lv1_net_stop_rx_dma failed, %d\n", status);
++
++	if (status) {
++		dev_err(dev, "%s:%d: lv1_net_stop_rx_dma failed: %d\n",
++			__func__, __LINE__, status);
++	}
+ }
+ 
+ /**
+@@ -216,6 +224,7 @@ static void gelic_descr_set_status(struct gelic_descr *descr,
+ 	 * Usually caller of this function wants to inform that to the
+ 	 * hardware, so we assure here the hardware sees the change.
+ 	 */
++
+ 	wmb();
+ }
+ 
+@@ -229,8 +238,7 @@ static void gelic_descr_set_status(struct gelic_descr *descr,
+  * and re-initialize the hardware chain for later use
+  */
+ static void gelic_card_reset_chain(struct gelic_card *card,
+-				   struct gelic_descr_chain *chain,
+-				   struct gelic_descr *start_descr)
++	struct gelic_descr_chain *chain, struct gelic_descr *start_descr)
+ {
+ 	struct gelic_descr *descr;
+ 
+@@ -248,45 +256,41 @@ static void gelic_card_reset_chain(struct gelic_card *card,
+ 
+ void gelic_card_up(struct gelic_card *card)
+ {
+-	pr_debug("%s: called\n", __func__);
++	struct device *dev = ctodev(card);
++
+ 	mutex_lock(&card->updown_lock);
+ 	if (atomic_inc_return(&card->users) == 1) {
+-		pr_debug("%s: real do\n", __func__);
+-		/* enable irq */
++		dev_dbg(dev, "%s:%d: Starting...\n", __func__, __LINE__);
+ 		gelic_card_set_irq_mask(card, card->irq_mask);
+-		/* start rx */
+ 		gelic_card_enable_rxdmac(card);
+-
+ 		napi_enable(&card->napi);
+ 	}
+ 	mutex_unlock(&card->updown_lock);
+-	pr_debug("%s: done\n", __func__);
+ }
+ 
+ void gelic_card_down(struct gelic_card *card)
+ {
++	struct device *dev = ctodev(card);
+ 	u64 mask;
+-	pr_debug("%s: called\n", __func__);
++
+ 	mutex_lock(&card->updown_lock);
+ 	if (atomic_dec_if_positive(&card->users) == 0) {
+-		pr_debug("%s: real do\n", __func__);
++		dev_dbg(dev, "%s:%d: Stopping...\n", __func__, __LINE__);
+ 		napi_disable(&card->napi);
+ 		/*
+-		 * Disable irq. Wireless interrupts will
+-		 * be disabled later if any
++		 * Disable irq. Wireless interrupts will be disabled later.
+ 		 */
+ 		mask = card->irq_mask & (GELIC_CARD_WLAN_EVENT_RECEIVED |
+-					 GELIC_CARD_WLAN_COMMAND_COMPLETED);
++			GELIC_CARD_WLAN_COMMAND_COMPLETED);
+ 		gelic_card_set_irq_mask(card, mask);
+-		/* stop rx */
++
+ 		gelic_card_disable_rxdmac(card);
+ 		gelic_card_reset_chain(card, &card->rx_chain,
+-				       card->descr + GELIC_NET_TX_DESCRIPTORS);
+-		/* stop tx */
++			card->descr + GELIC_NET_TX_DESCRIPTORS);
++
+ 		gelic_card_disable_txdmac(card);
+ 	}
+ 	mutex_unlock(&card->updown_lock);
+-	pr_debug("%s: done\n", __func__);
+ }
+ 
+ static void gelic_unmap_link(struct device *dev, struct gelic_descr *descr)
+@@ -652,6 +656,7 @@ static void gelic_card_release_tx_chain(struct gelic_card *card, int stop)
+ void gelic_net_set_multi(struct net_device *netdev)
+ {
+ 	struct gelic_card *card = netdev_card(netdev);
++	struct device *dev = ctodev(card);
+ 	struct netdev_hw_addr *ha;
+ 	unsigned int i;
+ 	uint8_t *p;
+@@ -661,27 +666,31 @@ void gelic_net_set_multi(struct net_device *netdev)
+ 	/* clear all multicast address */
+ 	status = lv1_net_remove_multicast_address(bus_id(card), dev_id(card),
+ 						  0, 1);
+-	if (status)
+-		dev_err(ctodev(card),
+-			"lv1_net_remove_multicast_address failed %d\n",
+-			status);
++	if (status) {
++		dev_err(dev,
++			"%s:%d: lv1_net_remove_multicast_address failed %d\n",
++			__func__, __LINE__, status);
++	}
++
+ 	/* set broadcast address */
+ 	status = lv1_net_add_multicast_address(bus_id(card), dev_id(card),
+ 					       GELIC_NET_BROADCAST_ADDR, 0);
+-	if (status)
+-		dev_err(ctodev(card),
+-			"lv1_net_add_multicast_address failed, %d\n",
+-			status);
++	if (status) {
++		dev_err(dev,
++			"%s:%d: lv1_net_add_multicast_address failed, %d\n",
++			__func__, __LINE__, status);
++	}
+ 
+ 	if ((netdev->flags & IFF_ALLMULTI) ||
+ 	    (netdev_mc_count(netdev) > GELIC_NET_MC_COUNT_MAX)) {
+ 		status = lv1_net_add_multicast_address(bus_id(card),
+ 						       dev_id(card),
+ 						       0, 1);
+-		if (status)
+-			dev_err(ctodev(card),
+-				"lv1_net_add_multicast_address failed, %d\n",
+-				status);
++		if (status) {
++			dev_err(dev,
++				"%s:%d: lv1_net_add_multicast_address failed, %d\n",
++				__func__, __LINE__, status);
++		}
+ 		return;
+ 	}
+ 
+@@ -694,12 +703,13 @@ void gelic_net_set_multi(struct net_device *netdev)
+ 			addr |= *p++;
+ 		}
+ 		status = lv1_net_add_multicast_address(bus_id(card),
+-						       dev_id(card),
+-						       addr, 0);
+-		if (status)
+-			dev_err(ctodev(card),
+-				"lv1_net_add_multicast_address failed, %d\n",
+-				status);
++			dev_id(card), addr, 0);
++
++		if (status) {
++			dev_err(dev,
++				"%s:%d: lv1_net_add_multicast_address failed, %d\n",
++				__func__, __LINE__, status);
++		}
+ 	}
+ }
+ 
+@@ -711,17 +721,17 @@ void gelic_net_set_multi(struct net_device *netdev)
+  */
+ int gelic_net_stop(struct net_device *netdev)
+ {
+-	struct gelic_card *card;
++	struct gelic_card *card = netdev_card(netdev);
++	struct device *dev = ctodev(card);
+ 
+-	pr_debug("%s: start\n", __func__);
++	dev_dbg(dev, "%s:%d: >\n", __func__, __LINE__);
+ 
+ 	netif_stop_queue(netdev);
+ 	netif_carrier_off(netdev);
+ 
+-	card = netdev_card(netdev);
+ 	gelic_card_down(card);
+ 
+-	pr_debug("%s: done\n", __func__);
++	dev_dbg(dev, "%s:%d: <\n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+@@ -736,14 +746,15 @@ gelic_card_get_next_tx_descr(struct gelic_card *card)
+ {
+ 	if (!card->tx_chain.head)
+ 		return NULL;
++
+ 	/*  see if the next descriptor is free */
+-	if (card->tx_chain.tail != card->tx_chain.head->next &&
+-	    gelic_descr_get_status(card->tx_chain.head) ==
+-	    GELIC_DESCR_DMA_NOT_IN_USE)
++	if ((card->tx_chain.tail != card->tx_chain.head->next)
++		&& (gelic_descr_get_status(card->tx_chain.head)
++		== GELIC_DESCR_DMA_NOT_IN_USE)) {
+ 		return card->tx_chain.head;
+-	else
+-		return NULL;
++	}
+ 
++	return NULL;
+ }
+ 
+ /**
+@@ -787,14 +798,15 @@ static void gelic_descr_set_tx_cmdstat(struct gelic_descr *descr,
+ }
+ 
+ static struct sk_buff *gelic_put_vlan_tag(struct sk_buff *skb,
+-						 unsigned short tag)
++	unsigned short tag)
+ {
+ 	struct vlan_ethhdr *veth;
+ 	static unsigned int c;
+ 
+ 	if (skb_headroom(skb) < VLAN_HLEN) {
+ 		struct sk_buff *sk_tmp = skb;
+-		pr_debug("%s: hd=%d c=%ud\n", __func__, skb_headroom(skb), c);
++		pr_debug("%s:%d: hd=%d c=%ud\n", __func__, __LINE__,
++			skb_headroom(skb), c);
+ 		skb = skb_realloc_headroom(sk_tmp, VLAN_HLEN);
+ 		if (!skb)
+ 			return NULL;
+@@ -818,7 +830,6 @@ static struct sk_buff *gelic_put_vlan_tag(struct sk_buff *skb,
+  * @skb: packet to use
+  *
+  * returns 0 on success, <0 on failure.
+- *
+  */
+ static int gelic_descr_prepare_tx(struct gelic_card *card,
+ 	struct gelic_descr *descr, struct sk_buff *skb)
+@@ -1161,9 +1172,9 @@ static int gelic_net_poll(struct napi_struct *napi, int budget)
+ 	int packets_done = 0;
+ 
+ 	while (packets_done < budget) {
+-		if (!gelic_card_decode_one_descr(card))
++		if (!gelic_card_decode_one_descr(card)) {
+ 			break;
+-
++		}
+ 		packets_done++;
+ 	}
+ 
+@@ -1171,6 +1182,7 @@ static int gelic_net_poll(struct napi_struct *napi, int budget)
+ 		napi_complete_done(napi, packets_done);
+ 		gelic_card_rx_irq_on(card);
+ 	}
++
+ 	return packets_done;
+ }
+ 
+@@ -1185,8 +1197,9 @@ static irqreturn_t gelic_card_interrupt(int irq, void *ptr)
+ 
+ 	status = card->irq_status;
+ 
+-	if (!status)
++	if (!status) {
+ 		return IRQ_NONE;
++	}
+ 
+ 	status &= card->irq_mask;
+ 
+@@ -1205,13 +1218,15 @@ static irqreturn_t gelic_card_interrupt(int irq, void *ptr)
+ 	}
+ 
+ 	/* ether port status changed */
+-	if (status & GELIC_CARD_PORT_STATUS_CHANGED)
++	if (status & GELIC_CARD_PORT_STATUS_CHANGED) {
+ 		gelic_card_get_ether_port_status(card, 1);
++	}
+ 
+ #ifdef CONFIG_GELIC_WIRELESS
+ 	if (status & (GELIC_CARD_WLAN_EVENT_RECEIVED |
+-		      GELIC_CARD_WLAN_COMMAND_COMPLETED))
++		GELIC_CARD_WLAN_COMMAND_COMPLETED)) {
+ 		gelic_wl_interrupt(card->netdev[GELIC_PORT_WIRELESS], status);
++	}
+ #endif
+ 
+ 	return IRQ_HANDLED;
+@@ -1247,19 +1262,16 @@ int gelic_net_open(struct net_device *netdev)
+ {
+ 	struct gelic_card *card = netdev_card(netdev);
+ 
+-	dev_dbg(ctodev(card), " -> %s %p\n", __func__, netdev);
+-
+ 	gelic_card_up(card);
+ 
+ 	netif_start_queue(netdev);
+ 	gelic_card_get_ether_port_status(card, 1);
+ 
+-	dev_dbg(ctodev(card), " <- %s\n", __func__);
+ 	return 0;
+ }
+ 
+ void gelic_net_get_drvinfo(struct net_device *netdev,
+-			   struct ethtool_drvinfo *info)
++	struct ethtool_drvinfo *info)
+ {
+ 	strlcpy(info->driver, DRV_NAME, sizeof(info->driver));
+ 	strlcpy(info->version, DRV_VERSION, sizeof(info->version));
+@@ -1317,11 +1329,11 @@ static int gelic_ether_get_link_ksettings(struct net_device *netdev,
+ 	return 0;
+ }
+ 
+-static int
+-gelic_ether_set_link_ksettings(struct net_device *netdev,
+-			       const struct ethtool_link_ksettings *cmd)
++static int gelic_ether_set_link_ksettings(struct net_device *netdev,
++	const struct ethtool_link_ksettings *cmd)
+ {
+ 	struct gelic_card *card = netdev_card(netdev);
++	struct device *dev = ctodev(card);
+ 	u64 mode;
+ 	int ret;
+ 
+@@ -1341,94 +1353,100 @@ gelic_ether_set_link_ksettings(struct net_device *netdev,
+ 		default:
+ 			return -EINVAL;
+ 		}
++
+ 		if (cmd->base.duplex == DUPLEX_FULL) {
+ 			mode |= GELIC_LV1_ETHER_FULL_DUPLEX;
+ 		} else if (cmd->base.speed == SPEED_1000) {
+-			pr_info("1000 half duplex is not supported.\n");
++			dev_dbg(dev,
++				"%s:%d: 1000 half duplex is not supported.\n",
++				__func__, __LINE__);
+ 			return -EINVAL;
+ 		}
+ 	}
+ 
+ 	ret = gelic_card_set_link_mode(card, mode);
+ 
+-	if (ret)
++	if (ret) {
+ 		return ret;
++	}
+ 
+ 	return 0;
+ }
+ 
+ static void gelic_net_get_wol(struct net_device *netdev,
+-			      struct ethtool_wolinfo *wol)
++	struct ethtool_wolinfo *wol)
+ {
+-	if (0 <= ps3_compare_firmware_version(2, 2, 0))
++	if (0 <= ps3_compare_firmware_version(2, 2, 0)) {
+ 		wol->supported = WAKE_MAGIC;
+-	else
++	} else {
+ 		wol->supported = 0;
++	}
+ 
+ 	wol->wolopts = ps3_sys_manager_get_wol() ? wol->supported : 0;
+ 	memset(&wol->sopass, 0, sizeof(wol->sopass));
+ }
++
+ static int gelic_net_set_wol(struct net_device *netdev,
+-			     struct ethtool_wolinfo *wol)
++	struct ethtool_wolinfo *wol)
+ {
++	struct gelic_card *card = netdev_card(netdev);
++	struct device *dev = ctodev(card);
+ 	int status;
+-	struct gelic_card *card;
+ 	u64 v1, v2;
+ 
+ 	if (ps3_compare_firmware_version(2, 2, 0) < 0 ||
+-	    !capable(CAP_NET_ADMIN))
++		!capable(CAP_NET_ADMIN)) {
+ 		return -EPERM;
++	}
+ 
+-	if (wol->wolopts & ~WAKE_MAGIC)
++	if (wol->wolopts & ~WAKE_MAGIC) {
+ 		return -EINVAL;
++	}
+ 
+-	card = netdev_card(netdev);
+ 	if (wol->wolopts & WAKE_MAGIC) {
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_SET_WOL,
+-					 GELIC_LV1_WOL_MAGIC_PACKET,
+-					 0, GELIC_LV1_WOL_MP_ENABLE,
+-					 &v1, &v2);
++			GELIC_LV1_SET_WOL, GELIC_LV1_WOL_MAGIC_PACKET, 0,
++			GELIC_LV1_WOL_MP_ENABLE, &v1, &v2);
++
+ 		if (status) {
+-			pr_info("%s: enabling WOL failed %d\n", __func__,
+-				status);
++			dev_dbg(dev, "%s:%d: enabling WOL failed: %d\n",
++				__func__, __LINE__, status);
+ 			status = -EIO;
+ 			goto done;
+ 		}
++
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_SET_WOL,
+-					 GELIC_LV1_WOL_ADD_MATCH_ADDR,
+-					 0, GELIC_LV1_WOL_MATCH_ALL,
+-					 &v1, &v2);
+-		if (!status)
++			GELIC_LV1_SET_WOL, GELIC_LV1_WOL_ADD_MATCH_ADDR, 0,
++			GELIC_LV1_WOL_MATCH_ALL, &v1, &v2);
++
++		if (!status) {
+ 			ps3_sys_manager_set_wol(1);
+-		else {
+-			pr_info("%s: enabling WOL filter failed %d\n",
+-				__func__, status);
++		} else {
++			dev_dbg(dev, "%s:%d: Enabling WOL filter failed: %d\n",
++				__func__, __LINE__, status);
+ 			status = -EIO;
+ 		}
+ 	} else {
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_SET_WOL,
+-					 GELIC_LV1_WOL_MAGIC_PACKET,
+-					 0, GELIC_LV1_WOL_MP_DISABLE,
+-					 &v1, &v2);
++			GELIC_LV1_SET_WOL, GELIC_LV1_WOL_MAGIC_PACKET, 0,
++			GELIC_LV1_WOL_MP_DISABLE, &v1, &v2);
++
+ 		if (status) {
+-			pr_info("%s: disabling WOL failed %d\n", __func__,
+-				status);
++			dev_dbg(dev, "%s:%d: Disabling WOL failed: %d\n",
++				__func__, __LINE__, status);
+ 			status = -EIO;
+ 			goto done;
+ 		}
++
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_SET_WOL,
+-					 GELIC_LV1_WOL_DELETE_MATCH_ADDR,
+-					 0, GELIC_LV1_WOL_MATCH_ALL,
+-					 &v1, &v2);
++			GELIC_LV1_SET_WOL, GELIC_LV1_WOL_DELETE_MATCH_ADDR, 0,
++			GELIC_LV1_WOL_MATCH_ALL, &v1, &v2);
++
+ 		if (!status)
+ 			ps3_sys_manager_set_wol(0);
+ 		else {
+-			pr_info("%s: removing WOL filter failed %d\n",
+-				__func__, status);
++			dev_dbg(dev, "%s:%d: Removing WOL filter failed: %d\n",
++				__func__, __LINE__, status);
+ 			status = -EIO;
+ 		}
+ 	}
+@@ -1445,6 +1463,11 @@ static const struct ethtool_ops gelic_ether_ethtool_ops = {
+ 	.set_link_ksettings = gelic_ether_set_link_ksettings,
+ };
+ 
++static struct gelic_card *gelic_work_to_card(struct work_struct *work)
++{
++	return container_of(work, struct gelic_card, tx_timeout_task);
++}
++
+ /**
+  * gelic_net_tx_timeout_task - task scheduled by the watchdog timeout
+  * function (to be called not under interrupt status)
+@@ -1454,14 +1477,15 @@ static const struct ethtool_ops gelic_ether_ethtool_ops = {
+  */
+ static void gelic_net_tx_timeout_task(struct work_struct *work)
+ {
+-	struct gelic_card *card =
+-		container_of(work, struct gelic_card, tx_timeout_task);
++	struct gelic_card *card = gelic_work_to_card(work);
+ 	struct net_device *netdev = card->netdev[GELIC_PORT_ETHERNET_0];
++	struct device *dev = ctodev(card);
+ 
+-	dev_info(ctodev(card), "%s:Timed out. Restarting...\n", __func__);
++	dev_info(dev, "%s:%d: Timed out. Restarting...\n", __func__, __LINE__);
+ 
+-	if (!(netdev->flags & IFF_UP))
++	if (!(netdev->flags & IFF_UP)) {
+ 		goto out;
++	}
+ 
+ 	netif_device_detach(netdev);
+ 	gelic_net_stop(netdev);
+@@ -1486,10 +1510,12 @@ void gelic_net_tx_timeout(struct net_device *netdev, unsigned int txqueue)
+ 
+ 	card = netdev_card(netdev);
+ 	atomic_inc(&card->tx_timeout_task_counter);
+-	if (netdev->flags & IFF_UP)
++
++	if (netdev->flags & IFF_UP) {
+ 		schedule_work(&card->tx_timeout_task);
+-	else
++	} else {
+ 		atomic_dec(&card->tx_timeout_task_counter);
++	}
+ }
+ 
+ static const struct net_device_ops gelic_netdevice_ops = {
+@@ -1513,7 +1539,7 @@ static const struct net_device_ops gelic_netdevice_ops = {
+  * fills out function pointers in the net_device structure
+  */
+ static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
+-					 struct napi_struct *napi)
++	struct napi_struct *napi)
+ {
+ 	netdev->watchdog_timeo = GELIC_NET_WATCHDOG_TIMEOUT;
+ 	/* NAPI */
+@@ -1534,25 +1560,28 @@ static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
+  **/
+ int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
+ {
++	struct device *dev = ctodev(card);
+ 	int status;
+ 	u64 v1, v2;
+ 
+ 	netdev->hw_features = NETIF_F_IP_CSUM | NETIF_F_RXCSUM;
+-
+ 	netdev->features = NETIF_F_IP_CSUM;
+-	if (GELIC_CARD_RX_CSUM_DEFAULT)
++
++	if (GELIC_CARD_RX_CSUM_DEFAULT) {
+ 		netdev->features |= NETIF_F_RXCSUM;
++	}
+ 
+ 	status = lv1_net_control(bus_id(card), dev_id(card),
+-				 GELIC_LV1_GET_MAC_ADDRESS,
+-				 0, 0, 0, &v1, &v2);
++		GELIC_LV1_GET_MAC_ADDRESS, 0, 0, 0, &v1, &v2);
++
+ 	v1 <<= 16;
++
+ 	if (status || !is_valid_ether_addr((u8 *)&v1)) {
+-		dev_info(ctodev(card),
+-			 "%s:lv1_net_control GET_MAC_ADDR failed %d\n",
+-			 __func__, status);
++		dev_dbg(dev, "%s:%d: lv1_net_control GET_MAC_ADDR failed: %d\n",
++				__func__, __LINE__, status);
+ 		return -EINVAL;
+ 	}
++
+ 	memcpy(netdev->dev_addr, &v1, ETH_ALEN);
+ 
+ 	if (card->vlan_required) {
+@@ -1569,13 +1598,15 @@ int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
+ 	netdev->max_mtu = GELIC_NET_MAX_MTU;
+ 
+ 	status = register_netdev(netdev);
++
+ 	if (status) {
+-		dev_err(ctodev(card), "%s:Couldn't register %s %d\n",
+-			__func__, netdev->name, status);
++		dev_err(dev, "%s:%d: Couldn't register %s: %d\n", __func__,
++			__LINE__, netdev->name, status);
+ 		return status;
+ 	}
+-	dev_info(ctodev(card), "%s: MAC addr %pM\n",
+-		 netdev->name, netdev->dev_addr);
++
++	dev_info(dev, "%s:%d: %s MAC addr %pxM\n", __func__, __LINE__,
++		netdev->name, netdev->dev_addr);
+ 
+ 	return 0;
+ }
+@@ -1600,34 +1631,33 @@ static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
+ 	 */
+ 	BUILD_BUG_ON(offsetof(struct gelic_card, irq_status) % 8);
+ 	BUILD_BUG_ON(offsetof(struct gelic_card, descr) % 32);
+-	alloc_size =
+-		sizeof(struct gelic_card) +
++
++	alloc_size = sizeof(struct gelic_card) +
+ 		sizeof(struct gelic_descr) * GELIC_NET_RX_DESCRIPTORS +
+ 		sizeof(struct gelic_descr) * GELIC_NET_TX_DESCRIPTORS +
+ 		GELIC_ALIGN - 1;
+ 
+ 	p  = kzalloc(alloc_size, GFP_KERNEL);
+-	if (!p)
++
++	if (!p) {
+ 		return NULL;
++	}
++
+ 	card = PTR_ALIGN(p, GELIC_ALIGN);
+ 	card->unalign = p;
+ 
+-	/*
+-	 * alloc netdev
+-	 */
+ 	*netdev = alloc_etherdev(sizeof(struct gelic_port));
++
+ 	if (!*netdev) {
+ 		kfree(card->unalign);
+ 		return NULL;
+ 	}
+-	port = netdev_priv(*netdev);
+ 
+-	/* gelic_port */
++	port = netdev_priv(*netdev);
+ 	port->netdev = *netdev;
+ 	port->card = card;
+ 	port->type = GELIC_PORT_ETHERNET_0;
+ 
+-	/* gelic_card */
+ 	card->netdev[GELIC_PORT_ETHERNET_0] = *netdev;
+ 
+ 	INIT_WORK(&card->tx_timeout_task, gelic_net_tx_timeout_task);
+@@ -1641,13 +1671,15 @@ static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
+ 
+ static void gelic_card_get_vlan_info(struct gelic_card *card)
+ {
++	struct device *dev = ctodev(card);
++	unsigned int i;
+ 	u64 v1, v2;
+ 	int status;
+-	unsigned int i;
+-	struct {
++	struct vlan_id {
+ 		int tx;
+ 		int rx;
+-	} vlan_id_ix[2] = {
++	};
++	struct vlan_id vlan_id_ix[2] = {
+ 		[GELIC_PORT_ETHERNET_0] = {
+ 			.tx = GELIC_LV1_VLAN_TX_ETHERNET_0,
+ 			.rx = GELIC_LV1_VLAN_RX_ETHERNET_0
+@@ -1661,38 +1693,44 @@ static void gelic_card_get_vlan_info(struct gelic_card *card)
+ 	for (i = 0; i < ARRAY_SIZE(vlan_id_ix); i++) {
+ 		/* tx tag */
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_GET_VLAN_ID,
+-					 vlan_id_ix[i].tx,
+-					 0, 0, &v1, &v2);
++			GELIC_LV1_GET_VLAN_ID,	vlan_id_ix[i].tx, 0, 0, &v1,
++			&v2);
++
+ 		if (status || !v1) {
+-			if (status != LV1_NO_ENTRY)
+-				dev_dbg(ctodev(card),
+-					"get vlan id for tx(%d) failed(%d)\n",
+-					vlan_id_ix[i].tx, status);
++			if (status != LV1_NO_ENTRY) {
++				dev_dbg(dev,
++					"%s:%d: Get vlan id for tx(%d) failed: %d\n",
++					__func__, __LINE__, vlan_id_ix[i].tx,
++					status);
++			}
+ 			card->vlan[i].tx = 0;
+ 			card->vlan[i].rx = 0;
+ 			continue;
+ 		}
++
+ 		card->vlan[i].tx = (u16)v1;
+ 
+ 		/* rx tag */
+ 		status = lv1_net_control(bus_id(card), dev_id(card),
+-					 GELIC_LV1_GET_VLAN_ID,
+-					 vlan_id_ix[i].rx,
+-					 0, 0, &v1, &v2);
++			GELIC_LV1_GET_VLAN_ID, vlan_id_ix[i].rx, 0, 0, &v1,
++			&v2);
++
+ 		if (status || !v1) {
+-			if (status != LV1_NO_ENTRY)
+-				dev_info(ctodev(card),
+-					 "get vlan id for rx(%d) failed(%d)\n",
+-					 vlan_id_ix[i].rx, status);
++			if (status != LV1_NO_ENTRY) {
++				dev_dbg(dev,
++					"%s:%d: Get vlan id for rx(%d) failed: %d\n",
++					__func__, __LINE__, vlan_id_ix[i].rx,
++					status);
++			}
+ 			card->vlan[i].tx = 0;
+ 			card->vlan[i].rx = 0;
+ 			continue;
+ 		}
++
+ 		card->vlan[i].rx = (u16)v1;
+ 
+-		dev_dbg(ctodev(card), "vlan_id[%d] tx=%02x rx=%02x\n",
+-			i, card->vlan[i].tx, card->vlan[i].rx);
++		dev_dbg(dev, "%s:%d: vlan_id[%d] tx=%02x rx=%02x\n", __func__,
++			__LINE__, i, card->vlan[i].tx, card->vlan[i].rx);
+ 	}
+ 
+ 	if (card->vlan[GELIC_PORT_ETHERNET_0].tx) {
+@@ -1707,9 +1745,10 @@ static void gelic_card_get_vlan_info(struct gelic_card *card)
+ 		card->vlan[GELIC_PORT_WIRELESS].rx = 0;
+ 	}
+ 
+-	dev_info(ctodev(card), "internal vlan %s\n",
+-		 card->vlan_required? "enabled" : "disabled");
++	dev_dbg(dev, "%s:%d: internal vlan %s\n", __func__, __LINE__,
++		card->vlan_required? "enabled" : "disabled");
+ }
++
+ /*
+  * ps3_gelic_driver_probe - add a device to the control of this driver
+  */
+@@ -1872,26 +1911,25 @@ static int ps3_gelic_driver_probe(struct ps3_system_bus_device *sb_dev)
+  * ps3_gelic_driver_remove - remove a device from the control of this driver
+  */
+ 
+-static void ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
++static void ps3_gelic_driver_remove(struct ps3_system_bus_device *sb_dev)
+ {
+-	struct gelic_card *card = ps3_system_bus_get_drvdata(dev);
++	struct gelic_card *card = ps3_system_bus_get_drvdata(sb_dev);
++	struct device *dev = &sb_dev->core;
+ 	struct net_device *netdev0;
+-	pr_debug("%s: called\n", __func__);
+ 
+-	/* set auto-negotiation */
++	dev_dbg(dev, "%s:%d: >\n", __func__, __LINE__);
++
+ 	gelic_card_set_link_mode(card, GELIC_LV1_ETHER_AUTO_NEG);
+ 
+ #ifdef CONFIG_GELIC_WIRELESS
+ 	gelic_wl_driver_remove(card);
+ #endif
+-	/* stop interrupt */
++
+ 	gelic_card_set_irq_mask(card, 0);
+ 
+-	/* turn off DMA, force end */
+ 	gelic_card_disable_rxdmac(card);
+ 	gelic_card_disable_txdmac(card);
+ 
+-	/* release chains */
+ 	gelic_card_release_tx_chain(card, 1);
+ 	gelic_card_release_rx_chain(card);
+ 
+@@ -1899,28 +1937,28 @@ static void ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
+ 	gelic_card_free_chain(card, card->rx_top);
+ 
+ 	netdev0 = card->netdev[GELIC_PORT_ETHERNET_0];
+-	/* disconnect event port */
++
+ 	free_irq(card->irq, card);
+ 	netdev0->irq = 0;
+ 	ps3_sb_event_receive_port_destroy(card->dev, card->irq);
+ 
+ 	wait_event(card->waitq,
+-		   atomic_read(&card->tx_timeout_task_counter) == 0);
++		atomic_read(&card->tx_timeout_task_counter) == 0);
+ 
+ 	lv1_net_set_interrupt_status_indicator(bus_id(card), dev_id(card),
+-					       0 , 0);
++		0 , 0);
+ 
+ 	unregister_netdev(netdev0);
+ 	kfree(netdev_card(netdev0)->unalign);
+ 	free_netdev(netdev0);
+ 
+-	ps3_system_bus_set_drvdata(dev, NULL);
++	ps3_system_bus_set_drvdata(sb_dev, NULL);
+ 
+-	ps3_dma_region_free(dev->d_region);
++	ps3_dma_region_free(sb_dev->d_region);
+ 
+-	ps3_close_hv_device(dev);
++	ps3_close_hv_device(sb_dev);
+ 
+-	pr_debug("%s: done\n", __func__);
++	dev_dbg(dev, "%s:%d: <\n", __func__, __LINE__);
+ }
+ 
+ static struct ps3_system_bus_driver ps3_gelic_driver = {
+@@ -1932,14 +1970,14 @@ static struct ps3_system_bus_driver ps3_gelic_driver = {
+ 	.core.owner = THIS_MODULE,
+ };
+ 
+-static int __init ps3_gelic_driver_init (void)
++static int __init ps3_gelic_driver_init(void)
+ {
+ 	return firmware_has_feature(FW_FEATURE_PS3_LV1)
+ 		? ps3_system_bus_driver_register(&ps3_gelic_driver)
+ 		: -ENODEV;
+ }
+ 
+-static void __exit ps3_gelic_driver_exit (void)
++static void __exit ps3_gelic_driver_exit(void)
+ {
+ 	ps3_system_bus_driver_unregister(&ps3_gelic_driver);
+ }
+@@ -1948,4 +1986,3 @@ module_init(ps3_gelic_driver_init);
+ module_exit(ps3_gelic_driver_exit);
+ 
+ MODULE_ALIAS(PS3_MODULE_ALIAS_GELIC);
+-
+-- 
+2.25.1
 
-> It's maybe best to compare this aspect to kernel modules in the sense that
-> you have an application that loads it into the kernel (insmod, etc, where
-> you could also enforce lockdown signature check), but after that, they can
-> be managed by other entities as well (implicitly refcounted from kernel,
-> removed by other applications, etc).
-
-Well, I guess we could consider BPF programs as out-of-tree kernel
-modules that potentially do very odd and dangerous things, e.g.
-performing access control checks *inside* access control checks ...
-but yeah, I get your point at a basic level, I just think that
-comparing BPF programs to kernel modules is a not-so-great comparison
-in general.
-
-> My understanding of the lockdown settings are that users have options
-> to select/enforce a lockdown level of CONFIG_LOCK_DOWN_KERNEL_FORCE_{INTEGRITY,
-> CONFIDENTIALITY} at compilation time, they have a lockdown={integrity|
-> confidentiality} boot-time parameter, /sys/kernel/security/lockdown,
-> and then more fine-grained policy via 59438b46471a ("security,lockdown,selinux:
-> implement SELinux lockdown"). Once you have set a global policy level,
-> you cannot revert back to a less strict mode.
-
-I don't recall there being anything in the SELinux lockdown support
-that prevents a newly loaded policy from allowing a change in the
-lockdown level, either stricter or more permissive, for a given
-domain.  Looking quickly at the code, that still seems to be the case.
-
-The SELinux lockdown access controls function independently of the
-global build and runtime lockdown configuration.
-
-> So the SELinux policy is
-> specifically tied around tasks to further restrict applications in respect
-> to the global policy.
-
-As a reminder, there is no guarantee that both the SELinux and
-lockdown LSM are both loaded and active at runtime, it is possible
-that only SELinux is active.  If SELinux is the only LSM enforcing
-lockdown access controls, there is no global lockdown setting, it is
-determined per-domain.
-
-> I presume that would mean for those users that majority
-> of tasks have the confidentiality option set via SELinux with just a few
-> necessary using the integrity global policy. So overall the enforcing
-> option when BPF program is loaded is the only really sensible option to
-> me given only there we have the valid current task where such policy can
-> be enforced.
-
---
-paul moore
-www.paul-moore.com
