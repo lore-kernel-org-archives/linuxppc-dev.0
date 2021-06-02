@@ -2,68 +2,73 @@ Return-Path: <SRS0=7LrA=K4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18489C47083
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2A83C47083
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3375601FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3375601FF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 55A41610CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 07:08:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55A41610CB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fw0VL5w6vz3c2Y
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 17:08:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fw0Vv387Fz3gSl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 17:08:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=nF5H5Xm7;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=nselector3 header.b=jDC9TnR4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+e38fb55258da4e18a096+6492+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=nF5H5Xm7; 
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=nselector3 header.b=jDC9TnR4; 
  dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fw0Dv5nv6z3c4c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 16:56:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=7GHnP6DNZGlKFwjbxdBpad0uFlCxBKJH9Xsnx8ec7ac=; b=nF5H5Xm7fe4zGXbHdq72l4Rnzy
- kg+w8MA3+xaOntMSOadwazIKALvfRRzCTRy9MFxfEVrh2sKEgQoBbgUOGRaieuAuAxc4ABeXBS8HN
- SQtDG1OQjVRLervqQcLcyPmZ3DOCzf6Iza9QUOxa7eEES0n40jma6ts5XDhrZorWgE/EAulN1GwbV
- Z5MnbQ9Pt4ZuIesxtmUE7CYUNs9IpOi40S5W3ULs7jy5knAcpmh8yHUS3I5I9+QDcpjjk0bMn7Cxn
- tMuGXllg4mbf6SO7+IH+aPv1V5kGTRswN64kZiIdU1FDVemfSZMUYCMTkt4iBJ9J6ovY+/RiKuAOr
- KKtQYNhA==;
-Received: from shol69.static.otenet.gr ([83.235.170.67] helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1loKnN-0026aZ-Dz; Wed, 02 Jun 2021 06:56:05 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 29/30] ataflop: use blk_mq_alloc_disk and blk_cleanup_disk
-Date: Wed,  2 Jun 2021 09:53:44 +0300
-Message-Id: <20210602065345.355274-30-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210602065345.355274-1-hch@lst.de>
-References: <20210602065345.355274-1-hch@lst.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fw0K12TFdz30CS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jun 2021 17:00:02 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 746AE1A1E9D;
+ Wed,  2 Jun 2021 08:59:57 +0200 (CEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 inva020.eu-rdc02.nxp.com 746AE1A1E9D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com;
+ s=nselector3; t=1622617197;
+ bh=SWgLA9X2K6gN6TIyMw7jN/rBkJDvoZSmZ7cEH5X1U7M=;
+ h=From:To:Subject:Date:From;
+ b=jDC9TnR4i6xgH8zwaCPLpZl13UR9d0C4rmME9PtLbcPebgyN2/Z16g8lXrWgSZBVr
+ QmTMG8LZ2Txqub8jwsN8LKB5Bn9BMi6psMj5ujnW2eVCJ4QZTIdk9GXYcnUHJiwrwf
+ sKQp7FuPWdo7Ow2NzZ1jN+5SGQ3yZuxfjZkEdLFJx8ERmDV+QA7x/4lFge6td/Gl90
+ Dh53wioGhYD1xeq1o/WyZSmwfm49NqKtCGtsQF62fTNa4MezD6XYbqJGvdlhBANjtc
+ X1nFMI2IQ7/fKFv3O0Dj6ai5C1cYTFYS9mKqTHaVCLJ6F2eQg6xiQL0mHpzN8hRDyL
+ Ow7GAcXDkaxBw==
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1050D1A1E8A;
+ Wed,  2 Jun 2021 08:59:53 +0200 (CEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 inva020.eu-rdc02.nxp.com 1050D1A1E8A
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 7933B4031D;
+ Wed,  2 Jun 2021 14:59:47 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl-asoc-card: change dev_err to dev_dbg for defer probe
+Date: Wed,  2 Jun 2021 14:42:12 +0800
+Message-Id: <1622616132-10391-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,66 +80,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Justin Sanders <justin@coraid.com>, Vignesh Raghavendra <vigneshr@ti.com>,
- Mike Snitzer <snitzer@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- Jason Wang <jasowang@redhat.com>, virtualization@lists.linux-foundation.org,
- dm-devel@redhat.com, "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
- Miquel Raynal <miquel.raynal@bootlin.com>, Jack Wang <jinpu.wang@ionos.com>,
- Tim Waugh <tim@cyberelk.net>, linux-s390@vger.kernel.org,
- Alex Dubov <oakad@yahoo.com>, Richard Weinberger <richard@nod.at>,
- Christian Borntraeger <borntraeger@de.ibm.com>, xen-devel@lists.xenproject.org,
- Ilya Dryomov <idryomov@gmail.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Heiko Carstens <hca@linux.ibm.com>, Josef Bacik <josef@toxicpanda.com>,
- Denis Efremov <efremov@linux.com>, nbd@other.debian.org,
- linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
- Maxim Levitsky <maximlevitsky@gmail.com>, Geoff Levand <geoff@infradead.org>,
- linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use blk_mq_alloc_disk and blk_cleanup_disk to simplify the gendisk and
-request_queue allocation.
+Don't need to print error message for defer probe
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- drivers/block/ataflop.c | 16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
-index d601e49f80e0..a093644ac39f 100644
---- a/drivers/block/ataflop.c
-+++ b/drivers/block/ataflop.c
-@@ -1968,22 +1968,14 @@ static const struct blk_mq_ops ataflop_mq_ops = {
- static int ataflop_alloc_disk(unsigned int drive, unsigned int type)
- {
- 	struct gendisk *disk;
--	int ret;
--
--	disk = alloc_disk(1);
--	if (!disk)
--		return -ENOMEM;
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 4f55b316cf0f..b40ba910ae9d 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -709,7 +709,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	of_node_put(framemaster);
  
--	disk->queue = blk_mq_init_queue(&unit[drive].tag_set);
--	if (IS_ERR(disk->queue)) {
--		ret = PTR_ERR(disk->queue);
--		disk->queue = NULL;
--		put_disk(disk);
--		return ret;
--	}
-+	disk = blk_mq_alloc_disk(&unit[drive].tag_set, NULL);
-+	if (IS_ERR(disk))
-+		return PTR_ERR(disk);
- 
- 	disk->major = FLOPPY_MAJOR;
- 	disk->first_minor = drive + (type << 2);
-+	disk->minors = 1;
- 	sprintf(disk->disk_name, "fd%d", drive);
- 	disk->fops = &floppy_fops;
- 	disk->events = DISK_EVENT_MEDIA_CHANGE;
+ 	if (!fsl_asoc_card_is_ac97(priv) && !codec_dev) {
+-		dev_err(&pdev->dev, "failed to find codec device\n");
++		dev_dbg(&pdev->dev, "failed to find codec device\n");
+ 		ret = -EPROBE_DEFER;
+ 		goto asrc_fail;
+ 	}
 -- 
-2.30.2
+2.27.0
 
