@@ -2,52 +2,88 @@ Return-Path: <SRS0=7LrA=K4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4604C47083
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 14:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17EB4C4708F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 15:14:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E11B0613BF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 14:10:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E11B0613BF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 48FBB61075
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jun 2021 15:14:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48FBB61075
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fw9sX5CYWz308n
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 00:10:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=/zfd=k4=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FwCHK4Vnvz30CS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 01:14:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=igpuWRlb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=paul-moore.com
+ (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com;
+ envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
+ header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=igpuWRlb; dkim-atps=neutral
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com
+ [IPv6:2a00:1450:4864:20::630])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fw9s86zcdz2yRX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jun 2021 00:10:04 +1000 (AEST)
-Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id F3C5C613D8;
- Wed,  2 Jun 2021 14:10:00 +0000 (UTC)
-Date: Wed, 2 Jun 2021 10:09:59 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 1/6] trace/stack: Move code to save the stack trace
- into a separate function
-Message-ID: <20210602100959.185264e3@oasis.local.home>
-In-Reply-To: <1622626530.3j8u9fhp7h.naveen@linux.ibm.com>
-References: <cover.1621577151.git.naveen.n.rao@linux.vnet.ibm.com>
- <6a8b68f8bd64f8c16d97ef943534c639781e7f77.1621577151.git.naveen.n.rao@linux.vnet.ibm.com>
- <20210601112824.29c5f168@oasis.local.home>
- <1622626530.3j8u9fhp7h.naveen@linux.ibm.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FwCGj6z4Gz2xZ3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jun 2021 01:13:47 +1000 (AEST)
+Received: by mail-ej1-x630.google.com with SMTP id c10so4340720eja.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jun 2021 08:13:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=+J7KF4ks9US2bAffAcsOJQKFyjMfB4gR4lgzzMSLNYI=;
+ b=igpuWRlb73xmxahkSHaMuUjyZe1AZUKePohe+4Fi/InrT6JxVOc8e91F5osWhaSLgX
+ E84EkXnpmXUZMoleQY1TbZkS7zMEZN4+HXy889QAxq82OaDUCta8mDCg+CDFR0S68+/f
+ DwY+xH9cCE0L/2BTW7CmtzXLbJ0WcObPFs2rxeOAsHButkL/MPV4qN+JjL3+3vK+FmR2
+ Tme3hvmLA2IKH5aKNG7E7QJEpZrATS6Njz5FrIOFpBzua8jgqkDvKqiu000m3hQ5f23y
+ nyETPrIfZtVbKPopwrFxW+VhJEa29oaIO9TR9M3v2rjZnVsDs06ghXOLkpMzEgh7PvwR
+ gZgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=+J7KF4ks9US2bAffAcsOJQKFyjMfB4gR4lgzzMSLNYI=;
+ b=cfgfMSeG1k627Wmte3n1Kll3BFj7tw6eel/Sqt0fjTMOk3ep9Eo/tiuyzYOzRiTE+M
+ gy2g7na8+/IhEqGohfY+dgf7i1SKtgaexxNna2B2s7+xieQQ8ekeqhr0hz6NbDm7ee4Q
+ S0X/UM2AhTTYwa0afK/2MoC4AT7OCG7xJGl3tOi4lgqJ/8e+H2CE8yLq2NviZD0E8i6D
+ vUzzS3HitpgBBo5ZpNFNcb70iI9/6ZNzEScqJyT0nH0rQjj0FJGmfhDWzp8KGeI8Rg7V
+ u8NeP04ForUe3zmPZRh1BUFZRnH4fvSyYCN6ZQ/yOVpGJ3I2DfF/XOoYG+9LXaX5h2eg
+ 1CUQ==
+X-Gm-Message-State: AOAM532Mjv5ifttpeI1Bp83GwZG1EaW61eHa7AW/LoN2uN+RSerfljpz
+ SpelOh0QACmmCfD1M4K3BeSJVbTfOh97pQ71+Nkr
+X-Google-Smtp-Source: ABdhPJwFomdKMYZxRrY9ExJPtl6HzjR84K/gicCWfDx/868bcJc4eB2tlYYJNUFzU5Q4QC96WaC2lUPEqPL7r6AtsDo=
+X-Received: by 2002:a17:906:2c54:: with SMTP id
+ f20mr17365763ejh.91.1622646818352; 
+ Wed, 02 Jun 2021 08:13:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20210517092006.803332-1-omosnace@redhat.com>
+ <CAHC9VhTasra0tU=bKwVqAwLRYaC+hYakirRz0Mn5jbVMuDkwrA@mail.gmail.com>
+ <01135120-8bf7-df2e-cff0-1d73f1f841c3@iogearbox.net>
+ <CAHC9VhR-kYmMA8gsqkiL5=poN9FoL-uCyx1YOLCoG2hRiUBYug@mail.gmail.com>
+ <c7c2d7e1-e253-dce0-d35c-392192e4926e@iogearbox.net>
+ <CAHC9VhS1XRZjKcTFgH1+n5uA-CeT+9BeSP5jvT2+RE5ougLpUg@mail.gmail.com>
+ <2e541bdc-ae21-9a07-7ac7-6c6a4dda09e8@iogearbox.net>
+ <CAHC9VhT464vr9sWxqY3PRB4DAccz=LvRMLgWBsSViWMR0JJvOQ@mail.gmail.com>
+ <3ca181e3-df32-9ae0-12c6-efb899b7ce7a@iogearbox.net>
+In-Reply-To: <3ca181e3-df32-9ae0-12c6-efb899b7ce7a@iogearbox.net>
+From: Paul Moore <paul@paul-moore.com>
+Date: Wed, 2 Jun 2021 11:13:27 -0400
+Message-ID: <CAHC9VhTuPnPs1wMTmoGUZ4fvyy-es9QJpE7O_yTs2JKos4fgbw@mail.gmail.com>
+Subject: Re: [PATCH v2] lockdown,selinux: avoid bogus SELinux lockdown
+ permission checks
+To: Daniel Borkmann <daniel@iogearbox.net>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,23 +95,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Torsten Duwe <duwe@suse.de>, Michal Suchanek <msuchanek@suse.de>,
+Cc: jolsa@redhat.com, selinux@vger.kernel.org, netdev@vger.kernel.org,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Ondrej Mosnacek <omosnace@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
+ linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 02 Jun 2021 16:05:18 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Wed, Jun 2, 2021 at 8:40 AM Daniel Borkmann <daniel@iogearbox.net> wrote:
+> On 6/1/21 10:47 PM, Paul Moore wrote:
+> > The thing I'm worried about would be the case where a LSM policy
+> > change requires that an existing BPF program be removed or disabled.
+> > I'm guessing based on the refcounting that there is not presently a
+> > clean way to remove a BPF program from the system, but is this
+> > something we could resolve?  If we can't safely remove a BPF program
+> > from the system, can we replace/swap it with an empty/NULL BPF
+> > program?
+>
+> Removing progs would somehow mean destroying those references from an
+> async event and then /safely/ guaranteeing that nothing is accessing
+> them anymore. But then if policy changes once more where they would
+> be allowed again we would need to revert back to the original state,
+> which brings us to your replace/swap question with an empty/null prog.
+> It's not feasible either, because there are different BPF program types
+> and they can have different return code semantics that lead to subsequent
+> actions. If we were to replace them with an empty/NULL program, then
+> essentially this will get us into an undefined system state given it's
+> unclear what should be a default policy for each program type, etc.
+> Just to pick one simple example, outside of tracing, that comes to mind:
+> say, you attached a program with tc to a given device ingress hook. That
+> program implements firewalling functionality, and potentially deep down
+> in that program there is functionality to record/sample packets along
+> with some meta data. Part of what is exported to the ring buffer to the
+> user space reader may be a struct net_device field that is otherwise not
+> available (or at least not yet), hence it's probe-read with mentioned
+> helpers. If you were now to change the SELinux policy for that tc loader
+> application, and therefore replace/swap the progs in the kernel that were
+> loaded with it (given tc's lockdown policy was recorded in their sec blob)
+> with an empty/NULL program, then either you say allow-all or drop-all,
+> but either way, you break the firewalling functionality completely by
+> locking yourself out of the machine or letting everything through. There
+> is no sane way where we could reason about the context/internals of a
+> given program where it would be safe to replace with a simple empty/NULL
+> prog.
 
-> It seems to be working fine otherwise. The one limitation though is down 
-> to how ftrace works on powerpc -- the mcount call is before a function 
-> sets up its own stackframe. Due to this, we won't ever be able to 
-> account for the stackframe from a leaf function -- but, that's a fairly 
-> minor limitation.
+Help me out here, is your answer that the access check can only be
+done at BPF program load time?  That isn't really a solution from a
+SELinux perspective as far as I'm concerned.
 
-And this is true for x86 as well because it no longer uses mcount, but
-uses fentry instead (called before stack setup), but I figured there's
-not much we could do about it.
+I understand the ideas I've tossed out aren't practical from a BPF
+perspective, but it would be nice if we could find something that does
+work.  Surely you BPF folks can think of some way to provide a
+runtime, not load time, check?
 
--- Steve
+-- 
+paul moore
+www.paul-moore.com
