@@ -2,88 +2,65 @@ Return-Path: <SRS0=qhKb=K5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34D69C47096
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 05:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA85FC47082
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 05:34:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44B3F613EE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 05:00:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44B3F613EE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DD47A613DE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 05:34:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD47A613DE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FwYc05Rd4z30BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 15:00:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FwZNB5cQJz306N
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 15:34:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=QpYPrtZi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mZ0vFPja;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d;
- helo=mail-pf1-x42d.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=QpYPrtZi; dkim-atps=neutral
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
- [IPv6:2607:f8b0:4864:20::42d])
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=mZ0vFPja; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FwYbS4vlkz2xv7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jun 2021 14:59:32 +1000 (AEST)
-Received: by mail-pf1-x42d.google.com with SMTP id u18so3960039pfk.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jun 2021 21:59:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=wP8kwWHvWPOSW3Kxg0y5i10MeeFhZ5W8gU40UHd6LVk=;
- b=QpYPrtZi34g2iPYCmRMlWxtW9XBnrY+oeGgWWi9RDUIirPnvEWtjlNh3l0UtluNu1t
- IxsfJ03eN2U9wMAMGuc15m9s/NJxsXrIdHijIEjLpO4NtT45PNM/dfgoBq65WzW6oBHg
- EApYdyV+Qw5G6qLvrB4QIevFNzTqWSdQZ0v8bGC3bG3U4Yiqdk05izROlnLlC11EFova
- yy40mAGUb2JUyeG5YXDY9iDaH8EnaPNfu2W4H/Dpwzug1wLjwQH+0UT5NH3Y3Os/LnYM
- D3VP6diqnkr6Fn9kQRV+POUTwOYgU+72PR2dmYzzkl+Ph10QE3FkLiIoR+q+8MV1rXaD
- DuAg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=wP8kwWHvWPOSW3Kxg0y5i10MeeFhZ5W8gU40UHd6LVk=;
- b=cJ61VNtOQYhsFyD+IU95MpaGYBKhS35tuVKR8Atnc6esQ4h605UHNnl+eZv2pdhx66
- NU+ZgTemRY/QgEMiVn1V5gwGnPIBCMfu71xLUy4/K3n55bz1x9OqBvmDknRp6A4WHruR
- eRUApqgjauqFg8xM0Weoj/5eWVCIrxlk80vO4/7haT0zrSEBNQtMXMW+6iHg+NGaWd+a
- DEmCKA+ksxjRWnIuvMnQAJXgx0QmIk1nB3EcCedETYnwCK+VL5T3pM61PAUGqR7ymhTp
- eCtCydgfy0BIoGvJUXGftqd1MFIZ/bL1VL1+LnkqmnyHcZK8b6u4QtpSfrWaDTfsRpGA
- 7tIw==
-X-Gm-Message-State: AOAM533boCQOHG/QR0ToCsUZHDZIht5ErQMLvvPA6h37cd9Cl1cB1ISe
- iwbMzXyJv3pD/IfUGupdDS4=
-X-Google-Smtp-Source: ABdhPJy+ldXCfckWAtAmrnYX3/p5DGgrvukhHO4fWZvH8wTPxP3vHI6u1y15Zp0e1S2Aua1EGX9qOA==
-X-Received: by 2002:a62:51c2:0:b029:2e9:e4c5:2a74 with SMTP id
- f185-20020a6251c20000b02902e9e4c52a74mr15858037pfb.51.1622696369006; 
- Wed, 02 Jun 2021 21:59:29 -0700 (PDT)
-Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
- by smtp.gmail.com with ESMTPSA id q91sm910669pja.50.2021.06.02.21.59.28
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 02 Jun 2021 21:59:28 -0700 (PDT)
-Date: Thu, 03 Jun 2021 14:59:23 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 14/16] crypto/nx: Register and unregister VAS interface
-To: Haren Myneni <haren@linux.ibm.com>, herbert@gondor.apana.org.au,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-References: <8d219c0816133a8643d650709066cf04c9c77322.camel@linux.ibm.com>
- <af17f1cd30b9bbece7e160d78fb83fe5e0e823f5.camel@linux.ibm.com>
-In-Reply-To: <af17f1cd30b9bbece7e160d78fb83fe5e0e823f5.camel@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FwZMj0sZ7z2yj1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jun 2021 15:34:24 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4FwZMX07j4z9s5R;
+ Thu,  3 Jun 2021 15:34:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1622698456;
+ bh=Aib70+D2BrDxRnGaaHyKRV5RMnRcn0NuaIP0L1866oA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=mZ0vFPjaV3/F+sFn68lJ9rBf+VqXX8LAvwd8sHO2UHsW01yEWS7fZFGxpk7Vnx4We
+ 013QQ0RfNTq+9c1nSPGu5WOonR/ibufEz83pGCCbsFPkRCE7hQnxN7mt/Qd4gUuWSR
+ 7O1uTq/pSVbl2KD9ZkSUE/SfH+7tChMuCKMxwK+khZ8FxwsPYJMmFa6OXbbZSK80ts
+ bnDz1CpYFWRnUzOhw1CYxihLEqFQth+gj8E/TmYwA21l/uElM2z4sS7qBwNmpzgeP8
+ fp6LdZI3nQFwDzDvVBfOvLHI23XQSPk19OnE3Gt4kmBUhi4ZDx3XydXl6FdVOj1hV5
+ NO+d7FPbTwb9w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/stacktrace: fix raise_backtrace_ipi() logic
+In-Reply-To: <871r9kyrtk.fsf@linux.ibm.com>
+References: <20210527011550.235443-1-nathanl@linux.ibm.com>
+ <87eedkh6cb.fsf@mpe.ellerman.id.au> <871r9kyrtk.fsf@linux.ibm.com>
+Date: Thu, 03 Jun 2021 15:34:11 +1000
+Message-ID: <878s3rh5po.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Message-Id: <1622696256.om3tqko8hq.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,77 +72,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: npiggin@gmail.com, paulus@samba.org, clg@kaod.org, ldufour@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Haren Myneni's message of May 21, 2021 7:41 pm:
->=20
-> Changes to create /dev/crypto/nx-gzip interface with VAS register
-> and to remove this interface with VAS unregister.
->=20
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Hi Michael,
+>
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>> When smp_send_safe_nmi_ipi() indicates that the target CPU has
+>>> responded to the IPI, skip the remote paca inspection
+>>> fallback. Otherwise both the sending and target CPUs attempt the
+>>> backtrace, usually creating a misleading ("didn't respond to backtrace
+>>> IPI" is wrong) and interleaved mess:
+>>
+>> Thanks for fixing my bugs for me :)
+>>
+>
+> Thanks for your review! I was beginning to think I had missed some
+> subtletly here, thanks for illustrating it.
+>
+> I'll run with your proposed change below for the problem I'm working.
 
-Could you include why the change is done, or what goes wrong without it?
+Thanks. I did test it a bit with the test_lockup module, but some real
+world testing would be good too.
 
-Thanks,
-Nick
-
-> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
-> Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
-> ---
->  drivers/crypto/nx/Kconfig             | 1 +
->  drivers/crypto/nx/nx-common-pseries.c | 9 +++++++++
->  2 files changed, 10 insertions(+)
->=20
-> diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
-> index 23e3d0160e67..2a35e0e785bd 100644
-> --- a/drivers/crypto/nx/Kconfig
-> +++ b/drivers/crypto/nx/Kconfig
-> @@ -29,6 +29,7 @@ if CRYPTO_DEV_NX_COMPRESS
->  config CRYPTO_DEV_NX_COMPRESS_PSERIES
->  	tristate "Compression acceleration support on pSeries platform"
->  	depends on PPC_PSERIES && IBMVIO
-> +	depends on PPC_VAS
->  	default y
->  	help
->  	  Support for PowerPC Nest (NX) compression acceleration. This
-> diff --git a/drivers/crypto/nx/nx-common-pseries.c b/drivers/crypto/nx/nx=
--common-pseries.c
-> index cc8dd3072b8b..9a40fca8a9e6 100644
-> --- a/drivers/crypto/nx/nx-common-pseries.c
-> +++ b/drivers/crypto/nx/nx-common-pseries.c
-> @@ -9,6 +9,7 @@
->   */
-> =20
->  #include <asm/vio.h>
-> +#include <asm/vas.h>
-> =20
->  #include "nx-842.h"
->  #include "nx_csbcpb.h" /* struct nx_csbcpb */
-> @@ -1101,6 +1102,12 @@ static int __init nx842_pseries_init(void)
->  		return ret;
->  	}
-> =20
-> +	ret =3D vas_register_api_pseries(THIS_MODULE, VAS_COP_TYPE_GZIP,
-> +				       "nx-gzip");
-> +
-> +	if (ret)
-> +		pr_err("NX-GZIP is not supported. Returned=3D%d\n", ret);
-> +
->  	return 0;
->  }
-> =20
-> @@ -1111,6 +1118,8 @@ static void __exit nx842_pseries_exit(void)
->  	struct nx842_devdata *old_devdata;
->  	unsigned long flags;
-> =20
-> +	vas_unregister_api_pseries();
-> +
->  	crypto_unregister_alg(&nx842_pseries_alg);
-> =20
->  	spin_lock_irqsave(&devdata_mutex, flags);
-> --=20
-> 2.18.2
->=20
->=20
->=20
+cheers
