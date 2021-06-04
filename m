@@ -2,116 +2,62 @@ Return-Path: <SRS0=yrNn=K6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6831CC4743C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 17:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6310C4743C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 17:48:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 74076613FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 17:24:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74076613FA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 39221613F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 17:48:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39221613F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FxV4S2yhzz303F
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jun 2021 03:24:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FxVcn6PHmz3bth
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jun 2021 03:48:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qfBpg1G7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Iqm0inp9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=qfBpg1G7; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Iqm0inp9; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FxV3v0RLQz2yyt
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jun 2021 03:23:54 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 154HHchW167368; Fri, 4 Jun 2021 13:23:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version : content-transfer-encoding; s=pp1;
- bh=0cE+9vTdeOWpXMMdEs0QoHgCpaz4oeeltpWGj3pS9oY=;
- b=qfBpg1G7a9DUcp23TFT6i1Ykfvq9WGn+09E7sUaEsXm7z8tlQ2FR1fln58um5MRuJGOy
- T7FQKL9phYqN4+PE3REsCwPRLuH8PomBwjI1YpSRobYxtOJkb4hQSn1QCTm03VMHuvdB
- 3E6jntIvSW0Zfg0jb6dHfBgm0dGR3DNI1YJsRsidFPrScXDVOuvtTilFnHuPwaXYIOlI
- 5PYC90GkaiKd7INChfaSGpDoJ6uz8/NwIYRpT6FhDGMVTtuLuJuwVu1Kp5kLuAT+Z484
- KOOYPj3gbmfCTqc9KhEOZxf3cZ16UqKQng4y5chugtlD/mG7nCl35dkT0ixBLMiIHmGw gQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38yrev83d0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 04 Jun 2021 13:23:43 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 154HIIhc171798;
- Fri, 4 Jun 2021 13:23:43 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38yrev83ck-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 04 Jun 2021 13:23:43 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 154HCoiG019774;
- Fri, 4 Jun 2021 17:23:42 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma01dal.us.ibm.com with ESMTP id 38ud8ae672-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 04 Jun 2021 17:23:41 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 154HNfQl24510920
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 4 Jun 2021 17:23:41 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02FCE112062;
- Fri,  4 Jun 2021 17:23:41 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 63D71112066;
- Fri,  4 Jun 2021 17:23:39 +0000 (GMT)
-Received: from sig-9-77-136-17.ibm.com (unknown [9.77.136.17])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri,  4 Jun 2021 17:23:39 +0000 (GMT)
-Message-ID: <86b608e12f35d66a88e29e3bbc9e0cf37979bc36.camel@linux.ibm.com>
-Subject: Re: [PATCH v4 16/16] crypto/nx: Add sysfs interface to export NX
- capabilities
-From: Haren Myneni <haren@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, herbert@gondor.apana.org.au,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 04 Jun 2021 10:23:37 -0700
-In-Reply-To: <87pmx1g83i.fsf@mpe.ellerman.id.au>
-References: <8d219c0816133a8643d650709066cf04c9c77322.camel@linux.ibm.com>
- <35bca44c5a8af7bdffbe03b22fd82713bced8d0e.camel@linux.ibm.com>
- <1622696109.949hlg4tnq.astroid@bobo.none>
- <340144138c53ae83588edcf0b4a5ae1880a01cd0.camel@linux.ibm.com>
- <87pmx1g83i.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.2 (3.36.2-1.fc32) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FxVcJ6CVKz2yXf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jun 2021 03:48:32 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D1B72611CE;
+ Fri,  4 Jun 2021 17:48:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1622828909;
+ bh=itHLj7KgFnb/FecADbuq7I4biuZGdUj1du28UW6T8SI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Iqm0inp9VgNpzeAFuP421rSsgCv0Qhkv5QnQPUkLUJFiTIxp7TFY3QR4OyPttmT96
+ 63UJ1NvLjEWUu6sIeGlZQM4Ted9nVFpDXdWeD/OOk+ONJBJL5Ar0gZ0w9EXx03CeNz
+ 9hxeLBPU+4Vs1Iu13rVy6icMo7fyuPwvCQ+cWk5bEidGKBw04BNS3wfiw4K6ZGCyPX
+ 6cUjTh3kCX/N4K95NY0l8Alu5nPdSl//4dOSMljRD2azPbGNPTGPvDRtwrHFnkFOCZ
+ c64/aftHtK6fT63h1C50fed28UcM2UZbSHegeAkgG/khU8kRyqVyIs14SrPvQtO8GW
+ fslW9h7sjgBEQ==
+Date: Fri, 4 Jun 2021 18:48:18 +0100
+From: Will Deacon <will@kernel.org>
+To: Claire Chang <tientzu@chromium.org>
+Subject: Re: [PATCH v8 00/15] Restricted DMA
+Message-ID: <20210604174818.GC3703@willie-the-truck>
+References: <20210527125845.1852284-1-tientzu@chromium.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 731EFbOIJylECNK2ZMXq3ZvjcyYoqwyM
-X-Proofpoint-ORIG-GUID: bhekDnZbdDsxljwOJrX1dxc1stOhQlNh
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-06-04_11:2021-06-04,
- 2021-06-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 bulkscore=0
- lowpriorityscore=0 clxscore=1015 mlxscore=0 impostorscore=0 suspectscore=0
- spamscore=0 mlxlogscore=999 priorityscore=1501 adultscore=0 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2106040123
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210527125845.1852284-1-tientzu@chromium.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,47 +69,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
+ mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ jxgao@google.com, daniel@ffwll.ch,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, bhelgaas@google.com, boris.ostrovsky@oracle.com,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
+ Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+ tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2021-06-04 at 21:52 +1000, Michael Ellerman wrote:
-> Haren Myneni <haren@linux.ibm.com> writes:
-> > On Thu, 2021-06-03 at 14:57 +1000, Nicholas Piggin wrote:
-> > > Excerpts from Haren Myneni's message of May 21, 2021 7:42 pm:
-> > > > Changes to export the following NXGZIP capabilities through
-> > > > sysfs:
-> > > > 
-> > > > /sys/devices/vio/ibm,compression-v1/NxGzCaps:
-> > > 
-> > > Where's the horrible camel case name coming from? PowerVM?
-> > 
-> > Yes, pHyp provides the capabalities string.
-> > 
-> > Capability Description Descriptor Value Descriptor ascii Value
-> > Overall NX Capabilities 0x4E78204361707320 “Nx Caps ”
-> > NX GZIP Capabilities 0x4E78477A43617073 “NxGzCaps”
+Hi Claire,
+
+On Thu, May 27, 2021 at 08:58:30PM +0800, Claire Chang wrote:
+> This series implements mitigations for lack of DMA access control on
+> systems without an IOMMU, which could result in the DMA accessing the
+> system memory at unexpected times and/or unexpected addresses, possibly
+> leading to data leakage or corruption.
 > 
-> That doesn't mean we have to use that name in sysfs though. In fact
-> we
-> couldn't use the "Nx Caps " name, because it contains spaces.
+> For example, we plan to use the PCI-e bus for Wi-Fi and that PCI-e bus is
+> not behind an IOMMU. As PCI-e, by design, gives the device full access to
+> system memory, a vulnerability in the Wi-Fi firmware could easily escalate
+> to a full system exploit (remote wifi exploits: [1a], [1b] that shows a
+> full chain of exploits; [2], [3]).
 > 
-> And we don't have to squeeze our name into 8 bytes, so it can be less
-> ugly.
+> To mitigate the security concerns, we introduce restricted DMA. Restricted
+> DMA utilizes the existing swiotlb to bounce streaming DMA in and out of a
+> specially allocated region and does memory allocation from the same region.
+> The feature on its own provides a basic level of protection against the DMA
+> overwriting buffer contents at unexpected times. However, to protect
+> against general data leakage and system memory corruption, the system needs
+> to provide a way to restrict the DMA to a predefined memory region (this is
+> usually done at firmware level, e.g. MPU in ATF on some ARM platforms [4]).
 > 
-> Like "nx_gzip_capabilities"?
-
-Thanks for your comments. 
-
-'NX Caps " provides the all available features in the hypervisor (only
-NX GZIP caps is supported right now) and we export information for the
-specific feature via sysfs.
-
-I will change it to "nx_gzip_caps" 
-
-Thanks
-Haren
-
+> [1a] https://googleprojectzero.blogspot.com/2017/04/over-air-exploiting-broadcoms-wi-fi_4.html
+> [1b] https://googleprojectzero.blogspot.com/2017/04/over-air-exploiting-broadcoms-wi-fi_11.html
+> [2] https://blade.tencent.com/en/advisories/qualpwn/
+> [3] https://www.bleepingcomputer.com/news/security/vulnerabilities-found-in-highly-popular-firmware-for-wifi-chips/
+> [4] https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/mediatek/mt8183/drivers/emi_mpu/emi_mpu.c#L132
 > 
-> cheers
+> v8:
+> - Fix reserved-memory.txt and add the reg property in example.
+> - Fix sizeof for of_property_count_elems_of_size in
+>   drivers/of/address.c#of_dma_set_restricted_buffer.
+> - Apply Will's suggestion to try the OF node having DMA configuration in
+>   drivers/of/address.c#of_dma_set_restricted_buffer.
+> - Fix typo in the comment of drivers/of/address.c#of_dma_set_restricted_buffer.
+> - Add error message for PageHighMem in
+>   kernel/dma/swiotlb.c#rmem_swiotlb_device_init and move it to
+>   rmem_swiotlb_setup.
+> - Fix the message string in rmem_swiotlb_setup.
 
+Thanks for the v8. It works for me out of the box on arm64 under KVM, so:
+
+Tested-by: Will Deacon <will@kernel.org>
+
+Note that something seems to have gone wrong with the mail threading, so
+the last 5 patches ended up as a separate thread for me. Probably worth
+posting again with all the patches in one place, if you can.
+
+Cheers,
+
+Will
