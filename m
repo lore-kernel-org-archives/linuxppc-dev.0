@@ -1,117 +1,68 @@
-Return-Path: <SRS0=qhKb=K5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=yrNn=K6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89CE9C47096
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 20:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 022DCC47082
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 00:34:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E71E96108D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jun 2021 20:25:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E71E96108D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 544956140F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 00:34:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 544956140F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fwy8H63dTz308w
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 06:25:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fx3gQ5XxRz30Bw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 10:34:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LIOYT/H8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MTBAZvCi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=LIOYT/H8; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=MTBAZvCi; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fwy7f37J8z2y8Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jun 2021 06:25:18 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 153K3xZ6060043; Thu, 3 Jun 2021 16:25:09 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version : content-transfer-encoding; s=pp1;
- bh=7ZTy10TVkl2nzkd3atwG7H7DcUr3ggbSaJmzOgWJ7zs=;
- b=LIOYT/H8MvzCsFapFqfjsedw+T52RniKcyDWwAjhUsiQUBIZbOqqDJiY58p6F1YJOSwC
- kwkHAlHwPreevUoSxzv3TmEpbEwOKp8Cr5zHyjHMBqP+DDbSpjf8h29cq+XBqeDPJdfC
- OFU78La6pLgltO/iEtEXUHxWEyi3cs3fxAq7a/qvEtXCcWFGS9HFQPczBQz9sWA7Yncl
- LI81iMD+MTJYkHIbjQEgaJZDw6Zg28UN0DWesa3H5ZX6aXL5BI+x04YIWXLNb+Q4cO4l
- HOnNwkX04sFC4+WLsQjoNSwuS2PD4U1qMS5jatu7GJLd3v+YqIIhwXsnl/UItWUZihMV +w== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38y576hake-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Jun 2021 16:25:09 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 153K5LPg064941;
- Thu, 3 Jun 2021 16:25:09 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0b-001b2d01.pphosted.com with ESMTP id 38y576hak4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Jun 2021 16:25:09 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 153KCtAw006729;
- Thu, 3 Jun 2021 20:25:08 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma02wdc.us.ibm.com with ESMTP id 38ud8a2msf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Jun 2021 20:25:08 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 153KP7tU18350482
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 3 Jun 2021 20:25:07 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C1F0C7805F;
- Thu,  3 Jun 2021 20:25:07 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C1E27805E;
- Thu,  3 Jun 2021 20:25:06 +0000 (GMT)
-Received: from sig-9-77-136-17.ibm.com (unknown [9.77.136.17])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  3 Jun 2021 20:25:06 +0000 (GMT)
-Message-ID: <27331a61f5f94b90748e60984a53cf8928e2d185.camel@linux.ibm.com>
-Subject: Re: [PATCH v4 03/16] powerpc/vas: Add platform specific user window
- operations
-From: Haren Myneni <haren@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, herbert@gondor.apana.org.au,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Date: Thu, 03 Jun 2021 13:25:04 -0700
-In-Reply-To: <1622692598.4iphcb4vdf.astroid@bobo.none>
-References: <8d219c0816133a8643d650709066cf04c9c77322.camel@linux.ibm.com>
- <f4fb4b7bb98580ae3c025d83148a6406541de892.camel@linux.ibm.com>
- <1622692598.4iphcb4vdf.astroid@bobo.none>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.2 (3.36.2-1.fc32) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fx3fz2j1wz2yhf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jun 2021 10:34:18 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Fx3fr5fzwz9s1l;
+ Fri,  4 Jun 2021 10:34:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1622766853;
+ bh=DlYD7/ikT8YNbVnd2jRpmnUISzjs7MCffewKt+dV8Zk=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=MTBAZvCihWnDtnLJ4HtIxdEG+CsBNWqSCDh/aKFo7J0FQp3ZvmnIfHmaTW0SH6dH6
+ TGrEG3/TTlNCiXMXrv6D0sCmHdmIvrPJfUfTgz9D9FkATH8vzrovgkESaE58lSH3IN
+ dzxbq9TLirzG8TbrbZCrAQS8QCXgUrCaw6PxYQwkZEiI+QikDUZ9grqCA9pOwcMb+d
+ 2aKKsgO608zGTeIdGEFzbrZJXz4QwaREAr7pf4wCncmFchOzU6SBzQhvV4nUpWmzds
+ xRK3CRgxmaVj2wmh0TMu/S8nkcHXNik6PCFsv0/4WjoYMPalRswmWl/0T8lVxrBToa
+ 7rAvfzwAd8UCA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geoff Levand <geoff@infradead.org>, "David S. Miller"
+ <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 0/5] DMA fixes for PS3 device drivers
+In-Reply-To: <850d4850-d45a-e22f-d4bb-18bd68a35031@infradead.org>
+References: <cover.1622577339.git.geoff@infradead.org>
+ <875yyvh5iy.fsf@mpe.ellerman.id.au>
+ <850d4850-d45a-e22f-d4bb-18bd68a35031@infradead.org>
+Date: Fri, 04 Jun 2021 10:34:10 +1000
+Message-ID: <8735tyh3i5.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 7sYm6qw9fIzpp8f-aO0u75M8ED43yfhn
-X-Proofpoint-ORIG-GUID: WRJvWK--uW319J6223mZTsTecYhn2rOY
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-06-03_13:2021-06-03,
- 2021-06-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0
- impostorscore=0 mlxscore=0 malwarescore=0 phishscore=0 mlxlogscore=999
- priorityscore=1501 adultscore=0 clxscore=1015 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2106030132
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,75 +74,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2021-06-03 at 14:05 +1000, Nicholas Piggin wrote:
-> Excerpts from Haren Myneni's message of May 21, 2021 7:30 pm:
-> > PowerNV uses registers to open/close VAS windows, and getting the
-> > paste address. Whereas the hypervisor calls are used on PowerVM.
-> > 
-> > This patch adds the platform specific user space window operations
-> > and register with the common VAS user space interface.
-> 
-> Basic idea makes sense. I don't understand this code in detail
-> though.
-> A couple of things,
-> 
-> > Signed-off-by: Haren Myneni <haren@linux.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/vas.h              | 14 +++++-
-> >  arch/powerpc/platforms/book3s/vas-api.c     | 52 ++++++++++++-----
-> > ----
-> >  arch/powerpc/platforms/powernv/vas-window.c | 46
-> > +++++++++++++++++-
-> >  3 files changed, 89 insertions(+), 23 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/vas.h
-> > b/arch/powerpc/include/asm/vas.h
-> > index 6076adf9ab4f..668303198772 100644
-> > --- a/arch/powerpc/include/asm/vas.h
-> > +++ b/arch/powerpc/include/asm/vas.h
-> > @@ -5,6 +5,7 @@
-> >  
-> >  #ifndef _ASM_POWERPC_VAS_H
-> >  #define _ASM_POWERPC_VAS_H
-> > +#include <uapi/asm/vas-api.h>
-> >  
-> >  struct vas_window;
-> >  
-> > @@ -48,6 +49,16 @@ enum vas_cop_type {
-> >  	VAS_COP_TYPE_MAX,
-> >  };
-> >  
-> > +/*
-> > + * User space window operations used for powernv and powerVM
-> > + */
-> > +struct vas_user_win_ops {
-> > +	struct vas_window * (*open_win)(struct vas_tx_win_open_attr *,
-> > +				enum vas_cop_type);
-> > +	u64 (*paste_addr)(void *);
-> > +	int (*close_win)(void *);
-> 
-> Without looking further into the series, why do these two take void
-> * 
-> when the first returns a vas_window * which appears to be the
-> required
-> argument to these?
+Geoff Levand <geoff@infradead.org> writes:
+> Hi Michael,
+>
+> On 6/2/21 10:38 PM, Michael Ellerman wrote:
+>> Geoff Levand <geoff@infradead.org> writes:
+>>> Hi,
+>>>
+>>> This is a set of patches that fix various DMA related problems in the PS3
+>>> device drivers, and add better error checking and improved message logging.
+>>>
+>>> The gelic network driver had a number of problems and most of the changes are
+>>> in it's sources.
+>>>
+>>> Please consider.
+>> 
+>> Who are you thinking would merge this?
+>> 
+>> It's sort of splattered all over the place, but is mostly networking by
+>> lines changed.
+>> 
+>> Maybe patches 3-5 should go via networking and I take 1-2?
+>
+> As suggested, I split the V1 series into two separate series, one for
+> powerpc, and one for network.  
 
-Yes, vas_window * should be passed instead of void * for paste_addr() /
-close_win()
+Thanks.
 
-> 
-> > +static struct vas_user_win_ops vops =  {
-> > +	.open_win	=	vas_user_win_open,
-> > +	.paste_addr	=	vas_user_win_paste_addr,
-> > +	.close_win	=	vas_user_win_close,
-> > +};
-> 
-> const?
-> 
-> Thanks,
-> Nick
+> I thought it made more sense for patch 3, 'powerpc/ps3: Add dma_mask
+> to ps3_dma_region' to go with the powerpc series, so put it into that
+> series.
 
+Oh I thought patches 4 and 5 had a dependency on it, but if not yeah
+makes sense for patch 3 to go via the powerpc tree.
+
+cheers
