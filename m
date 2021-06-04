@@ -2,26 +2,26 @@ Return-Path: <SRS0=yrNn=K6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F542C47098
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 15:59:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E99C5C07E94
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 15:59:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82016613E9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 15:59:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82016613E9
+	by mail.kernel.org (Postfix) with ESMTPS id 4EFF86108E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jun 2021 15:59:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EFF86108E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FxSBP3l0mz3c0G
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jun 2021 01:59:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FxSBp2Gv0z3036
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jun 2021 01:59:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=R0rL+aFU;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=p+0DeuMi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=merlin.20170209 header.b=R0rL+aFU; 
+ header.s=merlin.20170209 header.b=p+0DeuMi; 
  dkim-atps=neutral
 Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:8b0:10b:1234::107])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FxS9R65Mdz2yXX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FxS9T4jRDz2yx2
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jun 2021 01:58:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
  In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=yseJ9abQcTP9X+xb/zgeBROEQlgQAJLCVjgDaQrF+Wc=; b=R0rL+aFUA5qjvyEJZFfCNSv6mo
- KDFB84T0NRruJydDbktk1Txu6cCGLsEN7eZYzLxyRPhRcN4pVHa+2tyskIeGVMibgpswymnOOH4ne
- ATJPZPN/kgQBtxFK7RplZOY8Pbwy61U/F0ynhVpyYMkQqYhz/s+T/1nsIvlSjnLvh8yQjkfRWDPRw
- sMwQRa3oDCXD3mOIwQUC0bDyQlwBsFbxJMFnAlEM0iBdjjNuq4SdUsJ2iBntwOaBGD8ZA6nVCpwCF
- c30ozqcEioeHLa/SQN1NU1/vJ5WYZ8MitKIxm78ca7dllvh2EGXyHau/qIerPon2+VMkPpE9v9ZoA
- w98ccB2Q==;
+ bh=DjliIZ4KNATRPcNKRTDcoYLO3XlB9lnfFLbkU6XUyQA=; b=p+0DeuMibFCjZv9RqyRjhikZsV
+ c6w/hHUjSHbSAlwkfK2i0a760RRqfX9YJbXQQ2NDlFgMciV2DvRu2eWbXxHtVNkhGd0HtSuVhsOKl
+ 02wICKR3sz6XcT9LMu49Sd9XeG9J0+RBGV1CQOrn23g/rw+DdDEl1wtdyo09UZnSPlfVSL3u7TFrh
+ IrSFMt8uu5zqKs7UQBU84GK2mcFvdPk5KX9+lWZKxwfnloOTlHgqO64+JwNYspa6uUlmxulnUZoWb
+ c7je41X8YXxfyx4BApvJb39RJyPa6eNBI0c7bRtwipMOzR1R6D96MEHFLe2bgQaxNkSLBTI8diBeC
+ qBsKAPMQ==;
 Received: from geoff by merlin.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1lpCDJ-001R9I-Ck; Fri, 04 Jun 2021 15:58:25 +0000
-Message-Id: <cover.1622822173.git.geoff@infradead.org>
-In-Reply-To: <cover.1615916650.git.geoff@infradead.org>
-References: <cover.1615916650.git.geoff@infradead.org>
+ Hat Linux)) id 1lpCDJ-001R9K-Ir; Fri, 04 Jun 2021 15:58:25 +0000
+Message-Id: <41509b2da647cd34b1331cc4756c8774b1e284eb.1622822173.git.geoff@infradead.org>
+In-Reply-To: <cover.1622822173.git.geoff@infradead.org>
+References: <cover.1622822173.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Patch-Date: Fri, 4 Jun 2021 08:56:13 -0700
-Subject: [PATCH v2 0/2] PS3 Updates
+Patch-Date: Fri, 4 Jun 2021 08:35:45 -0700
+Subject: [PATCH v2 1/2] powerpc/ps3: Add firmware version to sysfs
 To: Michael Ellerman <mpe@ellerman.id.au>
 Date: Fri, 04 Jun 2021 15:58:25 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,36 +74,87 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Add a new sysfs entry /sys/firmware/ps3/fw-version that exports
+the PS3's firmware version.
 
-I've rebased the V1 patches to v5.13-rc4, and moved the firmware version export
-from procfs to sysfs/firmware.
+The firmware version is available through an LV1 hypercall, and we've
+been printing it to the boot log, but haven't provided an easy way for
+user utilities to get it.
 
-Please consider.
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ arch/powerpc/platforms/ps3/setup.c | 43 +++++++++++++++++++++++++++---
+ 1 file changed, 40 insertions(+), 3 deletions(-)
 
--Geoff
-
-The following changes since commit 8124c8a6b35386f73523d27eacb71b5364a68c4c:
-
-  Linux 5.13-rc4 (2021-05-30 11:58:25 -1000)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-powerpc
-
-for you to fetch changes up to 245897ed65e402686a4b114ba618e935cb5c6506:
-
-  powerpc/ps3: Re-align DTB in image (2021-06-04 08:35:45 -0700)
-
-----------------------------------------------------------------
-Geoff Levand (2):
-      powerpc/ps3: Add firmware version to sysfs
-      powerpc/ps3: Re-align DTB in image
-
- arch/powerpc/boot/zImage.ps3.lds.S |  2 +-
- arch/powerpc/platforms/ps3/setup.c | 43 +++++++++++++++++++++++++++++++++++---
- 2 files changed, 41 insertions(+), 4 deletions(-)
-
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index e9ae5dd03593..3de9145c20bc 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -36,6 +36,7 @@ DEFINE_MUTEX(ps3_gpu_mutex);
+ EXPORT_SYMBOL_GPL(ps3_gpu_mutex);
+ 
+ static union ps3_firmware_version ps3_firmware_version;
++static char ps3_firmware_version_str[16];
+ 
+ void ps3_get_firmware_version(union ps3_firmware_version *v)
+ {
+@@ -182,6 +183,40 @@ static int ps3_set_dabr(unsigned long dabr, unsigned long dabrx)
+ 	return lv1_set_dabr(dabr, dabrx) ? -1 : 0;
+ }
+ 
++static ssize_t ps3_fw_version_show(struct kobject *kobj,
++	struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%s", ps3_firmware_version_str);
++}
++
++static int __init ps3_setup_sysfs(void)
++{
++	static struct kobj_attribute attr = __ATTR(fw-version, S_IRUGO,
++		ps3_fw_version_show, NULL);
++	static struct kobject *kobj;
++	int result;
++
++	kobj = kobject_create_and_add("ps3", firmware_kobj);
++
++	if (!kobj) {
++		pr_warn("%s:%d: kobject_create_and_add failed.\n", __func__,
++			__LINE__);
++		return -ENOMEM;
++	}
++
++	result = sysfs_create_file(kobj, &attr.attr);
++
++	if (result) {
++		pr_warn("%s:%d: sysfs_create_file failed.\n", __func__,
++			__LINE__);
++		kobject_put(kobj);
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++core_initcall(ps3_setup_sysfs);
++
+ static void __init ps3_setup_arch(void)
+ {
+ 	u64 tmp;
+@@ -190,9 +225,11 @@ static void __init ps3_setup_arch(void)
+ 
+ 	lv1_get_version_info(&ps3_firmware_version.raw, &tmp);
+ 
+-	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n",
+-	       ps3_firmware_version.major, ps3_firmware_version.minor,
+-	       ps3_firmware_version.rev);
++	snprintf(ps3_firmware_version_str, sizeof(ps3_firmware_version_str),
++		"%u.%u.%u", ps3_firmware_version.major,
++		ps3_firmware_version.minor, ps3_firmware_version.rev);
++
++	printk(KERN_INFO "PS3 firmware version %s\n", ps3_firmware_version_str);
+ 
+ 	ps3_spu_set_platform();
+ 
 -- 
 2.25.1
+
 
