@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17799C47096
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BEFCC47096
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F6DE613EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F6DE613EF
+	by mail.kernel.org (Postfix) with ESMTPS id DF80C6124C
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF80C6124C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyb4r5t7cz3cGj
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:13:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyb5J0kKKz3cZP
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:13:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb396P0hz2yX0
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 22:12:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb3D0r0Wz306g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 22:12:08 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Fyb386Pz9z9sWF; Sun,  6 Jun 2021 22:12:04 +1000 (AEST)
+ id 4Fyb3B0qBZz9sWH; Sun,  6 Jun 2021 22:12:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <603725297466959419628ef7964aaf3417fb647d.1620363691.git.christophe.leroy@csgroup.eu>
-References: <603725297466959419628ef7964aaf3417fb647d.1620363691.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/603: Avoid a pile of NOPs when not using SW LRU
- in TLB exceptions
-Message-Id: <162298131614.2353459.7661512092871640787.b4-ty@ellerman.id.au>
-Date: Sun, 06 Jun 2021 22:08:36 +1000
+ Paul Mackerras <paulus@samba.org>
+In-Reply-To: <2541e4e415505b27db8ccbb8977035c20e408ef4.1620405461.git.christophe.leroy@csgroup.eu>
+References: <2541e4e415505b27db8ccbb8977035c20e408ef4.1620405461.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/8xx: Update mpc885_ads_defconfig to improve CI
+Message-Id: <162298131541.2353459.4370077652152199678.b4-ty@ellerman.id.au>
+Date: Sun, 06 Jun 2021 22:08:35 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -59,17 +59,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 7 May 2021 05:02:02 +0000 (UTC), Christophe Leroy wrote:
-> The SW LRU is in an MMU feature section. When not used, that's a
-> dozen of NOPs to fetch for nothing.
+On Fri, 7 May 2021 16:37:53 +0000 (UTC), Christophe Leroy wrote:
+> mpc885_ads_defconfig is used by several CI robots.
 > 
-> Define an ALT section that does the few remaining operations.
+> A few functionnalities are specific to 8xx and are not covered
+> by other default configuration, so improve build test coverage
+> by adding them to mpc885_ads_defconfig.
 > 
-> That also avoids a double read on SRR1 in the SW LRU case.
+> 8xx is the only platform supporting 16k page size in addition
+> to 4k page size. Considering that 4k page size is widely tested
+> by other configurations, lets make 16k pages the selection for
+> 8xx, as it has demonstrated in the past to be a weakness.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/603: Avoid a pile of NOPs when not using SW LRU in TLB exceptions
-      https://git.kernel.org/powerpc/c/70d6ebf82bd0cfddaebb54e861fc15e9945a5fc6
+[1/1] powerpc/8xx: Update mpc885_ads_defconfig to improve CI
+      https://git.kernel.org/powerpc/c/9a1762a4a4ff3cc096c605212165f59481e84503
 
 cheers
