@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1510CC4743E
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17799C47096
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 945A5613EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 945A5613EF
+	by mail.kernel.org (Postfix) with ESMTPS id 9F6DE613EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:13:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F6DE613EF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyb4W5S0gz3cCl
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:13:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyb4r5t7cz3cGj
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:13:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb3852Jqz2yWt
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 22:12:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb396P0hz2yX0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 22:12:05 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Fyb3757PQz9sWD; Sun,  6 Jun 2021 22:12:03 +1000 (AEST)
+ id 4Fyb386Pz9z9sWF; Sun,  6 Jun 2021 22:12:04 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <848f18d213b8341939add7302dc4ef80cc7a12e3.1620307636.git.christophe.leroy@csgroup.eu>
-References: <848f18d213b8341939add7302dc4ef80cc7a12e3.1620307636.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Speed up likely path of kuap_update_sr()
-Message-Id: <162298131688.2353459.37331133206133649.b4-ty@ellerman.id.au>
+In-Reply-To: <603725297466959419628ef7964aaf3417fb647d.1620363691.git.christophe.leroy@csgroup.eu>
+References: <603725297466959419628ef7964aaf3417fb647d.1620363691.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/603: Avoid a pile of NOPs when not using SW LRU
+ in TLB exceptions
+Message-Id: <162298131614.2353459.7661512092871640787.b4-ty@ellerman.id.au>
 Date: Sun, 06 Jun 2021 22:08:36 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -58,19 +59,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 May 2021 13:27:31 +0000 (UTC), Christophe Leroy wrote:
-> In most cases, kuap_update_sr() will update a single segment
-> register.
+On Fri, 7 May 2021 05:02:02 +0000 (UTC), Christophe Leroy wrote:
+> The SW LRU is in an MMU feature section. When not used, that's a
+> dozen of NOPs to fetch for nothing.
 > 
-> We know that first update will always be done, if there is no
-> segment register to update at all, kuap_update_sr() is not
-> called.
+> Define an ALT section that does the few remaining operations.
 > 
-> [...]
+> That also avoids a double read on SRR1 in the SW LRU case.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32s: Speed up likely path of kuap_update_sr()
-      https://git.kernel.org/powerpc/c/8af8d72dc58e90dc945ca627b24968400e0f21b6
+[1/1] powerpc/603: Avoid a pile of NOPs when not using SW LRU in TLB exceptions
+      https://git.kernel.org/powerpc/c/70d6ebf82bd0cfddaebb54e861fc15e9945a5fc6
 
 cheers
