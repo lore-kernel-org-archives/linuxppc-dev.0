@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6247CC47096
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A37E7C47096
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:19:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F08B4611CA
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:19:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F08B4611CA
+	by mail.kernel.org (Postfix) with ESMTPS id 50936611CA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 12:19:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50936611CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FybCH1PrFz306l
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:19:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FybCc3yf6z3fpc
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 22:19:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb3W1Smdz30GS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyb3W365mz30GS
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 22:12:23 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Fyb3S0hVzz9t1s; Sun,  6 Jun 2021 22:12:19 +1000 (AEST)
+ id 4Fyb3S67zcz9t1r; Sun,  6 Jun 2021 22:12:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
- Vaibhav Jain <vaibhav@linux.ibm.com>
-In-Reply-To: <20210508043642.114076-1-vaibhav@linux.ibm.com>
-References: <20210508043642.114076-1-vaibhav@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/papr_scm: Reduce error severity if nvdimm
- stats inaccessible
-Message-Id: <162298131517.2353459.4172460283508036246.b4-ty@ellerman.id.au>
-Date: Sun, 06 Jun 2021 22:08:35 +1000
+To: mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ YueHaibing <yuehaibing@huawei.com>
+In-Reply-To: <20210514071041.17432-1-yuehaibing@huawei.com>
+References: <20210514071041.17432-1-yuehaibing@huawei.com>
+Subject: Re: [PATCH -next] powerpc/pseries/memhotplug: Remove unused inline
+ function dlpar_memory_remove()
+Message-Id: <162298131833.2353459.4514813747754717384.b4-ty@ellerman.id.au>
+Date: Sun, 06 Jun 2021 22:08:38 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,25 +53,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 8 May 2021 10:06:42 +0530, Vaibhav Jain wrote:
-> Currently drc_pmem_qeury_stats() generates a dev_err in case
-> "Enable Performance Information Collection" feature is disabled from
-> HMC or performance stats are not available for an nvdimm. The error is
-> of the form below:
-> 
-> papr_scm ibm,persistent-memory:ibm,pmemory@44104001: Failed to query
-> 	 performance stats, Err:-10
-> 
-> [...]
+On Fri, 14 May 2021 15:10:41 +0800, YueHaibing wrote:
+> dlpar_memory_remove() is never used, so can be removed.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/papr_scm: Reduce error severity if nvdimm stats inaccessible
-      https://git.kernel.org/powerpc/c/f3f6d18417eb44ef393b23570d384d2778ef22dc
+[1/1] powerpc/pseries/memhotplug: Remove unused inline function dlpar_memory_remove()
+      https://git.kernel.org/powerpc/c/9b373899e9606d252364191ce2b385043a8808bc
 
 cheers
