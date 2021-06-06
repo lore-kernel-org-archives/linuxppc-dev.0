@@ -6,36 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C217C47096
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 11:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D269C47096
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 11:37:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87F8D6115B
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 11:36:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87F8D6115B
+	by mail.kernel.org (Postfix) with ESMTPS id AA3FE61220
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 11:37:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3FE61220
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FyZGM4fTzz3bxC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 21:36:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FyZGh6FdSz3c6Q
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jun 2021 21:37:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FyZFf41Rmz2yWt
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 21:36:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FyZFf5N4qz2yWt
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jun 2021 21:36:05 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4FyZFd4tdgz9sWD; Sun,  6 Jun 2021 21:36:05 +1000 (AEST)
+ id 4FyZFb5v3rz9sRN; Sun,  6 Jun 2021 21:36:03 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-In-Reply-To: <20210526125851.3436735-1-npiggin@gmail.com>
-References: <20210526125851.3436735-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: Save host FSCR in the P7/8 path
-Message-Id: <162297929349.2342154.8811673378838617538.b4-ty@ellerman.id.au>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, aik@ozlabs.ru,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210526144540.117795-1-fbarrat@linux.ibm.com>
+References: <20210526144540.117795-1-fbarrat@linux.ibm.com>
+Subject: Re: [PATCH] Revert "powerpc/kernel/iommu: Align size for
+ IOMMU_PAGE_SIZE() to save TCEs"
+Message-Id: <162297929376.2342154.14151322164907909539.b4-ty@ellerman.id.au>
 Date: Sun, 06 Jun 2021 21:34:53 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -51,24 +53,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Fabiano Rosas <farosas@linux.ibm.com>
+Cc: zdai@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 26 May 2021 22:58:51 +1000, Nicholas Piggin wrote:
-> Similar to commit 25edcc50d76c ("KVM: PPC: Book3S HV: Save and restore
-> FSCR in the P9 path"), ensure the P7/8 path saves and restores the host
-> FSCR. The logic explained in that patch actually applies there to the
-> old path well: a context switch can be made before kvmppc_vcpu_run_hv
-> restores the host FSCR and returns.
+On Wed, 26 May 2021 16:45:40 +0200, Frederic Barrat wrote:
+> This reverts commit 3c0468d4451eb6b4f6604370639f163f9637a479.
 > 
-> Now both the p9 and the p7/8 paths now save and restore their FSCR, it
-> no longer needs to be restored at the end of kvmppc_vcpu_run_hv
+> That commit was breaking alignment guarantees for the DMA address when
+> allocating coherent mappings, as described in
+> Documentation/core-api/dma-api-howto.rst
+> 
+> It was also noticed by Mellanox' driver:
+> [ 1515.763621] mlx5_core c002:01:00.0: mlx5_frag_buf_alloc_node:146:(pid 13402): unexpected map alignment: 0x0800000000c61000, page_shift=16
+> [ 1515.763635] mlx5_core c002:01:00.0: mlx5_cqwq_create:181:(pid
+> 13402): mlx5_frag_buf_alloc_node() failed, -12
 
 Applied to powerpc/fixes.
 
-[1/1] KVM: PPC: Book3S HV: Save host FSCR in the P7/8 path
-      https://git.kernel.org/powerpc/c/1438709e6328925ef496dafd467dbd0353137434
+[1/1] Revert "powerpc/kernel/iommu: Align size for IOMMU_PAGE_SIZE() to save TCEs"
+      https://git.kernel.org/powerpc/c/59cc84c802eb923805e7bba425976a3df5ce35d8
 
 cheers
