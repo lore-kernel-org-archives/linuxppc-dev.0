@@ -2,26 +2,25 @@ Return-Path: <SRS0=rLAe=LB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F20AC47082
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 23:50:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80382C47094
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 23:53:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8214610E7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 23:50:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8214610E7
+	by mail.kernel.org (Postfix) with ESMTPS id E4B756108D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 23:53:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4B756108D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FzVVD449rz3bTv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 09:50:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FzVYh10zpz3bsG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 09:53:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=asVX63aw;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=O3jUTkfK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
@@ -29,31 +28,30 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=korg header.b=asVX63aw; 
+ header.a=rsa-sha256 header.s=korg header.b=O3jUTkfK; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FzVTc3gY2z2yhd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 09:49:40 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 56A56610E7;
- Mon,  7 Jun 2021 23:49:35 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FzVY92chCz2yhd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 09:52:45 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 59258610E7;
+ Mon,  7 Jun 2021 23:52:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
- s=korg; t=1623109775;
- bh=wxUVyz8qev8tVhu8PQWcp+37ij3S9w/4BeA7vonLCSk=;
+ s=korg; t=1623109962;
+ bh=gZ7ag71htLxjG6QOcoLqIDfNOCltH8Ce826lm+nq7yM=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=asVX63awTfqg/iMMlsQL0INhiGLCFajgpBC0a1YCIfWFg/m2ij2+9NeD5Q5ip2hTT
- TAAVAn85Gr+4WdPiHXwr6HZhgU3/9wd+ld+G27FnFkb+JtAFkzEnmbfbBfq53rBeKg
- MzmrWw6bOnh6JWFKPU8ptpSBevb3gFf+L8saSdT8=
-Date: Mon, 7 Jun 2021 16:49:34 -0700
+ b=O3jUTkfKWL4/blrQFYIsKvIZXWutsz+IbZFBx+OVxX9C2UQpizZpg4Mf4DQHbaXj8
+ 8cqwH3XTcwDDzYwhWy9hqH54zSYylz7VJJe6W4x1eGUyFYf47lIimqT0I17baYB21n
+ nyCuxTJPuapCk7QNLUVbTOyDs2dwXq0vw1HBGbGQ=
+Date: Mon, 7 Jun 2021 16:52:41 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 1/4] lazy tlb: introduce lazy mm refcount helper
- functions
-Message-Id: <20210607164934.d453adcc42473e84beb25db3@linux-foundation.org>
-In-Reply-To: <20210605014216.446867-2-npiggin@gmail.com>
+Subject: Re: [PATCH v4 4/4] powerpc/64s: enable MMU_LAZY_TLB_SHOOTDOWN
+Message-Id: <20210607165241.4dcd4cf63f96437c5650d179@linux-foundation.org>
+In-Reply-To: <20210605014216.446867-5-npiggin@gmail.com>
 References: <20210605014216.446867-1-npiggin@gmail.com>
- <20210605014216.446867-2-npiggin@gmail.com>
+ <20210605014216.446867-5-npiggin@gmail.com>
 X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -76,32 +74,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat,  5 Jun 2021 11:42:13 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
+On Sat,  5 Jun 2021 11:42:16 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> Add explicit _lazy_tlb annotated functions for lazy mm refcounting.
-> This makes lazy mm references more obvious, and allows explicit
-> refcounting to be removed if it is not used.
-> 
-> ...
->
-> --- a/kernel/kthread.c
-> +++ b/kernel/kthread.c
-> @@ -1314,14 +1314,14 @@ void kthread_use_mm(struct mm_struct *mm)
->  	WARN_ON_ONCE(!(tsk->flags & PF_KTHREAD));
->  	WARN_ON_ONCE(tsk->mm);
->  
-> +	mmgrab(mm);
-> +
->  	task_lock(tsk);
->  	/* Hold off tlb flush IPIs while switching mm's */
->  	local_irq_disable();
->  	active_mm = tsk->active_mm;
-> -	if (active_mm != mm) {
-> -		mmgrab(mm);
-> +	if (active_mm != mm)
->  		tsk->active_mm = mm;
-> -	}
+> On a 16-socket 192-core POWER8 system, a context switching benchmark
+> with as many software threads as CPUs (so each switch will go in and
+> out of idle), upstream can achieve a rate of about 1 million context
+> switches per second. After this patch it goes up to 118 million.
 
-Looks like a functional change.  What's happening here?
+Nice.  Do we have a feel for the benefit on any real-world workloads?
 
-
+Could any other architectures benefit from these changes?
