@@ -2,61 +2,70 @@ Return-Path: <SRS0=rLAe=LB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4A45C4743D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 00:56:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C5EC4743D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 01:44:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 031F260724
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 00:56:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 031F260724
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 27452610C7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 01:44:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27452610C7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyw1D5mZ7z307X
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 10:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fyx471FVtz3btB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 11:44:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hDY5h37A;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyw0n3CPTz2yXM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jun 2021 10:56:05 +1000 (AEST)
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.53])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Fyvtz02SLzWnwv;
- Mon,  7 Jun 2021 08:51:07 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 7 Jun 2021 08:55:55 +0800
-Received: from [10.174.177.243] (10.174.177.243) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 7 Jun 2021 08:55:55 +0800
-Subject: Re: [PATCH v2 00/15] init_mm: cleanup ARCH's text/data/brk setup code
-To: Mike Rapoport <rppt@kernel.org>
-References: <20210604070633.32363-1-wangkefeng.wang@huawei.com>
- <YL0+Jargm+y9aqx1@kernel.org>
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Message-ID: <481056ab-686e-9f42-3b8a-b31941f58af6@huawei.com>
-Date: Mon, 7 Jun 2021 08:55:54 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=hDY5h37A; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fyx3Z1lp9z2yX6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jun 2021 11:43:37 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Fyx3P4ngMz9s1l;
+ Mon,  7 Jun 2021 11:43:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1623030210;
+ bh=FPR7ExVACiu4J+7LLh/Oh6D3FGm5nnJ0+HrdvUx8z6w=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=hDY5h37A1YZT6orGetPUzskyKgpBxev4EUFkEkTf0PqJeFYu98qyvjlBUuOOOGHTa
+ nRfLqrla3XWtpk4bffBFELKazKURK92xytEtykmQQqgLrR0yPC3rCqfFnKlt4OTnKC
+ +YVoLMJOmZJzJ/OIbOW+39mEXqLpDooK7E5HseQrEuULON9Reg+aooTO0JYMruQ7aF
+ U9QjsR41EnrdEQPHuFydRjX7RmbaClurrJbaXh180Q+QyPPdWENnrcS+vXlT/FYoB5
+ uFz/7xtECDJ5Gmwsv4PNW3r8SvRmmWFJZWtKaxl4+R6N+jhOeCkwpmcxj/31yOzhTp
+ 2ukahEiZIlT5A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Guenter Roeck <linux@roeck-us.net>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH] watchdog: Remove MV64x60 watchdog driver
+In-Reply-To: <e2a33fc1-f519-653d-9230-b06506b961c5@roeck-us.net>
+References: <9c2952bcfaec3b1789909eaa36bbce2afbfab7ab.1616085654.git.christophe.leroy@csgroup.eu>
+ <31d702e5-22d1-1766-76dd-e24860e5b1a4@roeck-us.net>
+ <87im3hk3t2.fsf@mpe.ellerman.id.au>
+ <e2a33fc1-f519-653d-9230-b06506b961c5@roeck-us.net>
+Date: Mon, 07 Jun 2021 11:43:26 +1000
+Message-ID: <87czsyfo01.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <YL0+Jargm+y9aqx1@kernel.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,93 +77,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: uclinux-h8-devel@lists.sourceforge.jp, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-csky@vger.kernel.org, linux-mm@kvack.org,
- linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
- Andrew Morton <akpm@linux-foundation.org>, linux-snps-arc@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On 2021/6/7 5:29, Mike Rapoport wrote:
-> Hello Kefeng,
+Guenter Roeck <linux@roeck-us.net> writes:
+> On 5/17/21 4:17 AM, Michael Ellerman wrote:
+>> Guenter Roeck <linux@roeck-us.net> writes:
+>>> On 3/18/21 10:25 AM, Christophe Leroy wrote:
+>>>> Commit 92c8c16f3457 ("powerpc/embedded6xx: Remove C2K board support")
+>>>> removed the last selector of CONFIG_MV64X60.
+>>>>
+>>>> Therefore CONFIG_MV64X60_WDT cannot be selected anymore and
+>>>> can be removed.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>>
+>>> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+>>>
+>>>> ---
+>>>>   drivers/watchdog/Kconfig       |   4 -
+>>>>   drivers/watchdog/Makefile      |   1 -
+>>>>   drivers/watchdog/mv64x60_wdt.c | 324 ---------------------------------
+>>>>   include/linux/mv643xx.h        |   8 -
+>>>>   4 files changed, 337 deletions(-)
+>>>>   delete mode 100644 drivers/watchdog/mv64x60_wdt.c
+>> 
+>> I assumed this would go via the watchdog tree, but seems like I
+>> misinterpreted.
+>> 
 >
-> On Fri, Jun 04, 2021 at 03:06:18PM +0800, Kefeng Wang wrote:
->> Add setup_initial_init_mm() helper, then use it
->> to cleanup the text, data and brk setup code.
->>
->> v2:
->> - change argument from "char *" to "void *" setup_initial_init_mm()
->>    suggested by Geert Uytterhoeven
->> - use NULL instead of (void *)0 on h8300 and m68k
->> - collect ACKs
->>
->> Cc: linux-snps-arc@lists.infradead.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-csky@vger.kernel.org
->> Cc: uclinux-h8-devel@lists.sourceforge.jp
->> Cc: linux-m68k@lists.linux-m68k.org
->> Cc: openrisc@lists.librecores.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: linux-riscv@lists.infradead.org
->> Cc: linux-sh@vger.kernel.org
->> Cc: linux-s390@vger.kernel.org
->> Kefeng Wang (15):
->>    mm: add setup_initial_init_mm() helper
->>    arc: convert to setup_initial_init_mm()
->>    arm: convert to setup_initial_init_mm()
->>    arm64: convert to setup_initial_init_mm()
->>    csky: convert to setup_initial_init_mm()
->>    h8300: convert to setup_initial_init_mm()
->>    m68k: convert to setup_initial_init_mm()
->>    nds32: convert to setup_initial_init_mm()
->>    nios2: convert to setup_initial_init_mm()
->>    openrisc: convert to setup_initial_init_mm()
->>    powerpc: convert to setup_initial_init_mm()
->>    riscv: convert to setup_initial_init_mm()
->>    s390: convert to setup_initial_init_mm()
->>    sh: convert to setup_initial_init_mm()
->>    x86: convert to setup_initial_init_mm()
-> I might be missing something, but AFAIU the init_mm.start_code and other
-> fields are not used really early so the new setup_initial_init_mm()
-> function can be called in the generic code outside setup_arch(), e.g in
-> mm_init().
+> Wim didn't send a pull request this time around.
+>
+> Guenter
+>
+>> Should I take this via the powerpc tree for v5.14 ?
 
-Hi Mike， each architecture has their own value, not the same, eg m68K and
+I still don't see this in the watchdog tree, should I take it?
 
-h8300, also the name of the text/code/brk is different in some arch, so 
-I keep
-
-unchanged.
-
->   
->>   arch/arc/mm/init.c                 | 5 +----
->>   arch/arm/kernel/setup.c            | 5 +----
->>   arch/arm64/kernel/setup.c          | 5 +----
->>   arch/csky/kernel/setup.c           | 5 +----
->>   arch/h8300/kernel/setup.c          | 5 +----
->>   arch/m68k/kernel/setup_mm.c        | 5 +----
->>   arch/m68k/kernel/setup_no.c        | 5 +----
->>   arch/nds32/kernel/setup.c          | 5 +----
->>   arch/nios2/kernel/setup.c          | 5 +----
->>   arch/openrisc/kernel/setup.c       | 5 +----
->>   arch/powerpc/kernel/setup-common.c | 5 +----
->>   arch/riscv/kernel/setup.c          | 5 +----
->>   arch/s390/kernel/setup.c           | 5 +----
->>   arch/sh/kernel/setup.c             | 5 +----
->>   arch/x86/kernel/setup.c            | 5 +----
->>   include/linux/mm_types.h           | 8 ++++++++
->>   16 files changed, 23 insertions(+), 60 deletions(-)
->>
->> -- 
->> 2.26.2
->>
->>
->> _______________________________________________
->> linux-riscv mailing list
->> linux-riscv@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-riscv
+cheers
