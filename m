@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4F5AC47082
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 05:25:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19029C47082
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 05:25:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B0416120F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 05:25:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B0416120F
+	by mail.kernel.org (Postfix) with ESMTPS id 6B55161208
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 05:25:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B55161208
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Fz1zT50mkz3023
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 15:25:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Fz1zy4VzYz3c0G
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jun 2021 15:25:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=la5gMiMV;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=XK4QdSXh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=la5gMiMV; 
+ header.a=rsa-sha256 header.s=201602 header.b=XK4QdSXh; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fz1yw1lmqz2yWP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fz1yw1nlsz2yXW
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jun 2021 15:24:55 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4Fz1yt0gLrz9sVt; Mon,  7 Jun 2021 15:24:54 +1000 (AEST)
+ id 4Fz1yt10WVz9sT6; Mon,  7 Jun 2021 15:24:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1623043494;
- bh=JAc5YQzpeD5lW7Z9BAWmTNGY3yGElPglJxBgcJp9NPI=;
+ bh=Q0ZAhkp7FWQOcYxPVObgHiqPp39qCkjQY7r+Qe59/6A=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=la5gMiMVqFDI3LD2ipJ1hTo5ZfOcV1F8BSn40ZV9xHLJ0hhkfnpIZSMFEPGkgSb0s
- mbLES8oEurirxBwaJzlkoYGqWM8ACE3Xz5WH+/TVZWXnFEMa5G++tfoZ/Od7v+q4Xf
- NzWhQHJuoLEWcPvPKx9cNbitSY9TnON0cJYuPHJE=
-Date: Mon, 7 Jun 2021 15:02:38 +1000
+ b=XK4QdSXh+s20cVuUWTtzi8COPKgAo/qyMsQvlJ+ez0bh/V5dMND5DAp4oiQwFwR2k
+ ug/yiJ30A80nCG5Q8mHWJmA590AcTbbo9vJcoNcgQ3KZDjFiBMaNCYnLeKcIRhEJUG
+ qffgrXCubOapMfwgHDHVG8L3+Yf2QaFPDbHPSBL4=
+Date: Mon, 7 Jun 2021 15:10:00 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Leonardo Bras <leobras.c@gmail.com>
-Subject: Re: [PATCH v2 1/3] powerpc/mm/hash: Avoid resizing-down HPT on first
+Subject: Re: [PATCH v2 2/3] powerpc/mm/hash: Avoid multiple HPT resize-ups on
  memory hotplug
-Message-ID: <YL2obsnp4rWbW6CV@yekko>
+Message-ID: <YL2qKPhC2TrsFn6e@yekko>
 References: <20210430143607.135005-1-leobras.c@gmail.com>
- <20210430143607.135005-2-leobras.c@gmail.com>
+ <20210430143607.135005-3-leobras.c@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="TVn+HWIGqqi/A3Yw"
+ protocol="application/pgp-signature"; boundary="+e3T6L8B4PjNfYWV"
 Content-Disposition: inline
-In-Reply-To: <20210430143607.135005-2-leobras.c@gmail.com>
+In-Reply-To: <20210430143607.135005-3-leobras.c@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,118 +82,120 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---TVn+HWIGqqi/A3Yw
+--+e3T6L8B4PjNfYWV
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 30, 2021 at 11:36:06AM -0300, Leonardo Bras wrote:
-> Because hypervisors may need to create HPTs without knowing the guest
-> page size, the smallest used page-size (4k) may be chosen, resulting in
-> a HPT that is possibly bigger than needed.
+On Fri, Apr 30, 2021 at 11:36:08AM -0300, Leonardo Bras wrote:
+> Every time a memory hotplug happens, and the memory limit crosses a 2^n
+> value, it may be necessary to perform HPT resizing-up, which can take
+> some time (over 100ms in my tests).
 >=20
-> On a guest with bigger page-sizes, the amount of entries for HTP may be
-> too high, causing the guest to ask for a HPT resize-down on the first
-> hotplug.
+> It usually is not an issue, but it can take some time if a lot of memory
+> is added to a guest with little starting memory:
+> Adding 256G to a 2GB guest, for example will require 8 HPT resizes.
 >=20
-> This becomes a problem when HPT resize-down fails, and causes the
-> HPT resize to be performed on every LMB added, until HPT size is
-> compatible to guest memory size, causing a major slowdown.
->=20
-> So, avoiding HPT resizing-down on hot-add significantly improves memory
-> hotplug times.
->=20
-> As an example, hotplugging 256GB on a 129GB guest took 710s without this
-> patch, and 21s after applied.
+> Perform an HPT resize before memory hotplug, updating HPT to its
+> final size (considering a successful hotplug), taking the number of
+> HPT resizes to at most one per memory hotplug action.
 >=20
 > Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
-
-Sorry it's taken me so long to look at these
-
-I don't love the extra statefulness that the 'shrinking' parameter
-adds, but I can't see an elegant way to avoid it, so:
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
->  arch/powerpc/mm/book3s64/hash_utils.c | 36 ++++++++++++++++-----------
->  1 file changed, 21 insertions(+), 15 deletions(-)
+>  arch/powerpc/include/asm/book3s/64/hash.h     |  2 ++
+>  arch/powerpc/mm/book3s64/hash_utils.c         | 20 +++++++++++++++++++
+>  .../platforms/pseries/hotplug-memory.c        |  9 +++++++++
+>  3 files changed, 31 insertions(+)
 >=20
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/inc=
+lude/asm/book3s/64/hash.h
+> index d959b0195ad9..fad4af8b8543 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> @@ -255,6 +255,8 @@ int hash__create_section_mapping(unsigned long start,=
+ unsigned long end,
+>  				 int nid, pgprot_t prot);
+>  int hash__remove_section_mapping(unsigned long start, unsigned long end);
+> =20
+> +void hash_batch_expand_prepare(unsigned long newsize);
+> +
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
 > diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book=
 3s64/hash_utils.c
-> index 581b20a2feaf..608e4ed397a9 100644
+> index 608e4ed397a9..3fa395b3fe57 100644
 > --- a/arch/powerpc/mm/book3s64/hash_utils.c
 > +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-> @@ -795,7 +795,7 @@ static unsigned long __init htab_get_table_size(void)
->  }
-> =20
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -static int resize_hpt_for_hotplug(unsigned long new_mem_size)
-> +static int resize_hpt_for_hotplug(unsigned long new_mem_size, bool shrin=
-king)
->  {
->  	unsigned target_hpt_shift;
-> =20
-> @@ -804,19 +804,25 @@ static int resize_hpt_for_hotplug(unsigned long new=
-_mem_size)
-> =20
->  	target_hpt_shift =3D htab_shift_for_mem_size(new_mem_size);
-> =20
-> -	/*
-> -	 * To avoid lots of HPT resizes if memory size is fluctuating
-> -	 * across a boundary, we deliberately have some hysterisis
-> -	 * here: we immediately increase the HPT size if the target
-> -	 * shift exceeds the current shift, but we won't attempt to
-> -	 * reduce unless the target shift is at least 2 below the
-> -	 * current shift
-> -	 */
-> -	if (target_hpt_shift > ppc64_pft_size ||
-> -	    target_hpt_shift < ppc64_pft_size - 1)
-> -		return mmu_hash_ops.resize_hpt(target_hpt_shift);
-> +	if (shrinking) {
-> =20
-> -	return 0;
-> +		/*
-> +		 * To avoid lots of HPT resizes if memory size is fluctuating
-> +		 * across a boundary, we deliberately have some hysterisis
-> +		 * here: we immediately increase the HPT size if the target
-> +		 * shift exceeds the current shift, but we won't attempt to
-> +		 * reduce unless the target shift is at least 2 below the
-> +		 * current shift
-> +		 */
-> +
-> +		if (target_hpt_shift >=3D ppc64_pft_size - 1)
-> +			return 0;
-> +
-> +	} else if (target_hpt_shift <=3D ppc64_pft_size) {
-> +		return 0;
-> +	}
-> +
-> +	return mmu_hash_ops.resize_hpt(target_hpt_shift);
->  }
-> =20
->  int hash__create_section_mapping(unsigned long start, unsigned long end,
-> @@ -829,7 +835,7 @@ int hash__create_section_mapping(unsigned long start,=
- unsigned long end,
->  		return -1;
->  	}
-> =20
-> -	resize_hpt_for_hotplug(memblock_phys_mem_size());
-> +	resize_hpt_for_hotplug(memblock_phys_mem_size(), false);
-> =20
->  	rc =3D htab_bolt_mapping(start, end, __pa(start),
->  			       pgprot_val(prot), mmu_linear_psize,
-> @@ -848,7 +854,7 @@ int hash__remove_section_mapping(unsigned long start,=
- unsigned long end)
->  	int rc =3D htab_remove_mapping(start, end, mmu_linear_psize,
->  				     mmu_kernel_ssize);
-> =20
-> -	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) =3D=3D -ENOSPC)
-> +	if (resize_hpt_for_hotplug(memblock_phys_mem_size(), true) =3D=3D -ENOS=
-PC)
->  		pr_warn("Hash collision while resizing HPT\n");
+> @@ -859,6 +859,26 @@ int hash__remove_section_mapping(unsigned long start=
+, unsigned long end)
 > =20
 >  	return rc;
+>  }
+> +
+> +void hash_batch_expand_prepare(unsigned long newsize)
+> +{
+> +	const u64 starting_size =3D ppc64_pft_size;
+> +
+> +	/*
+> +	 * Resizing-up HPT should never fail, but there are some cases system s=
+tarts with higher
+> +	 * SHIFT than required, and we go through the funny case of resizing HP=
+T down while
+> +	 * adding memory
+> +	 */
+> +
+> +	while (resize_hpt_for_hotplug(newsize, false) =3D=3D -ENOSPC) {
+> +		newsize *=3D 2;
+> +		pr_warn("Hash collision while resizing HPT\n");
+> +
+> +		/* Do not try to resize to the starting size, or bigger value */
+> +		if (htab_shift_for_mem_size(newsize) >=3D starting_size)
+> +			break;
+> +	}
+> +}
+>  #endif /* CONFIG_MEMORY_HOTPLUG */
+> =20
+>  static void __init hash_init_partition_table(phys_addr_t hash_table,
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
+pc/platforms/pseries/hotplug-memory.c
+> index 8377f1f7c78e..48b2cfe4ce69 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/memory.h>
+>  #include <linux/memory_hotplug.h>
+>  #include <linux/slab.h>
+> +#include <linux/pgtable.h>
+> =20
+>  #include <asm/firmware.h>
+>  #include <asm/machdep.h>
+> @@ -671,6 +672,10 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add)
+>  	if (lmbs_available < lmbs_to_add)
+>  		return -EINVAL;
+> =20
+> +	if (!radix_enabled())
+> +		hash_batch_expand_prepare(memblock_phys_mem_size() +
+> +						 lmbs_to_add * drmem_lmb_size());
+> +
+>  	for_each_drmem_lmb(lmb) {
+>  		if (lmb->flags & DRCONF_MEM_ASSIGNED)
+>  			continue;
+> @@ -788,6 +793,10 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u=
+32 drc_index)
+>  	if (lmbs_available < lmbs_to_add)
+>  		return -EINVAL;
+> =20
+> +	if (!radix_enabled())
+> +		hash_batch_expand_prepare(memblock_phys_mem_size() +
+> +					  lmbs_to_add * drmem_lmb_size());
+> +
+>  	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
+>  		if (lmb->flags & DRCONF_MEM_ASSIGNED)
+>  			continue;
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -201,24 +203,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---TVn+HWIGqqi/A3Yw
+--+e3T6L8B4PjNfYWV
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmC9qGsACgkQbDjKyiDZ
-s5JPbg//RGtldhbo5pK+Rz/xEmNtdPSemDKF3FMVpDcpq6Khn673HgaimTHLrLVL
-Jf6zp0vSROpSF1l4oy+TP3xORDxjf69/q1Uen95NWzYlbw2Wm97gdt2jWjErPSeL
-dmtGmA4+VuGZMExX3kOFqkl3f2IB2C/fyf6DW39OCinjlFOewOX+dNhdxP1MTnqs
-F22VN8kEiwsfloVYeD8NkHuXBDvcBic6lE67sYJTOmfUDT2kkzbz2QeqzZvJzV9Y
-ZEBZuIYR9wxiKZDunbmW+cVjp75l3KmO3QhJLOaJstF48tvtiitIJd2PnqPM5wlU
-b9S/NazPpbgAssrJYuJl0qwVYwDIhPyrg8SMxOqJ8AUtboZ37PLz0smhuSn+zO5s
-o8jOIPt/Xod2SgYgSbTD8a6pdKuKKeS4kfwW/sS8afxBkZFJ3u7kMoqrBNEsyHMJ
-YlokVD8BuksKGVrfaXJnE7UiioPilOT4PwcPjcN8nSGATx0jajl+Rw1l4WUnbgbp
-14RwAxMRKsgKfaWx0i5wOvPWGGCUUpYCeZgIrHIcMqO09x0wL4t1y28Cu64fBbJI
-PpOpwnnKDkC55YVGBJn2htLPOVQEN4dt8qoVzpPuUZ9eO4cYH1auA6fzzs4DlU9u
-IOFnl64i2q9K696dxDDAb8ZNjgti1OsSGZ5YXd5vSpVTMbM8Eh8=
-=tKLo
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmC9qicACgkQbDjKyiDZ
+s5Jdqw//RczgBrNyU1kIqVO7/FiFsNT63ohCuxllQ8p7j075vP50I4I/e3GUovQB
+DRLF2Zv3OOVxqhU7AEDxGAFj7wOzMoGrvuEAn8vRoilpL9SK1XzWzl71uVi6jE3W
+LfL+LVoP6rL/Aqp/LapU0E2GVDQWiBhckSFP7cEoy1eO1VlPZu/o2NbzIXo6rSf2
+rLIV8lubVuJjx5EPvmwUUrZG/kfmCOeZ7Fu2ym1VzFoj54JZppHLs6BZoDE4oSUa
+d15AV4LtAMyIPbYzPFEw5q3QfYbo1tLdYJ7blPkFGlYYtERtmGidtqlDIf9+yu+D
+Zr04CtmgA3IB0aW8OHJkHCpgovqQ0xwvFHxnNx9Ta59J5+qgLV1wHPDM7JgrW5bW
+mI0KFgE1uKcVK+T00TGNK1r8qiuwbQEWBcx0GrtoC1/wYt5f7AlNUJHhEZsUKcaN
+jYUOw9roHR+m+ccnkGvLTQb/OCkshLld/xdj5NBhKyc479dFQ8w6Wonx/c01O+9S
+nkunjt22DOumTWONk01cSYAzRCmdsaMOktfNITqxp8XU26DNsJdBiyOCvwZG8ieu
+Gl+QFaQD4PO+AHxWCP6upQzlHedgxU9WoYyQN+VP8NX1kJVBsGfcuq9neMyqDcR+
+obFfkY8ODfoFq8focOl3j9GZuA62bsCy7J5d7M/OqLkAtEX/z8s=
+=OPXK
 -----END PGP SIGNATURE-----
 
---TVn+HWIGqqi/A3Yw--
+--+e3T6L8B4PjNfYWV--
