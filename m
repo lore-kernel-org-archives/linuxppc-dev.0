@@ -2,77 +2,47 @@ Return-Path: <SRS0=nRCD=LC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5141AC47082
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 05:27:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C957C47082
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 05:36:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C0CF6124C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 05:27:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C0CF6124C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D841F60C3D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 05:36:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D841F60C3D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FzdzK2t5Lz2yxx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 15:27:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FzfBG6SxZz307Q
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 15:36:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=cTDXmT/O;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::733;
- helo=mail-qk1-x733.google.com; envelope-from=oohall@gmail.com;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=cTDXmT/O; dkim-atps=neutral
-Received: from mail-qk1-x733.google.com (mail-qk1-x733.google.com
- [IPv6:2607:f8b0:4864:20::733])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fzdyn3Kpjz2yWT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 15:26:56 +1000 (AEST)
-Received: by mail-qk1-x733.google.com with SMTP id u30so19074151qke.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jun 2021 22:26:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=OhYoLxflbqy2x4T8u5cV5CjjD3rbffxuuzJaYyXO3gI=;
- b=cTDXmT/OQamLVrplThr/blFULqQGxorezrmdpj23q9cJGz0+DSZX4eumowxe0gpEsQ
- GizK7NYafbS03QJoFZ5YLXtPhhyMrIr7vl79lMShB9Gffu0ld+Jg8t29Sm9aeDqbWjtp
- Qh+t2e7ZDcilDqWs/+nl8Fw6ZFXuYzI6itTFciZE3+cSIMxrcsE+MLWb/748C5VYDpd4
- /r+2o0UkCSLDvS4aBqBMuy4M+legNCHEgpBMQ2QIfYnFBg7jXptLlnGItPYWz0zB/vVA
- KIoqzx4YSHFmzt2MtsPx2IGV+yW67IKU0saxGBJwh9427PtGoh/IBGNuiQdQ+JK2JPUL
- NrsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=OhYoLxflbqy2x4T8u5cV5CjjD3rbffxuuzJaYyXO3gI=;
- b=msky/5RqN4BkYjzbtb0aDyqxz0cTlb8jjugKtlLJQATzLM5NbLBYHHm2d1wVhW6aPX
- jt+pvdnVRa1+FOYz2HBTvgNJvVFkpB6W5HuHA4wZSlLO2A9s2MUt3h1eZSaZoR/Ppk/k
- TzS3OC4+fHecrlg3cuK106XDgYLcbxX9I13pA2EozOz5Sjb4jr0ZgQKstFs35v0kd9wh
- sJpo+zcKOA5LmntsGsAKgx898QGAFAaTwwM/PSyUazqufioVXRc/MnsSFwOhFHDjtI7u
- sgLfwbjEml6xD7I16YiSQro8jyW3KTaJUAwYWa7+pkQCO4RQ3MAnh8IFfnt7x2uUhxNR
- ep8A==
-X-Gm-Message-State: AOAM531mj8jIrmChohVvFL8I1bhihAvo1tHWo82eKfuKhlJhRv8YcGPg
- I9nMjWVEo8wQ18KnAlQ4i9TojiMfNqlMIWq5AQQ=
-X-Google-Smtp-Source: ABdhPJyU2LS/EIzpbv0za8QUZs/k8bXIZynY+j4mB2wtvu36HqFZh1L4X3T4Vrxtvazt1WMmHZatFaL2SDr74LYEbow=
-X-Received: by 2002:a37:d88:: with SMTP id 130mr8857254qkn.34.1623130012658;
- Mon, 07 Jun 2021 22:26:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fzf9v0902z2xvV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 15:36:34 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 23B5C67373; Tue,  8 Jun 2021 07:36:28 +0200 (CEST)
+Date: Tue, 8 Jun 2021 07:36:27 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v2] libnvdimm/pmem: Fix blk_cleanup_disk() usage
+Message-ID: <20210608053627.GB14116@lst.de>
+References: <162310861219.1571453.6561642225122047071.stgit@dwillia2-desk3.amr.corp.intel.com>
+ <162310994435.1571616.334551212901820961.stgit@dwillia2-desk3.amr.corp.intel.com>
 MIME-Version: 1.0
-References: <20210604092228.199588-1-heying24@huawei.com>
-In-Reply-To: <20210604092228.199588-1-heying24@huawei.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Tue, 8 Jun 2021 15:26:41 +1000
-Message-ID: <CAOSf1CELBh4F334LK6+zy+BPOXKcOm92QZw4g71hQ7oQNa68nw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix kernel-jump address for ppc64 wrapper boot
-To: He Ying <heying24@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <162310994435.1571616.334551212901820961.stgit@dwillia2-desk3.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,33 +54,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nathan Chancellor <nathan@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: axboe@kernel.dk, Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, nvdimm@lists.linux.dev,
+ linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 4, 2021 at 7:39 PM He Ying <heying24@huawei.com> wrote:
->
-> From "64-bit PowerPC ELF Application Binary Interface Supplement 1.9",
-> we know that the value of a function pointer in a language like C is
-> the address of the function descriptor and the first doubleword
-> of the function descriptor contains the address of the entry point
-> of the function.
->
-> So, when we want to jump to an address (e.g. addr) to execute for
-> PPC-elf64abi, we should assign the address of addr *NOT* addr itself
-> to the function pointer or system will jump to the wrong address.
+Thanks Dan, this looks good to me:
 
-How have you tested this?
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-IIRC the 64bit wrapper is only used for ppc64le builds. For that case
-the current code is work because the LE ABI (ABIv2) doesn't use
-function descriptors. I think even for a BE kernel we need the current
-behaviour because the vmlinux's entry point is screwed up (i.e.
-doesn't point a descriptor) and tools in the wild (probably kexec)
-expect it to be screwed up.
-
-ABIv2 (LE) reference:
-https://openpowerfoundation.org/?resource_lib=64-bit-elf-v2-abi-specification-power-architecture
+Jens, can you quickly pick this up?
