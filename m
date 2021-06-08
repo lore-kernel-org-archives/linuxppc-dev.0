@@ -2,63 +2,86 @@ Return-Path: <SRS0=nRCD=LC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6C4AC47094
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 01:48:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EB4DC47082
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 02:14:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E3F961168
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 01:48:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E3F961168
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 89F4E61168
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 02:14:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89F4E61168
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FzY6t3dp2z30HP
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 11:48:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FzYhY4fNRz304j
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 12:14:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=woVcnjT2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=KAKRqeqM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629;
+ helo=mail-pl1-x629.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=korg header.b=woVcnjT2; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=KAKRqeqM; dkim-atps=neutral
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com
+ [IPv6:2607:f8b0:4864:20::629])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FzY6M5vG6z2yR4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 11:48:10 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8208860FE4;
- Tue,  8 Jun 2021 01:48:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
- s=korg; t=1623116886;
- bh=Q+5SvaOmqmPqR5Wg8GMpvtupvlOuAHY76M4MzKRjOlg=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=woVcnjT2gvMlMWupzbm2RW1aHD1OpFrxMPpGTUAlHEqwXyI+cqSEqpahSce9sUa23
- PX7XyEWUPXze2G2Xc83G0Hs999jBFcv3Pkf8Fj6xeYUV1QWlNdJO3BDpVcAT4dcFoC
- SQ8y+ueymlzsAPBdddPwS27YmwAOpFQ5DXJ/VzSQ=
-Date: Mon, 7 Jun 2021 18:48:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 1/4] lazy tlb: introduce lazy mm refcount helper
- functions
-Message-Id: <20210607184805.eddf8eb26b80e8af85d5777e@linux-foundation.org>
-In-Reply-To: <1623116020.vyls9ehp49.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FzYh36KB6z2xy4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jun 2021 12:13:53 +1000 (AEST)
+Received: by mail-pl1-x629.google.com with SMTP id v13so9778099ple.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jun 2021 19:13:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=GN9OGsGoM5q2Wj6TkWBVaSNZ3ULcmdL6q8p7m1JsxfU=;
+ b=KAKRqeqM/EnW/4UM54P+A9EJlb7HswqJaBECriEWn06A6AuPmgEhw53v2jNqs2UbU8
+ +ipemHkdCeJ7hZf8DGPXqrGtSQiaUtrrBKnBPdJgYjyVozFXY41ptb5hYLJGLFvhNTev
+ ewFaadk+5/gEhStXYpHg6FCtpMK8RgPstlt/1eAppeKlIpE6yPI9Bb4/UIxrHHPu8c2w
+ X5/UbsWQsJ4ttdYqBvk9F53mVXHLXCMepOcCypsou/dkksQrag3RLdK7s6a5G5G5JjOS
+ lXcVAZaZzBjqUyLDv8FhAI9Arq44OUf5eOICCTpZBJt15aYY9+zUAww9XM7MKW8Xp3eo
+ AhGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=GN9OGsGoM5q2Wj6TkWBVaSNZ3ULcmdL6q8p7m1JsxfU=;
+ b=Mcix72NT9oikGnx3V6N0yVT+2t4w+zZ5afBVrMkAR5cJjrbARFxuZcuhmsRogPwFTx
+ LP9BMzZCcBl10wYx+68AMPKcS0lhBBog/uuuOvPuGS6nEKT7bXe0FYai8+H4z1sfen5D
+ p05VyrgVEy9zLEMv3f9N9jVMhz8MnToXvtFMw2+FqvLezF6M0FGV55pKI+EDLxJwkUaF
+ z58FawbL/iHvhs2xyNvDfigpJxvrQeOHz4iTeW4p7513DKJu4INjZlHmwFXe1xvIMYx9
+ LOL0rhevQMZY4Z6cuGtTaq1llyAsbVL1qE8gUi5qmpGT7ZLxlN4TjI6Kh213+kGfOW3m
+ gQ2Q==
+X-Gm-Message-State: AOAM533ppk8oh2IpFFDgrvE3TgH7eHnMN79po/vrofcJr/SnLFiVrpww
+ dtzN7QqPbL02qLrJenyc/i6yK2JujDg=
+X-Google-Smtp-Source: ABdhPJwZostydn6bgzgZ5hc0R5uUZONrVbm87sBVNdPt/3RpSMRkRRnU2eGY1TzJGbBSLvRxXRgFUA==
+X-Received: by 2002:a17:90a:ff12:: with SMTP id
+ ce18mr23452289pjb.215.1623118430063; 
+ Mon, 07 Jun 2021 19:13:50 -0700 (PDT)
+Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id r92sm637379pja.6.2021.06.07.19.13.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 07 Jun 2021 19:13:49 -0700 (PDT)
+Date: Tue, 08 Jun 2021 12:13:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 4/4] powerpc/64s: enable MMU_LAZY_TLB_SHOOTDOWN
+To: Andrew Morton <akpm@linux-foundation.org>
 References: <20210605014216.446867-1-npiggin@gmail.com>
- <20210605014216.446867-2-npiggin@gmail.com>
- <20210607164934.d453adcc42473e84beb25db3@linux-foundation.org>
- <1623116020.vyls9ehp49.astroid@bobo.none>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ <20210605014216.446867-5-npiggin@gmail.com>
+ <20210607165241.4dcd4cf63f96437c5650d179@linux-foundation.org>
+In-Reply-To: <20210607165241.4dcd4cf63f96437c5650d179@linux-foundation.org>
+MIME-Version: 1.0
+Message-Id: <1623116405.kj57caxq27.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,24 +93,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Andy Lutomirski <luto@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Rik van Riel <riel@surriel.com>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 08 Jun 2021 11:39:56 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
+Excerpts from Andrew Morton's message of June 8, 2021 9:52 am:
+> On Sat,  5 Jun 2021 11:42:16 +1000 Nicholas Piggin <npiggin@gmail.com> wr=
+ote:
+>=20
+>> On a 16-socket 192-core POWER8 system, a context switching benchmark
+>> with as many software threads as CPUs (so each switch will go in and
+>> out of idle), upstream can achieve a rate of about 1 million context
+>> switches per second. After this patch it goes up to 118 million.
+>=20
+> Nice.  Do we have a feel for the benefit on any real-world workloads?
 
-> > Looks like a functional change.  What's happening here?
-> 
-> That's kthread_use_mm being clever about the lazy tlb mm. If it happened 
-> that the kthread had inherited a the lazy tlb mm that happens to be the 
-> one we want to use here, then we already have a refcount to it via the 
-> lazy tlb ref.
-> 
-> So then it doesn't have to touch the refcount, but rather just converts
-> it from the lazy tlb ref to the returned reference. If the lazy tlb mm
-> doesn't get a reference, we can't do that.
+Not really unfortunately. I think it's always been a "known" cacheline,
+it just showed up badly on will-it-scale tests recently when Anton was
+doing a sweep of low hanging scalability issues on big systems.
 
-Please cover this in the changelog and perhaps a code comment.
+We have some very big systems running certain in-memory databases that=20
+get into very high contention conditions on mutexes that push context
+switch rates right up and with idle times pretty high, which would get
+a lot of parallel context switching between user and idle thread, we
+might be getting a bit of this contention there.
+
+It's not something at the top of profiles though. And on multi-threaded
+workloads like this, the normal refcounting of the user mm still has
+fundmaental contention. It's tricky to get the change tested on these
+workloads (machine time is very limited and I can't drive the software).
+
+I suspect it could also show in things that do high net or disk IO rates
+(enough to need a lot of cores), and do some user processing steps along
+the way. You'd potentially get a lot of idle switching.
+
+>=20
+> Could any other architectures benefit from these changes?
+>=20
+
+The cacheline is going to bounce in the same situations on other archs,=20
+so I would say yes. Rik at one stage had some patches to try avoid it
+for x86 some years ago, I don't know what happened to those.
+
+The way powerpc has to maintain mm_cpumask for its TLB flushing makes it
+relatively easy to do this shootdown, and we decided the additional IPIs
+were less of a concern than the bouncing. Others have different concerns,
+but I tried to make it generic and add comments explaining what other
+archs can do, or possibly different ways it might be achieved.
+
+Thanks,
+Nick
