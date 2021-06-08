@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A62EBC4743D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 16:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3320C47082
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 16:12:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E7C46128E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 16:12:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E7C46128E
+	by mail.kernel.org (Postfix) with ESMTPS id 6E83861059
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jun 2021 16:12:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E83861059
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4FzwHm2vH2z3f3f
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 02:12:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4FzwJB4lPpz3f5V
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 02:12:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=b4Ja1PJt;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0u+MxU9g;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -30,33 +30,33 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=b4Ja1PJt; 
+ header.s=bombadil.20210309 header.b=0u+MxU9g; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Fzw9Q5hMhz3049
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jun 2021 02:07:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Fzw9W3Vpdz3byT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jun 2021 02:07:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=MyECqL7omrkh9N+zg6dzXAPF0qAslqNXJGlcR34EKvY=; b=b4Ja1PJtReL64inLe6q6cCHK2j
- QtsAsUGVqoXMk0uXRjtZKKxZ1KcDPFQ/2E3g7QVHWcya9I0qbV0cZ5SR6kwGsWdFU8pVgJkrBquar
- YxBxkAuHdDeCnhSV/aNvk9DoZDnXfzyOxprW2nqGWTXUdNdrJMmEsIP+Zgda00i5siUaPwCB1GzQY
- HGZo+IiuzOhYzTOjOzinhBZg2wu3GuX+/uVu52zf3xUxqxm/RYdi7Poxkf3mu42ry3kQqBBfvOmgt
- D9NnR40fuODEKp23cRsjGb3lOrICZfro2Zap+kPgitNZaEtEcqM5SUhVJZcVvRhvUJJ9BFQIZlJAi
- Ex1/l4NQ==;
+ bh=1vl+lJtrWoiUzzKH0COLUmHTJyPccdOEl/SXPdFbHq8=; b=0u+MxU9gFUcqqSv2kfOmfldTkp
+ w7E+5atKEAad8wVEtQr/LZNgxJYK8mzid8YXzoNJss/ueLRaIOdg8Ffi1dL/Gr31d3tFiWQ9zGH02
+ r8KOpgP6fzxXgSr3Wh6luKs/H3q+6tXlPI0xf+/W0LGq/H8vmX4Aoa51z42VVKK7k0YCZcWxMj1Tt
+ dRbFgmR1NoyJwN2S3vD5Ob9TaDuXkzdV4d2UhmdDO+ZWpixwO5QzrOmmRQRh4pj/bDkEBisgt7Y3t
+ xHTK/IpClwmin7IxY8YmqiMy2IbAOdFj8ljzq94oVX1751YbQwmfnlpOqnpoiDcmi2lZDM5h/0VgG
+ Fle2n2Gw==;
 Received: from [2001:4bb8:192:ff5f:74ed:7c4f:a5ee:8dcb] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lqeFh-009RlV-DI; Tue, 08 Jun 2021 16:06:54 +0000
+ id 1lqeFo-009Rnc-4u; Tue, 08 Jun 2021 16:07:00 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 14/16] block: use memcpy_from_bvec in __blk_queue_bounce
-Date: Tue,  8 Jun 2021 18:06:01 +0200
-Message-Id: <20210608160603.1535935-15-hch@lst.de>
+Subject: [PATCH 16/16] block: use bvec_kmap_local in bio_integrity_process
+Date: Tue,  8 Jun 2021 18:06:03 +0200
+Message-Id: <20210608160603.1535935-17-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210608160603.1535935-1-hch@lst.de>
 References: <20210608160603.1535935-1-hch@lst.de>
@@ -86,50 +86,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rewrite the actual bounce buffering loop in __blk_queue_bounce to that
-the memcpy_to_bvec helper can be used to perform the data copies.
+Using local kmaps slightly reduces the chances to stray writes, and
+the bvec interface cleans up the code a little bit.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- block/bounce.c | 21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+ block/bio-integrity.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/block/bounce.c b/block/bounce.c
-index a2fc6326b6c9..b5ad09e07bcf 100644
---- a/block/bounce.c
-+++ b/block/bounce.c
-@@ -243,24 +243,17 @@ void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig)
- 	 * because the 'bio' is single-page bvec.
- 	 */
- 	for (i = 0, to = bio->bi_io_vec; i < bio->bi_vcnt; to++, i++) {
--		struct page *page = to->bv_page;
-+		struct page *bounce_page;
+diff --git a/block/bio-integrity.c b/block/bio-integrity.c
+index 4b4eb8964a6f..8f54d49dc500 100644
+--- a/block/bio-integrity.c
++++ b/block/bio-integrity.c
+@@ -172,18 +172,16 @@ static blk_status_t bio_integrity_process(struct bio *bio,
+ 	iter.prot_buf = prot_buf;
  
--		if (!PageHighMem(page))
-+		if (!PageHighMem(to->bv_page))
- 			continue;
+ 	__bio_for_each_segment(bv, bio, bviter, *proc_iter) {
+-		void *kaddr = kmap_atomic(bv.bv_page);
++		void *kaddr = bvec_kmap_local(&bv);
  
--		to->bv_page = mempool_alloc(&page_pool, GFP_NOIO);
--		inc_zone_page_state(to->bv_page, NR_BOUNCE);
-+		bounce_page = mempool_alloc(&page_pool, GFP_NOIO);
-+		inc_zone_page_state(bounce_page, NR_BOUNCE);
- 
--		if (rw == WRITE) {
--			char *vto, *vfrom;
+-		iter.data_buf = kaddr + bv.bv_offset;
++		iter.data_buf = kaddr;
+ 		iter.data_size = bv.bv_len;
 -
--			flush_dcache_page(page);
--
--			vto = page_address(to->bv_page) + to->bv_offset;
--			vfrom = kmap_atomic(page) + to->bv_offset;
--			memcpy(vto, vfrom, to->bv_len);
--			kunmap_atomic(vfrom);
+ 		ret = proc_fn(&iter);
+-		if (ret) {
+-			kunmap_atomic(kaddr);
+-			return ret;
 -		}
-+		if (rw == WRITE)
-+			memcpy_from_bvec(page_address(bounce_page), to);
-+		to->bv_page = bounce_page;
- 	}
++		kunmap_local(kaddr);
++
++		if (ret)
++			break;
  
- 	trace_block_bio_bounce(*bio_orig);
+-		kunmap_atomic(kaddr);
+ 	}
+ 	return ret;
+ }
 -- 
 2.30.2
 
