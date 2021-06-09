@@ -5,74 +5,75 @@ X-Spam-Level:
 X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47F42C47095
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 09:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2DD8C48BE0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 09:38:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB2BE6124C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 09:33:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB2BE6124C
+	by mail.kernel.org (Postfix) with ESMTPS id C9C5E61285
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 09:38:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9C5E61285
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G0MP74Jr2z3bvq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 19:33:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G0MVH63mjz3byD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jun 2021 19:38:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=ADcj1YVv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=AUn30ilb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::12f;
- helo=mail-il1-x12f.google.com; envelope-from=idryomov@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::136;
+ helo=mail-il1-x136.google.com; envelope-from=idryomov@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ADcj1YVv; dkim-atps=neutral
-Received: from mail-il1-x12f.google.com (mail-il1-x12f.google.com
- [IPv6:2607:f8b0:4864:20::12f])
+ header.s=20161025 header.b=AUn30ilb; dkim-atps=neutral
+Received: from mail-il1-x136.google.com (mail-il1-x136.google.com
+ [IPv6:2607:f8b0:4864:20::136])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G0MNd3DJJz300S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jun 2021 19:33:19 +1000 (AEST)
-Received: by mail-il1-x12f.google.com with SMTP id z1so24665557ils.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jun 2021 02:33:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G0MTp6sM7z2yWp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jun 2021 19:37:50 +1000 (AEST)
+Received: by mail-il1-x136.google.com with SMTP id x18so24594174ila.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jun 2021 02:37:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=mhMcjERsi3wx3J0HCHYpS+goiMXBDBgg8cMNxlYjvGA=;
- b=ADcj1YVvHTLC+vKMpsqWPDJsBSDbQj9Juth1j7LfkjKpeyQiAv4eLJia7JtZshRFtJ
- A+TDHANIoo9IOJ4Kh0lYPvrrYa5nHWPVMBPmA405nRsS3sz38uj/ZBeAXl2ZMbNQjV+D
- mqkGmibxA5nlTggMZR8xaJL9mgWWlN0qvJ13j0sbvH5mcxMOF9754ReExqahIfdHqL2I
- NGrYqKJ6VLkatC3yXMel7BVvJXeid1JTMV2nRKXWSqgMLC4VnNuNxzIDSde7bQegncwu
- 8i1TuPOBXCJ8KzJ7C/7oFxid3upfTcHVU7lyPDQqvDi7b+rtEOCs4e9uougdvb5+gY72
- zPtQ==
+ :cc; bh=11paM/1lp22CavDEEN3A/olA+tOS+m0UgIjuNNPMc5c=;
+ b=AUn30ilbL3NzF5q2BCp0QVXHikpm8Vm6yUAM9SdAhos2m9u8xXGwxlhY7L/mh5ETkk
+ xMDLHdDCnvMj9u5VwkHn37GW+ujRpw2uJn/g/RTKxpbLL7paohPJB9BFTIoD6vBOz0FJ
+ wlEZkhAcmqWn9YlRTm67JdkNWHAiNqs9sQF7kLfjGLtZZjwbbdwYYhZL9eEqO6j8XGwT
+ WGtn6z7Ok1u7/f7AJWVfLsFL4AOnd9bBJ2NKdphWe6mO0Sya+xn+4ljLwykvBX8unsLj
+ qDtDo0A3iPuoyVDOa2dKVu/uzCQIFKij1E9QJ4Rpt6+OuJFeAbsxKLDuKg+JVf9eTdvV
+ qvfQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=mhMcjERsi3wx3J0HCHYpS+goiMXBDBgg8cMNxlYjvGA=;
- b=YTUeB1COS/iy54u3IoGdla2SdNT6eZ++tY8mft0oOJ2YTI8JNFUlYT20Bb8up1BDh2
- u6dy7zJUw5FWFth+OK11vmfae5NADvAj8mBp/vhsSIxrDlQFqC6S6zKYfK3n6ZMwSEAe
- zNSJhty2c8qR2CDICH/pWDFyiH9gfmDaSbM01nO9iyaIxOB74v7Rj2Ky4s6nRvHbKqmq
- rsrtZIqDA5fCQm5d1jA36hL37DrchrO72mLbAqTBkd1VQoWDHDQOhc4mU8LI+N7dg54t
- Y2optFW7g2s9hjWgOEdBm1ILR9rEVvo9DgpTSTFzNYv1Ct3gUD/Rc8dh1EKkAKbiFPIR
- zBIg==
-X-Gm-Message-State: AOAM533vIzw/tMFjT2AJ1bs6WMgIc4OlrhicZz53TMZ/ORX4MEUFilxq
- lSb1cOOibMzI/fvCbOAX5mS1Ew0MHwWoyuv8Ms8=
-X-Google-Smtp-Source: ABdhPJwAXk5XLhiYZ2SCv5KKecZJLPTCdFzz10ao0FJv/DCA2fGlPOpnYQTjWTA/Q177jVl11ZJJ3bM2RHXJ7omJZKU=
-X-Received: by 2002:a6b:287:: with SMTP id 129mr18520979ioc.182.1623231195095; 
- Wed, 09 Jun 2021 02:33:15 -0700 (PDT)
+ bh=11paM/1lp22CavDEEN3A/olA+tOS+m0UgIjuNNPMc5c=;
+ b=YZQ0qnjao7ZgEqCr2K1kyMe/URb67f6nbc5KPjbyA9hD+giTwaq0DQzmrXm9p/1jeN
+ z/4U6UR719KzO/OjTbSPUYH74mEjRPhpAKfYmTqiTBlyV0i7M9HmJ3zdHho7NJRodkiV
+ mLlHCqHTawvazZY7/GfeBLEiy3TbtLNTWOidw2xOE5bx3+mZtD43K3/9dFk0UWWeYyYl
+ amuOkaIKSjOHI1PL6IQkMz44vQ0a8IotYGHi55kadti4fEVeqenBwcR2iUqPcvuM/FQ/
+ UvFA+8JQ++f9npt1Bep+wVvAp4t22GY8FZISMwg5W6WYu6OdaM1Jd1Q0PIdUY1rBT9Rq
+ GJNw==
+X-Gm-Message-State: AOAM531dtzWkYRQYVP4PHIkMxYchN7i8iDk1/9UTmS3wcBlLROhReA0R
+ TkHOW6oUwoQh//eMtsu3eeZlwSvx4dUCWSwLV4g=
+X-Google-Smtp-Source: ABdhPJy5AROZdbsU+O1Vh/bwrnsq7wRpZEor176YD0iLaHDJhsh5Ad6i076nqZiL2In6oQ6aCiJFsx/mBME7wo4cSUc=
+X-Received: by 2002:a05:6638:267:: with SMTP id
+ x7mr7028650jaq.51.1623231466755; 
+ Wed, 09 Jun 2021 02:37:46 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210608160603.1535935-1-hch@lst.de>
- <20210608160603.1535935-5-hch@lst.de>
-In-Reply-To: <20210608160603.1535935-5-hch@lst.de>
+ <20210608160603.1535935-8-hch@lst.de>
+In-Reply-To: <20210608160603.1535935-8-hch@lst.de>
 From: Ilya Dryomov <idryomov@gmail.com>
-Date: Wed, 9 Jun 2021 11:33:13 +0200
-Message-ID: <CAOi1vP8Xe1ZqE8fe=8KcU00xDjRrvaRONAC_TYYctsE1dns0Og@mail.gmail.com>
-Subject: Re: [PATCH 04/16] bvec: add a bvec_kmap_local helper
+Date: Wed, 9 Jun 2021 11:37:45 +0200
+Message-ID: <CAOi1vP-zSAnx5z7EbPNVLoCHWdK5iGjXU7KKrRL8YZF1QfMf3A@mail.gmail.com>
+Subject: Re: [PATCH 07/16] rbd: use memzero_bvec
 To: Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -100,41 +101,57 @@ Sender: "Linuxppc-dev"
 
 On Tue, Jun 8, 2021 at 6:06 PM Christoph Hellwig <hch@lst.de> wrote:
 >
-> Add a helper to call kmap_local_page on a bvec.  There is no need for
-> an unmap helper given that kunmap_local accept any address in the mapped
-> page.
+> Use memzero_bvec instead of reimplementing it.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->  include/linux/bvec.h | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/block/rbd.c | 15 ++-------------
+>  1 file changed, 2 insertions(+), 13 deletions(-)
 >
-> diff --git a/include/linux/bvec.h b/include/linux/bvec.h
-> index 883faf5f1523..d64d6c0ceb77 100644
-> --- a/include/linux/bvec.h
-> +++ b/include/linux/bvec.h
-> @@ -7,6 +7,7 @@
->  #ifndef __LINUX_BVEC_H
->  #define __LINUX_BVEC_H
->
-> +#include <linux/highmem.h>
->  #include <linux/bug.h>
->  #include <linux/errno.h>
->  #include <linux/limits.h>
-> @@ -183,4 +184,9 @@ static inline void bvec_advance(const struct bio_vec *bvec,
->         }
+> diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
+> index bbb88eb009e0..eb243fc4d108 100644
+> --- a/drivers/block/rbd.c
+> +++ b/drivers/block/rbd.c
+> @@ -1219,24 +1219,13 @@ static void rbd_dev_mapping_clear(struct rbd_device *rbd_dev)
+>         rbd_dev->mapping.size = 0;
 >  }
 >
-> +static inline void *bvec_kmap_local(struct bio_vec *bvec)
-> +{
-> +       return kmap_local_page(bvec->bv_page) + bvec->bv_offset;
-> +}
-> +
->  #endif /* __LINUX_BVEC_H */
+> -static void zero_bvec(struct bio_vec *bv)
+> -{
+> -       void *buf;
+> -       unsigned long flags;
+> -
+> -       buf = bvec_kmap_irq(bv, &flags);
+> -       memset(buf, 0, bv->bv_len);
+> -       flush_dcache_page(bv->bv_page);
+> -       bvec_kunmap_irq(buf, &flags);
+> -}
+> -
+>  static void zero_bios(struct ceph_bio_iter *bio_pos, u32 off, u32 bytes)
+>  {
+>         struct ceph_bio_iter it = *bio_pos;
+>
+>         ceph_bio_iter_advance(&it, off);
+>         ceph_bio_iter_advance_step(&it, bytes, ({
+> -               zero_bvec(&bv);
+> +               memzero_bvec(&bv);
+>         }));
+>  }
+>
+> @@ -1246,7 +1235,7 @@ static void zero_bvecs(struct ceph_bvec_iter *bvec_pos, u32 off, u32 bytes)
+>
+>         ceph_bvec_iter_advance(&it, off);
+>         ceph_bvec_iter_advance_step(&it, bytes, ({
+> -               zero_bvec(&bv);
+> +               memzero_bvec(&bv);
+>         }));
+>  }
+>
 
-Might be useful to add the second sentence of the commit message as
-a comment for bvec_kmap_local().  It could be expanded to mention the
-single-page bvec caveat too.
+Ira already brought up the fact that this conversion drops
+flush_dcache_page() calls throughout.  Other than that:
+
+Acked-by: Ilya Dryomov <idryomov@gmail.com>
 
 Thanks,
 
