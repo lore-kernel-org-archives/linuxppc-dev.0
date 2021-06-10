@@ -8,75 +8,76 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5DB3C47094
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 13:12:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A63C48BD1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 13:13:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 618FF613DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 13:12:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 618FF613DE
+	by mail.kernel.org (Postfix) with ESMTPS id C8EB161374
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 13:13:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8EB161374
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G14CC5DdCz3c6p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 23:12:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G14Cg16Hzz3c8Z
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jun 2021 23:13:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=QQmm6PIf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=rjWcXR9B;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f;
- helo=mail-pl1-x62f.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029;
+ helo=mail-pj1-x1029.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=QQmm6PIf; dkim-atps=neutral
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
- [IPv6:2607:f8b0:4864:20::62f])
+ header.s=20161025 header.b=rjWcXR9B; dkim-atps=neutral
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com
+ [IPv6:2607:f8b0:4864:20::1029])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G147z38pLz3btw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2021 23:09:51 +1000 (AEST)
-Received: by mail-pl1-x62f.google.com with SMTP id v12so982409plo.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2021 06:09:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G1481064nz308N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2021 23:09:52 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id
+ pi6-20020a17090b1e46b029015cec51d7cdso3789546pjb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2021 06:09:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=TeyS9kPcmx97lrUqGTx0Je7SbGB1d6EDJmtcigtvCHQ=;
- b=QQmm6PIfvdQwGTD2ITGtEdo9uQeepxOPXxzoPxdc/bSMIgwOto5kmLQww5tb+Np96T
- nAqipS5tB78HNIZjmqZAu6YprIj0rs+YUrTSxPwKjk6iDTsag1bE4PWtjSEQJrYGGY3m
- JR6iizvdS3xMd8fUFYGfUFY01LCwTrZFEtvUXfBuZkPkH6RpMdi41thte0jPmb5dvKr+
- hrkQSrnYbUC0zSQnm12mAxgnwJ7M2Csnv3TXoBVKGBmsSziV60uJC8LvmaVyHZRYjhQ5
- WitEy/HPBundCCfvJSVT3w0GfDByTqp6IkBabUKkwIR/NZiwEST9RZS4U4cmNE7x4aRl
- lvEQ==
+ bh=Hhd+fuGqJUuQW2nqlOscXLPZPLQdJPLVzy4+rL5BTdM=;
+ b=rjWcXR9BhHKFSUQDm/ywC69XNJZVch1KebOVvRlEqXjsJU+ZtKULOFu/kwXMhJPhYd
+ O0MS+D68p0k+MvzvRlo2MIr/mE1tMVNvuIXs5UtQalJexwxVNV2hVDmWq2JLiSXEMG+D
+ 0wB9lcGCAFJOmfzBXeGjMmkurSwEug/Ie/RpsyRzUY3k0RPmNaxhJteSerseYGlvm1BD
+ /Xvmk0OtX8hO4NkWwHOyg5Q5bmt3+kew51HYNicjcDtM/sMyk31pvj60fMhZOuhM1P9h
+ 2lmtz+RdbfDtFXXsjpIRsM13UMyriiw8nlKKa4fWmnJsuONW11pxgZLR334HKRNClQSl
+ 3lJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=TeyS9kPcmx97lrUqGTx0Je7SbGB1d6EDJmtcigtvCHQ=;
- b=OLnxyXYwKjOt3Cec8WSulzo1qRixWtRZQb4Vh4jpQ1mFdtfwVHF0ltUC2mKt9qyPEv
- xQCOb4MU9wxkx6NiZ7M5vvPtNbDBo4NlOW/VqezyQQbFODrKKum15ahMqcdLUNXqovGh
- GKHJdtPPIQORDujBMm7/S5RlMPr6D2f6oId6o1+xcc7Pq7Tp2jyfM87fLTtAUyY6tpq/
- 12r9U6mWPdW5F1RvVwm9PbBJlAFHrEGhWB6C6csU10orebcAGZdt4pxvrnq78/hohwum
- RTvLepupirZEFaK7i1mJqDnYJ1Na9mlYTy+G5ooNLloFuJ5NBCa6qTM9PC1523f2pR96
- 21vg==
-X-Gm-Message-State: AOAM532Z/c32Qya3QU/1rovXRADz/YSyHQqIyGYEj0CTQyIaaSINZ3gT
- NuzeySfi1BJE4psSslIAVg+Xv/kBKhg=
-X-Google-Smtp-Source: ABdhPJy9KnAzR7XAVDaBcaOWTn0mLHl8eqdudYFpGasrVto3x9jmAB+GMQDArI8HYzynSvTyOipUxQ==
-X-Received: by 2002:a17:902:8695:b029:fd:6105:c936 with SMTP id
- g21-20020a1709028695b02900fd6105c936mr4781368plo.25.1623330587993; 
- Thu, 10 Jun 2021 06:09:47 -0700 (PDT)
+ bh=Hhd+fuGqJUuQW2nqlOscXLPZPLQdJPLVzy4+rL5BTdM=;
+ b=LbVQFYMdMu2Sklnr4EjM6PEfjJ+lcsLDLRfhU132obh3JNP1p5xy+Fkz+m5oIa9vYM
+ 0l1QjBehPH3rAExDKgP2d46v8QoppdS6X/Qf4fzqU0QFwNxswHbw8mqRp164RjVs8x2f
+ dDGANVPa2RvbBvEfeee44L5FyF5XyqOdUr71O2imgVl42lqliF5iOet7KnqbHOqQ5BTC
+ xQooj66LnI0q0HGQgNE6RIawZFkOW9nXZ88ZxDrM4hiYdFP8LRcsUxotQyYJ8ZFKiD7s
+ lZT185CM+c4zP5euaXm3OLXyljqt3IyBJKtAOLdZLIv1qwzJ5fEYJb15x+4VWZg+ATeJ
+ R0ag==
+X-Gm-Message-State: AOAM532HenR/LMk1SGLPTRdRGjfJppq3md2J/E4fHPYqgqkPfOKfrY8n
+ F4DA4p/tY9CEVkF0w5NJUDDS3aiaTvI=
+X-Google-Smtp-Source: ABdhPJySCSt8m+ZmzxGSR1Ifdzud4k5bpLGwro36aBlnCiJusU2MzMapEtwGGKvd70Kk/TBGndFlTg==
+X-Received: by 2002:a17:90a:708:: with SMTP id
+ l8mr3339944pjl.103.1623330589945; 
+ Thu, 10 Jun 2021 06:09:49 -0700 (PDT)
 Received: from bobo.ibm.com (60-242-147-73.tpgi.com.au. [60.242.147.73])
- by smtp.gmail.com with ESMTPSA id bv3sm7012173pjb.1.2021.06.10.06.09.46
+ by smtp.gmail.com with ESMTPSA id bv3sm7012173pjb.1.2021.06.10.06.09.48
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 10 Jun 2021 06:09:47 -0700 (PDT)
+ Thu, 10 Jun 2021 06:09:49 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 06/11] powerpc/64s: system call avoid setting MSR[RI] until
- we set MSR[EE]
-Date: Thu, 10 Jun 2021 23:09:16 +1000
-Message-Id: <20210610130921.706938-7-npiggin@gmail.com>
+Subject: [PATCH v3 07/11] powerpc/64s: save one more register in the masked
+ interrupt handler
+Date: Thu, 10 Jun 2021 23:09:17 +1000
+Message-Id: <20210610130921.706938-8-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210610130921.706938-1-npiggin@gmail.com>
 References: <20210610130921.706938-1-npiggin@gmail.com>
@@ -98,44 +99,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This extends the MSR[RI]=0 window a little further into the system
-call in order to pair RI and EE enabling with a single mtmsrd.
+This frees up one more register (and takes advantage of that to
+clean things up a little bit).
+
+This register will be used in the following patch.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 2 --
- arch/powerpc/kernel/interrupt_64.S   | 4 ++--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 34 ++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a2ae14d0600e..b6e1c46c97d0 100644
+index b6e1c46c97d0..0ba8c2387aac 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1942,8 +1942,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
- 	mtctr	r10
- 	bctr
+@@ -2758,7 +2758,6 @@ INT_DEFINE_END(soft_nmi)
+  * and run it entirely with interrupts hard disabled.
+  */
+ EXC_COMMON_BEGIN(soft_nmi_common)
+-	mfspr	r11,SPRN_SRR0
+ 	mr	r10,r1
+ 	ld	r1,PACAEMERGSP(r13)
+ 	subi	r1,r1,INT_FRAME_SIZE
+@@ -2793,19 +2792,24 @@ masked_Hinterrupt:
  	.else
--	li	r10,MSR_RI
--	mtmsrd 	r10,1			/* Set RI (EE=0) */
- #ifdef CONFIG_RELOCATABLE
- 	__LOAD_HANDLER(r10, system_call_common)
- 	mtctr	r10
-diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-index 83826775d239..3038c831fc5f 100644
---- a/arch/powerpc/kernel/interrupt_64.S
-+++ b/arch/powerpc/kernel/interrupt_64.S
-@@ -284,9 +284,9 @@ END_BTB_FLUSH_SECTION
- 	 * trace_hardirqs_off().
- 	 */
- 	li	r11,IRQS_ALL_DISABLED
--	li	r12,PACA_IRQ_HARD_DIS
-+	li	r12,-1 /* Set MSR_EE and MSR_RI */
- 	stb	r11,PACAIRQSOFTMASK(r13)
--	stb	r12,PACAIRQHAPPENED(r13)
-+	mtmsrd	r12,1
- 
- 	/* Calling convention has r9 = orig r0, r10 = regs */
- 	mr	r9,r0
+ masked_interrupt:
+ 	.endif
+-	lbz	r11,PACAIRQHAPPENED(r13)
+-	or	r11,r11,r10
+-	stb	r11,PACAIRQHAPPENED(r13)
++	stw	r9,PACA_EXGEN+EX_CCR(r13)
++	lbz	r9,PACAIRQHAPPENED(r13)
++	or	r9,r9,r10
++	stb	r9,PACAIRQHAPPENED(r13)
++
++	.if ! \hsrr
+ 	cmpwi	r10,PACA_IRQ_DEC
+ 	bne	1f
+-	lis	r10,0x7fff
+-	ori	r10,r10,0xffff
+-	mtspr	SPRN_DEC,r10
++	LOAD_REG_IMMEDIATE(r9, 0x7fffffff)
++	mtspr	SPRN_DEC,r9
+ #ifdef CONFIG_PPC_WATCHDOG
++	lwz	r9,PACA_EXGEN+EX_CCR(r13)
+ 	b	soft_nmi_common
+ #else
+ 	b	2f
+ #endif
++	.endif
++
+ 1:	andi.	r10,r10,PACA_IRQ_MUST_HARD_MASK
+ 	beq	2f
+ 	xori	r12,r12,MSR_EE	/* clear MSR_EE */
+@@ -2814,17 +2818,19 @@ masked_interrupt:
+ 	.else
+ 	mtspr	SPRN_SRR1,r12
+ 	.endif
+-	ori	r11,r11,PACA_IRQ_HARD_DIS
+-	stb	r11,PACAIRQHAPPENED(r13)
++	ori	r9,r9,PACA_IRQ_HARD_DIS
++	stb	r9,PACAIRQHAPPENED(r13)
+ 2:	/* done */
+-	li	r10,0
++	li	r9,0
+ 	.if \hsrr
+-	stb	r10,PACAHSRR_VALID(r13)
++	stb	r9,PACAHSRR_VALID(r13)
+ 	.else
+-	stb	r10,PACASRR_VALID(r13)
++	stb	r9,PACASRR_VALID(r13)
+ 	.endif
+-	ld	r10,PACA_EXGEN+EX_CTR(r13)
+-	mtctr	r10
++
++	ld	r9,PACA_EXGEN+EX_CTR(r13)
++	mtctr	r9
++	lwz	r9,PACA_EXGEN+EX_CCR(r13)
+ 	mtcrf	0x80,r9
+ 	std	r1,PACAR1(r13)
+ 	ld	r9,PACA_EXGEN+EX_R9(r13)
 -- 
 2.23.0
 
