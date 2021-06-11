@@ -2,78 +2,83 @@ Return-Path: <SRS0=pFgb=LF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 084DFC4743D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 08:12:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC3CC48BD1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:40:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 693BB610A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 08:12:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 693BB610A5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 09E6F613D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:40:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09E6F613D0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G1YVG47l0z3c2W
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 18:12:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G1bS55shZz3c36
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 19:40:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=eRIAU0zr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=K6l4dDzX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::12f;
- helo=mail-lf1-x12f.google.com; envelope-from=jannh@google.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f;
+ helo=mail-pl1-x62f.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=eRIAU0zr; dkim-atps=neutral
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com
- [IPv6:2a00:1450:4864:20::12f])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=K6l4dDzX; dkim-atps=neutral
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
+ [IPv6:2607:f8b0:4864:20::62f])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G1YTl4l9yz306R
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 18:11:54 +1000 (AEST)
-Received: by mail-lf1-x12f.google.com with SMTP id k40so7322254lfv.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 01:11:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=qVfuX7eringV45aszymciC9M23yqzm+XrbU26OAukAs=;
- b=eRIAU0zr7umENvyK9+XECGlz1pvLL13u2t4pVeLebfQhIaiWxQbFjvk+jqX6UjbzUv
- Q6wwZ9e3Nig0u/2hl6ZT03Ax4Q2ZG/oPSX6OYUXZh29dGkRQij2WQErrG8KyyjU41gj+
- CktPYNOhzbN1oHKLbbup75s+H4HuE5+keZKj90GIeonXeOBbjexXX59U+ERX3gn07vht
- wbHj14odE+xiJ7GV1wJoPgO4L714hUxJcm7b1ytzI8fWboJsSm5SQa677PwApiLc3kmn
- GDy+R5nS+EkP2HBZfU4d8aWb+8XbmILF5hsfUuFuu/t+7cvlXLJ/5N1Ya+11WaXqNkVn
- BRdw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G1bRZ6SQHz3033
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 19:40:09 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id 69so2560206plc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 02:40:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=DG/MZpO/hjtRvZGvdauW0MMB98XC9pxZIIemqr9D2mA=;
+ b=K6l4dDzXLv2kRPUWY+K+kCWFOxlkADsmtqAMwlZC8uBxi/kMiKxvPWGvDZuQyOPmEj
+ U0M+oAk6szrx/Hjyua7kTrCnQjbm9jT9OrD6OTFpcA3hP9GOZhnTLh32K/bb/s0HUEHN
+ QDKYMwkjMCj9Znapr6ItdpAjCpc72EKiQTrcvigX8TJ45XRNRwfHw2tjNNrnGnwWuHcR
+ NSwXrONKzknwFGiQjvo3zKuTnFbnjCtNVnNWg+erbFCYZlSKrOLx+NrFhe7Ri9Y5TpJP
+ p5E3Gkp18DeYOuDqHU1NeZXSF1rvZGsC4l4dSdYe3bi1ZA52sx9PxyVk7CcsoK3Tv3q8
+ Qp1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=qVfuX7eringV45aszymciC9M23yqzm+XrbU26OAukAs=;
- b=OGUnguG4dQ6l6mzwz2DsHyCsWWfUlc6S1P2B5RDuo66rSvi4UtOcuhaW6gPDESJsrD
- BmBOqwlTBq8HdZ89GJISBofGzqYst3LkOH5IxN6CgjSyxUsgbMwDuZL7arcv2/b2pIv3
- i9DXpbUR1MkPoNZIfD7SQ00ySzfyQYso6dw8wQ4dhuBBvk9Dm5HTCniEFOBGcckJF0wZ
- AQ0r7/gf19eJ8IAA0iXmVfN9Bvk2RytsjMfveXCsPP7wW+sCvnCOtDgnmBl9R1HQW1Fj
- KB2Yzn1VxKnD0yG/EWyAEMaUE+k87LfW1S9LH2yf0HVq5gZMiqtrKCKZ97KGfe2e+nDQ
- HQag==
-X-Gm-Message-State: AOAM530qB4fXNTAsorJW0MTO7n+y53qGyC39d9tC/PwDumW8q8qY8KZw
- aDJlYQx1BjtpX0ZERNFCcJawV1FebI2SG909vqahvw==
-X-Google-Smtp-Source: ABdhPJzQkvm60uXV9+CvbOCRR1sXng4+MCdfWrwi7B0EeHc1seHxuq/0nQSZXtU3+Fsu2yx9Zh2OHp41ji8WxFnzTmw=
-X-Received: by 2002:ac2:4a6f:: with SMTP id q15mr1963634lfp.463.1623399105636; 
- Fri, 11 Jun 2021 01:11:45 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=DG/MZpO/hjtRvZGvdauW0MMB98XC9pxZIIemqr9D2mA=;
+ b=JASIK/PHeZUMM7kvmw0xdbxPRzaWgTXy/9AK5mLDqTwVqW4a3Sd5KaZlWF6UmzNSl2
+ glrX2YzS50IFicg6Nc4shKw9BzT9P0ChGAn9tDj7ukizgQtDGqLSmh/eB45x14oLEa83
+ NXSBJgnhz0Pd/v9pH5Xb7rlt7lhCdIciKYqofYxOqe5jWu1PHSLxNH/VtZ5o7Pp5L6jZ
+ czJBaqGy3pciROKsaWfLJ7DVleWFM1CxZCsm2WB3ZkP31gruFVZUDlQYVFPDNFS/IXFY
+ 9ZA0OIqrETaLuiEl6hmeT8hwhkEK8MDK62XiJ1fRVE7rVR1+KRQasge+wnYGjBIofIU2
+ pBsg==
+X-Gm-Message-State: AOAM532ukq6rosU4x8EDiP0mugYzW2A7wMkaXOOuYjg689puf8AUjvGx
+ BW9F5p/p77g6jUdrWlbgpQHzF32L4eU=
+X-Google-Smtp-Source: ABdhPJyEwqk0A+dK/0pGaDhp/W57VGpZrx4ClsHT1p6EcCGweSbpc4HRj2nQw5wGt7SiWKInHbF0aw==
+X-Received: by 2002:a17:902:7c92:b029:111:2ca8:3d8e with SMTP id
+ y18-20020a1709027c92b02901112ca83d8emr3093148pll.77.1623404406142; 
+ Fri, 11 Jun 2021 02:40:06 -0700 (PDT)
+Received: from bobo.ibm.com (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id o139sm4981655pfd.96.2021.06.11.02.40.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 11 Jun 2021 02:40:05 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 0/2] powerpc/64: Option to use ELF V2 ABI for big-endian
+Date: Fri, 11 Jun 2021 19:39:57 +1000
+Message-Id: <20210611093959.821525-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-References: <20210610083549.386085-1-aneesh.kumar@linux.ibm.com>
- <20210610083549.386085-7-aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20210610083549.386085-7-aneesh.kumar@linux.ibm.com>
-From: Jann Horn <jannh@google.com>
-Date: Fri, 11 Jun 2021 10:11:19 +0200
-Message-ID: <CAG48ez3=gDRSB02aL84-A54jmPTja3BS0imje-PQywgidRuPxA@mail.gmail.com>
-Subject: Re: [PATCH 6/6] mm/mremap: hold the rmap lock in write mode when
- moving page table entries.
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,29 +90,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, Nicholas Piggin <npiggin@gmail.com>,
- Linux-MM <linux-mm@kvack.org>, Kalesh Singh <kaleshsingh@google.com>,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Jessica Yu <jeyu@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 10, 2021 at 10:35 AM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
-> To avoid a race between rmap walk and mremap, mremap does take_rmap_locks().
-> The lock was taken to ensure that rmap walk don't miss a page table entry due to
-> PTE moves via move_pagetables(). The kernel does further optimization of
-> this lock such that if we are going to find the newly added vma after the
-> old vma, the rmap lock is not taken. This is because rmap walk would find the
-> vmas in the same order and if we don't find the page table attached to
-> older vma we would find it with the new vma which we would iterate later.
-[...]
-> Fixes: 2c91bd4a4e2e ("mm: speed up mremap by 20x on large regions")
-> Fixes: c49dd3401802 ("mm: speedup mremap on 1GB or larger regions")
+Since v3 I added Michael's module check for ELF ABI level. This requires
+a change to core module code. If Jessica is happy with it it could go
+via the powerpc tree.
 
-probably also "Cc: stable@vger.kernel.org"?
+Thanks,
+Nick
+
+Nicholas Piggin (2):
+  module: add elf_check_module_arch for module specific elf arch checks
+  powerpc/64: Option to use ELF V2 ABI for big-endian kernels
+
+ arch/powerpc/Kconfig                | 22 ++++++++++++++++++++++
+ arch/powerpc/Makefile               | 18 ++++++++++++------
+ arch/powerpc/boot/Makefile          |  4 +++-
+ arch/powerpc/include/asm/module.h   | 24 ++++++++++++++++++++++++
+ arch/powerpc/kernel/vdso64/Makefile | 13 +++++++++++++
+ drivers/crypto/vmx/Makefile         |  8 ++++++--
+ drivers/crypto/vmx/ppc-xlate.pl     | 10 ++++++----
+ include/linux/moduleloader.h        |  5 +++++
+ kernel/module.c                     |  2 +-
+ 9 files changed, 92 insertions(+), 14 deletions(-)
+
+-- 
+2.23.0
+
