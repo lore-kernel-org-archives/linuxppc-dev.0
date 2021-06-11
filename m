@@ -2,110 +2,169 @@ Return-Path: <SRS0=pFgb=LF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99FA7C48BE0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 12:43:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1A3CC48BE0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 12:59:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26908613DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 12:43:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26908613DF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 268C461364
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 12:59:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 268C461364
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=fb.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G1gW93CnHz3cGV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 22:43:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G1gsw1mtSz3c3s
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 22:59:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lwXL1U1R;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fb.com header.i=@fb.com header.a=rsa-sha256 header.s=facebook header.b=GXyLfXH8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=lwXL1U1R; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=fb.com
+ (client-ip=67.231.153.30; helo=mx0a-00082601.pphosted.com;
+ envelope-from=prvs=579658a80c=clm@fb.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=fb.com header.i=@fb.com header.a=rsa-sha256
+ header.s=facebook header.b=GXyLfXH8; dkim-atps=neutral
+Received: from mx0a-00082601.pphosted.com (mx0b-00082601.pphosted.com
+ [67.231.153.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G1gTj3cdDz3bxZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 22:42:17 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 15BCXbCi013278; Fri, 11 Jun 2021 08:42:10 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : subject :
- date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=JhedSqjiHJno7nFv+Mq6xGFzMxPYJSPj48RO97RHbFM=;
- b=lwXL1U1RJxTNN7wpeg8jseEM5Zrm11Rbk1tXTzjC++mH9GH92khEHrkzEjx8hok/WQmV
- UH1ZRiPGUTU98FwhHHkYSksIb06ib6WUe56hRfeBz5a8BY/lprDK6PuXVX17ikM5lapF
- G0XK0RS9aAkIK5l1tyVJW4jLK/G/Ku1NzIIPaGVIx05YROkX4vnnDLvUu/qKpJCWZqrV
- d955k0Iz8Xu3lyA505w0AEUIl2tVDjn4c+YAofxa7cSbItwlrGz4wkWsMPvlSUfFSdVj
- G35EFtjbeL8Txrk7MupFd4Qt+8a2xqSHhw2crhCYK+x1M2kg69L4JhxCUK6E/xLdD2x1 Uw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3947pcgq04-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 11 Jun 2021 08:42:10 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 15BCY43W016082;
- Fri, 11 Jun 2021 08:42:10 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3947pcgpy4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 11 Jun 2021 08:42:09 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15BCWbUQ004792;
- Fri, 11 Jun 2021 12:42:07 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 3900w8becw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 11 Jun 2021 12:42:07 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 15BCf7fR35652026
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 11 Jun 2021 12:41:07 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6F36252067;
- Fri, 11 Jun 2021 12:41:59 +0000 (GMT)
-Received: from pratiks-thinkpad.in.ibm.com (unknown [9.85.83.107])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 982735205A;
- Fri, 11 Jun 2021 12:41:57 +0000 (GMT)
-From: "Pratik R. Sampat" <psampat@linux.ibm.com>
-To: mpe@ellerman.id.au, shuah@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
- psampat@linux.ibm.com, pratik.r.sampat@gmail.com
-Subject: [RFC 1/2] powerpc/cpuidle: Extract IPI based and timer based wakeup
- latency from idle states
-Date: Fri, 11 Jun 2021 18:11:53 +0530
-Message-Id: <20210611124154.56427-2-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210611124154.56427-1-psampat@linux.ibm.com>
-References: <20210611124154.56427-1-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G1gsF4Gs6z2ymN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 22:59:12 +1000 (AEST)
+Received: from pps.filterd (m0089730.ppops.net [127.0.0.1])
+ by m0089730.ppops.net (8.16.0.43/8.16.0.43) with SMTP id 15BCtfSX020303;
+ Fri, 11 Jun 2021 05:59:03 -0700
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fb.com;
+ h=from : to : cc : subject
+ : date : message-id : references : in-reply-to : content-type : content-id
+ : content-transfer-encoding : mime-version; s=facebook;
+ bh=1Odm7n1R5mKZBER6gJN89XcGzGFIJYcLUSrXgxBt45M=;
+ b=GXyLfXH8Wh9HB/xBL9DGakGBSrAJhNviu8V8zPDIXiotVjMfxtvMpvNFvOox7SFmdxvP
+ rGFb081cZ5Ahs8o5gL1bAGYXI45m2QT+aL/uo7IFCAP3XUwDseit/MFePSjuSCbeFIFS
+ yLm9fOZFHACmyCRcCZZmGrWBaCajx7dEtJU= 
+Received: from mail.thefacebook.com ([163.114.132.120])
+ by m0089730.ppops.net with ESMTP id 393scmvj4v-12
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
+ Fri, 11 Jun 2021 05:59:03 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (100.104.98.9) by
+ o365-in.thefacebook.com (100.104.94.198) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Fri, 11 Jun 2021 05:59:01 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CvC2mfAJvwSlTEpsvfrqxoNwpW8Sx7G9DQTk96dyrI1IoHOLJsAyT/u+xd0aPG4VsdEsIeAUoHH6ez1MNh7oUswOmIEXJERKL4mV+KHJE4bix1uuRb7PcUJfTjvPARcwsKYEJOtBIp1jsHxvBgqfDayIq/hOsgdiRoe2UKUlm6+tlK8eIkOsZ9WorvKusGyCUUloXSd7ogI/lBZKH5kGMdVMQ0Qqy7VAO2w+t5iPepQZnd/hP9W3Ih5OqtZjQX2esFAZPIol+IJzwzHitcCk0YbIqLtYCLLcInXvgiKQSuMmJaTLKzPm0bemiu+Uh/zxzdu6uIJ/RY8LS251ve1GYQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1Odm7n1R5mKZBER6gJN89XcGzGFIJYcLUSrXgxBt45M=;
+ b=b6E/qpNnuTATogeQ3MmB43QtA4UixL30QCBg3J/6ufPbMTIBAi01bJSuiFkFif0zaLEr2d/FTDgCKegZejF6X+q+iO1SzxGJQGYilcDzd9I8X1I7idBhoPzaCLuL0RZNiRLqWhlhCZ793CZrcet1bzRofvWsyQb4XsNETfjbMqwmbMsKEX97vD2Ob+3zTqRyUnd4dztzWZ832uHspghJbWAY8ZvkkT0QdevAQl+fla7FPKyCq4kCVRL0lfmbdlHLXSHAlK8IB7WVg1UgO8H1otJb65GvBuW8OpiGUzi4JOjoHE2prdeKp1bbHiTDLmsZfzQ1z54M0yn+/LCX0zeu6g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=fb.com; dmarc=pass action=none header.from=fb.com; dkim=pass
+ header.d=fb.com; arc=none
+Received: from CO1PR15MB4924.namprd15.prod.outlook.com (2603:10b6:303:e3::16)
+ by MWHPR15MB1343.namprd15.prod.outlook.com (2603:10b6:320:25::17)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4219.22; Fri, 11 Jun
+ 2021 12:58:58 +0000
+Received: from CO1PR15MB4924.namprd15.prod.outlook.com
+ ([fe80::2d50:36f7:4bce:9b01]) by CO1PR15MB4924.namprd15.prod.outlook.com
+ ([fe80::2d50:36f7:4bce:9b01%6]) with mapi id 15.20.4219.022; Fri, 11 Jun 2021
+ 12:58:58 +0000
+From: Chris Mason <clm@fb.com>
+To: "dsterba@suse.cz" <dsterba@suse.cz>
+Subject: Re: [PATCH] btrfs: Disable BTRFS on platforms having 256K pages
+Thread-Topic: [PATCH] btrfs: Disable BTRFS on platforms having 256K pages
+Thread-Index: AQHXXgAh7cM+p+g0g0iDshoLzzyYuqsNU9CAgAAZUgCAAVnygA==
+Date: Fri, 11 Jun 2021 12:58:58 +0000
+Message-ID: <6769ED4C-15A8-4CFF-BF2B-26A5328257A0@fb.com>
+References: <a16c31f3caf448dda5d9315e056585b6fafc22c5.1623302442.git.christophe.leroy@csgroup.eu>
+ <185278AF-1D87-432D-87E9-C86B3223113E@fb.com>
+ <cdadf66e-0a6e-4efe-0326-7236c43b2735@csgroup.eu>
+ <20210610162046.GB28158@suse.cz>
+In-Reply-To: <20210610162046.GB28158@suse.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-mailer: Apple Mail (2.3654.100.0.2.22)
+authentication-results: suse.cz; dkim=none (message not signed)
+ header.d=none;suse.cz; dmarc=none action=none header.from=fb.com;
+x-originating-ip: [2620:10d:c091:480::1:ee07]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 4a7a5a11-7301-48b2-4019-08d92cd8ada6
+x-ms-traffictypediagnostic: MWHPR15MB1343:
+x-microsoft-antispam-prvs: <MWHPR15MB134319A6894349082C7441E2D3349@MWHPR15MB1343.namprd15.prod.outlook.com>
+x-fb-source: Internal
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: O2Qavn6BpKgfIM1Bru/fdKAy9axqWw4zytOMWL5Mz12DPUbbJRPl/76O4OypDibF3CfOVaA5Rztvs8prHqKYlE1yP/sG/gu6LlUbxzVs2maeuGeC+Bk/awlQycJMoYlgt5DR+PIObhGL31BEsDvcl7wDaOKcMsRbIaeJRN1lG2k5mIR5wBWqNYnICAFq3JnfeuIskAprpNd6SINPOT58XQ8xPs82LwJAlqaEfSfPB1eQRVtppXFxDDOjtcM76IvXKxz4bDtFk4JoFjHyqQzfEUf3j5Ks3FZbUsPUxL7HEmzfUTGJKIl99q00TDNMsuweoCUZ2kt043n0ejjvlRZThx9XLHdO/0P6FUNT2p6wMEthlQGW0mit1dTpRD04YgQB5ZtDplWtZydgBNFJwQ8WKQX9TygT4DW34TltMsS/Wia5SXAW6sbI9mDNyfSv3umhfi3gZQ68E7sRnW5gZJLdVEqRlJ4viFwzKGpEBQB1WNniVXRXqYluhBsQHKJHvaFDkoTaGfF57V7+VuqOqLSB5+NVFbhNcgSDs7V82SbaOAABwJP72Bnz72HNU3WBvzu2mliF1LEnzOFVqafTxNZk/bO5BKhHQ0vWDZ5h5z5uFYPeW0VgMNenyTuc1nVYIr3Rq4UrEcEitxcQgQRRifWHDw==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO1PR15MB4924.namprd15.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(396003)(346002)(376002)(39860400002)(136003)(76116006)(5660300002)(316002)(8936002)(91956017)(186003)(6506007)(53546011)(2616005)(86362001)(36756003)(54906003)(38100700002)(122000001)(83380400001)(66556008)(66446008)(66476007)(8676002)(64756008)(4326008)(6486002)(6916009)(66946007)(478600001)(71200400001)(2906002)(33656002)(6512007)(45980500001);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?QVFSTHNDVVFvQzA2bDZ6VnozL1U1a0RmYVp1cTFRSFc0RlZDWjcvTFVqMTVi?=
+ =?utf-8?B?OGhOWkh1K3RNTVdQakZNbndCZnV0UFZMWVdFbkJ3LzZFbnMwOC9CTEk0WDFM?=
+ =?utf-8?B?YjkzejlBUVdTWCtQQlNyVENsRHFzUHNMZTNudnluZXNkZ1RxaUpSUjY0L05S?=
+ =?utf-8?B?STlhUTJCWHI5WUxWU01TNENzOGc2TnhmQWJjL2N1aXNzL2IvSWRxSHJaeFE1?=
+ =?utf-8?B?QW0vTDJhZS82UUxSTWFoMjNyK3F3RnJQVnRrMlR1N2JhSkdreTlFRXZjdnc1?=
+ =?utf-8?B?bGVkUGZGWTMvUFBJMDNGYWJOdzU2N3owNkltS0c2bXludERVZGF1SjlnQU1X?=
+ =?utf-8?B?SjJyK0VsTDZzaFJIVm40bDBad0tYMXFGWXV1MDBZb3dVRmY3VUdHSFNiUW1q?=
+ =?utf-8?B?bituY3lWdUwxTDd2cjNjS2Z5c2pFOGVxRnZ5a1dMOHBPYnFHeDEvYlJZaXgy?=
+ =?utf-8?B?ODlVODY4T3kxcnhhaGoyNkwyQ2ZEemxJL1BSVTlEMW5NQXAzaE9JSjJPaFlK?=
+ =?utf-8?B?dGg1MURzak5pbkVqTFVLZEMzM0ZMMElSVnVhckV6cVNheXlaL2JKazJTdGMy?=
+ =?utf-8?B?bk1PTWlzU29oZ1duWlUwNDdOY3FZV2NQZGJhb3lHZkY3NUhEbERmTkxORnRp?=
+ =?utf-8?B?ZllqaXpGWjFRdUpNa0pKWmZjVk5UUFVjT2Z2SWUyVEJMd2hmeVBoNWZnUWxn?=
+ =?utf-8?B?c1dFWHl2NmNQVmM4c1doQ21Qdk9idDlHWTZEUFJSc3hHZGNjaksxVTlXejlj?=
+ =?utf-8?B?MGYyK1RNcUc1QmdHS2w4cWl0Rm12SzFQTjB0eFk0ZXNqMWoyYmJaS1pGOEdh?=
+ =?utf-8?B?Y0RjeU5TOEpTNDNzQ1dmclRQZG1aZkV2SlFQOE5KQitJMjVRQ2N4cFAzTTBl?=
+ =?utf-8?B?dnNRbmloU0NqQ29FTFFuVGVRcEtKb3JONkxhMlpXVWpwWlJrQmExMGVFMk00?=
+ =?utf-8?B?Ym84dTB5NHJNYU4rSnhJdmdkSWhkZis4SS9kdWxMR1BzZklubWM2bUVnZnJ5?=
+ =?utf-8?B?YysyVjhmcCtqenlEMmpSbTdaSXY0STgxT2lxVjJIbEx4Tk9uVzVNaXhDaXJI?=
+ =?utf-8?B?OHA3WWVXaWppWnhXTmdiSXVUZ0h1T3dnZTk4VmxVc2NNR1FnaEpFdittclJn?=
+ =?utf-8?B?cFNxMjFsb2NBaXRIYTRNRFZ4elh5bTk1eDlLYWxmOW44d1c5OEFWd3JVZE4z?=
+ =?utf-8?B?ekRseE1pbmZIb2piN2NUWUhVOU5tektOMkY5d1hsc0VDSUcxZE1hZUwrM1BZ?=
+ =?utf-8?B?bVJ2K2hlYWZETFF6UDdOVHdQM3BQaklWdkVhOWZFSDBsWUFZY1pLd0VEYVN1?=
+ =?utf-8?B?c2ZDMi9RQUwyZ0x0ZVMzU2dsQllvVFVHTi9QNk1aTS9hb2E0R2VSbU0rN2RM?=
+ =?utf-8?B?ZWxYVTAyekpraXVhajRnZ0NUMEJIbDNMTDAzS2lncWo1anRuUEozaTFwSk9Q?=
+ =?utf-8?B?N2l2c1YrbnloVlFUaWp6T2Y3RUVEUjAvYVZNQ2dydTg5OG1kQk9BTWV3OWFL?=
+ =?utf-8?B?OVJYb2tkWTlxRUlvYUR0RGg5Mjg0Q2lQV1hlWkNCMkNtajVtOXZuTktiZTM1?=
+ =?utf-8?B?aUJyTlkrV1EzR2dCaGJqR0Z6NWNxTWZSNTZMZ1Q2S1pDZzk4b3dJdTlWU2FW?=
+ =?utf-8?B?QkFEcGlnelRvd0RjTmpIZEFuRW84QlV6VVJ6TUVNNW1rMG9qSjdHS1ZHY2hl?=
+ =?utf-8?B?OUJ1Tmp4QkVRSURRRXFzY1ZiSXcxU0NoSmFaU0pwa3dZS2ZQZElLOEpwSk5W?=
+ =?utf-8?B?M1B1QjdJOXJsaVB2N2g3VGU3azI4TFBXd3BxZGNMSzN2QWFDanhUbzZLWG1y?=
+ =?utf-8?Q?CKjdbxn/N9nsvhMq3E7Yzh1v7viqF6B+K9r8o=3D?=
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <3578489A2DE29A4CAA2B434D1802B8D6@namprd15.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 4rLkOiwQ1o7QlAmkhVGHrnTpQtroRNa1
-X-Proofpoint-ORIG-GUID: -FGEv8xzENIjBrC_GDqSohzEYwtQ_UsR
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR15MB4924.namprd15.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4a7a5a11-7301-48b2-4019-08d92cd8ada6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Jun 2021 12:58:58.5884 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 8ae927fe-1255-47a7-a2af-5f3a069daaa2
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 7xDUKeVPUvV24rUG4cj7AH1Fo7nPMC7MA4ZoosPJMrKG3/zazBh6yadbcArk4Vgr
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR15MB1343
+X-OriginatorOrg: fb.com
+X-Proofpoint-GUID: zDzmvpRLH6_xvZkGLqvT7P_AtmBa3GLo
+X-Proofpoint-ORIG-GUID: zDzmvpRLH6_xvZkGLqvT7P_AtmBa3GLo
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
  definitions=2021-06-11_05:2021-06-11,
  2021-06-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 mlxscore=0
- lowpriorityscore=0 phishscore=0 malwarescore=0 bulkscore=0 spamscore=0
- suspectscore=0 impostorscore=0 priorityscore=1501 adultscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2106110080
+X-Proofpoint-Spam-Details: rule=fb_default_notspam policy=fb_default score=0
+ mlxscore=0 adultscore=0
+ spamscore=0 suspectscore=0 mlxlogscore=999 malwarescore=0 phishscore=0
+ impostorscore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2106110083
+X-FB-Internal: deliver
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,225 +176,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
+ Josef Bacik <josef@toxicpanda.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Sterba <dsterba@suse.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-btrfs <linux-btrfs@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce a mechanism to fire directed IPIs from a specified source CPU
-to a specified target CPU and measure the difference in time incurred on
-wakeup.
-
-Also, introduce a mechanism to queue a HR timer on a specified CPU and
-subsequently measure the time taken to wakeup the CPU.
-
-Finally define a simple debugfs interface to control the knobs to fire
-the IPI and Timer events on specified CPU and view their incurred idle
-wakeup latencies.
-
-Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
----
- arch/powerpc/kernel/Makefile               |   1 +
- arch/powerpc/kernel/test-cpuidle_latency.c | 157 +++++++++++++++++++++
- lib/Kconfig.debug                          |  10 ++
- 3 files changed, 168 insertions(+)
- create mode 100644 arch/powerpc/kernel/test-cpuidle_latency.c
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f66b63e81c3b..56e36e797dd4 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_DAWR)		+= dawr.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
-+obj-$(CONFIG_IDLE_LATENCY_SELFTEST)	  += test-cpuidle_latency.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
-diff --git a/arch/powerpc/kernel/test-cpuidle_latency.c b/arch/powerpc/kernel/test-cpuidle_latency.c
-new file mode 100644
-index 000000000000..f138011ac225
---- /dev/null
-+++ b/arch/powerpc/kernel/test-cpuidle_latency.c
-@@ -0,0 +1,157 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Module-based API test facility for cpuidle latency using IPIs and timers
-+ */
-+
-+#include <linux/debugfs.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+/*
-+ * IPI based wakeup latencies
-+ * Measure time taken for a CPU to wakeup on a IPI sent from another CPU
-+ * The latency measured also includes the latency of sending the IPI
-+ */
-+struct latency {
-+	unsigned int src_cpu;
-+	unsigned int dest_cpu;
-+	ktime_t time_start;
-+	ktime_t time_end;
-+	u64 latency_ns;
-+} ipi_wakeup;
-+
-+static void measure_latency(void *info)
-+{
-+	struct latency *v;
-+	ktime_t time_diff;
-+
-+	v = (struct latency *)info;
-+	v->time_end = ktime_get();
-+	time_diff = ktime_sub(v->time_end, v->time_start);
-+	v->latency_ns = ktime_to_ns(time_diff);
-+}
-+
-+void run_smp_call_function_test(unsigned int cpu)
-+{
-+	ipi_wakeup.src_cpu = smp_processor_id();
-+	ipi_wakeup.dest_cpu = cpu;
-+	ipi_wakeup.time_start = ktime_get();
-+	smp_call_function_single(cpu, measure_latency, &ipi_wakeup, 1);
-+}
-+
-+/*
-+ * Timer based wakeup latencies
-+ * Measure time taken for a CPU to wakeup on a timer being armed and fired
-+ */
-+struct timer_data {
-+	unsigned int src_cpu;
-+	u64 timeout;
-+	ktime_t time_start;
-+	ktime_t time_end;
-+	struct hrtimer timer;
-+	u64 timeout_diff_ns;
-+} timer_wakeup;
-+
-+static enum hrtimer_restart timer_called(struct hrtimer *hrtimer)
-+{
-+	struct timer_data *w;
-+	ktime_t time_diff;
-+
-+	w = container_of(hrtimer, struct timer_data, timer);
-+	w->time_end = ktime_get();
-+
-+	time_diff = ktime_sub(w->time_end, w->time_start);
-+	time_diff = ktime_sub(time_diff, ns_to_ktime(w->timeout));
-+	w->timeout_diff_ns = ktime_to_ns(time_diff);
-+	return HRTIMER_NORESTART;
-+}
-+
-+static void run_timer_test(unsigned int ns)
-+{
-+	hrtimer_init(&timer_wakeup.timer, CLOCK_MONOTONIC,
-+		     HRTIMER_MODE_REL);
-+	timer_wakeup.timer.function = timer_called;
-+	timer_wakeup.src_cpu = smp_processor_id();
-+	timer_wakeup.timeout = ns;
-+	timer_wakeup.time_start = ktime_get();
-+
-+	hrtimer_start(&timer_wakeup.timer, ns_to_ktime(ns),
-+		      HRTIMER_MODE_REL_PINNED);
-+}
-+
-+static struct dentry *dir;
-+
-+static int cpu_read_op(void *data, u64 *dest_cpu)
-+{
-+	*dest_cpu = ipi_wakeup.dest_cpu;
-+	return 0;
-+}
-+
-+static int cpu_write_op(void *data, u64 value)
-+{
-+	run_smp_call_function_test(value);
-+	return 0;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(ipi_ops, cpu_read_op, cpu_write_op, "%llu\n");
-+
-+static int timeout_read_op(void *data, u64 *timeout)
-+{
-+	*timeout = timer_wakeup.timeout;
-+	return 0;
-+}
-+
-+static int timeout_write_op(void *data, u64 value)
-+{
-+	run_timer_test(value);
-+	return 0;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(timeout_ops, timeout_read_op, timeout_write_op, "%llu\n");
-+
-+static int __init latency_init(void)
-+{
-+	struct dentry *temp;
-+
-+	dir = debugfs_create_dir("latency_test", 0);
-+	if (!dir) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/latency_test\n");
-+		return -1;
-+	}
-+	temp = debugfs_create_file("ipi_cpu_dest",
-+				   0666,
-+				   dir,
-+				   NULL,
-+				   &ipi_ops);
-+	if (!temp) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/ipi_cpu_dest\n");
-+		return -1;
-+	}
-+	debugfs_create_u64("ipi_latency_ns", 0444, dir, &ipi_wakeup.latency_ns);
-+	debugfs_create_u32("ipi_cpu_src", 0444, dir, &ipi_wakeup.src_cpu);
-+
-+	temp = debugfs_create_file("timeout_expected_ns",
-+				   0666,
-+				   dir,
-+				   NULL,
-+				   &timeout_ops);
-+	if (!temp) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/timeout_expected_ns\n");
-+		return -1;
-+	}
-+	debugfs_create_u64("timeout_diff_ns", 0444, dir, &timer_wakeup.timeout_diff_ns);
-+	debugfs_create_u32("timeout_cpu_src", 0444, dir, &timer_wakeup.src_cpu);
-+	pr_info("Latency Test module loaded\n");
-+	return 0;
-+}
-+
-+static void __exit latency_cleanup(void)
-+{
-+	pr_info("Cleaning up Latency Test module.\n");
-+	debugfs_remove_recursive(dir);
-+}
-+
-+module_init(latency_init);
-+module_exit(latency_cleanup);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("IBM Corporation");
-+MODULE_DESCRIPTION("Measuring idle latency for IPIs and Timers");
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 417c3d3e521b..70264687e0c2 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1513,6 +1513,16 @@ config DEBUG_KOBJECT
- 	  If you say Y here, some extra kobject debugging messages will be sent
- 	  to the syslog.
- 
-+config IDLE_LATENCY_SELFTEST
-+	tristate "Cpuidle latency selftests"
-+	depends on CPU_IDLE
-+	help
-+	  This option provides a kernel module that runs tests using the IPI and
-+	  timers to measure latency.
-+
-+	  Say M if you want these self tests to build as a module.
-+	  Say N if you are unsure.
-+
- config DEBUG_KOBJECT_RELEASE
- 	bool "kobject release debugging"
- 	depends on DEBUG_OBJECTS_TIMERS
--- 
-2.17.1
-
+DQo+IE9uIEp1biAxMCwgMjAyMSwgYXQgMTI6MjAgUE0sIERhdmlkIFN0ZXJiYSA8ZHN0ZXJiYUBz
+dXNlLmN6PiB3cm90ZToNCj4gDQo+IE9uIFRodSwgSnVuIDEwLCAyMDIxIGF0IDA0OjUwOjA5UE0g
+KzAyMDAsIENocmlzdG9waGUgTGVyb3kgd3JvdGU6DQo+PiANCj4+IA0KPj4gTGUgMTAvMDYvMjAy
+MSDDoCAxNTo1NCwgQ2hyaXMgTWFzb24gYSDDqWNyaXQgOg0KPj4+IA0KPj4+PiBPbiBKdW4gMTAs
+IDIwMjEsIGF0IDE6MjMgQU0sIENocmlzdG9waGUgTGVyb3kgPGNocmlzdG9waGUubGVyb3lAY3Nn
+cm91cC5ldT4gd3JvdGU6DQo+Pj4+IA0KPj4+PiBXaXRoIGEgY29uZmlnIGhhdmluZyBQQUdFX1NJ
+WkUgc2V0IHRvIDI1NkssIEJUUkZTIGJ1aWxkIGZhaWxzDQo+Pj4+IHdpdGggdGhlIGZvbGxvd2lu
+ZyBtZXNzYWdlDQo+Pj4+IA0KPj4+PiBpbmNsdWRlL2xpbnV4L2NvbXBpbGVyX3R5cGVzLmg6MzI2
+OjM4OiBlcnJvcjogY2FsbCB0byAnX19jb21waWxldGltZV9hc3NlcnRfNzkxJyBkZWNsYXJlZCB3
+aXRoIGF0dHJpYnV0ZSBlcnJvcjogQlVJTERfQlVHX09OIGZhaWxlZDogKEJUUkZTX01BWF9DT01Q
+UkVTU0VEICUgUEFHRV9TSVpFKSAhPSAwDQo+Pj4+IA0KPj4+PiBCVFJGU19NQVhfQ09NUFJFU1NF
+RCBiZWluZyAxMjhLLCBCVFJGUyBjYW5ub3Qgc3VwcG9ydCBwbGF0Zm9ybXMgd2l0aA0KPj4+PiAy
+NTZLIHBhZ2VzIGF0IHRoZSB0aW1lIGJlaW5nLg0KPj4+PiANCj4+Pj4gVGhlcmUgYXJlIHR3byBw
+bGF0Zm9ybXMgdGhhdCBjYW4gc2VsZWN0IDI1NksgcGFnZXM6DQo+Pj4+IC0gaGV4YWdvbg0KPj4+
+PiAtIHBvd2VycGMNCj4+Pj4gDQo+Pj4+IERpc2FibGUgQlRSRlMgd2hlbiAyNTZLIHBhZ2Ugc2l6
+ZSBpcyBzZWxlY3RlZC4NCj4+Pj4gDQo+Pj4gDQo+Pj4gV2XigJlsbCBoYXZlIG90aGVyIHN1YnBh
+Z2UgYmxvY2tzaXplIGNvbmNlcm5zIHdpdGggMjU2SyBwYWdlcywgYnV0IHRoaXMgQlRSRlNfTUFY
+X0NPTVBSRVNTRUQgI2RlZmluZSBpcyBhcmJpdHJhcnkuICBJdOKAmXMganVzdCB0cnlpbmcgdG8g
+aGF2ZSBhbiB1cHBlciBib3VuZCBvbiB0aGUgYW1vdW50IG9mIG1lbW9yeSB3ZeKAmWxsIG5lZWQg
+dG8gdW5jb21wcmVzcyBhIHNpbmdsZSBwYWdl4oCZcyB3b3J0aCBvZiByYW5kb20gcmVhZHMuDQo+
+Pj4gDQo+Pj4gV2UgY291bGQgY2hhbmdlIGl0IHRvIG1heChQQUdFX1NJWkUsIDEyOEspIG9yIGp1
+c3QgYnVtcCB0byAyNTZLLg0KPj4+IA0KPj4gDQo+PiBCdXQgaWYgMjU2SyBpcyBwcm9ibGVtYXRp
+YyBpbiBvdGhlciB3YXlzLCBpcyBpdCB3b3J0aCBidW1waW5nIEJUUkZTX01BWF9DT01QUkVTU0VE
+IHRvIDI1NksgPw0KPj4gDQo+PiBEYXZpZCwgaW4gYmVsb3cgbWFpbCwgc2FpZCB0aGF0IDI1Nksg
+c3VwcG9ydCB3b3VsZCByZXF1aXJlIGRlYXBlciBjaGFuZ2VzLiBTbyBkaXNhYmxpbmcgQlRSRlMg
+DQo+PiBzdXBwb3J0IHNlZW1zIHRoZSBlYXNpZXN0IHNvbHV0aW9uIGZvciB0aGUgdGltZSBiZWlu
+ZywgYXQgbGVhc3QgZm9yIFN0YWJsZSAoSSBmb3Jnb3QgdGhlIEZpeGVzOiB0YWcgDQo+PiBhbmQg
+dGhlIENDOiB0byBzdGFibGUpLg0KPj4gDQo+PiBPbiBwb3dlcnBjLCAyNTZrIHBhZ2VzIGlzIGEg
+Y29ybmVyIGNhc2UsIGl0IHJlcXVpcmVzIGN1c3RvbWlzZWQgYmludXRpbHMsIHNvIEkgZG9uJ3Qg
+dGhpbmsgZGlzYWJsaW5nIA0KPj4gQlRSRlMgaXMgYSBpc3N1ZSB0aGVyZS4gRm9yIGhleGFnb24g
+SSBkb24ndCBrbm93Lg0KPiANCj4gVGhhdCBpdCBibGV3IHVwIGR1ZSB0byB0aGUgbWF4IGNvbXBy
+ZXNzZWQgc2l6ZSBpcyBhIGNvaW5jaWRlbmNlLiBXZQ0KPiBjb3VsZCBoYXZlIGV4cGxpY2l0IEJV
+SUxEX0JVR19PTnMgZm9yIHBhZ2Ugc2l6ZSBvciBvdGhlciBjb25zdHJhaW50cw0KPiBkZXJpdmVk
+IGZyb20gdGhlIHBhZ2Ugc2l6ZSBsaWtlIElOTElORV9FWFRFTlRfQlVGRkVSX1BBR0VTLg0KPiAN
+Cg0KUmlnaHQsIHRoZSBjb25zdHJhaW50IGlzIGJpZ2dlciBhbmQgbW9yZSBjb21wbGV4IHRoYW4g
+QlRSRlNfTUFYX0NPTVBSRVNTRUQuDQoNCj4gQW5kIHRoZXJlJ3Mgbm8gc3VjaCB0aGluZyBsaWtl
+ICJqdXN0IGJ1bXAgQlRSRlNfTUFYX0NPTVBSRVNTRUQgdG8gMjU2SyIuDQo+IFRoZSBjb25zdGFu
+dCBpcyBwYXJ0IG9mIG9uLWRpc2sgZm9ybWF0IGZvciBsem8gYW5kIG90aGVyd2lzZSBjaGFuZ2lu
+ZyBpdA0KPiB3b3VsZCBpbXBhY3QgcGVyZm9ybWFuY2Ugc28gdGhpcyB3b3VsZCBuZWVkIHByb3Bl
+ciBldmFsdWF0aW9uLg0KDQpTb3JyeSwgaG93IGlzIGl0IGJha2VkIGludG8gTFpPPyAgSXQgZGVm
+aW5pdGVseSB3aWxsIGhhdmUgcGVyZm9ybWFuY2UgaW1wbGljYXRpb25zLCBJIGFncmVlIHRoZXJl
+Lg0KDQotY2hyaXMNCg0K
