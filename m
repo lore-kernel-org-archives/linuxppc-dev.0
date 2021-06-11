@@ -2,87 +2,62 @@ Return-Path: <SRS0=pFgb=LF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4FB9C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:41:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B3FEC48BE0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:52:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5358C613F3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:41:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5358C613F3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7EB6C613E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 09:52:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EB6C613E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G1bT14Dp9z3cFQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 19:41:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=lEY1GqkT;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G1bk84Mkyz3c06
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jun 2021 19:52:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=lEY1GqkT; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G1bRh0FYdz3bsb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 19:40:15 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id u18so3983536pfk.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 02:40:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=4rqJ/ocNcEOM66H6GUGgWlWTMe/FRDaQZvizqSQdvaQ=;
- b=lEY1GqkTCgfml/tRcU0m44hQFVUgbzHoFBuu6mWu7uc3lTWgNYyAZUCLAPZ+ELBx0M
- kQHhZk8W5elifCvDwo1YOQo9OYsk73rcNJ1LUmkLaT0vBiyAH8lh04/Z9dqctk/OH3iV
- t2VWhazUCPTE28rVxSWycjBEnN7jp5W5giCw5o3GjvDaWrCXIePFn7QfYD9RR/KY0MKy
- zrOc0yLsYvhwDPk8wRuX62r4eF+fE/1Pej1qcFLG0qfn1NPjbH8aJXlHfIFPk+D3uBd2
- PPqa0QAHSBKPuUrmMAyqVkQ9zs0wHn18YnsEjZmzgn2hYJbGs/xCs1K2xCInN/08seWF
- 1TKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=4rqJ/ocNcEOM66H6GUGgWlWTMe/FRDaQZvizqSQdvaQ=;
- b=l461Kv5RFf7wWktmpZFLBBHINpBWy24VBuLihViBw4M/xWXSyHtRlfE8sSVNyWW6iZ
- pLHHtlEyPzGnGmcsox7k2i8ArkLhxxURfWoOdzQxR8JPR9+K2BOsjv59wc1uKjUfg02D
- 8T1OjUG93mhf5bhFFRkyqYkvgJP/jC6DCh1fCj2rPd9Z7BU0RxBru0Vas6aQ4tnlutHi
- 5WbqthNNk+Gbr59ljJWu5iiueHaptYAHbN+2dQ6ptgBq4ILBc7VF8gFcGmm8LQxoHL6J
- +UZAHCK9sJ23O2hTGi9CBLDLQQvrecktlK53JGDLQ/xQIFI6CPelWt8HepjOTt+YHDJ7
- 4pyg==
-X-Gm-Message-State: AOAM531VQMLMiYk6AxggmK8RItiCFwpNjwRVcoHuua8caERBvbi5NeM4
- dzpo2PDYzfdEspC4CsgSbiZyb8LwWj0=
-X-Google-Smtp-Source: ABdhPJxJHzGCRi0XdONVoFL8/v8/mVUBhe2GDICX/XZdXb+DC9CLaLGkwooGD4SRQfR+cz56dDPXHQ==
-X-Received: by 2002:a62:2bc6:0:b029:2cc:242f:ab69 with SMTP id
- r189-20020a622bc60000b02902cc242fab69mr7517628pfr.16.1623404412814; 
- Fri, 11 Jun 2021 02:40:12 -0700 (PDT)
-Received: from bobo.ibm.com (60-242-147-73.tpgi.com.au. [60.242.147.73])
- by smtp.gmail.com with ESMTPSA id o139sm4981655pfd.96.2021.06.11.02.40.10
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 11 Jun 2021 02:40:12 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 2/2] powerpc/64: Option to use ELF V2 ABI for big-endian
- kernels
-Date: Fri, 11 Jun 2021 19:39:59 +1000
-Message-Id: <20210611093959.821525-3-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20210611093959.821525-1-npiggin@gmail.com>
-References: <20210611093959.821525-1-npiggin@gmail.com>
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=yangyingliang@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 1188 seconds by postgrey-1.36 at boromir;
+ Fri, 11 Jun 2021 19:52:25 AEST
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G1bjj0V6wz303h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jun 2021 19:52:23 +1000 (AEST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4G1bCC1mPpz6vx1;
+ Fri, 11 Jun 2021 17:29:27 +0800 (CST)
+Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Fri, 11 Jun 2021 17:32:32 +0800
+Received: from huawei.com (10.175.103.91) by dggpeml500017.china.huawei.com
+ (7.185.36.243) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2176.2; Fri, 11 Jun
+ 2021 17:32:32 +0800
+From: Yang Yingliang <yangyingliang@huawei.com>
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <alsa-devel@alsa-project.org>
+Subject: [PATCH -next 7/9] ASoC: fsl_spdif: Use
+ devm_platform_get_and_ioremap_resource()
+Date: Fri, 11 Jun 2021 17:36:24 +0800
+Message-ID: <20210611093626.579176-8-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210611093626.579176-1-yangyingliang@huawei.com>
+References: <20210611093626.579176-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ dggpeml500017.china.huawei.com (7.185.36.243)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,274 +69,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Jessica Yu <jeyu@kernel.org>
+Cc: broonie@kernel.org, timur@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide an option to build big-endian kernels using the ELFv2 ABI. This
-works on GCC only so far, although it is rumored to work with clang
-that's not been tested yet. A new module version check ensures the
-module ELF ABI level matches the kernel build.
+Use devm_platform_get_and_ioremap_resource() to simplify
+code.
 
-This can give big-endian kernels some useful advantages of the ELFv2 ABI
-(e.g., less stack usage, -mprofile-kernel, better compatibility with eBPF
-tools).
-
-BE+ELFv2 is not officially supported by the GNU toolchain, but it works
-fine in testing and has been used by some userspace for some time (e.g.,
-Void Linux).
-
-Tested-by: Michal Suchánek <msuchanek@suse.de>
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 ---
- arch/powerpc/Kconfig                | 22 ++++++++++++++++++++++
- arch/powerpc/Makefile               | 18 ++++++++++++------
- arch/powerpc/boot/Makefile          |  4 +++-
- arch/powerpc/include/asm/module.h   | 24 ++++++++++++++++++++++++
- arch/powerpc/kernel/vdso64/Makefile | 13 +++++++++++++
- drivers/crypto/vmx/Makefile         |  8 ++++++--
- drivers/crypto/vmx/ppc-xlate.pl     | 10 ++++++----
- 7 files changed, 86 insertions(+), 13 deletions(-)
+ sound/soc/fsl/fsl_spdif.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 088dd2afcfe4..093f973a28b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -163,6 +163,7 @@ config PPC
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
-+	select PPC64_BUILD_ELF_V2_ABI		if PPC64 && CPU_LITTLE_ENDIAN
- 	select CLONE_BACKWARDS
- 	select DCACHE_WORD_ACCESS		if PPC64 && CPU_LITTLE_ENDIAN
- 	select DMA_OPS_BYPASS			if PPC64
-@@ -561,6 +562,27 @@ config KEXEC_FILE
- config ARCH_HAS_KEXEC_PURGATORY
- 	def_bool KEXEC_FILE
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 2a76714eb8e6..d812a3ff5845 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -1355,8 +1355,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 				spdif_priv->soc->tx_formats;
  
-+config PPC64_BUILD_ELF_V2_ABI
-+	bool
-+
-+config PPC64_BUILD_BIG_ENDIAN_ELF_V2_ABI
-+	bool "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)"
-+	depends on PPC64 && CPU_BIG_ENDIAN && EXPERT
-+	depends on CC_IS_GCC && LD_VERSION >= 22400
-+	default n
-+	select PPC64_BUILD_ELF_V2_ABI
-+	help
-+	  This builds the kernel image using the "Power Architecture 64-Bit ELF
-+	  V2 ABI Specification", which has a reduced stack overhead and faster
-+	  function calls. This internal kernel ABI option does not affect
-+          userspace compatibility.
-+
-+	  The V2 ABI is standard for 64-bit little-endian, but for big-endian
-+	  it is less well tested by kernel and toolchain. However some distros
-+	  build userspace this way, and it can produce a functioning kernel.
-+
-+	  This requires GCC and binutils 2.24 or newer.
-+
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
- 	depends on PPC64 || (FLATMEM && (44x || FSL_BOOKE))
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 3212d076ac6a..b90b5cb799aa 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -91,10 +91,14 @@ endif
+ 	/* Get the addresses and IRQ */
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	regs = devm_ioremap_resource(&pdev->dev, res);
++	regs = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
  
- ifdef CONFIG_PPC64
- ifndef CONFIG_CC_IS_CLANG
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
--aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
--aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
-+ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-+cflags-y				+= $(call cc-option,-mabi=elfv2)
-+aflags-y				+= $(call cc-option,-mabi=elfv2)
-+else
-+cflags-y				+= $(call cc-option,-mabi=elfv1)
-+cflags-y				+= $(call cc-option,-mcall-aixdesc)
-+aflags-y				+= $(call cc-option,-mabi=elfv1)
-+endif
- endif
- endif
- 
-@@ -142,15 +146,17 @@ endif
- 
- CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
- ifndef CONFIG_CC_IS_CLANG
--ifdef CONFIG_CPU_LITTLE_ENDIAN
--CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
-+ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-+CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
- AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
- else
-+# Keep these in synch with arch/powerpc/kernel/vdso64/Makefile
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
- AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
- endif
- endif
-+
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
- 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 2b8da923ceca..be84a72f8258 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -40,6 +40,9 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 
- ifdef CONFIG_PPC64_BOOT_WRAPPER
- BOOTCFLAGS	+= -m64
-+ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-+BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
-+endif
- else
- BOOTCFLAGS	+= -m32
- endif
-@@ -50,7 +53,6 @@ ifdef CONFIG_CPU_BIG_ENDIAN
- BOOTCFLAGS	+= -mbig-endian
- else
- BOOTCFLAGS	+= -mlittle-endian
--BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
- endif
- 
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -nostdinc
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 857d9ff24295..043e11068ff4 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -52,6 +52,30 @@ struct mod_arch_specific {
- 	unsigned int num_bugs;
- };
- 
-+/*
-+ * Check kernel module ELF header architecture specific compatibility.
-+ */
-+static inline bool elf_check_module_arch(Elf_Ehdr *hdr)
-+{
-+	if (!elf_check_arch(hdr))
-+		return false;
-+
-+	if (IS_ENABLED(CONFIG_PPC64)) {
-+		unsigned long abi_level = hdr->e_flags & 0x3;
-+
-+		if (IS_ENABLED(CONFIG_PPC64_BUILD_ELF_V2_ABI)) {
-+			if (abi_level != 2)
-+				return false;
-+		} else {
-+			if (abi_level >= 2)
-+				return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+#define elf_check_module_arch elf_check_module_arch
-+
- /*
-  * Select ELF headers.
-  * Make empty section for module_frob_arch_sections to expand.
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index 2813e3f98db6..d783c07e558f 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -25,6 +25,19 @@ KCOV_INSTRUMENT := n
- UBSAN_SANITIZE := n
- KASAN_SANITIZE := n
- 
-+# Always build vdso64 with ELFv1 ABI for BE kernels
-+ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-+ifdef CONFIG_CPU_BIG_ENDIAN
-+KBUILD_CFLAGS := $(filter-out -mabi=elfv2,$(KBUILD_CFLAGS))
-+KBUILD_AFLAGS := $(filter-out -mabi=elfv2,$(KBUILD_AFLAGS))
-+
-+# These are derived from arch/powerpc/Makefile
-+KBUILD_CFLAGS += $(call cc-option,-mabi=elfv1)
-+KBUILD_CFLAGS += $(call cc-option,-mcall-aixdesc)
-+KBUILD_AFLAGS += $(call cc-option,-mabi=elfv1)
-+endif
-+endif
-+
- ccflags-y := -shared -fno-common -fno-builtin -nostdlib \
- 	-Wl,-soname=linux-vdso64.so.1 -Wl,--hash-style=both
- asflags-y := -D__VDSO64__ -s
-diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
-index 709670d2b553..d9ccf9fc3483 100644
---- a/drivers/crypto/vmx/Makefile
-+++ b/drivers/crypto/vmx/Makefile
-@@ -5,18 +5,22 @@ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- override flavour := linux-ppc64le
- else
-+ifdef CONFIG_PPC64_BUILD_ELF_V2_ABI
-+override flavour := linux-ppc64-elfv2
-+else
- override flavour := linux-ppc64
- endif
-+endif
- 
- quiet_cmd_perl = PERL $@
-       cmd_perl = $(PERL) $(<) $(flavour) > $(@)
- 
- targets += aesp8-ppc.S ghashp8-ppc.S
- 
--$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl FORCE
-+$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl $(src)/ppc-xlate.pl FORCE
- 	$(call if_changed,perl)
-   
--$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl FORCE
-+$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl $(src)/ppc-xlate.pl FORCE
- 	$(call if_changed,perl)
- 
- clean-files := aesp8-ppc.S ghashp8-ppc.S
-diff --git a/drivers/crypto/vmx/ppc-xlate.pl b/drivers/crypto/vmx/ppc-xlate.pl
-index 36db2ef09e5b..b583898c11ae 100644
---- a/drivers/crypto/vmx/ppc-xlate.pl
-+++ b/drivers/crypto/vmx/ppc-xlate.pl
-@@ -9,6 +9,8 @@ open STDOUT,">$output" || die "can't open $output: $!";
- 
- my %GLOBALS;
- my $dotinlocallabels=($flavour=~/linux/)?1:0;
-+my $elfv2abi=(($flavour =~ /linux-ppc64le/) or ($flavour =~ /linux-ppc64-elfv2/))?1:0;
-+my $dotfunctions=($elfv2abi=~1)?0:1;
- 
- ################################################################
- # directives which need special treatment on different platforms
-@@ -40,7 +42,7 @@ my $globl = sub {
- };
- my $text = sub {
-     my $ret = ($flavour =~ /aix/) ? ".csect\t.text[PR],7" : ".text";
--    $ret = ".abiversion	2\n".$ret	if ($flavour =~ /linux.*64le/);
-+    $ret = ".abiversion	2\n".$ret	if ($elfv2abi);
-     $ret;
- };
- my $machine = sub {
-@@ -56,8 +58,8 @@ my $size = sub {
-     if ($flavour =~ /linux/)
-     {	shift;
- 	my $name = shift; $name =~ s|^[\.\_]||;
--	my $ret  = ".size	$name,.-".($flavour=~/64$/?".":"").$name;
--	$ret .= "\n.size	.$name,.-.$name" if ($flavour=~/64$/);
-+	my $ret  = ".size	$name,.-".($dotfunctions?".":"").$name;
-+	$ret .= "\n.size	.$name,.-.$name" if ($dotfunctions);
- 	$ret;
-     }
-     else
-@@ -142,7 +144,7 @@ my $vmr = sub {
- 
- # Some ABIs specify vrsave, special-purpose register #256, as reserved
- # for system use.
--my $no_vrsave = ($flavour =~ /linux-ppc64le/);
-+my $no_vrsave = ($elfv2abi);
- my $mtspr = sub {
-     my ($f,$idx,$ra) = @_;
-     if ($idx == 256 && $no_vrsave) {
 -- 
-2.23.0
+2.25.1
 
