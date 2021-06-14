@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1424C48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3303BC48BE6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:25:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FE86613B8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:24:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FE86613B8
+	by mail.kernel.org (Postfix) with ESMTPS id CDD8E6120E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:25:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDD8E6120E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3LyF5NgSz3bnh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:24:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3M040Flhz309y
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:25:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,22 +27,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lxt1y8fz2yXh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:24:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lzg2g1Dz2xgN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:25:35 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id B6EE767373; Mon, 14 Jun 2021 08:23:55 +0200 (CEST)
-Date: Mon, 14 Jun 2021 08:23:55 +0200
+ id BF02567373; Mon, 14 Jun 2021 08:25:30 +0200 (CEST)
+Date: Mon, 14 Jun 2021 08:25:30 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v9 06/14] swiotlb: Update is_swiotlb_active to add a
- struct device argument
-Message-ID: <20210614062355.GF28343@lst.de>
+Subject: Re: [PATCH v9 07/14] swiotlb: Bounce data from/to restricted DMA
+ pool if available
+Message-ID: <20210614062530.GG28343@lst.de>
 References: <20210611152659.2142983-1-tientzu@chromium.org>
- <20210611152659.2142983-7-tientzu@chromium.org>
+ <20210611152659.2142983-8-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210611152659.2142983-7-tientzu@chromium.org>
+In-Reply-To: <20210611152659.2142983-8-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,50 +85,89 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->  kernel/dma/direct.c                          | 2 +-
->  kernel/dma/swiotlb.c                         | 4 ++--
->  6 files changed, 8 insertions(+), 8 deletions(-)
+On Fri, Jun 11, 2021 at 11:26:52PM +0800, Claire Chang wrote:
+> Regardless of swiotlb setting, the restricted DMA pool is preferred if
+> available.
 > 
-> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_internal.c b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
-> index ce6b664b10aa..89a894354263 100644
-> --- a/drivers/gpu/drm/i915/gem/i915_gem_internal.c
-> +++ b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
-> @@ -42,7 +42,7 @@ static int i915_gem_object_get_pages_internal(struct drm_i915_gem_object *obj)
+> The restricted DMA pools provide a basic level of protection against the
+> DMA overwriting buffer contents at unexpected times. However, to protect
+> against general data leakage and system memory corruption, the system
+> needs to provide a way to lock down the memory access, e.g., MPU.
+> 
+> Note that is_dev_swiotlb_force doesn't check if
+> swiotlb_force == SWIOTLB_FORCE. Otherwise the memory allocation behavior
+> with default swiotlb will be changed by the following patche
+> ("dma-direct: Allocate memory from restricted DMA pool if available").
+> 
+> Signed-off-by: Claire Chang <tientzu@chromium.org>
+> ---
+>  include/linux/swiotlb.h | 10 +++++++++-
+>  kernel/dma/direct.c     |  3 ++-
+>  kernel/dma/direct.h     |  3 ++-
+>  kernel/dma/swiotlb.c    |  1 +
+>  4 files changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index 06cf17a80f5c..8200c100fe10 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -85,6 +85,7 @@ extern enum swiotlb_force swiotlb_force;
+>   *		unmap calls.
+>   * @debugfs:	The dentry to debugfs.
+>   * @late_alloc:	%true if allocated using the page allocator
+> + * @force_swiotlb: %true if swiotlb is forced
+>   */
+>  struct io_tlb_mem {
+>  	phys_addr_t start;
+> @@ -95,6 +96,7 @@ struct io_tlb_mem {
+>  	spinlock_t lock;
+>  	struct dentry *debugfs;
+>  	bool late_alloc;
+> +	bool force_swiotlb;
+>  	struct io_tlb_slot {
+>  		phys_addr_t orig_addr;
+>  		size_t alloc_size;
+> @@ -115,6 +117,11 @@ static inline void swiotlb_set_io_tlb_default_mem(struct device *dev)
+>  	dev->dma_io_tlb_mem = io_tlb_default_mem;
+>  }
 >  
->  	max_order = MAX_ORDER;
->  #ifdef CONFIG_SWIOTLB
-> -	if (is_swiotlb_active()) {
-> +	if (is_swiotlb_active(obj->base.dev->dev)) {
+> +static inline bool is_dev_swiotlb_force(struct device *dev)
+> +{
+> +	return dev->dma_io_tlb_mem->force_swiotlb;
+> +}
+> +
+>  void __init swiotlb_exit(void);
+>  unsigned int swiotlb_max_segment(void);
+>  size_t swiotlb_max_mapping_size(struct device *dev);
+> @@ -126,8 +133,9 @@ static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr)
+>  {
+>  	return false;
+>  }
+> -static inline void swiotlb_set_io_tlb_default_mem(struct device *dev)
+> +static inline bool is_dev_swiotlb_force(struct device *dev)
+>  {
+> +	return false;
+>  }
+>  static inline void swiotlb_exit(void)
+>  {
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 7a88c34d0867..078f7087e466 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -496,7 +496,8 @@ size_t dma_direct_max_mapping_size(struct device *dev)
+>  {
+>  	/* If SWIOTLB is active, use its maximum mapping size */
+>  	if (is_swiotlb_active(dev) &&
+> -	    (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE))
+> +	    (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE ||
+> +	     is_dev_swiotlb_force(dev)))
 
-This is the same device used for DMA mapping in
-i915_gem_gtt_prepare_pages, so this looks good.
+I think we can remove the extra swiotlb_force check here if the
+swiotlb_force setting is propagated into io_tlb_default_mem->force
+when that is initialized. This avoids an extra check in the fast path.
 
-> index f4c2e46b6fe1..2ca9d9a9e5d5 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
-> @@ -276,7 +276,7 @@ nouveau_ttm_init(struct nouveau_drm *drm)
->  	}
->  
->  #if IS_ENABLED(CONFIG_SWIOTLB) && IS_ENABLED(CONFIG_X86)
-> -	need_swiotlb = is_swiotlb_active();
-> +	need_swiotlb = is_swiotlb_active(dev->dev);
->  #endif
+> -	if (unlikely(swiotlb_force == SWIOTLB_FORCE))
+> +	if (unlikely(swiotlb_force == SWIOTLB_FORCE) ||
+> +	    is_dev_swiotlb_force(dev))
 
-This looks good, too.
-
-> diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
-> index b7a8f3a1921f..0d56985bfe81 100644
-> --- a/drivers/pci/xen-pcifront.c
-> +++ b/drivers/pci/xen-pcifront.c
-> @@ -693,7 +693,7 @@ static int pcifront_connect_and_init_dma(struct pcifront_device *pdev)
->  
->  	spin_unlock(&pcifront_dev_lock);
->  
-> -	if (!err && !is_swiotlb_active()) {
-> +	if (!err && !is_swiotlb_active(&pdev->xdev->dev)) {
-
-This looks good as well.
-
-So I think the devices are all good.
-
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Same here.
