@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07714C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 23:07:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18666C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 23:07:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9169261246
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 23:07:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9169261246
+	by mail.kernel.org (Postfix) with ESMTPS id A337D61246
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 23:07:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A337D61246
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3nCr0GgVz3cK6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:07:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3nDG0lnqz3cND
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:07:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=lrJqOsPE;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=Nqw5GI2v;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=paulus@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=lrJqOsPE; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ header.s=201707 header.b=Nqw5GI2v; dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3n9d2WVrz2ysk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3n9d3F2bz2ymS
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 09:05:41 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4G3n9Z5sMSz9t0J; Tue, 15 Jun 2021 09:05:38 +1000 (AEST)
+ id 4G3n9b3tXMz9sXL; Tue, 15 Jun 2021 09:05:39 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 4G3n9Z58Jfz9sW7; Tue, 15 Jun 2021 09:05:38 +1000 (AEST)
+ id 4G3n9b3Kp9z9srX; Tue, 15 Jun 2021 09:05:38 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1623711938; bh=Y176si/IXnYcD44zz3Hp1UGpgLKQmILs6BCg/JZRPPI=;
+ t=1623711939; bh=BkVo/UdVTWpNBYtEcAIox48JjJQmB/hhKCRWptpr2ak=;
  h=Date:From:To:Subject:References:In-Reply-To:From;
- b=lrJqOsPErpzebmd9hCS/4kYl30AETb/yifteSn9gW+3dUOlfpwCYLzABDc98TaMqe
- yi6lxJL9UsnITadpjNwGJ0lCtsuTUIyCmzY32ylyVcP6Y9CafHDjzXFwhhZZ04B3j/
- 1E9TtpEnq/wJWaLHvlhoyvNRhq6LmyJbGhUAl5hQeub8I74jTUbtzDm2HgCpPbiHRG
- K5HLQWhFedabQf8+KOTV78TRmvisE1nqx8uumIxzchsXoYt4T1YwL9L8J3nuHlYu/K
- 2c+6oGJy33KAboRwWOxCwSv5MfbfuWitwVUh5Nu8fCrRJd7iQRa2biroufpH1+gxLu
- tvZSBpk/1p9PA==
-Date: Tue, 15 Jun 2021 09:04:17 +1000
+ b=Nqw5GI2v78L53Tbwe+MMvk80U2RoxQpOEPEEns2WiMAJVaZWenaPm6zfJCf6NbP0b
+ ZlwH6kTheV/w+CxRZRsBcOTp+TLQsD8hI+NN3Uvxk13ee2NCaZs00to1/Pdvvrc48w
+ ZFIYDO59cz8GNDl8ewkS14G9K17SLSeS0fnYyKCvdSKVgd+ukcJzJAa8CtOhoRRuO+
+ AWnLue0ymY5zrPN+xuEucqhU2rcTFqMNmqq6KtaMP5I40s8wYU5TJUp+DqU52fhA5x
+ EZA7W4bViKNQthed8IFDyV800nsrI6naq6D4kCl+qqd2K5VLSidpk4tsPTpleLYBM4
+ +bD1bpZtBzz7g==
+Date: Tue, 15 Jun 2021 09:01:27 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/11] powerpc: boot: Fixup device-tree on little endian
-Message-ID: <YMfgcYTmjiiR8yow@thinks.paulus.ozlabs.org>
+Subject: [PATCH 06/11] powerpc: microwatt: Use standard 16550 UART for console
+Message-ID: <YMffx9iB13wRUvqz@thinks.paulus.ozlabs.org>
 References: <YMfeswgEHeXSLOUF@thinks.paulus.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -75,231 +75,144 @@ Sender: "Linuxppc-dev"
 
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This fixes the core devtree.c functions and the ns16550 UART backend.
+This adds support to the Microwatt platform to use the standard
+1655-style UART which available in the standalone Microwatt FPGA.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/boot/devtree.c | 59 +++++++++++++++++++++----------------
- arch/powerpc/boot/ns16550.c |  9 ++++--
- 2 files changed, 41 insertions(+), 27 deletions(-)
+ arch/powerpc/boot/dts/microwatt.dts      | 25 ++++++++++++---
+ arch/powerpc/kernel/udbg_16550.c         | 39 ++++++++++++++++++++++++
+ arch/powerpc/platforms/microwatt/Kconfig |  1 +
+ arch/powerpc/platforms/microwatt/setup.c |  2 ++
+ 4 files changed, 62 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-index 5d91036ad626..58fbcfcc98c9 100644
---- a/arch/powerpc/boot/devtree.c
-+++ b/arch/powerpc/boot/devtree.c
-@@ -13,6 +13,7 @@
- #include "string.h"
- #include "stdio.h"
- #include "ops.h"
-+#include "of.h"
+diff --git a/arch/powerpc/boot/dts/microwatt.dts b/arch/powerpc/boot/dts/microwatt.dts
+index 2e75600320e8..dbde200d4692 100644
+--- a/arch/powerpc/boot/dts/microwatt.dts
++++ b/arch/powerpc/boot/dts/microwatt.dts
+@@ -6,6 +6,10 @@ / {
+ 	model-name = "microwatt";
+ 	compatible = "microwatt-soc";
  
- void dt_fixup_memory(u64 start, u64 size)
- {
-@@ -23,21 +24,25 @@ void dt_fixup_memory(u64 start, u64 size)
- 	root = finddevice("/");
- 	if (getprop(root, "#address-cells", &naddr, sizeof(naddr)) < 0)
- 		naddr = 2;
-+	else
-+		naddr = be32_to_cpu(naddr);
- 	if (naddr < 1 || naddr > 2)
- 		fatal("Can't cope with #address-cells == %d in /\n\r", naddr);
++	aliases {
++		serial0 = &UART0;
++	};
++
+ 	reserved-memory {
+ 		#size-cells = <0x02>;
+ 		#address-cells = <0x02>;
+@@ -97,11 +101,6 @@ PowerPC,Microwatt@0 {
+ 		};
+ 	};
  
- 	if (getprop(root, "#size-cells", &nsize, sizeof(nsize)) < 0)
- 		nsize = 1;
-+	else
-+		nsize = be32_to_cpu(nsize);
- 	if (nsize < 1 || nsize > 2)
- 		fatal("Can't cope with #size-cells == %d in /\n\r", nsize);
+-	chosen {
+-		bootargs = "";
+-		ibm,architecture-vec-5 = [19 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 00 40];
+-	};
+-
+ 	soc@c0000000 {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -126,5 +125,21 @@ ICS: interrupt-controller@5000 {
+ 			#interrupt-cells = <2>;
+ 		};
  
- 	i = 0;
- 	if (naddr == 2)
--		memreg[i++] = start >> 32;
--	memreg[i++] = start & 0xffffffff;
-+		memreg[i++] = cpu_to_be32(start >> 32);
-+	memreg[i++] = cpu_to_be32(start & 0xffffffff);
- 	if (nsize == 2)
--		memreg[i++] = size >> 32;
--	memreg[i++] = size & 0xffffffff;
-+		memreg[i++] = cpu_to_be32(size >> 32);
-+	memreg[i++] = cpu_to_be32(size & 0xffffffff);
- 
- 	memory = finddevice("/memory");
- 	if (! memory) {
-@@ -45,9 +50,9 @@ void dt_fixup_memory(u64 start, u64 size)
- 		setprop_str(memory, "device_type", "memory");
- 	}
- 
--	printf("Memory <- <0x%x", memreg[0]);
-+	printf("Memory <- <0x%x", be32_to_cpu(memreg[0]));
- 	for (i = 1; i < (naddr + nsize); i++)
--		printf(" 0x%x", memreg[i]);
-+		printf(" 0x%x", be32_to_cpu(memreg[i]));
- 	printf("> (%ldMB)\n\r", (unsigned long)(size >> 20));
- 
- 	setprop(memory, "reg", memreg, (naddr + nsize)*sizeof(u32));
-@@ -65,10 +70,10 @@ void dt_fixup_cpu_clocks(u32 cpu, u32 tb, u32 bus)
- 		printf("CPU bus-frequency <- 0x%x (%dMHz)\n\r", bus, MHZ(bus));
- 
- 	while ((devp = find_node_by_devtype(devp, "cpu"))) {
--		setprop_val(devp, "clock-frequency", cpu);
--		setprop_val(devp, "timebase-frequency", tb);
-+		setprop_val(devp, "clock-frequency", cpu_to_be32(cpu));
-+		setprop_val(devp, "timebase-frequency", cpu_to_be32(tb));
- 		if (bus > 0)
--			setprop_val(devp, "bus-frequency", bus);
-+			setprop_val(devp, "bus-frequency", cpu_to_be32(bus));
- 	}
- 
- 	timebase_period_ns = 1000000000 / tb;
-@@ -80,7 +85,7 @@ void dt_fixup_clock(const char *path, u32 freq)
- 
- 	if (devp) {
- 		printf("%s: clock-frequency <- %x (%dMHz)\n\r", path, freq, MHZ(freq));
--		setprop_val(devp, "clock-frequency", freq);
-+		setprop_val(devp, "clock-frequency", cpu_to_be32(freq));
- 	}
++		UART0: serial@2000 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x2000 0x8>;
++			clock-frequency = <100000000>;
++			current-speed = <115200>;
++			reg-shift = <2>;
++			fifo-size = <16>;
++			interrupts = <0x10 0x1>;
++		};
++	};
++
++	chosen {
++		bootargs = "";
++		ibm,architecture-vec-5 = [19 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 00 40];
++		stdout-path = &UART0;
+ 	};
+ };
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index 9356b60d6030..8513aa49614e 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -296,3 +296,42 @@ void __init udbg_init_40x_realmode(void)
  }
  
-@@ -133,8 +138,12 @@ void dt_get_reg_format(void *node, u32 *naddr, u32 *nsize)
+ #endif /* CONFIG_PPC_EARLY_DEBUG_40x */
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_MICROWATT
++
++#define UDBG_UART_MW_ADDR	((void __iomem *)0xc0002000)
++
++static u8 udbg_uart_in_isa300_rm(unsigned int reg)
++{
++	uint64_t msr = mfmsr();
++	uint8_t  c;
++
++	mtmsr(msr & ~(MSR_EE|MSR_DR));
++	isync();
++	eieio();
++	c = __raw_rm_readb(UDBG_UART_MW_ADDR + (reg << 2));
++	mtmsr(msr);
++	isync();
++	return c;
++}
++
++static void udbg_uart_out_isa300_rm(unsigned int reg, u8 val)
++{
++	uint64_t msr = mfmsr();
++
++	mtmsr(msr & ~(MSR_EE|MSR_DR));
++	isync();
++	eieio();
++	__raw_rm_writeb(val, UDBG_UART_MW_ADDR + (reg << 2));
++	mtmsr(msr);
++	isync();
++}
++
++void __init udbg_init_debug_microwatt(void)
++{
++	udbg_uart_in = udbg_uart_in_isa300_rm;
++	udbg_uart_out = udbg_uart_out_isa300_rm;
++	udbg_use_uart();
++}
++
++#endif /* CONFIG_PPC_EARLY_DEBUG_MICROWATT */
+diff --git a/arch/powerpc/platforms/microwatt/Kconfig b/arch/powerpc/platforms/microwatt/Kconfig
+index b52c869c0eb8..50ed0cedb5f1 100644
+--- a/arch/powerpc/platforms/microwatt/Kconfig
++++ b/arch/powerpc/platforms/microwatt/Kconfig
+@@ -6,6 +6,7 @@ config PPC_MICROWATT
+ 	select PPC_ICS_NATIVE
+ 	select PPC_ICP_NATIVE
+ 	select PPC_NATIVE
++	select PPC_UDBG_16550
+ 	help
+           This option enables support for FPGA-based Microwatt implementations.
+ 
+diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
+index 1c1b7791fa57..0b02603bdb74 100644
+--- a/arch/powerpc/platforms/microwatt/setup.c
++++ b/arch/powerpc/platforms/microwatt/setup.c
+@@ -14,6 +14,7 @@
+ #include <asm/machdep.h>
+ #include <asm/time.h>
+ #include <asm/xics.h>
++#include <asm/udbg.h>
+ 
+ static void __init microwatt_init_IRQ(void)
  {
- 	if (getprop(node, "#address-cells", naddr, 4) != 4)
- 		*naddr = 2;
-+	else
-+		*naddr = be32_to_cpu(*naddr);
- 	if (getprop(node, "#size-cells", nsize, 4) != 4)
- 		*nsize = 1;
-+	else
-+		*nsize = be32_to_cpu(*nsize);
- }
- 
- static void copy_val(u32 *dest, u32 *src, int naddr)
-@@ -163,9 +172,9 @@ static int add_reg(u32 *reg, u32 *add, int naddr)
- 	int i, carry = 0;
- 
- 	for (i = MAX_ADDR_CELLS - 1; i >= MAX_ADDR_CELLS - naddr; i--) {
--		u64 tmp = (u64)reg[i] + add[i] + carry;
-+		u64 tmp = (u64)be32_to_cpu(reg[i]) + be32_to_cpu(add[i]) + carry;
- 		carry = tmp >> 32;
--		reg[i] = (u32)tmp;
-+		reg[i] = cpu_to_be32((u32)tmp);
- 	}
- 
- 	return !carry;
-@@ -180,18 +189,18 @@ static int compare_reg(u32 *reg, u32 *range, u32 *rangesize)
- 	u32 end;
- 
- 	for (i = 0; i < MAX_ADDR_CELLS; i++) {
--		if (reg[i] < range[i])
-+		if (be32_to_cpu(reg[i]) < be32_to_cpu(range[i]))
- 			return 0;
--		if (reg[i] > range[i])
-+		if (be32_to_cpu(reg[i]) > be32_to_cpu(range[i]))
- 			break;
- 	}
- 
- 	for (i = 0; i < MAX_ADDR_CELLS; i++) {
--		end = range[i] + rangesize[i];
-+		end = be32_to_cpu(range[i]) + be32_to_cpu(rangesize[i]);
- 
--		if (reg[i] < end)
-+		if (be32_to_cpu(reg[i]) < end)
- 			break;
--		if (reg[i] > end)
-+		if (be32_to_cpu(reg[i]) > end)
- 			return 0;
- 	}
- 
-@@ -240,7 +249,6 @@ static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
- 		return 0;
- 
- 	dt_get_reg_format(parent, &naddr, &nsize);
--
- 	if (nsize > 2)
- 		return 0;
- 
-@@ -252,10 +260,10 @@ static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
- 
- 	copy_val(last_addr, prop_buf + offset, naddr);
- 
--	ret_size = prop_buf[offset + naddr];
-+	ret_size = be32_to_cpu(prop_buf[offset + naddr]);
- 	if (nsize == 2) {
- 		ret_size <<= 32;
--		ret_size |= prop_buf[offset + naddr + 1];
-+		ret_size |= be32_to_cpu(prop_buf[offset + naddr + 1]);
- 	}
- 
- 	for (;;) {
-@@ -278,7 +286,6 @@ static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
- 
- 		offset = find_range(last_addr, prop_buf, prev_naddr,
- 		                    naddr, prev_nsize, buflen / 4);
--
- 		if (offset < 0)
- 			return 0;
- 
-@@ -296,8 +303,7 @@ static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
- 	if (naddr > 2)
- 		return 0;
- 
--	ret_addr = ((u64)last_addr[2] << 32) | last_addr[3];
--
-+	ret_addr = ((u64)be32_to_cpu(last_addr[2]) << 32) | be32_to_cpu(last_addr[3]);
- 	if (sizeof(void *) == 4 &&
- 	    (ret_addr >= 0x100000000ULL || ret_size > 0x100000000ULL ||
- 	     ret_addr + ret_size > 0x100000000ULL))
-@@ -350,11 +356,14 @@ int dt_is_compatible(void *node, const char *compat)
- int dt_get_virtual_reg(void *node, void **addr, int nres)
- {
- 	unsigned long xaddr;
--	int n;
-+	int n, i;
- 
- 	n = getprop(node, "virtual-reg", addr, nres * 4);
--	if (n > 0)
-+	if (n > 0) {
-+		for (i = 0; i < n/4; i ++)
-+			((u32 *)addr)[i] = be32_to_cpu(((u32 *)addr)[i]);
- 		return n / 4;
-+	}
- 
- 	for (n = 0; n < nres; n++) {
- 		if (!dt_xlate_reg(node, n, &xaddr, NULL))
-diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
-index b0da4466d419..f16d2be1d0f3 100644
---- a/arch/powerpc/boot/ns16550.c
-+++ b/arch/powerpc/boot/ns16550.c
-@@ -15,6 +15,7 @@
- #include "stdio.h"
- #include "io.h"
- #include "ops.h"
-+#include "of.h"
- 
- #define UART_DLL	0	/* Out: Divisor Latch Low */
- #define UART_DLM	1	/* Out: Divisor Latch High */
-@@ -58,16 +59,20 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
- 	int n;
- 	u32 reg_offset;
- 
--	if (dt_get_virtual_reg(devp, (void **)&reg_base, 1) < 1)
-+	if (dt_get_virtual_reg(devp, (void **)&reg_base, 1) < 1) {
-+		printf("virt reg parse fail...\r\n");
- 		return -1;
-+	}
- 
- 	n = getprop(devp, "reg-offset", &reg_offset, sizeof(reg_offset));
- 	if (n == sizeof(reg_offset))
--		reg_base += reg_offset;
-+		reg_base += be32_to_cpu(reg_offset);
- 
- 	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
- 	if (n != sizeof(reg_shift))
- 		reg_shift = 0;
-+	else
-+		reg_shift = be32_to_cpu(reg_shift);
- 
- 	scdp->open = ns16550_open;
- 	scdp->putc = ns16550_putc;
+@@ -35,5 +36,6 @@ define_machine(microwatt) {
+ 	.name			= "microwatt",
+ 	.probe			= microwatt_probe,
+ 	.init_IRQ		= microwatt_init_IRQ,
++	.progress		= udbg_progress,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ };
 -- 
 2.31.1
 
