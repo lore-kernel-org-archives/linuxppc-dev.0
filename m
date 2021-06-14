@@ -2,24 +2,24 @@ Return-Path: <SRS0=LJle=LI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8166C48BE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:17:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2515C48BE6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:18:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD8A1613BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:17:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD8A1613BF
+	by mail.kernel.org (Postfix) with ESMTPS id 2310D613BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:18:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2310D613BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3Lp31w8vz3015
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:17:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3Lpw2RFLz3bvt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:18:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,21 +27,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lnf6vSnz2yYH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:16:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3LpY5MV0z2yjS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:17:41 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 6D6E667373; Mon, 14 Jun 2021 08:16:44 +0200 (CEST)
-Date: Mon, 14 Jun 2021 08:16:44 +0200
+ id 2951067373; Mon, 14 Jun 2021 08:17:37 +0200 (CEST)
+Date: Mon, 14 Jun 2021 08:17:36 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v9 01/14] swiotlb: Refactor swiotlb init functions
-Message-ID: <20210614061644.GA28343@lst.de>
+Subject: Re: [PATCH v9 02/14] swiotlb: Refactor swiotlb_create_debugfs
+Message-ID: <20210614061736.GB28343@lst.de>
 References: <20210611152659.2142983-1-tientzu@chromium.org>
- <20210611152659.2142983-2-tientzu@chromium.org>
+ <20210611152659.2142983-3-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210611152659.2142983-2-tientzu@chromium.org>
+In-Reply-To: <20210611152659.2142983-3-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -84,21 +84,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 11, 2021 at 11:26:46PM +0800, Claire Chang wrote:
-> +	spin_lock_init(&mem->lock);
-> +	for (i = 0; i < mem->nslabs; i++) {
-> +		mem->slots[i].list = IO_TLB_SEGSIZE - io_tlb_offset(i);
-> +		mem->slots[i].orig_addr = INVALID_PHYS_ADDR;
-> +		mem->slots[i].alloc_size = 0;
-> +	}
-> +
-> +	if (memory_decrypted)
-> +		set_memory_decrypted((unsigned long)vaddr, bytes >> PAGE_SHIFT);
-> +	memset(vaddr, 0, bytes);
+On Fri, Jun 11, 2021 at 11:26:47PM +0800, Claire Chang wrote:
+> Split the debugfs creation to make the code reusable for supporting
+> different bounce buffer pools, e.g. restricted DMA pool.
+> 
+> Signed-off-by: Claire Chang <tientzu@chromium.org>
+> ---
+>  kernel/dma/swiotlb.c | 23 ++++++++++++++++-------
+>  1 file changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index 1a1208c81e85..8a3e2b3b246d 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -64,6 +64,9 @@
+>  enum swiotlb_force swiotlb_force;
+>  
+>  struct io_tlb_mem *io_tlb_default_mem;
+> +#ifdef CONFIG_DEBUG_FS
+> +static struct dentry *debugfs_dir;
+> +#endif
 
-We don't really need to do this call before the memset.  Which means we
-can just move it to the callers that care instead of having a bool
-argument.
+What about moving this declaration into the main CONFIG_DEBUG_FS block
+near the functions using it?
 
 Otherwise looks good:
 
