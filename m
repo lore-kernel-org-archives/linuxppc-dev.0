@@ -2,24 +2,24 @@ Return-Path: <SRS0=LJle=LI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3303BC48BE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E20D5C48BE6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:26:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDD8E6120E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:25:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDD8E6120E
+	by mail.kernel.org (Postfix) with ESMTPS id 56E00613AD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:26:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56E00613AD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3M040Flhz309y
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:25:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3M0Y3cshz3037
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:26:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,22 +27,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lzg2g1Dz2xgN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:25:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lzx0rMnz308T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:25:48 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id BF02567373; Mon, 14 Jun 2021 08:25:30 +0200 (CEST)
-Date: Mon, 14 Jun 2021 08:25:30 +0200
+ id 4495467373; Mon, 14 Jun 2021 08:25:44 +0200 (CEST)
+Date: Mon, 14 Jun 2021 08:25:44 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v9 07/14] swiotlb: Bounce data from/to restricted DMA
- pool if available
-Message-ID: <20210614062530.GG28343@lst.de>
+Subject: Re: [PATCH v9 08/14] swiotlb: Move alloc_size to find_slots
+Message-ID: <20210614062544.GH28343@lst.de>
 References: <20210611152659.2142983-1-tientzu@chromium.org>
- <20210611152659.2142983-8-tientzu@chromium.org>
+ <20210611152659.2142983-9-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210611152659.2142983-8-tientzu@chromium.org>
+In-Reply-To: <20210611152659.2142983-9-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,89 +84,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 11, 2021 at 11:26:52PM +0800, Claire Chang wrote:
-> Regardless of swiotlb setting, the restricted DMA pool is preferred if
-> available.
-> 
-> The restricted DMA pools provide a basic level of protection against the
-> DMA overwriting buffer contents at unexpected times. However, to protect
-> against general data leakage and system memory corruption, the system
-> needs to provide a way to lock down the memory access, e.g., MPU.
-> 
-> Note that is_dev_swiotlb_force doesn't check if
-> swiotlb_force == SWIOTLB_FORCE. Otherwise the memory allocation behavior
-> with default swiotlb will be changed by the following patche
-> ("dma-direct: Allocate memory from restricted DMA pool if available").
-> 
-> Signed-off-by: Claire Chang <tientzu@chromium.org>
-> ---
->  include/linux/swiotlb.h | 10 +++++++++-
->  kernel/dma/direct.c     |  3 ++-
->  kernel/dma/direct.h     |  3 ++-
->  kernel/dma/swiotlb.c    |  1 +
->  4 files changed, 14 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-> index 06cf17a80f5c..8200c100fe10 100644
-> --- a/include/linux/swiotlb.h
-> +++ b/include/linux/swiotlb.h
-> @@ -85,6 +85,7 @@ extern enum swiotlb_force swiotlb_force;
->   *		unmap calls.
->   * @debugfs:	The dentry to debugfs.
->   * @late_alloc:	%true if allocated using the page allocator
-> + * @force_swiotlb: %true if swiotlb is forced
->   */
->  struct io_tlb_mem {
->  	phys_addr_t start;
-> @@ -95,6 +96,7 @@ struct io_tlb_mem {
->  	spinlock_t lock;
->  	struct dentry *debugfs;
->  	bool late_alloc;
-> +	bool force_swiotlb;
->  	struct io_tlb_slot {
->  		phys_addr_t orig_addr;
->  		size_t alloc_size;
-> @@ -115,6 +117,11 @@ static inline void swiotlb_set_io_tlb_default_mem(struct device *dev)
->  	dev->dma_io_tlb_mem = io_tlb_default_mem;
->  }
->  
-> +static inline bool is_dev_swiotlb_force(struct device *dev)
-> +{
-> +	return dev->dma_io_tlb_mem->force_swiotlb;
-> +}
-> +
->  void __init swiotlb_exit(void);
->  unsigned int swiotlb_max_segment(void);
->  size_t swiotlb_max_mapping_size(struct device *dev);
-> @@ -126,8 +133,9 @@ static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr)
->  {
->  	return false;
->  }
-> -static inline void swiotlb_set_io_tlb_default_mem(struct device *dev)
-> +static inline bool is_dev_swiotlb_force(struct device *dev)
->  {
-> +	return false;
->  }
->  static inline void swiotlb_exit(void)
->  {
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 7a88c34d0867..078f7087e466 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -496,7 +496,8 @@ size_t dma_direct_max_mapping_size(struct device *dev)
->  {
->  	/* If SWIOTLB is active, use its maximum mapping size */
->  	if (is_swiotlb_active(dev) &&
-> -	    (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE))
-> +	    (dma_addressing_limited(dev) || swiotlb_force == SWIOTLB_FORCE ||
-> +	     is_dev_swiotlb_force(dev)))
+On Fri, Jun 11, 2021 at 11:26:53PM +0800, Claire Chang wrote:
+> Move the maintenance of alloc_size to find_slots for better code
+> reusability later.
 
-I think we can remove the extra swiotlb_force check here if the
-swiotlb_force setting is propagated into io_tlb_default_mem->force
-when that is initialized. This avoids an extra check in the fast path.
+Looks good,
 
-> -	if (unlikely(swiotlb_force == SWIOTLB_FORCE))
-> +	if (unlikely(swiotlb_force == SWIOTLB_FORCE) ||
-> +	    is_dev_swiotlb_force(dev))
-
-Same here.
+Reviewed-by: Christoph Hellwig <hch@lst.de>
