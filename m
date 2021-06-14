@@ -2,24 +2,24 @@ Return-Path: <SRS0=LJle=LI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39EEDC48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1424C48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:24:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB760613AD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:22:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB760613AD
+	by mail.kernel.org (Postfix) with ESMTPS id 5FE86613B8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:24:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FE86613B8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3Lvd1tYQz3c03
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:22:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3LyF5NgSz3bnh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:24:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,22 +27,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3LvD6M2Zz2ysk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:21:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lxt1y8fz2yXh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:24:02 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 2608B68AFE; Mon, 14 Jun 2021 08:21:40 +0200 (CEST)
-Date: Mon, 14 Jun 2021 08:21:39 +0200
+ id B6EE767373; Mon, 14 Jun 2021 08:23:55 +0200 (CEST)
+Date: Mon, 14 Jun 2021 08:23:55 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v9 05/14] swiotlb: Update is_swiotlb_buffer to add a
+Subject: Re: [PATCH v9 06/14] swiotlb: Update is_swiotlb_active to add a
  struct device argument
-Message-ID: <20210614062139.GE28343@lst.de>
+Message-ID: <20210614062355.GF28343@lst.de>
 References: <20210611152659.2142983-1-tientzu@chromium.org>
- <20210611152659.2142983-6-tientzu@chromium.org>
+ <20210611152659.2142983-7-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210611152659.2142983-6-tientzu@chromium.org>
+In-Reply-To: <20210611152659.2142983-7-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,6 +85,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Looks good,
+>  kernel/dma/direct.c                          | 2 +-
+>  kernel/dma/swiotlb.c                         | 4 ++--
+>  6 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_internal.c b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> index ce6b664b10aa..89a894354263 100644
+> --- a/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> +++ b/drivers/gpu/drm/i915/gem/i915_gem_internal.c
+> @@ -42,7 +42,7 @@ static int i915_gem_object_get_pages_internal(struct drm_i915_gem_object *obj)
+>  
+>  	max_order = MAX_ORDER;
+>  #ifdef CONFIG_SWIOTLB
+> -	if (is_swiotlb_active()) {
+> +	if (is_swiotlb_active(obj->base.dev->dev)) {
+
+This is the same device used for DMA mapping in
+i915_gem_gtt_prepare_pages, so this looks good.
+
+> index f4c2e46b6fe1..2ca9d9a9e5d5 100644
+> --- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> +++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+> @@ -276,7 +276,7 @@ nouveau_ttm_init(struct nouveau_drm *drm)
+>  	}
+>  
+>  #if IS_ENABLED(CONFIG_SWIOTLB) && IS_ENABLED(CONFIG_X86)
+> -	need_swiotlb = is_swiotlb_active();
+> +	need_swiotlb = is_swiotlb_active(dev->dev);
+>  #endif
+
+This looks good, too.
+
+> diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
+> index b7a8f3a1921f..0d56985bfe81 100644
+> --- a/drivers/pci/xen-pcifront.c
+> +++ b/drivers/pci/xen-pcifront.c
+> @@ -693,7 +693,7 @@ static int pcifront_connect_and_init_dma(struct pcifront_device *pdev)
+>  
+>  	spin_unlock(&pcifront_dev_lock);
+>  
+> -	if (!err && !is_swiotlb_active()) {
+> +	if (!err && !is_swiotlb_active(&pdev->xdev->dev)) {
+
+This looks good as well.
+
+So I think the devices are all good.
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
