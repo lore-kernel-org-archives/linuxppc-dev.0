@@ -2,23 +2,23 @@ Return-Path: <SRS0=LJle=LI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15CF6C48BE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4699C48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:21:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD5F7610A2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:20:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD5F7610A2
+	by mail.kernel.org (Postfix) with ESMTPS id 49846613C2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 06:21:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49846613C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3Lt60Bdvz308l
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:20:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3LvC4klZz2yxv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jun 2021 16:21:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -26,23 +26,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Lsg46wPz2yXh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:20:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3Ltq55gzz2yXh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 16:21:23 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 6FC7267373; Mon, 14 Jun 2021 08:20:15 +0200 (CEST)
-Date: Mon, 14 Jun 2021 08:20:15 +0200
+ id B72AF67373; Mon, 14 Jun 2021 08:21:18 +0200 (CEST)
+Date: Mon, 14 Jun 2021 08:21:18 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v9 03/14] swiotlb: Set dev->dma_io_tlb_mem to the
- swiotlb pool used
-Message-ID: <20210614062015.GC28343@lst.de>
+Subject: Re: [PATCH v9 04/14] swiotlb: Add restricted DMA pool initialization
+Message-ID: <20210614062118.GD28343@lst.de>
 References: <20210611152659.2142983-1-tientzu@chromium.org>
- <20210611152659.2142983-4-tientzu@chromium.org>
- <CALiNf2_nzP=qLg5Fqvn3kiaMiaR9r+QJhE3pqypW4FPrgo23DQ@mail.gmail.com>
+ <20210611152659.2142983-5-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CALiNf2_nzP=qLg5Fqvn3kiaMiaR9r+QJhE3pqypW4FPrgo23DQ@mail.gmail.com>
+In-Reply-To: <20210611152659.2142983-5-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -68,17 +66,16 @@ Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
  linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
  Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
  matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- Jianxiong Gao <jxgao@google.com>, Daniel Vetter <daniel@ffwll.ch>,
- Will Deacon <will@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ jxgao@google.com, daniel@ffwll.ch, Will Deacon <will@kernel.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  maarten.lankhorst@linux.intel.com, airlied@linux.ie,
  Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
  jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
- rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
- boris.ostrovsky@oracle.com,
+ rodrigo.vivi@intel.com, bhelgaas@google.com, boris.ostrovsky@oracle.com,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
  Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
  Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
- Tomasz Figa <tfiga@chromium.org>,
+ tfiga@chromium.org,
  "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
  Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
  Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
@@ -86,10 +83,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 11, 2021 at 11:33:15PM +0800, Claire Chang wrote:
-> I'm not sure if this would break arch/x86/pci/sta2x11-fixup.c
-> swiotlb_late_init_with_default_size is called here
-> https://elixir.bootlin.com/linux/v5.13-rc5/source/arch/x86/pci/sta2x11-fixup.c#L60
+On Fri, Jun 11, 2021 at 11:26:49PM +0800, Claire Chang wrote:
+> Add the initialization function to create restricted DMA pools from
+> matching reserved-memory nodes.
 
-It will.  It will also break all non-OF devices.  I think you need to
-initialize the initial pool in device_initialize, which covers all devices.
+Bisection hazard:  we should only add the new config option when the
+code is actually read to be used.  So this patch should move to the end
+of the series.
