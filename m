@@ -7,81 +7,64 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FF93C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39EBDC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:35:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA5636146D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:35:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA5636146D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id B662D6146D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:35:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B662D6146D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48TC0y1Mz3fd9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:35:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48Th1Ltwz3fk5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:35:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=eMMTD49W;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Kaaj+w5s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1034;
- helo=mail-pj1-x1034.google.com; envelope-from=tientzu@chromium.org;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=eMMTD49W; dkim-atps=neutral
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com
- [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=Kaaj+w5s; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48Kz3T7Vz3byp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:29:11 +1000 (AEST)
-Received: by mail-pj1-x1034.google.com with SMTP id k5so11788656pjj.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:29:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=JTiG8Mo/Nik+wIMq7cgtIy70t0SMnfIMs1UdiPtMcT8=;
- b=eMMTD49WILvEJwNkbyXll1fUBPjpxlVSOhGaqL9TwmPYonPep8XftjIi5HAggU5srI
- CLNpua3pQ7CwLVSW3dv0uDNKq24FS4175dYppaWlWO3XqF6T9hZPazFJ1he0aV5H6ErX
- dgTORgnp7aFTod/O8rpuewIUUw+E6SucoIApk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=JTiG8Mo/Nik+wIMq7cgtIy70t0SMnfIMs1UdiPtMcT8=;
- b=kcNApnmcwRHBrShBMumi68D3cB2RAX9K4Bxt8askyMIAoVV5BCE9IjZHN2NoMohBvK
- LWNDoXYTXHR0ENydWrBNuKvS2U+6Q6UnE3PdKbXyjRVymsYQQFfJJ7NVQCQwHW0412Xc
- llphDlzH0IqMNv6CvbL9aTT7oimMN+tZ1VlJJe8Qy0Iwa14AolKj4x9+S6Q/IQvaBwNL
- Q6v/M8scw/qzX9rXntJP86U1Az6Q+cDwGUwv3ko0xS7D9t1nztHwQl7MDEO6/grE4rP5
- NP6o0roNDCP8VW0yRRHOMndCO12X+BvZ027H+lVWfuahg9YGM7hWKzHr3Utsxf7k1MuL
- LQWA==
-X-Gm-Message-State: AOAM531duXll4tqI85FTXSOHzmKkICH4r/THR7NyFCfjoN7oG/mpNNZl
- ACajUUEWgcleImYYaPYpXP7Uwg==
-X-Google-Smtp-Source: ABdhPJzXEtYDRC2fz4fUhVok40FY/FvrMnNmlVHfb+TKFwVcW+8fDTaQF2I0RwRDZ7J7BoI70NFDeg==
-X-Received: by 2002:a17:902:e289:b029:10c:97e9:2c74 with SMTP id
- o9-20020a170902e289b029010c97e92c74mr4206776plc.34.1623763748216; 
- Tue, 15 Jun 2021 06:29:08 -0700 (PDT)
-Received: from localhost ([2401:fa00:95:205:1846:5274:e444:139e])
- by smtp.gmail.com with UTF8SMTPSA id w27sm16447396pfq.117.2021.06.15.06.29.00
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 15 Jun 2021 06:29:07 -0700 (PDT)
-From: Claire Chang <tientzu@chromium.org>
-To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
- Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
- jgross@suse.com, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v10 12/12] of: Add plumbing for restricted DMA pool
-Date: Tue, 15 Jun 2021 21:27:11 +0800
-Message-Id: <20210615132711.553451-13-tientzu@chromium.org>
-X-Mailer: git-send-email 2.32.0.272.g935e593368-goog
-In-Reply-To: <20210615132711.553451-1-tientzu@chromium.org>
-References: <20210615132711.553451-1-tientzu@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48L82MClz3dFF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:29:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=gCdUfdryXX9J3CwMxmwyJL5seb86z6Ov9FawmIkvAKE=; b=Kaaj+w5sQBoBqkokmlMCbw4thd
+ Y7RDcQBgSPtWiunihfvmP4ESXOvhqtDJoTqJoE/9zJZprhgvpjDifd84KWd+McMZbcjtKZXFVlJUN
+ jQg6z+ZJ54Tz4G17iB1ZeKnFbcbf9O+F+c28OwF/47Tcch64az3DF3QiXEebGtjAucaT1r0tIgSvE
+ CY3C3GkjI8ZtiKGXJSYcKIMth7IL2aHU47vDbyksvE6tWslM8x9Dh1MmU4C3uNhLT/izjphPsnF20
+ CiWAlkUponb1AsZWsfz5+tjnNExbaWSCT5bk2MDSTan/yAXXEiELwPjfQkKmiuYUy/NJjXyM7lrBM
+ oj39iSdw==;
+Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1lt96I-006o5s-Gs; Tue, 15 Jun 2021 13:27:36 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>,
+	Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 08/18] block: use memzero_page in zero_fill_bio
+Date: Tue, 15 Jun 2021 15:24:46 +0200
+Message-Id: <20210615132456.753241-9-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210615132456.753241-1-hch@lst.de>
+References: <20210615132456.753241-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,129 +76,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
- sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
- xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
- bhelgaas@google.com, tientzu@chromium.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
+ Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
+ Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If a device is not behind an IOMMU, we look up the device node and set
-up the restricted DMA when the restricted-dma-pool is presented.
+Use memzero_bvec to zero each segment in the bio instead of manually
+mapping and zeroing the data.
 
-Signed-off-by: Claire Chang <tientzu@chromium.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/of/address.c    | 33 +++++++++++++++++++++++++++++++++
- drivers/of/device.c     |  3 +++
- drivers/of/of_private.h |  6 ++++++
- 3 files changed, 42 insertions(+)
+ block/bio.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 3b2acca7e363..c8066d95ff0e 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -8,6 +8,7 @@
- #include <linux/logic_pio.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-+#include <linux/of_reserved_mem.h>
- #include <linux/pci.h>
- #include <linux/pci_regs.h>
- #include <linux/sizes.h>
-@@ -1001,6 +1002,38 @@ int of_dma_get_range(struct device_node *np, const struct bus_dma_region **map)
- 	of_node_put(node);
- 	return ret;
- }
-+
-+int of_dma_set_restricted_buffer(struct device *dev, struct device_node *np)
-+{
-+	struct device_node *node, *of_node = dev->of_node;
-+	int count, i;
-+
-+	count = of_property_count_elems_of_size(of_node, "memory-region",
-+						sizeof(u32));
-+	/*
-+	 * If dev->of_node doesn't exist or doesn't contain memory-region, try
-+	 * the OF node having DMA configuration.
-+	 */
-+	if (count <= 0) {
-+		of_node = np;
-+		count = of_property_count_elems_of_size(
-+			of_node, "memory-region", sizeof(u32));
-+	}
-+
-+	for (i = 0; i < count; i++) {
-+		node = of_parse_phandle(of_node, "memory-region", i);
-+		/*
-+		 * There might be multiple memory regions, but only one
-+		 * restricted-dma-pool region is allowed.
-+		 */
-+		if (of_device_is_compatible(node, "restricted-dma-pool") &&
-+		    of_device_is_available(node))
-+			return of_reserved_mem_device_init_by_idx(dev, of_node,
-+								  i);
-+	}
-+
-+	return 0;
-+}
- #endif /* CONFIG_HAS_DMA */
+diff --git a/block/bio.c b/block/bio.c
+index 44205dfb6b60..1d7abdb83a39 100644
+--- a/block/bio.c
++++ b/block/bio.c
+@@ -495,16 +495,11 @@ EXPORT_SYMBOL(bio_kmalloc);
  
- /**
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index c5a9473a5fb1..2defdca418ec 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -165,6 +165,9 @@ int of_dma_configure_id(struct device *dev, struct device_node *np,
- 
- 	arch_setup_dma_ops(dev, dma_start, size, iommu, coherent);
- 
-+	if (!iommu)
-+		return of_dma_set_restricted_buffer(dev, np);
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(of_dma_configure_id);
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 631489f7f8c0..376462798f7e 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -163,12 +163,18 @@ struct bus_dma_region;
- #if defined(CONFIG_OF_ADDRESS) && defined(CONFIG_HAS_DMA)
- int of_dma_get_range(struct device_node *np,
- 		const struct bus_dma_region **map);
-+int of_dma_set_restricted_buffer(struct device *dev, struct device_node *np);
- #else
- static inline int of_dma_get_range(struct device_node *np,
- 		const struct bus_dma_region **map)
+ void zero_fill_bio(struct bio *bio)
  {
- 	return -ENODEV;
- }
-+static inline int of_dma_set_restricted_buffer(struct device *dev,
-+					       struct device_node *np)
-+{
-+	return -ENODEV;
-+}
- #endif
+-	unsigned long flags;
+ 	struct bio_vec bv;
+ 	struct bvec_iter iter;
  
- void fdt_init_reserved_mem(void);
+-	bio_for_each_segment(bv, bio, iter) {
+-		char *data = bvec_kmap_irq(&bv, &flags);
+-		memset(data, 0, bv.bv_len);
+-		flush_dcache_page(bv.bv_page);
+-		bvec_kunmap_irq(data, &flags);
+-	}
++	bio_for_each_segment(bv, bio, iter)
++		memzero_bvec(&bv);
+ }
+ EXPORT_SYMBOL(zero_fill_bio);
+ 
 -- 
-2.32.0.272.g935e593368-goog
+2.30.2
 
