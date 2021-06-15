@@ -2,79 +2,138 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEAA2C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:49:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76B92C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:55:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 48FE6613DE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:49:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48FE6613DE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D12366140F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:55:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D12366140F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vSc3hq9z3bxc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:49:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vbs1yzwz3078
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:55:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Gtt8sv2K;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=Gh1/j2qh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b2d;
- helo=mail-yb1-xb2d.google.com; envelope-from=jniethe5@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Gtt8sv2K; dkim-atps=neutral
-Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com
- [IPv6:2607:f8b0:4864:20::b2d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.68; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=Gh1/j2qh; 
+ dkim-atps=neutral
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20068.outbound.protection.outlook.com [40.107.2.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vS71lDBz2yjS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 13:48:38 +1000 (AEST)
-Received: by mail-yb1-xb2d.google.com with SMTP id c14so18507226ybk.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 20:48:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=yin680PxT32vvsFD3cgHVsiUYZwQgvezq1Xoe5O317c=;
- b=Gtt8sv2KPRSl3UIUPDmkHcCj5XNL9oJgV5f0w/jrE0nVN+X7LEPbj9GYDUSZUOLt59
- 3+4MSm+kzX1CI1uGiVaMTwsYAjxaniKbGnZQBvQQOMCgjMcIrw7G40ZbTN8dxIyH2vTy
- dKjtCe62Q/S9r2ydzl4PIPvj4jNGchg1hh5t2ix/VFXfOdANxJNieil5BlOsOVxZpVrs
- AEthIhdk68OmQIK4voYsCn/fr+djO8sbdGu27V3Zh1eTSj0m0VNFDMbdYmK7lMVsSx9G
- mlSdeWF4kfTvsg+SO1jRk9voBPSf8IFk2Otha7XhpL6LcpMnVUXbiFCqO22Ss8eqkv4l
- Fl1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=yin680PxT32vvsFD3cgHVsiUYZwQgvezq1Xoe5O317c=;
- b=S7Tv0e3/5FivBw+HGi+Z4iA4DeUDgKhXAKFCUZbdd+iRqFXFSPWVQK6gd/9n+uv6g6
- XIeydHsk2fQM+SNxpyFzNXdbdlLztMBGYz5E3GZusuClvwCJpXa6XqvGaF8YJFUw3uDq
- j0VyfbXNSyAP92pm45uZssRDcGYptQwGqFgHPlSfsTO2q8eOQq4a7p7LfzXRUJCgBgR5
- LbovRotkQvF0tWNAOy+zEfJ1vCUW4TYg+BZWArnv2FBevHY78BC+sz4K0iZIWzEPs/yL
- Cqc7eSCBeLIoORZ7j5Tt49yR9AHK8vAsFvpbZEAjHW8hOFsGcAFPCihleNfX6kFvmlbu
- GdWA==
-X-Gm-Message-State: AOAM533PCyCT+hBrk3RB/vZvzna4N3xv2C8xDbIrae/sRi/K205GDjDn
- 1MYKGcW3cuHxtEDRdcD8muc6tvxp4yGzZuOw43A=
-X-Google-Smtp-Source: ABdhPJw9ZI06p4bfDSpDF6e0BS6jWeKMJll3l4TO6xyULMQ8kEUfjDXChwtGw/ohDBpgxouXzBoBnVm+ngQlBvjB6Ek=
-X-Received: by 2002:a25:607:: with SMTP id 7mr3224929ybg.343.1623728915277;
- Mon, 14 Jun 2021 20:48:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vbB1TgYz2yWp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 13:54:44 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jkaD01B31aJdApm0MTjPhVZR3ydgbT9F+hzqWYkKvv/QwpGLvwoHJy03DDoMKjooTSNM6eDfDcfmMChaN0mICkr9VtmCK4XYfkFFZ2i1OvzJ96XPlcg0Wz1d9WFipt24s+NpGSz87vjzQYxFs3a4AdmmS7kSGrzO3HsQTFWb0fEKo4qNtW4+RBP2wOL7BuADGf/36llQXKly3JTcs2/HgN6AUhuAmhnrRPhS6Q8N+BIj3lQk/fZkiLBVcKeRyZslax6O7EYuNk4/pR3YuHuSoFsevu8nB3tvwBUd/8bF5o0Yg51+ftCBfnUmmmiAVl6aT1fOzQuQ07NSa5bSCUk+xQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=XjeOIdQgJTVZ763sYZu286nieJjHnhbQuSePIv+eO+o=;
+ b=K7MtJfECxOuxVa0eQT8MzBIU/SUV5Xgg/H6M52xVAFB2I1s4w1FkA4akj2V1GDuF5O/BBMmjgvDp8Lg93xyE0j/1Jz/kJ+Lm8NW7R9/MBfrA0mvY95/WY2SxPUOuJ7QijO0WL2k2S9Bq0N19nTpazR6bnqE9LT5cS6+34GbB5w5+WDGE5Co0Uzv9xnLBd/6d1T7xNQw95I5iD+CuhY1W6IQ9z+zGhHWBpew+fYsX4r7WS3gGhu24NBtYecOdq5+jhtLsAWc+uSrBDsMmVq6Mv3YECSXhg0FThb2twP2IgqBbegA0FIYL4clnj8hBRZwU0374u1BQ7eW76Mr+w3FwpQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=XjeOIdQgJTVZ763sYZu286nieJjHnhbQuSePIv+eO+o=;
+ b=Gh1/j2qhJqY1FvLnUMBrOTDbevTiE1naGdddnH3QTAG73IqW4AtDhLGixt/sFgjQb53ivIf3LBnBRva48Ewe++pHvZjv+eXAVmLJ7dEyJ+uCCVMxZlRSbikwFfiZX52+KnsnX2317B4FDz2GFNVxYDkKqZP2efgoum2SQmpVuok=
+Received: from VI1PR04MB4478.eurprd04.prod.outlook.com (2603:10a6:803:67::30)
+ by VE1PR04MB7246.eurprd04.prod.outlook.com (2603:10a6:800:1ae::24)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4219.23; Tue, 15 Jun
+ 2021 03:54:37 +0000
+Received: from VI1PR04MB4478.eurprd04.prod.outlook.com
+ ([fe80::f1f8:ff94:2b66:8429]) by VI1PR04MB4478.eurprd04.prod.outlook.com
+ ([fe80::f1f8:ff94:2b66:8429%5]) with mapi id 15.20.4219.025; Tue, 15 Jun 2021
+ 03:54:36 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: Joel Stanley <joel@jms.id.au>
+Subject: RE: [PATCH] usb: gadget: fsl: properly remove remnant of MXC support
+Thread-Topic: [PATCH] usb: gadget: fsl: properly remove remnant of MXC support
+Thread-Index: AQHXXyJaPtbrvsFOdEq86ntFi4l5gqsUU8MAgAAhrQA=
+Date: Tue, 15 Jun 2021 03:54:36 +0000
+Message-ID: <VI1PR04MB44782C719DCEA2FF0DB03DBF8F309@VI1PR04MB4478.eurprd04.prod.outlook.com>
+References: <20210612003128.372238-1-leoyang.li@nxp.com>
+ <CACPK8XfUiiBM=KQiqSJ5uSUpOHLTp_wxhNyEw-gYkTBsZjbZVg@mail.gmail.com>
+In-Reply-To: <CACPK8XfUiiBM=KQiqSJ5uSUpOHLTp_wxhNyEw-gYkTBsZjbZVg@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: jms.id.au; dkim=none (message not signed)
+ header.d=none;jms.id.au; dmarc=none action=none header.from=nxp.com;
+x-originating-ip: [136.49.83.111]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: dbfae566-083c-4f00-81fb-08d92fb14b4a
+x-ms-traffictypediagnostic: VE1PR04MB7246:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VE1PR04MB724663252FE6FBC5D256E6AF8F309@VE1PR04MB7246.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:6790;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: G8mLqLa71ivDpT+PaKgqrddhKKnN9IcvSC+y0En3On9j6uHvdkn28yT+XqR5LV9I5+vDeAQ6HoIn9FJWmyGQiveTWy2O3d0wZIJ9sNNMRlFydOjoAl8mbbCa2ikRgzve05M5EMwI/nq76ujmjhuEQUE6rRnxBw2X2skW08MH/vKiNK0Kxm1VoKXxHj3PLZxkcFsMMHf6PQD2ZibXpC6nt4cE2JGYgJNAvCjh1BnKHI2fyfgGbi+odSDkQsYtt+Jg6HuNFvMxiqwx4NIdo/CwZtX/dIkiZ9AAFYPrnJTjY8MsbRP9yZlhW8CnYqVLnvzdei3nZb7SZHiZzD8Fq2X8I+0u43N4pRH0sMdBHz0hiz8q0TWr09344u99J8VlALMI/0OYFEC+2cSIbuvgbVnKYVxAmCz1L1FpGvCO0kKSBRP/qHpqyZLNY71Y/l8bSJWOMXR0DRyMA0BMtJgT8SAvwlTgFnKhZSXeC7gwsN/1K2s/IkhRJ0t9Oa3xIMz9OAw8d7A8OQPmdXZXuSZN58+uE/ULpNu2cWpnzZTdCCWpSMGCuDM0PtXYclHURHmYfOpqY1yahLXwevOUyOB72u8/Ci9LOs9isdUk5JSpbBpqWB8=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:VI1PR04MB4478.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(396003)(376002)(366004)(136003)(346002)(39860400002)(5660300002)(83380400001)(4744005)(55016002)(66946007)(76116006)(86362001)(9686003)(6916009)(4326008)(33656002)(66476007)(52536014)(71200400001)(6506007)(53546011)(8936002)(122000001)(38100700002)(2906002)(66556008)(64756008)(186003)(8676002)(478600001)(7696005)(54906003)(316002)(66446008)(26005);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?M1VTd01GcE9SN1Q3NTZmUkh0cEtrb0ZuZm5XQ3IzMXp4UlV3YWJaN3dMaUpQ?=
+ =?utf-8?B?Y0VIemJKNnpqWWN3TFdHdWh4MWZpbG9XeDI0Sm12ZDVEQ3hHNVRrOG9IVFcy?=
+ =?utf-8?B?MmZSbDlpd0E2WGdNN3dudmpaUFVUeFg5OGFCbjV3UTFFQzNBaCtVY0pCSFdu?=
+ =?utf-8?B?aG9hajFpWjhkOEpVMVZucXlsbVBpbGJGZU1GdmZhcGQ0ZGJ6QTJkT2FvaXNp?=
+ =?utf-8?B?UkVJWXlLYVVickxEK1JrSXB1TjVmMkNNdHVNSkZXVE1WTEltMlpFQnVXYVJH?=
+ =?utf-8?B?dkQxZXVkWXdWRFZnT1dZZEY0V3JLTkJFdDVTNXZvZzhNSEtOYkJLeG1EWGxa?=
+ =?utf-8?B?N0praDFFenJvUzBrUVd0Qjl3MzArVWUxOTFQKzZ2Q01PYnZndU9uR1NyV2lj?=
+ =?utf-8?B?dE9COVVsOVhzSmo1MHVqRm5rKzFSZU9pc0pibmRhSTBWcHRTeVdUNXhXbGdv?=
+ =?utf-8?B?RDIxM040dGltQmlRODBFS05FcEJoUUQxcnBXNGh3S3BCMzIycW44c2VkazVO?=
+ =?utf-8?B?Z2tyN0N0L0ZIb01IT2Vxd2VZMHZRUjJHU0RRVFNGQVkrenZOTlA4QkF5Q2tW?=
+ =?utf-8?B?TDZpZ1NLVDdQZmhoT2o0dmNWOHRSenBWQ1haMWhWTFoyQ1Z5SXlyUk5LcDdw?=
+ =?utf-8?B?RWExOFk2c3dBY3JmRVFzMklSam5mUUtBTWl0UE0rSXlsZytOT0c2aXZxenZj?=
+ =?utf-8?B?Y3M4WS9MK2NoMVZDRVNjL3JkL0hUdy9vQUo4TEY5WW5NblVPSzF3T2I1T3Zs?=
+ =?utf-8?B?djc5NHl4Vi85RXl3dm1ud2hENnVEQXRCNkFScitsS0ZPc3ByN0Z5dnYwR2FH?=
+ =?utf-8?B?V2Z0eEkxTWEzRjZGVW41QW1xRjRtUnVhVFMzZDJ6WDNCdkFDMDJTZjgvY0hq?=
+ =?utf-8?B?QkhCUGpHNDhOZjRaS2p3alEzdWdpazRWazhaUkdZY0V3VkdxdkJtTU5JY05S?=
+ =?utf-8?B?cmYycEl2YzJMYnVlRzZmQUNaZ1g1SVYzcEdTcnRkQkdqT2J6NmdqYm0wNysy?=
+ =?utf-8?B?NC9WNW5YQndzcGNYV0hzUHhzS2ROU1hMemppdUIzeEJsT0M3LzhBejVXNVZE?=
+ =?utf-8?B?dDhkK3ZDWnJtRTRZZjBDSGtBTGJ5M2ZMUGM2TmZOcGhDQW9YL0ROVnJGZ0Fz?=
+ =?utf-8?B?cW5BRm9VZ1lKTlNRNUVlb2w0WXJpMHJYUWlXb04rdmNGSkNmNlcvbWFoWmY3?=
+ =?utf-8?B?S0x1NjEvOFpjUURUVVczZEVJVEwrQUpRdWZGVzNKaWdLQlNzK2lNWkhDT0xO?=
+ =?utf-8?B?SGp0R2k3RHd4Q09lalNPZzNLS3NrMHE1K0RyaXBmdUdsUVZKQnFZUk1DWE4z?=
+ =?utf-8?B?L05KNkJ2cXdoVElQWDhPdlJMVGs5VnpyTjNBV0s0aWZGbHpHZ2hLbk5STDVv?=
+ =?utf-8?B?Vkp4OWNVeXNsOHU1bWx5SHF1V096b28xKzJ0MjZVNlpzZXBBa290ZXZJcG96?=
+ =?utf-8?B?UzhDemVOUHBjTWN4M3FSek5Vek1rNDkxWWMvZEszU2VqcE1iOU1VcHZqRFYv?=
+ =?utf-8?B?WS9qamZWN1FjMkk0bGMvNVJ3bkVFU0wwM2pUYVBTNURSdXlCL3NSbW8rL3c3?=
+ =?utf-8?B?YkE4VkNXbGtnczJEVS9vSzM0R3E3Ri95WUVERFRwU2RyQW43VTB3RFZ3Q3g0?=
+ =?utf-8?B?ZnhYQWxiOVVxdzZyODUvcDZ2L2svMTVwREw4cmg1QjZsL0lGb0FMVkgrSnN5?=
+ =?utf-8?B?Qk9PWm9KK21xMmZkcHVjWU9RYVR3S1U1L3VuN0tUdWF3TkJZdXVjZGhMVlpn?=
+ =?utf-8?Q?UBaFL5ZHhAeyYlaQqvgPmlGhipWUg5ei1tAp0nJ?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-References: <cover.1621516826.git.christophe.leroy@csgroup.eu>
- <d54c63dcac6d190e1cc0d2fe3259d6e621928cdf.1621516826.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <d54c63dcac6d190e1cc0d2fe3259d6e621928cdf.1621516826.git.christophe.leroy@csgroup.eu>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Tue, 15 Jun 2021 13:48:23 +1000
-Message-ID: <CACzsE9qX3TT07QXBECdB4EJq70KGB0UPn3kfk3WfS-jTQgaAvQ@mail.gmail.com>
-Subject: Re: [PATCH v2 09/12] powerpc/inst: Refactor PPC32 and PPC64 versions
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB4478.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: dbfae566-083c-4f00-81fb-08d92fb14b4a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Jun 2021 03:54:36.6787 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: dJEHROcZ+7JL/Q90KTH8/lWekX7QwdV9cDhDPts9j/ptrpJ2sVHjWkUJa7g78CIYD08VHXOaZyNPy4Kk2LJVhA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB7246
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,110 +145,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+Cc: Felipe Balbi <balbi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, Ran Wang <ran.wang_1@nxp.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 20, 2021 at 11:50 PM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
->
-> ppc_inst() ppc_inst_prefixed() ppc_inst_swab() can easily
-> be made common to both PPC32 and PPC64.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/include/asm/inst.h | 49 +++++++++------------------------
->  1 file changed, 13 insertions(+), 36 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-> index 32d318c3b180..e009e94e90b2 100644
-> --- a/arch/powerpc/include/asm/inst.h
-> +++ b/arch/powerpc/include/asm/inst.h
-> @@ -60,9 +60,9 @@ static inline int ppc_inst_primary_opcode(struct ppc_inst x)
->         return ppc_inst_val(x) >> 26;
->  }
->
-> -#ifdef CONFIG_PPC64
->  #define ppc_inst(x) ((struct ppc_inst){ .val = (x) })
->
-> +#ifdef CONFIG_PPC64
->  #define ppc_inst_prefix(x, y) ((struct ppc_inst){ .val = (x), .suffix = (y) })
->
->  static inline u32 ppc_inst_suffix(struct ppc_inst x)
-> @@ -70,57 +70,34 @@ static inline u32 ppc_inst_suffix(struct ppc_inst x)
->         return x.suffix;
->  }
->
-> -static inline bool ppc_inst_prefixed(struct ppc_inst x)
-> -{
-> -       return ppc_inst_primary_opcode(x) == OP_PREFIX;
-> -}
-> +#else
-> +#define ppc_inst_prefix(x, y) ppc_inst(x)
->
-> -static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
-> +static inline u32 ppc_inst_suffix(struct ppc_inst x)
->  {
-> -       return ppc_inst_prefix(swab32(ppc_inst_val(x)), swab32(ppc_inst_suffix(x)));
-> +       return 0;
->  }
->
-> +#endif /* CONFIG_PPC64 */
-> +
->  static inline struct ppc_inst ppc_inst_read(const unsigned int *ptr)
->  {
-> -       u32 val, suffix;
-> -
-> -       val = *ptr;
-> -       if ((val >> 26) == OP_PREFIX) {
-> -               suffix = *(ptr + 1);
-> -               return ppc_inst_prefix(val, suffix);
-> -       } else {
-> -               return ppc_inst(val);
-> -       }
-> +       if (IS_ENABLED(CONFIG_PPC64) && (*ptr >> 26) == OP_PREFIX)
-> +               return ppc_inst_prefix(*ptr, *(ptr + 1));
-> +       else
-> +               return ppc_inst(*ptr);
->  }
->
-> -#else
-> -
-> -#define ppc_inst(x) ((struct ppc_inst){ .val = x })
-> -
-> -#define ppc_inst_prefix(x, y) ppc_inst(x)
-> -
->  static inline bool ppc_inst_prefixed(struct ppc_inst x)
->  {
-> -       return false;
-> -}
-> -
-> -static inline u32 ppc_inst_suffix(struct ppc_inst x)
-> -{
-> -       return 0;
-> +       return IS_ENABLED(CONFIG_PPC64) && ppc_inst_primary_opcode(x) == OP_PREFIX;
->  }
->
->  static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
->  {
-> -       return ppc_inst(swab32(ppc_inst_val(x)));
-> -}
-> -
-> -static inline struct ppc_inst ppc_inst_read(const unsigned int *ptr)
-> -{
-> -       return ppc_inst(*ptr);
-> +       return ppc_inst_prefix(swab32(ppc_inst_val(x)), swab32(ppc_inst_suffix(x)));
->  }
->
-> -#endif /* CONFIG_PPC64 */
-> -
->  static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
->  {
->         if (ppc_inst_val(x) != ppc_inst_val(y))
-> --
-> 2.25.0
->
-Reviewed by: Jordan Niethe <jniethe5@gmail.com>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSm9lbCBTdGFubGV5IDxq
+b2VsQGptcy5pZC5hdT4NCj4gU2VudDogTW9uZGF5LCBKdW5lIDE0LCAyMDIxIDg6NTIgUE0NCj4g
+VG86IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPg0KPiBDYzogRmVsaXBlIEJhbGJpIDxiYWxi
+aUBrZXJuZWwub3JnPjsgR3JlZyBLcm9haC1IYXJ0bWFuDQo+IDxncmVna2hAbGludXhmb3VuZGF0
+aW9uLm9yZz47IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldg0KPiA8bGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0IDxs
+aW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz47IEFybmQgQmVyZ21hbm4gPGFybmRAYXJu
+ZGIuZGU+OyBSYW4gV2FuZw0KPiA8cmFuLndhbmdfMUBueHAuY29tPjsgRmFiaW8gRXN0ZXZhbSA8
+ZmVzdGV2YW1AZ21haWwuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB1c2I6IGdhZGdldDog
+ZnNsOiBwcm9wZXJseSByZW1vdmUgcmVtbmFudCBvZiBNWEMNCj4gc3VwcG9ydA0KPiANCj4gT24g
+U2F0LCAxMiBKdW4gMjAyMSBhdCAwMDozMSwgTGkgWWFuZyA8bGVveWFuZy5saUBueHAuY29tPiB3
+cm90ZToNCj4gPg0KPiA+IENvbW1pdCBhMzkwYmVmN2RiMWYgKCJ1c2I6IGdhZGdldDogZnNsX214
+Y191ZGM6IFJlbW92ZSB0aGUgZHJpdmVyIikNCj4gPiBkaWRuJ3QgcmVtb3ZlIGFsbCB0aGUgTVhD
+IHJlbGF0ZWQgc3R1ZmYgd2hpY2ggY2FuIGNhdXNlIGJ1aWxkIHByb2JsZW0NCj4gPiBmb3IgTFMx
+MDIxIHdoZW4gZW5hYmxlZCBhZ2FpbiBpbiBLY29uZmlnLiAgVGhpcyBwYXRjaCByZW1vdmUgYWxs
+IHRoZQ0KPiA+IHJlbW5hbnRzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTGkgWWFuZyA8bGVv
+eWFuZy5saUBueHAuY29tPg0KPiANCj4gUmV2aWV3ZWQtYnk6IEpvZWwgU3RhbmxleSA8am9lbEBq
+bXMuaWQuYXU+DQo+IA0KPiBXaWxsIHlvdSByZS1zdWJtaXQgdGhlIGtjb25maWcgY2hhbmdlIG9u
+Y2UgdGhpcyBpcyBtZXJnZWQ/DQoNCkkgdGhpbmsgdGhhdCB3ZSBjYW4gcmUtdXNlIHlvdXIgcHJl
+dmlvdXMgcGF0Y2guDQoNCkhpIEdyZWcsDQoNCkNhbiB5b3UgYXBwbHkgdGhlIHJldmVydGVkIEtj
+b25maWcgcGF0Y2ggYWdhaW4/ICBPciBkbyB5b3UgcHJlZmVyIHVzIHRvIHJlLXN1Ym1pdCBpdCBh
+Z2Fpbj8NCg0KUmVnYXJkcywNCkxlbw0K
