@@ -7,82 +7,64 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C697C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6682C48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:34:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E6A56146D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:33:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E6A56146D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7E7EF61480
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:34:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E7EF61480
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48R90Grhz3fCN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:33:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48Rc71C0z3c7C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:34:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WzvexR7E;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=o9rlvoNl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1031;
- helo=mail-pj1-x1031.google.com; envelope-from=tientzu@chromium.org;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=WzvexR7E; dkim-atps=neutral
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
- [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=o9rlvoNl; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48KT1jKrz3cm2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:28:45 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id
- bb10-20020a17090b008ab029016eef083425so1421188pjb.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:28:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=r+B+WmWHIHMs91nx15AVM2itHN+i1YzQ775bO9+kHdU=;
- b=WzvexR7E+ALC8UHpMEnA+Cx3vlr1A1Cr5s3TW1YH4PposTtGKLhFpA/R/qQszzGPqE
- ordIiKc6mP07Rj60smVk6CJmnBRs8OEvLe0owSLDWKCjVANuxKyE3xs4HLfFTCYWWVik
- a6KT5EvKiBmg9I5cDjlQBmab8/PKoLLvYg/3Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=r+B+WmWHIHMs91nx15AVM2itHN+i1YzQ775bO9+kHdU=;
- b=b7TpIe4k9wc+4NJuqx8sovQZXF2FfBiqKaV7RXort7/Y+oVjaCfcr9hGWCp5caOl8m
- IlNxh9ARKy7BvLvogqUJgaBOfRg5zLJxKNWqrn+jDvM7uT1b2Ldi6BGn4sLLkclY1C7M
- BRb6iJFOrrfc1jNkDMCjTCxOKaNiTmGQG1ujY6Ag6WOVE9ZWhMc0vIk8wVxx/IZsiJ5c
- hnuyo4MaJqcd11HMlvZ7DeKfPKaOmxMxVmnBKBWRFW7Zl5lQhS3S6fzLdH+eOLg3TmY9
- wNlcOBexPiFnnPrHbWzEwEkDZboe+3c6MmzLPAUazv0C6uZvGi0gCELkb3pEBgAe5OJz
- UMWA==
-X-Gm-Message-State: AOAM532ot7FOr7G325oJvp6nM8zQioAfV4LX6FppWXJ2nyDiyb6nf2Hl
- nYh9wnITSfbBzC7XFLdewusdSQ==
-X-Google-Smtp-Source: ABdhPJxXGen/VsbHb/d7x2+yJI3KCk0Nmq9xnzsLjk06QOONO3j9/EsgGWLcwS/xwhPSaKB97/qqqw==
-X-Received: by 2002:a17:90b:19cd:: with SMTP id
- nm13mr5085576pjb.226.1623763722158; 
- Tue, 15 Jun 2021 06:28:42 -0700 (PDT)
-Received: from localhost ([2401:fa00:95:205:1846:5274:e444:139e])
- by smtp.gmail.com with UTF8SMTPSA id d8sm16002774pfq.198.2021.06.15.06.28.34
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 15 Jun 2021 06:28:41 -0700 (PDT)
-From: Claire Chang <tientzu@chromium.org>
-To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
- Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
- jgross@suse.com, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v10 09/12] swiotlb: Add restricted DMA pool initialization
-Date: Tue, 15 Jun 2021 21:27:08 +0800
-Message-Id: <20210615132711.553451-10-tientzu@chromium.org>
-X-Mailer: git-send-email 2.32.0.272.g935e593368-goog
-In-Reply-To: <20210615132711.553451-1-tientzu@chromium.org>
-References: <20210615132711.553451-1-tientzu@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48KW0QVgz3clg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:28:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=fwYY4cSIlXZUYhtFYDVp8X4pn3Su5FY8BPl+PlDQj0g=; b=o9rlvoNlNXNdcekDmTn200bHY3
+ du7q+hb5J/7l7Mmff9Frg7gGmQSc1zn1ny8mabmMdI1BR1VvKpaSCb2W3kFfgmB5Wn0ypoLANru6K
+ 0JyShqr627zVnXx3hdSjEHc5BRqaxcSXp6Lv41q3Vlpz9bnuGI+IDYeMnY+/4hXs2q0cqYlOfXVY0
+ qWfc4SgsvwzQszydwfkZOw+gVh4V8ZlrQTPw5FSbbhfjFqbbTuUSS97XHewV2dusDFIBy8Y/ssZNq
+ j5kIz+H15DstpmzoIdDZzwETQ220TxaVmb4fr0nBQwM2aPWzWB+SyYB9LT1e3W4NDUUJhbhy2WEM6
+ DAhmxf9A==;
+Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1lt962-006o4C-KU; Tue, 15 Jun 2021 13:27:19 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>,
+	Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 07/18] bvec: add memcpy_{from, to}_bvec and memzero_bvec helper
+Date: Tue, 15 Jun 2021 15:24:45 +0200
+Message-Id: <20210615132456.753241-8-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210615132456.753241-1-hch@lst.de>
+References: <20210615132456.753241-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,181 +76,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
- peterz@infradead.org, joonas.lahtinen@linux.intel.com,
- dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
- grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
- sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
- xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
- daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
- bhelgaas@google.com, tientzu@chromium.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
- bauerman@linux.ibm.com
+Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
+ Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
+ Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the initialization function to create restricted DMA pools from
-matching reserved-memory nodes.
+Add helpers to perform common memory operation on a bvec.
 
-Regardless of swiotlb setting, the restricted DMA pool is preferred if
-available.
-
-The restricted DMA pools provide a basic level of protection against the
-DMA overwriting buffer contents at unexpected times. However, to protect
-against general data leakage and system memory corruption, the system
-needs to provide a way to lock down the memory access, e.g., MPU.
-
-Signed-off-by: Claire Chang <tientzu@chromium.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 ---
- include/linux/swiotlb.h |  3 +-
- kernel/dma/Kconfig      | 14 ++++++++
- kernel/dma/swiotlb.c    | 78 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 94 insertions(+), 1 deletion(-)
+ include/linux/bvec.h | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index efcd56e3a16c..e76ac46ffff9 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -73,7 +73,8 @@ extern enum swiotlb_force swiotlb_force;
-  *		range check to see if the memory was in fact allocated by this
-  *		API.
-  * @nslabs:	The number of IO TLB blocks (in groups of 64) between @start and
-- *		@end. This is command line adjustable via setup_io_tlb_npages.
-+ *		@end. For default swiotlb, this is command line adjustable via
-+ *		setup_io_tlb_npages.
-  * @used:	The number of used IO TLB block.
-  * @list:	The free list describing the number of free entries available
-  *		from each index.
-diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
-index 77b405508743..3e961dc39634 100644
---- a/kernel/dma/Kconfig
-+++ b/kernel/dma/Kconfig
-@@ -80,6 +80,20 @@ config SWIOTLB
- 	bool
- 	select NEED_DMA_MAP_STATE
+diff --git a/include/linux/bvec.h b/include/linux/bvec.h
+index f8710af18eef..f9fa43b940ff 100644
+--- a/include/linux/bvec.h
++++ b/include/linux/bvec.h
+@@ -196,4 +196,37 @@ static inline void *bvec_kmap_local(struct bio_vec *bvec)
+ 	return kmap_local_page(bvec->bv_page) + bvec->bv_offset;
+ }
  
-+config DMA_RESTRICTED_POOL
-+	bool "DMA Restricted Pool"
-+	depends on OF && OF_RESERVED_MEM
-+	select SWIOTLB
-+	help
-+	  This enables support for restricted DMA pools which provide a level of
-+	  DMA memory protection on systems with limited hardware protection
-+	  capabilities, such as those lacking an IOMMU.
-+
-+	  For more information see
-+	  <Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt>
-+	  and <kernel/dma/swiotlb.c>.
-+	  If unsure, say "n".
-+
- #
- # Should be selected if we can mmap non-coherent mappings to userspace.
- # The only thing that is really required is a way to set an uncached bit
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 3c01162c400b..ef1ccd63534d 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -39,6 +39,13 @@
- #ifdef CONFIG_DEBUG_FS
- #include <linux/debugfs.h>
- #endif
-+#ifdef CONFIG_DMA_RESTRICTED_POOL
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_fdt.h>
-+#include <linux/of_reserved_mem.h>
-+#include <linux/slab.h>
-+#endif
- 
- #include <asm/io.h>
- #include <asm/dma.h>
-@@ -693,3 +700,74 @@ static int __init swiotlb_create_default_debugfs(void)
- late_initcall(swiotlb_create_default_debugfs);
- 
- #endif
-+
-+#ifdef CONFIG_DMA_RESTRICTED_POOL
-+static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
-+				    struct device *dev)
++/**
++ * memcpy_from_bvec - copy data from a bvec
++ * @bvec: bvec to copy from
++ *
++ * Must be called on single-page bvecs only.
++ */
++static inline void memcpy_from_bvec(char *to, struct bio_vec *bvec)
 +{
-+	struct io_tlb_mem *mem = rmem->priv;
-+	unsigned long nslabs = rmem->size >> IO_TLB_SHIFT;
-+
-+	/*
-+	 * Since multiple devices can share the same pool, the private data,
-+	 * io_tlb_mem struct, will be initialized by the first device attached
-+	 * to it.
-+	 */
-+	if (!mem) {
-+		mem = kzalloc(struct_size(mem, slots, nslabs), GFP_KERNEL);
-+		if (!mem)
-+			return -ENOMEM;
-+
-+		swiotlb_init_io_tlb_mem(mem, rmem->base, nslabs, false);
-+		mem->force = true;
-+		set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
-+				     rmem->size >> PAGE_SHIFT);
-+
-+		rmem->priv = mem;
-+
-+		if (IS_ENABLED(CONFIG_DEBUG_FS)) {
-+			mem->debugfs =
-+				debugfs_create_dir(rmem->name, debugfs_dir);
-+			swiotlb_create_debugfs_files(mem);
-+		}
-+	}
-+
-+	dev->dma_io_tlb_mem = mem;
-+
-+	return 0;
++	memcpy_from_page(to, bvec->bv_page, bvec->bv_offset, bvec->bv_len);
 +}
 +
-+static void rmem_swiotlb_device_release(struct reserved_mem *rmem,
-+					struct device *dev)
++/**
++ * memcpy_to_bvec - copy data to a bvec
++ * @bvec: bvec to copy to
++ *
++ * Must be called on single-page bvecs only.
++ */
++static inline void memcpy_to_bvec(struct bio_vec *bvec, const char *from)
 +{
-+	dev->dma_io_tlb_mem = io_tlb_default_mem;
++	memcpy_to_page(bvec->bv_page, bvec->bv_offset, from, bvec->bv_len);
 +}
 +
-+static const struct reserved_mem_ops rmem_swiotlb_ops = {
-+	.device_init = rmem_swiotlb_device_init,
-+	.device_release = rmem_swiotlb_device_release,
-+};
-+
-+static int __init rmem_swiotlb_setup(struct reserved_mem *rmem)
++/**
++ * memzero_bvec - zero all data in a bvec
++ * @bvec: bvec to zero
++ *
++ * Must be called on single-page bvecs only.
++ */
++static inline void memzero_bvec(struct bio_vec *bvec)
 +{
-+	unsigned long node = rmem->fdt_node;
-+
-+	if (of_get_flat_dt_prop(node, "reusable", NULL) ||
-+	    of_get_flat_dt_prop(node, "linux,cma-default", NULL) ||
-+	    of_get_flat_dt_prop(node, "linux,dma-default", NULL) ||
-+	    of_get_flat_dt_prop(node, "no-map", NULL))
-+		return -EINVAL;
-+
-+	if (PageHighMem(pfn_to_page(PHYS_PFN(rmem->base)))) {
-+		pr_err("Restricted DMA pool must be accessible within the linear mapping.");
-+		return -EINVAL;
-+	}
-+
-+	rmem->ops = &rmem_swiotlb_ops;
-+	pr_info("Reserved memory: created restricted DMA pool at %pa, size %ld MiB\n",
-+		&rmem->base, (unsigned long)rmem->size / SZ_1M);
-+	return 0;
++	memzero_page(bvec->bv_page, bvec->bv_offset, bvec->bv_len);
 +}
 +
-+RESERVEDMEM_OF_DECLARE(dma, "restricted-dma-pool", rmem_swiotlb_setup);
-+#endif /* CONFIG_DMA_RESTRICTED_POOL */
+ #endif /* __LINUX_BVEC_H */
 -- 
-2.32.0.272.g935e593368-goog
+2.30.2
 
