@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD61DC48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7F0FC48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:44:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73D4861369
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:44:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73D4861369
+	by mail.kernel.org (Postfix) with ESMTPS id 3881E61369
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:44:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3881E61369
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48g36RDfz3hNQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:43:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48gR501bz3cGW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:44:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,21 +27,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48Zb1ChXz3gVM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:40:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48b90Sb8z3dFv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:40:37 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id BE0D967373; Tue, 15 Jun 2021 15:40:02 +0200 (CEST)
-Date: Tue, 15 Jun 2021 15:40:02 +0200
+ id C138F67373; Tue, 15 Jun 2021 15:40:32 +0200 (CEST)
+Date: Tue, 15 Jun 2021 15:40:32 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v10 08/12] swiotlb: Refactor swiotlb_tbl_unmap_single
-Message-ID: <20210615134002.GH20389@lst.de>
+Subject: Re: [PATCH v10 09/12] swiotlb: Add restricted DMA pool initialization
+Message-ID: <20210615134032.GI20389@lst.de>
 References: <20210615132711.553451-1-tientzu@chromium.org>
- <20210615132711.553451-9-tientzu@chromium.org>
+ <20210615132711.553451-10-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210615132711.553451-9-tientzu@chromium.org>
+In-Reply-To: <20210615132711.553451-10-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,6 +83,20 @@ Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+
+On Tue, Jun 15, 2021 at 09:27:08PM +0800, Claire Chang wrote:
+> Add the initialization function to create restricted DMA pools from
+> matching reserved-memory nodes.
+> 
+> Regardless of swiotlb setting, the restricted DMA pool is preferred if
+> available.
+> 
+> The restricted DMA pools provide a basic level of protection against the
+> DMA overwriting buffer contents at unexpected times. However, to protect
+> against general data leakage and system memory corruption, the system
+> needs to provide a way to lock down the memory access, e.g., MPU.
+> 
+> Signed-off-by: Claire Chang <tientzu@chromium.org>
 
 Looks good,
 
