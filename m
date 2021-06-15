@@ -7,64 +7,80 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F15FC48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F68C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:30:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBE1461460
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:29:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBE1461460
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id DC20F61460
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:30:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC20F61460
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48LW0gmZz3cBX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:29:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48M31BDBz3dZ9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:30:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PoKYYdGY;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Ityiyn/6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::432;
+ helo=mail-pf1-x432.google.com; envelope-from=tientzu@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=PoKYYdGY; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=Ityiyn/6; dkim-atps=neutral
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
+ [IPv6:2607:f8b0:4864:20::432])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48JD3KjNz3bwb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:27:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=wcPpMDy97xUK1RM10BNiXs7xBvfpVplA66+OJqXXBlc=; b=PoKYYdGYNgKcb1Dj9Q9IOSmwID
- 7Kj7GzlvQq59r7+2/f5WMOpRRW+ZC41jxWkwj8ZNlkcTOLrn8O375s2Eg4Ly0E3VzmKwtzDtsFt+y
- m+6oCKbwu3G99/VH9eULMdeur3AsveUeLtF1JKn71UKFoYGv3swhN7URyvuh5jir7P2a/mPwV/7P2
- jJ8E/5RQNgCqn/uLR9uN8Q3/Mxq0SR2DWTahAW9RBPpiqdmWAN+cYx+VyZ2V1suqukiNuVOLrMIWZ
- gPbuXrEfQAiHdbNIFl2a120wbipxdYE+49g6khs8IPXOO0i6hHYMRHN8Gx/gllkvjupYKXKSzl3Sd
- fmhdvWyA==;
-Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lt95F-006nyF-RW; Tue, 15 Jun 2021 13:26:30 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 05/18] bvec: fix the include guards for bvec.h
-Date: Tue, 15 Jun 2021 15:24:43 +0200
-Message-Id: <20210615132456.753241-6-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210615132456.753241-1-hch@lst.de>
-References: <20210615132456.753241-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48JG5c6kz3cFs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:27:42 +1000 (AEST)
+Received: by mail-pf1-x432.google.com with SMTP id a127so7443954pfa.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:27:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=9+wXpY/H82TQMYJceCCK5GarrRWjIymFsSn79ihfI/w=;
+ b=Ityiyn/6rZ6eEobs+2lnH4TKbbZk+VdtN2w2T43meIIZNh9+72wW8S0VDK8goTPM0v
+ VD9NihJYeGETrBdORYc12PZdn+8m79SSBJ6F1LfLiwMAUohS+C8HkRvwkY21VvJTZM8O
+ JQ8rzrFr7pberm347Pyh+hg1b2fiB3MgVNUFQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=9+wXpY/H82TQMYJceCCK5GarrRWjIymFsSn79ihfI/w=;
+ b=hfAL0APfBxOvTe/CptBE0jyQ8LV0GwrDvTOiWXn0mnspnkmixY3ZKg2hzcyXzeKSgn
+ sfyLq0jm9keoOPfzCNrvM0l/ufs90iak6lY6smPulxnk56yczgMtkx2ULrASpidQ4tBc
+ LgmcuJO4Q7dXZRUEy2nxO8o2EW9qpQkR4VyqKUxb+xQU5dwwumL0y6+vCxrJ+5z3uRGh
+ BHWJBNkPxhfxbRMeU3kZGtEfWeLB9DtYN0Xbe47Rpt4TVootkIbdaHbrdblblFYnDYkc
+ NwEcjHYzrxUFk57Up4L2bxKe1T993tG+sIw0jkc5jj+3tcFNsuWGH2dkIAZ/46rJ2ll5
+ u6+g==
+X-Gm-Message-State: AOAM532+TKkpj8OlS9OY+M0BuxNYKdt/5MQAQP7v9yTb9r+I4E7fvCQB
+ 5RvzbsvlLR45q7u8BHcEhBZLmQ==
+X-Google-Smtp-Source: ABdhPJx713+ejHrsLud4m0g5wl75An7KsmYTto2sbhWgatvTfcJwFg19W074/BIx2abKYG48hp2c6g==
+X-Received: by 2002:a63:a805:: with SMTP id o5mr22403221pgf.328.1623763659827; 
+ Tue, 15 Jun 2021 06:27:39 -0700 (PDT)
+Received: from localhost ([2401:fa00:95:205:1846:5274:e444:139e])
+ by smtp.gmail.com with UTF8SMTPSA id p6sm217209pjh.24.2021.06.15.06.27.32
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 15 Jun 2021 06:27:39 -0700 (PDT)
+From: Claire Chang <tientzu@chromium.org>
+To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
+ Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
+ jgross@suse.com, Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v10 02/12] swiotlb: Refactor swiotlb_create_debugfs
+Date: Tue, 15 Jun 2021 21:27:01 +0800
+Message-Id: <20210615132711.553451-3-tientzu@chromium.org>
+X-Mailer: git-send-email 2.32.0.272.g935e593368-goog
+In-Reply-To: <20210615132711.553451-1-tientzu@chromium.org>
+References: <20210615132711.553451-1-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,50 +92,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Bart Van Assche <bvanassche@acm.org>, Mike Snitzer <snitzer@redhat.com>,
- Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>, linux-mips@vger.kernel.org,
- Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
- Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
+ Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
+ bhelgaas@google.com, tientzu@chromium.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the include guards to match the file naming.
+Split the debugfs creation to make the code reusable for supporting
+different bounce buffer pools.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Claire Chang <tientzu@chromium.org>
 ---
- include/linux/bvec.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ kernel/dma/swiotlb.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/bvec.h b/include/linux/bvec.h
-index ff832e698efb..883faf5f1523 100644
---- a/include/linux/bvec.h
-+++ b/include/linux/bvec.h
-@@ -4,8 +4,8 @@
-  *
-  * Copyright (C) 2001 Ming Lei <ming.lei@canonical.com>
-  */
--#ifndef __LINUX_BVEC_ITER_H
--#define __LINUX_BVEC_ITER_H
-+#ifndef __LINUX_BVEC_H
-+#define __LINUX_BVEC_H
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index c64298e416c8..97c6ad50fdc2 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -661,19 +661,26 @@ bool is_swiotlb_active(void)
+ EXPORT_SYMBOL_GPL(is_swiotlb_active);
  
- #include <linux/bug.h>
- #include <linux/errno.h>
-@@ -183,4 +183,4 @@ static inline void bvec_advance(const struct bio_vec *bvec,
- 	}
+ #ifdef CONFIG_DEBUG_FS
++static struct dentry *debugfs_dir;
+ 
+-static int __init swiotlb_create_debugfs(void)
++static void swiotlb_create_debugfs_files(struct io_tlb_mem *mem)
+ {
+-	struct io_tlb_mem *mem = io_tlb_default_mem;
+-
+-	if (!mem)
+-		return 0;
+-	mem->debugfs = debugfs_create_dir("swiotlb", NULL);
+ 	debugfs_create_ulong("io_tlb_nslabs", 0400, mem->debugfs, &mem->nslabs);
+ 	debugfs_create_ulong("io_tlb_used", 0400, mem->debugfs, &mem->used);
++}
++
++static int __init swiotlb_create_default_debugfs(void)
++{
++	struct io_tlb_mem *mem = io_tlb_default_mem;
++
++	debugfs_dir = debugfs_create_dir("swiotlb", NULL);
++	if (mem) {
++		mem->debugfs = debugfs_dir;
++		swiotlb_create_debugfs_files(mem);
++	}
+ 	return 0;
  }
  
--#endif /* __LINUX_BVEC_ITER_H */
-+#endif /* __LINUX_BVEC_H */
+-late_initcall(swiotlb_create_debugfs);
++late_initcall(swiotlb_create_default_debugfs);
+ 
+ #endif
 -- 
-2.30.2
+2.32.0.272.g935e593368-goog
 
