@@ -7,73 +7,75 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 321D2C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:49:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50081C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:50:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B52B061378
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:49:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B52B061378
+	by mail.kernel.org (Postfix) with ESMTPS id E5AC561412
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:50:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5AC561412
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rpz1NMwz3dDb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:49:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rqT2lTyz3dXs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:50:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=X0nswPKS;
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=ZeJTQLnh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::534;
- helo=mail-pg1-x534.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1035;
+ helo=mail-pj1-x1035.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=X0nswPKS; dkim-atps=neutral
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com
- [IPv6:2607:f8b0:4864:20::534])
+ header.s=google header.b=ZeJTQLnh; dkim-atps=neutral
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rmL5nD9z308d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:47:30 +1000 (AEST)
-Received: by mail-pg1-x534.google.com with SMTP id w31so7640171pga.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 18:47:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rmQ54hvz3btL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:47:34 +1000 (AEST)
+Received: by mail-pj1-x1035.google.com with SMTP id
+ g6-20020a17090adac6b029015d1a9a6f1aso915756pjx.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 18:47:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=l3K1BTqaM5pKy65dpCEo3lZI1RCD2stLd5UR2x4SDMk=;
- b=X0nswPKSD51xx5SUUNgPTOxx9Nzx2H96D/YduRYRZHo+ejqCQzThCbpTVUia8QeV9R
- HdIR5kd9RP86hki3k4UkBoiYhfysqZ1n0rn+upB0o0TRnfoK96DT08O5/uKpVd6JcNjt
- W/u6S+e7PCOUhEJSpkXQzLSmHd4ODdHjB47m8=
+ bh=Yq2AQYTBwcMSkk50BfF3YUyk3WvoM0RKP8OIdZyLogM=;
+ b=ZeJTQLnhfCYIF5Alb7Xcgk6mY9zzQWFwt3XhISP0PkPInYBI9a5/ZaMCsy80NCvgIn
+ nSVdbGwMuO0uX84KkYEAuIPjAXkySgG3mlroYr4cGA5WGFzgNpn4J/HKXkGc8Y2d9KL2
+ vaabfR/X5gDD51l49hsy4PjrGjT/drL7td3nc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=l3K1BTqaM5pKy65dpCEo3lZI1RCD2stLd5UR2x4SDMk=;
- b=gbgsm7H7ESHL9829xnPHoCUeDMDpxY2KWiJXw3vFQZozfn6PdvgSryk6XGixczXFvZ
- zvNdkubo5FdYl9Amb7I1RJu79dwr2y4GvrZd2EQfIOrFD9gvZkvJ4aHQIh+LJ7AyO9Gk
- g6lS9B6jn6qV7SITb7mdoHbJryxnvzXM5jBQ/v9cOGAGZoBA1OzshknnMumzpriP0fLo
- x6hKC4p9TkLjdtcfzxBDWJZdR4Hdt22oLK0iK9Gp1X2dKkXQqkqq5OQ5xb3Nyc7Kg8BN
- mXk/1/3LgEV3T5bfypeIwZ3M/fSZ0+r7YxWALKkNtMmaeyDLKW2q9qnfPnJ/A22ecN/b
- rNUw==
-X-Gm-Message-State: AOAM533DHLXSYc0OZusezzs1MP7rOVi+vLiQAzTLy1DZpyVJjYHTn0C/
- lKX5HcKQOWxYpmDWGdnKQgZPdw==
-X-Google-Smtp-Source: ABdhPJw7o9IChYHT/R02LwCZbPFFEfQ7b/20+CtiE7nlvaJ6m/AvsWXKO7fqTTME6tiaz6HvSr0q9g==
-X-Received: by 2002:a63:5d52:: with SMTP id o18mr19853904pgm.440.1623721647575; 
- Mon, 14 Jun 2021 18:47:27 -0700 (PDT)
+ bh=Yq2AQYTBwcMSkk50BfF3YUyk3WvoM0RKP8OIdZyLogM=;
+ b=HrJosXxqPAhvPC493F9/JQmQ8EaQjoDjyJG8fYaSpjjoQlZc2LI3DeFDzcAi5mjJTe
+ yNb2fW4YQ0S4LwOwaHXpGzlbeZe+bt6Usj4NAVTaWV27brTNFEI/cqpWsW5Fay+LWXY/
+ F8+LoIm+pODS33Fk26MN03y2ue6tezGW0GOFoUb8Og87ih1kzSfeJ5aUTXvHqim+edQS
+ ZccviXA24ji8MCY8THfelRaThA6DixmRn/X6mp/+BAPUaRQDQbdPc6j6UnBXW5k0CdIU
+ ahK7g8ZaDMBP3VOxb/g9GXxSwQWrHpaHu7aXLqzyWTpLQOJx5tAw+5rILcMKX9VYLJAC
+ az6A==
+X-Gm-Message-State: AOAM531vUqq8twID78V37wF/b5iaVAcfmoIa5OWYvTjtXeXcDKGVbrUX
+ 3E54MGgUqENnvnM3kgcVCcPBgA==
+X-Google-Smtp-Source: ABdhPJwIh6iSrt+CcEWzVqr90qKul9F0AOPFTbmA3xMVJpWYKIvGycOfdzCm5eVl4SQ5y/hhcfyFCQ==
+X-Received: by 2002:a17:902:728e:b029:101:c3b7:a47f with SMTP id
+ d14-20020a170902728eb0290101c3b7a47fmr1630411pll.21.1623721651578; 
+ Mon, 14 Jun 2021 18:47:31 -0700 (PDT)
 Received: from localhost ([203.206.29.204])
- by smtp.gmail.com with ESMTPSA id n6sm14378524pgm.79.2021.06.14.18.47.26
+ by smtp.gmail.com with ESMTPSA id t62sm5508747pfc.189.2021.06.14.18.47.30
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 14 Jun 2021 18:47:27 -0700 (PDT)
+ Mon, 14 Jun 2021 18:47:31 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
  christophe.leroy@csgroup.eu, aneesh.kumar@linux.ibm.com,
  bsingharora@gmail.com
-Subject: [PATCH v12 4/6] kasan: Document support on 32-bit powerpc
-Date: Tue, 15 Jun 2021 11:47:03 +1000
-Message-Id: <20210615014705.2234866-5-dja@axtens.net>
+Subject: [PATCH v12 5/6] powerpc/mm/kasan: rename kasan_init_32.c to init_32.c
+Date: Tue, 15 Jun 2021 11:47:04 +1000
+Message-Id: <20210615014705.2234866-6-dja@axtens.net>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210615014705.2234866-1-dja@axtens.net>
 References: <20210615014705.2234866-1-dja@axtens.net>
@@ -95,61 +97,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-KASAN is supported on 32-bit powerpc and the docs should reflect this.
+kasan is already implied by the directory name, we don't need to
+repeat it.
 
 Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- Documentation/dev-tools/kasan.rst |  8 ++++++--
- Documentation/powerpc/kasan.txt   | 12 ++++++++++++
- 2 files changed, 18 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/powerpc/kasan.txt
+ arch/powerpc/mm/kasan/Makefile                       | 2 +-
+ arch/powerpc/mm/kasan/{kasan_init_32.c => init_32.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename arch/powerpc/mm/kasan/{kasan_init_32.c => init_32.c} (100%)
 
-diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
-index 83ec4a556c19..05d2d428a332 100644
---- a/Documentation/dev-tools/kasan.rst
-+++ b/Documentation/dev-tools/kasan.rst
-@@ -36,7 +36,8 @@ Both software KASAN modes work with SLUB and SLAB memory allocators,
- while the hardware tag-based KASAN currently only supports SLUB.
+diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
+index bb1a5408b86b..42fb628a44fd 100644
+--- a/arch/powerpc/mm/kasan/Makefile
++++ b/arch/powerpc/mm/kasan/Makefile
+@@ -2,6 +2,6 @@
  
- Currently, generic KASAN is supported for the x86_64, arm, arm64, xtensa, s390,
--and riscv architectures, and tag-based KASAN modes are supported only for arm64.
-+and riscv architectures. It is also supported on 32-bit powerpc kernels.
-+Tag-based KASAN modes are supported only for arm64.
+ KASAN_SANITIZE := n
  
- Usage
- -----
-@@ -343,7 +344,10 @@ CONFIG_KASAN_VMALLOC
- 
- With ``CONFIG_KASAN_VMALLOC``, KASAN can cover vmalloc space at the
- cost of greater memory usage. Currently, this is supported on x86,
--riscv, s390, and powerpc.
-+riscv, s390, and 32-bit powerpc.
-+
-+It is optional, except on 32-bit powerpc kernels with module support,
-+where it is required.
- 
- This works by hooking into vmalloc and vmap and dynamically
- allocating real shadow memory to back the mappings.
-diff --git a/Documentation/powerpc/kasan.txt b/Documentation/powerpc/kasan.txt
-new file mode 100644
-index 000000000000..26bb0e8bb18c
---- /dev/null
-+++ b/Documentation/powerpc/kasan.txt
-@@ -0,0 +1,12 @@
-+KASAN is supported on powerpc on 32-bit only.
-+
-+32 bit support
-+==============
-+
-+KASAN is supported on both hash and nohash MMUs on 32-bit.
-+
-+The shadow area sits at the top of the kernel virtual memory space above the
-+fixmap area and occupies one eighth of the total kernel virtual memory space.
-+
-+Instrumentation of the vmalloc area is optional, unless built with modules,
-+in which case it is required.
+-obj-$(CONFIG_PPC32)           += kasan_init_32.o
++obj-$(CONFIG_PPC32)           += init_32.o
+ obj-$(CONFIG_PPC_8xx)		+= 8xx.o
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s_32.o
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/init_32.c
+similarity index 100%
+rename from arch/powerpc/mm/kasan/kasan_init_32.c
+rename to arch/powerpc/mm/kasan/init_32.c
 -- 
 2.27.0
 
