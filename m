@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B9A6C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:57:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF8CC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:57:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC5FF61413
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:57:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC5FF61413
+	by mail.kernel.org (Postfix) with ESMTPS id 0296F60FEE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:57:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0296F60FEE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vdx1JLVz3c1h
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:57:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vfN39qdz3btG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:57:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=jVn8A3Gu;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=M5xyRPFz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=jVn8A3Gu; 
+ header.a=rsa-sha256 header.s=201602 header.b=M5xyRPFz; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vd11G5Pz2yXK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vd11x5qz302B
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 13:56:20 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4G3vcz45y1z9t0p; Tue, 15 Jun 2021 13:56:19 +1000 (AEST)
+ id 4G3vcz1nn6z9sfG; Tue, 15 Jun 2021 13:56:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1623729379;
- bh=j1g6Y4duzu8lXroal7e/EVBoZKlsdhIyHUaKHwIJvIc=;
+ bh=cXSmm7K02r9BV5PA5fMnTkhab3AJowirVUVxYt8p1h4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=jVn8A3Gukhv1uw5kCn6ngq8IAt/8cNspWruPPPeSnfj2JAOXY+0LdKRM7s+oHt260
- YRs0ZMGvYZeMlzBjLfFEGFqA3SPvLDFxqseeazeR68dcWE0KDCATdsIdxGViJszPC3
- KfDD1AUq979PvicIOAFEGuFU7Kiir3F1E5PG+7oE=
-Date: Tue, 15 Jun 2021 13:13:44 +1000
+ b=M5xyRPFzY500hFDDaoVpm0qz1uE7o/dZj5F4z21fmWK7EkMS/Xk87fTWhTR4O6IBf
+ pWmnEw/83pU2VCwnV5udPcRgikK1Y/sDBF80KNYCI/exbCuSwcrLlkGZtGC/aBkCxu
+ UcRMFhP0q5VP74yRVWFCsAa631PSBz9xMC8XuiO4=
+Date: Tue, 15 Jun 2021 13:00:36 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [RFC PATCH 4/8] powerpc/pseries: Consolidate DLPAR NUMA distance
- update
-Message-ID: <YMga6CtDlIB0wLbp@yekko>
+Subject: Re: [RFC PATCH 1/8] powerpc/pseries: rename min_common_depth to
+ primary_domain_index
+Message-ID: <YMgX1L3j/5JcaLhR@yekko>
 References: <20210614164003.196094-1-aneesh.kumar@linux.ibm.com>
- <20210614164003.196094-5-aneesh.kumar@linux.ibm.com>
+ <20210614164003.196094-2-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="NWr3IvVJjHvk5f4P"
+ protocol="application/pgp-signature"; boundary="AhQrDou0Af3FPWiu"
 Content-Disposition: inline
-In-Reply-To: <20210614164003.196094-5-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20210614164003.196094-2-aneesh.kumar@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,124 +76,160 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---NWr3IvVJjHvk5f4P
+--AhQrDou0Af3FPWiu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 14, 2021 at 10:09:59PM +0530, Aneesh Kumar K.V wrote:
-> The associativity details of the newly added resourced are collected from
-> the hypervisor via "ibm,configure-connector" rtas call. Update the numa
-> distance details of the newly added numa node after the above call. In
-> later patch we will remove updating NUMA distance when we are looking
-> for node id from associativity array.
+On Mon, Jun 14, 2021 at 10:09:56PM +0530, Aneesh Kumar K.V wrote:
+> No functional change in this patch.
+
+I think this needs a rationale as to why 'primary_domain_index' is a
+better name than 'min_common_depth'.  The meaning isn't obvious to me
+=66rom either name.
+
 >=20
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 > ---
->  arch/powerpc/mm/numa.c                        | 41 +++++++++++++++++++
->  arch/powerpc/platforms/pseries/hotplug-cpu.c  |  2 +
->  .../platforms/pseries/hotplug-memory.c        |  2 +
->  arch/powerpc/platforms/pseries/pseries.h      |  1 +
->  4 files changed, 46 insertions(+)
+>  arch/powerpc/mm/numa.c | 38 +++++++++++++++++++-------------------
+>  1 file changed, 19 insertions(+), 19 deletions(-)
 >=20
 > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 192067991f8a..fec47981c1ef 100644
+> index f2bf98bdcea2..8365b298ec48 100644
 > --- a/arch/powerpc/mm/numa.c
 > +++ b/arch/powerpc/mm/numa.c
-> @@ -287,6 +287,47 @@ int of_node_to_nid(struct device_node *device)
+> @@ -51,7 +51,7 @@ EXPORT_SYMBOL(numa_cpu_lookup_table);
+>  EXPORT_SYMBOL(node_to_cpumask_map);
+>  EXPORT_SYMBOL(node_data);
+> =20
+> -static int min_common_depth;
+> +static int primary_domain_index;
+>  static int n_mem_addr_cells, n_mem_size_cells;
+>  static int form1_affinity;
+> =20
+> @@ -232,8 +232,8 @@ static int associativity_to_nid(const __be32 *associa=
+tivity)
+>  	if (!numa_enabled)
+>  		goto out;
+> =20
+> -	if (of_read_number(associativity, 1) >=3D min_common_depth)
+> -		nid =3D of_read_number(&associativity[min_common_depth], 1);
+> +	if (of_read_number(associativity, 1) >=3D primary_domain_index)
+> +		nid =3D of_read_number(&associativity[primary_domain_index], 1);
+> =20
+>  	/* POWER4 LPAR uses 0xffff as invalid node */
+>  	if (nid =3D=3D 0xffff || nid >=3D nr_node_ids)
+> @@ -284,9 +284,9 @@ int of_node_to_nid(struct device_node *device)
 >  }
 >  EXPORT_SYMBOL(of_node_to_nid);
 > =20
-> +static void __initialize_form1_numa_distance(const __be32 *associativity)
-> +{
-> +	int i, nid;
-> +
-> +	if (of_read_number(associativity, 1) >=3D primary_domain_index) {
-> +		nid =3D of_read_number(&associativity[primary_domain_index], 1);
-> +
-> +		for (i =3D 0; i < max_domain_index; i++) {
-> +			const __be32 *entry;
-> +
-> +			entry =3D &associativity[be32_to_cpu(distance_ref_points[i])];
-> +			distance_lookup_table[nid][i] =3D of_read_number(entry, 1);
-> +		}
-> +	}
-> +}
-
-This logic is almost identicaly to initialize_distance_lookup_table()
-- it would be good if they could be consolidated, so it's clear that
-coldplugged and hotplugged nodes are parsing the NUMA information in
-the same way.
-
-> +
-> +static void initialize_form1_numa_distance(struct device_node *node)
-> +{
-> +	const __be32 *associativity;
-> +
-> +	associativity =3D of_get_associativity(node);
-> +	if (!associativity)
-> +		return;
-> +
-> +	__initialize_form1_numa_distance(associativity);
-> +	return;
-> +}
-> +
-> +/*
-> + * Used to update distance information w.r.t newly added node.
-> + */
-> +void update_numa_distance(struct device_node *node)
-> +{
-> +	if (affinity_form =3D=3D FORM0_AFFINITY)
-> +		return;
-> +	else if (affinity_form =3D=3D FORM1_AFFINITY) {
-> +		initialize_form1_numa_distance(node);
-> +		return;
-> +	}
-> +}
-> +
->  static int __init find_primary_domain_index(void)
+> -static int __init find_min_common_depth(void)
+> +static int __init find_primary_domain_index(void)
 >  {
->  	int index;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index 7e970f81d8ff..778b6ab35f0d 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -498,6 +498,8 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->  		return saved_rc;
+> -	int depth;
+> +	int index;
+>  	struct device_node *root;
+> =20
+>  	if (firmware_has_feature(FW_FEATURE_OPAL))
+> @@ -326,7 +326,7 @@ static int __init find_min_common_depth(void)
 >  	}
 > =20
-> +	update_numa_distance(dn);
-> +
->  	rc =3D dlpar_online_cpu(dn);
->  	if (rc) {
->  		saved_rc =3D rc;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
-pc/platforms/pseries/hotplug-memory.c
-> index 8377f1f7c78e..0e602c3b01ea 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -180,6 +180,8 @@ static int update_lmb_associativity_index(struct drme=
-m_lmb *lmb)
->  		return -ENODEV;
+>  	if (form1_affinity) {
+> -		depth =3D of_read_number(distance_ref_points, 1);
+> +		index =3D of_read_number(distance_ref_points, 1);
+>  	} else {
+>  		if (distance_ref_points_depth < 2) {
+>  			printk(KERN_WARNING "NUMA: "
+> @@ -334,7 +334,7 @@ static int __init find_min_common_depth(void)
+>  			goto err;
+>  		}
+> =20
+> -		depth =3D of_read_number(&distance_ref_points[1], 1);
+> +		index =3D of_read_number(&distance_ref_points[1], 1);
 >  	}
 > =20
-> +	update_numa_distance(lmb_node);
-> +
->  	dr_node =3D of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->  	if (!dr_node) {
->  		dlpar_free_cc_nodes(lmb_node);
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/plat=
-forms/pseries/pseries.h
-> index 1f051a786fb3..663a0859cf13 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -113,4 +113,5 @@ extern u32 pseries_security_flavor;
->  void pseries_setup_security_mitigations(void);
->  void pseries_lpar_read_hblkrm_characteristics(void);
+>  	/*
+> @@ -348,7 +348,7 @@ static int __init find_min_common_depth(void)
+>  	}
 > =20
-> +void update_numa_distance(struct device_node *node);
->  #endif /* _PSERIES_PSERIES_H */
+>  	of_node_put(root);
+> -	return depth;
+> +	return index;
+> =20
+>  err:
+>  	of_node_put(root);
+> @@ -437,16 +437,16 @@ int of_drconf_to_nid_single(struct drmem_lmb *lmb)
+>  	int nid =3D default_nid;
+>  	int rc, index;
+> =20
+> -	if ((min_common_depth < 0) || !numa_enabled)
+> +	if ((primary_domain_index < 0) || !numa_enabled)
+>  		return default_nid;
+> =20
+>  	rc =3D of_get_assoc_arrays(&aa);
+>  	if (rc)
+>  		return default_nid;
+> =20
+> -	if (min_common_depth <=3D aa.array_sz &&
+> +	if (primary_domain_index <=3D aa.array_sz &&
+>  	    !(lmb->flags & DRCONF_MEM_AI_INVALID) && lmb->aa_index < aa.n_array=
+s) {
+> -		index =3D lmb->aa_index * aa.array_sz + min_common_depth - 1;
+> +		index =3D lmb->aa_index * aa.array_sz + primary_domain_index - 1;
+>  		nid =3D of_read_number(&aa.arrays[index], 1);
+> =20
+>  		if (nid =3D=3D 0xffff || nid >=3D nr_node_ids)
+> @@ -708,18 +708,18 @@ static int __init parse_numa_properties(void)
+>  		return -1;
+>  	}
+> =20
+> -	min_common_depth =3D find_min_common_depth();
+> +	primary_domain_index =3D find_primary_domain_index();
+> =20
+> -	if (min_common_depth < 0) {
+> +	if (primary_domain_index < 0) {
+>  		/*
+> -		 * if we fail to parse min_common_depth from device tree
+> +		 * if we fail to parse primary_domain_index from device tree
+>  		 * mark the numa disabled, boot with numa disabled.
+>  		 */
+>  		numa_enabled =3D false;
+> -		return min_common_depth;
+> +		return primary_domain_index;
+>  	}
+> =20
+> -	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
+> +	dbg("NUMA associativity depth for CPU/Memory: %d\n", primary_domain_ind=
+ex);
+> =20
+>  	/*
+>  	 * Even though we connect cpus to numa domains later in SMP
+> @@ -919,14 +919,14 @@ static void __init find_possible_nodes(void)
+>  			goto out;
+>  	}
+> =20
+> -	max_nodes =3D of_read_number(&domains[min_common_depth], 1);
+> +	max_nodes =3D of_read_number(&domains[primary_domain_index], 1);
+>  	for (i =3D 0; i < max_nodes; i++) {
+>  		if (!node_possible(i))
+>  			node_set(i, node_possible_map);
+>  	}
+> =20
+>  	prop_length /=3D sizeof(int);
+> -	if (prop_length > min_common_depth + 2)
+> +	if (prop_length > primary_domain_index + 2)
+>  		coregroup_enabled =3D 1;
+> =20
+>  out:
+> @@ -1259,7 +1259,7 @@ int cpu_to_coregroup_id(int cpu)
+>  		goto out;
+> =20
+>  	index =3D of_read_number(associativity, 1);
+> -	if (index > min_common_depth + 1)
+> +	if (index > primary_domain_index + 1)
+>  		return of_read_number(&associativity[index - 1], 1);
+> =20
+>  out:
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -201,24 +237,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---NWr3IvVJjHvk5f4P
+--AhQrDou0Af3FPWiu
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmDIGugACgkQbDjKyiDZ
-s5LPnRAA5nXA3ymO0WGCJm1KNqzmnYwBaf3NKLjsiCiiDAx2r9FZUnQ93IUhdsA6
-t3bInjsWjnKQro3DGZs8T+KwOKTOwpa8eVyf+5DQ1yxx2FsycS8LK1Jelppc72V4
-cFPabhmalfXBI3crB3jGvq/JQLeL9eFoDqpHm3ik+Pmu9c10DorywG0qKZsoP+0i
-CsKTG1ycwG0LsUAHGT7NvmcnVEcDRD6napCQnkjKzTaRQeC5Y0/ubFXpNxCmJS/x
-QNXe+o0u8DT5zQ2nJsvHdfRkRk7/aYsRYXcaHJDq+4XCTMTW2YdBVoXa93gtTFPb
-m7VFZuTug0u4lyFuSsvy+i/g88FNYxXyihqPD+QFB6q2dpJnSRf4wHR9TQtAjT4H
-eIoPfEmO9G0Wg2anVk8MRwXESVwtFkFcMRTRohOOjXiIhLeVVm6TF7dRa5a8lsOt
-/e/GAlZ8SK68vN6u5K1IRS3UndGXG6CBGa4Eub68RHbAzUNB4y2qRF0RnNI9LZPz
-JIZwqsLoT8OkqqtsfBHU+OcOpP/udSqLSf5VeS3X4PXMErNdfJmm1qZDSxzLHoYG
-JRebYiirMM3ffvazbqPfcd3oVXEmFbZXrFjksEpP7N9tNfBUyraTCz5ZjDbw7dEJ
-MWlc7WW/zWduLU9wU1v+GSXqsGtJGRrPz9rH991gTAxSm9g3vK8=
-=uI/N
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmDIF9QACgkQbDjKyiDZ
+s5J51hAAg6oDS/wB9fPMPFy0APaTWTWC18xVPudbmCRkxv3aHO4feOT4StU9msQ+
+qDOi2hMIDjulup0vFjZRH9s/upTnp1lA0t4AN59MJR4HyKwVNQRjam/X3ChxNSSs
+orQDmSqvG7oPJakKAG9sxC8woDr7A/LsxTYXpgBIBbXDAXwI5C4MnOpjfccqb6Uu
+dFHN9pFjKcOwPu7HERkJiKEStk9TpswPW6LqirK0vemgj66a7WT4OlClRieNMsXp
+1g8oP+/sbF8VmhHa3Mmw52t9WzHcJqVBq6U3ZjOTxKSqouN651S7FzaYC1FA1UQL
+hLyAqrpp6AKyBf5id2wg1BebmFRs76+j+wfHCktZgtMulh1XiloVuEM95E85jtxk
+biEEDOk4SkTKFjWH3I6mNya/QnK+meE1n8uQo9gbVQdz4OBNX+yHLLqdVtx12Z5U
+C5CuGsycA+19Cd27uSPZj7Lu6Lac0WkO7mK2wwaNxACGf5quRRTZZs1Ay+bf2mG0
+57M1hEA3IAnBkSXiPghgtuEpZ8sUh44cNzaYy/50W1U6N3cRnSWWZaRrxAKn65Px
+JRKX6+6O2vCTUD7L/g2hVVv611vx6CVA/3q+42wFGh+Xi0NYImEJrwyGi0ONtz3J
+XNFOCX47KDGvmROLqtThcM0AdRBB5lBYMjQyU2CbaGBMssP1xD4=
+=hKo4
 -----END PGP SIGNATURE-----
 
---NWr3IvVJjHvk5f4P--
+--AhQrDou0Af3FPWiu--
