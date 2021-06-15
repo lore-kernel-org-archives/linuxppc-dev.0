@@ -2,70 +2,90 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 989EFC48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2DF2C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:37:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 48AEE60FE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:36:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48AEE60FE5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 7E17061477
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:37:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E17061477
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48Vb55Bcz3fvS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:36:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48WB6ZQBz3dRC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:37:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=lg9kItVE;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BkGuougK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d41;
+ helo=mail-io1-xd41.google.com; envelope-from=tientzu@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=lg9kItVE; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=BkGuougK; dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48MD6gRpz3dd0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:30:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=2zRJ25N1ZQDjqoP5wRz0IPeM9t4AaO32k8GS/PID3co=; b=lg9kItVEWpEdsdpwblcoecYLrq
- nZ0fKKtL35zH7MUYw0F4AXQrqzi9e/V3lpY/GWSimSh1x46k6Weu3TDJVDlIDMvAzj+eGSQO03gzw
- 5UaIHXhBx2u8NFFxHB89hxgXzBYbP5kwjzs5XwiLZynjO7ciIQgYWgOq3AO44AVNZ9r/hTjz4/2Of
- r0ku0UvSEU73lyxqx3QpcciGuNqCxEr0dOesI+wbPsUGXSGTdboY0wNj/Mq2Og0FA/RHuI5wT/pzk
- VOFK9eqWGz1osp64Ulb8foUPTSy6r31VRLoH0QXmFIcq9YYoP5OlIZROzAZCK7wLZjr993uYbTnPC
- awIppbww==;
-Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lt97O-006oBC-0j; Tue, 15 Jun 2021 13:28:47 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 10/18] dm-writecache: use bvec_kmap_local instead of
- bvec_kmap_irq
-Date: Tue, 15 Jun 2021 15:24:48 +0200
-Message-Id: <20210615132456.753241-11-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210615132456.753241-1-hch@lst.de>
-References: <20210615132456.753241-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48Mv3B6Nz3djy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:30:51 +1000 (AEST)
+Received: by mail-io1-xd41.google.com with SMTP id k5so33597302iow.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:30:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=UDZeAXhtUGNxVigPWnCAmqvhZ5xmOZkpwoxu/kotpBc=;
+ b=BkGuougKdpvJFSjPDCYcuDM+EfC9+Z6Iw8t63OKFUyvGcy9WEOaTZOyzUjDtlqxxWx
+ b+f6+GiSSKCn4V8zlclen8CemZkaZyLB8FJKB0g3go6na2Mkb6J76IEsPQg2PB5YFP++
+ oJX8/uFYscqhRRWgaBEXbZGZq7TD88YFqCsf4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=UDZeAXhtUGNxVigPWnCAmqvhZ5xmOZkpwoxu/kotpBc=;
+ b=BTdT4p7UFxa/4KVnKwequl5nahhgI9acEKPTX10ZZ0zfZDiDuAyfLnBvMdxW33HpEJ
+ NwRHSTswQHQz8zpbG3QAi6jeTz4aJ9WMdUBdOGllWYRBhXtjbH8sjZ206XH36IzDa7Sf
+ uAETQceLmM6kYOr3teqvfydoj1flsbo1RjqSfh6iRWiMnrUYcg6s2L+HT+ByCpt/UxAu
+ Vhw1dM02m6uUX3O0/8Rs6pUtUWIUvxt4QyFUXAA9HboIG1vOpK8kiwBsbw32Kp5a74ua
+ bmCoFtx+OyVVpnvhRD/qYY7qSQVRM4MVYLQvlUfuzYxA/lP/qqWwsf03sECYy0rX2mSE
+ EgtA==
+X-Gm-Message-State: AOAM531DngjcGrRhUDtBqgWWuTyEz9QVVxTzSvjnF8cJRjqyyB/DpE+9
+ tGPwMS9IHykZ2FeQ6Bc7AzwECPhNfGWjDQ==
+X-Google-Smtp-Source: ABdhPJzwUoU95uplcGwkqYkDoRlFUePN4k8fVzrCEEB4NovgtAeJF1beWwDLGQuk4Pc9aMQxVMW9ww==
+X-Received: by 2002:a6b:b74e:: with SMTP id h75mr18618995iof.125.1623763847390; 
+ Tue, 15 Jun 2021 06:30:47 -0700 (PDT)
+Received: from mail-io1-f46.google.com (mail-io1-f46.google.com.
+ [209.85.166.46])
+ by smtp.gmail.com with ESMTPSA id a19sm9346394ioe.22.2021.06.15.06.30.46
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 15 Jun 2021 06:30:47 -0700 (PDT)
+Received: by mail-io1-f46.google.com with SMTP id p66so41554788iod.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:30:46 -0700 (PDT)
+X-Received: by 2002:a05:6e02:219d:: with SMTP id
+ j29mr17936278ila.64.1623763835517; 
+ Tue, 15 Jun 2021 06:30:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+References: <20210611152659.2142983-1-tientzu@chromium.org>
+In-Reply-To: <20210611152659.2142983-1-tientzu@chromium.org>
+From: Claire Chang <tientzu@chromium.org>
+Date: Tue, 15 Jun 2021 21:30:24 +0800
+X-Gmail-Original-Message-ID: <CALiNf28fb4rZ0Afun8wAWRYJY4gqc+-vRvDBZT3x2JgSPL_iVQ@mail.gmail.com>
+Message-ID: <CALiNf28fb4rZ0Afun8wAWRYJY4gqc+-vRvDBZT3x2JgSPL_iVQ@mail.gmail.com>
+Subject: Re: [PATCH v9 00/14] Restricted DMA
+To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
+ Joerg Roedel <joro@8bytes.org>, 
+ Will Deacon <will@kernel.org>, Frank Rowand <frowand.list@gmail.com>, 
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
+ jgross@suse.com, 
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,57 +97,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
- Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
- Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, mingo@kernel.org,
+ Jianxiong Gao <jxgao@google.com>, sstabellini@kernel.org,
+ Saravana Kannan <saravanak@google.com>, xypron.glpk@gmx.de,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ Daniel Vetter <daniel@ffwll.ch>, airlied@linux.ie,
+ maarten.lankhorst@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Nicolas Boichat <drinkcat@chromium.org>,
+ rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ lkml <linux-kernel@vger.kernel.org>, Tomasz Figa <tfiga@chromium.org>,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need to disable interrupts in bio_copy_block, and the local
-only mappings helps to avoid any sort of problems with stray writes
-into the bio data.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
----
- drivers/md/dm-writecache.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/md/dm-writecache.c b/drivers/md/dm-writecache.c
-index aecc246ade26..93ca454eaca9 100644
---- a/drivers/md/dm-writecache.c
-+++ b/drivers/md/dm-writecache.c
-@@ -1205,14 +1205,13 @@ static void memcpy_flushcache_optimized(void *dest, void *source, size_t size)
- static void bio_copy_block(struct dm_writecache *wc, struct bio *bio, void *data)
- {
- 	void *buf;
--	unsigned long flags;
- 	unsigned size;
- 	int rw = bio_data_dir(bio);
- 	unsigned remaining_size = wc->block_size;
- 
- 	do {
- 		struct bio_vec bv = bio_iter_iovec(bio, bio->bi_iter);
--		buf = bvec_kmap_irq(&bv, &flags);
-+		buf = bvec_kmap_local(&bv);
- 		size = bv.bv_len;
- 		if (unlikely(size > remaining_size))
- 			size = remaining_size;
-@@ -1230,7 +1229,7 @@ static void bio_copy_block(struct dm_writecache *wc, struct bio *bio, void *data
- 			memcpy_flushcache_optimized(data, buf, size);
- 		}
- 
--		bvec_kunmap_irq(buf, &flags);
-+		kunmap_local(buf);
- 
- 		data = (char *)data + size;
- 		remaining_size -= size;
--- 
-2.30.2
-
+v10 here: https://lore.kernel.org/patchwork/cover/1446882/
