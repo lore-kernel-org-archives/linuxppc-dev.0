@@ -2,66 +2,63 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67CF3C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2565CC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B045961458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B045961458
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 73ECD61461
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73ECD61461
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G46mD6hYPz3c11
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 22:18:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LecsFWuG;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G46mb6cccz3c2g
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 22:18:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=jeyu@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=LecsFWuG; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.217.47; helo=mail-vs1-f47.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com
+ [209.85.217.47])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G46lg4Qr4z30B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 22:17:51 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8BB3161461;
- Tue, 15 Jun 2021 12:17:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1623759467;
- bh=ZOobHo2nepnalPKzwxZMCxNgrD2fbEDO02BZri0udFo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=LecsFWuG/QSB8cQA0wl+VtK1EGygYbmMTtzqDUeEE37KPZtK38sFXD9PQbD65I5g7
- wSmKMZp5yG5ePcmD1DEqvYWQgX1Q7zUk4plzIuIhGYiYzGSPe6skB2tA2mbwKbzkjl
- cZTL1s1a6LCZvIcU9PivwcMwCA3eIWnuFoj4I7Yo8dX6nXjTP4xFVvhrSMRH0Wz6FR
- r59G5AG1Iyk4ts5fjH+U63rq3im7DeIPA9HhuSFswSHEWUuvP/t3mtSnoz0LCvA0VF
- V+KIHZsJEutgw8TjPRMf8BuKslPS4Cm+eBMIkkQZWE4z3LEbqHwaxqsBPIpmKYQZE3
- pYOqLQpnq7ukQ==
-Date: Tue, 15 Jun 2021 14:17:40 +0200
-From: Jessica Yu <jeyu@kernel.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 1/2] module: add elf_check_module_arch for module
- specific elf arch checks
-Message-ID: <YMiaZOqhHck9iy0n@p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de>
-References: <20210611093959.821525-1-npiggin@gmail.com>
- <20210611093959.821525-2-npiggin@gmail.com>
- <YMdGWjBOmcstBwOl@p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de>
- <1623722110.amu32mwaqs.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G46m70PkGz3bw1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 22:18:14 +1000 (AEST)
+Received: by mail-vs1-f47.google.com with SMTP id f21so9674958vsl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 05:18:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=jrlwSWatHznx383NLiMm7Z2IuN1e5i6noGzyC8CFebk=;
+ b=sCcUDvpg7l/80uQcFPYHK+++oM4yKcAO/x9lUBQ0VZv72fMx7mZmT4xpAwfNy2hGso
+ RjeZwwhPqt17kPeE9a4ke6F6FOxozZn6HX70ZnWywejRasA4h6+em3GvKL4bFMigbILi
+ cmrW1wwXBCGWL7jTvaEW4ydvYXjAhalf6WSQYk7NWF7GdF2GYDlsmPPXgBLzrnntQpJT
+ p/kIqioG3pSXEclSQrJn91lvp5XWcfRl8rnTRDWc/90CGdKtYPK/PL3Y/JhaiLgAYkEc
+ ppPRngoQVfPIZYMEvYpfz7sLTOysoJqQ++5vmNZ6qWZY6t+LplArcnmdO9BmGhGgQ0gU
+ Lfzg==
+X-Gm-Message-State: AOAM532L/rtsU8Y7CnzC2Jc3b4RjovUWWmaKH6j83LowxjNy+J1/fysM
+ YoTauE1wHVG0FOYd0z5h0fnXW4L7upqPQrXbjI4=
+X-Google-Smtp-Source: ABdhPJyWLBtsARFbraykVxhSly+mYdsijjLf5u4llpgj1CcBtHFQinLCCrvpCrriX7X558sqTXYumrMOgaLjD7ZGGnM=
+X-Received: by 2002:a05:6102:2011:: with SMTP id
+ p17mr4770704vsr.40.1623759490847; 
+ Tue, 15 Jun 2021 05:18:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <1623722110.amu32mwaqs.astroid@bobo.none>
-X-OS: Linux p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de
- 5.12.9-1-default x86_64
+References: <20210221174930.27324-1-nramas@linux.microsoft.com>
+ <20210221174930.27324-6-nramas@linux.microsoft.com>
+In-Reply-To: <20210221174930.27324-6-nramas@linux.microsoft.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 15 Jun 2021 14:17:59 +0200
+Message-ID: <CAMuHMdVSuNS4edh-zM0_sbC0i1AAjQ9Y0n_8Mjz=3CALkW4pgg@mail.gmail.com>
+Subject: Re: [PATCH v19 05/13] of: Add a common kexec FDT setup function
+To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,96 +70,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, tao.li@vivo.com,
+ Mimi Zohar <zohar@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ Frank Rowand <frowand.list@gmail.com>, Sasha Levin <sashal@kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Masahiro Yamada <masahiroy@kernel.org>, James Morris <jmorris@namei.org>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Will Deacon <will@kernel.org>, prsriva@linux.microsoft.com,
+ Hsin-Yi Wang <hsinyi@chromium.org>, Allison Randal <allison@lohutok.net>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Matthias Brugger <mbrugger@suse.com>, balajib@linux.microsoft.com,
+ dmitry.kasatkin@gmail.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ James Morse <james.morse@arm.com>, Greg KH <gregkh@linuxfoundation.org>,
+ Joe Perches <joe@perches.com>,
+ linux-integrity <linux-integrity@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-+++ Nicholas Piggin [15/06/21 12:05 +1000]:
->Excerpts from Jessica Yu's message of June 14, 2021 10:06 pm:
->> +++ Nicholas Piggin [11/06/21 19:39 +1000]:
->>>The elf_check_arch() function is used to test usermode binaries, but
->>>kernel modules may have more specific requirements. powerpc would like
->>>to test for ABI version compatibility.
->>>
->>>Add an arch-overridable function elf_check_module_arch() that defaults
->>>to elf_check_arch() and use it in elf_validity_check().
->>>
->>>Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>>[np: split patch, added changelog]
->>>Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>>---
->>> include/linux/moduleloader.h | 5 +++++
->>> kernel/module.c              | 2 +-
->>> 2 files changed, 6 insertions(+), 1 deletion(-)
->>>
->>>diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
->>>index 9e09d11ffe5b..fdc042a84562 100644
->>>--- a/include/linux/moduleloader.h
->>>+++ b/include/linux/moduleloader.h
->>>@@ -13,6 +13,11 @@
->>>  * must be implemented by each architecture.
->>>  */
->>>
->>>+// Allow arch to optionally do additional checking of module ELF header
->>>+#ifndef elf_check_module_arch
->>>+#define elf_check_module_arch elf_check_arch
->>>+#endif
->>
->> Hi Nicholas,
->>
->> Why not make elf_check_module_arch() consistent with the other
->> arch-specific functions? Please see module_frob_arch_sections(),
->> module_{init,exit}_section(), etc in moduleloader.h. That is, they are
->> all __weak functions that are overridable by arches. We can maybe make
->> elf_check_module_arch() a weak symbol, available for arches to
->> override if they want to perform additional elf checks. Then we don't
->> have to have this one-off #define.
+Hi Lakshmi and Rob,
+
+On Sun, Feb 21, 2021 at 6:52 PM Lakshmi Ramasubramanian
+<nramas@linux.microsoft.com> wrote:
+> From: Rob Herring <robh@kernel.org>
 >
+> Both arm64 and powerpc do essentially the same FDT /chosen setup for
+> kexec.  The differences are either omissions that arm64 should have
+> or additional properties that will be ignored.  The setup code can be
+> combined and shared by both powerpc and arm64.
 >
->Like this? I like it. Good idea.
+> The differences relative to the arm64 version:
+>  - If /chosen doesn't exist, it will be created (should never happen).
+>  - Any old dtb and initrd reserved memory will be released.
+>  - The new initrd and elfcorehdr are marked reserved.
+>  - "linux,booted-from-kexec" is set.
+>
+> The differences relative to the powerpc version:
+>  - "kaslr-seed" and "rng-seed" may be set.
+>  - "linux,elfcorehdr" is set.
+>  - Any existing "linux,usable-memory-range" is removed.
+>
+> Combine the code for setting up the /chosen node in the FDT and updating
+> the memory reservation for kexec, for powerpc and arm64, in
+> of_kexec_alloc_and_setup_fdt() and move it to "drivers/of/kexec.c".
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
 
-Yeah! Also, maybe we can alternatively make elf_check_module_arch() a
-separate check entirely so that the powerpc implementation doesn't
-have to include that extra elf_check_arch() call. Something like this maybe?
+> --- /dev/null
+> +++ b/drivers/of/kexec.c
 
-diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
-index 9e09d11ffe5b..2f9ebd593b4f 100644
---- a/include/linux/moduleloader.h
-+++ b/include/linux/moduleloader.h
-@@ -39,6 +39,9 @@ bool module_init_section(const char *name);
-   */
-  bool module_exit_section(const char *name);
+> +/*
+> + * of_kexec_alloc_and_setup_fdt - Alloc and setup a new Flattened Device Tree
+> + *
+> + * @image:             kexec image being loaded.
+> + * @initrd_load_addr:  Address where the next initrd will be loaded.
+> + * @initrd_len:                Size of the next initrd, or 0 if there will be none.
+> + * @cmdline:           Command line for the next kernel, or NULL if there will
+> + *                     be none.
+> + * @extra_fdt_size:    Additional size for the new FDT buffer.
+> + *
+> + * Return: fdt on success, or NULL errno on error.
+> + */
+> +void *of_kexec_alloc_and_setup_fdt(const struct kimage *image,
+> +                                  unsigned long initrd_load_addr,
+> +                                  unsigned long initrd_len,
+> +                                  const char *cmdline, size_t extra_fdt_size)
+> +{
 
-+/* Arch may override to do additional checking of ELF header architecture */
-+int elf_check_module_arch(Elf_Ehdr *hdr);
-+
-  /*
-   * Apply the given relocation to the (simplified) ELF.  Return -error
-   * or 0.
-diff --git a/kernel/module.c b/kernel/module.c
-index fdd6047728df..9963a979ed54 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2923,6 +2923,11 @@ static int validate_section_offset(struct load_info *info, Elf_Shdr *shdr)
-         return 0;
-  }
+> +       /* Did we boot using an initrd? */
+> +       prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
+> +       if (prop) {
+> +               u64 tmp_start, tmp_end, tmp_size;
+> +
+> +               tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
+> +
+> +               prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
+> +               if (!prop) {
+> +                       ret = -EINVAL;
+> +                       goto out;
+> +               }
+> +
+> +               tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
 
-+int __weak elf_check_module_arch(Elf_Ehdr *hdr)
-+{
-+       return 1;
-+}
-+
-  /*
-   * Sanity checks against invalid binaries, wrong arch, weird elf version.
-   *
-@@ -2941,6 +2946,7 @@ static int elf_validity_check(struct load_info *info)
-         if (memcmp(info->hdr->e_ident, ELFMAG, SELFMAG) != 0
-             || info->hdr->e_type != ET_REL
-             || !elf_check_arch(info->hdr)
-+           || !elf_check_module_arch(info->hdr)
-             || info->hdr->e_shentsize != sizeof(Elf_Shdr))
-                 return -ENOEXEC;
-  
+Some kernel code assumes "linux,initrd-{start,end}" are 64-bit,
+other code assumes 32-bit.
+linux/Documentation/arm/uefi.rst says 64-bit,
+dt-schema/schemas/chosen.yaml says 32-bit.
 
+> +
+> +               /*
+> +                * kexec reserves exact initrd size, while firmware may
+> +                * reserve a multiple of PAGE_SIZE, so check for both.
+> +                */
+> +               tmp_size = tmp_end - tmp_start;
+> +               ret = fdt_find_and_del_mem_rsv(fdt, tmp_start, tmp_size);
+> +               if (ret == -ENOENT)
+> +                       ret = fdt_find_and_del_mem_rsv(fdt, tmp_start,
+> +                                                      round_up(tmp_size, PAGE_SIZE));
+> +               if (ret == -EINVAL)
+> +                       goto out;
+> +       }
+> +
+> +       /* add initrd-* */
+> +       if (initrd_load_addr) {
+> +               ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_START,
+> +                                     initrd_load_addr);
+> +               if (ret)
+> +                       goto out;
+> +
+> +               ret = fdt_setprop_u64(fdt, chosen_node, FDT_PROP_INITRD_END,
+> +                                     initrd_load_addr + initrd_len);
+> +               if (ret)
+> +                       goto out;
+> +
+> +               ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
+> +               if (ret)
+> +                       goto out;
+> +
+> +       } else {
+> +               ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_START);
+> +               if (ret && (ret != -FDT_ERR_NOTFOUND))
+> +                       goto out;
+> +
+> +               ret = fdt_delprop(fdt, chosen_node, FDT_PROP_INITRD_END);
+> +               if (ret && (ret != -FDT_ERR_NOTFOUND))
+> +                       goto out;
+> +       }
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
