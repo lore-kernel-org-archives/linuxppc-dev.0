@@ -5,88 +5,77 @@ X-Spam-Level:
 X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F01F5C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 02:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177C1C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:38:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71D746115B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 02:11:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71D746115B
+	by mail.kernel.org (Postfix) with ESMTPS id 53C10613D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:38:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53C10613D3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3sJP5xhQz2yX6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:11:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vDl1wpyz307w
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:38:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=EsKB9NIp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=V4AhZHiG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b;
- helo=mail-pl1-x62b.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b34;
+ helo=mail-yb1-xb34.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=EsKB9NIp; dkim-atps=neutral
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
- [IPv6:2607:f8b0:4864:20::62b])
+ header.s=20161025 header.b=V4AhZHiG; dkim-atps=neutral
+Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com
+ [IPv6:2607:f8b0:4864:20::b34])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3sHv4r44z2yX1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 12:11:22 +1000 (AEST)
-Received: by mail-pl1-x62b.google.com with SMTP id h12so7635714plf.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 19:11:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vDF4RDPz2yXK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 13:38:21 +1000 (AEST)
+Received: by mail-yb1-xb34.google.com with SMTP id e10so18455208ybb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 20:38:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=gRq2FYXbBfZE78ZlbIvRRAtOBRqSS2pti8IDQuYyl3A=;
- b=EsKB9NIpiQrIfF1WxV8wV1gLEwR+g77x0P/DLbKyq20cCgSvciV/nytqWyGThuivgT
- 9s6YSJQneSDdiyrw0IQggegTL0qz5OuO8jNHEK3w/6Oq+DAVMR80R7vx8efUBpGVGZa3
- e1uB7X3Na68C2sI1USIZM0E1HItUTiRV3grnUHknN+rP3LIHbaSLEOhjKNQA5S+9bkVx
- 8p8ysv69n0plt2RQ4+jJHf7GoqNwTy6mmFxErlGsApk7OMcltOj0epWfp2bvR9QweSSa
- KXRNKyBWQ/4erPkFi5iMHNqSfPGM6hYRl58EtYjuZGYT75fsysTRMkpOAuQb2HFKay1e
- L5Nw==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=/XUOfUqfTAfZKjkDbz8URCssQM6wFC15YP6MEdCsnEs=;
+ b=V4AhZHiGDcSAoKGd4li1VrGqwa0atky1ZWjy4PK8GFIfFPHtirrJIubkGA47nU5ngf
+ FT3KHoby1zmeLQ0m5TnuP0N6Loa8o5p/9CINYfaNY4ZcowUpkG9XPYYHVSRU9dBR64IF
+ WTgFAWAEZyyJ3xBf2hOlC+Q5kvPVN4kzIDkQX9ACe8SuZ0GS7SjLUE2Q0f3iRRWklCAd
+ 41fmORPId7SGei4NTXqqe0LPWdvyfEpJaJ7ChsQjP3rEu2naKL4cssByUFoVrFKCdfza
+ h/peepqZ8l6cBDS2dkyLcjpeeTtFWcGdYLDQwffy95gO0gFVxfaYDjo0YnvDbMN9290b
+ 9aUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=gRq2FYXbBfZE78ZlbIvRRAtOBRqSS2pti8IDQuYyl3A=;
- b=sK7GJrXaPGPAfaG1fQkbwu4TIqAmYJlXaqT/P3G5jQIJAethZH3jcwR4TkT8HK2+Vl
- xLbuSkq9/1s05zfY8hnJj78/uRO04ttKRjdagyX4iE7e+nPY2DIQqBsnvpTq0at4FArk
- qAa50yGkjeBwASHZxbWGJfLuIqiqSsRniyd3a0O7QwOS/vziDfRf3B2+FEOq7ABCliX3
- 6tY+tzsIvvnux+at1vKL//H0cwTdOSBwDjSZ1IPO5CrWOqNp+XdoB4Rwq3ipm9PG2t3s
- Us4olRzc7gQ6bkCEjO2CDN/E6RKifyBVTJH1bFOKguZd5WZhjteLKoN7sgBn73C9jT6M
- Wz1Q==
-X-Gm-Message-State: AOAM531DTTDn9gl9GVUD8c8B9SICB2btt66DexZ/x58hcccczDn0OKV7
- yX3eGbWC6UukxyfgU7SWs9g=
-X-Google-Smtp-Source: ABdhPJzVGinTVmAB0FAEJ5SHYnVSAjLL2JBxIsCsJAbt2lpR4YKXXKU409R2ztZj6ED8rx8W7rh3tg==
-X-Received: by 2002:a17:902:b40e:b029:113:fbd6:3fe8 with SMTP id
- x14-20020a170902b40eb0290113fbd63fe8mr1726998plr.22.1623723080126; 
- Mon, 14 Jun 2021 19:11:20 -0700 (PDT)
-Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
- by smtp.gmail.com with ESMTPSA id d12sm13409896pfo.113.2021.06.14.19.11.19
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 14 Jun 2021 19:11:19 -0700 (PDT)
-Date: Tue, 15 Jun 2021 12:11:14 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/signal64: Copy siginfo before changing regs->nip
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-References: <20210608134605.2783677-1-mpe@ellerman.id.au>
- <1623631623.jvh0hlk56m.astroid@bobo.none>
- <1623633868.lnyugcilh9.astroid@bobo.none>
- <759f715b-df1f-847d-d836-2d202c8a7dc4@csgroup.eu>
- <1623649799.9s42wcnyya.astroid@bobo.none>
- <a7739358-6dd3-2f5d-50c4-f6b908ab2718@csgroup.eu>
-In-Reply-To: <a7739358-6dd3-2f5d-50c4-f6b908ab2718@csgroup.eu>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=/XUOfUqfTAfZKjkDbz8URCssQM6wFC15YP6MEdCsnEs=;
+ b=ETzVeLk9XSZQjL47/mHEtj9YfxrtscadHkvuJD7uyAnM/TfuThWXfUEfx87aBPkqff
+ 01mLDZLihxLoxd6BwmEth6FLjx+Dm/lbEgN32UBsgv3y/rJrxpQ9oTcKAvDOJJzk0Vgb
+ 5Junw9ZSYaUMIvvOIU09koEny1p6AVLLgSPtzWWTov4uzwRAZt7s11TLjCMIyZokdnId
+ J6KjK7eRFVil3oBhDB5i1jco3W/XaO6G6XCyhEzgEr6nxq7AqXw+/jjDKguoulC6XpuR
+ OzUsiSBOX4L7k1S4brjE/SZBpUe2BVjqh2JYPXPTIcwvAkRwAy9gXCl2dq7Q2GpmzAc2
+ 0Exg==
+X-Gm-Message-State: AOAM533nlp1jkSsUuzwbpc8v+PQjGfBR4zaUejoS6vzUQhwTxs8P/Jyo
+ nl2olpsH7uAYqvAQ74lRkUgUjgfeS4LFBFmpTJY=
+X-Google-Smtp-Source: ABdhPJyQSb9L5NmkZfVMh3Mhm4D7uk1nKnR93vM0a2IUycPGFER5W0DAW1c4sqf7g8PhjXQim3AEFZfCivg8cWkONBo=
+X-Received: by 2002:a25:694d:: with SMTP id e74mr4712799ybc.377.1623728297445; 
+ Mon, 14 Jun 2021 20:38:17 -0700 (PDT)
 MIME-Version: 1.0
-Message-Id: <1623722824.bpyc873xto.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+References: <cover.1621516826.git.christophe.leroy@csgroup.eu>
+ <d8b155e930b7a9708ca110e8ff0ace6713a7af75.1621516826.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <d8b155e930b7a9708ca110e8ff0ace6713a7af75.1621516826.git.christophe.leroy@csgroup.eu>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Tue, 15 Jun 2021 13:38:06 +1000
+Message-ID: <CACzsE9pYG2=FWnxb=gkd2WAFjfy3sLXN8mxsEP26zc7OHgX0Nw@mail.gmail.com>
+Subject: Re: [PATCH v2 04/12] powerpc/inst: Avoid pointer dereferencing in
+ ppc_inst_equal()
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,143 +87,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dja@axtens.net, cmr@codefail.de
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Christophe Leroy's message of June 14, 2021 5:22 pm:
->=20
->=20
-> Le 14/06/2021 =C3=A0 07:55, Nicholas Piggin a =C3=A9crit=C2=A0:
->> Excerpts from Christophe Leroy's message of June 14, 2021 3:31 pm:
->>>
->>>
->>> Le 14/06/2021 =C3=A0 03:29, Nicholas Piggin a =C3=A9crit=C2=A0:
->>>> Excerpts from Nicholas Piggin's message of June 14, 2021 10:47 am:
->>>>> Excerpts from Michael Ellerman's message of June 8, 2021 11:46 pm:
->>>>>> In commit 96d7a4e06fab ("powerpc/signal64: Rewrite handle_rt_signal6=
-4()
->>>>>> to minimise uaccess switches") the 64-bit signal code was rearranged=
- to
->>>>>> use user_write_access_begin/end().
->>>>>>
->>>>>> As part of that change the call to copy_siginfo_to_user() was moved
->>>>>> later in the function, so that it could be done after the
->>>>>> user_write_access_end().
->>>>>>
->>>>>> In particular it was moved after we modify regs->nip to point to the
->>>>>> signal trampoline. That means if copy_siginfo_to_user() fails we exi=
-t
->>>>>> handle_rt_signal64() with an error but with regs->nip modified, wher=
-eas
->>>>>> previously we would not modify regs->nip until the copy succeeded.
->>>>>>
->>>>>> Returning an error from signal delivery but with regs->nip updated
->>>>>> leaves the process in a sort of half-delivered state. We do immediat=
-ely
->>>>>> force a SEGV in signal_setup_done(), called from do_signal(), so the
->>>>>> process should never run in the half-delivered state.
->>>>>>
->>>>>> However that SEGV is not delivered until we've gone around to
->>>>>> do_notify_resume() again, so it's possible some tracing could observ=
-e
->>>>>> the half-delivered state.
->>>>>>
->>>>>> There are other cases where we fail signal delivery with regs partly
->>>>>> updated, eg. the write to newsp and SA_SIGINFO, but the latter at le=
-ast
->>>>>> is very unlikely to fail as it reads back from the frame we just wro=
-te
->>>>>> to.
->>>>>>
->>>>>> Looking at other arches they seem to be more careful about leaving r=
-egs
->>>>>> unchanged until the copy operations have succeeded, and in general t=
-hat
->>>>>> seems like good hygenie.
->>>>>>
->>>>>> So although the current behaviour is not cleary buggy, it's also not
->>>>>> clearly correct. So move the call to copy_siginfo_to_user() up prior=
- to
->>>>>> the modification of regs->nip, which is closer to the old behaviour,=
- and
->>>>>> easier to reason about.
->>>>>
->>>>> Good catch, should it still have a Fixes: tag though? Even if it's no=
-t
->>>>> clearly buggy we want it to be patched.
->>>>
->>>> Also...
->>>>
->>>>>>
->>>>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>>>>> ---
->>>>>>    arch/powerpc/kernel/signal_64.c | 9 ++++-----
->>>>>>    1 file changed, 4 insertions(+), 5 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/s=
-ignal_64.c
->>>>>> index dca66481d0c2..f9e1f5428b9e 100644
->>>>>> --- a/arch/powerpc/kernel/signal_64.c
->>>>>> +++ b/arch/powerpc/kernel/signal_64.c
->>>>>> @@ -902,6 +902,10 @@ int handle_rt_signal64(struct ksignal *ksig, si=
-gset_t *set,
->>>>>>    	unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), ba=
-dframe_block);
->>>>>>    	user_write_access_end();
->>>>>>   =20
->>>>>> +	/* Save the siginfo outside of the unsafe block. */
->>>>>> +	if (copy_siginfo_to_user(&frame->info, &ksig->info))
->>>>>> +		goto badframe;
->>>>>> +
->>>>>>    	/* Make sure signal handler doesn't get spurious FP exceptions *=
-/
->>>>>>    	tsk->thread.fp_state.fpscr =3D 0;
->>>>>>   =20
->>>>>> @@ -915,11 +919,6 @@ int handle_rt_signal64(struct ksignal *ksig, si=
-gset_t *set,
->>>>>>    		regs->nip =3D (unsigned long) &frame->tramp[0];
->>>>>>    	}
->>>>>>   =20
->>>>>> -
->>>>>> -	/* Save the siginfo outside of the unsafe block. */
->>>>>> -	if (copy_siginfo_to_user(&frame->info, &ksig->info))
->>>>>> -		goto badframe;
->>>>>> -
->>>>>>    	/* Allocate a dummy caller frame for the signal handler. */
->>>>>>    	newsp =3D ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
->>>>>>    	err |=3D put_user(regs->gpr[1], (unsigned long __user *)newsp);
->>>>
->>>> Does the same reasoning apply to this one and the ELF V1 function
->>>> descriptor thing? It seems like you could move all of that block
->>>> up instead. With your other SA_SIGINFO get_user patch, there would
->>>> then be no possibility of error after you start modifying regs.
->>>>
->>>
->>> To move the above in the user access block, we need to open a larger wi=
-ndow. At the time being the
->>> window opened only contains the 'frame'. 'newsp' points before the 'fra=
-me'.
->>>
->>=20
->> Only by 64/128 bytes though. Is that a problem? Not for 64s. Could it
->> cause more overhead than it saves on other platforms?
->=20
-> No it is not a problem at all, just need to not be forgotten, on ppc64 it=
- may go unnoticed, on 32s=20
-> it will blew up if we forget to enlarge the access window and the access =
-involves a different 256M=20
-> segment (Very unlikely for sure but ...)
-
-Okay, and it's a good point. Would be nice if there was some sanitizer=20
-that could check this to byte granularity.
-
-Thanks,
-Nick
-
->> For protection, it looks like all the important control data is in the
->> signal frame anyway, this frame is just for stack unwinding?
->=20
-> That's my understanding as well.
-
+On Thu, May 20, 2021 at 11:50 PM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+> Avoid casting/dereferencing ppc_inst() as u64* , check each member
+> of the struct when relevant.
+>
+> And remove the 0xff initialisation of the suffix for non
+> prefixed instruction. An instruction with 0xff as a suffix
+> might be invalid, but still is a prefixed instruction and
+> has to be considered as this.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/include/asm/inst.h | 19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+> index fc6adef528a5..5a0740ebf132 100644
+> --- a/arch/powerpc/include/asm/inst.h
+> +++ b/arch/powerpc/include/asm/inst.h
+> @@ -61,7 +61,7 @@ static inline int ppc_inst_primary_opcode(struct ppc_inst x)
+>  }
+>
+>  #ifdef CONFIG_PPC64
+> -#define ppc_inst(x) ((struct ppc_inst){ .val = (x), .suffix = 0xff })
+> +#define ppc_inst(x) ((struct ppc_inst){ .val = (x) })
+>
+>  #define ppc_inst_prefix(x, y) ((struct ppc_inst){ .val = (x), .suffix = (y) })
+>
+> @@ -72,7 +72,7 @@ static inline u32 ppc_inst_suffix(struct ppc_inst x)
+>
+>  static inline bool ppc_inst_prefixed(struct ppc_inst x)
+>  {
+> -       return ppc_inst_primary_opcode(x) == OP_PREFIX && ppc_inst_suffix(x) != 0xff;
+> +       return ppc_inst_primary_opcode(x) == OP_PREFIX;
+>  }
+>
+>  static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
+> @@ -93,11 +93,6 @@ static inline struct ppc_inst ppc_inst_read(const struct ppc_inst *ptr)
+>         }
+>  }
+>
+> -static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
+> -{
+> -       return *(u64 *)&x == *(u64 *)&y;
+> -}
+> -
+>  #else
+>
+>  #define ppc_inst(x) ((struct ppc_inst){ .val = x })
+> @@ -124,13 +119,17 @@ static inline struct ppc_inst ppc_inst_read(const struct ppc_inst *ptr)
+>         return *ptr;
+>  }
+>
+> +#endif /* CONFIG_PPC64 */
+> +
+>  static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
+>  {
+> -       return ppc_inst_val(x) == ppc_inst_val(y);
+> +       if (ppc_inst_val(x) != ppc_inst_val(y))
+> +               return false;
+> +       if (!ppc_inst_prefixed(x))
+> +               return true;
+> +       return ppc_inst_suffix(x) == ppc_inst_suffix(y);
+>  }
+>
+> -#endif /* CONFIG_PPC64 */
+> -
+>  static inline int ppc_inst_len(struct ppc_inst x)
+>  {
+>         return ppc_inst_prefixed(x) ? 8 : 4;
+> --
+> 2.25.0
+>
+Reviewed by: Jordan Niethe <jniethe5@gmail.com>
