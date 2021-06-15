@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9660DC2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:36:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF0FCC48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:36:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C13E161418
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:36:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C13E161418
+	by mail.kernel.org (Postfix) with ESMTPS id 4D1B56140C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:36:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D1B56140C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rWP1Y3yz3byv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:36:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rWl5NbLz309v
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:36:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=yangyingliang@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rVc0RqTz2yxW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:35:33 +1000 (AEST)
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.57])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4G3rR63TvQzZhJd;
- Tue, 15 Jun 2021 09:32:34 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rVc0kj6z2yxk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:35:34 +1000 (AEST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.56])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4G3rQq48gHz6yqm;
+ Tue, 15 Jun 2021 09:32:19 +0800 (CST)
 Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 15 Jun 2021 09:35:25 +0800
+ 15.1.2176.2; Tue, 15 Jun 2021 09:35:28 +0800
 Received: from huawei.com (10.175.103.91) by dggpeml500017.china.huawei.com
  (7.185.36.243) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2176.2; Tue, 15 Jun
- 2021 09:35:25 +0800
+ 2021 09:35:27 +0800
 From: Yang Yingliang <yangyingliang@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <alsa-devel@alsa-project.org>
-Subject: [PATCH -next v2 1/9] ASoC: fsl_asrc: Use
+Subject: [PATCH -next v2 7/9] ASoC: fsl_spdif: Use
  devm_platform_get_and_ioremap_resource()
-Date: Tue, 15 Jun 2021 09:39:14 +0800
-Message-ID: <20210615013922.784296-2-yangyingliang@huawei.com>
+Date: Tue, 15 Jun 2021 09:39:20 +0800
+Message-ID: <20210615013922.784296-8-yangyingliang@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210615013922.784296-1-yangyingliang@huawei.com>
 References: <20210615013922.784296-1-yangyingliang@huawei.com>
@@ -77,15 +77,15 @@ code.
 
 Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 ---
- sound/soc/fsl/fsl_asrc.c | 3 +--
+ sound/soc/fsl/fsl_spdif.c | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 0e1ad8efebd3..24b41881a68f 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -1035,8 +1035,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 	asrc->private = asrc_priv;
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 2a76714eb8e6..d812a3ff5845 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -1355,8 +1355,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 				spdif_priv->soc->tx_formats;
  
  	/* Get the addresses and IRQ */
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
