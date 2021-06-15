@@ -2,90 +2,82 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E740DC48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:47:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 492B1C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:48:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A06B6140B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:47:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A06B6140B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DA80161412
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 01:48:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA80161412
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rmY4rxYz3c0H
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:47:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3rn125PYz3cBf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:48:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=RK+EV8Qg;
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=H4VDtuCl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2d;
- helo=mail-qv1-xf2d.google.com; envelope-from=danielhb413@gmail.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::62a;
+ helo=mail-pl1-x62a.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=RK+EV8Qg; dkim-atps=neutral
-Received: from mail-qv1-xf2d.google.com (mail-qv1-xf2d.google.com
- [IPv6:2607:f8b0:4864:20::f2d])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=H4VDtuCl; dkim-atps=neutral
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
+ [IPv6:2607:f8b0:4864:20::62a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rlz6N78z2xg5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:47:10 +1000 (AEST)
-Received: by mail-qv1-xf2d.google.com with SMTP id r19so384168qvw.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 18:47:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=oxP+s2iS98ER6mHisipKzQt/k7YDENuwuSSC6bgnPhs=;
- b=RK+EV8QguSi+RmSn5lJG++5eopr3fr0351qu6U1CcJ0iK1nW81UbhFvTT59sirWYEI
- gZGqKMr6ZTxTAEYoLAJue9iPn1Ye5yoVlQdOuzYgKkbLOGfCkyPcuL//xeQPHyucmddK
- zSAcKjXaqJdatOu3MQXkLS5QFHIC5/P7azj1/rieDTiJqdxIW2WE0NmbhrJsMfJMl5Bh
- XFn3LNZUnWmMSPnzsLFm0SrzMrbKR0ZfkINZwrnozs5vB+YeCszuX6bAP1B2SBDYNGuN
- 0y1pRqlmKAq9lOjvs0+jQbprOS1l4cD04hkhcY3iwVGKNCaeXiJWP2XqPV1sXgqPTkjX
- IL0g==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3rm34R2zz2xg5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 11:47:14 +1000 (AEST)
+Received: by mail-pl1-x62a.google.com with SMTP id h12so7608549plf.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 18:47:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Ok1AmBf91H6Q/IhwbEd4jKqOoWLU/Xv6mOEECK2NByo=;
+ b=H4VDtuClI+xBARo/PkX4faHPWxSILJD209oddgYal3t0beaYPakrVo/4tTDPLfWJ3r
+ gotXX1n6Iq929WNOAdC9iC1VR2H3HXFpK3i9YDiyBj5NeVven5qtdU0yZITIYwJfT18R
+ R402qr5t3f3fnjNl8J8Y7kwZfOxy0uVpk1qNM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=oxP+s2iS98ER6mHisipKzQt/k7YDENuwuSSC6bgnPhs=;
- b=uhA7brgISg0aQ8txljUU8wjFNMmId1q6yPESTD25o/57cfTua7h3WDzVYLLFL5smob
- dmEvD4tRMWRs2FA83hLzVStnYB97iPoEx8gLAvJeji1joMr3XkWOuzLLrYwaPqnF/oT1
- EcO76JzQxzN6epuNtYGFWA05ii8bknvFoG8DvaQc4Gwv9kzzdZ/atZ3idsLrKZ5w1dAv
- K7WF/0gxx56fPh/6dfO6xMJtygY3A2NEDW71U1zLthL3g5EQjv3vKbdTEaKNZ5ZWPHii
- flK+y/caq5KcWSzISv+fiOcR7OsqClvjQB/U3wG4qofuojOwoGDec/9rnWVKx0SKkvjq
- MUow==
-X-Gm-Message-State: AOAM532gqSz2Acla7yM8rn3aq9GniI7iwiBlVqa4Zi94W5aEKQLUJ/B8
- 7/FgKS8OiWx4maK2cgo2MLo=
-X-Google-Smtp-Source: ABdhPJxON7Mqr8CfjUrrMSK0CPHqrPhgJQOV1rpLR00/Y8QGwG/5jvAqGNaAwmXET+8LRwNeiaI5sA==
-X-Received: by 2002:ad4:4426:: with SMTP id e6mr2380274qvt.46.1623721626794;
- Mon, 14 Jun 2021 18:47:06 -0700 (PDT)
-Received: from ?IPv6:2804:431:c7c6:4d9a:784f:a7de:c020:5f1e?
- ([2804:431:c7c6:4d9a:784f:a7de:c020:5f1e])
- by smtp.gmail.com with ESMTPSA id f193sm11274687qke.43.2021.06.14.18.47.04
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 14 Jun 2021 18:47:06 -0700 (PDT)
-Subject: Re: [RFC PATCH 0/8] Add support for FORM2 associativity
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-References: <20210614164003.196094-1-aneesh.kumar@linux.ibm.com>
-From: Daniel Henrique Barboza <danielhb413@gmail.com>
-Message-ID: <7615533f-abc2-17f4-aaad-f8290e26d16e@gmail.com>
-Date: Mon, 14 Jun 2021 22:47:03 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ bh=Ok1AmBf91H6Q/IhwbEd4jKqOoWLU/Xv6mOEECK2NByo=;
+ b=oDqCUOnasDBFZGgi9c2HB7TxY/YIW76IyzkRjAPTF6tPD0W6R6zoH6T+RiqdYD4BpF
+ qUJ0lghca0kYhLJVfLFAWbeiIHy/hEIIUoEDhcDqu/h3F7Pon8VgqYTBzMeEJ8MKLbe/
+ ej5lMKzDe6IT0EmN7bf2bdM3xIg/8l8aBMXbFBhXSYLmLXZE1acz6lAXDKtGh0Y4aYRs
+ 1bq3uukGqCE8UwpmO8uwdHNmtHnp8evCpZe3ilR9GnnOIsOC1lAuOn0wAQUKYq0jvkd/
+ CG/RCeubYhu9S8DzaXHp1S65ZKqJTD7i5sRA21/DmV1vU71A4yrEvcKXGsRifgIUAOMB
+ hNNQ==
+X-Gm-Message-State: AOAM530yIx5OA0qHKj8AD5FvRd6uoz0fBd8V56O7uq10PjfyJcWNZCJ9
+ vgeM7QuxokSpkGSJvLa9wcKhzZLuMjreFg==
+X-Google-Smtp-Source: ABdhPJwweEOVq3GJfsTJTL6yeQhZ4Ms23CXanMBJCKsQmXd9Q1u6Wl2KRDctbbN/XtM4RyiyKCDmeA==
+X-Received: by 2002:a17:90a:8546:: with SMTP id
+ a6mr22237711pjw.128.1623721630780; 
+ Mon, 14 Jun 2021 18:47:10 -0700 (PDT)
+Received: from localhost ([203.206.29.204])
+ by smtp.gmail.com with ESMTPSA id gl13sm628913pjb.5.2021.06.14.18.47.09
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 14 Jun 2021 18:47:10 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
+ christophe.leroy@csgroup.eu, aneesh.kumar@linux.ibm.com,
+ bsingharora@gmail.com
+Subject: [PATCH v12 0/6] KASAN core changes for ppc64 radix KASAN
+Date: Tue, 15 Jun 2021 11:46:59 +1000
+Message-Id: <20210615014705.2234866-1-dja@axtens.net>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-In-Reply-To: <20210614164003.196094-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,129 +89,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: elver@google.com, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Building on the work of Christophe, Aneesh and Balbir, I've ported
+KASAN to 64-bit Book3S kernels running on the Radix MMU.
 
+I've been trying this for a while, but we keep having collisions
+between the kasan code in the mm tree and the code I want to put in to
+the ppc tree. So my aim here is for patches 1 through 4 or 1 through 5
+to go in via the mm tree. I will then propose the powerpc changes for
+a later cycle. (I have attached them to this series as an RFC, and
+there are still outstanding review comments I need to attend to.)
 
-On 6/14/21 1:39 PM, Aneesh Kumar K.V wrote:
-> Form2 associativity adds a much more flexible NUMA topology layout
-> than what is provided by Form1. This also allows PAPR SCM device
-> to use better associativity when using the device as DAX KMEM
-> device. More details can be found in patch x
-> 
-> $ ndctl list -N -v
-> [
->    {
->      "dev":"namespace0.0",
->      "mode":"devdax",
->      "map":"dev",
->      "size":1071644672,
->      "uuid":"37dea198-ddb5-4e42-915a-99a915e24188",
->      "raw_uuid":"148deeaa-4a2f-41d1-8d74-fd9a942d26ba",
->      "daxregion":{
->        "id":0,
->        "size":1071644672,
->        "devices":[
->          {
->            "chardev":"dax0.0",
->            "size":1071644672,
->            "target_node":4,
->            "mode":"devdax"
->          }
->        ]
->      },
->      "align":2097152,
->      "numa_node":1
->    }
-> ]
-> 
-> $ numactl -H
-> ...
-> node distances:
-> node   0   1   2   3
->    0:  10  11  222  33
->    1:  44  10  55  66
->    2:  77  88  10  99
->    3:  101  121  132  10
-> $
-> 
-> After DAX KMEM
-> # numactl -H
-> available: 5 nodes (0-4)
-> ...
-> node distances:
-> node   0   1   2   3   4
->    0:  10  11  22  33  255
->    1:  44  10  55  66  255
->    2:  77  88  10  99  255
->    3:  101  121  132  10  255
->    4:  255  255  255  255  10
-> #
-> 
-> The above output is with a Qemu command line
+v12 applies to next-20210611. There should be no noticable changes to
+other platforms.
 
+Kind regards,
+Daniel
 
-For reference, this QEMU:
+Daniel Axtens (6):
+  kasan: allow an architecture to disable inline instrumentation
+  kasan: allow architectures to provide an outline readiness check
+  kasan: define and use MAX_PTRS_PER_* for early shadow tables
+  kasan: Document support on 32-bit powerpc
+  powerpc/mm/kasan: rename kasan_init_32.c to init_32.c
+  [RFC] powerpc: Book3S 64-bit outline-only KASAN support
 
+ Documentation/dev-tools/kasan.rst             |  7 +-
+ Documentation/powerpc/kasan.txt               | 58 +++++++++++
+ arch/powerpc/Kconfig                          |  4 +-
+ arch/powerpc/Kconfig.debug                    |  3 +-
+ arch/powerpc/include/asm/book3s/64/hash.h     |  4 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  4 +
+ arch/powerpc/include/asm/book3s/64/radix.h    | 13 ++-
+ arch/powerpc/include/asm/kasan.h              | 22 +++++
+ arch/powerpc/kernel/Makefile                  | 11 +++
+ arch/powerpc/kernel/process.c                 | 16 ++--
+ arch/powerpc/kvm/Makefile                     |  5 +
+ arch/powerpc/mm/book3s64/Makefile             |  9 ++
+ arch/powerpc/mm/kasan/Makefile                |  3 +-
+ .../mm/kasan/{kasan_init_32.c => init_32.c}   |  0
+ arch/powerpc/mm/kasan/init_book3s_64.c        | 95 +++++++++++++++++++
+ arch/powerpc/mm/ptdump/ptdump.c               | 20 +++-
+ arch/powerpc/platforms/Kconfig.cputype        |  1 +
+ arch/powerpc/platforms/powernv/Makefile       |  6 ++
+ arch/powerpc/platforms/pseries/Makefile       |  3 +
+ include/linux/kasan.h                         | 18 +++-
+ lib/Kconfig.kasan                             | 14 +++
+ mm/kasan/common.c                             |  4 +
+ mm/kasan/generic.c                            |  3 +
+ mm/kasan/init.c                               |  6 +-
+ mm/kasan/kasan.h                              |  4 +
+ mm/kasan/shadow.c                             |  4 +
+ 26 files changed, 316 insertions(+), 21 deletions(-)
+ create mode 100644 Documentation/powerpc/kasan.txt
+ rename arch/powerpc/mm/kasan/{kasan_init_32.c => init_32.c} (100%)
+ create mode 100644 arch/powerpc/mm/kasan/init_book3s_64.c
 
-https://github.com/danielhb/qemu/tree/form2_affinity_v1
+-- 
+2.27.0
 
-https://lists.gnu.org/archive/html/qemu-devel/2021-06/msg03617.html
-
-
-but ...
-
-> 
-> -numa node,nodeid=4 \
-> -numa dist,src=0,dst=1,val=11 -numa dist,src=0,dst=2,val=22 -numa dist,src=0,dst=3,val=33 -numa dist,src=0,dst=4,val=255 \
-> -numa dist,src=1,dst=0,val=44 -numa dist,src=1,dst=2,val=55 -numa dist,src=1,dst=3,val=66 -numa dist,src=1,dst=4,val=255 \
-> -numa dist,src=2,dst=0,val=77 -numa dist,src=2,dst=1,val=88 -numa dist,src=2,dst=3,val=99 -numa dist,src=2,dst=4,val=255 \
-> -numa dist,src=3,dst=0,val=101 -numa dist,src=3,dst=1,val=121 -numa dist,src=3,dst=2,val=132 -numa dist,src=3,dst=4,val=255 \
-> -numa dist,src=4,dst=0,val=255 -numa dist,src=4,dst=1,val=255 -numa dist,src=4,dst=2,val=255 -numa dist,src=4,dst=3,val=255 \
-> -object memory-backend-file,id=memnvdimm1,prealloc=yes,mem-path=$PMEM_DISK,share=yes,size=${PMEM_SIZE}  \
-> -device nvdimm,label-size=128K,memdev=memnvdimm1,id=nvdimm1,slot=4,uuid=72511b67-0b3b-42fd-8d1d-5be3cae8bcaa,node=4,persistent-nodeid=1
-
-
-with 'device-node=1' instead of 'persistent=nodeid=1' in the nvdimm parameter
-up here.
-
-
-> 
-> 
-> 
-> Aneesh Kumar K.V (8):
->    powerpc/pseries: rename min_common_depth to primary_domain_index
->    powerpc/pseries: rename distance_ref_points_depth to max_domain_index
->    powerpc/pseries: Rename TYPE1_AFFINITY to FORM1_AFFINITY
->    powerpc/pseries: Consolidate DLPAR NUMA distance update
->    powerpc/pseries: Consolidate NUMA distance update during boot
->    powerpc/pseries: Add a helper for form1 cpu distance
->    powerpc/pseries: Add support for FORM2 associativity
->    powerpc/papr_scm: Use FORM2 associativity details
-
-
-Series:
-
-
-Tested-by: Daniel Henrique Barboza <danielhb413@gmail.com>
-
-
-
-> 
->   Documentation/powerpc/associativity.rst       | 139 ++++++
->   arch/powerpc/include/asm/firmware.h           |   7 +-
->   arch/powerpc/include/asm/prom.h               |   3 +-
->   arch/powerpc/kernel/prom_init.c               |   3 +-
->   arch/powerpc/mm/numa.c                        | 436 ++++++++++++++----
->   arch/powerpc/platforms/pseries/firmware.c     |   3 +-
->   arch/powerpc/platforms/pseries/hotplug-cpu.c  |   2 +
->   .../platforms/pseries/hotplug-memory.c        |   2 +
->   arch/powerpc/platforms/pseries/papr_scm.c     |  26 +-
->   arch/powerpc/platforms/pseries/pseries.h      |   2 +
->   10 files changed, 522 insertions(+), 101 deletions(-)
->   create mode 100644 Documentation/powerpc/associativity.rst
-> 
