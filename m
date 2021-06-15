@@ -2,101 +2,56 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30B3BC48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:33:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C7B5C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:38:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D04D61459
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:33:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D04D61459
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 82E5761455
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:38:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82E5761455
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G45mB6BYNz3c5v
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 21:33:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DOdl0Vo+;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G45t05Qj7z3c1x
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 21:38:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=DOdl0Vo+; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G45lc4YC3z30CZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 21:32:44 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 15FBF22d115060; Tue, 15 Jun 2021 07:32:06 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=Iqm3Fgzf26WsoyAdzyp37W9UIZYX5LKF8+rvmRpcpRA=;
- b=DOdl0Vo+r9XESD+a0U0EMoze6ErnoIjzXF3MPpDo1TtA/7ZQxiEdunUXc8wiV2FoGI0N
- /pGx45dPrpkBAGetqs+zk5pdxVkQtyaLVByRMJSXk3R+I5G6rlCBOwvirNw/K0X/4Bq7
- 2I4zsaF8hzwDDJdD8OMtVaZDIyDMlvNaUC/MyymyfJKqvfs1G5T0C/Lhe93NVYDfqjZq
- EUsj6clxE0cVZpfNrvuR02l4qBzN5aotuHCvkoGODig3APeBTpnfSKNlP1i536KbYUvR
- PuknCby/W8wv+yosOMQMOoiN689g+PqjpbtiG5Mlg1vrFLuxW8NkRpAwjvjplSFPPtQr lQ== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 396u5s8eh0-10
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 15 Jun 2021 07:32:05 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15FB8Edk014699;
- Tue, 15 Jun 2021 11:09:20 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma04dal.us.ibm.com with ESMTP id 3965ytj7t4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 15 Jun 2021 11:09:19 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 15FB9JOd16777584
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 15 Jun 2021 11:09:19 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C29AEAE05F;
- Tue, 15 Jun 2021 11:09:18 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6671BAE076;
- Tue, 15 Jun 2021 11:09:13 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.54.82])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 15 Jun 2021 11:09:13 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v2 1/2] mm: rename pud_page_vaddr to pud_pgtable and make it
- return pmd_t *
-Date: Tue, 15 Jun 2021 16:38:58 +0530
-Message-Id: <20210615110859.320299-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 9u8EASiRB3rZzk7qN054tV9AdQnaPH_F
-X-Proofpoint-GUID: 9u8EASiRB3rZzk7qN054tV9AdQnaPH_F
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G45sc3Jtsz30CT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 21:37:49 +1000 (AEST)
+IronPort-SDR: 69lWVABZZAbmDvQWgNyYgRQlvQUjb1Ka0HF/audVaFtTpwMHZSTB+wkDj4jTXRUBdc8p8OGeym
+ as+fXG4YjG9g==
+X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="269820746"
+X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="269820746"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Jun 2021 04:37:44 -0700
+IronPort-SDR: RLDU3AbZjaa+TiKnfhbhwENOpHKej1jIAutEt8Ds1bKrRXeSgSponcqCXr1KnDSph3UrMY2Lpj
+ z0rmbXu79Xyw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="484439348"
+Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
+ by orsmga001.jf.intel.com with ESMTP; 15 Jun 2021 04:37:43 -0700
+Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1lt7O2-0000OQ-OX; Tue, 15 Jun 2021 11:37:42 +0000
+Date: Tue, 15 Jun 2021 19:37:18 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 419dfbc3e05d80c5f6d6856534cd0a21c22c22de
+Message-ID: <60c890ee.Mmu/4OlFTJm7V8Gn%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.761
- definitions=2021-06-15_04:2021-06-14,
- 2021-06-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0
- suspectscore=0 phishscore=0 spamscore=0 mlxlogscore=979 clxscore=1015
- lowpriorityscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2106150070
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,425 +63,207 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No functional change in this patch.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 419dfbc3e05d80c5f6d6856534cd0a21c22c22de  Automatic merge of 'master' into merge (2021-06-07 11:03)
 
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-riscv@lists.infradead.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-um@lists.infradead.org
-Cc: linux-arch@vger.kernel.org
+elapsed time: 12103m
 
-Link: https://lore.kernel.org/linuxppc-dev/CAHk-=wi+J+iodze9FtjM3Zi4j4OeS+qqbKxME9QN4roxPEXH9Q@mail.gmail.com/
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+configs tested: 181
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                         cm_x300_defconfig
+sh                               alldefconfig
+powerpc                       ebony_defconfig
+sh                        edosk7760_defconfig
+sparc                       sparc32_defconfig
+mips                       lemote2f_defconfig
+powerpc                   motionpro_defconfig
+arm                          moxart_defconfig
+sh                             sh03_defconfig
+powerpc                     pseries_defconfig
+m68k                        mvme147_defconfig
+um                               alldefconfig
+powerpc                    amigaone_defconfig
+powerpc                        fsp2_defconfig
+powerpc                      ppc64e_defconfig
+powerpc                      katmai_defconfig
+m68k                          hp300_defconfig
+ia64                                defconfig
+powerpc                     tqm8560_defconfig
+mips                        vocore2_defconfig
+mips                         cobalt_defconfig
+mips                        bcm63xx_defconfig
+powerpc                  mpc866_ads_defconfig
+sh                          polaris_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                        dreamcast_defconfig
+powerpc                     powernv_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                         s3c2410_defconfig
+arm                         nhk8815_defconfig
+powerpc                      chrp32_defconfig
+nios2                         10m50_defconfig
+arm                           omap1_defconfig
+csky                                defconfig
+sh                     magicpanelr2_defconfig
+sh                   sh7724_generic_defconfig
+powerpc                     tqm8555_defconfig
+mips                       bmips_be_defconfig
+arm                        realview_defconfig
+m68k                            mac_defconfig
+x86_64                            allnoconfig
+powerpc                     tqm8548_defconfig
+powerpc                     tqm8540_defconfig
+arm                           sunxi_defconfig
+sh                 kfr2r09-romimage_defconfig
+arm                         s3c6400_defconfig
+sh                          sdk7780_defconfig
+mips                           jazz_defconfig
+powerpc                 mpc85xx_cds_defconfig
+mips                         bigsur_defconfig
+powerpc                     taishan_defconfig
+arm                          ixp4xx_defconfig
+mips                        nlm_xlp_defconfig
+arm64                            alldefconfig
+mips                        maltaup_defconfig
+m68k                       m5275evb_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                   lite5200b_defconfig
+um                                  defconfig
+powerpc                 mpc8315_rdb_defconfig
+sh                           se7721_defconfig
+mips                      malta_kvm_defconfig
+arm                          pcm027_defconfig
+powerpc                      ppc40x_defconfig
+arm                          simpad_defconfig
+sh                          rsk7201_defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc                      walnut_defconfig
+m68k                        mvme16x_defconfig
+arm                         mv78xx0_defconfig
+arm                            dove_defconfig
+mips                      maltasmvp_defconfig
+xtensa                              defconfig
+arm                        multi_v7_defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20210613
+i386                 randconfig-a006-20210613
+i386                 randconfig-a001-20210613
+i386                 randconfig-a004-20210613
+i386                 randconfig-a005-20210613
+i386                 randconfig-a003-20210613
+i386                 randconfig-a003-20210606
+i386                 randconfig-a006-20210606
+i386                 randconfig-a004-20210606
+i386                 randconfig-a001-20210606
+i386                 randconfig-a005-20210606
+i386                 randconfig-a002-20210606
+i386                 randconfig-a003-20210607
+i386                 randconfig-a006-20210607
+i386                 randconfig-a004-20210607
+i386                 randconfig-a001-20210607
+i386                 randconfig-a002-20210607
+i386                 randconfig-a005-20210607
+x86_64               randconfig-a015-20210607
+x86_64               randconfig-a011-20210607
+x86_64               randconfig-a014-20210607
+x86_64               randconfig-a012-20210607
+x86_64               randconfig-a016-20210607
+x86_64               randconfig-a013-20210607
+i386                 randconfig-a015-20210613
+i386                 randconfig-a013-20210613
+i386                 randconfig-a016-20210613
+i386                 randconfig-a014-20210613
+i386                 randconfig-a012-20210613
+i386                 randconfig-a011-20210613
+i386                 randconfig-a015-20210607
+i386                 randconfig-a013-20210607
+i386                 randconfig-a011-20210607
+i386                 randconfig-a016-20210607
+i386                 randconfig-a014-20210607
+i386                 randconfig-a012-20210607
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210607
+x86_64               randconfig-b001-20210614
+x86_64               randconfig-a001-20210614
+x86_64               randconfig-a004-20210614
+x86_64               randconfig-a002-20210614
+x86_64               randconfig-a003-20210614
+x86_64               randconfig-a006-20210614
+x86_64               randconfig-a005-20210614
+x86_64               randconfig-a002-20210607
+x86_64               randconfig-a004-20210607
+x86_64               randconfig-a003-20210607
+x86_64               randconfig-a006-20210607
+x86_64               randconfig-a005-20210607
+x86_64               randconfig-a001-20210607
+x86_64               randconfig-a015-20210613
+x86_64               randconfig-a011-20210613
+x86_64               randconfig-a014-20210613
+x86_64               randconfig-a012-20210613
+x86_64               randconfig-a013-20210613
+x86_64               randconfig-a016-20210613
+
 ---
- arch/alpha/include/asm/pgtable.h             | 8 +++++---
- arch/arm/include/asm/pgtable-3level.h        | 2 +-
- arch/arm64/include/asm/pgtable.h             | 4 ++--
- arch/ia64/include/asm/pgtable.h              | 2 +-
- arch/m68k/include/asm/motorola_pgtable.h     | 2 +-
- arch/mips/include/asm/pgtable-64.h           | 4 ++--
- arch/parisc/include/asm/pgtable.h            | 4 ++--
- arch/powerpc/include/asm/book3s/64/pgtable.h | 6 +++++-
- arch/powerpc/include/asm/nohash/64/pgtable.h | 6 +++++-
- arch/powerpc/mm/book3s64/radix_pgtable.c     | 4 ++--
- arch/powerpc/mm/pgtable_64.c                 | 2 +-
- arch/riscv/include/asm/pgtable-64.h          | 4 ++--
- arch/sh/include/asm/pgtable-3level.h         | 4 ++--
- arch/sparc/include/asm/pgtable_32.h          | 4 ++--
- arch/sparc/include/asm/pgtable_64.h          | 6 +++---
- arch/um/include/asm/pgtable-3level.h         | 2 +-
- arch/x86/include/asm/pgtable.h               | 4 ++--
- arch/x86/mm/pat/set_memory.c                 | 4 ++--
- arch/x86/mm/pgtable.c                        | 2 +-
- include/asm-generic/pgtable-nopmd.h          | 2 +-
- include/asm-generic/pgtable-nopud.h          | 2 +-
- include/linux/pgtable.h                      | 2 +-
- 22 files changed, 45 insertions(+), 35 deletions(-)
-
-diff --git a/arch/alpha/include/asm/pgtable.h b/arch/alpha/include/asm/pgtable.h
-index 8d856c62e22a..be02e4e403d1 100644
---- a/arch/alpha/include/asm/pgtable.h
-+++ b/arch/alpha/include/asm/pgtable.h
-@@ -239,8 +239,10 @@ pmd_page_vaddr(pmd_t pmd)
- #define pmd_page(pmd)	(pfn_to_page(pmd_val(pmd) >> 32))
- #define pud_page(pud)	(pfn_to_page(pud_val(pud) >> 32))
- 
--extern inline unsigned long pud_page_vaddr(pud_t pgd)
--{ return PAGE_OFFSET + ((pud_val(pgd) & _PFN_MASK) >> (32-PAGE_SHIFT)); }
-+static inline pmd_t *pud_pgtable(pud_t pgd)
-+{
-+	return (pmd_t *)(PAGE_OFFSET + ((pud_val(pgd) & _PFN_MASK) >> (32-PAGE_SHIFT)));
-+}
- 
- extern inline int pte_none(pte_t pte)		{ return !pte_val(pte); }
- extern inline int pte_present(pte_t pte)	{ return pte_val(pte) & _PAGE_VALID; }
-@@ -290,7 +292,7 @@ extern inline pte_t pte_mkyoung(pte_t pte)	{ pte_val(pte) |= __ACCESS_BITS; retu
- /* Find an entry in the second-level page table.. */
- extern inline pmd_t * pmd_offset(pud_t * dir, unsigned long address)
- {
--	pmd_t *ret = (pmd_t *) pud_page_vaddr(*dir) + ((address >> PMD_SHIFT) & (PTRS_PER_PAGE - 1));
-+	pmd_t *ret = pud_pgtable(*dir) + ((address >> PMD_SHIFT) & (PTRS_PER_PAGE - 1));
- 	smp_rmb(); /* see above */
- 	return ret;
- }
-diff --git a/arch/arm/include/asm/pgtable-3level.h b/arch/arm/include/asm/pgtable-3level.h
-index d4edab51a77c..eabe72ff7381 100644
---- a/arch/arm/include/asm/pgtable-3level.h
-+++ b/arch/arm/include/asm/pgtable-3level.h
-@@ -130,7 +130,7 @@
- 		flush_pmd_entry(pudp);	\
- 	} while (0)
- 
--static inline pmd_t *pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
- 	return __va(pud_val(pud) & PHYS_MASK & (s32)PAGE_MASK);
- }
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 0b10204e72fc..53a415b329b0 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -636,9 +636,9 @@ static inline phys_addr_t pud_page_paddr(pud_t pud)
- 	return __pud_to_phys(pud);
- }
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
--	return (unsigned long)__va(pud_page_paddr(pud));
-+	return (pmd_t *)__va(pud_page_paddr(pud));
- }
- 
- /* Find an entry in the second-level page table. */
-diff --git a/arch/ia64/include/asm/pgtable.h b/arch/ia64/include/asm/pgtable.h
-index d765fd948fae..b2ddfbe70365 100644
---- a/arch/ia64/include/asm/pgtable.h
-+++ b/arch/ia64/include/asm/pgtable.h
-@@ -274,7 +274,7 @@ ia64_phys_addr_valid (unsigned long addr)
- #define pud_bad(pud)			(!ia64_phys_addr_valid(pud_val(pud)))
- #define pud_present(pud)		(pud_val(pud) != 0UL)
- #define pud_clear(pudp)			(pud_val(*(pudp)) = 0UL)
--#define pud_page_vaddr(pud)		((unsigned long) __va(pud_val(pud) & _PFN_MASK))
-+#define pud_pgtable(pud)		((pmd_t *) __va(pud_val(pud) & _PFN_MASK))
- #define pud_page(pud)			virt_to_page((pud_val(pud) + PAGE_OFFSET))
- 
- #if CONFIG_PGTABLE_LEVELS == 4
-diff --git a/arch/m68k/include/asm/motorola_pgtable.h b/arch/m68k/include/asm/motorola_pgtable.h
-index 8076467eff4b..956c80874f98 100644
---- a/arch/m68k/include/asm/motorola_pgtable.h
-+++ b/arch/m68k/include/asm/motorola_pgtable.h
-@@ -129,7 +129,7 @@ static inline void pud_set(pud_t *pudp, pmd_t *pmdp)
- 
- #define __pte_page(pte) ((unsigned long)__va(pte_val(pte) & PAGE_MASK))
- #define pmd_page_vaddr(pmd) ((unsigned long)__va(pmd_val(pmd) & _TABLE_MASK))
--#define pud_page_vaddr(pud) ((unsigned long)__va(pud_val(pud) & _TABLE_MASK))
-+#define pud_pgtable(pud) ((pmd_t *)__va(pud_val(pud) & _TABLE_MASK))
- 
- 
- #define pte_none(pte)		(!pte_val(pte))
-diff --git a/arch/mips/include/asm/pgtable-64.h b/arch/mips/include/asm/pgtable-64.h
-index 1e7d6ce9d8d6..ab305453e90f 100644
---- a/arch/mips/include/asm/pgtable-64.h
-+++ b/arch/mips/include/asm/pgtable-64.h
-@@ -314,9 +314,9 @@ static inline void pud_clear(pud_t *pudp)
- #endif
- 
- #ifndef __PAGETABLE_PMD_FOLDED
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
--	return pud_val(pud);
-+	return (pmd_t *)pud_val(pud);
- }
- #define pud_phys(pud)		virt_to_phys((void *)pud_val(pud))
- #define pud_page(pud)		(pfn_to_page(pud_phys(pud) >> PAGE_SHIFT))
-diff --git a/arch/parisc/include/asm/pgtable.h b/arch/parisc/include/asm/pgtable.h
-index 39017210dbf0..7218345a447f 100644
---- a/arch/parisc/include/asm/pgtable.h
-+++ b/arch/parisc/include/asm/pgtable.h
-@@ -324,8 +324,8 @@ static inline void pmd_clear(pmd_t *pmd) {
- 
- 
- #if CONFIG_PGTABLE_LEVELS == 3
--#define pud_page_vaddr(pud) ((unsigned long) __va(pud_address(pud)))
--#define pud_page(pud)	virt_to_page((void *)pud_page_vaddr(pud))
-+#define pud_pgtable(pud) ((pmd_t *) __va(pud_address(pud)))
-+#define pud_page(pud)	virt_to_page((void *)pud_pgtable(pud))
- 
- /* For 64 bit we have three level tables */
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index a666d561b44d..40bafe1e80c9 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1048,9 +1048,13 @@ extern struct page *p4d_page(p4d_t p4d);
- /* Pointers in the page table tree are physical addresses */
- #define __pgtable_ptr_val(ptr)	__pa(ptr)
- 
--#define pud_page_vaddr(pud)	__va(pud_val(pud) & ~PUD_MASKED_BITS)
- #define p4d_page_vaddr(p4d)	__va(p4d_val(p4d) & ~P4D_MASKED_BITS)
- 
-+static inline pmd_t *pud_pgtable(pud_t pud)
-+{
-+	return (pmd_t *)__va(pud_val(pud) & ~PUD_MASKED_BITS);
-+}
-+
- #define pte_ERROR(e) \
- 	pr_err("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
- #define pmd_ERROR(e) \
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 57cd3892bfe0..4158c90c572a 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -164,7 +164,11 @@ static inline void pud_clear(pud_t *pudp)
- #define	pud_bad(pud)		(!is_kernel_addr(pud_val(pud)) \
- 				 || (pud_val(pud) & PUD_BAD_BITS))
- #define pud_present(pud)	(pud_val(pud) != 0)
--#define pud_page_vaddr(pud)	(pud_val(pud) & ~PUD_MASKED_BITS)
-+
-+static inline pmd_t *pud_pgtable(pud_t pud)
-+{
-+	return (pmd_t *)(pud_val(pud) & ~PUD_MASKED_BITS);
-+}
- 
- extern struct page *pud_page(pud_t pud);
- 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 5fef8db3b463..b663d8f9f05c 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -825,7 +825,7 @@ static void __meminit remove_pud_table(pud_t *pud_start, unsigned long addr,
- 			continue;
- 		}
- 
--		pmd_base = (pmd_t *)pud_page_vaddr(*pud);
-+		pmd_base = pud_pgtable(*pud);
- 		remove_pmd_table(pmd_base, addr, next);
- 		free_pmd_table(pmd_base, pud);
- 	}
-@@ -1110,7 +1110,7 @@ int pud_free_pmd_page(pud_t *pud, unsigned long addr)
- 	pmd_t *pmd;
- 	int i;
- 
--	pmd = (pmd_t *)pud_page_vaddr(*pud);
-+	pmd = pud_pgtable(*pud);
- 	pud_clear(pud);
- 
- 	flush_tlb_kernel_range(addr, addr + PUD_SIZE);
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index cc6e2f94517f..4ba311808bdb 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -115,7 +115,7 @@ struct page *pud_page(pud_t pud)
- 		VM_WARN_ON(!pud_huge(pud));
- 		return pte_page(pud_pte(pud));
- 	}
--	return virt_to_page(pud_page_vaddr(pud));
-+	return virt_to_page(pud_pgtable(pud));
- }
- 
- /*
-diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index f3b0da64c6c8..0e863f3f7187 100644
---- a/arch/riscv/include/asm/pgtable-64.h
-+++ b/arch/riscv/include/asm/pgtable-64.h
-@@ -60,9 +60,9 @@ static inline void pud_clear(pud_t *pudp)
- 	set_pud(pudp, __pud(0));
- }
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
--	return (unsigned long)pfn_to_virt(pud_val(pud) >> _PAGE_PFN_SHIFT);
-+	return (pmd_t *)pfn_to_virt(pud_val(pud) >> _PAGE_PFN_SHIFT);
- }
- 
- static inline struct page *pud_page(pud_t pud)
-diff --git a/arch/sh/include/asm/pgtable-3level.h b/arch/sh/include/asm/pgtable-3level.h
-index 82d74472dfcd..56bf35c2f29c 100644
---- a/arch/sh/include/asm/pgtable-3level.h
-+++ b/arch/sh/include/asm/pgtable-3level.h
-@@ -32,9 +32,9 @@ typedef struct { unsigned long long pmd; } pmd_t;
- #define pmd_val(x)	((x).pmd)
- #define __pmd(x)	((pmd_t) { (x) } )
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
--	return pud_val(pud);
-+	return (pmd_t *)pud_val(pud);
- }
- 
- /* only used by the stubbed out hugetlb gup code, should never be called */
-diff --git a/arch/sparc/include/asm/pgtable_32.h b/arch/sparc/include/asm/pgtable_32.h
-index a5cf79c149fe..affd70ab02c8 100644
---- a/arch/sparc/include/asm/pgtable_32.h
-+++ b/arch/sparc/include/asm/pgtable_32.h
-@@ -152,13 +152,13 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
- 	return (unsigned long)__nocache_va(v << 4);
- }
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
- 	if (srmmu_device_memory(pud_val(pud))) {
- 		return ~0;
- 	} else {
- 		unsigned long v = pud_val(pud) & SRMMU_PTD_PMASK;
--		return (unsigned long)__nocache_va(v << 4);
-+		return (pmd_t *)__nocache_va(v << 4);
- 	}
- }
- 
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 550d3904de65..534ec872fa2c 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -845,18 +845,18 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
- 	return ((unsigned long) __va(pfn << PAGE_SHIFT));
- }
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
- 	pte_t pte = __pte(pud_val(pud));
- 	unsigned long pfn;
- 
- 	pfn = pte_pfn(pte);
- 
--	return ((unsigned long) __va(pfn << PAGE_SHIFT));
-+	return ((pmd_t *) __va(pfn << PAGE_SHIFT));
- }
- 
- #define pmd_page(pmd) 			virt_to_page((void *)pmd_page_vaddr(pmd))
--#define pud_page(pud) 			virt_to_page((void *)pud_page_vaddr(pud))
-+#define pud_page(pud)			virt_to_page((void *)pud_pgtable(pud))
- #define pmd_clear(pmdp)			(pmd_val(*(pmdp)) = 0UL)
- #define pud_present(pud)		(pud_val(pud) != 0U)
- #define pud_clear(pudp)			(pud_val(*(pudp)) = 0UL)
-diff --git a/arch/um/include/asm/pgtable-3level.h b/arch/um/include/asm/pgtable-3level.h
-index 7e6a4180db9d..091bff319ccd 100644
---- a/arch/um/include/asm/pgtable-3level.h
-+++ b/arch/um/include/asm/pgtable-3level.h
-@@ -84,7 +84,7 @@ static inline void pud_clear (pud_t *pud)
- }
- 
- #define pud_page(pud) phys_to_page(pud_val(pud) & PAGE_MASK)
--#define pud_page_vaddr(pud) ((unsigned long) __va(pud_val(pud) & PAGE_MASK))
-+#define pud_pgtable(pud) ((pmd_t *) __va(pud_val(pud) & PAGE_MASK))
- 
- static inline unsigned long pte_pfn(pte_t pte)
- {
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index b1099f2d9800..35a34ca6f2e9 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -865,9 +865,9 @@ static inline int pud_present(pud_t pud)
- 	return pud_flags(pud) & _PAGE_PRESENT;
- }
- 
--static inline unsigned long pud_page_vaddr(pud_t pud)
-+static inline pmd_t *pud_pgtable(pud_t pud)
- {
--	return (unsigned long)__va(pud_val(pud) & pud_pfn_mask(pud));
-+	return (pmd_t *)__va(pud_val(pud) & pud_pfn_mask(pud));
- }
- 
- /*
-diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index 156cd235659f..ad8a5c586a35 100644
---- a/arch/x86/mm/pat/set_memory.c
-+++ b/arch/x86/mm/pat/set_memory.c
-@@ -1134,7 +1134,7 @@ static void __unmap_pmd_range(pud_t *pud, pmd_t *pmd,
- 			      unsigned long start, unsigned long end)
- {
- 	if (unmap_pte_range(pmd, start, end))
--		if (try_to_free_pmd_page((pmd_t *)pud_page_vaddr(*pud)))
-+		if (try_to_free_pmd_page(pud_pgtable(*pud)))
- 			pud_clear(pud);
- }
- 
-@@ -1178,7 +1178,7 @@ static void unmap_pmd_range(pud_t *pud, unsigned long start, unsigned long end)
- 	 * Try again to free the PMD page if haven't succeeded above.
- 	 */
- 	if (!pud_none(*pud))
--		if (try_to_free_pmd_page((pmd_t *)pud_page_vaddr(*pud)))
-+		if (try_to_free_pmd_page(pud_pgtable(*pud)))
- 			pud_clear(pud);
- }
- 
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index d27cf69e811d..3481b35cb4ec 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -797,7 +797,7 @@ int pud_free_pmd_page(pud_t *pud, unsigned long addr)
- 	pte_t *pte;
- 	int i;
- 
--	pmd = (pmd_t *)pud_page_vaddr(*pud);
-+	pmd = pud_pgtable(*pud);
- 	pmd_sv = (pmd_t *)__get_free_page(GFP_KERNEL);
- 	if (!pmd_sv)
- 		return 0;
-diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
-index 3e13acd019ae..10789cf51d16 100644
---- a/include/asm-generic/pgtable-nopmd.h
-+++ b/include/asm-generic/pgtable-nopmd.h
-@@ -51,7 +51,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
- #define __pmd(x)				((pmd_t) { __pud(x) } )
- 
- #define pud_page(pud)				(pmd_page((pmd_t){ pud }))
--#define pud_page_vaddr(pud)			(pmd_page_vaddr((pmd_t){ pud }))
-+#define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
- 
- /*
-  * allocating and freeing a pmd is trivial: the 1-entry pmd is
-diff --git a/include/asm-generic/pgtable-nopud.h b/include/asm-generic/pgtable-nopud.h
-index a9d751fbda9e..7cbd15f70bf5 100644
---- a/include/asm-generic/pgtable-nopud.h
-+++ b/include/asm-generic/pgtable-nopud.h
-@@ -49,7 +49,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
- #define __pud(x)				((pud_t) { __p4d(x) })
- 
- #define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
--#define p4d_page_vaddr(p4d)			(pud_page_vaddr((pud_t){ p4d }))
-+#define p4d_page_vaddr(p4d)			(pud_pgtable((pud_t){ p4d }))
- 
- /*
-  * allocating and freeing a pud is trivial: the 1-entry pud is
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index a43047b1030d..311984f87cf9 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -88,7 +88,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
- #ifndef pmd_offset
- static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
- {
--	return (pmd_t *)pud_page_vaddr(*pud) + pmd_index(address);
-+	return pud_pgtable(*pud) + pmd_index(address);
- }
- #define pmd_offset pmd_offset
- #endif
--- 
-2.31.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
