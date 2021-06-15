@@ -2,62 +2,66 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5088DC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:42:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67CF3C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE1CC6145B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 11:42:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE1CC6145B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id B045961458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 12:18:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B045961458
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G45yv0R9Mz3c24
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 21:42:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G46mD6hYPz3c11
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 22:18:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LecsFWuG;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.217.45; helo=mail-vs1-f45.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com
- [209.85.217.45])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=jeyu@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=LecsFWuG; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G45yW1Nh1z308Y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 21:42:10 +1000 (AEST)
-Received: by mail-vs1-f45.google.com with SMTP id f21so9617678vsl.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 04:42:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=6cLFWPwpottSL5NyBrmyH12rIdn1diKeLgL8Kz1B3hs=;
- b=AEgGQusEL836PHFOkysHgd/evbscSB4VhkAF9kD73giwFGaLObxDtsQW3T5L42dqSv
- Pz5bSaA3Vz9ayo6mKOfoAg3r6LGq0NsHne8DoLK2WNfe+DVKL094UDq00nJnzw63AYWe
- ZYeGBq+xJr0zJYHrao6exsxJ33I1PjR9lD4ooUgtQ7kFCYtySt1bvpYIcPMGEYCdXMYy
- BOs5yGtH/hlg501YImtCGEZwhzCRFYNbjkAqknIIPwDSw8dfwBeQH8gr6KQmA3fCq4w9
- MESJzUhaZzSzybDnw3LnAjnPRihkZT45adLShZesIbS16/fQmf9N17BDOTJ0ovKaTCuG
- 9PXg==
-X-Gm-Message-State: AOAM533D6QlQ+FLyl8H3rhc/kdqVFxz1mJnA7v8awOKDEWdGUEH/WvFT
- rzQzGN6eoQVQlljugnF6IBu0aGYH4HzdSIkc0UU=
-X-Google-Smtp-Source: ABdhPJznuEjA8rihIMbbzhrVXLV05AmmQE+goCl46rfP2wIOnP/fUciGjhBT/1Kzp4dchtm5tTMtBoSZNwhqYUvmAU8=
-X-Received: by 2002:a67:3c2:: with SMTP id 185mr4432436vsd.42.1623757324455;
- Tue, 15 Jun 2021 04:42:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G46lg4Qr4z30B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 22:17:51 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 8BB3161461;
+ Tue, 15 Jun 2021 12:17:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1623759467;
+ bh=ZOobHo2nepnalPKzwxZMCxNgrD2fbEDO02BZri0udFo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=LecsFWuG/QSB8cQA0wl+VtK1EGygYbmMTtzqDUeEE37KPZtK38sFXD9PQbD65I5g7
+ wSmKMZp5yG5ePcmD1DEqvYWQgX1Q7zUk4plzIuIhGYiYzGSPe6skB2tA2mbwKbzkjl
+ cZTL1s1a6LCZvIcU9PivwcMwCA3eIWnuFoj4I7Yo8dX6nXjTP4xFVvhrSMRH0Wz6FR
+ r59G5AG1Iyk4ts5fjH+U63rq3im7DeIPA9HhuSFswSHEWUuvP/t3mtSnoz0LCvA0VF
+ V+KIHZsJEutgw8TjPRMf8BuKslPS4Cm+eBMIkkQZWE4z3LEbqHwaxqsBPIpmKYQZE3
+ pYOqLQpnq7ukQ==
+Date: Tue, 15 Jun 2021 14:17:40 +0200
+From: Jessica Yu <jeyu@kernel.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 1/2] module: add elf_check_module_arch for module
+ specific elf arch checks
+Message-ID: <YMiaZOqhHck9iy0n@p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de>
+References: <20210611093959.821525-1-npiggin@gmail.com>
+ <20210611093959.821525-2-npiggin@gmail.com>
+ <YMdGWjBOmcstBwOl@p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de>
+ <1623722110.amu32mwaqs.astroid@bobo.none>
 MIME-Version: 1.0
-References: <20210615110859.320299-1-aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20210615110859.320299-1-aneesh.kumar@linux.ibm.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 15 Jun 2021 13:41:53 +0200
-Message-ID: <CAMuHMdVdG10w4mUP_nLpPkDCP-tb3waPg_AOSJPch9b7AsLGsw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] mm: rename pud_page_vaddr to pud_pgtable and make
- it return pmd_t *
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <1623722110.amu32mwaqs.astroid@bobo.none>
+X-OS: Linux p200300cbcf109700df096d564fe976c3.dip0.t-ipconnect.de
+ 5.12.9-1-default x86_64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,41 +73,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-um <linux-um@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>,
- alpha <linux-alpha@vger.kernel.org>, sparclinux <sparclinux@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 15, 2021 at 1:32 PM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
-> No functional change in this patch.
++++ Nicholas Piggin [15/06/21 12:05 +1000]:
+>Excerpts from Jessica Yu's message of June 14, 2021 10:06 pm:
+>> +++ Nicholas Piggin [11/06/21 19:39 +1000]:
+>>>The elf_check_arch() function is used to test usermode binaries, but
+>>>kernel modules may have more specific requirements. powerpc would like
+>>>to test for ABI version compatibility.
+>>>
+>>>Add an arch-overridable function elf_check_module_arch() that defaults
+>>>to elf_check_arch() and use it in elf_validity_check().
+>>>
+>>>Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>>[np: split patch, added changelog]
+>>>Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>---
+>>> include/linux/moduleloader.h | 5 +++++
+>>> kernel/module.c              | 2 +-
+>>> 2 files changed, 6 insertions(+), 1 deletion(-)
+>>>
+>>>diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
+>>>index 9e09d11ffe5b..fdc042a84562 100644
+>>>--- a/include/linux/moduleloader.h
+>>>+++ b/include/linux/moduleloader.h
+>>>@@ -13,6 +13,11 @@
+>>>  * must be implemented by each architecture.
+>>>  */
+>>>
+>>>+// Allow arch to optionally do additional checking of module ELF header
+>>>+#ifndef elf_check_module_arch
+>>>+#define elf_check_module_arch elf_check_arch
+>>>+#endif
+>>
+>> Hi Nicholas,
+>>
+>> Why not make elf_check_module_arch() consistent with the other
+>> arch-specific functions? Please see module_frob_arch_sections(),
+>> module_{init,exit}_section(), etc in moduleloader.h. That is, they are
+>> all __weak functions that are overridable by arches. We can maybe make
+>> elf_check_module_arch() a weak symbol, available for arches to
+>> override if they want to perform additional elf checks. Then we don't
+>> have to have this one-off #define.
+>
+>
+>Like this? I like it. Good idea.
 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Yeah! Also, maybe we can alternatively make elf_check_module_arch() a
+separate check entirely so that the powerpc implementation doesn't
+have to include that extra elf_check_arch() call. Something like this maybe?
 
->  arch/m68k/include/asm/motorola_pgtable.h     | 2 +-
+diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
+index 9e09d11ffe5b..2f9ebd593b4f 100644
+--- a/include/linux/moduleloader.h
++++ b/include/linux/moduleloader.h
+@@ -39,6 +39,9 @@ bool module_init_section(const char *name);
+   */
+  bool module_exit_section(const char *name);
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
++/* Arch may override to do additional checking of ELF header architecture */
++int elf_check_module_arch(Elf_Ehdr *hdr);
++
+  /*
+   * Apply the given relocation to the (simplified) ELF.  Return -error
+   * or 0.
+diff --git a/kernel/module.c b/kernel/module.c
+index fdd6047728df..9963a979ed54 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2923,6 +2923,11 @@ static int validate_section_offset(struct load_info *info, Elf_Shdr *shdr)
+         return 0;
+  }
 
-Gr{oetje,eeting}s,
++int __weak elf_check_module_arch(Elf_Ehdr *hdr)
++{
++       return 1;
++}
++
+  /*
+   * Sanity checks against invalid binaries, wrong arch, weird elf version.
+   *
+@@ -2941,6 +2946,7 @@ static int elf_validity_check(struct load_info *info)
+         if (memcmp(info->hdr->e_ident, ELFMAG, SELFMAG) != 0
+             || info->hdr->e_type != ET_REL
+             || !elf_check_arch(info->hdr)
++           || !elf_check_module_arch(info->hdr)
+             || info->hdr->e_shentsize != sizeof(Elf_Shdr))
+                 return -ENOEXEC;
+  
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
