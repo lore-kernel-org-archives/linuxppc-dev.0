@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EF87C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 15:49:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFFD0C49EA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 15:49:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09C8C6142E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 15:49:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09C8C6142E
+	by mail.kernel.org (Postfix) with ESMTPS id 5BA326162A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 15:49:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BA326162A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G4CRM0Xn8z3c2R
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 01:49:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G4CS84crTz3byw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 01:49:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AVgxaFF3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZK2Q5K9U;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=AVgxaFF3; 
+ header.s=k20201202 header.b=ZK2Q5K9U; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G4CQs2R47z2yxq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 01:48:37 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id F12DD61626;
- Tue, 15 Jun 2021 15:48:32 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G4CRh4bH0z2ysq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 01:49:20 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C66E1617ED;
+ Tue, 15 Jun 2021 15:49:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1623772113;
- bh=NtMKHikNEMchJUzwx8CdjNO3tpRArTcGzKU5NJGU3j4=;
+ s=k20201202; t=1623772157;
+ bh=EheN55RV15pxgeIQu4DP1PTRSoQC4OUgOyikc4uj/g8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=AVgxaFF3ACdw4oO8qEU3k9z23pilTzhVvIUSp3JBhcYEOfsClkYVgkwpmVFa373GL
- e1AgHHlHSqEm266dJFCg+ClnQcX9SJeXiFgxp6bzy6ViA2ryqDf3anVPqArJhGH++i
- pc3hbSTANRYcD7YDjuXNAADWj9PJeK2O2eLkz0AdHETxOO1maWVMV/Vu8/6Yh73kyP
- SI0gRSc3MAfrTJPVGL5XReLmAXN1gyRobYJza43lL3NDFTvZGNkJ3tXYMeVDtPqZpC
- XIPPcEQyRd7bGtJIPDjpAlNVGFom3vkcmBWPmxPnZ5UaN0XrphhedZl0g7xtWVROSi
- B7EVkVfh7EogQ==
+ b=ZK2Q5K9U1a+PX1+Q54IvkiR9ljKxxNTUdAHnju5RD12C++GukoX9W1V2L8NrZeem3
+ 6X+aQgcOenFa54LpuAf+qZlFPRMvyzg4GyL6YbiGOMdrUoM/QsiPPyMOw3U4P3UY8C
+ lsiejMZf9Ph1zTl2fLWVzg+aQgwsII1XES79cyp9iefuwoYkW2M6mFoqRVVpAzuq9r
+ G8ny4XpEx5+ZpPNdGGqlrbFbMz9qK8DdP/+mq8eXtF2rZMuqNf/NLibwyqIsEBNmPy
+ 0gnjeuqssgDylnPEsAqCzaDok2WZLOrTw9HB8wH0IDj1lhzQQnjVDMhVtnJHvB/ehz
+ bSf8rdoN6nYRg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.12 07/33] ASoC: fsl-asoc-card: Set .owner attribute
+Subject: [PATCH AUTOSEL 5.10 07/30] ASoC: fsl-asoc-card: Set .owner attribute
  when registering card.
-Date: Tue, 15 Jun 2021 11:47:58 -0400
-Message-Id: <20210615154824.62044-7-sashal@kernel.org>
+Date: Tue, 15 Jun 2021 11:48:44 -0400
+Message-Id: <20210615154908.62388-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210615154824.62044-1-sashal@kernel.org>
-References: <20210615154824.62044-1-sashal@kernel.org>
+In-Reply-To: <20210615154908.62388-1-sashal@kernel.org>
+References: <20210615154908.62388-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -112,10 +112,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index f62f81ceab0d..9dcbe5d5a428 100644
+index a2dd3b6b7fec..7cd14d6b9436 100644
 --- a/sound/soc/fsl/fsl-asoc-card.c
 +++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -732,6 +732,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+@@ -720,6 +720,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
  	/* Initialize sound card */
  	priv->pdev = pdev;
  	priv->card.dev = &pdev->dev;
