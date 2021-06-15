@@ -2,69 +2,63 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06EE3C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75F8AC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:40:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F16861439
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:40:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F16861439
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id D3E2061474
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:40:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3E2061474
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48b80mhTz3dYY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:40:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48bZ2Qfxz3cGZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:40:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=orcVM4ZS;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KMNY2Z73;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=orcVM4ZS; 
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=KMNY2Z73; 
  dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48RP4dW8z3c6b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:33:53 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=1vl+lJtrWoiUzzKH0COLUmHTJyPccdOEl/SXPdFbHq8=; b=orcVM4ZS+23ndu19ILV+oG8Kdb
- EYq30bY5COpSe8j73G1ZSpdxCnZvGUug6zi+n3PtNKTIYr2gdrB6nrERB3vHdIIR4hPOT/UpTCyWs
- AYodO6/zr9y0OT7KoRpqlRoey1MBbGiUTgoxOd/kcm4TRjkQ8E3XYxEkGCrC8InktD++/3VespVyQ
- FAP7MeVYaSA+NqHbe0Hkisx+6r4BLNLdkNjC0eQtKEFztNzuWuVCAheweEjtcFUDpKAbuCLRmg4/G
- EVnQKf6DqMMaY9iFPuJi82thdu+6gkEtdThFuqtrkl3pXuuSly/nPtwkQFcg10SnbFD7sIkGMm4qc
- 1ysBDTTA==;
-Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lt9Ae-006obD-98; Tue, 15 Jun 2021 13:32:08 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 18/18] block: use bvec_kmap_local in bio_integrity_process
-Date: Tue, 15 Jun 2021 15:24:56 +0200
-Message-Id: <20210615132456.753241-19-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210615132456.753241-1-hch@lst.de>
-References: <20210615132456.753241-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48T81cyNz3fcb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:35:23 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4G48T43GNjz9t1s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:35:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1623764120;
+ bh=f+pAIeUvCGS8IgI11tBxPnZcN1hRhb6FByqbKIzyQjI=;
+ h=From:To:Subject:Date:From;
+ b=KMNY2Z73Xu0n28fWb4uCCDJZQ1RhzX7ZT7M6Hxb3ipO6cXGvY4uO4lfUy6sZCZDPw
+ rI/1r9GHcsSd7H6OTRlaug5Xxpt9TQofZpg/AULlHoKtfm8fwyGf+ovlsGyNb1pGy5
+ 0/JZ+EjDEGuFlFBkPU4fMF5WHyn5gvnLh9wb0OQm0i4Na9lMZZSzDMiPrCOcFHCtja
+ S4a3BkzkmoAcvtqc2kvDCVYLH036C8G03VPK/S++QEYvkI5xe4z4Hvuycr3CCK3sj4
+ dfuvAnbW7SaSCXqF0FYlICAkAxDK5xdQOG0RVsxmRMVrU3dZD/gpB+Tbb7oxw2xNS3
+ Bsv3WNmVqVFkA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Testing with Github Actions
+Date: Tue, 15 Jun 2021 23:35:19 +1000
+Message-ID: <87h7hztfmw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,55 +70,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
- Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
- Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using local kmaps slightly reduces the chances to stray writes, and
-the bvec interface cleans up the code a little bit.
+Hi all,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- block/bio-integrity.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+I've setup automated builds + qemu boot tests using Github Actions.
 
-diff --git a/block/bio-integrity.c b/block/bio-integrity.c
-index 4b4eb8964a6f..8f54d49dc500 100644
---- a/block/bio-integrity.c
-+++ b/block/bio-integrity.c
-@@ -172,18 +172,16 @@ static blk_status_t bio_integrity_process(struct bio *bio,
- 	iter.prot_buf = prot_buf;
- 
- 	__bio_for_each_segment(bv, bio, bviter, *proc_iter) {
--		void *kaddr = kmap_atomic(bv.bv_page);
-+		void *kaddr = bvec_kmap_local(&bv);
- 
--		iter.data_buf = kaddr + bv.bv_offset;
-+		iter.data_buf = kaddr;
- 		iter.data_size = bv.bv_len;
--
- 		ret = proc_fn(&iter);
--		if (ret) {
--			kunmap_atomic(kaddr);
--			return ret;
--		}
-+		kunmap_local(kaddr);
-+
-+		if (ret)
-+			break;
- 
--		kunmap_atomic(kaddr);
- 	}
- 	return ret;
- }
--- 
-2.30.2
+You can see the results here:
 
+  https://github.com/linuxppc/linux-ci/actions
+
+
+You can use it for testing your own patches before submitting them by
+doing the following:
+
+  - Fork the linuxppc/linux-ci repo on github. (Note not the main linux repository)
+  - Enable GitHub Actions for your forked repository
+  - Add your work on top of the merge branch (or create a branch based on merge)
+  - Push to your fork of linux-ci on GitHub
+  - Results should appear in the Actions tab of your repository
+
+
+Using it is entirely optional, I know not everyone likes to use Github.
+
+But if you're sending a significant number of powerpc patches then
+testing them before submission using this setup can save us all some
+time :)
+
+If you have any problems or questions let me know.
+
+cheers
