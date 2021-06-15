@@ -2,25 +2,25 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 983CBC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 06:54:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 079BBC48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 06:56:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2779861413
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 06:54:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2779861413
+	by mail.kernel.org (Postfix) with ESMTPS id 133456141F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 06:56:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 133456141F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3zZM3jxbz3c1G
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 16:54:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3zcn3fsjz3bvj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 16:56:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=M25VAanL;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=gMNzpGI3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
@@ -29,38 +29,38 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=M25VAanL; 
+ header.s=casper.20170209 header.b=gMNzpGI3; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3zYv6y2dz303P
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 16:53:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3zcK20Zmz2xVt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 16:56:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=6LV9BM3Pp04bKu2UoJ3ix0LclPXqE12gKen1uMnIsOs=; b=M25VAanLtpaXgntkN8Qf+Wt8ZI
- dktarA5AKe+TZ3bnF1bMS18t4h0YDZgtYjpV49hYatGmyAW1TuO31f5dM3blXZ9+I8qplH81hwJHg
- hxDRsnRM8GBHA8ZjuMqH+/pzOquOfj0Nv9GqDHPLAv4kfDubE/mlYKQP1dJ7Mqn7AZw5NP7e45rMr
- JFnOj+0j35MeAzCxCHEsryXkUyY6ajxlYZ73OTArbbbLSMmwe9gHPieS3frliTgL8vIeYtc/99fZi
- B/9I8AFjZ3iloa8gnLwZjHb8iwAyPOQvAUcVL1I/JbB+l+MVlCY+qAm1N6XQuFpxBrUE/Rxt/ig67
- aYZrJp+g==;
+ bh=GCTN830Yp9doPgPY7pu2XF+Fwldsm+mzIOYdbShiloE=; b=gMNzpGI3YiXqfEOvxDoQ/kfFiy
+ xwichaSc9hs+Oh//p75TJLSFdwWG4+mPqDVSZnXmmfIx0lQmouL8L27PQyduFKtudue5EW0s1a/Dv
+ LrU6ZE/x1U6rz+Rzkx2Cfbhs4ooUh1kBl1NVoHdaYxlrnBeOD8gPmWGUW3+6Rkfv3bOTtH6vU+awZ
+ a39leE69VA2pzrgLSWj+LJIOlxfDzf96fSClPQSj4El+Nc4eCJ0l812CcwakOMa9OAAzk/YLNDDVL
+ eW26t4P1Jvwm6r4VLAEUZric599ENx7GpAQUgvO5E1KOtptJ0qPZq82OKj6vDTgrfLN72II8KDlw0
+ TylkxA9w==;
 Received: from hch by casper.infradead.org with local (Exim 4.94 #2 (Red Hat
- Linux)) id 1lt2wq-006BNx-Ar; Tue, 15 Jun 2021 06:53:23 +0000
-Date: Tue, 15 Jun 2021 07:53:20 +0100
+ Linux)) id 1lt2yw-006BSj-GV; Tue, 15 Jun 2021 06:55:37 +0000
+Date: Tue, 15 Jun 2021 07:55:30 +0100
 From: Christoph Hellwig <hch@infradead.org>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 6/7] powerpc/uaccess: Add unsafe_clear_user()
-Message-ID: <YMhOYKM5+s0wUoeP@infradead.org>
+Subject: Re: [PATCH 7/7] powerpc/signal: Use unsafe_copy_siginfo_to_user()
+Message-ID: <YMhO4oiqh4F+ZEW8@infradead.org>
 References: <b813c1f4d3dab2f51300eac44d99029aa8e57830.1623739212.git.christophe.leroy@csgroup.eu>
- <67eedb69ca81e5a4b16459a4c61f99e64cb42675.1623739212.git.christophe.leroy@csgroup.eu>
+ <8b4b640746523f5efb1c9a9fd97465bac4f00cae.1623739212.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <67eedb69ca81e5a4b16459a4c61f99e64cb42675.1623739212.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <8b4b640746523f5efb1c9a9fd97465bac4f00cae.1623739212.git.christophe.leroy@csgroup.eu>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,12 +80,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 15, 2021 at 06:41:02AM +0000, Christophe Leroy wrote:
-> Implement unsafe_clear_user() for powerpc.
-> It's a copy/paste of unsafe_copy_to_user() with value 0 as source.
-> 
-> It may be improved in a later patch by using 'dcbz' instruction
-> to zeroize full cache lines at once.
+> @@ -836,14 +830,19 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+>  		asm("dcbst %y0; sync; icbi %y0; sync" :: "Z" (mctx->mc_pad[0]));
+>  	}
+>  	unsafe_put_sigset_t(&frame->uc.uc_sigmask, oldset, failed);
+> +#ifndef CONFIG_COMPAT
+> +	unsafe_copy_siginfo_to_user(&frame->info, &ksig->info, failed);
+> +#endif
+>  
+>  	/* create a stack frame for the caller of the handler */
+>  	unsafe_put_user(regs->gpr[1], newsp, failed);
+>  
+>  	user_access_end();
+>  
+> -	if (copy_siginfo_to_user(&frame->info, &ksig->info))
+> +#ifdef CONFIG_COMPAT
+> +	if (copy_siginfo_to_user32(&frame->info, &ksig->info))
+>  		goto badframe;
+> +#endif
 
-Please add this to common code insted of making it powerpc specific.
-
+Shouldn't the compat case be handled the same way?
