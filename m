@@ -2,62 +2,88 @@ Return-Path: <SRS0=IFQS=LJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEDBAC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:59:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B49C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 04:07:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53E856008E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 03:59:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53E856008E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6CB6960FEA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 04:07:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CB6960FEA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vhQ5ghjz3cmV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:59:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G3vsR3gKGz3bsL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 14:07:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=WP7jJxJC;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=fMG07OU4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::f2e;
+ helo=mail-qv1-xf2e.google.com; envelope-from=tientzu@chromium.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=WP7jJxJC; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=fMG07OU4; dkim-atps=neutral
+Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com
+ [IPv6:2607:f8b0:4864:20::f2e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vd70Z7nz303y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 13:56:26 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4G3vcz4m8yz9t10; Tue, 15 Jun 2021 13:56:19 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1623729379;
- bh=13Pn92Rsr/hYhtFrTjnVtB9iZYClobDqpyOkISx6PZo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=WP7jJxJCEGESvxOdW+XQ9mC5Ax96LrRzHrvNUvOplTyfqJyupMOTxonFP5ksGZF+A
- yQuMIzUcwk5P0qA6rEiE2yi/Gu/4RtfHVovea7iunU13ghHld62rRz4TYK1Pi5r9xQ
- 5Nwn6xAexJcoa506tzsQ4JepCKC84Og0GZPXlx34=
-Date: Tue, 15 Jun 2021 13:21:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [RFC PATCH 6/8] powerpc/pseries: Add a helper for form1 cpu
- distance
-Message-ID: <YMgc1z63ejhHEHsM@yekko>
-References: <20210614164003.196094-1-aneesh.kumar@linux.ibm.com>
- <20210614164003.196094-7-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G3vrv0XVrz302L
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 14:06:36 +1000 (AEST)
+Received: by mail-qv1-xf2e.google.com with SMTP id 5so11397537qvf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 21:06:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=YDA/6rYFbIzGwN3DJJ3v30Ilg60B464lccTuq9RZZyA=;
+ b=fMG07OU4hKhOT0Ejr3qOHcrU08EN3G1+RpniZ8liKpsJESj8tYmvpPMQZbf905Arqa
+ jTNjk7/cw8NTc05aXCrTOb4W4H63TAdnEqedfWvkUqde8aQCNzpKVfF+WTvNV5ptv2qS
+ TsIum45Bdbkm1pBXJPvJDobZEXMxEtOKj24Zc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=YDA/6rYFbIzGwN3DJJ3v30Ilg60B464lccTuq9RZZyA=;
+ b=PeZv/Vp9RPddSqrdJMV0ITuMjx8qySJxDTXgkvXfUz7g1RYiabpLn7hEZ+rn7iRAfy
+ qYjabc0g4aBh1OXk2Z9BGokRagQ0LFVgCTTknUxzpVQsmrJa+3iIOxAS8TCT2RisbG84
+ xcJjdnMRHXW7QKjTFarYSdMf+dDx4LwHSzW+GldmAr5CNRbIKj0iCgUD4+d33DCsnDy3
+ gl4HpSPi4oVabpy52NAU8MkycjSvqjU4CG7fOYc+k57aThDrA9xEq0/kIBRY/UPZo8K+
+ TOplPDrlR7pDGSK6VcOx/TjVQkdEQFkNYExpmehuJkvXXC7EShLvs5qOMBsJXjZJGRm8
+ BAjw==
+X-Gm-Message-State: AOAM532wjqp6xpGhxbPVbGx5+AoJ7DeseKIMXnY8ZndergMZ3hQHabae
+ Y7M/g7p/1N801XSAltNJrN/RQp0rP6veTA==
+X-Google-Smtp-Source: ABdhPJzb0xZKlPo/RTC8YCEl79IG5PKuqj6X5ooPWPlfj0Slb5cRJb8+eIZ9B6MMmY64YVyc7X8spQ==
+X-Received: by 2002:a05:6214:3cb:: with SMTP id
+ ce11mr1796053qvb.53.1623729991837; 
+ Mon, 14 Jun 2021 21:06:31 -0700 (PDT)
+Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com.
+ [209.85.222.181])
+ by smtp.gmail.com with ESMTPSA id t62sm11442126qkc.26.2021.06.14.21.06.28
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 14 Jun 2021 21:06:30 -0700 (PDT)
+Received: by mail-qk1-f181.google.com with SMTP id c9so14394576qkm.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jun 2021 21:06:28 -0700 (PDT)
+X-Received: by 2002:a02:384b:: with SMTP id v11mr19686288jae.90.1623729977741; 
+ Mon, 14 Jun 2021 21:06:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Ltj0sKFFmY8m21Do"
-Content-Disposition: inline
-In-Reply-To: <20210614164003.196094-7-aneesh.kumar@linux.ibm.com>
+References: <20210611152659.2142983-1-tientzu@chromium.org>
+ <20210611152659.2142983-2-tientzu@chromium.org>
+ <20210614061644.GA28343@lst.de>
+In-Reply-To: <20210614061644.GA28343@lst.de>
+From: Claire Chang <tientzu@chromium.org>
+Date: Tue, 15 Jun 2021 12:06:06 +0800
+X-Gmail-Original-Message-ID: <CALiNf29cE-T7xf+nUZF2pjT8osaXj+wb4MibtdSkAU_K13wuMw@mail.gmail.com>
+Message-ID: <CALiNf29cE-T7xf+nUZF2pjT8osaXj+wb4MibtdSkAU_K13wuMw@mail.gmail.com>
+Subject: Re: [PATCH v9 01/14] swiotlb: Refactor swiotlb init functions
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,86 +95,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
+ mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ Jianxiong Gao <jxgao@google.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Will Deacon <will@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
+ boris.ostrovsky@oracle.com,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
+ Nicolas Boichat <drinkcat@chromium.org>, Greg KH <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+ Tomasz Figa <tfiga@chromium.org>,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jun 14, 2021 at 2:16 PM Christoph Hellwig <hch@lst.de> wrote:
+>
+> On Fri, Jun 11, 2021 at 11:26:46PM +0800, Claire Chang wrote:
+> > +     spin_lock_init(&mem->lock);
+> > +     for (i = 0; i < mem->nslabs; i++) {
+> > +             mem->slots[i].list = IO_TLB_SEGSIZE - io_tlb_offset(i);
+> > +             mem->slots[i].orig_addr = INVALID_PHYS_ADDR;
+> > +             mem->slots[i].alloc_size = 0;
+> > +     }
+> > +
+> > +     if (memory_decrypted)
+> > +             set_memory_decrypted((unsigned long)vaddr, bytes >> PAGE_SHIFT);
+> > +     memset(vaddr, 0, bytes);
+>
+> We don't really need to do this call before the memset.  Which means we
+> can just move it to the callers that care instead of having a bool
+> argument.
+>
+> Otherwise looks good:
+>
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
 
---Ltj0sKFFmY8m21Do
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jun 14, 2021 at 10:10:01PM +0530, Aneesh Kumar K.V wrote:
-> This helper is only used with the dispatch trace log collection.
-> A later patch will add Form2 affinity support and this change helps
-> in keeping that simpler. Also add a comment explaining we don't expect
-> the code to be called with FORM0
->=20
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  arch/powerpc/mm/numa.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 64caaf07cf82..696e5bfe1414 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -166,7 +166,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
->  }
->  #endif /* CONFIG_HOTPLUG_CPU || CONFIG_PPC_SPLPAR */
-> =20
-> -int cpu_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
-> +static int __cpu_form1_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
->  {
->  	int dist =3D 0;
-> =20
-> @@ -182,6 +182,14 @@ int cpu_distance(__be32 *cpu1_assoc, __be32 *cpu2_as=
-soc)
->  	return dist;
->  }
-> =20
-> +int cpu_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
-> +{
-> +	/* We should not get called with FORM0 */
-> +	VM_WARN_ON(affinity_form =3D=3D FORM0_AFFINITY);
-> +
-> +	return __cpu_form1_distance(cpu1_assoc, cpu2_assoc);
-> +}
-> +
->  /* must hold reference to node during call */
->  static const __be32 *of_get_associativity(struct device_node *dev)
->  {
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---Ltj0sKFFmY8m21Do
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmDIHNcACgkQbDjKyiDZ
-s5Ie1Q/9Gg2JCY9Lz4xuRk0/XNB19EiSKe4RH2bg/2EESfvK6WE6yjHATNX/s4xg
-RQJRTOpM5Q94q0NijW25oCQyHoeE6iYkYfFWmCjM/X7KvOkFO4bw92TvCJlRJ8vA
-d3aU5yJqCHeGRTrONMFTTO8CzscNTdLR4zQaMprGWkqqVpsrT5PKCX/Gyl+aacgf
-cSn0FWJH0q6Uqckr96YztQeR/e+fswabmGTRDPBuukq4iHEEYH+Rsku5uV9X6K5p
-xacQPlWnH9c4CcTa3bzQlA7aqiUoEmOVBDyrcB1YhQ8MCxMtOojQ4/AhbbSI395r
-Vqo4DB6YdbZM1Xcugd00zz3XqeHOi0qJtmL/+Quep8OAKcRL5szwvbNQRZzP1V1e
-My21tN/oQpdht3HRJalGptC5MEgBUHN7HhqVg7pITCHFTOtWPVBBr0IsTGOCczWn
-LiJ7JRbLldAB712GImY2OK3Tj+1imPGW9QU7xj0UQpCuKLzGt5XAljDOvBznQs3v
-H1VLx7Y6dhBPkkQPJ/tpVP2XncMKn/eYHxYxwTOkGCbvK6A7LQNpjCtkQLsiFu/1
-XCplFWEnevyQVtg9fZ0DOl90MM9Zk2sb1mxXhrNBkIHoky3n6cOOjArnWgPh5Ucx
-KHqysFFxOfPYCjzzYizrg/hJd351Y0ugMqECnWZE6O/mv4x6A/Y=
-=msmZ
------END PGP SIGNATURE-----
-
---Ltj0sKFFmY8m21Do--
+Thanks for the review. Will wait more days for other reviews and send
+v10 to address the comments in this and other patches.
