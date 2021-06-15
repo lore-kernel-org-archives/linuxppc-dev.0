@@ -3,69 +3,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF5F4C49EA2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9B5C49361
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:28:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31F3561468
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:28:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31F3561468
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 2D7F361477
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 13:28:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D7F361477
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G48Jy35Lkz3c59
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:28:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G48KR4KTTz3cm2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 23:28:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=UvySjDzn;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=S0KOTmQ1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+01b1093948f83d17b939+6505+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1036;
+ helo=mail-pj1-x1036.google.com; envelope-from=tientzu@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=UvySjDzn; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=S0KOTmQ1; dkim-atps=neutral
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
+ [IPv6:2607:f8b0:4864:20::1036])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G48Hm6dBRz3c95
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:27:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=g2VhDbsqU+1BH7ucwppsHj1i0dCrR9dcKJzb5SaYpTo=; b=UvySjDznQ/F22fIfY6ks31l8vl
- AlJAtvZaUYVZ/U0xG7DvMn2QFwU4AdpXf89dIyWNCZuuDIxSQ8zjaEr5gy/s80zp/0UjXRwQFTF1/
- RDZo3gX/ciFau8X9dIxGugAumnxdKSJSSCsa8vQUkvJDNkukJioIld57bWVuRvGJ7cfUcGDVq25Vl
- 19hmSGv6n3TbtG8FeZG0nPNvGqlpTP7bnF/n4nrzMotcrcmLA2ib7XUfZXt7ghfmCKbw62PGQz+gR
- 7a0i66ngnLKcmIHAahI3XqXhWHMOcD/qI38foiyd7hYL3t/iVC1SiV4962oLL/CfbVt7bO2HE/VI9
- 91ifMLzw==;
-Received: from [2001:4bb8:19b:fdce:9045:1e63:20f0:ca9] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lt94v-006nx9-5v; Tue, 15 Jun 2021 13:26:09 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 04/18] MIPS: don't include <linux/genhd.h> in
- <asm/mach-rc32434/rb.h>
-Date: Tue, 15 Jun 2021 15:24:42 +0200
-Message-Id: <20210615132456.753241-5-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210615132456.753241-1-hch@lst.de>
-References: <20210615132456.753241-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G48Hw5xMWz3cBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 23:27:23 +1000 (AEST)
+Received: by mail-pj1-x1036.google.com with SMTP id
+ s17-20020a17090a8811b029016e89654f93so1811270pjn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 06:27:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ju6S8lgCxf3St5TjBpM/zWBg3zY1k2oOfdLAzP6ctcg=;
+ b=S0KOTmQ1dyMFUgjraAGrRI0c2Mihsv8RUfx+tMl8U8V5wwFpZrXslfg71+0gtaQ4MS
+ 920rIvXLA/w2InlV9cjhFj31GrTJmfYtMvDEkxHMkIU3x8/eylAN0MxowVG16KZdI3xd
+ R6EZBcTiAFbROkN0bkdkSLOWCWkPs3n3Q835U=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ju6S8lgCxf3St5TjBpM/zWBg3zY1k2oOfdLAzP6ctcg=;
+ b=T/JPFsOqNEOaz7ihBdXPdQA5lCElvnKlYFO3lko9jARMHNCejyBlQo2JMu70AwXpjn
+ 60+P6+qpdRCit7Q/E1QLtGFXevj680qHx01EFzE9pgSu8gEL9fDgWMowtiBjA1ldmGoz
+ I8MAurwBP57WUs1f3rc9bEOJDi8Zom3HpDIVj651gTEouix2By9tIj0KxVmDtYFUpAm+
+ SX0GnEq45Lr6KNScEX8tZYxUyupVw0eqz/kQcwTqyaIDlnNmtT0YhsvS3aGwtVp9qVDL
+ pAoA0LfXJ4VjaO2jsVORCEQQXow7tAG70WIhvS8uG0FFlp6mFcuPkMUZIQ0RtYkttH9l
+ TJSQ==
+X-Gm-Message-State: AOAM530dFSlny0n3pdgvDB8nCrJQRPOYebdiyAFAEl/wltQ6jMaVMslx
+ LAp82Xuk9EBs8HuV1obdEYs90w==
+X-Google-Smtp-Source: ABdhPJxr9A5pl6/ZdjjYY9mlXXb/uiYKpVxDCD4IZ9OsbKJOMyQWEYEFuItILAhw43oMKDFA7z0SMA==
+X-Received: by 2002:a17:90a:be0b:: with SMTP id
+ a11mr25279126pjs.197.1623763641154; 
+ Tue, 15 Jun 2021 06:27:21 -0700 (PDT)
+Received: from localhost ([2401:fa00:95:205:1846:5274:e444:139e])
+ by smtp.gmail.com with UTF8SMTPSA id k70sm16257566pgd.41.2021.06.15.06.27.13
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 15 Jun 2021 06:27:20 -0700 (PDT)
+From: Claire Chang <tientzu@chromium.org>
+To: Rob Herring <robh+dt@kernel.org>, mpe@ellerman.id.au,
+ Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, boris.ostrovsky@oracle.com,
+ jgross@suse.com, Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v10 00/12] Restricted DMA
+Date: Tue, 15 Jun 2021 21:26:59 +0800
+Message-Id: <20210615132711.553451-1-tientzu@chromium.org>
+X-Mailer: git-send-email 2.32.0.272.g935e593368-goog
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,42 +92,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
- Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
- Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- dm-devel@redhat.com, Ilya Dryomov <idryomov@gmail.com>,
- Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, mingo@kernel.org, jxgao@google.com,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ xypron.glpk@gmx.de, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ daniel@ffwll.ch, airlied@linux.ie, maarten.lankhorst@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, jani.nikula@linux.intel.com,
+ Nicolas Boichat <drinkcat@chromium.org>, rodrigo.vivi@intel.com,
+ bhelgaas@google.com, tientzu@chromium.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ lkml <linux-kernel@vger.kernel.org>, tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, Robin Murphy <robin.murphy@arm.com>,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need to include genhd.h from a random arch header, and not
-doing so prevents the possibility for nasty include loops.
+This series implements mitigations for lack of DMA access control on
+systems without an IOMMU, which could result in the DMA accessing the
+system memory at unexpected times and/or unexpected addresses, possibly
+leading to data leakage or corruption.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
----
- arch/mips/include/asm/mach-rc32434/rb.h | 2 --
- 1 file changed, 2 deletions(-)
+For example, we plan to use the PCI-e bus for Wi-Fi and that PCI-e bus is
+not behind an IOMMU. As PCI-e, by design, gives the device full access to
+system memory, a vulnerability in the Wi-Fi firmware could easily escalate
+to a full system exploit (remote wifi exploits: [1a], [1b] that shows a
+full chain of exploits; [2], [3]).
 
-diff --git a/arch/mips/include/asm/mach-rc32434/rb.h b/arch/mips/include/asm/mach-rc32434/rb.h
-index d502673a4f6c..34d179ca020b 100644
---- a/arch/mips/include/asm/mach-rc32434/rb.h
-+++ b/arch/mips/include/asm/mach-rc32434/rb.h
-@@ -7,8 +7,6 @@
- #ifndef __ASM_RC32434_RB_H
- #define __ASM_RC32434_RB_H
- 
--#include <linux/genhd.h>
--
- #define REGBASE		0x18000000
- #define IDT434_REG_BASE ((volatile void *) KSEG1ADDR(REGBASE))
- #define UART0BASE	0x58000
+To mitigate the security concerns, we introduce restricted DMA. Restricted
+DMA utilizes the existing swiotlb to bounce streaming DMA in and out of a
+specially allocated region and does memory allocation from the same region.
+The feature on its own provides a basic level of protection against the DMA
+overwriting buffer contents at unexpected times. However, to protect
+against general data leakage and system memory corruption, the system needs
+to provide a way to restrict the DMA to a predefined memory region (this is
+usually done at firmware level, e.g. MPU in ATF on some ARM platforms [4]).
+
+[1a] https://googleprojectzero.blogspot.com/2017/04/over-air-exploiting-broadcoms-wi-fi_4.html
+[1b] https://googleprojectzero.blogspot.com/2017/04/over-air-exploiting-broadcoms-wi-fi_11.html
+[2] https://blade.tencent.com/en/advisories/qualpwn/
+[3] https://www.bleepingcomputer.com/news/security/vulnerabilities-found-in-highly-popular-firmware-for-wifi-chips/
+[4] https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/mediatek/mt8183/drivers/emi_mpu/emi_mpu.c#L132
+
+v10:
+Address the comments in v9 to
+  - fix the dev->dma_io_tlb_mem assignment
+  - propagate swiotlb_force setting into io_tlb_default_mem->force
+  - move set_memory_decrypted out of swiotlb_init_io_tlb_mem
+  - move debugfs_dir declaration into the main CONFIG_DEBUG_FS block
+  - add swiotlb_ prefix to find_slots and release_slots
+  - merge the 3 alloc/free related patches
+  - move the CONFIG_DMA_RESTRICTED_POOL later
+
+v9:
+Address the comments in v7 to
+  - set swiotlb active pool to dev->dma_io_tlb_mem
+  - get rid of get_io_tlb_mem
+  - dig out the device struct for is_swiotlb_active
+  - move debugfs_create_dir out of swiotlb_create_debugfs
+  - do set_memory_decrypted conditionally in swiotlb_init_io_tlb_mem
+  - use IS_ENABLED in kernel/dma/direct.c
+  - fix redefinition of 'of_dma_set_restricted_buffer'
+https://lore.kernel.org/patchwork/cover/1445081/
+
+v8:
+- Fix reserved-memory.txt and add the reg property in example.
+- Fix sizeof for of_property_count_elems_of_size in
+  drivers/of/address.c#of_dma_set_restricted_buffer.
+- Apply Will's suggestion to try the OF node having DMA configuration in
+  drivers/of/address.c#of_dma_set_restricted_buffer.
+- Fix typo in the comment of drivers/of/address.c#of_dma_set_restricted_buffer.
+- Add error message for PageHighMem in
+  kernel/dma/swiotlb.c#rmem_swiotlb_device_init and move it to
+  rmem_swiotlb_setup.
+- Fix the message string in rmem_swiotlb_setup.
+https://lore.kernel.org/patchwork/cover/1437112/
+
+v7:
+Fix debugfs, PageHighMem and comment style in rmem_swiotlb_device_init
+https://lore.kernel.org/patchwork/cover/1431031/
+
+v6:
+Address the comments in v5
+https://lore.kernel.org/patchwork/cover/1423201/
+
+v5:
+Rebase on latest linux-next
+https://lore.kernel.org/patchwork/cover/1416899/
+
+v4:
+- Fix spinlock bad magic
+- Use rmem->name for debugfs entry
+- Address the comments in v3
+https://lore.kernel.org/patchwork/cover/1378113/
+
+v3:
+Using only one reserved memory region for both streaming DMA and memory
+allocation.
+https://lore.kernel.org/patchwork/cover/1360992/
+
+v2:
+Building on top of swiotlb.
+https://lore.kernel.org/patchwork/cover/1280705/
+
+v1:
+Using dma_map_ops.
+https://lore.kernel.org/patchwork/cover/1271660/
+
+
+Claire Chang (12):
+  swiotlb: Refactor swiotlb init functions
+  swiotlb: Refactor swiotlb_create_debugfs
+  swiotlb: Set dev->dma_io_tlb_mem to the swiotlb pool used
+  swiotlb: Update is_swiotlb_buffer to add a struct device argument
+  swiotlb: Update is_swiotlb_active to add a struct device argument
+  swiotlb: Use is_dev_swiotlb_force for swiotlb data bouncing
+  swiotlb: Move alloc_size to swiotlb_find_slots
+  swiotlb: Refactor swiotlb_tbl_unmap_single
+  swiotlb: Add restricted DMA pool initialization
+  swiotlb: Add restricted DMA alloc/free support
+  dt-bindings: of: Add restricted DMA pool
+  of: Add plumbing for restricted DMA pool
+
+ .../reserved-memory/reserved-memory.txt       |  36 ++-
+ drivers/base/core.c                           |   4 +
+ drivers/gpu/drm/i915/gem/i915_gem_internal.c  |   2 +-
+ drivers/gpu/drm/nouveau/nouveau_ttm.c         |   2 +-
+ drivers/iommu/dma-iommu.c                     |  12 +-
+ drivers/of/address.c                          |  33 +++
+ drivers/of/device.c                           |   3 +
+ drivers/of/of_private.h                       |   6 +
+ drivers/pci/xen-pcifront.c                    |   2 +-
+ drivers/xen/swiotlb-xen.c                     |   2 +-
+ include/linux/device.h                        |   4 +
+ include/linux/swiotlb.h                       |  40 ++-
+ kernel/dma/Kconfig                            |  14 +
+ kernel/dma/direct.c                           |  60 +++--
+ kernel/dma/direct.h                           |   8 +-
+ kernel/dma/swiotlb.c                          | 255 +++++++++++++-----
+ 16 files changed, 380 insertions(+), 103 deletions(-)
+
 -- 
-2.30.2
+2.32.0.272.g935e593368-goog
 
