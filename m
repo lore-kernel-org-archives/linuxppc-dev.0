@@ -6,49 +6,48 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80C9EC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:17:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAD04C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:17:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A654A61245
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:17:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A654A61245
+	by mail.kernel.org (Postfix) with ESMTPS id 268CA61245
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 09:17:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 268CA61245
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G42lG6dwbz3bvk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 19:17:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G42lc4L8Fz3c4c
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jun 2021 19:17:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G42kr3q8Vz306Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 19:16:47 +1000 (AEST)
-IronPort-SDR: IO86fIOcoiXG3htTErk6wfeoRVKC7Ecy/VVBknwP79OE9hdJjkfI7KH+LaFSkbPhyUz4WD9iWF
- IyddzDyFR40w==
-X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="205772392"
-X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="205772392"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G42kr6Y5Rz3073
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jun 2021 19:16:46 +1000 (AEST)
+IronPort-SDR: DBsyU3iTzWnYwELOrvYT14exxLrCCas/ci5boDMXswW6/ww9miZrLFlfOgrw7fpWNvEgLxLWGX
+ FI1c4qvjAn5A==
+X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="193263015"
+X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="193263015"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  15 Jun 2021 02:16:41 -0700
-IronPort-SDR: WyG+7qeXFalrWkW/hMJfBhUF7oSMLjK2SkPeG68bcZovrhes6wZU5i/3zlp5LJyWRdPKDsV+3c
- wpiLHN2FW2yQ==
+IronPort-SDR: 5O3ISjHxukGObE3xUpnyEn2zycDbkZMdS6Wy9W3vw70QXsXN1O0dKMuuAsCzAmyLjTcU4T0b0u
+ ViM19JK+ZTDg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="554387206"
+X-IronPort-AV: E=Sophos;i="5.83,275,1616482800"; d="scan'208";a="404166244"
 Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
- by fmsmga001.fm.intel.com with ESMTP; 15 Jun 2021 02:16:40 -0700
+ by orsmga003.jf.intel.com with ESMTP; 15 Jun 2021 02:16:40 -0700
 Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lt5BX-0000Ir-On; Tue, 15 Jun 2021 09:16:39 +0000
-Date: Tue, 15 Jun 2021 17:16:27 +0800
+ id 1lt5BX-0000It-Ph; Tue, 15 Jun 2021 09:16:39 +0000
+Date: Tue, 15 Jun 2021 17:16:36 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- b41bd709a9a2e2d0ce55eef23656770d6fa16221
-Message-ID: <60c86feb.zHwvZYJfWzn3XVDZ%lkp@intel.com>
+Subject: [powerpc:fixes] BUILD SUCCESS e41d6c3f4f9b4804e53ca87aba8ee11ada606c77
+Message-ID: <60c86ff4.P4U7qn+TsQaDvW91%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -69,8 +68,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: b41bd709a9a2e2d0ce55eef23656770d6fa16221  powerpc: Fix initrd corruption with relative jump labels
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+branch HEAD: e41d6c3f4f9b4804e53ca87aba8ee11ada606c77  powerpc/signal64: Copy siginfo before changing regs->nip
 
 elapsed time: 1173m
 
