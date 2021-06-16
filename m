@@ -2,74 +2,71 @@ Return-Path: <SRS0=sb+l=LK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E097C48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 15:13:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AEF2C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 16:37:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8324260FDB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 15:13:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8324260FDB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id BB15861359
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 16:37:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB15861359
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G4pbN3C3nz3c1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:13:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G4rTD5x5Kz3c1R
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 02:37:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BqW78zvf;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=EKjRJP/D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=BqW78zvf; 
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=desiato.20200630 header.b=EKjRJP/D; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from desiato.infradead.org (desiato.infradead.org
+ [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G4pZt2PXBz306n
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 01:12:38 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 2A96360FDB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 15:12:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1623856354;
- bh=79yfQdKxv3qf+Uv+p6L1hNCWKPz5Fwg5T6U9zNgNXKw=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=BqW78zvfiJFX1WM3aDIknqlHXv25abiaKRQGWflPbVe5mHb8O9l3o/637flx39WEV
- cxE5w+ImnzJWcupRqiIlSCdWw3mWk3Cx9zyVndQ6dkPj5t43AKjeBGVfcpsgenW4vb
- OtKupuD0Ntu2vsfS9jGRg8LEs4BP2xDparQODe4NbrpL5Ifi5OWG2B4/P9HW70cQ+p
- X/YEaHt+LUkVEt4USF3AMG74opsi25veGHPjoUFr0Y86T4K0ypaX1XE8w1CW0XHn0r
- M7bIYHn+eSLwn7g9EpX8Xjv0jQ72wzH8eddElWFaUDVLoyT0S+osdrecHy6yxIijoO
- vHMYPlo4SyQqg==
-Received: by mail-lf1-f41.google.com with SMTP id p17so4913762lfc.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 08:12:34 -0700 (PDT)
-X-Gm-Message-State: AOAM530m/TRt5FOCbyLvgU2jIAA3ojKzfG9u+gA35B0xDpRQBjdmxaMn
- d8V/6sx1goJptKcFkTbxmmQ57r9f4faZRC63Mg==
-X-Google-Smtp-Source: ABdhPJxABYnhsAzimi3nTGL6QdJk0DeFkDzt1g0oue+DKcU8vorHRba5UMSdbzxFOM1x2Zy6FOyPf8RPn7FkPhkqUPU=
-X-Received: by 2002:a05:6402:cb0:: with SMTP id
- cn16mr69518edb.165.1623856342407; 
- Wed, 16 Jun 2021 08:12:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G4rSg4FhLz2yXK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 02:37:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+ :In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:
+ Sender:Reply-To:Content-ID:Content-Description;
+ bh=amXA5DbpjsK6z6OozTNT4JwawEseuiTE2IRGyEgfxc0=; b=EKjRJP/D6AtT/jvfxesq/zn+X0
+ vdbEnOW9ybPOfoUgQaR6zJxTCL8EOJkYLJV1sB40Juy5qU6yLPh3wginXJUR7eYprXEffSSc31C8j
+ 8JAunLJz18MTOR+D9Fy+z+m/S/BNxWdAhyxlkHVREbKfMV7pbG3jCkovKM+Um46sySoUmDEkhvN4Z
+ hikVR5mTZNwHlNZwxflAHGLtQiwWG6FzPqAsZHi0vSpS8T8wDaLPOtXDd2sOfy2c6jG3q6JW8SbWi
+ w4+RiTxmktkrIjSyNdYYnFLc/4KFmH9cUXcyHX/dH6lygLf3H64BkQ9mrZ2KpOFBaXepkvfjGxC5M
+ mDm/cEyA==;
+Received: from c-73-223-233-156.hsd1.ca.comcast.net ([73.223.233.156]
+ helo=[10.193.95.42])
+ by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1ltYX7-008MFA-6K; Wed, 16 Jun 2021 16:37:00 +0000
+Subject: Re: [PATCH 11/18] ps3disk: use memcpy_{from,to}_bvec
+To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
+ Thomas Gleixner <tglx@linutronix.de>
+References: <20210615132456.753241-1-hch@lst.de>
+ <20210615132456.753241-12-hch@lst.de>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <e15447e1-753a-ba0b-d016-8b8ab2302fd1@infradead.org>
+Date: Wed, 16 Jun 2021 09:36:52 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-References: <20210221174930.27324-1-nramas@linux.microsoft.com>
- <20210221174930.27324-6-nramas@linux.microsoft.com>
- <CAMuHMdVSuNS4edh-zM0_sbC0i1AAjQ9Y0n_8Mjz=3CALkW4pgg@mail.gmail.com>
- <CAL_JsqJ2x7zbyP3fAacdfHOWjCVjg6XhraV2YkoBJdZ2jXAMEA@mail.gmail.com>
- <54efb4fce5aac7efbd0b1b3885e9098b1d4ea745.camel@linux.microsoft.com>
- <CAL_JsqJEucP043eViq0Y1kAeqWNTqP5fLjfjz7+ksYx7QP_V5w@mail.gmail.com>
- <87y2basg27.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87y2basg27.fsf@mpe.ellerman.id.au>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 16 Jun 2021 09:12:10 -0600
-X-Gmail-Original-Message-ID: <CAL_Jsq+6bKsEBLoUXDBXM3FyYoBxmVzg8divwhayVGmHbHLhFQ@mail.gmail.com>
-Message-ID: <CAL_Jsq+6bKsEBLoUXDBXM3FyYoBxmVzg8divwhayVGmHbHLhFQ@mail.gmail.com>
-Subject: Re: [PATCH v19 05/13] of: Add a common kexec FDT setup function
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210615132456.753241-12-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,104 +78,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, tao.li@vivo.com,
- Mimi Zohar <zohar@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Frank Rowand <frowand.list@gmail.com>, Sasha Levin <sashal@kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, nramas <nramas@linux.microsoft.com>,
- Will Deacon <will@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>,
- James Morris <jmorris@namei.org>, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "Serge E. Hallyn" <serge@hallyn.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Prakhar Srivastava <prsriva@linux.microsoft.com>,
- Hsin-Yi Wang <hsinyi@chromium.org>, Allison Randal <allison@lohutok.net>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Matthias Brugger <mbrugger@suse.com>, balajib@linux.microsoft.com,
- dmitry.kasatkin@gmail.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- James Morse <james.morse@arm.com>, Greg KH <gregkh@linuxfoundation.org>,
- Joe Perches <joe@perches.com>,
- linux-integrity <linux-integrity@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Mike Snitzer <snitzer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, Dongsheng Yang <dongsheng.yang@easystack.cn>,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ dm-devel@redhat.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Ilya Dryomov <idryomov@gmail.com>, Ira Weiny <ira.weiny@intel.com>,
+ ceph-devel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 15, 2021 at 8:23 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Rob Herring <robh@kernel.org> writes:
-> > On Tue, Jun 15, 2021 at 10:13 AM nramas <nramas@linux.microsoft.com> wrote:
-> >>
-> >> On Tue, 2021-06-15 at 08:01 -0600, Rob Herring wrote:
-> >> > On Tue, Jun 15, 2021 at 6:18 AM Geert Uytterhoeven <
-> >> > geert@linux-m68k.org> wrote:
-> >> > >
-> >> > > > +void *of_kexec_alloc_and_setup_fdt(const struct kimage *image,
-> >> > > > +                                  unsigned long
-> >> > > > initrd_load_addr,
-> >> > > > +                                  unsigned long initrd_len,
-> >> > > > +                                  const char *cmdline, size_t
-> >> > > > extra_fdt_size)
-> >> > > > +{
-> >> > > > +       /* Did we boot using an initrd? */
-> >> > > > +       prop = fdt_getprop(fdt, chosen_node, "linux,initrd-
-> >> > > > start", NULL);
-> >> > > > +       if (prop) {
-> >> > > > +               u64 tmp_start, tmp_end, tmp_size;
-> >> > > > +
-> >> > > > +               tmp_start = fdt64_to_cpu(*((const fdt64_t *)
-> >> > > > prop));
-> >> > > > +
-> >> > > > +               prop = fdt_getprop(fdt, chosen_node,
-> >> > > > "linux,initrd-end", NULL);
-> >> > > > +               if (!prop) {
-> >> > > > +                       ret = -EINVAL;
-> >> > > > +                       goto out;
-> >> > > > +               }
-> >> > > > +
-> >> > > > +               tmp_end = fdt64_to_cpu(*((const fdt64_t *)
-> >> > > > prop));
-> >> > >
-> >> > > Some kernel code assumes "linux,initrd-{start,end}" are 64-bit,
-> >> > > other code assumes 32-bit.
-> >> >
-> >> > It can be either. The above code was a merge of arm64 and powerpc >> > both
-> >> > of which use 64-bit and still only runs on those arches. It looks >> > like
-> >> > some powerpc platforms may use 32-bit, but this would have been >> > broken
-> >> > before.
->
-> >> of_kexec_alloc_and_setup_fdt() is called from elf_64.c (in
-> >> arch/powerpc/kexec) which is for 64-bit powerpc platform only.
-> >
-> > 64-bit PPC could be writing 32-bit property values. The architecture
-> > size doesn't necessarily matter. And if the values came from the
-> > bootloader, who knows what size it used.
-> >
-> > This code is 32-bit powerpc only?:
-> >
-> > arch/powerpc/boot/main.c-       /* Tell the kernel initrd address via device tree */
-> > arch/powerpc/boot/main.c:       setprop_val(chosen, "linux,initrd-start", (u32)(initrd_addr));
-> > arch/powerpc/boot/main.c-       setprop_val(chosen, "linux,initrd-end", (u32)(initrd_addr+initrd_size));
->
-> Historically that code was always built 32-bit, even when used with a
-> 64-bit kernel.
->
-> These days it is also built 64-bit (for ppc64le).
+Hi Christoph,
 
-How it is built is immaterial. It's always writing a 32-bit value due
-to the u32 cast.
+On 6/15/21 6:24 AM, Christoph Hellwig wrote:
+> Use the bvec helpers instead of open coding the copy.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/block/ps3disk.c | 19 +++----------------
+>  1 file changed, 3 insertions(+), 16 deletions(-)
 
-> It looks like the drivers/of/fdt.c code can handle either 64 or 32-bit,
-> so I guess that's why it seems to be working.
+I tested your patch set applied to v5.13-rc6 on PS3 and it seemed to be
+working OK.
 
-Yes, that works, but that's not the issue. The question is does the
-main.c code run in combination with kexec. The kexec code above
-(copied straight from PPC code) would not work if linux,initrd-* are
-written by the main.c code.
+I did some rsync's, some dd's, some fsck's, etc.  If you have anything
+you could suggest that you think would exercise your changes I could
+try that also.
 
-Rob
+Tested-by: Geoff Levand <geoff@infradead.org>
