@@ -2,71 +2,63 @@ Return-Path: <SRS0=sb+l=LK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DBACC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 13:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6A12C48BE6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 13:38:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AD7761001
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 13:16:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AD7761001
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 01B3D61166
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 13:38:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01B3D61166
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G4m0t72WDz3bss
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 23:16:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iq21nY+l;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G4mVX0Ztyz3bx6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 23:38:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=iq21nY+l; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G4m0P3p1Yz2yhf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 23:16:05 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4G4m0M4MNVz9sXN; Wed, 16 Jun 2021 23:16:03 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4G4m0M1jzkz9sXG;
- Wed, 16 Jun 2021 23:16:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1623849363;
- bh=3b52rQs0fiBVy4a26RpNkv6YV/hurzJhrdxYv1c4/6k=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=iq21nY+lQMFhkeZlLVcdkpzP+Yb9FgVTMV87TumgIrCyPeFf2ELbuhH9h3J9+i7E5
- V7YYlS+juZv4HNdb3qAr4uhgJ7vi624vrErZtrz+9eFIBY1lxH098pl/MhIUrW1Awx
- nCSZcXbw1HZFlbh6vLW9f5oYvBen84wfxerThLwsU+Ze8xNS6f92kh/wRItFDr0K5Q
- z1uHiz5oXG6L2Q6qGjem+UKNMqczSc4SGhZCSaCvFzKmLklnjG5J2Qxd1E2jhyPJoe
- RAcofqqje+ytQKW7XCuo1wUPfPCqAy9Hg203t7G1UTJumx0F/41Wxbq9vLdZglWviy
- jxmNzXYv85Pwg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@ozlabs.org, Paul
- Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 07/11] powerpc: Add support for microwatt's hardware
- random number generator
-In-Reply-To: <1623720368.eqmkro3mgw.astroid@bobo.none>
-References: <YMfeswgEHeXSLOUF@thinks.paulus.ozlabs.org>
- <YMff6iLDiCbFQmrW@thinks.paulus.ozlabs.org>
- <1623720368.eqmkro3mgw.astroid@bobo.none>
-Date: Wed, 16 Jun 2021 23:16:02 +1000
-Message-ID: <87bl86rlv1.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G4mV46hdcz2ysw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 23:38:18 +1000 (AEST)
+IronPort-SDR: 0XkXvkNzfJ3dxNUm63U2SGpau0RaHj3Sz51xIHibtITWOQ20CV9WixyVRyhi/3kvHyznUKoSNk
+ Ly2WbG3kleZg==
+X-IronPort-AV: E=McAfee;i="6200,9189,10016"; a="185867383"
+X-IronPort-AV: E=Sophos;i="5.83,278,1616482800"; d="scan'208";a="185867383"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Jun 2021 06:38:14 -0700
+IronPort-SDR: BkBI40BZYJIqmAd92J8juCou6h4VCZDnNSF1hrjCtf1OVenWDFpsnilaEUQ5bjV6kDkMrIhtAg
+ U0oAN4uWUo3g==
+X-IronPort-AV: E=Sophos;i="5.83,278,1616482800"; d="scan'208";a="637455199"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+ by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Jun 2021 06:38:12 -0700
+Received: from andy by smile with local (Exim 4.94)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1ltVk8-002pSk-Un; Wed, 16 Jun 2021 16:38:08 +0300
+Date: Wed, 16 Jun 2021 16:38:08 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v1 1/1] powerpc/papr_scm: Properly handle UUID types and
+ API
+Message-ID: <YMn+wDYHux16HBhd@smile.fi.intel.com>
+References: <20210415134637.17770-1-andriy.shevchenko@linux.intel.com>
+ <af677216-82b4-f1fa-1d90-3d32dabf8583@linux.ibm.com>
+ <YHlUNSwm8Ofy9sNr@smile.fi.intel.com>
+ <8e724a87-da78-9fc9-073e-cbbfea0ff97e@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8e724a87-da78-9fc9-073e-cbbfea0ff97e@linux.ibm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,58 +70,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> Excerpts from Paul Mackerras's message of June 15, 2021 9:02 am:
->> This is accessed using the DARN instruction and should probably be
->> done more generically.
->> 
->> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
->> ---
->>  arch/powerpc/include/asm/archrandom.h     | 12 +++++-
->>  arch/powerpc/platforms/microwatt/Kconfig  |  1 +
->>  arch/powerpc/platforms/microwatt/Makefile |  2 +-
->>  arch/powerpc/platforms/microwatt/rng.c    | 48 +++++++++++++++++++++++
->>  4 files changed, 61 insertions(+), 2 deletions(-)
->>  create mode 100644 arch/powerpc/platforms/microwatt/rng.c
->> 
->> diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
->> index 9a53e29680f4..e8ae0f7740f9 100644
->> --- a/arch/powerpc/include/asm/archrandom.h
->> +++ b/arch/powerpc/include/asm/archrandom.h
->> @@ -8,12 +8,22 @@
->>  
->>  static inline bool __must_check arch_get_random_long(unsigned long *v)
->>  {
->> +	if (ppc_md.get_random_seed)
->> +		return ppc_md.get_random_seed(v);
->> +
->>  	return false;
->>  }
->>  
->>  static inline bool __must_check arch_get_random_int(unsigned int *v)
->>  {
->> -	return false;
->> +	unsigned long val;
->> +	bool rc;
->> +
->> +	rc = arch_get_random_long(&val);
->> +	if (rc)
->> +		*v = val;
->> +
->> +	return rc;
->>  }
->>  
->
-> I would be happier if you didn't change this (or at least put it in its 
-> own patch explaining why it's not going to slow down other platforms).
+On Fri, Apr 16, 2021 at 03:05:31PM +0530, Aneesh Kumar K.V wrote:
+> On 4/16/21 2:39 PM, Andy Shevchenko wrote:
+> > On Fri, Apr 16, 2021 at 01:28:21PM +0530, Aneesh Kumar K.V wrote:
+> > > On 4/15/21 7:16 PM, Andy Shevchenko wrote:
+> > > > Parse to and export from UUID own type, before dereferencing.
+> > > > This also fixes wrong comment (Little Endian UUID is something else)
+> > > > and should fix Sparse warnings about assigning strict types to POD.
+> > > > 
+> > > > Fixes: 43001c52b603 ("powerpc/papr_scm: Use ibm,unit-guid as the iset cookie")
+> > > > Fixes: 259a948c4ba1 ("powerpc/pseries/scm: Use a specific endian format for storing uuid from the device tree")
+> > > > Cc: Oliver O'Halloran <oohall@gmail.com>
+> > > > Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> > > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > > > ---
+> > > > Not tested
+> > > >    arch/powerpc/platforms/pseries/papr_scm.c | 13 ++++++++-----
+> > > >    1 file changed, 8 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+> > > > index ae6f5d80d5ce..4366e1902890 100644
+> > > > --- a/arch/powerpc/platforms/pseries/papr_scm.c
+> > > > +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> > > > @@ -1085,8 +1085,9 @@ static int papr_scm_probe(struct platform_device *pdev)
+> > > >    	u32 drc_index, metadata_size;
+> > > >    	u64 blocks, block_size;
+> > > >    	struct papr_scm_priv *p;
+> > > > +	u8 uuid_raw[UUID_SIZE];
+> > > >    	const char *uuid_str;
+> > > > -	u64 uuid[2];
+> > > > +	uuid_t uuid;
+> > > >    	int rc;
+> > > >    	/* check we have all the required DT properties */
+> > > > @@ -1129,16 +1130,18 @@ static int papr_scm_probe(struct platform_device *pdev)
+> > > >    	p->hcall_flush_required = of_property_read_bool(dn, "ibm,hcall-flush-required");
+> > > >    	/* We just need to ensure that set cookies are unique across */
+> > > > -	uuid_parse(uuid_str, (uuid_t *) uuid);
+> > > > +	uuid_parse(uuid_str, &uuid);
+> > > > +
+> > > >    	/*
+> > > >    	 * cookie1 and cookie2 are not really little endian
+> > > > -	 * we store a little endian representation of the
+> > > > +	 * we store a raw buffer representation of the
+> > > >    	 * uuid str so that we can compare this with the label
+> > > >    	 * area cookie irrespective of the endian config with which
+> > > >    	 * the kernel is built.
+> > > >    	 */
+> > > > -	p->nd_set.cookie1 = cpu_to_le64(uuid[0]);
+> > > > -	p->nd_set.cookie2 = cpu_to_le64(uuid[1]);
+> > > > +	export_uuid(uuid_raw, &uuid);
+> > > > +	p->nd_set.cookie1 = get_unaligned_le64(&uuid_raw[0]);
+> > > > +	p->nd_set.cookie2 = get_unaligned_le64(&uuid_raw[8]);
+> > > 
+> > > ok that does the equivalent of cpu_to_le64 there. So we are good. But the
+> > > comment update is missing the details why we did that get_unaligned_le64.
+> > > Maybe raw buffer representation is the correct term?
+> > > Should we add an example in the comment. ie,
+> > 
+> > > /*
+> > >   * Historically we stored the cookie in the below format.
+> > > for a uuid str 72511b67-0b3b-42fd-8d1d-5be3cae8bcaa
+> > > cookie1 was  0xfd423b0b671b5172 cookie2 was 0xaabce8cae35b1d8d
+> > > */
+> > 
+> > I'm fine with the comment. At least it will shed a light on the byte ordering
+> > we are expecting.
+> > 
+> 
+> Will you be sending an update? Also it will be good to list the sparse
+> warning in the commit message?
 
-It would essentially be a revert of 01c9348c7620 ("powerpc: Use hardware
-RNG for arch_get_random_seed_* not arch_get_random_*")
+I'll send an update but I rephrase to remove mention of Sparse. I have no
+Sparse build for this architecture.
 
-Which would be ironic :)
+If you have one, try to build with `make W=1 C=1 CF=-D__CHECK_ENDIAN__ ...`
+which will enable warnings about restricted types assignment.
 
-cheers
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
