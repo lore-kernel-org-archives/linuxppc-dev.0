@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A085C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 07:39:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FD85C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 07:40:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1D1C61055
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 07:39:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1D1C61055
+	by mail.kernel.org (Postfix) with ESMTPS id BA955610A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 07:40:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA955610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G4cXP6y4dz3by6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 17:39:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G4cXy4Vpqz3bww
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jun 2021 17:40:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -27,22 +27,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G4cX219K0z2yxW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 17:39:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G4cXM1WkCz3bwy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 17:39:46 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 9C8526736F; Wed, 16 Jun 2021 09:39:22 +0200 (CEST)
-Date: Wed, 16 Jun 2021 09:39:22 +0200
+ id 329CC68B05; Wed, 16 Jun 2021 09:39:42 +0200 (CEST)
+Date: Wed, 16 Jun 2021 09:39:42 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Claire Chang <tientzu@chromium.org>
-Subject: Re: [PATCH v12 06/12] swiotlb: Use is_swiotlb_force_bounce for
- swiotlb data bouncing
-Message-ID: <20210616073922.GA2326@lst.de>
+Subject: Re: [PATCH v12 09/12] swiotlb: Add restricted DMA alloc/free support
+Message-ID: <20210616073942.GB2326@lst.de>
 References: <20210616062157.953777-1-tientzu@chromium.org>
- <20210616062157.953777-7-tientzu@chromium.org>
+ <20210616062157.953777-10-tientzu@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210616062157.953777-7-tientzu@chromium.org>
+In-Reply-To: <20210616062157.953777-10-tientzu@chromium.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,10 +84,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jun 16, 2021 at 02:21:51PM +0800, Claire Chang wrote:
-> Propagate the swiotlb_force into io_tlb_default_mem->force_bounce and
-> use it to determine whether to bounce the data or not. This will be
-> useful later to allow for different pools.
+On Wed, Jun 16, 2021 at 02:21:54PM +0800, Claire Chang wrote:
+> Add the functions, swiotlb_{alloc,free} and is_swiotlb_for_alloc to
+> support the memory allocation from restricted DMA pool.
+> 
+> The restricted DMA pool is preferred if available.
+> 
+> Note that since coherent allocation needs remapping, one must set up
+> another device coherent pool by shared-dma-pool and use
+> dma_alloc_from_dev_coherent instead for atomic coherent allocation.
 > 
 > Signed-off-by: Claire Chang <tientzu@chromium.org>
 
