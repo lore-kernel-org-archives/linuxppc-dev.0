@@ -2,59 +2,106 @@ Return-Path: <SRS0=XOTo=LL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BCDDC48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DC6C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:41:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77038613BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:00:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77038613BF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 81FD0611CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:41:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81FD0611CE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G53dF581bz3bvm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 11:00:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G54XD4sZsz3c14
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 11:41:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=rhPK/KAF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=ryuq2VGO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=korg header.b=rhPK/KAF; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=srs0=dhfd=ll=gmail.com=npiggin@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=ryuq2VGO; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G53cm4MyLz2y0G
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 11:00:07 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 85F92613BF;
- Thu, 17 Jun 2021 01:00:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
- s=korg; t=1623891603;
- bh=NGVGy6SwWlS3Ziv0DbpY7O+czUWd2nNe/IhmZqLmQOE=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=rhPK/KAFZ04tG2pPuUPGqWX4hc5fh4tjJzmW2wecEhjMIbEQo2AIoWoM/CaH7NSdV
- f8ZeGBTUz6WcHRsxOrzDeQoxn7pM7xUw4jf9pdZy271eZ4vjMsgdHkStKcmfuNaLcm
- ofWqGb/0RYKxAJNcXV3fklZ1kz2Z/w0Tm77SOI8k=
-Date: Wed, 16 Jun 2021 18:00:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2 0/6] mrermap fixes
-Message-Id: <20210616180003.da8705bba63a9898e269e38c@linux-foundation.org>
-In-Reply-To: <20210616045239.370802-1-aneesh.kumar@linux.ibm.com>
-References: <20210616045239.370802-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G54Wf5T4Hz304R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 11:40:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by ozlabs.org (Postfix) with ESMTP id 4G54WT1mdcz9sXN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 11:40:37 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4G54WT1GS3z9sW7; Thu, 17 Jun 2021 11:40:37 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031;
+ helo=mail-pj1-x1031.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=ryuq2VGO; dkim-atps=neutral
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
+ [IPv6:2607:f8b0:4864:20::1031])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4G54WT0ZTJz9sW4;
+ Thu, 17 Jun 2021 11:40:34 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id
+ x21-20020a17090aa395b029016e25313bfcso2901072pjp.2; 
+ Wed, 16 Jun 2021 18:40:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=XE0Uu0x7WxO/8W+LzqTJdpHuYjnFPOrGbCBFZ9cFpc0=;
+ b=ryuq2VGOgbryrm2XSr8SH51X7nKQVI3hUozBMkuXwRpcjYr3i05owjj+o/nrnfUgZu
+ eb1+qW7UCH3LpGQhP2ezauPMm/gLYZKQH7YTGKeg8COOpwVMHBnYbipHrpq/xzT2lh1k
+ hXayaJvwZHApz7mg1bXyb6zOykwdYlZUcAXn+Y/gTtLmIAPCc34EljEySAL2s3qY6GOC
+ LuuLTKiAoKaZafWWJ9y4z0ZGzgoilHb2AT+Ao0pE9UcGQwGubyMx3RVTe8hjRgbjArHj
+ aTRJWEhK3opcw5ruouuAFv5axZbhY4aIxqR3LyznY0A11kb0TB0+80ehw6trJ7/e7o+z
+ IoVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=XE0Uu0x7WxO/8W+LzqTJdpHuYjnFPOrGbCBFZ9cFpc0=;
+ b=kYSoZXvH1gTZPnPgw2chSZFHXEUEERNX5hGhaXhQnEj6DzuXe0VDLu4aHG/mvWEnK+
+ o+t97sMirSPxdDkPQRC9wsZC1hNl0mnGgijUSxEacnKCXW6b3+DmhnaYsKPJWuffFpnR
+ QLmMv3cTOZOsfbWaG7kxMCnKRgVuvayFwybMTCmb2HQXV1uV3TuxBjEt349T6hBFwzNI
+ oPJbaVMBbGJZk+67yBqOAkNYc8diCTE9Yu9ADTJO92NrxNscMag4pPkT3Wc0bP9p5Czf
+ o0g0BZ3gb13U7bdFl3oPN3501ioS+ckr6I/PF6zZDqgUsd0xlLlz/uUZg3pwO3fba1cC
+ mkdQ==
+X-Gm-Message-State: AOAM53398QTts45v3Ez5z3YQEl7w64cN1fWkaeTEsuAB5vIrGKkR4t8N
+ JCNnB7xBZWNysT5iyc5aFcm+qJLXY9U=
+X-Google-Smtp-Source: ABdhPJx4Jgz5BHCfjqlkevc/Ue1J9N4wAyOL51k+Yr4K8cwPQddKPd8oEiz6MzEZ9BfJY/9OvUOfzg==
+X-Received: by 2002:a17:90a:ce8b:: with SMTP id
+ g11mr2003647pju.170.1623894029112; 
+ Wed, 16 Jun 2021 18:40:29 -0700 (PDT)
+Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id i125sm3199259pfc.7.2021.06.16.18.40.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 16 Jun 2021 18:40:28 -0700 (PDT)
+Date: Thu, 17 Jun 2021 11:40:23 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 11/11] powerpc/microwatt: Disable interrupts in boot
+ wrapper main program
+To: Paul Mackerras <paulus@ozlabs.org>, Segher Boessenkool
+ <segher@kernel.crashing.org>
+References: <YMfeswgEHeXSLOUF@thinks.paulus.ozlabs.org>
+ <YMfgt4ndMrtYwWYY@thinks.paulus.ozlabs.org>
+ <20210616233739.GN5077@gate.crashing.org>
+In-Reply-To: <20210616233739.GN5077@gate.crashing.org>
+MIME-Version: 1.0
+Message-Id: <1623893913.zpw6v9dt4c.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,20 +113,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, npiggin@gmail.com,
- linux-mm@kvack.org, kaleshsingh@google.com, joel@joelfernandes.org,
- "Kirill A . Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 16 Jun 2021 10:22:33 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+Excerpts from Segher Boessenkool's message of June 17, 2021 9:37 am:
+> On Tue, Jun 15, 2021 at 09:05:27AM +1000, Paul Mackerras wrote:
+>> This ensures that we don't get a decrementer interrupt arriving before
+>> we have set up a handler for it.
+>=20
+> Maybe add a comment saying this is setting MSR[EE]=3D0 for that?  Or do
+> other bits here matter as well?
 
-> This patch series is split out series from [PATCH v7 00/11] Speedup mremap on ppc64
-> (https://lore.kernel.org/linux-mm/20210607055131.156184-1-aneesh.kumar@linux.ibm.com)
-> dropping ppc64 specific changes.
-> 
-> This patchset is dependent on
-> https://lore.kernel.org/linux-mm/20210615110859.320299-1-aneesh.kumar@linux.ibm.com
+Hmm, it actually clears MSR[RI] as well.
 
-Which I just dropped because of all the build breakages :(
+__hard_irq_disable() is what we want here, unless the MSR[RI] clearing=20
+is required as well, in which case there is __hard_EE_RI_disable().
+
+Thanks,
+Nick
