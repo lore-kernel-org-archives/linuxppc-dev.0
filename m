@@ -2,108 +2,80 @@ Return-Path: <SRS0=XOTo=LL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9301C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 06:34:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75EE2C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 06:40:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A7CC613EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 06:34:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A7CC613EC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EBD3F613D5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 06:40:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBD3F613D5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5C2F5sMRz3f0f
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 16:34:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5C9h2ptPz3c7B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 16:40:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G1IjcJCT;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=ZvI05WcG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::102a;
+ helo=mail-pj1-x102a.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=G1IjcJCT; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=ZvI05WcG; dkim-atps=neutral
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com
+ [IPv6:2607:f8b0:4864:20::102a])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5C1k2dv5z2yX9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 16:33:45 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 15H6KVqR026133; Thu, 17 Jun 2021 02:33:07 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=PpBlJMekb7/xP2iTzZYrGLtbYT9ZT6tGKIE7GTX75SM=;
- b=G1IjcJCT31ASjBNcOGYhDKgKRhuDPEr6b9rUhl4E/ard6X5+tH5X5ooYm+D1OGGchYrS
- qj3uz9AnqDgeGAgSL2l0AXXeK/bsm9njz/THEaQlMm0WoT8xeGKrzvW3Y3Z4ANwIxdqR
- D0N2tRrNZmXvZHyW2bUj8GZqqYYc431NN1Kh0WXpROqF1LaVOX+SCFHx3N//QB0NjWGN
- oEAxJfJNBE9pfGLrTAmczOcFDzz40NOIZqCw3KHemR4NBbevgrKcGQJgcBem7TNR+7N4
- 3Ohi22vDyRcWO+Va7Zq8lN6wfJbg3d6VQPt4L2r6mhAWIOQbJhBWOL56B97uKGiQZr7V JQ== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39811u88w8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Jun 2021 02:33:07 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15H6VVrT016986;
- Thu, 17 Jun 2021 06:33:06 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01wdc.us.ibm.com with ESMTP id 394mj9pgf7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Jun 2021 06:33:06 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 15H6X51Y12649114
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 17 Jun 2021 06:33:05 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F40C1C6059;
- Thu, 17 Jun 2021 06:33:04 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2FBBDC6055;
- Thu, 17 Jun 2021 06:32:59 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.36.139])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 17 Jun 2021 06:32:58 +0000 (GMT)
-Subject: Re: [PATCH v2 0/4] Add perf interface to expose nvdimm
-To: Nageswara Sastry <rnsastry@linux.ibm.com>
-References: <20210614052326.285710-1-kjain@linux.ibm.com>
- <B216F74B-8542-4363-8A82-1E392D9C5929@linux.ibm.com>
-From: kajoljain <kjain@linux.ibm.com>
-Message-ID: <14a63986-8a99-26dc-d207-7ff902df3afa@linux.ibm.com>
-Date: Thu, 17 Jun 2021 12:02:56 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
-In-Reply-To: <B216F74B-8542-4363-8A82-1E392D9C5929@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 7R4RhjD38HIv6GWshwH_hBt71ej_o28-
-X-Proofpoint-GUID: 7R4RhjD38HIv6GWshwH_hBt71ej_o28-
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5C974q4Sz2yYC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 16:40:09 +1000 (AEST)
+Received: by mail-pj1-x102a.google.com with SMTP id h16so3201970pjv.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 23:40:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=z5tXXD3iVvEIVZ0tTMhEKfG6zykuiGGLtMWYWjRDWYs=;
+ b=ZvI05WcGmnfe5oUfXHNoGdM/4PM/h3nxOJp96Y+tFn5U15FBFxeWkFmjh3oZf1EL8A
+ ADkJUTvU+y/ObXXNwK0vGCrvjU1eU92ZHL7pmy1vKZFrzb+YG+Yqm32icH5OIHbXYy2p
+ a2oGBtVpOoRVNRRYQe6ovJIHlhAuYmObTEb5E=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=z5tXXD3iVvEIVZ0tTMhEKfG6zykuiGGLtMWYWjRDWYs=;
+ b=GIQXTZ45oLl3pPV2vyZ7fMRedMeda/z+P9FAPg1al2/F9dJ9APbWmecTzIeagrl3Ve
+ 7REQYjfedIrBdgEhglYKtxmpIMZDQtvD4QyotE3zfop9NgYWRPDr2WIwuaDYWkWPYCxQ
+ LzjDrZjm/8zHZj9aLgYzIgyFzsJAxzildMdqaoCCzu6wo1A7ZN80gzgy2v7bqTtJ47gQ
+ x1k26UbMG5X75ffMjezVsQZEeQAnYIlV9TzogtTSi4G72ZykPQmN8VyCusTqMuFrxMta
+ Ezndf4xYufBMMjwzYyQ8Pmx1k8/h+yU7M0lt5D7A+hs4bSXKLqnHM72A3ooiahcgI7M1
+ oowg==
+X-Gm-Message-State: AOAM5336ITtS24av1nzfHn0AO9U7491leQX65hnfw+V6zMgkK3qw5A0P
+ A27gtpC4ZlIqa8rqmFAtWi0OLA==
+X-Google-Smtp-Source: ABdhPJzXBEGC2svL4/w6uQzTlhwr8EKMXDJngko+LKuujG1Wr3mcyI7qAM8QXo2oeD3ihoXSYQO+3A==
+X-Received: by 2002:a17:90a:f193:: with SMTP id
+ bv19mr15312947pjb.86.1623912003744; 
+ Wed, 16 Jun 2021 23:40:03 -0700 (PDT)
+Received: from localhost ([203.206.29.204])
+ by smtp.gmail.com with ESMTPSA id b1sm4112148pgb.91.2021.06.16.23.40.02
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 16 Jun 2021 23:40:03 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ kasan-dev@googlegroups.com, elver@google.com, akpm@linux-foundation.org,
+ andreyknvl@gmail.com
+Subject: [PATCH v14 0/4] KASAN core changes for ppc64 radix KASAN
+Date: Thu, 17 Jun 2021 16:39:52 +1000
+Message-Id: <20210617063956.94061-1-dja@axtens.net>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-06-17_02:2021-06-15,
- 2021-06-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 mlxlogscore=999 spamscore=0 phishscore=0 mlxscore=0
- adultscore=0 clxscore=1015 suspectscore=0 priorityscore=1501
- impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104190000 definitions=main-2106170041
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,102 +87,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, santosh@fossix.org, maddy@linux.vnet.ibm.com,
- ira.weiny@intel.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
- Athira Rajeev <atrajeev@linux.vnet.ibm.com>, aneesh.kumar@linux.ibm.com,
- vaibhav@linux.ibm.com, dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
- tglx@linutronix.de
+Cc: aneesh.kumar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Building on the work of Christophe, Aneesh and Balbir, I've ported
+KASAN to 64-bit Book3S kernels running on the Radix MMU. I've been
+trying this for a while, but we keep having collisions between the
+kasan code in the mm tree and the code I want to put in to the ppc
+tree.
 
+This series just contains the kasan core changes that we need. These
+can go in via the mm tree. I will then propose the powerpc changes for
+a later cycle. (The most recent RFC for the powerpc changes is in the
+v12 series at
+https://lore.kernel.org/linux-mm/20210615014705.2234866-1-dja@axtens.net/
+)
 
-On 6/16/21 4:25 PM, Nageswara Sastry wrote:
-> 
-> 
->> On 14-Jun-2021, at 10:53 AM, Kajol Jain <kjain@linux.ibm.com> wrote:
->>
->> Patchset adds performance stats reporting support for nvdimm.
->> Added interface includes support for pmu register/unregister
->> functions. A structure is added called nvdimm_pmu to be used for
->> adding arch/platform specific data such as supported events, cpumask
->> pmu event functions like event_init/add/read/del.
->> User could use the standard perf tool to access perf
->> events exposed via pmu.
->>
->> Added implementation to expose IBM pseries platform nmem*
->> device performance stats using this interface.
->> ...
->>
->> Patch1:
->>        Introduces the nvdimm_pmu structure
->> Patch2:
->> 	Adds common interface to add arch/platform specific data
->> 	includes supported events, pmu event functions. It also
->> 	adds code for cpu hotplug support.
->> Patch3:
->>        Add code in arch/powerpc/platform/pseries/papr_scm.c to expose
->>        nmem* pmu. It fills in the nvdimm_pmu structure with event attrs
->>        cpumask andevent functions and then registers the pmu by adding
->>        callbacks to register_nvdimm_pmu.
->> Patch4:
->>        Sysfs documentation patch
-> 
-> Tested with the following scenarios:
-> 1. Check dmesg for nmem PMU registered messages.
-> 2. Listed nmem events using 'perf list and perf list nmem'
-> 3. Ran 'perf stat' with single event, grouping events, events from same pmu,
->    different pmu and invalid events
-> 4. Read from sysfs files, Writing in to sysfs files
-> 5. While running nmem events with perf stat, offline cpu from the nmem?/cpumask
-> 
-> While running the above functionality worked as expected, no error messages seen
-> in dmesg.
-> 
-> Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
+v14 applies to next-20210611. There should be no noticeable changes to
+other platforms.
 
-Hi Nageswara,
-     Thanks for testing the patch-set.
-There is a nit change which need to be done in patch 4(Documentation patch).
-We need to update nvdimm mailing list from linux-nvdimm@lists.01.org to
-nvdimm@lists.linux.dev.
-I will make this change and send a new patch-set with your tested-by tag.
+Changes since v13: move the MAX_PTR_PER_* definitions out of kasan and
+into pgtable.h. Add a build time error to hopefully prevent any
+confusion about when the new hook is applicable. Thanks Marco and
+Christophe.
 
-Thanks,
-Kajol Jain
+Changes since v12: respond to Marco's review comments - clean up the
+help for ARCH_DISABLE_KASAN_INLINE, and add an arch readiness check to
+the new granule poisioning function. Thanks Marco.
 
-> 
->>
->> Changelog
->> ---
->> PATCH v1 -> PATCH v2
->> - Fix hotplug code by adding pmu migration call
->>  incase current designated cpu got offline. As
->>  pointed by Peter Zijlstra.
->>
->> - Removed the retun -1 part from cpu hotplug offline
->>  function.
->>
->> - Link to the previous patchset : https://lkml.org/lkml/2021/6/8/500
->> ---
->> Kajol Jain (4):
->>  drivers/nvdimm: Add nvdimm pmu structure
->>  drivers/nvdimm: Add perf interface to expose nvdimm performance stats
->>  powerpc/papr_scm: Add perf interface support
->>  powerpc/papr_scm: Document papr_scm sysfs event format entries
->>
->> Documentation/ABI/testing/sysfs-bus-papr-pmem |  31 ++
->> arch/powerpc/include/asm/device.h             |   5 +
->> arch/powerpc/platforms/pseries/papr_scm.c     | 365 ++++++++++++++++++
->> drivers/nvdimm/Makefile                       |   1 +
->> drivers/nvdimm/nd_perf.c                      | 230 +++++++++++
->> include/linux/nd.h                            |  46 +++
->> 6 files changed, 678 insertions(+)
->> create mode 100644 drivers/nvdimm/nd_perf.c
->>
-> Thanks and Regards,
-> R.Nageswara Sastry
-> 
->>
-> 
+Daniel Axtens (4):
+  kasan: allow an architecture to disable inline instrumentation
+  kasan: allow architectures to provide an outline readiness check
+  mm: define default MAX_PTRS_PER_* in include/pgtable.h
+  kasan: use MAX_PTRS_PER_* for early shadow tables
