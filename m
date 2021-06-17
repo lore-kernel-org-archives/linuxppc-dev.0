@@ -2,61 +2,86 @@ Return-Path: <SRS0=XOTo=LL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49408C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:43:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53AA6C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:49:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9BCB6112D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:43:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9BCB6112D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id BD3F4613DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 01:49:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD3F4613DB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G54b46ssKz3c0p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 11:43:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G54jj0mW4z3bsC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jun 2021 11:49:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=s6O005oO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=WtNZ86RL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f;
+ helo=mail-pj1-x102f.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=korg header.b=s6O005oO; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=WtNZ86RL; dkim-atps=neutral
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
+ [IPv6:2607:f8b0:4864:20::102f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G54Zd2n5Wz2yWs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 11:43:21 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6B6266112D;
- Thu, 17 Jun 2021 01:43:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
- s=korg; t=1623894197;
- bh=TfsTygI0gHSyYhqOTv8VBGgCJP8Jiua6aKYAwmvNJu4=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=s6O005oO2/PzdpyTrKmakB40bKNOrYWA2pCHsqCb/lj8RcTdEk/QdqeLLUNgiDETI
- vjXn+LONvLpOv6Xo43pBx7iyGYdlHgCKNZJlFJBohiUnfOqBDpyH7mfVn9+hqqa5Tu
- EVuFxR9mIN1BSLO3el+UC5XzlUDqB/NVQFu73k6c=
-Date: Wed, 16 Jun 2021 18:43:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2 6/6] mm/mremap: hold the rmap lock in write mode when
- moving page table entries.
-Message-Id: <20210616184316.17229c71508fbd536afa3662@linux-foundation.org>
-In-Reply-To: <20210616045239.370802-7-aneesh.kumar@linux.ibm.com>
-References: <20210616045239.370802-1-aneesh.kumar@linux.ibm.com>
- <20210616045239.370802-7-aneesh.kumar@linux.ibm.com>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G54jF4WVbz304R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2021 11:49:03 +1000 (AEST)
+Received: by mail-pj1-x102f.google.com with SMTP id
+ 13-20020a17090a08cdb029016eed209ca4so2918435pjn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jun 2021 18:49:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=7bYaosGE/fa8Mu1OlaYAbGCa68G83xHIE6nxVpigaB8=;
+ b=WtNZ86RL6iFpFY5L9JgN0YJ8DVn+0+cJUvN/o0HXK0Uz8ag7wE8FhSNFv78BmfLt/6
+ 4xG6ZWXXi4YVsw28+ec+nZw44cwSjzhKZgiamsf4yMmUs8UgGs+IMNBXtRg0EnhYFztr
+ ICXLmQlj1a7VRGr8OBhBnaQ0k1K3Sp5TRGFnqvJk8mI6jas1AcYfGwrKCkwVDK5qp/np
+ GvggqokFoIGTYmg0HXiEymr5Y8qGIit3cgYLX+6M9JjPQb8LucD5qtttgd1IdpuzcF2E
+ 2KzZXZRnTdZwyLlNt0jjoESPhpxgu0cWyrd7m9vWJpoXRYLhHNKAZRGD0Sz2aq/aIb3i
+ 5JoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=7bYaosGE/fa8Mu1OlaYAbGCa68G83xHIE6nxVpigaB8=;
+ b=MnMtmcR0NXIYhsldXqR9hxSoEENUEmgwjg337uTPReCU6R5oaTxcBPH1PDW4VTTvOq
+ BbPz6PC4NbnaHV6UZhn4klTYH6N72LeEbc7Adz0EK2dM480V8A1x5GzXFTReHp32GRUV
+ XH64OLA0XOZXr0zsoikPmAMo1QY3NpuCEjEbZDKDSr/FFKILBLFL3NXlEjZdSJHzoEpu
+ 0Es7Xfg4i6N+0GQG36+mkBFv51knzEQUXD7J7RTUStOQOAdWPlD9NBdqRefYeyQHlolF
+ Odx5hPTgeKXuMMRbVEceKxFg/Ht0RFp5ageBOeWc/vlfr6g32j4E1tvSshy70/QDSZxj
+ L4Mg==
+X-Gm-Message-State: AOAM5337t6d1mKrwFbyk+hXMcd7lX+aqvjDVKbPIGs1Xn2wwkgYkscZB
+ vsmnuTYd6DI6/QPjVT7Yp4UVB2mFpj8=
+X-Google-Smtp-Source: ABdhPJz7g5gVPBjrFU9G5ZskPZrqLlDR3q/WZERd06sgCQFwE+XAKKwhSg0XAvpGLJPZQkVhzzAHHw==
+X-Received: by 2002:a17:902:8541:b029:11d:15db:46a3 with SMTP id
+ d1-20020a1709028541b029011d15db46a3mr2308743plo.41.1623894539467; 
+ Wed, 16 Jun 2021 18:48:59 -0700 (PDT)
+Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id c14sm3497502pgv.86.2021.06.16.18.48.58
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 16 Jun 2021 18:48:59 -0700 (PDT)
+Date: Thu, 17 Jun 2021 11:48:53 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/build: vdso linker warning for orphan sections
+To: linuxppc-dev@lists.ozlabs.org
+References: <20210611111029.1058789-1-npiggin@gmail.com>
+In-Reply-To: <20210611111029.1058789-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Message-Id: <1623894190.q9s66e7wug.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,38 +93,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, npiggin@gmail.com, linux-mm@kvack.org,
- kaleshsingh@google.com, joel@joelfernandes.org,
- "Kirill A . Shutemov" <kirill@shutemov.name>, stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 16 Jun 2021 10:22:39 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+Excerpts from Nicholas Piggin's message of June 11, 2021 9:10 pm:
+> Add --orphan-handling=3Dwarn for vdsos, and adjust vdso linker scripts to
+> deal with orphan sections.
+>=20
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-> To avoid a race between rmap walk and mremap, mremap does take_rmap_locks().
-> The lock was taken to ensure that rmap walk don't miss a page table entry due to
-> PTE moves via move_pagetables(). The kernel does further optimization of
-> this lock such that if we are going to find the newly added vma after the
-> old vma, the rmap lock is not taken. This is because rmap walk would find the
-> vmas in the same order and if we don't find the page table attached to
-> older vma we would find it with the new vma which we would iterate later.
-> 
-> As explained in commit eb66ae030829 ("mremap: properly flush TLB before releasing the page")
-> mremap is special in that it doesn't take ownership of the page. The
-> optimized version for PUD/PMD aligned mremap also doesn't hold the ptl lock.
-> This can result in stale TLB entries as show below.
-> 
-> ...
->
-> Cc: stable@vger.kernel.org
+Okay it looks like modules should discard .PPC.EMB.apuinfo. Not entirely=20
+sure about .rela.opd.
 
-Sneaking a -stable patch into the middle of all of this was ... sneaky :(
-
-It doesn't actually apply to current mainline either.
-
-I think I'll pretend I didn't notice.  Please sort this out with Greg
-when he reports this back to you.
+Thanks,
+Nick
