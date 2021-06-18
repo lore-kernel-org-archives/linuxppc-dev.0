@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04904C48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:27:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A41FC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:27:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9920361159
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:27:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9920361159
+	by mail.kernel.org (Postfix) with ESMTPS id 0E083611AC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:27:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E083611AC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m910gB7z3f8r
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:27:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m9L4395z3fFV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:27:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,20 +26,19 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4F0yqwz3c2Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4G0YM2z3bsG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G5m4D0scNz9sjD; Fri, 18 Jun 2021 14:22:51 +1000 (AEST)
+ id 4G5m4D6QTPz9svs; Fri, 18 Jun 2021 14:22:52 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, trix@redhat.com,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <bf1e074f6fb213a1c4cc4964370bdce4b648d647.1622706812.git.christophe.leroy@csgroup.eu>
-References: <bf1e074f6fb213a1c4cc4964370bdce4b648d647.1622706812.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Remove CONFIG_PPC_MMU_NOHASH_32
-Message-Id: <162398828829.1363949.4502364876568416205.b4-ty@ellerman.id.au>
-Date: Fri, 18 Jun 2021 13:51:28 +1000
+To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <827944ea12d470c2f862635f48b5ee6c1520351f.1623217909.git.christophe.leroy@csgroup.eu>
+References: <827944ea12d470c2f862635f48b5ee6c1520351f.1623217909.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Remove proc_trap()
+Message-Id: <162398829732.1363949.3536667275772125816.b4-ty@ellerman.id.au>
+Date: Fri, 18 Jun 2021 13:51:37 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -59,15 +58,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 3 Jun 2021 07:53:49 +0000 (UTC), Christophe Leroy wrote:
-> Since commit Fixes: 555904d07eef ("powerpc/8xx: MM_SLICE is not needed anymore"),
-> CONFIG_PPC_MMU_NOHASH_32 has not been used.
-> 
-> Remove it.
+On Wed, 9 Jun 2021 05:52:50 +0000 (UTC), Christophe Leroy wrote:
+> proc_trap() has never been used, remove it.
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Remove CONFIG_PPC_MMU_NOHASH_32
-      https://git.kernel.org/powerpc/c/c0ca0fe08c9213a5187e4513b5506667f249030f
+[1/1] powerpc: Remove proc_trap()
+      https://git.kernel.org/powerpc/c/77b0bed74232c480b94bae188b6c7cd0ddee92e8
 
 cheers
