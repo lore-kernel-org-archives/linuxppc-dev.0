@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8A6AC48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55632C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4ADD76135C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4ADD76135C
+	by mail.kernel.org (Postfix) with ESMTPS id CACCD610A7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CACCD610A7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m5b5SbLz3ck0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:24:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m5x2PFnz301j
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:24:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,19 +26,19 @@ Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m496Ggnz3c0G
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4B1BXlz3c0T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:50 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G5m4541Wvz9sXb; Fri, 18 Jun 2021 14:22:45 +1000 (AEST)
+ id 4G5m485hncz9sXG; Fri, 18 Jun 2021 14:22:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <5838caffa269e0957c5a50cc85477876220298b0.1623063174.git.christophe.leroy@csgroup.eu>
-References: <5838caffa269e0957c5a50cc85477876220298b0.1623063174.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/3] powerpc: Define empty_zero_page[] in C
-Message-Id: <162398829697.1363949.8863181598389195121.b4-ty@ellerman.id.au>
-Date: Fri, 18 Jun 2021 13:51:36 +1000
+In-Reply-To: <f7f4d4e364de6e473da874468b903da6e5d97adc.1620713272.git.christophe.leroy@csgroup.eu>
+References: <f7f4d4e364de6e473da874468b903da6e5d97adc.1620713272.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Force inlining of csum_add()
+Message-Id: <162398828953.1363949.250127564614690986.b4-ty@ellerman.id.au>
+Date: Fri, 18 Jun 2021 13:51:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,22 +58,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 7 Jun 2021 10:56:04 +0000 (UTC), Christophe Leroy wrote:
-> At the time being, empty_zero_page[] is defined in each
-> platform head.S.
+On Tue, 11 May 2021 06:08:06 +0000 (UTC), Christophe Leroy wrote:
+> Commit 328e7e487a46 ("powerpc: force inlining of csum_partial() to
+> avoid multiple csum_partial() with GCC10") inlined csum_partial().
 > 
-> Define it in mm/mem.c instead, and put it in BSS section instead
-> of the DATA section. Commit 5227cfa71f9e ("arm64: mm: place
-> empty_zero_page in bss") explains why it is interesting to have
-> it in BSS.
+> Now that csum_partial() is inlined, GCC outlines csum_add() when
+> called by csum_partial().
+> 
+> c064fb28 <csum_add>:
+> c064fb28:	7c 63 20 14 	addc    r3,r3,r4
+> c064fb2c:	7c 63 01 94 	addze   r3,r3
+> c064fb30:	4e 80 00 20 	blr
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc: Define empty_zero_page[] in C
-      https://git.kernel.org/powerpc/c/45b30fafe528601f1a4449c9d68d8ebe7bbc39ad
-[2/3] powerpc: Define swapper_pg_dir[] in C
-      https://git.kernel.org/powerpc/c/e72421a085a8dc81c71b0daeb89612279c2c621c
-[3/3] powerpc/32s: Rename PTE_SIZE to PTE_T_SIZE
-      https://git.kernel.org/powerpc/c/91e9ee7e949bff08cc3845a4811185e826b6e2f1
+[1/1] powerpc: Force inlining of csum_add()
+      https://git.kernel.org/powerpc/c/4423eff71ca6b8f2c5e0fc4cea33d8cdfe3c3740
 
 cheers
