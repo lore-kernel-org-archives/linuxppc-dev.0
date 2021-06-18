@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD93C48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:32:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8969FC48BE8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:32:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E21AA611AC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:32:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E21AA611AC
+	by mail.kernel.org (Postfix) with ESMTPS id 110B461263
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:32:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 110B461263
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5mHM2cypz3gns
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:32:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5mHh3nHLz3dYS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:32:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,18 +26,17 @@ Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4V1k9lz3c7V
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:23:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4W1QHxz3c7m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:23:07 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G5m4T20v6z9t14; Fri, 18 Jun 2021 14:23:05 +1000 (AEST)
+ id 4G5m4T6qPmz9t18; Fri, 18 Jun 2021 14:23:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, trix@redhat.com, mpe@ellerman.id.au,
- benh@kernel.crashing.org, agust@denx.de
-In-Reply-To: <20210601190200.2637776-1-trix@redhat.com>
-References: <20210601190200.2637776-1-trix@redhat.com>
-Subject: Re: [PATCH] powerpc: 52xx: add fallthrough in mpc52xx_wdt_ioctl()
-Message-Id: <162398828853.1363949.2617045934377270438.b4-ty@ellerman.id.au>
-Date: Fri, 18 Jun 2021 13:51:28 +1000
+To: linuxppc-dev@lists.ozlabs.org, Shaokun Zhang <zhangshaokun@hisilicon.com>
+In-Reply-To: <1622529385-5938-1-git-send-email-zhangshaokun@hisilicon.com>
+References: <1622529385-5938-1-git-send-email-zhangshaokun@hisilicon.com>
+Subject: Re: [PATCH] selftests/powerpc: Remove the repeated declaration
+Message-Id: <162398828902.1363949.4984436760853941116.b4-ty@ellerman.id.au>
+Date: Fri, 18 Jun 2021 13:51:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -52,25 +51,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 1 Jun 2021 12:02:00 -0700, trix@redhat.com wrote:
-> With gcc 10.3, there is this compiler error
-> compiler.h:56:26: error: this statement may
->   fall through [-Werror=implicit-fallthrough=]
-> 
-> mpc52xx_gpt.c:586:2: note: here
->   586 |  case WDIOC_GETTIMEOUT:
->       |  ^~~~
-> 
-> [...]
+On Tue, 1 Jun 2021 14:36:25 +0800, Shaokun Zhang wrote:
+> Function 'event_ebb_init' and 'event_leader_ebb_init' are declared
+> twice in the header file, so remove the repeated declaration.
 
 Applied to powerpc/next.
 
-[1/1] powerpc: 52xx: add fallthrough in mpc52xx_wdt_ioctl()
-      https://git.kernel.org/powerpc/c/b629f6c0ab8668a186fda2627296d0cbcc45a368
+[1/1] selftests/powerpc: Remove the repeated declaration
+      https://git.kernel.org/powerpc/c/8f6a54bcaf62a791a7bceccc093497f7f53e2e26
 
 cheers
