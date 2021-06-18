@@ -6,39 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55632C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA909C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CACCD610A7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CACCD610A7
+	by mail.kernel.org (Postfix) with ESMTPS id 69E356117A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 04:24:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69E356117A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m5x2PFnz301j
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:24:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5m6G6NbJz3dHh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 14:24:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4B1BXlz3c0T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5m4C1fLMz3c1W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 14:22:51 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G5m485hncz9sXG; Fri, 18 Jun 2021 14:22:48 +1000 (AEST)
+ id 4G5m4925tZz9sCD; Fri, 18 Jun 2021 14:22:49 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <f7f4d4e364de6e473da874468b903da6e5d97adc.1620713272.git.christophe.leroy@csgroup.eu>
-References: <f7f4d4e364de6e473da874468b903da6e5d97adc.1620713272.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Force inlining of csum_add()
-Message-Id: <162398828953.1363949.250127564614690986.b4-ty@ellerman.id.au>
-Date: Fri, 18 Jun 2021 13:51:29 +1000
+In-Reply-To: <8479a862e165a57a855292d47e24c259a578f5a0.1622711627.git.christophe.leroy@csgroup.eu>
+References: <8479a862e165a57a855292d47e24c259a578f5a0.1622711627.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/kuap: Force inlining of all first level KUAP
+ helpers.
+Message-Id: <162398829627.1363949.10534995724959196164.b4-ty@ellerman.id.au>
+Date: Fri, 18 Jun 2021 13:51:36 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,23 +59,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 May 2021 06:08:06 +0000 (UTC), Christophe Leroy wrote:
-> Commit 328e7e487a46 ("powerpc: force inlining of csum_partial() to
-> avoid multiple csum_partial() with GCC10") inlined csum_partial().
+On Thu, 3 Jun 2021 09:13:54 +0000 (UTC), Christophe Leroy wrote:
+> All KUAP helpers defined in asm/kup.h are single line functions
+> that should be inlined. But on book3s/32 build, we get many
+> instances of <prevent_write_to_user.constprop.0>.
 > 
-> Now that csum_partial() is inlined, GCC outlines csum_add() when
-> called by csum_partial().
-> 
-> c064fb28 <csum_add>:
-> c064fb28:	7c 63 20 14 	addc    r3,r3,r4
-> c064fb2c:	7c 63 01 94 	addze   r3,r3
-> c064fb30:	4e 80 00 20 	blr
-> 
-> [...]
+> Force inlining of those helpers.
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Force inlining of csum_add()
-      https://git.kernel.org/powerpc/c/4423eff71ca6b8f2c5e0fc4cea33d8cdfe3c3740
+[1/1] powerpc/kuap: Force inlining of all first level KUAP helpers.
+      https://git.kernel.org/powerpc/c/240efd717c415e69511780044f44416bdf161523
 
 cheers
