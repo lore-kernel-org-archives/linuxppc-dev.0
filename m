@@ -2,82 +2,116 @@ Return-Path: <SRS0=hJnm=LM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2832C48BE8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 07:49:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E91C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 07:50:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0431E61209
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 07:49:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0431E61209
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 65BF461209
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 07:50:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65BF461209
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G5rfr39fSz3c0y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 17:49:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G5rgr6LnXz3cHS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 17:50:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=KWWPPg7f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iKTGuRJG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::634;
- helo=mail-pl1-x634.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=KWWPPg7f; dkim-atps=neutral
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
- [IPv6:2607:f8b0:4864:20::634])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=iKTGuRJG; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G5rfK5xs3z2xZG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 17:49:11 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id x22so2721293pll.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 00:49:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=rRljl0lqXtQr1Tlype5mHQD3Pca3Q2hIIBpo11jL15g=;
- b=KWWPPg7foJs9lp/W8xnM6c5Lfmi+SoD5uvZu0BJxq6rrCCWH57hfP+6hNENwB1NGrC
- NsWT8IczKr5D1kdEaOBYFrA83PCm/QLzuEyyCh1B9UogPAUCKtBQp5CJkDprGPt4K+sM
- dvHrMs2y39bL1/5uCNFa5g+71zlOvREFZCSVg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=rRljl0lqXtQr1Tlype5mHQD3Pca3Q2hIIBpo11jL15g=;
- b=ekQVvtPrwRu/1uCVcuOPL+r3QjCh2u5x8ns2kknNxNwyxJTTOgU1lV39S6FRVr7mXM
- dkrtAvVnQYPqx2uuHCFxbseKyqm46pbHFPGo5IhLDSSYV1MRfj8H1WV1/w9OSdjaUbPq
- Kcc+INmGgYdzVz1dstgyNFJTm4/DJ7koYTM4O65hRkfhLi739DqtcR49Ri00cWIj/DTm
- BiLp7ftJtV2Eg+DbxHgYahpzuyTDXa7ydvskveJG/8rMSbT1cGXAolsdGBiqaTzoFdRQ
- 3hWDMWJ4x7jrbu2QsYBWkMTV6zj8DSSoWsji/ZwGvIB5Vm64Hl4Dl6Dut2E2rukwgkmD
- Df1Q==
-X-Gm-Message-State: AOAM530P9c3yoOQRm1yz0YgI0outpGXaTozc0g33ey22Bi0sU2jrmG5X
- DCeTnp5HwE3yS/1T7yMdVqmj6A==
-X-Google-Smtp-Source: ABdhPJywdVaBxmdrr/j43lJUhMz7Op9k0FznBBoEZwtN0FqkIuAUo5QQsKbmWR0Me5f4JfPqlzB5fw==
-X-Received: by 2002:a17:902:ce8f:b029:114:a0e5:7be1 with SMTP id
- f15-20020a170902ce8fb0290114a0e57be1mr3576110plg.10.1624002548694; 
- Fri, 18 Jun 2021 00:49:08 -0700 (PDT)
-Received: from localhost ([120.17.188.88])
- by smtp.gmail.com with ESMTPSA id c207sm7198055pfb.86.2021.06.18.00.49.07
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 18 Jun 2021 00:49:08 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- christophe.leroy@csgroup.eu
-Subject: Re: [PATCH 2/4] powerpc/64s: Remove unneeded #ifdef
- CONFIG_DEBUG_PAGEALLOC in hash_utils
-In-Reply-To: <20210517061658.194708-3-jniethe5@gmail.com>
-References: <20210517061658.194708-1-jniethe5@gmail.com>
- <20210517061658.194708-3-jniethe5@gmail.com>
-Date: Fri, 18 Jun 2021 17:49:04 +1000
-Message-ID: <87eeczsjdb.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G5rgB6zDbz2xZg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 17:49:58 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 15I7XnRa161809; Fri, 18 Jun 2021 03:49:46 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=dTIZ5axw1NujsOwjATMsWE2BYptzs1vQcDRoq+UzODc=;
+ b=iKTGuRJGcMJlsSjyQ0h1w3xc7lYS2wKMe3kBH0g51YT1ORK8ddRKk8kUwQNWD28iGms9
+ tCw4KcBSZvm+uOSsImlHkayo9CEwGpsHx9lViY58WjJG0xvKsNrIfcEG0xemV6Pkllst
+ RDuzs8PAYtDkxwFThFec4ahLG28Xkns/+B4d1Ke+kyHSoeOaU8D4jzl5cjeS2VFIH75k
+ T9nBRkSEow12WzUEk8vHEw6skUD0Zp546jgmOCUKwK6r3t99RpKgM10JwvIEQ8Q1VPh/
+ Cj/gc6eiuhFNfNdlgYQaDgQLRLUqH0uYNkvL/1OjelOA8pQxbldNVljttrsQBBSBj2+S pg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 398nktkaxv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 18 Jun 2021 03:49:46 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 15I7YpSB168121;
+ Fri, 18 Jun 2021 03:49:46 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 398nktkaxj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 18 Jun 2021 03:49:46 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15I7haP4005960;
+ Fri, 18 Jun 2021 07:49:45 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01wdc.us.ibm.com with ESMTP id 394mj9yk4x-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 18 Jun 2021 07:49:45 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 15I7niNQ32833936
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 18 Jun 2021 07:49:44 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 252D5C605D;
+ Fri, 18 Jun 2021 07:49:44 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ADA21C605B;
+ Fri, 18 Jun 2021 07:49:42 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.160.180.39])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 18 Jun 2021 07:49:42 +0000 (GMT)
+Message-ID: <0d6ca1ec553a61b219f42ebf6699dd6c56e2e978.camel@linux.ibm.com>
+Subject: Re: [PATCH v6 12/17] powerpc/pseries/vas: Integrate API with
+ open/close windows
+From: Haren Myneni <haren@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, herbert@gondor.apana.org.au,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Date: Fri, 18 Jun 2021 00:49:40 -0700
+In-Reply-To: <1623971609.844odc55aw.astroid@bobo.none>
+References: <827bf56dce09620ebecd8a00a5f97105187a6205.camel@linux.ibm.com>
+ <e8d956bace3f182c4d2e66e343ff37cb0391d1fd.camel@linux.ibm.com>
+ <1623971609.844odc55aw.astroid@bobo.none>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.2 (3.36.2-1.fc32) 
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: S-sC37TKa9kPXiwhITFGlx0mpRHLq70M
+X-Proofpoint-ORIG-GUID: q7BpOxNwB48C9HNNG4XB9yOINExUJ77G
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-06-17_17:2021-06-15,
+ 2021-06-17 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ impostorscore=0 phishscore=0 malwarescore=0 suspectscore=0 bulkscore=0
+ spamscore=0 mlxlogscore=999 adultscore=0 lowpriorityscore=0 mlxscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2106180042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,52 +123,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>, npiggin@gmail.com,
- aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jordan and Christophe,
+On Fri, 2021-06-18 at 09:22 +1000, Nicholas Piggin wrote:
+> Excerpts from Haren Myneni's message of June 18, 2021 6:36 am:
+> > This patch adds VAS window allocatioa/close with the corresponding
+> > hcalls. Also changes to integrate with the existing user space VAS
+> > API and provide register/unregister functions to NX pseries driver.
+> > 
+> > The driver register function is used to create the user space
+> > interface (/dev/crypto/nx-gzip) and unregister to remove this
+> > entry.
+> > 
+> > The user space process opens this device node and makes an ioctl
+> > to allocate VAS window. The close interface is used to deallocate
+> > window.
+> > 
+> > Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+> 
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> 
+> Unless there is some significant performance reason it might be
+> simplest
+> to take the mutex for the duration of the allocate and frees rather
+> than 
+> taking it several times, covering the atomic with the lock instead.
+> 
+> You have a big lock, might as well use it and not have to wonder what
+> if 
+> things race here or there.
 
-> --- a/arch/powerpc/mm/book3s64/hash_utils.c
-> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-> @@ -126,11 +126,8 @@ EXPORT_SYMBOL_GPL(mmu_slb_size);
->  #ifdef CONFIG_PPC_64K_PAGES
->  int mmu_ci_restrictions;
->  #endif
-> -#ifdef CONFIG_DEBUG_PAGEALLOC
->  static u8 *linear_map_hash_slots;
->  static unsigned long linear_map_hash_count;
-> -static DEFINE_SPINLOCK(linear_map_hash_lock);
-> -#endif /* CONFIG_DEBUG_PAGEALLOC */
->  struct mmu_hash_ops mmu_hash_ops;
->  EXPORT_SYMBOL(mmu_hash_ops);
->  
+Using mutex to protect allocate/deallocate window and setup/free IRQ,
+also to protect updating the list. We do not need lock for modify
+window hcall and other things. Hence taking mutex several times. Also
+used atomic for counters (used_lpar_creds) which can be exported in
+sysfs (this patch will be added later in next enhancement seris). 
 
-> @@ -1944,6 +1937,8 @@ long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
->  }
->  
->  #ifdef CONFIG_DEBUG_PAGEALLOC
-> +static DEFINE_SPINLOCK(linear_map_hash_lock);
-> +
+Genarlly applications open window initially, do continuous copy/paste
+operations and close window later. But possible that the library /
+application to open/close window for each request. Also may be opening
+or closing multiple windows (say 1000 depends on cores on the system)
+at the same time. These cases may affect the application performance.
 
-I had some trouble figuring out why the spinlock has to be in the
-ifdef. A bit of investigation suggests that it's only used in functions
-that are only defined under CONFIG_DEBUG_PAGEALLOC - unlike the other
-variables. So that makes sense.
+Thanks
+Haren
 
-While I was poking around, I noticed that linear_map_hash_slots is
-manipulated under linear_map_hash_lock in kernel_(un)map_linear_page but
-is manipulated outside the lock in htab_bolt_mapping(). Is that OK? (I
-don't know when htab_bolt_mapping is called, it's possible it's only
-called at times where nothing else could be happing to that array.)
+> 
+> But don't rework that now, maybe just something to consider for
+> later.
+> 
+> Thanks,
+> Nick
+> 
 
-Kind regards,
-Daniel
-
->  static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
->  {
->  	unsigned long hash;
-> -- 
-> 2.25.1
